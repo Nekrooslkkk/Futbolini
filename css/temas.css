@@ -1,0 +1,102 @@
+/* ============================================================
+   FUTBOLINI 3.0 · temas.css
+   Negro, Claro e Insano. Mismo lenguaje visual que el Aero:
+   barras con brillo duro, encabezados propios, botones con reflejo.
+   ============================================================ */
+
+/* ================= NEGRO ================= */
+body[data-tema="negro"]{
+  --verde-alto:#2f9bff; --verde-medio:#1c5f9e; --verde-hondo:#0d3355;
+  --aqua:#39e0c8; --tinta:#dbecff; --tinta-suave:#8fb2cf; --tinta-clara:#eaf6ff;
+  --linea:rgba(120,190,255,.22); --resalte:rgba(60,120,190,.35);
+  --f-titulo:"Trebuchet MS","Segoe UI",Tahoma,sans-serif;
+  --f-cuerpo:"Segoe UI",Tahoma,Verdana,system-ui,sans-serif;
+  --f-dato:"Lucida Console",Consolas,monospace;
+}
+body[data-tema="negro"] .cielo{background:radial-gradient(120% 80% at 50% -10%,#16283d 0%,#0e1a2a 45%,#070d16 100%)}
+body[data-tema="negro"] .destello{background:radial-gradient(45% 26% at 24% 3%,rgba(90,180,255,.22),transparent 70%)}
+body[data-tema="negro"] .pasto{background:radial-gradient(70% 40% at 20% 110%,rgba(20,70,110,.5),transparent 62%),
+  radial-gradient(60% 40% at 82% 112%,rgba(16,60,90,.55),transparent 60%)}
+body[data-tema="negro"] #barra{background:linear-gradient(180deg,#2b425e 0%,#1a2c42 45%,#12202f 60%,#0b1522 100%);
+  border-bottom:2px solid #060c14;box-shadow:0 2px 0 rgba(140,200,255,.14) inset,0 4px 14px rgba(0,0,0,.6)}
+body[data-tema="negro"] #menu{background:rgba(12,22,34,.82);border-bottom:1px solid rgba(120,190,255,.18)}
+body[data-tema="negro"] .mi{color:#cfe4f7;background:linear-gradient(180deg,#22354b,#162536);border:1px solid rgba(120,190,255,.2)}
+body[data-tema="negro"] .mi[aria-selected="true"]{background:linear-gradient(180deg,#3d8fd6,#1c5f9e);color:#fff;border-color:#2f9bff}
+body[data-tema="negro"] .panel{background:linear-gradient(180deg,rgba(24,38,54,.9),rgba(14,24,36,.86));
+  border:1px solid rgba(120,190,255,.2);box-shadow:0 6px 20px rgba(0,0,0,.55)}
+body[data-tema="negro"] .btn-aqua{color:#04212b;background:linear-gradient(180deg,#c9f6ee,#5fd9c3 48%,#25a691 52%,#12786a)}
+body[data-tema="negro"] .btn-aqua.verde{color:#fff;background:linear-gradient(180deg,#63b6f5,#1c5f9e 50%,#12456f)}
+body[data-tema="negro"] .btn-aqua.rojo{color:#fff;background:linear-gradient(180deg,#ef8d7d,#b23524 50%,#7f1d10)}
+body[data-tema="negro"] .btn-aqua.gris{color:#dbecff;background:linear-gradient(180deg,#3a4f66,#22344a)}
+body[data-tema="negro"] .panel > .cab{color:#eaf6ff;
+  background:linear-gradient(180deg,#3a5f88 0%,#25405c 46%,#1e3450 54%,#17293d 100%);
+  border-bottom:1px solid rgba(120,190,255,.25);text-shadow:0 1px 1px rgba(0,0,0,.5)}
+body[data-tema="negro"] .op{background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.03))}
+body[data-tema="negro"] .resul{background:rgba(255,255,255,.06)}
+body[data-tema="negro"] .icono{background:linear-gradient(180deg,#22354b,#162536)}
+body[data-tema="negro"] .ficha{background:linear-gradient(180deg,#22354b,#162536)}
+body[data-tema="negro"] .ficha[aria-pressed="true"]{background:linear-gradient(180deg,#3d8fd6,#1c5f9e)}
+body[data-tema="negro"] .modal{background:linear-gradient(180deg,#1b2b3d,#111c29);border:1px solid rgba(120,190,255,.25)}
+body[data-tema="negro"] input[type=text],body[data-tema="negro"] select{background:rgba(255,255,255,.09)}
+body[data-tema="negro"] .etq{background:rgba(255,255,255,.08)}
+
+/* ================= CLARO ================= */
+body[data-tema="claro"]{
+  --verde-alto:#4a90d9; --verde-medio:#2f6fb5; --verde-hondo:#1d4f88;
+  --aqua:#63c8d8; --tinta:#12222f; --tinta-suave:#5b7386; --tinta-clara:#fff;
+  --linea:rgba(20,50,80,.16); --resalte:rgba(255,226,140,.5);
+  --f-titulo:"Segoe UI","Trebuchet MS",sans-serif;
+  --f-cuerpo:"Segoe UI",Tahoma,Verdana,system-ui,sans-serif;
+  --f-dato:"Lucida Console",Consolas,monospace;
+}
+body[data-tema="claro"] .cielo{background:linear-gradient(180deg,#ffffff 0%,#f1f5f9 55%,#e2e9f0 100%)}
+body[data-tema="claro"] .destello,body[data-tema="claro"] .pasto{background:none}
+body[data-tema="claro"] .burbujas{display:none}
+body[data-tema="claro"] #barra{background:linear-gradient(180deg,#6ba7e6,#3d7fc4 50%,#2f6fb5);
+  border-bottom:1px solid #24578f;box-shadow:0 2px 6px rgba(20,60,110,.25)}
+body[data-tema="claro"] #menu{background:#fff;border-bottom:1px solid var(--linea)}
+body[data-tema="claro"] .mi{color:#25455f;background:#f2f6fa;border:1px solid var(--linea)}
+body[data-tema="claro"] .mi[aria-selected="true"]{background:linear-gradient(180deg,#5b9ee0,#2f6fb5);color:#fff}
+body[data-tema="claro"] .panel{background:#fff;border:1px solid var(--linea);box-shadow:0 2px 10px rgba(20,50,80,.08)}
+body[data-tema="claro"] .panel > .cab{color:#fff;background:linear-gradient(180deg,#6ba7e6,#3d7fc4 52%,#2f6fb5)}
+body[data-tema="claro"] .btn-aqua{color:#0f2c3c;background:linear-gradient(180deg,#ddf3f8,#9fdce8 50%,#63c8d8)}
+body[data-tema="claro"] .btn-aqua.verde{color:#fff;background:linear-gradient(180deg,#6ba7e6,#2f6fb5)}
+body[data-tema="claro"] .btn-aqua.rojo{color:#fff;background:linear-gradient(180deg,#f09a8b,#c0392b)}
+body[data-tema="claro"] .btn-aqua.gris{color:#25455f;background:linear-gradient(180deg,#fff,#dde5ec)}
+body[data-tema="claro"] .op{background:#f8fbfd}
+body[data-tema="claro"] .icono,body[data-tema="claro"] .ficha{background:#f2f6fa}
+body[data-tema="claro"] .ficha[aria-pressed="true"]{background:linear-gradient(180deg,#5b9ee0,#2f6fb5)}
+body[data-tema="claro"] .modal{background:#fff}
+body[data-tema="claro"] .resul{background:#f6f9fb}
+
+/* ================= INSANO ================= */
+body[data-tema="insano"]{
+  --verde-alto:#ff2fd0; --verde-medio:#00ffd0; --verde-hondo:#ffe600;
+  --aqua:#00ffe1; --tinta:#180032; --tinta-suave:#5b0080; --tinta-clara:#fff;
+  --linea:rgba(0,0,0,.35); --resalte:rgba(255,255,0,.55);
+  --f-titulo:"Comic Sans MS","Trebuchet MS",cursive;
+  --f-cuerpo:"Comic Sans MS","Segoe UI",cursive;
+  --f-dato:"Lucida Console",Consolas,monospace;
+}
+body[data-tema="insano"]{animation:locura 8s linear infinite}
+@keyframes locura{to{filter:hue-rotate(360deg)}}
+body[data-tema="insano"] .cielo{background:linear-gradient(135deg,#ff00c8,#00ffe1 35%,#fff700 70%,#00ff62)}
+body[data-tema="insano"] .destello{background:radial-gradient(40% 30% at 30% 5%,rgba(255,255,255,.85),transparent 70%)}
+body[data-tema="insano"] .pasto{background:radial-gradient(60% 40% at 20% 110%,rgba(255,0,200,.6),transparent 60%)}
+body[data-tema="insano"] #barra{background:linear-gradient(90deg,#ff66cc,#66ffff,#66ff99);border-bottom:3px solid #ffff00}
+body[data-tema="insano"] #menu{background:rgba(255,255,255,.42);border-bottom:3px solid #ff00aa}
+body[data-tema="insano"] .mi{background:linear-gradient(180deg,#ff88dd,#ff44aa);color:#fff;
+  border:2px solid #ffff00;text-shadow:1px 1px 0 #000}
+body[data-tema="insano"] .mi[aria-selected="true"]{background:linear-gradient(180deg,#44ffcc,#00aa88);color:#002a22}
+body[data-tema="insano"] .panel{background:rgba(255,255,255,.62);border:3px double #ff00aa;
+  box-shadow:0 0 22px rgba(255,0,170,.45)}
+body[data-tema="insano"] .panel > .cab{background:linear-gradient(90deg,#ff00aa,#00ffe1);color:#180032;
+  text-shadow:1px 1px 0 #ffff00}
+body[data-tema="insano"] .btn-aqua{color:#180032;background:linear-gradient(180deg,#ffffff,#00ffe1 50%,#00c9b0);
+  border:2px solid #ff00aa}
+body[data-tema="insano"] .btn-aqua.verde{background:linear-gradient(180deg,#faff00,#8fdc00)}
+body[data-tema="insano"] .btn-aqua.rojo{background:linear-gradient(180deg,#ff9ecf,#ff0080);color:#fff}
+body[data-tema="insano"] .btn-aqua.gris{background:linear-gradient(180deg,#fff,#d0d0ff)}
+body[data-tema="insano"] .op{background:rgba(255,255,255,.7);border:2px dashed #ff00aa}
+body[data-tema="insano"] .icono,body[data-tema="insano"] .ficha{background:linear-gradient(180deg,#fff,#ffe6fa)}
+body[data-tema="insano"] .modal{background:rgba(255,255,255,.9);border:3px double #ff00aa}

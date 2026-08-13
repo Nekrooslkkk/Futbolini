@@ -1,0 +1,25 @@
+FUTBOLINI 3.0 — Fase A
+
+CÓMO JUGAR
+- Abre index.html en un navegador (doble clic).
+- Para el celular, usa el archivo único Futbolini-3.0.html.
+
+ESTRUCTURA (para agregar contenido después)
+  index.html            arranque y orden de carga
+  css/base.css          estructura y componentes
+  css/aero.css          tema Frutiger Aero Waypoint
+  css/temas.css         negro, claro, insano
+  js/util.js            helpers, guardado, azar
+  js/data-liga.js       clubes 1991, Copa Libertadores real, calendario
+  js/data-plantel.js    planteles reales + tokens {GOLEADOR} etc.
+  js/data-grupos.js     grupos de interes, estatutos, reputacion
+  js/data-decisiones.js decisiones (ACA se escribe la historia nueva)
+  js/data-eventos.js    mundo vivo y crisis
+  js/motor.js           estado, economia, resolucion sin porcentajes
+  js/partido.js         motor de partido (simular/seguir/dirigir)
+  js/carrera.js         mandato, destitucion, ofertas de clubes
+  js/ui-partido.js      pantallas de partido
+  js/ui.js              interfaz y menu
+
+Todo es dramatizacion: nombres reales, hechos con base publica,
+conversaciones y frases inventadas para el juego.

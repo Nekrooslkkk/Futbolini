@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Futbolini 3.0 — Conducción de clubes chilenos</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/aero.css">
+<link rel="stylesheet" href="css/temas.css">
+</head>
+<body data-tema="aero">
+
+<div id="fondo" aria-hidden="true">
+  <div class="capa cielo"></div>
+  <div class="capa destello"></div>
+  <div class="capa pasto"></div>
+  <div class="capa burbujas" id="burbujas"></div>
+</div>
+
+<!-- ===== BARRA SUPERIOR ===== -->
+<header id="barra">
+  <div class="barra-brillo"></div>
+  <div class="marca">
+    <span class="glifo" id="escudo">⚽</span>
+    <span class="nombre">FUTBOLINI</span>
+    <span class="ver">3.0</span>
+  </div>
+  <div class="barra-datos" id="barraDatos"></div>
+  <div class="barra-acc">
+    <button class="btn-aqua" id="btnAvanzar">Avanzar</button>
+    <button class="btn-aqua chico" id="btnTemas" title="Cambiar tema">◐</button>
+  </div>
+</header>
+
+<nav id="menu" role="tablist"></nav>
+
+<main id="vista"></main>
+
+<footer id="pie">
+  <span id="pieTxt">Futbolini 3.0 · dramatización · Frutiger Aero</span>
+  <span id="guardadoTxt">—</span>
+</footer>
+
+<div id="capa-modal"></div>
+<div id="avisos"></div>
+
+<script src="js/util.js"></script>
+<script src="js/data-liga.js"></script>
+<script src="js/data-plantel.js"></script>
+<script src="js/data-grupos.js"></script>
+<script src="js/data-decisiones.js"></script>
+<script src="js/data-eventos.js"></script>
+<script src="js/motor.js"></script>
+<script src="js/partido.js"></script>
+<script src="js/carrera.js"></script>
+<script src="js/ui-partido.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>

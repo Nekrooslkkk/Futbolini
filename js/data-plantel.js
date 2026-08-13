@@ -1,0 +1,116 @@
+"use strict";
+/* ============================================================
+   FUTBOLINI 3.0 · data-plantel.js
+   Planteles con nombres reales. Los jugadores del plantel de
+   Colo-Colo 1991 corresponden al grupo que disputó la Copa
+   Libertadores de ese año (listado aproximado). Edades, sueldos,
+   valores y atributos son estimaciones del juego, no datos
+   contractuales reales.
+   ============================================================ */
+
+/* [nombre, posición, edad aprox, nivel, proyección, sueldo anual (MM$), valor (MM$), rasgos] */
+const PLANTEL_CC_1991=[
+ ["Daniel Morón","ARQ",29,82,82,58,260,["ídolo","seguro bajo los tres palos"]],
+ ["Marcelo Ramírez","ARQ",23,68,76,16,90,["joven"]],
+ ["Lizardo Garrido","DEF",33,79,79,52,140,["ídolo","veterano","marca implacable"]],
+ ["Javier Margas","DEF",22,80,90,34,520,["proyección europea","juego aéreo"]],
+ ["Miguel Ramírez","DEF",21,74,86,22,300,["joven","polivalente"]],
+ ["Gabriel Mendoza","DEF",23,80,86,36,420,["lateral ofensivo","llegó desde O'Higgins"]],
+ ["Leonel Herrera","DEF",23,76,84,28,260,["apellido pesado","llega al gol"]],
+ ["Eduardo Vilches","VOL",26,74,76,24,120,["orden","corre por dos"]],
+ ["Jaime Pizarro","VOL",27,84,84,62,300,["capitán","cerebro","ídolo"]],
+ ["Rubén Espinoza","VOL",26,83,85,58,340,["desequilibrio","gol de media distancia"]],
+ ["Raúl Ormeño","VOL",30,72,72,26,70,["veterano","oficio"]],
+ ["Marcelo Barticciotto","DEL",25,87,89,90,620,["ídolo","gambeta","aguanta la presión"]],
+ ["Luis Pérez","DEL",26,81,84,44,340,["definición","préstamo desde U. Católica"]],
+ ["Rubén Martínez","DEL",28,85,85,72,400,["goleador del torneo","olfato"]],
+ ["Patricio Yáñez","DEL",30,78,78,66,180,["experiencia internacional","carácter"]],
+ ["Ricardo Dabrowski","DEL",28,80,80,58,280,["extranjero","juego aéreo"]],
+ ["Sergio Salgado","DEL",24,70,78,18,110,["recambio"]],
+ ["Juan Carlos Peralta","DEF",26,70,72,20,90,["recambio"]]
+];
+
+const PLANTEL_UCH_1994=[
+ ["Sergio Vargas","ARQ",27,84,84,60,320,["selección","reflejos"]],
+ ["Cristián Castañeda","DEF",25,78,82,34,200,["temperamento"]],
+ ["Ronald Fuentes","DEF",25,78,82,34,200,["salida limpia"]],
+ ["Rogelio Delgado","DEF",30,76,76,38,120,["extranjero","liderazgo"]],
+ ["Luis Musrri","VOL",25,80,84,40,260,["capitán","pulmón"]],
+ ["Víctor Hugo Castañeda","VOL",28,82,82,50,240,["pegada","tiro libre"]],
+ ["Patricio Mardones","DEL",30,78,78,42,150,["penales","experiencia"]],
+ ["Marcelo Salas","DEL",19,84,95,26,900,["joven","killer","proyección europea"]]
+];
+
+const PLANTELES_REALES={ CC:{1991:PLANTEL_CC_1991}, UCH:{1994:PLANTEL_UCH_1994} };
+
+const NOMBRES_PILA=["Luis","Carlos","Jorge","Mauricio","Cristián","Rodrigo","Felipe","Marcelo","Sebastián","Iván",
+ "Héctor","Nelson","Patricio","Ramón","Víctor","Álvaro","Esteban","Franco","Matías","Gonzalo","Claudio","Fabián"];
+const APELLIDOS=["Aránguiz","Bravo","Cáceres","Díaz","Espinoza","Fuentes","Gutiérrez","Henríquez","Ibáñez","Jara",
+ "López","Muñoz","Navarrete","Órdenes","Pizarro","Quinteros","Rojas","Sepúlveda","Tapia","Urrutia","Valdés",
+ "Yáñez","Zúñiga","Contreras","Silva","Riquelme","Maldonado","Cortés","Fernández","Aguilera","Bustos","Cifuentes"];
+
+function semilla(txt){let h=2166136261;for(let i=0;i<txt.length;i++){h^=txt.charCodeAt(i);h=Math.imul(h,16777619);}return Math.abs(h);}
+function azarFijo(s){let x=s;return()=>{x=(x*1103515245+12345)&0x7fffffff;return x/0x7fffffff;};}
+
+function jugadorDesde(a){
+  return {n:a[0],pos:a[1],edad:a[2],nivel:a[3],proy:a[4],
+    sueldo:a[5],valor:a[6],rasgos:a[7]||[],forma:70,moral:70,real:true,
+    contrato:{hasta:0},lesion:0,goles:0,partidos:0,tarjetas:0};
+}
+function generarJugador(rr,nivelBase,pos,edad){
+  const nivel=clamp(Math.round(nivelBase+rr()*20-10),28,92);
+  const edd=edad||18+Math.floor(rr()*16);
+  const proy=clamp(nivel+(edd<23?Math.round(rr()*12):0),28,95);
+  return {n:NOMBRES_PILA[Math.floor(rr()*NOMBRES_PILA.length)]+" "+APELLIDOS[Math.floor(rr()*APELLIDOS.length)],
+    pos:pos,edad:edd,nivel:nivel,proy:proy,
+    sueldo:Math.round(nivel*nivel/110),valor:Math.round(nivel*nivel/16+(proy-nivel)*10),
+    rasgos:[],forma:65+Math.round(rr()*15),moral:65+Math.round(rr()*15),real:false,
+    contrato:{hasta:0},lesion:0,goles:0,partidos:0,tarjetas:0};
+}
+/* Arma un plantel: usa los nombres reales si existen y completa con generados */
+function armarPlantel(clubId,anio,nivelBase){
+  const out=[];
+  const reales=(PLANTELES_REALES[clubId]||{})[anio];
+  if(reales) reales.forEach(a=>out.push(jugadorDesde(a)));
+  const rr=azarFijo(semilla(clubId+"-"+anio));
+  const faltan=["ARQ","DEF","DEF","VOL","VOL","DEL","DEF","VOL","DEL","VOL"];
+  let i=0;
+  while(out.length<22 && i<faltan.length*3){
+    out.push(generarJugador(rr,nivelBase||60,faltan[i%faltan.length]));
+    i++;
+  }
+  out.forEach(j=>{ if(!j.contrato.hasta) j.contrato.hasta=anio+1+Math.floor(rr()*3); });
+  return out;
+}
+/* Plantel corto para rivales, solo para narrar goles con nombre */
+function plantelRival(idOrNombre,fuerza){
+  const rr=azarFijo(semilla("riv-"+idOrNombre));
+  const out=[];
+  for(let i=0;i<11;i++) out.push(generarJugador(rr,fuerza-4,["ARQ","DEF","DEF","DEF","DEF","VOL","VOL","VOL","DEL","DEL","DEL"][i]));
+  return out;
+}
+/* ---------- tokens: las decisiones nombran jugadores de verdad ---------- */
+function resolverTokens(txt,E){
+  if(!txt) return txt;
+  const p=E.plantel.filter(j=>!j.vendido);
+  const mejor=(f,filtro)=>{const l=filtro?p.filter(filtro):p; if(!l.length) return null;
+    return l.slice().sort((a,b)=>f(b)-f(a))[0];};
+  const val={
+    CAPITAN:(mejor(j=>j.nivel+(j.rasgos.includes("capitán")?40:0))||{}).n,
+    GOLEADOR:(mejor(j=>j.goles*10+j.nivel,j=>j.pos==="DEL")||{}).n,
+    ARQUERO:(mejor(j=>j.nivel,j=>j.pos==="ARQ")||{}).n,
+    IDOLO:(mejor(j=>j.nivel+(j.rasgos.includes("ídolo")?40:0))||{}).n,
+    JOVEN:(mejor(j=>j.proy-j.edad,j=>j.edad<=23)||{}).n,
+    VETERANO:(mejor(j=>j.edad,j=>j.edad>=28)||{}).n,
+    DEFENSA_JOVEN:(mejor(j=>j.proy-j.edad,j=>j.pos==="DEF"&&j.edad<=24)||{}).n,
+    CRACK:(mejor(j=>j.valor)||{}).n,
+    DT:(E.dt||"el cuerpo técnico"),
+    CLUB:(E.clubNombre||"el club"),
+    ANIO:E.anio
+  };
+  return txt.replace(/\{([A-Z_]+)\}/g,(m,k)=> val[k]!=null?val[k]:m);
+}
+function jugadorPorToken(token,E){
+  const nombre=resolverTokens("{"+token+"}",E);
+  return E.plantel.find(j=>j.n===nombre)||null;
+}
