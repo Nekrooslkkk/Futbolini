@@ -3,7 +3,21 @@
    FUTBOLINI 3.0 · ui-partido.js
    Pantallas de previa, partido en vivo y resumen.
    ============================================================ */
-let P_ACTUAL=null, TIMER=null;
+let P_ACTUAL=null, TIMER=null, PAUSADO=false, MOMENTO_OPS=[];
+/* Atajos de teclado durante el partido:
+   Espacio = pausa/reanuda (modo Seguir) · 1/2/3 = orden rápida (modo Dirigir) */
+function partidoTeclas(e){
+  if(!P_ACTUAL||P_ACTUAL.terminado) return;
+  if(e.code==="Space"||e.key===" "){
+    if(P_ACTUAL.modo==="seguir"){ e.preventDefault(); PAUSADO=!PAUSADO; aviso(PAUSADO?"⏸ Pausa":"▶ Sigue"); }
+    return;
+  }
+  if(P_ACTUAL.modo==="dirigir"&&MOMENTO_OPS.length){
+    const n=parseInt(e.key,10);
+    if(n>=1&&n<=MOMENTO_OPS.length){ e.preventDefault(); const b=MOMENTO_OPS[n-1]; MOMENTO_OPS=[]; if(b) b.click(); }
+  }
+}
+document.addEventListener("keydown",partidoTeclas);
 
 function pantallaPrevia(part){
   const v=$("#vista"); v.innerHTML="";
@@ -46,6 +60,8 @@ function pantallaPrevia(part){
   const lectura=fz.base>part.fuerzaRival+6?"Sobre el papel somos mejores, pero eso no se cobra en la cancha.":
     (fz.base>part.fuerzaRival-4?"Está parejo. Lo va a definir un detalle.":"El rival es superior. Hay que jugar perfecto.");
   p2.cuerpo.appendChild(el("p",null,"<b>"+E.dt+":</b> "+lectura));
+  const cl=(typeof CLIMAS!=="undefined"&&CLIMAS[part.clima])||null;
+  if(cl) p2.cuerpo.appendChild(el("p","mini",cl.ic+" Clima: "+cl.n+". "+cl.d));
   if(part.local) p2.cuerpo.appendChild(el("p","mini","Se espera buena taquilla: la gente está "+(E.ind.hinchada>65?"encendida":"tibia")+"."));
   p2.cuerpo.appendChild(fila("Precio de la entrada",["Popular","Normal","Alto"][E.precioEntrada]));
   const cambia=el("button","btn-aqua chico gris","Cambiar precio");
@@ -62,12 +78,14 @@ function pantallaPrevia(part){
     bs.appendChild(b);
   });
   p2.cuerpo.appendChild(bs);
+  p2.cuerpo.appendChild(el("p","mini","Seguir: barra espaciadora para pausar. Dirigir: teclas 1 / 2 / 3 en cada decisión."));
   rej.appendChild(p2);
   v.appendChild(rej);
   window.scrollTo({top:0});
 }
 function arrancarPartido(part,modo){
   P_ACTUAL=iniciarPartido(part,modo);
+  PAUSADO=false; MOMENTO_OPS=[];
   if(modo==="dirigir"){ pintarPartido(); pedirMomento(); }
   else if(modo==="seguir"){ pintarPartido(); correrEnVivo(); }
   else { correrHasta(P_ACTUAL,90); pintarPartido(); cerrarPartido(); }
@@ -92,7 +110,9 @@ function pintarPartido(){
 function correrEnVivo(){
   clearInterval(TIMER);
   TIMER=setInterval(()=>{
+    if(PAUSADO) return;
     const P=P_ACTUAL;
+    if(!P){ clearInterval(TIMER); return; }
     correrHasta(P,Math.min(90,P.min+ri(6,11)));
     pintarPartido();
     if(P.min>=90){ clearInterval(TIMER); cerrarPartido(); }
@@ -109,13 +129,16 @@ function pedirMomento(){
   const p=panel(m.t,"🧠","alerta");
   p.cuerpo.appendChild(el("p",null,m.d));
   const ops=el("div","ops");
-  m.op.forEach(o=>{
+  MOMENTO_OPS=[];
+  m.op.forEach((o,i)=>{
     const b=el("button","op");
-    b.innerHTML='<div class="t">'+o.t+'</div>';
-    b.onclick=()=>{ aplicarMomento(P,o.ef); P.momentoIdx++; pedirMomento(); };
+    b.innerHTML='<div class="t"><span class="tecla">'+(i+1)+'</span> '+o.t+'</div>';
+    b.onclick=()=>{ MOMENTO_OPS=[]; aplicarMomento(P,o.ef); P.momentoIdx++; pedirMomento(); };
     ops.appendChild(b);
+    MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);
+  p.cuerpo.appendChild(el("p","mini","Atajos: teclas 1 / 2 / 3 para decidir sin soltar el teclado."));
   $("#vista").appendChild(p);
 }
 function cerrarPartido(){

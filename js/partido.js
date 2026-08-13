@@ -52,13 +52,63 @@ function iniciarPartido(part,modo){
   let bonoTorneo=part.tipo==="copa"?modSuma("copa"):modSuma("liga");
   const arb=modSuma("arbitraje");
   const rivalBase=part.fuerzaRival+(part.local?0:3);
+  const cl=(typeof CLIMAS!=="undefined"&&CLIMAS[part.clima])||{desgaste:0,precision:1};
   return {
     part:part, modo:modo||"simular", min:0, gl:0, gv:0, once:once, rivalPlantel:plantelRival(part.rivalNombre||part.rivalId,part.fuerzaRival),
     ataque:fz.ataque+bonoLocal+bonoTorneo+arb, orden:fz.orden+bonoLocal*0.6+bonoTorneo+arb,
-    desgaste:fz.desgaste, cansancio:0, rival:rivalBase, empuje:0, riesgoPlan:0,
+    desgaste:fz.desgaste+(cl.desgaste||0), cansancio:0, rival:rivalBase, empuje:0, riesgoPlan:0,
+    precClima:cl.precision||1, arb:arb,
     lineas:[], goleadores:[], tarjetas:[], lesionados:[], terminado:false,
     momentos:momentosPartido(part), momentoIdx:0
   };
+}
+/* ---------- penales y polémica arbitral ---------- */
+function arqueroDe(lista){ return (lista&&(lista.find(j=>j.pos==="ARQ")||lista[0]))||null; }
+function pateadorDe(once){
+  const c=once.filter(j=>j.pos!=="ARQ");
+  const puntaje=j=>(j.nivel||60)+((j.rasgos&&j.rasgos.includes("penales"))?30:0)+((j.rasgos&&j.rasgos.includes("definición"))?12:0);
+  return c.slice().sort((a,b)=>puntaje(b)-puntaje(a))[0]||once[0];
+}
+/* ~78% base, corregido por nivel del pateador vs temple (nivel) del arquero */
+function cobrarPenal(pateador,arquero){
+  let p=0.78;
+  if(pateador) p+=((pateador.nivel||70)-70)*0.006+((pateador.rasgos&&pateador.rasgos.includes("penales"))?0.06:0);
+  if(arquero)  p-=((arquero.nivel||70)-70)*0.005;
+  return Math.random()<clamp(p,0.55,0.92);
+}
+function penalEnPartido(P,aFavor,motivo){
+  const min=P.min;
+  if(aFavor){
+    const pat=pateadorDe(P.once), arq=arqueroDe(P.rivalPlantel);
+    linea(P,min,(motivo||"Penal para "+E.clubNombre+".")+" Toma la pelota "+pat.n+"…");
+    if(cobrarPenal(pat,arq)){
+      pat.goles++; P.goleadores.push(pat.n); if(P.part.local)P.gl++; else P.gv++;
+      linea(P,min,"¡Gol de penal de "+pat.n+"! "+marcadorTxt(P),"gol");
+    } else { linea(P,min,"¡Atajadón! "+(arq?arq.n:"el arquero")+" le contiene el penal a "+pat.n+".","grave"); P.empuje-=0.4; }
+  } else {
+    const pat=elige(P.rivalPlantel.filter(x=>x.pos!=="ARQ"))||P.rivalPlantel[0], arq=arqueroDe(P.once);
+    linea(P,min,(motivo||"Penal para "+P.part.rivalNombre+".")+" Va a patear "+pat.n+"…");
+    if(cobrarPenal(pat,arq)){
+      if(P.part.local)P.gv++; else P.gl++;
+      linea(P,min,"Gol de penal de "+P.part.rivalNombre+": "+pat.n+". "+marcadorTxt(P),"gol");
+    } else { linea(P,min,"¡"+(arq?arq.n:"el arquero")+" le ataja el penal! El estadio explota.","gol"); P.empuje+=0.5; }
+  }
+}
+/* polémica en minutos calientes: penal dudoso o gol anulado, con sesgo según
+   el modificador de arbitraje (pactos oscuros inclinan la balanza a tu favor). */
+function polemicaArbitral(P){
+  const sesgo=clamp(0.5+(P.arb||0)*0.04,0.15,0.85);
+  const aFavor=Math.random()<sesgo;
+  if(Math.random()<0.5){
+    penalEnPartido(P,aFavor,aFavor?("Penal muy dudoso para "+E.clubNombre+". El rival protesta."):("Penal dudosísimo para "+P.part.rivalNombre+". La banca salta furiosa."));
+    aplicarEfectos({moral:aFavor?1:-2});
+  } else if(aFavor){
+    linea(P,P.min,"Le anulan un gol al rival por un offside milimétrico. Se salva "+E.clubNombre+".","gol");
+    aplicarEfectos({moral:1}); P.empuje+=0.3;
+  } else {
+    linea(P,P.min,"¡Gol anulado a "+E.clubNombre+"! El línea levantó la bandera y nadie entendió por qué.","grave");
+    aplicarEfectos({moral:-2}); P.empuje-=0.3;
+  }
 }
 function momentosPartido(part){
   const base=[12,32,46,58,70,82];
@@ -100,6 +150,7 @@ function correrHasta(P,hasta){
     if(P.min>hasta) P.min=hasta;
     P.cansancio+=P.desgaste*0.05;
     const pl=peligro(P);
+    if(P.precClima&&P.precClima!==1){ pl.yo*=P.precClima; pl.el*=P.precClima; }
     const r=Math.random();
     if(r<pl.yo/pasos){ anotaPropio(P,P.min); }
     else if(r<(pl.yo+pl.el)/pasos){ anotaRival(P,P.min); }
@@ -122,6 +173,10 @@ function correrHasta(P,hasta){
         "Se juega con el balón parado como única arma.",
         "Momento de estudio: nadie quiere equivocarse."]));
     }
+    /* penal esporádico (sesgado por quién ataca más) */
+    if(!P.terminado&&Math.random()<0.008){ penalEnPartido(P,Math.random()<clamp(0.5+(P.ataque-P.rival)*0.004,0.2,0.8)); }
+    /* polémica arbitral solo en el tramo caliente del partido */
+    if(!P.terminado&&P.min>60&&Math.random()<0.022){ polemicaArbitral(P); }
   }
   if(P.min>=90&&!P.terminado) P.min=90;
 }

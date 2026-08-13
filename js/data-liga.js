@@ -70,6 +70,27 @@ const NOTAS_COPA={
  "Octavos-1":"En la vuelta de octavos, Colo-Colo venció 2-1 a Universitario de Lima con dos goles de Rubén Espinoza."
 };
 
+/* ---------- clima ---------- */
+/* El clima de cada partido se fija al construir el calendario y después el
+   motor de partido lo lee: cambia el desgaste (cansancio) y la precisión
+   (cuántas ocasiones terminan en gol). */
+const CLIMAS={
+ despejado:{n:"despejado",ic:"☀️",desgaste:0,  precision:1.00, d:"Tarde despejada, cancha en buen estado."},
+ calor:    {n:"calor",    ic:"🌡️",desgaste:1.3,precision:0.97, d:"Calor pesado: se va a sentir en las piernas."},
+ lluvia:   {n:"lluvia",   ic:"🌧️",desgaste:0.8,precision:0.89, d:"Llueve fuerte y la pelota queda pesada."},
+ viento:   {n:"viento",   ic:"🌬️",desgaste:0.3,precision:0.92, d:"Viento cruzado que complica cada pelota alta."},
+ frio:     {n:"frío",     ic:"❄️",desgaste:0.6,precision:0.96, d:"Frío de invierno y cancha dura."}
+};
+function climaDeFecha(mes,seed){
+  const rr=azarFijo(semilla("clima-"+seed+"-"+mes));
+  let tabla;
+  if(mes>=6&&mes<=8) tabla=[["lluvia",3],["frio",3],["viento",2],["despejado",2]];        // invierno
+  else if(mes===12||mes<=2) tabla=[["calor",3],["despejado",4],["viento",1]];              // verano
+  else tabla=[["despejado",5],["viento",2],["lluvia",2],["calor",1]];                      // media estación
+  const tot=tabla.reduce((s,x)=>s+x[1],0); let r=rr()*tot;
+  for(const par of tabla){ r-=par[1]; if(r<=0) return par[0]; }
+  return "despejado";
+}
 /* ---------- generación de calendario ---------- */
 /* Round robin de 16 equipos → 15 fechas por rueda, 30 en total. */
 function fixturesLiga(equipos){
@@ -103,7 +124,7 @@ function construirCalendario(clubId, anio, conCopa){
   if(conCopa && anio===1991 && clubId==="CC"){
     COPA91.forEach((p,i)=>cal.push({
       tipo:"copa", torneo:"Copa Libertadores", ronda:p.ronda, rivalNombre:p.rival, rivalId:null,
-      fuerzaRival:p.fuerza, local:p.local, sede:p.sede, f:p.f, jugado:false,
+      fuerzaRival:p.fuerza, local:p.local, sede:p.sede, f:p.f, jugado:false, clima:climaDeFecha(p.f.m,"copa"+anio+i),
       real:p.real, apodo:p.apodo||null, notaId:p.ronda+"-"+(cal.filter(x=>x.ronda===p.ronda).length)
     }));
   }
@@ -115,7 +136,7 @@ function construirCalendario(clubId, anio, conCopa){
     cal.push({tipo:"liga", torneo:"Campeonato Nacional", fecha:i+1, rivalId:rival,
       rivalNombre:CLUB_POR_ID[rival].n, fuerzaRival:CLUB_POR_ID[rival].fuerza,
       local:local, sede:local?CLUB_POR_ID[clubId].est:CLUB_POR_ID[rival].est,
-      f:fechas[i], jugado:false, jornada:jornada});
+      f:fechas[i], jugado:false, clima:climaDeFecha(fechas[i].m,"liga"+clubId+anio+i), jornada:jornada});
   });
   cal.sort((a,b)=>(a.f.m*100+(a.f.d||15))-(b.f.m*100+(b.f.d||15)));
   return cal;
