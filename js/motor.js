@@ -53,7 +53,7 @@ function nuevaPartida(clubId,anio,modo){
     grupos:{}, estatutos:Object.assign({},ESTATUTO_INICIAL[clubId]),
     mods:[], flags:{}, plantel:[], calendario:[], idx:0,
     tabla:{}, decPend:[], decHechas:{}, bandeja:[], cronica:[], titulos:[],
-    pendientesEncadenadas:[],
+    pendientesEncadenadas:[], notifs:[], ofertasPend:[], mercadoLog:{rechazadas:{},vendidos:[]},
     tactica:{form:"4-4-2",estilo:"Equilibrado",presion:"Media"},
     precioEntrada:1, presupuesto:null, temporada:{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0},
     carrera:{club:clubId,desde:anio,despidos:0,clubes:[],evaluacion:null,fin:false},
@@ -82,7 +82,37 @@ function normalizarEstado(){
   if(!Array.isArray(E.pendientesEncadenadas)) E.pendientesEncadenadas=[];
   if(!E.temporada) E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0};
   if(E.temporada.sinGanar===undefined) E.temporada.sinGanar=0;
+  if(!Array.isArray(E.notifs)) E.notifs=[];
+  if(!Array.isArray(E.ofertasPend)) E.ofertasPend=[];
+  if(!E.mercadoLog) E.mercadoLog={rechazadas:{},vendidos:[]};
 }
+/* ============================================================
+   Centro de notificaciones: TODO lo importante deja un aviso
+   persistente y explicado, que se puede revisar cuando quieras.
+   `acc` marca los avisos accionables (ej: una oferta por un jugador).
+   ============================================================ */
+function notificar(n){
+  if(!E) return null;
+  if(!E.notifs) E.notifs=[];
+  const part=proximoPartido();
+  const item={
+    id:"n"+(E._nid=(E._nid||0)+1),
+    t:n.t, d:n.d||"", extra:n.extra||"", tipo:n.tipo||"neutro",
+    anio:E.anio, fecha:(part&&part.f?fechaTxt(part.f):"cierre de temporada"),
+    leido:false, acc:n.acc||null
+  };
+  E.notifs.unshift(item);
+  if(E.notifs.length>80) E.notifs.length=80;
+  /* también entra a la bandeja semanal del escritorio, salvo que se pida lo contrario */
+  if(n.bandeja!==false){
+    E.bandeja.unshift({t:item.t,d:item.d,extra:item.extra,tipo:item.tipo,anio:E.anio});
+    if(E.bandeja.length>20) E.bandeja.length=20;
+  }
+  return item;
+}
+function notifsNoLeidas(){ return (E.notifs||[]).filter(n=>!n.leido).length; }
+function notifsAccionables(){ return (E.notifs||[]).filter(n=>n.acc&&!n.acc.resuelta); }
+function marcarLeidas(){ (E.notifs||[]).forEach(n=>{ n.leido=true; }); }
 /* ---------------- helpers de estado ---------------- */
 function modSuma(k){ let s=0; E.mods.forEach(m=>{ if(m.ef&&m.ef[k]) s+=m.ef[k]; }); return s; }
 function agregarMod(m){
@@ -145,8 +175,8 @@ function procesarEncadenadas(){
       if(d.rep) aplicarRep(d.rep);
       aplicarBanderas(d);
       const extra=d.accion?ejecutarAccion(d.accion):"";
-      const item={t:d.t,d:resolverTokens(d.d||"",E),extra:extra,tipo:d.tipo||"neutro",anio:E.anio};
-      E.bandeja.unshift(item); disparadas.push(item);
+      const item=notificar({t:d.t,d:resolverTokens(d.d||"",E),extra:extra,tipo:d.tipo||"neutro"});
+      disparadas.push(item);
     }
   });
   return disparadas;
@@ -403,8 +433,7 @@ function tirarEvento(){
   if(ev.rep) aplicarRep(ev.rep);
   let extra=ev.accion?ejecutarAccion(ev.accion):"";
   const txt=resolverTokens(ev.d,E).replace("{JUGADOR}",(elige(E.plantel.filter(j=>!j.vendido))||{n:"un jugador"}).n);
-  const item={t:ev.t,d:txt,extra:extra,tipo:ev.tipo,anio:E.anio};
-  E.bandeja.unshift(item);
+  const item=notificar({t:ev.t,d:txt,extra:extra,tipo:ev.tipo});
   return {tipo:"aviso",item:item};
 }
 function crisisActiva(){
@@ -429,6 +458,10 @@ function finDeTemporada(){
   /* balance y crónica */
   E.cronica.unshift({anio:E.anio,pos:pos,pts:t.pts,campeon:campeon,copa:copaGanada?"Campeón":null,
     plata:Math.round(E.plata),deuda:Math.round(E.deuda),ev:ev});
+  notificar({t:"Balance "+E.anio+": "+(copaGanada?"Campeón de América":campeon?"Campeón nacional":ordinal(pos)+" en el Nacional"),
+    tipo:(campeon||copaGanada)?"bueno":(pos<=5?"neutro":"malo"),
+    d:"Terminó la temporada "+E.anio+" en el "+ordinal(pos)+" lugar con "+t.pts+" puntos ("+t.pg+"G "+t.pe+"E "+t.pp+"P). "+
+      "Premios de competencia: "+plata(premio)+". "+ev.txt,bandeja:false});
   return {pos:pos,campeon:campeon,copa:copaGanada,premio:premio,ev:ev};
 }
 function posicionEnTabla(){
@@ -459,6 +492,9 @@ function nuevoAnio(){
   GRUPOS.forEach(g=>{ const x=E.grupos[g.id]; x.aprob=Math.round(x.aprob*0.72); });
   E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0};
   E.idx=0; E.decPend=[]; E.bandeja=[]; E.pendientesEncadenadas=[]; E.mercado=null; E.flags.copaCampeon=false;
+  E.ofertasPend=[]; E.mercadoLog={rechazadas:{},vendidos:[]};
+  notificar({t:"Arranca la temporada "+E.anio,tipo:"neutro",
+    d:"Nuevo año, nuevo campeonato. El plantel se renovó, los objetivos se reajustan y la caja arranca de cero en lo semanal.",bandeja:false});
   /* banderas que solo valen dentro de una temporada */
   E.flags.rachaLiquida=false;
   Object.keys(E.flags).forEach(k=>{ if(k.indexOf("medianoche_")===0) delete E.flags[k]; });

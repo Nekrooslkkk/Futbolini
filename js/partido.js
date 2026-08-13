@@ -252,6 +252,15 @@ function terminarPartido(P){
   if(E.temporada.sinGanar===undefined) E.temporada.sinGanar=0;
   if(yo>otro){ E.temporada.sinGanar=0; E.flags.rachaLiquida=false; }
   else E.temporada.sinGanar++;
+  notificar({
+    t:(yo>otro?"Victoria ":(yo<otro?"Derrota ":"Empate "))+yo+"-"+otro+" ante "+part.rivalNombre,
+    tipo:(yo>otro?"bueno":(yo<otro?"malo":"neutro")),
+    d:(part.tipo==="copa"?"Copa Libertadores · "+part.ronda:"Campeonato Nacional · fecha "+part.fecha)+", "+
+      (part.local?"de local":"de visita")+" en "+part.sede+". "+
+      (P.goleadores.length?("Goles: "+P.goleadores.join(", ")+". "):"")+
+      (part.local?("Fueron "+(part.publico||0).toLocaleString("es-CL")+" personas; taquilla "+plata(part.caja||0)+". "):"")+
+      (yo>otro?"Suben moral e hinchada.":(yo<otro?"Bajan moral e hinchada; el vestuario queda sensible.":"Reparto de puntos.")),
+    bandeja:false});
   E.idx++;
   guardar();
   return {yo:yo,otro:otro,caja:caja,gente:gente};
@@ -287,16 +296,16 @@ function resolverCopa(part,yo,otro){
   else { pasa=acc.gf>acc.gc||(acc.gf===acc.gc&&Math.random()<0.5); }
   if(!pasa){
     E.calendario=E.calendario.filter(p=>!(p.tipo==="copa"&&!p.jugado));
-    E.bandeja.unshift({t:"Eliminado de la Copa Libertadores",d:"El club queda fuera en "+k+" ("+acc.gf+"-"+acc.gc+" en la llave).",tipo:"malo",anio:E.anio});
+    notificar({t:"Eliminado de la Copa Libertadores",d:"El club queda fuera en "+k+" ("+acc.gf+"-"+acc.gc+" en la llave). Se resiente la moral y baja algo de prestigio.",tipo:"malo"});
     aplicarEfectos({moral:-5,prestigio:-2});
   } else if(k==="FINAL"){
     E.flags.copaCampeon=true;
-    E.bandeja.unshift({t:"CAMPEÓN DE AMÉRICA",d:"El club gana la Copa Libertadores "+E.anio+".",tipo:"bueno",anio:E.anio});
+    notificar({t:"CAMPEÓN DE AMÉRICA",d:"El club gana la Copa Libertadores "+E.anio+". Estalla la hinchada, se dispara el prestigio y entran premios grandes.",tipo:"bueno"});
     aplicarGrupos({hinchada:22,socios:14,camarin:18,directorio:20,prensa:14,comunidad:10,anfp:6,sponsors:16,tecnico:15});
     aplicarRep({publica:25,credibilidad:15});
   } else {
     aplicarEfectos({plata:130});
-    E.bandeja.unshift({t:"Avanza en la Copa",d:"El club supera "+k+" ("+acc.gf+"-"+acc.gc+"). Entran "+plata(130)+" por premios.",tipo:"bueno",anio:E.anio});
+    notificar({t:"Avanza en la Copa",d:"El club supera "+k+" ("+acc.gf+"-"+acc.gc+"). Entran "+plata(130)+" por premios y sube la moral.",tipo:"bueno"});
     aplicarEfectos({moral:5,prestigio:3});
   }
 }

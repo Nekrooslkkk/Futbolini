@@ -7,14 +7,16 @@ let SEC="escritorio";
 const SECCIONES=[
  ["escritorio","🗂️","Escritorio"],["institucion","🏛️","Institución"],["finanzas","💰","Finanzas"],
  ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["calendario","📅","Calendario"],["historia","📚","Historia"],
- ["carrera","🎖️","Carrera"],["ajustes","⚙️","Ajustes"]
+ ["carrera","🎖️","Carrera"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
 ];
 function irA(s){ SEC=s; render(); window.scrollTo({top:0}); }
 
 /* ---------------- barra y menú ---------------- */
 function pintarBarra(){
   const bd=$("#barraDatos"); bd.innerHTML="";
-  if(!E){ $("#escudo").textContent="⚽"; return; }
+  const badge=$("#avisoBadge");
+  if(!E){ $("#escudo").textContent="⚽"; if(badge) badge.classList.add("oculto"); return; }
+  if(badge){ const n=notifsNoLeidas(); badge.textContent=n>9?"9+":String(n); badge.classList.toggle("oculto",!n); }
   $("#escudo").textContent=CLUB_INFO[E.club].esc;
   const part=proximoPartido();
   const datos=[
@@ -38,6 +40,7 @@ function pintarMenu(){
     b.setAttribute("role","tab");
     b.setAttribute("aria-selected",SEC===id?"true":"false");
     if(id==="escritorio"&&E.decPend.length) b.appendChild(el("span","pip",String(E.decPend.length)));
+    if(id==="avisos"&&notifsNoLeidas()) b.appendChild(el("span","pip",String(notifsNoLeidas())));
     b.onclick=()=>irA(id);
     m.appendChild(b);
   });
@@ -51,7 +54,8 @@ function render(){
   if(E.carrera.fin){ v.appendChild(pantallaFinCarrera()); return; }
   if(E.carrera.enParo){ v.appendChild(pantallaSinClub()); return; }
   ({escritorio:vistaEscritorio,institucion:vistaInstitucion,finanzas:vistaFinanzas,plantel:vistaPlantel,
-    mercado:vistaMercado,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,ajustes:vistaAjustes}[SEC]||vistaEscritorio)();
+    mercado:vistaMercado,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,
+    avisos:vistaAvisos,ajustes:vistaAjustes}[SEC]||vistaEscritorio)();
 }
 /* ---------------- inicio ---------------- */
 function pantallaInicio(){
@@ -234,6 +238,9 @@ function abrirDecision(d,enModal){
         b.onclick=()=>{
           const r=resolverDecision(d,i);
           if(!r) return;
+          notificar({t:"Decisión: "+resolverTokens(d.t,E),
+            tipo:r.tier==="bien"?"bueno":(r.tier==="mal"?"malo":"neutro"),
+            d:"Elegiste «"+resolverTokens(o.t,E)+"». "+r.txt,extra:r.extra,bandeja:false});
           aviso(r.hist?"Seguiste el camino histórico":"Tu línea se separa de la historia");
           pintar(cont);
           pintarBarra(); pintarMenu();
@@ -520,6 +527,47 @@ function pantallaFinCarrera(){
   p.cuerpo.appendChild(b);
   return p;
 }
+/* ---------------- avisos (centro de notificaciones) ---------------- */
+function claseTipo(t){ return t==="bueno"?"bien":(t==="malo"?"mal":"mitad"); }
+function icoTipo(t){ return t==="bueno"?"✅":(t==="malo"?"⚠️":(t==="mercado"?"🧳":"📌")); }
+function vistaAvisos(){
+  const v=$("#vista");
+  const acc=notifsAccionables();
+  if(acc.length){
+    const pa=panel("Requieren tu respuesta","📨","alerta");
+    acc.forEach(n=>pa.cuerpo.appendChild(tarjetaAviso(n,true)));
+    v.appendChild(pa);
+  }
+  const p=panel("Todos los avisos","🔔","agua");
+  const barra=el("div"); barra.style.marginBottom="8px";
+  const bl=el("button","btn-aqua chico gris","Marcar todo leído");
+  bl.onclick=()=>{ marcarLeidas(); guardar(); render(); };
+  const bb=el("button","btn-aqua chico rojo","Vaciar leídos"); bb.style.marginLeft="6px";
+  bb.onclick=()=>{ E.notifs=(E.notifs||[]).filter(n=>!n.leido||(n.acc&&!n.acc.resuelta)); guardar(); render(); };
+  barra.appendChild(bl); barra.appendChild(bb);
+  p.cuerpo.appendChild(barra);
+  const lista=(E.notifs||[]);
+  if(!lista.length) p.cuerpo.appendChild(el("p","mini","Todavía no hay avisos. Todo lo importante que pase va a quedar registrado acá."));
+  lista.forEach(n=>{ if(n.acc&&!n.acc.resuelta) return; p.cuerpo.appendChild(tarjetaAviso(n,false)); });
+  v.appendChild(p);
+  /* al entrar, se dan por leídos (los accionables siguen visibles arriba) */
+  if(notifsNoLeidas()){ marcarLeidas(); pintarBarra(); pintarMenu(); guardar(); }
+}
+function tarjetaAviso(n,conAcciones){
+  const d=el("div","resul "+claseTipo(n.tipo)+(n.leido?"":" nuevo"));
+  d.innerHTML="<div class='mini' style='opacity:.7'>"+icoTipo(n.tipo)+" "+n.fecha+" · "+n.anio+(n.leido?"":" · <b>nuevo</b>")+"</div>"+
+    "<b>"+n.t+"</b><br>"+n.d+(n.extra?"<br><span class='mini'>"+n.extra+"</span>":"");
+  if(conAcciones&&n.acc&&n.acc.tipo==="ofertaJugador"){
+    const cont=el("div"); cont.style.marginTop="6px";
+    const ba=el("button","btn-aqua chico verde","Aceptar venta");
+    ba.onclick=()=>{ if(typeof responderOferta==="function"){ responderOferta(n,true); render(); } };
+    const br=el("button","btn-aqua chico gris","Rechazar"); br.style.marginLeft="6px";
+    br.onclick=()=>{ if(typeof responderOferta==="function"){ responderOferta(n,false); render(); } };
+    cont.appendChild(ba); cont.appendChild(br);
+    d.appendChild(cont);
+  }
+  return d;
+}
 /* ---------------- ajustes ---------------- */
 function vistaAjustes(){
   const v=$("#vista");
@@ -577,7 +625,7 @@ function abrirEventoDecision(ev){
         const fake={id:d.id,buzon:"institucional",op:ev.op,posturas:ev.posturas||{}};
         const r=resolverDecision(fake,i);
         cerrarModal();
-        if(r){ E.bandeja.unshift({t:ev.t,d:r.txt,extra:r.extra,tipo:r.tier==="bien"?"bueno":(r.tier==="mal"?"malo":"neutro"),anio:E.anio}); }
+        if(r){ notificar({t:ev.t,d:"Elegiste «"+o.t+"». "+r.txt,extra:r.extra,tipo:r.tier==="bien"?"bueno":(r.tier==="mal"?"malo":"neutro")}); }
         irA("escritorio");
       };
       ops.appendChild(b);
@@ -603,7 +651,7 @@ function abrirCrisis(cr){
         const r=resolverDecision(fake,i);
         E.flags["crisis_"+cr.id]=true;
         cerrarModal();
-        if(r) E.bandeja.unshift({t:cr.t,d:r.txt,extra:r.extra,tipo:r.tier==="bien"?"bueno":"malo",anio:E.anio});
+        if(r) notificar({t:"CRISIS: "+cr.t,d:"Elegiste «"+o.t+"». "+r.txt,extra:r.extra,tipo:r.tier==="bien"?"bueno":"malo"});
         guardar(); irA("escritorio");
       };
       ops.appendChild(b);
@@ -641,6 +689,7 @@ function cerrarTemporada(){
 }
 /* ---------------- arranque ---------------- */
 $("#btnAvanzar").onclick=avanzar;
+$("#btnAvisos").onclick=()=>{ if(E) irA("avisos"); };
 $("#btnTemas").onclick=()=>{
   const orden=["aero","negro","claro","insano"];
   const i=(orden.indexOf(document.body.dataset.tema)+1)%orden.length;

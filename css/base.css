@@ -173,3 +173,9 @@ input[type=range]{width:100%}
 /* Atajo de teclado en las órdenes del modo Dirigir (Mejora 2) */
 .op .tecla{display:inline-block;min-width:16px;padding:0 5px;margin-right:4px;border-radius:5px;
   background:rgba(0,0,0,.18);border:1px solid var(--linea);font-weight:700;font-size:11px;text-align:center}
+
+/* Centro de notificaciones (Mejora: avisos) */
+#btnAvisos{position:relative}
+#btnAvisos .badge{position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;line-height:16px;
+  padding:0 4px;border-radius:9px;background:#e0563f;color:#fff;font-size:10px;font-weight:800;text-align:center}
+.resul.nuevo{box-shadow:inset 3px 0 0 #39b7e0}
