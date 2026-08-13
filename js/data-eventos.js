@@ -47,8 +47,8 @@ const EVENTOS=[
   {t:"Aceptar la gira",dif:34,bien:{txt:"Buena caja y vitrina internacional.",ef:{plata:220,prestigio:3,plantel:-2}},
    mitad:{txt:"Se cobró, pero el plantel volvió fundido.",ef:{plata:160,plantel:-4,moral:-3}},
    mal:{txt:"Viajes eternos, un lesionado y un camarín furioso.",ef:{plata:140,plantel:-6,moral:-8}}},
-  {t:"Rechazarla",dif:12,bien:{txt:"El plantel agradece la semana de trabajo tranquilo.",ef:{moral:4,plantel:2}},
-   mitad:{txt:"Se dejó pasar plata fácil.",ef:{}},mal:{txt:"El directorio no perdonó dejar ese dinero sobre la mesa.",ef:{},grupos:{directorio:-10}}}
+  {t:"Rechazarla",dif:12,bien:{txt:"El plantel agradece la semana de trabajo tranquilo y llega enchufado a la próxima fecha.",ef:{moral:4,plantel:2}},
+   mitad:{txt:"Se dejó pasar plata fácil y el tesorero lo anotó para la próxima pelea de presupuesto.",ef:{},grupos:{directorio:-5}},mal:{txt:"El directorio no perdonó dejar ese dinero sobre la mesa.",ef:{},grupos:{directorio:-10}}}
  ]},
 /* ---- hinchada y calle ---- */
 {id:"ev_lienzo",tipo:"malo",peso:E=>E.grupos.hinchada.aprob<-25?2.8:0.3,
@@ -84,15 +84,15 @@ const EVENTOS=[
    bien:{txt:"Llegó con hambre y se ganó un lugar de inmediato.",ef:{plantel:5},accion:"ficharLibre"},
    mitad:{txt:"Aporta desde el banco, sin más.",ef:{plantel:2},accion:"ficharLibre"},
    mal:{txt:"Llegó pasado de peso y peleado con medio mundo.",ef:{plantel:1,moral:-5},accion:"ficharLibre"}},
-  {t:"Dejarlo pasar",dif:8,bien:{txt:"Se fue a otro club y no pasó nada.",ef:{}},
-   mitad:{txt:"Terminó jugando en un rival directo.",ef:{}},mal:{txt:"Terminó siendo figura en un rival directo.",ef:{},grupos:{prensa:-5}}}
+  {t:"Dejarlo pasar",dif:8,bien:{txt:"Se fue lejos y el tema se cerró sin costo. A veces no meter la mano también es administrar bien.",ef:{}},
+   mitad:{txt:"Terminó en un rival directo y suma minutos. Cada vez que lo enfrentes, alguien te lo va a recordar.",ef:{moral:-2}},mal:{txt:"Explotó en un rival directo y ahora es figura. La prensa te cobra el ojo que no tuviste.",ef:{hinchada:-4},grupos:{prensa:-8}}}
  ]},
 {id:"ev_agente",tipo:"neutro",peso:E=>E.ind.riesgo>30?1.8:0.8,
  t:"Un agente ofrece un negocio",d:"Un representante propone triangular un pase con un club chico y repartir la diferencia.",
  op:[
   {t:"Rechazar y avisar",dif:22,rep:{credibilidad:8},grupos:{prensa:8},
    bien:{txt:"Se cortó de raíz y quedó registro.",ef:{riesgo:-8}},
-   mitad:{txt:"Se cortó, pero el tipo sigue dando vueltas.",ef:{}},
+   mitad:{txt:"Se cortó, pero el tipo sigue dando vueltas y ya sabe qué puertas tocar en el club. Algo de ese fantasma queda.",ef:{riesgo:4}},
    mal:{txt:"El agente se fue a hablar mal de ti a todos lados.",ef:{},grupos:{directorio:-8}}},
   {t:"Aceptar",dif:56,ef:{plata:180,riesgo:18},rep:{credibilidad:-10},
    bien:{txt:"Entró plata que nadie va a poder explicar en el balance.",ef:{}},
@@ -227,7 +227,7 @@ const ENCADENADAS=[
    mal:{txt:"Prometiste y ni tu propio camarín te creyó.",ef:{moral:-8},grupos:{directorio:-12,camarin:-10}}},
   {t:"Encerrarte a trabajar y no hablar con nadie",dif:34,rep:{dureza:6,prensa:-8},
    bien:{txt:"El silencio se leyó como temple y el equipo cortó la racha de puro amor propio.",ef:{moral:5,plantel:2}},
-   mitad:{txt:"Ni bien ni mal: el ruido siguió afuera, el equipo adentro.",ef:{}},
+   mitad:{txt:"El equipo se abstrajo del ruido, pero la racha no se cortó y el clima sigue enrarecido.",ef:{moral:-2}},
    mal:{txt:"El vacío lo llenó la prensa con la versión que quiso.",ef:{moral:-6},grupos:{prensa:-14,directorio:-10}}}
  ]},
 
