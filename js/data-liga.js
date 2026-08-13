@@ -26,7 +26,48 @@ const LIGA91=[
  {id:"OSO",n:"Provincial Osorno",     c:"P. Osorno",   fuerza:50, aforo:10000, est:"Estadio Municipal",             ciudad:"Osorno"},
  {id:"SW", n:"Santiago Wanderers",    c:"Wanderers",   fuerza:50, aforo:20000, est:"Estadio Playa Ancha",           ciudad:"Valparaíso"}
 ];
-const CLUB_POR_ID={}; LIGA91.forEach(c=>CLUB_POR_ID[c.id]=c);
+/* ---------- Primera División 2026 (segunda época jugable) ----------
+   Datos APROXIMADOS: clubes de la Primera chilena y fuerzas estimadas a
+   partir de las últimas temporadas. Se marca en el juego que hay que
+   verificarlos, porque los planteles cambian cada mercado. */
+const LIGA_2026=[
+ {id:"CC", n:"Colo-Colo",             c:"Colo-Colo",   fuerza:82, aforo:47000, est:"Estadio Monumental",           ciudad:"Santiago"},
+ {id:"UC", n:"Universidad Católica",  c:"U. Católica", fuerza:80, aforo:20000, est:"Claro Arena",                  ciudad:"Santiago"},
+ {id:"UCH",n:"Universidad de Chile",  c:"U. de Chile", fuerza:81, aforo:48000, est:"Estadio Nacional",              ciudad:"Santiago"},
+ {id:"COQ",n:"Coquimbo Unido",        c:"Coquimbo",    fuerza:74, aforo:18000, est:"Estadio Francisco Sánchez R.",  ciudad:"Coquimbo"},
+ {id:"AUD",n:"Audax Italiano",        c:"Audax",       fuerza:73, aforo:20000, est:"Estadio La Florida",            ciudad:"Santiago"},
+ {id:"NUB",n:"Ñublense",              c:"Ñublense",    fuerza:71, aforo:22000, est:"Estadio Bicentenario Nelson O.",ciudad:"Chillán"},
+ {id:"UES",n:"Unión Española",        c:"U. Española", fuerza:70, aforo:20000, est:"Estadio Santa Laura",           ciudad:"Santiago"},
+ {id:"HUA",n:"Huachipato",            c:"Huachipato",  fuerza:72, aforo:10500, est:"Estadio CAP",                   ciudad:"Talcahuano"},
+ {id:"OHI",n:"O'Higgins",             c:"O'Higgins",   fuerza:70, aforo:14000, est:"Estadio El Teniente",           ciudad:"Rancagua"},
+ {id:"PAL",n:"Palestino",             c:"Palestino",   fuerza:70, aforo:12000, est:"Municipal de La Cisterna",      ciudad:"Santiago"},
+ {id:"COB",n:"Cobresal",              c:"Cobresal",    fuerza:69, aforo:12000, est:"Estadio El Cobre",              ciudad:"El Salvador"},
+ {id:"EVE",n:"Everton",               c:"Everton",     fuerza:66, aforo:22000, est:"Estadio Sausalito",             ciudad:"Viña del Mar"},
+ {id:"IQQ",n:"Deportes Iquique",      c:"D. Iquique",  fuerza:63, aforo:10000, est:"Estadio Tierra de Campeones",   ciudad:"Iquique"},
+ {id:"CAL",n:"Unión La Calera",       c:"La Calera",   fuerza:67, aforo:9000,  est:"Estadio Nicolás Chahuán",       ciudad:"La Calera"},
+ {id:"LSE",n:"Deportes La Serena",    c:"La Serena",   fuerza:64, aforo:18000, est:"Estadio La Portada",            ciudad:"La Serena"},
+ {id:"LIM",n:"Deportes Limache",      c:"Limache",     fuerza:60, aforo:9000,  est:"Estadio Lucio Fariña",          ciudad:"Limache"}
+];
+
+/* ---------- ERAS: reglas que cambian con la época ----------
+   puntos por victoria (2 en 1991, 3 hoy), inflación económica y cupos. */
+const ERA={
+ 1991:{n:"1991", puntosVictoria:2, inflacion:1.0,  cuposInternacional:3,
+   desc:"Fútbol de los 90: la victoria vale 2 puntos, presupuestos chicos y la Copa Libertadores como techo."},
+ 2026:{n:"2026", puntosVictoria:3, inflacion:1.4,  cuposInternacional:6,
+   desc:"Fútbol moderno: la victoria vale 3 puntos, sociedades anónimas, plata de TV y valores inflados."}
+};
+function eraDe(base){ return ERA[base] || (base>=2010?ERA[2026]:ERA[1991]); }
+function baseEra(anio){ return anio>=2010?2026:1991; }
+
+/* liga activa y su índice, según la época del juego actual */
+const LIGAS={1991:LIGA91, 2026:LIGA_2026};
+let LIGA_ACT=LIGA91;
+let CLUB_POR_ID={}; LIGA91.forEach(c=>CLUB_POR_ID[c.id]=c);
+function activarLiga(base){
+  LIGA_ACT = LIGAS[base] || LIGA91;
+  CLUB_POR_ID={}; LIGA_ACT.forEach(c=>CLUB_POR_ID[c.id]=c);
+}
 
 /* Tabla final real 1991, para la pestaña Historia y la comparación de líneas */
 const TABLA_REAL_91=[
@@ -128,7 +169,7 @@ function construirCalendario(clubId, anio, conCopa){
       real:p.real, apodo:p.apodo||null, notaId:p.ronda+"-"+(cal.filter(x=>x.ronda===p.ronda).length)
     }));
   }
-  const fx=fixturesLiga(LIGA91), fechas=fechasTemporada();
+  const fx=fixturesLiga(LIGA_ACT), fechas=fechasTemporada();
   fx.forEach((jornada,i)=>{
     const mio=jornada.find(p=>p[0]===clubId||p[1]===clubId);
     if(!mio) return;

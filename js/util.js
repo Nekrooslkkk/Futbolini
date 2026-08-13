@@ -27,6 +27,7 @@ function plata(v){
 }
 function pesosLargo(v){ return plata(v)+" (millones de pesos)"; }
 function signo(v){ return (v>0?"+":"")+Math.round(v); }
+function ordinal(n){ return n+"°"; }
 
 const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 function fechaTxt(f){ if(!f) return ""; return f.d?(f.d+" de "+MESES[f.m-1]):MESES[f.m-1]; }

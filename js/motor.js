@@ -41,13 +41,46 @@ const CLUB_INFO={
   desc:"Club provincial. Todo se juega a sobrevivir y crecer."}
 };
 
+/* ---------- época 2026 (datos APROXIMADOS, verificar) ---------- */
+const CLUB_INFO_2026={
+ CC:{n:"Colo-Colo",esc:"⚪",est:"Estadio Monumental",dt:"el cuerpo técnico",
+  desc:"El club más popular de Chile en la era de las sociedades anónimas. Plantel caro, hinchada enorme y una deuda que siempre ronda."},
+ UCH:{n:"Universidad de Chile",esc:"🔵",est:"Estadio Nacional (arrendado)",dt:"el cuerpo técnico",
+  desc:"Volvió a pelear arriba tras años irregulares. Masa social gigante y todavía sin estadio propio."},
+ UC:{n:"Universidad Católica",esc:"🔷",est:"Claro Arena",dt:"el cuerpo técnico",
+  desc:"Estrena estadio propio y arrastra una camada ganadora. Administración ordenada y cantera fuerte."},
+ PAL:{n:"Palestino",esc:"🟩",est:"Municipal de La Cisterna",dt:"el cuerpo técnico",
+  desc:"Club de colonia, competitivo y con buena formación, siempre peleando con presupuesto acotado."},
+ LIM:{n:"Deportes Limache",esc:"🟨",est:"Estadio Lucio Fariña",dt:"el cuerpo técnico",
+  desc:"Recién ascendido a Primera. El objetivo es claro: aguantar la categoría y no morir en el intento."}
+};
+const IND_BASE_2026={
+ CC:{plantel:80,moral:66,hinchada:88,socios:62,cantera:66,estadio:74,prestigio:84,riesgo:22},
+ UCH:{plantel:79,moral:64,hinchada:86,socios:58,cantera:66,estadio:40,prestigio:78,riesgo:24},
+ UC:{plantel:79,moral:68,hinchada:50,socios:55,cantera:74,estadio:82,prestigio:76,riesgo:14},
+ PAL:{plantel:70,moral:62,hinchada:38,socios:40,cantera:62,estadio:48,prestigio:54,riesgo:16},
+ LIM:{plantel:60,moral:60,hinchada:40,socios:26,cantera:42,estadio:30,prestigio:32,riesgo:14}
+};
+const CAJA_BASE_2026={CC:{plata:1200,deuda:3000},UCH:{plata:900,deuda:1800},UC:{plata:1000,deuda:900},
+ PAL:{plata:520,deuda:480},LIM:{plata:300,deuda:200}};
+/* Devuelve el set de datos de club según la época (1991 o 2026). */
+function datosEra(base){
+  return base===2026
+   ? {info:CLUB_INFO_2026, ind:IND_BASE_2026, caja:CAJA_BASE_2026}
+   : {info:CLUB_INFO, ind:IND_BASE, caja:CAJA_BASE};
+}
+function infoClub(clubId){ return datosEra(E?E.eraBase:1991).info[clubId] || CLUB_INFO[clubId]; }
+
 /* ---------------- arranque ---------------- */
 function nuevaPartida(clubId,anio,modo){
-  const info=CLUB_INFO[clubId];
+  const base=baseEra(anio);
+  activarLiga(base);
+  const D=datosEra(base);
+  const info=D.info[clubId];
   E={
-    v:3, club:clubId, clubNombre:info.n, dt:info.dt, anio:anio, modo:modo||"historico",
-    ind:Object.assign({},IND_BASE[clubId]),
-    plata:CAJA_BASE[clubId].plata, deuda:CAJA_BASE[clubId].deuda,
+    v:3, club:clubId, eraBase:base, clubNombre:info.n, dt:info.dt, anio:anio, modo:modo||"historico",
+    ind:Object.assign({},D.ind[clubId]),
+    plata:D.caja[clubId].plata, deuda:D.caja[clubId].deuda,
     capital:45,
     rep:{publica:52,credibilidad:50,prensa:50,dureza:40},
     grupos:{}, estatutos:Object.assign({},ESTATUTO_INICIAL[clubId]),
@@ -64,7 +97,7 @@ function nuevaPartida(clubId,anio,modo){
     const ap=((APROB_INICIAL[clubId]||{})[g.id])||0;
     E.grupos[g.id]={poder:poder,aprob:ap};
   });
-  E.plantel=armarPlantel(clubId,anio,IND_BASE[clubId].plantel);
+  E.plantel=armarPlantel(clubId,anio,D.ind[clubId].plantel);
   E.calendario=construirCalendario(clubId,anio,true);
   reiniciarTabla();
   repartirDecisiones();
@@ -72,12 +105,16 @@ function nuevaPartida(clubId,anio,modo){
 }
 function reiniciarTabla(){
   E.tabla={};
-  LIGA91.forEach(c=>E.tabla[c.id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0});
+  LIGA_ACT.forEach(c=>E.tabla[c.id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0});
 }
+/* puntos por victoria según la época (2 en 1991, 3 en 2026) */
+function puntosVictoria(){ return (E&&eraDe(E.eraBase)?eraDe(E.eraBase).puntosVictoria:2); }
 /* Rellena campos nuevos en partidas guardadas de antes del roadmap 3.0.
    No sube la versión: solo agrega lo que falte sin tocar lo existente. */
 function normalizarEstado(){
   if(!E) return;
+  if(!E.eraBase) E.eraBase=baseEra(E.anio);
+  if(typeof activarLiga==="function") activarLiga(E.eraBase);
   if(!E.flags) E.flags={};
   if(!Array.isArray(E.pendientesEncadenadas)) E.pendientesEncadenadas=[];
   if(!E.temporada) E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0};
@@ -465,7 +502,7 @@ function finDeTemporada(){
   return {pos:pos,campeon:campeon,copa:copaGanada,premio:premio,ev:ev};
 }
 function posicionEnTabla(){
-  const arr=LIGA91.map(c=>({id:c.id,...E.tabla[c.id]}));
+  const arr=LIGA_ACT.map(c=>({id:c.id,...E.tabla[c.id]}));
   arr.sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc)||b.gf-a.gf);
   return arr.findIndex(x=>x.id===E.club)+1;
 }
@@ -480,6 +517,20 @@ function nuevoAnio(){
     else if(j.edad>=30) j.nivel=clamp(j.nivel-ri(1,4),20,97);
     j.goles=0;j.partidos=0;j.tarjetas=0;j.lesion=0;j.forma=68;
   });
+  /* retiros: los muy veteranos cuelgan los botines y suben regens de la cantera */
+  const retirados=E.plantel.filter(j=>j.edad>=37);
+  if(retirados.length){
+    E.plantel=E.plantel.filter(j=>j.edad<37);
+    retirados.forEach(j=>{
+      const rr=azarFijo(semilla("regen"+E.anio+j.n));
+      const joven=generarJugador(rr, E.ind.cantera*0.8+12, j.pos, ri(17,20));
+      joven.proy=clamp(joven.proy+10,40,95); joven.rasgos=["de la cantera"]; joven.contrato.hasta=E.anio+4;
+      E.plantel.push(joven);
+    });
+    notificar({t:"Retiros y relevo generacional",tipo:"neutro",
+      d:"Colgaron los botines: "+retirados.map(j=>j.n+" ("+j.edad+" años)").join(", ")+
+        ". Suben juveniles de la cantera para ocupar su lugar.",bandeja:false});
+  }
   while(E.plantel.length<20){
     const rr=azarFijo(semilla("relleno"+E.anio+E.plantel.length));
     E.plantel.push(generarJugador(rr,E.ind.plantel-6,elige(["DEF","VOL","DEL","ARQ"])));

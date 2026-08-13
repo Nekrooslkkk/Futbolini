@@ -236,10 +236,11 @@ function terminarPartido(P){
   part.publico=gente; part.caja=caja;
 
   if(part.tipo==="liga"){
+    const pv=puntosVictoria();
     const t=E.temporada; t.pj++; t.gf+=yo; t.gc+=otro;
-    if(yo>otro){ t.pg++; t.pts+=2; } else if(yo===otro){ t.pe++; t.pts+=1; } else t.pp++;
+    if(yo>otro){ t.pg++; t.pts+=pv; } else if(yo===otro){ t.pe++; t.pts+=1; } else t.pp++;
     const mi=E.tabla[E.club]; mi.pj++; mi.gf+=yo; mi.gc+=otro;
-    if(yo>otro){ mi.pg++; mi.pts+=2; } else if(yo===otro){ mi.pe++; mi.pts++; } else mi.pp++;
+    if(yo>otro){ mi.pg++; mi.pts+=pv; } else if(yo===otro){ mi.pe++; mi.pts++; } else mi.pp++;
     simularResto(part);
   } else {
     resolverCopa(part,yo,otro);
@@ -276,8 +277,9 @@ function simularResto(part){
     let ga=clamp(Math.round(1.25+d*0.6+rnd(-1,1.3)),0,6);
     let gb=clamp(Math.round(1.05-d*0.6+rnd(-1,1.3)),0,6);
     const ta=E.tabla[a.id], tb=E.tabla[b.id];
+    const pv=puntosVictoria();
     ta.pj++;tb.pj++;ta.gf+=ga;ta.gc+=gb;tb.gf+=gb;tb.gc+=ga;
-    if(ga>gb){ta.pg++;ta.pts+=2;tb.pp++;} else if(ga<gb){tb.pg++;tb.pts+=2;ta.pp++;}
+    if(ga>gb){ta.pg++;ta.pts+=pv;tb.pp++;} else if(ga<gb){tb.pg++;tb.pts+=pv;ta.pp++;}
     else {ta.pe++;tb.pe++;ta.pts++;tb.pts++;}
   });
 }

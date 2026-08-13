@@ -80,37 +80,58 @@ function pantallaInicio(){
     g.appendChild(b);
   });
   paso1.cuerpo.appendChild(g);
-  paso1.cuerpo.appendChild(el("p","mini","La Fase A del juego está construida sobre Colo-Colo 1991, que es la temporada con calendario real completo: Campeonato Nacional de 16 equipos y el camino verdadero de la Copa Libertadores."));
+  paso1.cuerpo.appendChild(el("p","mini","Después elegís época: 1991 (calendario real completo, Campeonato de 16 equipos y el camino verdadero de la Copa Libertadores de Colo-Colo) o 2026 (Primera División actual, con planteles aproximados y 3 puntos por victoria)."));
   v.appendChild(paso1);
 }
 function elegirEpoca(id){
+  let base=1991, modo="historico";
+  const anioDe=b=>b===2026?2026:1991;
   modal(box=>{
-    const c=el("div","cuerpo");
-    box.appendChild(el("div","cab",'<span class="ic">'+CLUB_INFO[id].esc+'</span><span>'+CLUB_INFO[id].n+'</span>'));
-    box.appendChild(c);
-    c.appendChild(el("p",null,CLUB_INFO[id].desc));
-    c.appendChild(el("h3","sub","2 · Elegí modo"));
-    let modo="historico";
-    const f=el("div","fichas");
-    [["historico","Histórico","Los hechos reales pasan igual, salvo que los cambies."],
-     ["libre","Libre","La historia es solo el punto de partida."],
-     ["caos","Caos","Eventos improbables activados. Acá pasa lo imposible."]].forEach(([k,n,d])=>{
-      const b=el("button","ficha",n);
-      b.title=d; b.setAttribute("aria-pressed",modo===k?"true":"false");
-      b.onclick=()=>{ modo=k; Array.from(f.children).forEach(x=>x.setAttribute("aria-pressed","false")); b.setAttribute("aria-pressed","true"); };
-      f.appendChild(b);
-    });
-    c.appendChild(f);
-    c.appendChild(el("h3","sub","3 · Briefing"));
-    const ib=IND_BASE[id], cb=CAJA_BASE[id];
-    c.appendChild(fila("Deportivo","plantel "+ib.plantel+" · cantera "+ib.cantera));
-    c.appendChild(fila("Económico",plata(cb.plata)+" en caja · "+plata(cb.deuda)+" de deuda"));
-    c.appendChild(fila("Interno","hinchada "+ib.hinchada+" · socios "+ib.socios+" · riesgo "+ib.riesgo));
-    const go=el("button","btn-aqua ancho verde","Empezar en 1991");
-    go.style.marginTop="12px";
-    go.onclick=()=>{ cerrarModal(); nuevaPartida(id,1991,modo); SEC="escritorio"; render();
-      aviso("Empieza la temporada 1991"); };
-    c.appendChild(go);
+    const pintar=()=>{
+      box.innerHTML="";
+      const D=datosEra(base), info=D.info[id];
+      box.appendChild(el("div","cab",'<span class="ic">'+info.esc+'</span><span>'+info.n+'</span>'));
+      const c=el("div","cuerpo"); box.appendChild(c);
+
+      c.appendChild(el("h3","sub","1 · Elegí época"));
+      const fe=el("div","fichas");
+      [[1991,"1991 · Fase A"],[2026,"2026 · actual"]].forEach(([b,n])=>{
+        const btn=el("button","ficha",n);
+        btn.setAttribute("aria-pressed",base===b?"true":"false");
+        btn.onclick=()=>{ base=b; pintar(); };
+        fe.appendChild(btn);
+      });
+      c.appendChild(fe);
+      c.appendChild(el("p","mini",ERA[base].desc));
+      c.appendChild(el("p",null,info.desc));
+
+      c.appendChild(el("h3","sub","2 · Elegí modo"));
+      const f=el("div","fichas");
+      [["historico","Histórico","Los hechos reales pasan igual, salvo que los cambies."],
+       ["libre","Libre","La historia es solo el punto de partida."],
+       ["caos","Caos","Eventos improbables activados. Acá pasa lo imposible."]].forEach(([k,n,d])=>{
+        const b=el("button","ficha",n);
+        b.title=d; b.setAttribute("aria-pressed",modo===k?"true":"false");
+        b.onclick=()=>{ modo=k; pintar(); };
+        f.appendChild(b);
+      });
+      c.appendChild(f);
+
+      c.appendChild(el("h3","sub","3 · Briefing"));
+      const ib=D.ind[id], cb=D.caja[id];
+      c.appendChild(fila("Época","Campeonato de "+(base===2026?LIGA_2026.length:LIGA91.length)+" equipos · victoria vale "+ERA[base].puntosVictoria+" puntos"));
+      c.appendChild(fila("Deportivo","plantel "+ib.plantel+" · cantera "+ib.cantera));
+      c.appendChild(fila("Económico",plata(cb.plata)+" en caja · "+plata(cb.deuda)+" de deuda"));
+      c.appendChild(fila("Interno","hinchada "+ib.hinchada+" · socios "+ib.socios+" · riesgo "+ib.riesgo));
+      if(base===2026) c.appendChild(el("div","resul mitad","<b>Aviso.</b> Los planteles 2026 son <b>aproximados</b> y pueden haber cambiado en el mercado: verificá los nombres. Los tres grandes traen plantel de referencia; el resto se completa con jugadores generados."));
+
+      const go=el("button","btn-aqua ancho verde","Empezar en "+anioDe(base));
+      go.style.marginTop="12px";
+      go.onclick=()=>{ cerrarModal(); nuevaPartida(id,anioDe(base),modo); SEC="escritorio"; render();
+        aviso("Empieza la temporada "+anioDe(base)); };
+      c.appendChild(go);
+    };
+    pintar();
   });
 }
 /* ---------------- escritorio ---------------- */
@@ -185,7 +206,6 @@ function vistaEscritorio(){
 
   rej.appendChild(izq); rej.appendChild(der); v.appendChild(rej);
 }
-function ordinal(n){ return n+"°"; }
 function bloqueoDecisiones(){
   const b=decisionesBloqueantes();
   if(b.length){ aviso("Primero hay que resolver: "+resolverTokens(decisionPorId(b[0].id).t,E)); abrirDecision(decisionPorId(b[0].id)); return true; }
@@ -432,26 +452,34 @@ function vistaCalendario(){
     tb.appendChild(tr);
   });
   t.appendChild(tb); pt.cuerpo.appendChild(t);
-  pt.cuerpo.appendChild(el("p","mini","En 1991 la victoria valía 2 puntos. Campeonato de 16 equipos y 30 fechas."));
+  pt.cuerpo.appendChild(el("p","mini","Época "+ERA[E.eraBase].n+": la victoria vale "+ERA[E.eraBase].puntosVictoria+" puntos. Campeonato de "+LIGA_ACT.length+" equipos."));
   v.appendChild(pt);
 }
 /* ---------------- historia ---------------- */
 function vistaHistoria(){
   const v=$("#vista");
-  const p=panel("Temporada 1991 · lo que pasó de verdad","📚");
-  Object.keys(HECHOS_91).forEach(k=>{
-    const n={campeon:"Campeón",goleador:"Goleador",descendidos:"Descendieron",publico:"Público",cierre:"Cierre"}[k];
-    p.cuerpo.appendChild(fila(n,HECHOS_91[k]));
-  });
-  p.cuerpo.appendChild(el("p","mini","La Copa Libertadores 1991 la ganó Colo-Colo: primero del Grupo 2, eliminó a Universitario de Lima, a Nacional de Montevideo y a Boca Juniors, y venció a Olimpia en la final (0-0 en Asunción y 3-0 en el Monumental el 5 de junio)."));
-  v.appendChild(p);
+  if(E.eraBase===2026){
+    const p2=panel("Época 2026","📚","agua");
+    p2.cuerpo.appendChild(el("p",null,ERA[2026].desc));
+    p2.cuerpo.appendChild(el("div","resul mitad","<b>Aviso.</b> El plantel y los clubes de 2026 usan nombres reales de referencia, pero los datos son <b>aproximados</b> y pueden haber cambiado. Todo lo dramatizado (conversaciones, conflictos, frases) es ficción del juego."));
+    p2.cuerpo.appendChild(el("p","mini","No hay una \"tabla histórica\" fija para 2026: la estás escribiendo vos temporada a temporada."));
+    v.appendChild(p2);
+  } else {
+    const p=panel("Temporada 1991 · lo que pasó de verdad","📚");
+    Object.keys(HECHOS_91).forEach(k=>{
+      const n={campeon:"Campeón",goleador:"Goleador",descendidos:"Descendieron",publico:"Público",cierre:"Cierre"}[k];
+      p.cuerpo.appendChild(fila(n,HECHOS_91[k]));
+    });
+    p.cuerpo.appendChild(el("p","mini","La Copa Libertadores 1991 la ganó Colo-Colo: primero del Grupo 2, eliminó a Universitario de Lima, a Nacional de Montevideo y a Boca Juniors, y venció a Olimpia en la final (0-0 en Asunción y 3-0 en el Monumental el 5 de junio)."));
+    v.appendChild(p);
 
-  const pt=panel("Tabla final histórica 1991","📋","agua");
-  const t=el("table"); t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>Pts</th></tr></thead>";
-  const tb=el("tbody");
-  TABLA_REAL_91.forEach((r,i)=>tb.appendChild(el("tr",r[0]===E.clubNombre?"yo":"", "<td class='n'>"+(i+1)+"</td><td>"+r[0]+"</td><td class='n'>"+r[1]+"</td>")));
-  t.appendChild(tb); pt.cuerpo.appendChild(t);
-  v.appendChild(pt);
+    const pt=panel("Tabla final histórica 1991","📋","agua");
+    const t=el("table"); t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>Pts</th></tr></thead>";
+    const tb=el("tbody");
+    TABLA_REAL_91.forEach((r,i)=>tb.appendChild(el("tr",r[0]===E.clubNombre?"yo":"", "<td class='n'>"+(i+1)+"</td><td>"+r[0]+"</td><td class='n'>"+r[1]+"</td>")));
+    t.appendChild(tb); pt.cuerpo.appendChild(t);
+    v.appendChild(pt);
+  }
 
   const pd=panel("Tu línea","🧭");
   pd.cuerpo.appendChild(fila("Decisiones iguales a la historia",E.coincidencias.length));

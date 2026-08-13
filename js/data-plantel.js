@@ -41,7 +41,64 @@ const PLANTEL_UCH_1994=[
  ["Marcelo Salas","DEL",19,84,95,26,900,["joven","killer","proyección europea"]]
 ];
 
-const PLANTELES_REALES={ CC:{1991:PLANTEL_CC_1991}, UCH:{1994:PLANTEL_UCH_1994} };
+/* ---------- planteles 2026 (APROXIMADOS · verificar) ----------
+   Nombres reales de referencia según las últimas temporadas. Edades,
+   niveles, sueldos y valores son estimaciones del juego, y los rosters
+   pueden haber cambiado en el mercado. Los huecos se completan con
+   jugadores generados. */
+const PLANTEL_CC_2026=[
+ ["Fernando de Paul","ARQ",34,76,76,90,120,["experiencia"]],
+ ["Alan Saldivia","DEF",24,78,84,110,520,["proyección","juego aéreo"]],
+ ["Emiliano Amor","DEF",31,76,76,120,220,["extranjero","liderazgo"]],
+ ["Sebastián Vegas","DEF",29,76,76,130,240,["marca"]],
+ ["Erick Wiemberg","DEF",29,74,74,100,180,["lateral"]],
+ ["Vicente Pizarro","VOL",23,80,88,140,760,["cerebro","canterano"]],
+ ["Esteban Pavez","VOL",34,74,74,110,120,["capitán","veterano"]],
+ ["Arturo Vidal","VOL",38,78,78,260,180,["ídolo","carácter","experiencia internacional"]],
+ ["Claudio Aquino","VOL",30,79,79,180,420,["extranjero","desequilibrio"]],
+ ["Lucas Cepeda","DEL",23,81,89,150,900,["gambeta","proyección europea"]],
+ ["Javier Correa","DEL",32,78,78,170,300,["extranjero","goleador"]],
+ ["Salomón Rodríguez","DEL",26,74,76,130,260,["extranjero"]]
+];
+const PLANTEL_UCH_2026=[
+ ["Gabriel Castellón","ARQ",31,78,78,130,260,["reflejos"]],
+ ["Matías Zaldivia","DEF",34,75,75,120,140,["experiencia"]],
+ ["Franco Calderón","DEF",25,74,80,100,260,["proyección"]],
+ ["Fabián Hormazábal","DEF",30,76,76,120,240,["lateral ofensivo"]],
+ ["Marcelo Díaz","VOL",39,74,74,150,80,["capitán","ídolo","veterano"]],
+ ["Charles Aránguiz","VOL",37,79,79,220,160,["ídolo","cerebro","experiencia internacional"]],
+ ["Israel Poblete","VOL",31,73,73,100,140,["orden"]],
+ ["Lucas Assadi","VOL",22,79,88,120,720,["enganche","proyección","canterano"]],
+ ["Maximiliano Guerrero","DEL",25,76,80,120,360,["velocidad"]],
+ ["Leandro Fernández","DEL",34,75,75,140,160,["extranjero","definición"]],
+ ["Rodrigo Contreras","DEL",31,77,77,160,300,["extranjero","goleador"]]
+];
+const PLANTEL_UC_2026=[
+ ["Vicente Bernedo","ARQ",23,73,80,90,300,["proyección"]],
+ ["Daniel González","DEF",27,78,80,140,420,["salida limpia","selección"]],
+ ["Cristian Cuevas","DEF",30,74,74,120,200,["lateral"]],
+ ["Branco Ampuero","DEF",23,72,80,90,260,["proyección"]],
+ ["Alfred Canales","VOL",21,74,85,90,420,["proyección","canterano"]],
+ ["Gary Medel","VOL",38,76,76,200,120,["ídolo","carácter","experiencia internacional"]],
+ ["Clemente Montes","DEL",24,77,82,120,480,["velocidad","canterano"]],
+ ["Fernando Zampedri","DEL",37,82,82,220,340,["capitán","goleador","olfato"]],
+ ["Gastón Lezcano","DEL",31,74,74,130,220,["extranjero"]],
+ ["Tomás Asta-Buruaga","VOL",22,71,80,80,220,["proyección"]]
+];
+const PLANTEL_PAL_2026=[
+ ["Fernando Cordero","DEF",30,73,73,100,170,["lateral"]],
+ ["Sebastián Cabrera","DEF",29,72,72,90,150,["marca"]],
+ ["César Pérez","VOL",27,73,74,100,190,["orden"]],
+ ["Bryan Carrasco","VOL",34,72,72,110,120,["experiencia"]],
+ ["Maximiliano Salas","DEL",28,76,76,150,320,["goleador"]],
+ ["Junior Marabel","DEL",30,74,74,120,220,["extranjero","juego aéreo"]]
+];
+const PLANTELES_REALES={
+  CC:{1991:PLANTEL_CC_1991, 2026:PLANTEL_CC_2026},
+  UCH:{1994:PLANTEL_UCH_1994, 2026:PLANTEL_UCH_2026},
+  UC:{2026:PLANTEL_UC_2026},
+  PAL:{2026:PLANTEL_PAL_2026}
+};
 
 const NOMBRES_PILA=["Luis","Carlos","Jorge","Mauricio","Cristián","Rodrigo","Felipe","Marcelo","Sebastián","Iván",
  "Héctor","Nelson","Patricio","Ramón","Víctor","Álvaro","Esteban","Franco","Matías","Gonzalo","Claudio","Fabián"];
@@ -61,9 +118,10 @@ function generarJugador(rr,nivelBase,pos,edad){
   const nivel=clamp(Math.round(nivelBase+rr()*20-10),28,92);
   const edd=edad||18+Math.floor(rr()*16);
   const proy=clamp(nivel+(edd<23?Math.round(rr()*12):0),28,95);
+  const infl=(typeof inflacionEra==="function" && typeof E!=="undefined" && E)?inflacionEra():1;
   return {n:NOMBRES_PILA[Math.floor(rr()*NOMBRES_PILA.length)]+" "+APELLIDOS[Math.floor(rr()*APELLIDOS.length)],
     pos:pos,edad:edd,nivel:nivel,proy:proy,
-    sueldo:Math.round(nivel*nivel/110),valor:Math.round(nivel*nivel/16+(proy-nivel)*10),
+    sueldo:Math.round(nivel*nivel/110*infl),valor:Math.round((nivel*nivel/16+(proy-nivel)*10)*infl),
     rasgos:[],forma:65+Math.round(rr()*15),moral:65+Math.round(rr()*15),real:false,
     contrato:{hasta:0},lesion:0,goles:0,partidos:0,tarjetas:0};
 }

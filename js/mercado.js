@@ -11,7 +11,8 @@
    ============================================================ */
 
 function inflacionEra(){
-  return (typeof ERA!=="undefined" && ERA[E.anio] && ERA[E.anio].inflacion) || 1;
+  if(typeof eraDe!=="function" || !E) return 1;
+  const er=eraDe(E.eraBase); return (er&&er.inflacion)||1;
 }
 function mesMercado(){ const p=proximoPartido(); return p&&p.f?p.f.m:12; }
 function mercadoAbierto(){ const m=mesMercado(); return m<=2||m===6||m===7; }
