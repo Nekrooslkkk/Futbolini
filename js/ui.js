@@ -396,7 +396,12 @@ function fichaJugador(j){
     c.appendChild(fila("Contrato","hasta "+j.contrato.hasta));
     if(j.rasgos.length) c.appendChild(el("p","mini","Rasgos: "+j.rasgos.join(", ")));
     if(j.lesion>0) c.appendChild(el("p","mini","Lesionado: fuera unas "+j.lesion+" semanas."));
-    const b=el("button","btn-aqua ancho gris","Cerrar"); b.onclick=cerrarModal; c.appendChild(b);
+    const tieneOferta=E.ofertasPend&&E.ofertasPend.some(o=>o.jid===j.n);
+    const bv=el("button","btn-aqua ancho verde"+(tieneOferta?" gris":""),tieneOferta?"Ya hay una oferta abierta":"Buscar comprador");
+    bv.disabled=tieneOferta;
+    bv.onclick=()=>{ cerrarModal(); buscarComprador(j); };
+    c.appendChild(bv);
+    const b=el("button","btn-aqua ancho gris","Cerrar"); b.style.marginTop="6px"; b.onclick=cerrarModal; c.appendChild(b);
   });
 }
 /* ---------------- calendario ---------------- */
@@ -601,6 +606,7 @@ function avanzar(){
   const neto=tickSemana();
   repartirDecisiones();
   const ctx=eventosDeContexto();
+  generarOfertasSemana();
   const ev=tirarEvento();
   if(ev&&ev.tipo==="decision"){ abrirEventoDecision(ev.ev); return; }
   irA("escritorio");
