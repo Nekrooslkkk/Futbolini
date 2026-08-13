@@ -169,3 +169,7 @@ input[type=range]{width:100%}
 .icono{border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;border:1px solid var(--linea)}
 .icono .g{font-size:22px;display:block;line-height:1.1}
 .icono .n{font-size:10.5px;font-weight:600;margin-top:3px;display:block}
+
+/* Atajo de teclado en las órdenes del modo Dirigir (Mejora 2) */
+.op .tecla{display:inline-block;min-width:16px;padding:0 5px;margin-right:4px;border-radius:5px;
+  background:rgba(0,0,0,.18);border:1px solid var(--linea);font-weight:700;font-size:11px;text-align:center}
