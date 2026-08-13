@@ -247,6 +247,7 @@ const DECISIONES=[
      ef:{riesgo:8},grupos:{prensa:-12},rep:{credibilidad:-6}}},
   {t:"Mano dura y desalojo",d:"Cero negociación, con Carabineros si hace falta.",dif:58,
    grupos:{hinchada:-35,prensa:18,anfp:15},rep:{dureza:12,publica:-4},
+   flags:{barraDolida:true,dtFirme:true},
    bien:{txt:"Se limpia el sector y la prensa te trata de valiente. La tribuna queda fría.",ef:{riesgo:-18,hinchada:-10}},
    mitad:{txt:"Hubo desalojos, forcejeos y una sanción menor. El problema se movió de lugar.",ef:{riesgo:-6,hinchada:-14}},
    mal:{txt:"Incidentes graves, partido con sumario y guerra abierta con tu propia hinchada.",
@@ -254,6 +255,7 @@ const DECISIONES=[
      mods:[{id:"guerra_barra",n:"Guerra con la barra",anios:3,ef:{taquilla:-0.15,local:-4}}]}},
   {t:"Darles todo lo que piden",d:"Que no molesten y que alienten.",dif:26,
    ef:{plata:-140},grupos:{hinchada:30,prensa:-20,anfp:-15},rep:{publica:-5},
+   flag:"barraAliada",
    bien:{txt:"El estadio alienta como nunca. Le entregaste poder a un grupo que no rinde cuentas.",
      ef:{hinchada:14,riesgo:12},mods:[{id:"barra_poderosa",n:"Barra con poder",anios:5,ef:{local:5,riesgo:0.2}}]},
    mitad:{txt:"Cumplen con el aliento y con pedir cada vez más.",ef:{hinchada:8,riesgo:14}},
@@ -313,6 +315,7 @@ const DECISIONES=[
      ef:{riesgo:16},grupos:{prensa:-12},rep:{publica:-8}}},
   {t:"Aceptar la ayuda",d:"Ventaja real, riesgo real.",dif:62,
    grupos:{directorio:5},rep:{publica:-10,credibilidad:-10},
+   encadena:{id:"enc_factura",en:3},
    bien:{txt:"Aparecen detalles que suman: fallos convenientes, calendarios cómodos. Nadie dice nada.",
      ef:{riesgo:26},mods:[{id:"pacto_sucio",n:"Compromiso impagable",anios:8,ef:{arbitraje:5,crisis:0.35}}]},
    mitad:{txt:"Sirvió a medias y ahora ese tipo tiene tu teléfono y tu deuda.",ef:{riesgo:32},
@@ -523,4 +526,7 @@ const BOLSA=[
 ];
 
 /* índice rápido */
-function decisionPorId(id){ return DECISIONES.find(d=>d.id===id)||BOLSA.find(d=>d.id===id)||null; }
+function decisionPorId(id){
+  return DECISIONES.find(d=>d.id===id)||BOLSA.find(d=>d.id===id)||
+    (typeof ENCADENADAS!=="undefined"?ENCADENADAS.find(d=>d.id===id):null)||null;
+}

@@ -552,10 +552,12 @@ function avanzar(){
   if(!part){ cerrarTemporada(); return; }
   const neto=tickSemana();
   repartirDecisiones();
+  const ctx=eventosDeContexto();
   const ev=tirarEvento();
   if(ev&&ev.tipo==="decision"){ abrirEventoDecision(ev.ev); return; }
   irA("escritorio");
-  if(ev) aviso(ev.item.t);
+  if(ctx.length) aviso(ctx[0]);
+  else if(ev) aviso(ev.item.t);
   else aviso("Semana tranquila · "+plata(neto));
 }
 function abrirEventoDecision(ev){
@@ -649,7 +651,7 @@ $("#btnTemas").onclick=()=>{
   const t=await Store.get("futbolini3_tema");
   document.body.dataset.tema=t||"aero";
   const g=await cargar();
-  if(g&&g.club&&g.v===3){ E=g; aplicarEstatutosMod(); }
+  if(g&&g.club&&g.v===3){ E=g; normalizarEstado(); aplicarEstatutosMod(); }
   render();
 })();
 window.addEventListener("resize",()=>{ clearTimeout(window._rb); window._rb=setTimeout(burbujas,400); });

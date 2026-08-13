@@ -193,6 +193,10 @@ function terminarPartido(P){
   if(yo>otro){ aplicarEfectos({moral:3,hinchada:2}); aplicarGrupos({hinchada:4,camarin:3,directorio:2,tecnico:2}); }
   else if(yo<otro){ aplicarEfectos({moral:-3,hinchada:-2}); aplicarGrupos({hinchada:-4,camarin:-2,directorio:-3,prensa:-2}); }
   else { aplicarGrupos({hinchada:-1}); }
+  /* racha para el efecto mariposa: ganar corta la cuenta y rehabilita el aviso */
+  if(E.temporada.sinGanar===undefined) E.temporada.sinGanar=0;
+  if(yo>otro){ E.temporada.sinGanar=0; E.flags.rachaLiquida=false; }
+  else E.temporada.sinGanar++;
   E.idx++;
   guardar();
   return {yo:yo,otro:otro,caja:caja,gente:gente};

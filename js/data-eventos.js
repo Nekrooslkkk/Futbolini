@@ -107,7 +107,17 @@ const EVENTOS=[
  ef:{plata:160},grupos:{comunidad:6}},
 {id:"ev_museo",tipo:"bueno",peso:E=>E.ind.prestigio>70?1.4:0.3,
  t:"El club como patrimonio",d:"Una universidad propone armar el archivo histórico del club con acceso público.",
- ef:{prestigio:4},rep:{publica:4},grupos:{socios:8,comunidad:8}}
+ ef:{prestigio:4},rep:{publica:4},grupos:{socios:8,comunidad:8}},
+/* ---- eventos que leen banderas dejadas por decisiones anteriores (efecto mariposa) ---- */
+{id:"ev_pintas",tipo:"malo",peso:E=>E.flags.barraDolida?3.2:0,
+ t:"Pintas contra la dirigencia",d:"Aparecieron rayados con tu nombre en los muros del estadio. Es la respuesta de la barra a la mano dura de hace unas semanas.",
+ ef:{hinchada:-6,moral:-3},rep:{publica:-4},accion:"limpiaBandera:barraDolida"},
+{id:"ev_barra_aliento",tipo:"bueno",peso:E=>E.flags.barraAliada?2.8:0,
+ t:"La barra copa el estadio",d:"Después del acuerdo, la barra armó un recibimiento que empujó al plantel los noventa minutos.",
+ ef:{hinchada:5,moral:4},grupos:{hinchada:6},accion:"limpiaBandera:barraAliada"},
+{id:"ev_dt_firme",tipo:"bueno",peso:E=>E.flags.dtFirme?2.4:0,
+ t:"Plantel motivado por un DT firme",d:"La postura dura del cuerpo técnico prendió al camarín: se entrena distinto desde que quedó claro quién manda.",
+ ef:{moral:6,plantel:2},accion:"limpiaBandera:dtFirme"}
 ];
 
 /* ---------- CRISIS: interrumpen y hay que resolverlas sí o sí ---------- */
@@ -188,4 +198,84 @@ const CLUBES_COMPRADORES=[
  "Boca Juniors","River Plate","São Paulo","Cruzeiro","América de Cali","Nacional de Montevideo",
  "Peñarol","Independiente","Vélez Sarsfield","Standard de Lieja","Real Valladolid","Toulouse",
  "Racing Club","Universidad Católica","Cobreloa","Unión Española","Puebla","Necaxa"
+];
+
+/* ============================================================
+   ENCADENADAS: decisiones que NO aparecen solas. Las dispara la
+   cola de encadenados (campo `encadena` de otra decisión) o el
+   contexto (mala racha, oferta de medianoche). Misma estructura
+   que las decisiones normales: el motor las resuelve igual.
+   ============================================================ */
+const ENCADENADAS=[
+{id:"enc_racha",buzon:"prensa",peso:"alto",tipo:"malo",
+ t:"La racha ya es tema de portada",
+ d:"Cuatro partidos sin ganar y la prensa dejó de preguntar por el equipo para preguntar por vos. En la radio ya pusieron la fecha de tu salida. El directorio mira de reojo.",
+ posturas:{prensa:-20,directorio:-25,hinchada:-15},
+ consejo:{deportivo:"Necesito respaldo público o el camarín va a jugar cagado de miedo.",
+   tesorero:"Un cambio de técnico ahora nos cuesta plata que no tenemos.",
+   prensa:"Si salís a pelearte con todos, mañana sos el enemigo. Si no decís nada, sos el que no da la cara."},
+ op:[
+  {t:"Dar la cara y bancar al plantel en público",dif:40,
+   grupos:{camarin:12,prensa:5,directorio:-4},rep:{credibilidad:6},
+   bien:{txt:"El mensaje ordenó el camarín: salieron a jugarse el puesto por vos.",ef:{moral:10}},
+   mitad:{txt:"Calmó las aguas un par de días, nada más.",ef:{moral:3}},
+   mal:{txt:"Sonó a excusa y la prensa lo hizo pedazos.",ef:{moral:-4},grupos:{prensa:-10}}},
+  {t:"Prometer un golpe de timón y cambios",dif:52,
+   grupos:{directorio:10,camarin:-10},
+   bien:{txt:"El directorio compró la promesa y te dio un respiro. Ahora hay que cumplirla.",ef:{},grupos:{directorio:8}},
+   mitad:{txt:"Te dieron una fecha más, con el reloj corriendo.",ef:{moral:-3}},
+   mal:{txt:"Prometiste y ni tu propio camarín te creyó.",ef:{moral:-8},grupos:{directorio:-12,camarin:-10}}},
+  {t:"Encerrarte a trabajar y no hablar con nadie",dif:34,rep:{dureza:6,prensa:-8},
+   bien:{txt:"El silencio se leyó como temple y el equipo cortó la racha de puro amor propio.",ef:{moral:5,plantel:2}},
+   mitad:{txt:"Ni bien ni mal: el ruido siguió afuera, el equipo adentro.",ef:{}},
+   mal:{txt:"El vacío lo llenó la prensa con la versión que quiso.",ef:{moral:-6},grupos:{prensa:-14,directorio:-10}}}
+ ]},
+
+{id:"enc_medianoche",buzon:"gris",peso:"alto",tipo:"neutro",
+ t:"Oferta de medianoche",
+ d:"La noche antes del partido más grande del año suena el teléfono del hotel. Del otro lado, una voz conocida en los pasillos ofrece «un arreglo para que no haya sorpresas mañana». No da nombres. Deja un número y una hora.",
+ historia:"Situación dramatizada del juego; no reconstruye ningún hecho documentado.",
+ posturas:{prensa:-30,anfp:-25,directorio:-10},
+ consejo:{deportivo:"Yo mañana pongo el equipo. Lo demás no lo quiero ni escuchar.",
+   tesorero:"Sea lo que sea, no pasa por caja y no lo firma nadie.",
+   prensa:"Si se sabe que atendiste esa llamada, el título vale cero."},
+ op:[
+  {t:"Cortar y denunciarlo apenas amanezca",dif:36,
+   grupos:{anfp:12,prensa:15,directorio:-6},rep:{publica:10,credibilidad:12},
+   bien:{txt:"Quedó registro de que llamaste a la puerta correcta. Se juega limpio y con la conciencia liviana.",ef:{riesgo:-10,moral:4}},
+   mitad:{txt:"Denunciaste, nadie investigó, pero tu palabra quedó parada.",ef:{riesgo:-4}},
+   mal:{txt:"Te trataron de alarmista y encima el rival se hizo la víctima.",ef:{},grupos:{anfp:-8}}},
+  {t:"Colgar y no decir nada",dif:26,
+   bien:{txt:"No hubo trato ni escándalo. Vos y tu almohada saben que colgaste.",ef:{riesgo:2}},
+   mitad:{txt:"Colgaste, pero la duda te acompañó hasta el pitazo inicial.",ef:{moral:-2}},
+   mal:{txt:"El silencio dejó la puerta entornada: volvieron a llamar.",ef:{riesgo:8}}},
+  {t:"Escuchar qué ofrecen",dif:64,rep:{publica:-12,credibilidad:-12},
+   bien:{txt:"Aparecieron «facilidades» al día siguiente. Nadie dijo nada. Todavía.",
+     ef:{riesgo:30,arbitraje:4},mods:[{id:"pacto_sucio",n:"Compromiso impagable",anios:8,ef:{arbitraje:5,crisis:0.35}}],
+     encadena:{id:"enc_factura",en:3}},
+   mitad:{txt:"Escuchaste de más y ahora ese tipo tiene con qué apretarte.",ef:{riesgo:36},encadena:{id:"enc_factura",en:2}},
+   mal:{txt:"Alguien grabó la conversación del hotel.",ef:{riesgo:44},grupos:{prensa:-20,anfp:-18},rep:{publica:-18},encadena:{id:"enc_factura",en:2}}}
+ ]},
+
+{id:"enc_factura",buzon:"gris",peso:"alto",tipo:"malo",
+ t:"Llegó la factura",
+ d:"El favor de aquella vez volvió con intereses. El mismo intermediario reaparece: ahora pide que le devuelvas la mano, y deja claro que si no, hay material que puede terminar en un fiscal.",
+ posturas:{prensa:-30,anfp:-25,directorio:-15},
+ consejo:{deportivo:"Yo esto no lo escuché.",tesorero:"Lo que pida, no sale de mis libros.",
+   prensa:"Cualquier cosa que hagas ahora, la estás haciendo con una grabación colgando encima."},
+ op:[
+  {t:"Cortar por lo sano y blanquearlo vos primero",dif:48,
+   grupos:{prensa:18,socios:8,directorio:-15},rep:{credibilidad:14,publica:8},
+   bien:{txt:"Te adelantaste al escándalo y lo contaste con tus palabras. Duele, pero controlaste el incendio.",ef:{riesgo:-25,prestigio:-4}},
+   mitad:{txt:"Blanqueaste una parte y la otra igual salió por otro lado.",ef:{riesgo:-10,prestigio:-8}},
+   mal:{txt:"Tu versión llegó tarde: ya la habían contado por vos.",ef:{riesgo:-4,prestigio:-12},rep:{publica:-10}}},
+  {t:"Pagar el favor y que se termine",dif:60,req:{plata:250},ef:{plata:-250},rep:{credibilidad:-10},
+   bien:{txt:"Se saldó la deuda. El tipo desapareció. Por ahora.",ef:{riesgo:-6}},
+   mitad:{txt:"Pagaste y aún así quedó un cabo suelto dando vueltas.",ef:{riesgo:8}},
+   mal:{txt:"Pagaste, y el pago mismo quedó documentado.",ef:{riesgo:20},grupos:{prensa:-18},rep:{publica:-15}}},
+  {t:"Plantarte y que haga lo que quiera",dif:66,rep:{dureza:14},
+   bien:{txt:"Le jugaste al farol y no tenía tanto como decía. Se fue con las manos vacías.",ef:{riesgo:-8}},
+   mitad:{txt:"Filtró algo, no todo. Dos días feos y a seguir.",ef:{riesgo:6},grupos:{prensa:-10}},
+   mal:{txt:"Tenía todo. Salió publicado y ahora hay una causa abierta.",ef:{riesgo:24,plata:-140},rep:{publica:-18},grupos:{directorio:-18,prensa:-15}}}
+ ]}
 ];

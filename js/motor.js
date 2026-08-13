@@ -53,8 +53,9 @@ function nuevaPartida(clubId,anio,modo){
     grupos:{}, estatutos:Object.assign({},ESTATUTO_INICIAL[clubId]),
     mods:[], flags:{}, plantel:[], calendario:[], idx:0,
     tabla:{}, decPend:[], decHechas:{}, bandeja:[], cronica:[], titulos:[],
+    pendientesEncadenadas:[],
     tactica:{form:"4-4-2",estilo:"Equilibrado",presion:"Media"},
-    precioEntrada:1, presupuesto:null, temporada:{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0},
+    precioEntrada:1, presupuesto:null, temporada:{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0},
     carrera:{club:clubId,desde:anio,despidos:0,clubes:[],evaluacion:null,fin:false},
     divergencias:[], coincidencias:[], staff:{deportivo:62,tesorero:60,prensa:58}
   };
@@ -72,6 +73,15 @@ function nuevaPartida(clubId,anio,modo){
 function reiniciarTabla(){
   E.tabla={};
   LIGA91.forEach(c=>E.tabla[c.id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0});
+}
+/* Rellena campos nuevos en partidas guardadas de antes del roadmap 3.0.
+   No sube la versión: solo agrega lo que falte sin tocar lo existente. */
+function normalizarEstado(){
+  if(!E) return;
+  if(!E.flags) E.flags={};
+  if(!Array.isArray(E.pendientesEncadenadas)) E.pendientesEncadenadas=[];
+  if(!E.temporada) E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0};
+  if(E.temporada.sinGanar===undefined) E.temporada.sinGanar=0;
 }
 /* ---------------- helpers de estado ---------------- */
 function modSuma(k){ let s=0; E.mods.forEach(m=>{ if(m.ef&&m.ef[k]) s+=m.ef[k]; }); return s; }
@@ -94,6 +104,80 @@ function aplicarEfectos(ef){
 }
 function aplicarGrupos(g){ if(!g) return; for(const k in g){ if(E.grupos[k]) E.grupos[k].aprob=clamp(E.grupos[k].aprob+g[k],-100,100); } }
 function aplicarRep(r){ if(!r) return; for(const k in r){ if(E.rep[k]!==undefined) E.rep[k]=clamp(E.rep[k]+r[k],0,100); } }
+/* ---------- banderas y efecto mariposa ----------
+   Una opción o un desenlace puede dejar una bandera (`flag`/`flags`) que otros
+   eventos leen fechas después, y puede `encadena`r una decisión más adelante. */
+function aplicarBanderas(o){
+  if(!o) return;
+  if(typeof o.flag==="string") E.flags[o.flag]=true;
+  if(o.flags) for(const k in o.flags) E.flags[k]=o.flags[k];
+}
+/* encadena:"idDecision"  ó  encadena:{id:"idDecision",en:3,peso:"alto"} */
+function agendarEncadena(enc){
+  if(!enc) return;
+  const cfg=(typeof enc==="string")?{id:enc}:enc;
+  if(!cfg.id) return;
+  const fecha=E.idx+(cfg.en||3);
+  const ya=E.pendientesEncadenadas.some(p=>p.id===cfg.id)
+        || E.decPend.some(x=>x.id===cfg.id)
+        || E.decHechas[cfg.id+"_"+E.anio];
+  if(ya) return;
+  E.pendientesEncadenadas.push({id:cfg.id,fecha:fecha,peso:cfg.peso||"medio"});
+}
+/* Se llama al avanzar: madura la cola de encadenados. Los que tienen `op` van a
+   la bandeja de decisiones; los simples (solo efectos) se aplican al toque. */
+function procesarEncadenadas(){
+  if(!E.pendientesEncadenadas||!E.pendientesEncadenadas.length) return [];
+  const listos=[], quedan=[];
+  E.pendientesEncadenadas.forEach(p=>{ (p.fecha<=E.idx?listos:quedan).push(p); });
+  E.pendientesEncadenadas=quedan;
+  const disparadas=[];
+  listos.forEach(p=>{
+    const d=decisionPorId(p.id); if(!d) return;
+    const clave=d.id+"_"+E.anio;
+    if(E.decHechas[clave]||E.decPend.some(x=>x.id===d.id)) return;
+    if(d.op){
+      E.decPend.push({id:d.id,clave:clave,peso:p.peso||d.peso||"medio"});
+      disparadas.push(d);
+    } else {
+      if(d.ef) aplicarEfectos(d.ef);
+      if(d.grupos) aplicarGrupos(d.grupos);
+      if(d.rep) aplicarRep(d.rep);
+      aplicarBanderas(d);
+      const extra=d.accion?ejecutarAccion(d.accion):"";
+      const item={t:d.t,d:resolverTokens(d.d||"",E),extra:extra,tipo:d.tipo||"neutro",anio:E.anio};
+      E.bandeja.unshift(item); disparadas.push(item);
+    }
+  });
+  return disparadas;
+}
+/* Contexto que se evalúa cada semana: mala racha y oferta de medianoche.
+   Devuelve una lista de novedades para avisar al jugador. */
+function eventosDeContexto(){
+  const avisos=[];
+  procesarEncadenadas();
+  /* mala racha: 4 partidos sin ganar → la prensa pide tu cabeza */
+  if((E.temporada.sinGanar||0)>=4 && !E.flags.rachaLiquida
+     && typeof ENCADENADAS!=="undefined" && decisionPorId("enc_racha")){
+    E.flags.rachaLiquida=true;
+    if(!E.decPend.some(x=>x.id==="enc_racha") && !E.decHechas["enc_racha_"+E.anio]){
+      E.decPend.push({id:"enc_racha",clave:"enc_racha_"+E.anio,peso:"alto"});
+      avisos.push("La prensa se te tiró encima por la racha");
+    }
+  }
+  /* oferta de medianoche: la noche previa a una semifinal o final */
+  const part=proximoPartido();
+  if(part && (part.ronda==="FINAL"||part.ronda==="Semifinal")
+     && !E.flags["medianoche_"+E.idx] && Math.random()<0.5
+     && typeof ENCADENADAS!=="undefined" && decisionPorId("enc_medianoche")){
+    E.flags["medianoche_"+E.idx]=true;
+    if(!E.decPend.some(x=>x.id==="enc_medianoche") && !E.decHechas["enc_medianoche_"+E.anio]){
+      E.decPend.push({id:"enc_medianoche",clave:"enc_medianoche_"+E.anio,peso:"alto"});
+      avisos.push("Alguien te busca la noche antes del partido grande");
+    }
+  }
+  return avisos;
+}
 function apoyoPonderado(posturas){
   if(!posturas) return 0;
   let num=0,den=0;
@@ -167,6 +251,8 @@ function resolverDecision(dec,idx){
   if(res.grupos) aplicarGrupos(res.grupos);
   if(res.rep) aplicarRep(res.rep);
   (res.mods||[]).forEach(agregarMod);
+  aplicarBanderas(op); aplicarBanderas(res);
+  agendarEncadena(op.encadena); agendarEncadena(res.encadena);
   const accion=res.accion||op.accion;
   let extra=accion?ejecutarAccion(accion):"";
 
@@ -229,6 +315,10 @@ function ejecutarAccion(a){
       E.flags.cisma=true;
       aplicarEfectos({socios:-25,hinchada:-20,prestigio:-10});
       return "Un grupo de socios funda un club nuevo con el nombre y los colores originales. Desde ahora son tus enemigos.";
+    }
+    case "limpiaBandera":{
+      if(arg) delete E.flags[arg];
+      return "";
     }
   }
   return "";
@@ -367,8 +457,11 @@ function nuevoAnio(){
   /* el fútbol olvida: nadie te quiere ni te odia para siempre */
   for(const k in E.rep) E.rep[k]=Math.round(E.rep[k]+(50-E.rep[k])*0.12);
   GRUPOS.forEach(g=>{ const x=E.grupos[g.id]; x.aprob=Math.round(x.aprob*0.72); });
-  E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
-  E.idx=0; E.decPend=[]; E.bandeja=[]; E.flags.copaCampeon=false;
+  E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0};
+  E.idx=0; E.decPend=[]; E.bandeja=[]; E.pendientesEncadenadas=[]; E.flags.copaCampeon=false;
+  /* banderas que solo valen dentro de una temporada */
+  E.flags.rachaLiquida=false;
+  Object.keys(E.flags).forEach(k=>{ if(k.indexOf("medianoche_")===0) delete E.flags[k]; });
   E.calendario=construirCalendario(E.club,E.anio,E.anio===1992);
   reiniciarTabla();
   repartirDecisiones();
