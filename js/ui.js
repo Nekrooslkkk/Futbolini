@@ -6,7 +6,7 @@
 let SEC="escritorio";
 const SECCIONES=[
  ["escritorio","🗂️","Escritorio"],["institucion","🏛️","Institución"],["finanzas","💰","Finanzas"],
- ["plantel","👥","Plantel"],["calendario","📅","Calendario"],["historia","📚","Historia"],
+ ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["calendario","📅","Calendario"],["historia","📚","Historia"],
  ["carrera","🎖️","Carrera"],["ajustes","⚙️","Ajustes"]
 ];
 function irA(s){ SEC=s; render(); window.scrollTo({top:0}); }
@@ -51,7 +51,7 @@ function render(){
   if(E.carrera.fin){ v.appendChild(pantallaFinCarrera()); return; }
   if(E.carrera.enParo){ v.appendChild(pantallaSinClub()); return; }
   ({escritorio:vistaEscritorio,institucion:vistaInstitucion,finanzas:vistaFinanzas,plantel:vistaPlantel,
-    calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,ajustes:vistaAjustes}[SEC]||vistaEscritorio)();
+    mercado:vistaMercado,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,ajustes:vistaAjustes}[SEC]||vistaEscritorio)();
 }
 /* ---------------- inicio ---------------- */
 function pantallaInicio(){

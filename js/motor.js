@@ -458,7 +458,7 @@ function nuevoAnio(){
   for(const k in E.rep) E.rep[k]=Math.round(E.rep[k]+(50-E.rep[k])*0.12);
   GRUPOS.forEach(g=>{ const x=E.grupos[g.id]; x.aprob=Math.round(x.aprob*0.72); });
   E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0};
-  E.idx=0; E.decPend=[]; E.bandeja=[]; E.pendientesEncadenadas=[]; E.flags.copaCampeon=false;
+  E.idx=0; E.decPend=[]; E.bandeja=[]; E.pendientesEncadenadas=[]; E.mercado=null; E.flags.copaCampeon=false;
   /* banderas que solo valen dentro de una temporada */
   E.flags.rachaLiquida=false;
   Object.keys(E.flags).forEach(k=>{ if(k.indexOf("medianoche_")===0) delete E.flags[k]; });
