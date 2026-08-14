@@ -364,6 +364,7 @@ function terminarPartido(P){
       (yo>otro?"Suben moral e hinchada.":(yo<otro?"Bajan moral e hinchada; el vestuario queda sensible.":"Reparto de puntos.")),
     bandeja:false});
   const posDespues=(part.tipo==="liga")?posicionEnTabla():null;
+  if(typeof redesReaccion==="function") redesReaccion("partido",{yo:yo,otro:otro,rival:part.rivalNombre});
   E.idx++;
   guardar();
   return {yo:yo,otro:otro,caja:caja,gente:gente,posAntes:posAntes,posDespues:posDespues,

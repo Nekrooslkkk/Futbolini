@@ -88,6 +88,7 @@ function nuevaPartida(clubId,anio,modo){
     tabla:{}, decPend:[], decHechas:{}, bandeja:[], cronica:[], titulos:[],
     pendientesEncadenadas:[], notifs:[], ofertasPend:[], mercadoLog:{rechazadas:{},vendidos:[]},
     redes:[], promesas:[], historialAnual:[], ultimaFecha:[], prensaAuto:false,
+    timeline:[], seguidores:Math.round((D.ind[clubId].hinchada+D.ind[clubId].prestigio)*280),
     tactica:{form:"4-4-2",estilo:"Equilibrado",presion:"Media"},
     precioEntrada:1, presupuesto:null, temporada:{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0},
     carrera:{club:clubId,desde:anio,despidos:0,clubes:[],evaluacion:null,fin:false},
@@ -132,6 +133,8 @@ function normalizarEstado(){
   if(!Array.isArray(E.historialAnual)) E.historialAnual=[];
   if(!Array.isArray(E.ultimaFecha)) E.ultimaFecha=[];
   if(E.prensaAuto===undefined) E.prensaAuto=false;
+  if(!Array.isArray(E.timeline)) E.timeline=[];
+  if(E.seguidores===undefined) E.seguidores=Math.round((E.ind.hinchada+E.ind.prestigio)*280);
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){
@@ -484,7 +487,8 @@ function ingresosAnuales(){
   const tv=(120+E.ind.prestigio*3)*(1+(modSuma("tv")||0));
   const spo=(90+E.ind.prestigio*3.5)*(1+(modSuma("sponsor")||0));
   const soc=(E.ind.socios*10)*(1+(modSuma("ingresoSocios")||0));
-  return {tv:Math.round(tv),sponsors:Math.round(spo),socios:Math.round(soc)};
+  const dig=(typeof ingresoDigital==="function")?ingresoDigital():0;
+  return {tv:Math.round(tv),sponsors:Math.round(spo),socios:Math.round(soc),digital:dig};
 }
 function egresosAnuales(){
   const planilla=planillaAnual();
@@ -498,7 +502,7 @@ function costoSemanal(){
 }
 function ingresoSemanal(){
   const i=ingresosAnuales();
-  return Math.round((i.tv+i.sponsors+i.socios)/40);
+  return Math.round((i.tv+i.sponsors+i.socios+(i.digital||0))/40);
 }
 function aplicarEstatutosMod(){
   ESTATUTOS.forEach(cat=>{

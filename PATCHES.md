@@ -163,8 +163,17 @@ Orden de programación acordado: **Pizarra/Timer → Economía/Sliders → Histo
 > Nota de testing: el navegador MCP CACHEA los `.js` por origen. Para verificar cambios, usar un
 > puerto nuevo (`python -m http.server 889X`) o cache-bust; el harness de Node siempre lee los archivos reales.
 
-## 4.0 · Pendiente (próximos bloques)
-- **Redes (`js/redes.js`):** timeline tipo Twitter, generador procedural de posts (hinchas/prensa/jugadores), campañas del CM, ingresos por seguidores/sponsor digital.
+## 4.0 · Bloque 5 — Redes sociales procedural  ✅ (cierra el 4.0)
+**Archivos:** `js/redes.js` (nuevo), `ui.js`, `motor.js`, `partido.js`, `mercado.js`, `ia.js`, `index.html`
+- **Timeline procedural** (`E.timeline`): hinchas/prensa/jugadores/club postean solos vía `redesReaccion(tipo,data)`,
+  enganchado en resultados (`terminarPartido`), fichajes (`cerrarFichaje`), ventas (`ventaFlash`/`responderOferta`)
+  y precios (slider de Finanzas). UI: panel "Timeline" en `vistaRedes`. Los posteos del DT (ia.js) también entran.
+- **Seguidores** (`E.seguidores`): suben con victorias/fichajes/buenas campañas, bajan con derrotas/ventas de ídolos/precios altos.
+- **Community Manager** (`E.staff.cm`, se contrata en Finanzas): `campanaCM("humo"|"serio")` — humo sube hinchada/seguidores
+  a costa de credibilidad; serio suma credibilidad. Botones en `vistaRedes`.
+- **Sponsor digital**: `ingresoDigital()` = 2% de los seguidores/año (solo con CM), entra en `ingresosAnuales`/`ingresoSemanal`.
+
+## ✅ ROADMAP 4.0 COMPLETO (Bloques 1-5). Próximas mejoras: las que definas / la lista pendiente del usuario.
 
 ---
 

@@ -91,6 +91,7 @@ function ventaFlash(j){
   E.mercadoLog.vendidos.push({n:j.n,monto:monto,anio:E.anio,flash:true});
   notificar({t:"Venta de urgencia: "+j.n,tipo:"malo",
     d:"Remataste a "+j.n+" por "+plata(monto)+" ("+Math.round(pct*100)+"% de su valor). Entra plata rápida, pero el directorio lo lee como manotazo de ahogado"+(ref?" y la hinchada no perdona malvender a un referente.":".")});
+  if(typeof redesReaccion==="function") redesReaccion("venta",{n:j.n,flash:true,ref:ref});
   guardar();
 }
 /* ---------- préstamos ---------- */
@@ -134,6 +135,7 @@ function responderOferta(notif, aceptar){
     notificar({t:"Vendiste a "+j.n,tipo:"bueno",
       d:"Se cerró la salida de "+j.n+" a "+of.comprador+" por "+plata(of.monto)+". Entra la plata a la caja"+
         (ref?", pero la hinchada no perdona que se vaya un referente.":" y el plantel baja un poco de nivel.")});
+    if(typeof redesReaccion==="function") redesReaccion("venta",{n:j.n,ref:ref});
   } else {
     E.mercadoLog.rechazadas[of.jid]=E.idx;
     notificar({t:"Rechazaste la oferta por "+of.jid,tipo:"neutro",
@@ -189,6 +191,7 @@ function cerrarFichaje(j,oferta){
   notificar({t:"Fichaste a "+nuevo.n,tipo:"bueno",
     d:"Se incorpora "+nuevo.n+" ("+nuevo.pos+", nivel "+nuevo.nivel+") como "+oferta.rol+". Costó "+plata(oferta.precio)+
       " y gana "+plata(oferta.sueldo)+" al año. El nivel del plantel se recalcula."});
+  if(typeof redesReaccion==="function") redesReaccion("ficha",{n:nuevo.n});
   guardar();
   return nuevo;
 }

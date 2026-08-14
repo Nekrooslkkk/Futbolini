@@ -379,7 +379,7 @@ function vistaFinanzas(){
     pe.cuerpo.appendChild(el("label","lb",s.ic+" "+s.n+" — <b id='pr_"+s.id+"'>$"+(E.precios[s.id]||0).toLocaleString("es-CL")+"</b>"));
     const r=el("input"); r.type="range"; r.min=s.min; r.max=s.max; r.step=Math.max(50,Math.round(s.ref*0.05)); r.value=E.precios[s.id]||s.ref; r.className="rango";
     r.oninput=()=>{ E.precios[s.id]=parseInt(r.value,10); const lab=document.getElementById("pr_"+s.id); if(lab) lab.textContent="$"+E.precios[s.id].toLocaleString("es-CL"); refrescarProy(); };
-    r.onchange=()=>{ guardar(); };
+    r.onchange=()=>{ if(typeof redesReaccion==="function") redesReaccion("precio",{ratio:precioPromedioRatio()}); guardar(); };
     pe.cuerpo.appendChild(r);
   });
   pe.cuerpo.appendChild(proy); refrescarProy();
@@ -671,6 +671,35 @@ function vistaRedes(){
   });
   p.cuerpo.appendChild(fr);
   v.appendChild(p);
+
+  /* comunidad digital: seguidores, ingreso y campañas del CM */
+  const pcd=panel("Comunidad digital","📈","agua");
+  pcd.cuerpo.appendChild(fila("Seguidores",(E.seguidores||0).toLocaleString("es-CL")));
+  const dig=(typeof ingresoDigital==="function")?ingresoDigital():0;
+  pcd.cuerpo.appendChild(fila("Sponsor digital (al año)",E.staff&&E.staff.cm?plata(dig):"—"));
+  if(E.staff&&E.staff.cm){
+    pcd.cuerpo.appendChild(el("p","mini","Tu Community Manager puede lanzar campañas:"));
+    const bh=el("button","btn-aqua chico","🎉 Campaña de humo");
+    bh.onclick=()=>{ campanaCM("humo"); render(); };
+    const bs=el("button","btn-aqua chico gris","📄 Comunicado serio"); bs.style.marginLeft="6px";
+    bs.onclick=()=>{ campanaCM("serio"); render(); };
+    pcd.cuerpo.appendChild(bh); pcd.cuerpo.appendChild(bs);
+  } else {
+    pcd.cuerpo.appendChild(el("div","resul mitad","Contratá un <b>Community Manager</b> en Finanzas para monetizar seguidores (sponsor digital) y lanzar campañas."));
+  }
+  v.appendChild(pcd);
+
+  /* timeline procedural */
+  const pt=panel("Timeline","🐦");
+  if(!E.timeline||!E.timeline.length) pt.cuerpo.appendChild(el("p","mini","Todavía no hay movimiento en las redes. Jugá, fichá o cambiá precios y la gente va a empezar a hablar."));
+  (E.timeline||[]).slice(0,25).forEach(t=>{
+    const ic=t.tipo==="prensa"?"🎙️":(t.tipo==="jugador"?"⚽":(t.tipo==="club"?"🏟️":(t.tipo==="dt"?"🧑‍💼":"👤")));
+    const d=el("div","resul "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"mitad")));
+    d.innerHTML="<b>"+ic+" "+t.autor+"</b> <span class='mini'>· "+t.fecha+" "+t.anio+"</span><br>"+t.texto+
+      "<div class='mini' style='opacity:.6;margin-top:2px'>♡ "+(t.likes||0).toLocaleString("es-CL")+"</div>";
+    pt.cuerpo.appendChild(d);
+  });
+  v.appendChild(pt);
 
   /* roleo con el capitán */
   const pc=panel("Charla con el capitán","🧑‍✈️");

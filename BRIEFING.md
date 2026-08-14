@@ -54,7 +54,7 @@ Helpers centrales: `aplicarEfectos(ef)`, `aplicarGrupos`, `aplicarRep`, `notific
 
 ## 6. Estado del roadmap
 Roadmap 3.0 **completo** (encadenados, motor partido, mercado, eras 1991/2026, redes offline) + centro de
-notificaciones. Roadmap **4.0 en curso**, orden: **Pizarra/Timer ✔ → Economía/Sliders ✔ → Historial → Mercado profundo → Redes procedural**.
+notificaciones. Roadmap **4.0 COMPLETO** (Pizarra/Timer, Economía/Sliders, Historial, Mercado profundo, Redes procedural).
 **`PATCHES.md` es la bitácora fuente de verdad**: dice qué toca cada parche, cómo editar planteles y cómo
 encender la IA. LEERLA SIEMPRE ANTES DE TOCAR NADA.
 
