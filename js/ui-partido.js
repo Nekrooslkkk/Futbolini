@@ -229,7 +229,7 @@ function centroTiroLibre(P){
   const aereo=P.once.filter(j=>j.rasgos&&j.rasgos.includes("juego aéreo"))[0]||elige(P.once.filter(j=>j.pos==="DEF"||j.pos==="DEL"))||P.once[0];
   linea(P,P.min,"Centro al área, sube "+(aereo?aereo.n:"la defensa")+" a cabecear…");
   const prob=clamp(0.14+((aereo&&aereo.rasgos&&aereo.rasgos.includes("juego aéreo"))?0.10:0),0.06,0.28);
-  if(Math.random()<prob){ if(aereo){aereo.goles++;P.goleadores.push(aereo.n);} if(P.part.local)P.gl++;else P.gv++;
+  if(Math.random()<prob){ if(aereo){aereo.goles++;P.goleadores.push(aereo.n);regGol(P,P.min,aereo.n,true);} if(P.part.local)P.gl++;else P.gv++;
     linea(P,P.min,"¡Gol de cabeza"+(aereo?" de "+aereo.n:"")+"! "+marcadorTxt(P),"gol"); }
   else linea(P,P.min,"Despeja la defensa rival de cabeza.");
 }
@@ -267,15 +267,61 @@ function mostrarAccion(ev){
   p.cuerpo.appendChild(el("p","mini","Decidí con 1 / 2 / 3."));
   $("#vista").appendChild(p);
 }
+function hitosPartido(res){
+  const h=[], yo=res.yo, otro=res.otro, dif=Math.abs(yo-otro);
+  if(yo>=5) h.push("🎩 Manita: "+yo+" goles en un partido.");
+  else if(dif>=4&&yo>otro) h.push("💥 Goleada histórica.");
+  if(yo>0&&otro===0) h.push("🧤 Valla invicta.");
+  const cuenta={};
+  (res.golesDetalle||[]).forEach(g=>{ if(g.propio) cuenta[g.quien]=(cuenta[g.quien]||0)+1; });
+  for(const k in cuenta){ if(cuenta[k]>=3) h.push("⚽ ¡Hat-trick de "+k+"!"); else if(cuenta[k]===2) h.push("⚽ Doblete de "+k+"."); }
+  (res.golesDetalle||[]).forEach(g=>{ if(g.propio&&(cuenta[g.quien]||0)<2){ const j=E.plantel.find(x=>x.n===g.quien); if(j&&j.edad<=20) h.push("🌱 Gol del juvenil "+j.n+" ("+j.edad+" años)."); } });
+  return h;
+}
 function cerrarPartido(){
   const P=P_ACTUAL; if(!P||P.cerrado) return;
-  P.cerrado=true; clearInterval(TIMER);
+  P.cerrado=true; clearInterval(TIMER); MOMENTO_OPS=[];
   const res=terminarPartido(P);
-  const p=panel("Final del partido","📄",res.yo>res.otro?"":"alerta");
-  p.cuerpo.appendChild(el("h2","tit",(res.yo>res.otro?"Victoria ":(res.yo<res.otro?"Derrota ":"Empate "))+res.yo+"-"+res.otro+" ante "+P.part.rivalNombre));
-  if(P.goleadores.length) p.cuerpo.appendChild(el("p","mini","Goles: "+P.goleadores.join(", ")));
-  if(P.lesionados.length) p.cuerpo.appendChild(el("p","mini","Lesionados: "+P.lesionados.join(", ")));
+  const gano=res.yo>res.otro;
+  const p=panel("Final del partido","📄",gano?"":"alerta");
+  p.cuerpo.appendChild(el("h2","tit",(gano?"Victoria ":(res.yo<res.otro?"Derrota ":"Empate "))+res.yo+"-"+res.otro+" ante "+P.part.rivalNombre));
+
+  /* caja de resumen: goles con minuto, tarjetas, lesiones */
+  const cajita=el("div","resul mitad");
+  let html="";
+  const goles=(res.golesDetalle||[]).slice().sort((a,b)=>a.min-b.min);
+  if(goles.length) html+="<b>Goles</b><br>"+goles.map(g=>g.min+"' "+(g.propio?"":"("+P.part.rivalNombre+") ")+g.quien).join("<br>")+"<br>";
+  else html+="<b>Sin goles.</b><br>";
+  if(res.tarjetas&&res.tarjetas.length) html+="<span class='mini'>Amarillas: "+res.tarjetas.join(", ")+"</span><br>";
+  if(res.lesionados&&res.lesionados.length) html+="<span class='mini'>Lesionados: "+res.lesionados.join(", ")+"</span><br>";
+  cajita.innerHTML=html;
+  p.cuerpo.appendChild(cajita);
+
+  /* hitos / efemérides */
+  const hitos=hitosPartido(res);
+  if(hitos.length) p.cuerpo.appendChild(el("div","resul "+(gano?"bien":"mitad"),hitos.join("<br>")));
+
   if(P.part.local) p.cuerpo.appendChild(fila("Público / taquilla",res.gente.toLocaleString("es-CL")+" personas · "+plata(res.caja)));
+
+  /* salto de posición + otros resultados de la fecha (solo liga) */
+  if(res.esLiga){
+    if(res.posAntes&&res.posDespues){
+      const delta=res.posAntes-res.posDespues;
+      p.cuerpo.appendChild(fila("Posición en la tabla",ordinal(res.posDespues)+(delta>0?" ▲ (subiste "+delta+")":(delta<0?" ▼ (bajaste "+(-delta)+")":" (sin cambios)"))));
+    }
+    if(E.ultimaFecha&&E.ultimaFecha.length){
+      p.cuerpo.appendChild(el("h3","sub","Otros resultados de la fecha"));
+      E.ultimaFecha.forEach(r=>p.cuerpo.appendChild(el("div","fila","<span>"+r.a+"</span><b>"+r.ga+" - "+r.gb+"</b><span>"+r.b+"</span>")));
+    }
+    /* mini tabla en vivo: top 5 + tu posición */
+    const arr=tablaOrdenada();
+    const t=el("table"); t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>Pts</th></tr></thead>";
+    const tb=el("tbody");
+    arr.forEach((c,i)=>{ if(i<5||c.id===E.club) tb.appendChild(el("tr",c.id===E.club?"yo":"", "<td class='n'>"+(i+1)+"</td><td>"+c.n+"</td><td class='n'>"+c.pj+"</td><td class='n'>"+c.pts+"</td>")); });
+    t.appendChild(tb);
+    p.cuerpo.appendChild(el("h3","sub","Tabla al día")); p.cuerpo.appendChild(t);
+  }
+
   if(P.part.real){
     p.cuerpo.appendChild(el("h3","sub","En la línea histórica"));
     p.cuerpo.appendChild(el("p","mini","Ese partido terminó "+P.part.real+"."+
@@ -283,9 +329,65 @@ function cerrarPartido(){
     const nota=NOTAS_COPA[P.part.notaId];
     if(nota) p.cuerpo.appendChild(el("p","mini",nota));
   }
+
+  /* rueda de prensa: manual (mini-decisión) o automática (ayudante) */
+  seccionPrensa(p,res);
+
   const b=el("button","btn-aqua ancho verde","Volver al escritorio");
   b.onclick=()=>{ P_ACTUAL=null; irA("escritorio"); };
   p.cuerpo.appendChild(b);
   $("#vista").appendChild(p);
   window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
+}
+/* ---------- rueda de prensa post-partido ---------- */
+function opcionesPrensa(res){
+  if(res.yo>res.otro) return [
+   {t:"Elogiar al plantel y bajar el perfil",ef:{},grupos:{camarin:6,prensa:5},rep:{publica:3},d:"Mensaje sobrio: el camarín lo agradece y la prensa te trata bien."},
+   {t:"Agrandarse y prometer más",ef:{hinchada:4},grupos:{hinchada:6,prensa:-4},rep:{credibilidad:-3},d:"La hinchada se prende, pero pusiste la vara alta y la prensa toma nota."},
+   {t:"Mandarle un recado al rival",ef:{},grupos:{hinchada:5,anfp:-6,prensa:-3},rep:{dureza:4},d:"Calentaste la previa del próximo; algunos lo aplauden, otros no."}
+  ];
+  if(res.yo<res.otro) return [
+   {t:"Poner la cara y bancar al grupo",ef:{moral:4},grupos:{camarin:8,prensa:3},rep:{publica:2},d:"Diste la cara: el vestuario lo valora."},
+   {t:"Autocrítica pública",ef:{moral:-2},grupos:{prensa:6},rep:{credibilidad:6},d:"Sinceridad que suma credibilidad, aunque duela hacia adentro."},
+   {t:"Apuntar al árbitro",ef:{hinchada:4},grupos:{hinchada:6,anfp:-8,prensa:-6},rep:{dureza:5,publica:-3},d:"La hinchada compra el complot; la ANFP y la prensa, no."}
+  ];
+  return [
+   {t:"Rescatar lo bueno",ef:{moral:2},grupos:{prensa:3},d:"Un empate se puede vender bien si sabés hablar."},
+   {t:"Mostrar bronca por los puntos perdidos",ef:{},grupos:{camarin:-3,prensa:4},rep:{dureza:3},d:"Marcaste exigencia; el camarín siente la presión."}
+  ];
+}
+function seccionPrensa(p,res){
+  p.cuerpo.appendChild(el("h3","sub","Rueda de prensa"));
+  const tog=el("div","mini");
+  tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (vos hablás)")+"</b>";
+  p.cuerpo.appendChild(tog);
+  const bt=el("button","btn-aqua chico gris",E.prensaAuto?"Pasar a manual":"Delegar en el ayudante");
+  bt.onclick=()=>{ E.prensaAuto=!E.prensaAuto; guardar(); tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (vos hablás)")+"</b>"; bt.textContent=E.prensaAuto?"Pasar a manual":"Delegar en el ayudante"; zonaPrensa.innerHTML=""; pintarZonaPrensa(); };
+  p.cuerpo.appendChild(bt);
+  const zonaPrensa=el("div"); p.cuerpo.appendChild(zonaPrensa);
+  let hecho=false;
+  function pintarZonaPrensa(){
+    zonaPrensa.innerHTML="";
+    if(hecho) return;
+    if(E.prensaAuto){
+      const r=res.yo>res.otro?{grupos:{prensa:3,camarin:2}}:res.yo<res.otro?{grupos:{prensa:1,camarin:1}}:{grupos:{prensa:1}};
+      aplicarGrupos(r.grupos);
+      notificar({t:"El ayudante habló con la prensa",tipo:"neutro",d:"Se ocupó de la rueda de prensa sin sobresaltos. Declaraciones tibias, cero polémica.",bandeja:false});
+      guardar(); hecho=true;
+      zonaPrensa.appendChild(el("div","resul mitad","El ayudante se encargó: sin polémica."));
+    } else {
+      const ops=el("div","ops");
+      opcionesPrensa(res).forEach(o=>{
+        const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
+        b.onclick=()=>{
+          if(o.ef) aplicarEfectos(o.ef); if(o.grupos) aplicarGrupos(o.grupos); if(o.rep) aplicarRep(o.rep);
+          notificar({t:"Declaraciones a la prensa",tipo:"neutro",d:o.d,bandeja:false});
+          guardar(); hecho=true; zonaPrensa.innerHTML=""; zonaPrensa.appendChild(el("div","resul bien",o.d));
+        };
+        ops.appendChild(b);
+      });
+      zonaPrensa.appendChild(ops);
+    }
+  }
+  pintarZonaPrensa();
 }

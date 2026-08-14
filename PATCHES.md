@@ -135,8 +135,20 @@ Orden de programación acordado: **Pizarra/Timer → Economía/Sliders → Histo
   (`E.staff.cm`) — el CM se usará en el bloque de Redes.
 - Nota: el viejo `E.precioEntrada` quedó obsoleto (se mantiene por compatibilidad, ya no se usa).
 
+## 4.0 · Bloque 3 — Historial, tablas y efemérides
+**Archivos:** `motor.js`, `partido.js`, `ui.js`, `ui-partido.js`
+- **Tablas históricas:** `E.historialAnual` (copia profunda de la tabla final + goleador por año), se llena en
+  `finDeTemporada` vía `guardarHistorial()`. UI: panel "Temporadas jugadas" en `vistaHistoria` +
+  `modalTablaHistorica(h)` para ver la tabla final de cada año. `tablaOrdenada()` centraliza el orden.
+- **Resultados de la fecha + tabla al día:** `simularResto` guarda los otros partidos en `E.ultimaFecha`;
+  `terminarPartido` devuelve `posAntes`/`posDespues` (salto de posición) y `golesDetalle`/`tarjetas`/`lesionados`.
+- **Caja de resumen (efemérides):** `cerrarPartido` muestra goles con minuto y autor, tarjetas, lesiones,
+  hitos (`hitosPartido`: manita, goleada, valla invicta, hat-trick/doblete, gol de juvenil), salto de posición,
+  otros resultados de la fecha y una mini tabla (top 5 + tu posición). `regGol()` captura goles con minuto.
+- **Prensa manual/automática:** `E.prensaAuto` (toggle en el post-partido). Manual → mini-decisión contextual
+  (`opcionesPrensa` por resultado); automático → el ayudante resuelve neutral. `seccionPrensa(p,res)`.
+
 ## 4.0 · Pendiente (próximos bloques)
-- **Historial:** `E.historialAnual` (copia profunda de la tabla por año) + vista; tabla en vivo mientras se simula la fecha; caja de resumen post-partido (goles/min/tarjetas/hitos); toggle prensa manual/automática.
 - **Mercado profundo:** panic sell, préstamos (`cedido`), lluvia de ofertas semanal, negociación en 2-3 pasos.
 - **Redes (`js/redes.js`):** timeline tipo Twitter, generador procedural de posts (hinchas/prensa/jugadores), campañas del CM, ingresos por seguidores/sponsor digital.
 

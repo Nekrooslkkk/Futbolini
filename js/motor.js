@@ -87,7 +87,7 @@ function nuevaPartida(clubId,anio,modo){
     mods:[], flags:{}, plantel:[], calendario:[], idx:0,
     tabla:{}, decPend:[], decHechas:{}, bandeja:[], cronica:[], titulos:[],
     pendientesEncadenadas:[], notifs:[], ofertasPend:[], mercadoLog:{rechazadas:{},vendidos:[]},
-    redes:[], promesas:[],
+    redes:[], promesas:[], historialAnual:[], ultimaFecha:[], prensaAuto:false,
     tactica:{form:"4-4-2",estilo:"Equilibrado",presion:"Media"},
     precioEntrada:1, presupuesto:null, temporada:{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0},
     carrera:{club:clubId,desde:anio,despidos:0,clubes:[],evaluacion:null,fin:false},
@@ -129,6 +129,27 @@ function normalizarEstado(){
   if(!E.precios) E.precios=preciosDefault();
   if(!E.staff) E.staff={deportivo:62,tesorero:60,prensa:58,cm:false};
   if(E.staff.cm===undefined) E.staff.cm=false;
+  if(!Array.isArray(E.historialAnual)) E.historialAnual=[];
+  if(!Array.isArray(E.ultimaFecha)) E.ultimaFecha=[];
+  if(E.prensaAuto===undefined) E.prensaAuto=false;
+}
+/* ---------- historial de temporadas (memoria a largo plazo) ---------- */
+function tablaOrdenada(){
+  const arr=LIGA_ACT.map(c=>Object.assign({id:c.id,n:c.n},E.tabla[c.id]));
+  arr.sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc)||b.gf-a.gf);
+  return arr;
+}
+function guardarHistorial(pos,campeon,copaGanada){
+  if(!E.historialAnual) E.historialAnual=[];
+  const arr=tablaOrdenada();
+  const gol=E.plantel.filter(j=>!j.vendido).slice().sort((a,b)=>b.goles-a.goles)[0];
+  E.historialAnual.unshift({
+    anio:E.anio, era:E.eraBase, club:E.club, clubNombre:E.clubNombre,
+    pos:pos, campeon:campeon, copa:!!copaGanada,
+    tabla:arr.map(c=>({id:c.id,n:c.n,pj:c.pj,pg:c.pg,pe:c.pe,pp:c.pp,gf:c.gf,gc:c.gc,pts:c.pts})),
+    goleador:(gol&&gol.goles>0)?{n:gol.n,goles:gol.goles}:null
+  });
+  if(E.historialAnual.length>40) E.historialAnual.length=40;
 }
 /* ============================================================
    Centro de notificaciones: TODO lo importante deja un aviso
@@ -553,6 +574,7 @@ function finDeTemporada(){
   /* evaluación del mandato */
   const ev=evaluarMandato(pos,campeon,copaGanada);
   /* balance y crónica */
+  guardarHistorial(pos,campeon,copaGanada);
   E.cronica.unshift({anio:E.anio,pos:pos,pts:t.pts,campeon:campeon,copa:copaGanada?"Campeón":null,
     plata:Math.round(E.plata),deuda:Math.round(E.deuda),ev:ev});
   notificar({t:"Balance "+E.anio+": "+(copaGanada?"Campeón de América":campeon?"Campeón nacional":ordinal(pos)+" en el Nacional"),

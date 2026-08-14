@@ -527,6 +527,33 @@ function vistaHistoria(){
   }
   E.divergencias.slice(-8).reverse().forEach(d=>pd.cuerpo.appendChild(fila(d.anio+" · "+d.t,d.elegido)));
   v.appendChild(pd);
+
+  /* historial de temporadas jugadas (tablas guardadas) */
+  const ph=panel("Temporadas jugadas","🗄️","agua");
+  if(!E.historialAnual||!E.historialAnual.length) ph.cuerpo.appendChild(el("p","mini","Todavía no cerraste ninguna temporada. Cuando termine un año, su tabla final queda guardada acá."));
+  (E.historialAnual||[]).forEach(h=>{
+    const b=el("button","op");
+    const remate=h.copa?"🏆 Campeón de América":(h.campeon?"🥇 Campeón nacional":ordinal(h.pos)+" en la tabla");
+    b.innerHTML='<div class="t">'+h.anio+' · '+remate+'</div>'+
+      '<div class="d">'+(h.goleador?("Goleador del plantel: "+h.goleador.n+" ("+h.goleador.goles+")"):"")+'</div>';
+    b.onclick=()=>modalTablaHistorica(h);
+    ph.cuerpo.appendChild(b);
+  });
+  v.appendChild(ph);
+}
+function modalTablaHistorica(h){
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">🗄️</span><span>Tabla final '+h.anio+'</span>'));
+    const c=el("div","cuerpo"); box.appendChild(c);
+    const t=el("table");
+    t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>G</th><th class='n'>E</th><th class='n'>P</th><th class='n'>GF</th><th class='n'>GC</th><th class='n'>Pts</th></tr></thead>";
+    const tb=el("tbody");
+    (h.tabla||[]).forEach((r,i)=>tb.appendChild(el("tr",r.id===h.club?"yo":"",
+      "<td class='n'>"+(i+1)+"</td><td>"+r.n+"</td><td class='n'>"+r.pj+"</td><td class='n'>"+r.pg+"</td><td class='n'>"+r.pe+"</td><td class='n'>"+r.pp+"</td><td class='n'>"+r.gf+"</td><td class='n'>"+r.gc+"</td><td class='n'>"+r.pts+"</td>")));
+    t.appendChild(tb); c.appendChild(t);
+    if(h.goleador) c.appendChild(el("p","mini","Goleador de tu plantel: "+h.goleador.n+" con "+h.goleador.goles+" goles."));
+    const b=el("button","btn-aqua ancho gris","Cerrar"); b.onclick=cerrarModal; c.appendChild(b);
+  });
 }
 /* ---------------- carrera ---------------- */
 function vistaCarrera(){

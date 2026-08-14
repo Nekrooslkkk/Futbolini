@@ -137,14 +137,14 @@ function penalEnPartido(P,aFavor,motivo,patElegido){
     const pat=patElegido||pateadorDe(P.once), arq=arqueroDe(P.rivalPlantel);
     linea(P,min,(motivo||"Penal para "+E.clubNombre+".")+" Toma la pelota "+pat.n+"…");
     if(cobrarPenal(pat,arq)){
-      pat.goles++; P.goleadores.push(pat.n); if(P.part.local)P.gl++; else P.gv++;
+      pat.goles++; P.goleadores.push(pat.n); regGol(P,min,pat.n,true); if(P.part.local)P.gl++; else P.gv++;
       linea(P,min,"¡Gol de penal de "+pat.n+"! "+marcadorTxt(P),"gol");
     } else { linea(P,min,"¡Atajadón! "+(arq?arq.n:"el arquero")+" le contiene el penal a "+pat.n+".","grave"); P.empuje-=0.4; }
   } else {
     const pat=elige(P.rivalPlantel.filter(x=>x.pos!=="ARQ"))||P.rivalPlantel[0], arq=arqueroDe(P.once);
     linea(P,min,(motivo||"Penal para "+P.part.rivalNombre+".")+" Va a patear "+pat.n+"…");
     if(cobrarPenal(pat,arq)){
-      if(P.part.local)P.gv++; else P.gl++;
+      if(P.part.local)P.gv++; else P.gl++; regGol(P,min,pat.n,false);
       linea(P,min,"Gol de penal de "+P.part.rivalNombre+": "+pat.n+". "+marcadorTxt(P),"gol");
     } else { linea(P,min,"¡"+(arq?arq.n:"el arquero")+" le ataja el penal! El estadio explota.","gol"); P.empuje+=0.5; }
   }
@@ -171,16 +171,19 @@ function momentosPartido(part){
   return base;
 }
 function linea(P,min,txt,clase){ P.lineas.push({m:min,t:txt,c:clase||""}); }
+/* registra un gol con minuto y autor, para la caja de resumen (efemérides) */
+function regGol(P,min,quien,propio){ P.golesDetalle=P.golesDetalle||[]; P.golesDetalle.push({min:min,quien:quien,propio:!!propio}); }
 function anotaPropio(P,min){
   const cand=P.once.filter(j=>j.pos==="DEL").concat(P.once.filter(j=>j.pos==="VOL"));
   const j=eligePeso(cand,x=>(x.pos==="DEL"?3:1)*(x.nivel/50))||elige(P.once);
-  j.goles++; P.goleadores.push(j.n);
+  j.goles++; P.goleadores.push(j.n); regGol(P,min,j.n,true);
   if(P.part.local) P.gl++; else P.gv++;
   linea(P,min,"¡Gol de "+j.n+"! "+marcadorTxt(P),"gol");
 }
 function anotaRival(P,min){
   const j=elige(P.rivalPlantel.filter(x=>x.pos!=="ARQ"));
   if(P.part.local) P.gv++; else P.gl++;
+  regGol(P,min,j.n,false);
   linea(P,min,"Gol de "+P.part.rivalNombre+": "+j.n+". "+marcadorTxt(P),"gol");
 }
 function marcadorTxt(P){
@@ -255,7 +258,7 @@ function tiroLibreAuto(P){
   const j=pateadorDe(P.once);
   linea(P,P.min,"Tiro libre peligroso para "+E.clubNombre+", lo toma "+j.n+"…");
   const prob=clamp(0.11+((j.nivel||70)-70)*0.004+((j.rasgos&&j.rasgos.includes("tiro libre"))?0.10:0),0.05,0.32);
-  if(Math.random()<prob){ j.goles++; P.goleadores.push(j.n); if(P.part.local)P.gl++; else P.gv++;
+  if(Math.random()<prob){ j.goles++; P.goleadores.push(j.n); regGol(P,P.min,j.n,true); if(P.part.local)P.gl++; else P.gv++;
     linea(P,P.min,"¡GOLAZO de tiro libre de "+j.n+"! "+marcadorTxt(P),"gol"); return true; }
   linea(P,P.min,elige(["La barrera la desvía al córner.","¡Al travesaño! Por un pelo.",
     "El arquero vuela y la manda al córner.","Se fue rozando el palo."])); return false;
@@ -324,6 +327,7 @@ function terminarPartido(P){
   P.terminado=true;
   const part=P.part;
   const [yo,otro]=miMarcador(P);
+  const posAntes=(part.tipo==="liga")?posicionEnTabla():null;
   part.jugado=true; part.gf=yo; part.gc=otro;
   P.once.forEach(j=>{ j.partidos++; j.forma=clamp(j.forma+(yo>otro?4:(yo<otro?-4:0))+ri(-3,3),30,99); });
 
@@ -359,12 +363,15 @@ function terminarPartido(P){
       (part.local?("Fueron "+(part.publico||0).toLocaleString("es-CL")+" personas; taquilla "+plata(part.caja||0)+". "):"")+
       (yo>otro?"Suben moral e hinchada.":(yo<otro?"Bajan moral e hinchada; el vestuario queda sensible.":"Reparto de puntos.")),
     bandeja:false});
+  const posDespues=(part.tipo==="liga")?posicionEnTabla():null;
   E.idx++;
   guardar();
-  return {yo:yo,otro:otro,caja:caja,gente:gente};
+  return {yo:yo,otro:otro,caja:caja,gente:gente,posAntes:posAntes,posDespues:posDespues,
+    golesDetalle:(P.golesDetalle||[]),tarjetas:(P.tarjetas||[]),lesionados:(P.lesionados||[]),esLiga:part.tipo==="liga"};
 }
-/* los otros 7 partidos de la fecha */
+/* los otros 7 partidos de la fecha (se guardan para mostrarlos en el resumen) */
 function simularResto(part){
+  E.ultimaFecha=[];
   if(!part.jornada) return;
   part.jornada.forEach(par=>{
     if(par[0]===E.club||par[1]===E.club) return;
@@ -378,6 +385,7 @@ function simularResto(part){
     ta.pj++;tb.pj++;ta.gf+=ga;ta.gc+=gb;tb.gf+=gb;tb.gc+=ga;
     if(ga>gb){ta.pg++;ta.pts+=pv;tb.pp++;} else if(ga<gb){tb.pg++;tb.pts+=pv;ta.pp++;}
     else {ta.pe++;tb.pe++;ta.pts++;tb.pts++;}
+    E.ultimaFecha.push({a:a.c||a.n, b:b.c||b.n, ga:ga, gb:gb});
   });
 }
 /* copa: al terminar una llave se decide si sigue o se acaba */
