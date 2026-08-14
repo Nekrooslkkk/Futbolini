@@ -96,6 +96,38 @@ Los huecos hasta 22 jugadores se completan solos con generados.
 
 ---
 
+# ─────────────── FUTBOLINI 4.0 (expansión de simulación) ───────────────
+Orden de programación acordado: **Pizarra/Timer → Economía/Sliders → Historial → Mercado → Redes.**
+
+## 4.0 · Bloque 1 — Motor de partido fluido + Pizarra libre
+**Archivos:** `partido.js`, `ui-partido.js`, `data-decisiones.js`, `css/base.css`
+- **Motor por ticks:** `tickPartido(P)` avanza el reloj un poco y devuelve UN evento
+  (`gol/golRival/penal/penalRival/tiroLibre/lesion/tarjeta/chance/relato/polemica`).
+  Los de acción se devuelven SIN resolver para poder auto-pausar. `correrHasta()` los
+  auto-resuelve para el modo Simular.
+- **Timer realista + auto-pausa:** `correrEnVivo()`/`pasoEnVivo()` con `setInterval`
+  (velocidad `VEL_PARTIDO`, botones Lento/Normal/Rápido + Pausa). En Dirigir se auto-pausa
+  en penal (elegís pateador), tiro libre (al arco/centro/corto) y lesión (recambio/aguantar)
+  vía `mostrarAccion(ev)`, y en los momentos tácticos vía `mostrarMomento()`.
+- **Presión con peso real:** `PRESIONES` ahora trae `recup` (recuperar arriba) y `expo`
+  (exponer defensa). En `peligro()` se aplican FUERA del clamp para que pesen; el cansancio
+  (`P.cansancio`, drena según `desgaste`) apaga el pressing y agrava la exposición. Barra de
+  físico del equipo en pantalla.
+- **Pizarra libre:** grilla 5×5 (`PIZ_FILAS/PIZ_COLS`). `pizarraDesdeFormacion(once)` arma el
+  default; `formaLibre(piz)` deduce ataque/orden/ancho (permite esquemas asimétricos) y
+  alimenta `fuerzaEquipo()`. UI: `modalPizarra(part)` (tocar jugador → tocar celda). Se guarda
+  en `E.tactica.pizarra`; "volver a formación clásica" la limpia.
+- Guardas anti-crash: `pintarPartido`/`cerrarPartido` chequean `P_ACTUAL` nulo; `P.cerrado`
+  evita doble cierre (un solo `terminarPartido` por partido).
+
+## 4.0 · Pendiente (próximos bloques)
+- **Economía/Sliders:** capital sin tope, sliders de precios con proyección en vivo, penalizaciones reales por deuda, inversiones (estadio/propaganda/CM).
+- **Historial:** `E.historialAnual` (copia profunda de la tabla por año) + vista; tabla en vivo mientras se simula la fecha; caja de resumen post-partido (goles/min/tarjetas/hitos); toggle prensa manual/automática.
+- **Mercado profundo:** panic sell, préstamos (`cedido`), lluvia de ofertas semanal, negociación en 2-3 pasos.
+- **Redes (`js/redes.js`):** timeline tipo Twitter, generador procedural de posts (hinchas/prensa/jugadores), campañas del CM, ingresos por seguidores/sponsor digital.
+
+---
+
 ## 🔌 Encender la IA (queda APAGADA por defecto, no gasta nada)
 
 Todo el hook está en **`js/ia.js`**. Para activarlo cuando haya backend con llave:

@@ -187,3 +187,16 @@ input.rango{width:100%;margin:4px 0 10px;accent-color:#4fbf3f;height:22px;cursor
 textarea.entrada{background:rgba(255,255,255,.06);border:1px solid var(--linea);border-radius:10px;
   color:inherit;padding:8px 10px;font:inherit;resize:vertical;margin:4px 0 8px}
 textarea.entrada:focus{outline:2px solid #39b7e0}
+
+/* Motor de partido 4.0: controles y pizarra */
+.ctrlPartido{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+.pizarra{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;background:linear-gradient(#1f7a3a,#2c9350);
+  border:2px solid rgba(255,255,255,.35);border-radius:10px;padding:5px;margin:6px 0;aspect-ratio:3/4}
+.pizarra .celda{border:1px dashed rgba(255,255,255,.14);border-radius:6px;min-height:34px;display:flex;
+  align-items:center;justify-content:center;cursor:pointer}
+.pizarra .celda.ataque{background:rgba(255,255,255,.05)}
+.pizarra .celda.propia{background:rgba(0,0,0,.10)}
+.pizarra .chip{background:#eef4ff;color:#12233b;font-size:10px;font-weight:800;border-radius:8px;
+  padding:3px 4px;text-align:center;line-height:1.05;box-shadow:0 1px 3px rgba(0,0,0,.4);width:100%}
+.pizarra .chip.arq{background:#ffe08a}
+.pizarra .chip.sel{outline:3px solid #39b7e0;transform:scale(1.06)}

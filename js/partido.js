@@ -19,8 +19,59 @@ const ESTILOS={
  "Control y toque":{ataque:2,orden:2,desgaste:2},
  "Pelotazo":{ataque:2,orden:0,desgaste:3}
 };
-const PRESIONES={"Baja":{desgaste:-2,orden:2,ataque:-1},"Media":{desgaste:0,orden:0,ataque:0},"Alta":{desgaste:3,orden:-1,ataque:3}};
+/* recup = cuánto recuperás la pelota arriba (más peligro propio temprano) ·
+   expo  = cuánto exponés la defensa (más peligro rival, peor con el cansancio) */
+const PRESIONES={
+ "Baja": {desgaste:-2,orden:3, ataque:-1,recup:-1,expo:-3},
+ "Media":{desgaste:0, orden:0, ataque:0, recup:0, expo:0},
+ "Alta": {desgaste:5, orden:-2,ataque:4, recup:4, expo:4}
+};
 
+/* ---------- pizarra libre ----------
+   La cancha es una grilla de 5 columnas (0=izq … 4=der) × 5 filas
+   (0=nuestra defensa … 4=ataque rival). Cada titular ocupa una celda.
+   De la distribución se deduce la forma táctica (ataque/orden/ancho),
+   permitiendo esquemas asimétricos o bizarros. */
+const PIZ_FILAS=5, PIZ_COLS=5;
+/* Posiciones por defecto a partir de una formación clásica. */
+function pizarraDesdeFormacion(once){
+  const f=FORMACIONES[E.tactica.form]||FORMACIONES["4-4-2"];
+  const piz=[];
+  const arq=once.filter(j=>j.pos==="ARQ").slice(0,1);
+  const resto=once.filter(j=>!arq.includes(j));
+  const filaDe=(idx)=>{ // reparte por líneas def/vol/del
+    if(idx<f.def) return 1;
+    if(idx<f.def+f.vol) return 2;
+    return 3;
+  };
+  const porFila={1:[],2:[],3:[]};
+  resto.forEach((j,i)=>{ (porFila[filaDe(i)]=porFila[filaDe(i)]||[]).push(j); });
+  if(arq[0]) piz.push({n:arq[0].n,pos:"ARQ",r:0,c:2});
+  [1,2,3].forEach(r=>{
+    const linea=porFila[r]||[];
+    linea.forEach((j,i)=>{
+      const c=linea.length===1?2:Math.round(i*(PIZ_COLS-1)/(linea.length-1));
+      piz.push({n:j.n,pos:j.pos,r:r,c:c});
+    });
+  });
+  return piz;
+}
+/* Deduce la forma táctica desde las celdas ocupadas. */
+function formaLibre(piz){
+  if(!piz||!piz.length) return null;
+  const out=piz.filter(p=>p.pos!=="ARQ");
+  if(!out.length) return null;
+  const avgR=out.reduce((s,p)=>s+p.r,0)/out.length;                 // 0..4
+  const def=out.filter(p=>p.r<=1).length, atk=out.filter(p=>p.r>=3).length;
+  const cols=out.map(p=>p.c), meanC=cols.reduce((a,b)=>a+b,0)/cols.length;
+  const spread=Math.sqrt(cols.reduce((s,c)=>s+(c-meanC)*(c-meanC),0)/cols.length);
+  const asim=Math.abs(meanC-(PIZ_COLS-1)/2);
+  return {
+    ataque:(avgR-2)*3 + (atk-2)*2,
+    orden:(2-avgR)*2.5 + (def-3)*2 - asim*1.6,
+    ancho:(spread-1.3)*2
+  };
+}
 function onceIdeal(){
   const disp=E.plantel.filter(j=>!j.vendido&&j.lesion<=0);
   const f=FORMACIONES[E.tactica.form]||FORMACIONES["4-4-2"];
@@ -38,10 +89,12 @@ function fuerzaEquipo(once){
   const f=FORMACIONES[E.tactica.form]||FORMACIONES["4-4-2"];
   const es=ESTILOS[E.tactica.estilo]||ESTILOS["Equilibrado"];
   const pr=PRESIONES[E.tactica.presion]||PRESIONES["Media"];
+  const libre=(E.tactica.pizarra&&E.tactica.pizarra.length)?formaLibre(E.tactica.pizarra):null;
+  const shape=libre||f.ef;
   return {
     base:base,
-    ataque:base+(f.ef.ataque+es.ataque+pr.ataque)*1.2+(E.ind.moral-55)*0.08,
-    orden:base+(f.ef.orden+es.orden+pr.orden)*1.2+(E.ind.plantel-55)*0.05,
+    ataque:base+((shape.ataque||0)+es.ataque+pr.ataque)*1.2+(E.ind.moral-55)*0.08+(shape.ancho||0)*0.6,
+    orden:base+((shape.orden||0)+es.orden+pr.orden)*1.2+(E.ind.plantel-55)*0.05,
     desgaste:es.desgaste+pr.desgaste
   };
 }
@@ -53,10 +106,12 @@ function iniciarPartido(part,modo){
   const arb=modSuma("arbitraje");
   const rivalBase=part.fuerzaRival+(part.local?0:3);
   const cl=(typeof CLIMAS!=="undefined"&&CLIMAS[part.clima])||{desgaste:0,precision:1};
+  const pr=PRESIONES[E.tactica.presion]||PRESIONES["Media"];
   return {
     part:part, modo:modo||"simular", min:0, gl:0, gv:0, once:once, rivalPlantel:plantelRival(part.rivalNombre||part.rivalId,part.fuerzaRival),
     ataque:fz.ataque+bonoLocal+bonoTorneo+arb, orden:fz.orden+bonoLocal*0.6+bonoTorneo+arb,
     desgaste:fz.desgaste+(cl.desgaste||0), cansancio:0, rival:rivalBase, empuje:0, riesgoPlan:0,
+    recup:pr.recup||0, expo:pr.expo||0,
     precClima:cl.precision||1, arb:arb,
     lineas:[], goleadores:[], tarjetas:[], lesionados:[], terminado:false,
     momentos:momentosPartido(part), momentoIdx:0
@@ -76,10 +131,10 @@ function cobrarPenal(pateador,arquero){
   if(arquero)  p-=((arquero.nivel||70)-70)*0.005;
   return Math.random()<clamp(p,0.55,0.92);
 }
-function penalEnPartido(P,aFavor,motivo){
+function penalEnPartido(P,aFavor,motivo,patElegido){
   const min=P.min;
   if(aFavor){
-    const pat=pateadorDe(P.once), arq=arqueroDe(P.rivalPlantel);
+    const pat=patElegido||pateadorDe(P.once), arq=arqueroDe(P.rivalPlantel);
     linea(P,min,(motivo||"Penal para "+E.clubNombre+".")+" Toma la pelota "+pat.n+"…");
     if(cobrarPenal(pat,arq)){
       pat.goles++; P.goleadores.push(pat.n); if(P.part.local)P.gl++; else P.gv++;
@@ -141,42 +196,83 @@ function peligro(P){
   const mio=P.ataque+P.empuje-P.cansancio*1.6;
   const suyo=P.rival+P.riesgoPlan*1.4-(P.orden-P.rival)*0.16;
   const d=clamp((mio-suyo)/11,-2.1,2.1);
-  return {yo:Math.max(0.22,1.30+d*0.42), el:Math.max(0.22,1.30-d*0.42)};
+  /* la presión se aplica FUERA del clamp para que pese aun contra rivales
+     saturados: recuperar arriba (se apaga con el cansancio) sube tu peligro;
+     exponer la defensa (peor cansado) sube el del rival. */
+  const recup=(P.recup||0)*Math.max(0,1-P.cansancio*0.09);
+  const expo=(P.expo||0)*(0.3+P.cansancio*0.06);
+  return {
+    yo:Math.max(0.20,1.30+d*0.42+recup*0.06),
+    el:Math.max(0.20,1.30-d*0.42+expo*0.06)
+  };
 }
+/* Un tick avanza el reloj un poco y devuelve UN evento. Los eventos simples
+   (gol, chance, tarjeta, color) se aplican acá; los de acción (penal, tiro
+   libre, lesión) se devuelven SIN resolver para que el modo dirigir pueda
+   auto-pausar y pedir una decisión. En simular se resuelven en automático. */
+function tickPartido(P){
+  if(P.terminado||P.min>=90){ P.min=Math.min(90,P.min); return {tipo:"fin",min:90}; }
+  const paso=ri(2,4);
+  P.min=Math.min(90,P.min+paso);
+  P.cansancio+=P.desgaste*0.011*paso;   /* ~5-6 al final con presión alta */
+  const min=P.min;
+  const pl=peligro(P);
+  if(P.precClima&&P.precClima!==1){ pl.yo*=P.precClima; pl.el*=P.precClima; }
+  const N=28;
+  const r=Math.random();
+  if(r<pl.yo/N){ anotaPropio(P,min); return {tipo:"gol",min:min}; }
+  if(r<(pl.yo+pl.el)/N){ anotaRival(P,min); return {tipo:"golRival",min:min}; }
+  /* acción: penal */
+  if(Math.random()<0.006){ const aFavor=Math.random()<clamp(0.5+(P.ataque-P.rival)*0.004,0.2,0.8);
+    return {tipo:aFavor?"penal":"penalRival",min:min,aFavor:aFavor}; }
+  /* acción: lesión */
+  if(min>20&&Math.random()<0.006){ return {tipo:"lesion",min:min}; }
+  /* acción: tiro libre peligroso propio */
+  if(Math.random()<0.010){ return {tipo:"tiroLibre",min:min}; }
+  /* polémica en el tramo caliente */
+  if(min>60&&Math.random()<0.012){ polemicaArbitral(P); return {tipo:"polemica",min:min}; }
+  /* tarjeta */
+  if(Math.random()<0.03){ const j=elige(P.once); j.tarjetas++; P.tarjetas.push(j.n);
+    linea(P,min,"Amarilla para "+j.n+".",min>70?"grave":""); return {tipo:"tarjeta",min:min}; }
+  /* chance perdida */
+  if(Math.random()<0.13){ linea(P,min,elige(["Tiro de media distancia que se va apenas afuera.",
+    "El arquero rival manda al córner una que iba adentro.","Se pierde una clarísima en el área chica.",
+    P.part.rivalNombre+" avisa con un cabezazo que pasa cerca.","Se salva en la línea. El estadio se agarra la cabeza."]));
+    return {tipo:"chance",min:min}; }
+  /* color */
+  if(Math.random()<0.12){ linea(P,min,elige(["Juego trabado en la mitad de la cancha.",
+    "El árbitro cobra falta y la tribuna reclama.","Cambio de ritmo: el partido se abrió.",
+    "Se juega con el balón parado como única arma.","Momento de estudio: nadie quiere equivocarse."]));
+    return {tipo:"relato",min:min}; }
+  return {tipo:"nada",min:min};
+}
+function lesionEnPartido(P){
+  const j=elige(P.once.filter(x=>x.pos!=="ARQ"));
+  if(j){ j.lesion=ri(2,5); P.lesionados.push(j.n); linea(P,P.min,j.n+" se resiente y no puede seguir.","grave"); }
+  return j;
+}
+function tiroLibreAuto(P){
+  const j=pateadorDe(P.once);
+  linea(P,P.min,"Tiro libre peligroso para "+E.clubNombre+", lo toma "+j.n+"…");
+  const prob=clamp(0.11+((j.nivel||70)-70)*0.004+((j.rasgos&&j.rasgos.includes("tiro libre"))?0.10:0),0.05,0.32);
+  if(Math.random()<prob){ j.goles++; P.goleadores.push(j.n); if(P.part.local)P.gl++; else P.gv++;
+    linea(P,P.min,"¡GOLAZO de tiro libre de "+j.n+"! "+marcadorTxt(P),"gol"); return true; }
+  linea(P,P.min,elige(["La barrera la desvía al córner.","¡Al travesaño! Por un pelo.",
+    "El arquero vuela y la manda al córner.","Se fue rozando el palo."])); return false;
+}
+function resolverEventoAuto(P,ev){
+  if(ev.tipo==="penal") penalEnPartido(P,true);
+  else if(ev.tipo==="penalRival") penalEnPartido(P,false);
+  else if(ev.tipo==="lesion") lesionEnPartido(P);
+  else if(ev.tipo==="tiroLibre") tiroLibreAuto(P);
+}
+/* Corrida en bloque (simular y para completar tramos). */
 function correrHasta(P,hasta){
-  const pasos=18;
-  while(P.min<hasta&&!P.terminado){
-    P.min+=ri(3,6);
-    if(P.min>hasta) P.min=hasta;
-    P.cansancio+=P.desgaste*0.05;
-    const pl=peligro(P);
-    if(P.precClima&&P.precClima!==1){ pl.yo*=P.precClima; pl.el*=P.precClima; }
-    const r=Math.random();
-    if(r<pl.yo/pasos){ anotaPropio(P,P.min); }
-    else if(r<(pl.yo+pl.el)/pasos){ anotaRival(P,P.min); }
-    else if(r<0.10){
-      linea(P,P.min,elige(["Tiro de media distancia que se va apenas afuera.",
-        "El arquero rival manda al córner una que iba adentro.",
-        "Se pierde una clarísima en el área chica.",
-        P.part.rivalNombre+" avisa con un cabezazo que pasa cerca.",
-        "Se salva en la línea. El estadio se agarra la cabeza."]));
-    } else if(r<0.135){
-      const j=elige(P.once); j.tarjetas++; P.tarjetas.push(j.n);
-      linea(P,P.min,"Amarilla para "+j.n+".",P.min>70?"grave":"");
-    } else if(r<0.145&&P.min>25){
-      const j=elige(P.once.filter(x=>x.pos!=="ARQ"));
-      if(j){ j.lesion=ri(2,5); P.lesionados.push(j.n); linea(P,P.min,j.n+" se resiente y no puede seguir.","grave"); }
-    } else if(r<0.175){
-      linea(P,P.min,elige(["Juego trabado en la mitad de la cancha.",
-        "El árbitro cobra falta y la tribuna reclama.",
-        "Cambio de ritmo: el partido se abrió.",
-        "Se juega con el balón parado como única arma.",
-        "Momento de estudio: nadie quiere equivocarse."]));
-    }
-    /* penal esporádico (sesgado por quién ataca más) */
-    if(!P.terminado&&Math.random()<0.008){ penalEnPartido(P,Math.random()<clamp(0.5+(P.ataque-P.rival)*0.004,0.2,0.8)); }
-    /* polémica arbitral solo en el tramo caliente del partido */
-    if(!P.terminado&&P.min>60&&Math.random()<0.022){ polemicaArbitral(P); }
+  let guard=0;
+  while(P.min<hasta&&!P.terminado&&guard++<600){
+    const ev=tickPartido(P);
+    if(ev.tipo==="fin") break;
+    if(ev.tipo==="penal"||ev.tipo==="penalRival"||ev.tipo==="lesion"||ev.tipo==="tiroLibre") resolverEventoAuto(P,ev);
   }
   if(P.min>=90&&!P.terminado) P.min=90;
 }

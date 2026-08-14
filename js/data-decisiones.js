@@ -602,7 +602,7 @@ const BOLSA=[
   {t:"Ignorarlo y que se aguante",d:"No hay tiempo para dramas.",dif:44,
    grupos:{tecnico:-20,camarin:-6},
    bien:{txt:"Tragó saliva y siguió, aunque la relación quedó fría para siempre.",ef:{moral:-2}},
-   mitad:{txt:"Siguió trabajando a media máquina, y esta vez sí se notó en la cancha.",ef:{moral:-6,plantel:-3}},
+   mitad:{txt:"Cumplió por obligación, sin entregarse, y el bajón se terminó viendo en la cancha.",ef:{moral:-6,plantel:-3}},
    mal:{txt:"Renunció y lo contó todo en una conferencia demoledora. Quedaste como el villano.",
      ef:{moral:-12,plantel:-3},grupos:{tecnico:-25,prensa:-15},rep:{publica:-10}}}
  ]},
