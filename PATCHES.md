@@ -148,8 +148,22 @@ Orden de programación acordado: **Pizarra/Timer → Economía/Sliders → Histo
 - **Prensa manual/automática:** `E.prensaAuto` (toggle en el post-partido). Manual → mini-decisión contextual
   (`opcionesPrensa` por resultado); automático → el ayudante resuelve neutral. `seccionPrensa(p,res)`.
 
+## 4.0 · Bloque 4 — Mercado de fichajes profundo
+**Archivos:** `mercado.js`, `motor.js`, `partido.js`, `ui.js`
+- **Panic sell:** `ventaFlash(j)` vende YA por 40-55% del valor con castigo de directorio/credibilidad
+  (hinchada extra si es referente). Botón "Rematar" en Mercado y en la ficha del jugador.
+- **Préstamos:** estado `j.cedido={desde,hasta,club}`. `cederPrestamo(j)` (juveniles ≤23, `puedeCeder`);
+  vuelven en `nuevoAnio` con `+ri(3,8)` de nivel. Los cedidos NO cuentan en `onceIdeal`/`planillaAnual`/`mediaPlantel`.
+  Panel "Cesiones a préstamo" en Mercado + botón en la ficha; marca 🔄 en el plantel.
+- **Lluvia de ofertas:** `generarOfertasSemana` refactorizada (`crearOfertaEntrante`): ~62% por semana en
+  ventana (con chance de una segunda) vs ~18% fuera.
+- **Negociación en 2-3 pasos:** `modalComprar` ahora es por etapas — tu oferta (sliders) → contraoferta del
+  club/jugador → aceptás / insistís (suben la vara, a las 3 rondas se levantan) / te retirás.
+
+> Nota de testing: el navegador MCP CACHEA los `.js` por origen. Para verificar cambios, usar un
+> puerto nuevo (`python -m http.server 889X`) o cache-bust; el harness de Node siempre lee los archivos reales.
+
 ## 4.0 · Pendiente (próximos bloques)
-- **Mercado profundo:** panic sell, préstamos (`cedido`), lluvia de ofertas semanal, negociación en 2-3 pasos.
 - **Redes (`js/redes.js`):** timeline tipo Twitter, generador procedural de posts (hinchas/prensa/jugadores), campañas del CM, ingresos por seguidores/sponsor digital.
 
 ---

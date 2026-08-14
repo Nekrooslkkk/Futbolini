@@ -42,33 +42,67 @@ function mercadoSemana(){
 /* ---------- ofertas entrantes por TUS jugadores (persistentes) ---------- */
 /* Se generan al avanzar la semana y quedan en E.ofertasPend hasta que
    respondés o caducan. Si rechazaste, ese jugador queda "enfriado". */
-function generarOfertasSemana(){
-  if(!E.ofertasPend) E.ofertasPend=[];
-  if(!E.mercadoLog) E.mercadoLog={rechazadas:{},vendidos:[]};
-  caducarOfertas();
-  const rr=azarFijo(semilla("oferta"+E.club+E.anio+"-"+E.idx));
-  if(rr()>0.34) return null;                                   // ~1 de cada 3 semanas
-  const cand=E.plantel.filter(j=>!j.vendido
+/* crea UNA oferta entrante por una figura disponible; devuelve true si lo logró */
+function crearOfertaEntrante(rr){
+  const cand=E.plantel.filter(j=>!j.vendido && !j.cedido
     && !E.ofertasPend.some(o=>o.jid===j.n)                     // no dos ofertas por el mismo
     && (E.mercadoLog.rechazadas[j.n]==null || E.idx-E.mercadoLog.rechazadas[j.n]>=4)); // enfriamiento tras rechazo
-  if(!cand.length) return null;
+  if(!cand.length) return false;
   const j=eligePeso(cand, x=>clamp(x.valor/300+(x.proy>x.nivel+4?0.4:0)+(x.edad<24?0.3:0),0.05,2));
-  if(!j) return null;
+  if(!j) return false;
   const comprador=CLUBES_COMPRADORES[Math.floor(rr()*CLUBES_COMPRADORES.length)];
   const monto=Math.round(j.valor*(0.8+rr()*0.8)*inflacionEra());
   const of={id:"of"+(E._ofid=(E._ofid||0)+1), jid:j.n, comprador:comprador, monto:monto, creada:E.idx};
   E.ofertasPend.push(of);
   const sobre=monto-j.valor;
-  const n=notificar({
-    t:comprador+" ofrece por "+j.n,
-    tipo:"mercado",
+  notificar({
+    t:comprador+" ofrece por "+j.n, tipo:"mercado",
     d:comprador+" pone "+plata(monto)+" sobre la mesa por "+j.n+" ("+j.pos+", nivel "+j.nivel+
       ", valor estimado "+plata(j.valor)+"). "+(sobre>=0?"Pagan por encima del valor: buena venta para la caja.":"Ofrecen por debajo del valor: venderías resignando plata.")+
       (j.rasgos&&(j.rasgos.includes("ídolo")||j.rasgos.includes("capitán"))?" Ojo: es un referente, la hinchada lo va a sentir.":"")+
       " Respondé desde Avisos o desde la sección Mercado.",
     acc:{tipo:"ofertaJugador", ofertaId:of.id, resuelta:false}
   });
-  return n;
+  return true;
+}
+/* Lluvia de ofertas: durante la ventana llueven; fuera, alguna esporádica. */
+function generarOfertasSemana(){
+  if(!E.ofertasPend) E.ofertasPend=[];
+  if(!E.mercadoLog) E.mercadoLog={rechazadas:{},vendidos:[]};
+  caducarOfertas();
+  const rr=azarFijo(semilla("oferta"+E.club+E.anio+"-"+E.idx));
+  const abierto=mercadoAbierto();
+  let hechas=0;
+  if(rr()<(abierto?0.62:0.18) && crearOfertaEntrante(rr)) hechas++;
+  if(abierto && rr()<0.38 && crearOfertaEntrante(rr)) hechas++;   // segunda oferta en plena ventana
+  return hechas?true:null;
+}
+/* ---------- venta flash / panic sell ---------- */
+function ventaFlash(j){
+  if(!j || j.vendido) return;
+  const pct=rnd(0.40,0.55);
+  const monto=Math.round(j.valor*pct);
+  j.vendido=true; E.plata+=monto;
+  const ref=j.rasgos&&(j.rasgos.includes("ídolo")||j.rasgos.includes("capitán"));
+  E.ind.plantel=clamp(E.ind.plantel-Math.round(j.nivel/14),0,100);
+  aplicarGrupos({directorio:-12, hinchada:ref?-12:-4});
+  aplicarRep({credibilidad:-4});
+  E.ofertasPend=(E.ofertasPend||[]).filter(o=>o.jid!==j.n);
+  E.mercadoLog.vendidos.push({n:j.n,monto:monto,anio:E.anio,flash:true});
+  notificar({t:"Venta de urgencia: "+j.n,tipo:"malo",
+    d:"Remataste a "+j.n+" por "+plata(monto)+" ("+Math.round(pct*100)+"% de su valor). Entra plata rápida, pero el directorio lo lee como manotazo de ahogado"+(ref?" y la hinchada no perdona malvender a un referente.":".")});
+  guardar();
+}
+/* ---------- préstamos ---------- */
+function puedeCeder(j){ return j && !j.vendido && !j.cedido && j.edad<=23; }
+function cederPrestamo(j){
+  if(!puedeCeder(j)) return;
+  const club=CLUBES_COMPRADORES[Math.floor(Math.random()*CLUBES_COMPRADORES.length)];
+  j.cedido={desde:E.anio, hasta:E.anio+1, club:club};
+  E.ind.plantel=clamp(Math.round(mediaPlantel()),0,100);
+  notificar({t:j.n+" se va a préstamo",tipo:"neutro",
+    d:j.n+" ("+j.edad+" años, nivel "+j.nivel+") se va cedido a "+club+" por una temporada para foguearse. No lo tenés disponible este año, pero vuelve mejor y el club que lo recibe le paga el sueldo."});
+  guardar();
 }
 function caducarOfertas(){
   if(!E.ofertasPend) return;
@@ -191,19 +225,43 @@ function vistaMercado(){
   });
   v.appendChild(pe);
 
-  /* --- vender jugadores (buscar comprador) --- */
+  /* --- vender jugadores (buscar comprador / rematar) --- */
   const pv=panel("Vender jugadores","💸");
-  pv.cuerpo.appendChild(el("p","mini","Salí a ofrecer a un jugador. Si hay interés, te llega una oferta para aceptar o rechazar."));
-  E.plantel.filter(j=>!j.vendido).sort((a,b)=>b.valor-a.valor).slice(0,12).forEach(j=>{
-    const row=el("div","fila");
-    row.innerHTML='<span>'+(j.real?"● ":"")+j.n+' <span class="mini">'+j.pos+" · niv "+j.nivel+" · "+plata(j.valor)+'</span></span>';
-    const b=el("button","btn-aqua chico"+(E.ofertasPend&&E.ofertasPend.some(o=>o.jid===j.n)?" gris":""),"Buscar comprador");
-    b.disabled=E.ofertasPend&&E.ofertasPend.some(o=>o.jid===j.n);
+  pv.cuerpo.appendChild(el("p","mini","«Buscar comprador» ofrece al jugador y espera interés. «Rematar» lo vende YA por el 40-55% del valor (plata urgente, pero el directorio lo castiga)."));
+  E.plantel.filter(j=>!j.vendido&&!j.cedido).sort((a,b)=>b.valor-a.valor).slice(0,12).forEach(j=>{
+    const row=el("div","resul mitad");
+    row.innerHTML='<b>'+(j.real?"● ":"")+j.n+'</b> <span class="mini">'+j.pos+" · niv "+j.nivel+" · "+plata(j.valor)+'</span>';
+    const cont=el("div"); cont.style.marginTop="5px";
+    const tiene=E.ofertasPend&&E.ofertasPend.some(o=>o.jid===j.n);
+    const b=el("button","btn-aqua chico"+(tiene?" gris":""),"Buscar comprador"); b.disabled=tiene;
     b.onclick=()=>buscarComprador(j);
-    row.appendChild(b);
+    const br=el("button","btn-aqua chico rojo","Rematar"); br.style.marginLeft="6px";
+    br.onclick=()=>{ if(confirm("¿Rematar a "+j.n+" por ~"+plata(Math.round(j.valor*0.47))+"? El directorio no lo va a perdonar.")){ ventaFlash(j); render(); } };
+    cont.appendChild(b); cont.appendChild(br); row.appendChild(cont);
     pv.cuerpo.appendChild(row);
   });
   v.appendChild(pv);
+
+  /* --- cesiones a préstamo --- */
+  const pc=panel("Cesiones a préstamo","🔄");
+  pc.cuerpo.appendChild(el("p","mini","Mandá juveniles (≤23) a foguearse una temporada. Vuelven con más nivel; mientras tanto no los tenés y el otro club les paga el sueldo."));
+  const cedidos=E.plantel.filter(j=>!j.vendido&&j.cedido);
+  if(cedidos.length){
+    pc.cuerpo.appendChild(el("h3","sub","En préstamo ahora"));
+    cedidos.forEach(j=>pc.cuerpo.appendChild(el("div","fila","<span>"+j.n+' <span class="mini">'+j.pos+" · niv "+j.nivel+'</span></span><b class="mini">'+j.cedido.club+" · vuelve "+j.cedido.hasta+"</b>")));
+  }
+  const cedibles=E.plantel.filter(puedeCeder).sort((a,b)=>b.proy-a.proy).slice(0,10);
+  if(cedibles.length){
+    pc.cuerpo.appendChild(el("h3","sub","Se pueden ceder"));
+    cedibles.forEach(j=>{
+      const row=el("div","fila");
+      row.innerHTML='<span>'+j.n+' <span class="mini">'+j.pos+" · "+j.edad+"a · niv "+j.nivel+" · proy "+j.proy+'</span></span>';
+      const b=el("button","btn-aqua chico","Ceder");
+      b.onclick=()=>{ cederPrestamo(j); render(); };
+      row.appendChild(b); pc.cuerpo.appendChild(row);
+    });
+  } else if(!cedidos.length){ pc.cuerpo.appendChild(el("p","mini","No tenés juveniles para ceder ahora mismo.")); }
+  v.appendChild(pc);
 
   /* --- objetivos para comprar --- */
   const po=panel("Objetivos en el mercado","📤");
@@ -222,12 +280,49 @@ function vistaMercado(){
   v.appendChild(po);
 }
 
-/* Modal de compra con BARRAS EDITABLES de precio y sueldo. */
+/* Negociación de compra en 2-3 pasos: tu oferta → contraoferta → cierre.
+   Insistir cuesta (suben lo que piden); a las 3 rondas se levantan de la mesa. */
 function modalComprar(j,abierto){
   const oferta={ precio:j.precio, sueldo:j.pidesueldo, rol:"titular" };
-  const minP=Math.max(1,Math.round(j.precio*0.5)), maxP=Math.round(j.precio*1.6);
+  const minP=Math.max(1,Math.round(j.precio*0.5)), maxP=Math.round(j.precio*1.7);
   const minS=Math.max(1,Math.round(j.pidesueldo*0.7)), maxS=Math.round(j.pidesueldo*2);
+  let paso=1, contra=null, ronda=0, exigePrecio=Math.round(j.precio*0.9);
   modal(box=>{
+    const cerrar=()=>{ const nuevo=cerrarFichaje(j,oferta); cerrarModal(); render(); aviso("Fichaste a "+nuevo.n+" ("+oferta.rol+")"); };
+    /* evalúa la oferta actual: aceptan, o arman contraoferta */
+    const evaluar=()=>{
+      ronda++;
+      const cok=oferta.precio>=exigePrecio, jok=jugadorAcepta(j,oferta);
+      if(cok&&jok){
+        if(!abierto){ contra={cerrado:false,msg:"El acuerdo está, pero la ventana está cerrada: no se puede firmar hasta "+proximaVentana()+"."}; paso=2; pintar(); return; }
+        if(E.plata<oferta.precio){ contra={cerrado:false,msg:"Se pusieron de acuerdo, pero no te alcanza la caja ("+plata(oferta.precio)+")."}; paso=2; pintar(); return; }
+        cerrar(); return;
+      }
+      contra={cerrado:false};
+      if(!cok) contra.precio=exigePrecio;
+      if(!jok){ contra.sueldo=Math.max(oferta.sueldo, Math.round(j.pidesueldo*1.12)); contra.rol=(j.edad<=22?"promesa":"titular"); }
+      contra.msg = "El club "+(cok?"acepta el precio":"pide "+plata(contra.precio))+
+        (jok?"":" · el jugador quiere "+plata(contra.sueldo)+(contra.rol&&contra.rol!==oferta.rol?" y ser "+contra.rol:""));
+      paso=2; pintar();
+    };
+    const insistir=()=>{
+      /* pequeña chance de que cedan; si no, suben la vara y vuelven a contraofertar */
+      if(Math.random()<Math.max(0.05,0.28-ronda*0.08)){ // ceden a tu oferta actual
+        if(!abierto||E.plata<oferta.precio){ evaluar(); return; }
+        cerrar(); return;
+      }
+      exigePrecio=Math.round(exigePrecio*1.06);
+      if(ronda>=3){ paso=3; pintar(); return; }   // se levantan de la mesa
+      evaluar();
+    };
+    const aceptarContra=()=>{
+      if(contra.precio) oferta.precio=contra.precio;
+      if(contra.sueldo) oferta.sueldo=contra.sueldo;
+      if(contra.rol) oferta.rol=contra.rol;
+      if(!abierto){ contra.msg="Trato cerrado en la palabra, pero la ventana está cerrada: firmás en "+proximaVentana()+"."; pintar(); return; }
+      if(E.plata<oferta.precio){ contra.msg="Aceptaste, pero no te alcanza la caja para "+plata(oferta.precio)+"."; pintar(); return; }
+      cerrar();
+    };
     const pintar=()=>{
       box.innerHTML="";
       box.appendChild(el("div","cab",'<span class="ic">🧳</span><span>Fichar a '+j.n+'</span>'));
@@ -235,53 +330,37 @@ function modalComprar(j,abierto){
       c.appendChild(el("p","mini",j.club+" · "+j.pos+" · "+j.edad+" años · nivel "+j.nivel+
         (j.proy>j.nivel+4?" · proyección "+j.proy:"")+". Piden "+plata(j.precio)+" y sueldo "+plata(j.pidesueldo)+"."));
 
-      /* barra precio */
-      c.appendChild(el("label","lb","Precio ofrecido — <b id='mcPrecio'>"+plata(oferta.precio)+"</b>"));
-      const sp=el("input"); sp.type="range"; sp.min=minP; sp.max=maxP; sp.step=Math.max(1,Math.round(j.precio*0.02)); sp.value=oferta.precio; sp.className="rango";
-      sp.oninput=()=>{ oferta.precio=parseInt(sp.value,10); readout(); };
-      c.appendChild(sp);
-
-      /* barra sueldo */
-      c.appendChild(el("label","lb","Sueldo ofrecido — <b id='mcSueldo'>"+plata(oferta.sueldo)+"</b>"));
-      const ss=el("input"); ss.type="range"; ss.min=minS; ss.max=maxS; ss.step=Math.max(1,Math.round(j.pidesueldo*0.03)); ss.value=oferta.sueldo; ss.className="rango";
-      ss.oninput=()=>{ oferta.sueldo=parseInt(ss.value,10); readout(); };
-      c.appendChild(ss);
-
-      /* rol */
-      c.appendChild(el("label","lb","Rol prometido"));
-      const fr=el("div","fichas");
-      [["titular","Titular"],["promesa","Promesa"],["suplente","Suplente"]].forEach(([k,n])=>{
-        const b=el("button","ficha",n);
-        b.setAttribute("aria-pressed",oferta.rol===k?"true":"false");
-        b.onclick=()=>{ oferta.rol=k; pintar(); };
-        fr.appendChild(b);
-      });
-      c.appendChild(fr);
-
-      /* readout en vivo */
-      const box2=el("div","resul mitad"); box2.id="mcReadout"; c.appendChild(box2);
-      const b=el("button","btn-aqua ancho verde","Cerrar fichaje"); b.id="mcBtn"; b.style.marginTop="8px";
-      b.onclick=()=>{ const nuevo=cerrarFichaje(j,oferta); cerrarModal(); render(); aviso("Fichaste a "+nuevo.n+" ("+oferta.rol+")"); };
-      c.appendChild(b);
-      const x=el("button","btn-aqua ancho gris","Dejarlo pasar"); x.style.marginTop="6px"; x.onclick=cerrarModal;
-      c.appendChild(x);
-
-      function readout(){
-        const eP=document.getElementById("mcPrecio"); if(eP) eP.textContent=plata(oferta.precio);
-        const eS=document.getElementById("mcSueldo"); if(eS) eS.textContent=plata(oferta.sueldo);
-        const inter=interesJugador(j,oferta), jok=jugadorAcepta(j,oferta), cok=clubAcepta(j,oferta), platak=E.plata>=oferta.precio;
-        const r=document.getElementById("mcReadout");
-        if(r) r.innerHTML=
-          "Interés del jugador: <b>"+(inter>=15?"convencido":inter>=0?"lo evalúa":"tibio")+" ("+signo(inter)+")</b><br>"+
-          "Club vendedor: <b>"+(cok?"aceptaría el precio":"pide más plata (mín "+plata(Math.round(j.precio*0.9))+")")+"</b><br>"+
-          "Costo: <b>"+plata(oferta.precio)+"</b>"+(platak?"":" · <b>no te alcanza</b>")+
-          (!abierto?"<br><span class='mini'>Ventana cerrada: no se puede cerrar todavía.</span>":
-            (!jok?"<br><span class='mini'>Subí el sueldo o mejorá el rol para convencerlo.</span>":
-            (!cok?"<br><span class='mini'>Subí el precio para que el club libere al jugador.</span>":"")));
-        const listo=jok&&cok&&platak&&abierto;
-        const bt=document.getElementById("mcBtn"); if(bt){ bt.disabled=!listo; bt.classList.toggle("gris",!listo); }
+      if(paso===1){
+        c.appendChild(el("label","lb","Precio ofrecido — <b id='mcPrecio'>"+plata(oferta.precio)+"</b>"));
+        const sp=el("input"); sp.type="range"; sp.min=minP; sp.max=maxP; sp.step=Math.max(1,Math.round(j.precio*0.02)); sp.value=oferta.precio; sp.className="rango";
+        sp.oninput=()=>{ oferta.precio=parseInt(sp.value,10); const e=document.getElementById("mcPrecio"); if(e)e.textContent=plata(oferta.precio); };
+        c.appendChild(sp);
+        c.appendChild(el("label","lb","Sueldo ofrecido — <b id='mcSueldo'>"+plata(oferta.sueldo)+"</b>"));
+        const ss=el("input"); ss.type="range"; ss.min=minS; ss.max=maxS; ss.step=Math.max(1,Math.round(j.pidesueldo*0.03)); ss.value=oferta.sueldo; ss.className="rango";
+        ss.oninput=()=>{ oferta.sueldo=parseInt(ss.value,10); const e=document.getElementById("mcSueldo"); if(e)e.textContent=plata(oferta.sueldo); };
+        c.appendChild(ss);
+        c.appendChild(el("label","lb","Rol prometido"));
+        const fr=el("div","fichas");
+        [["titular","Titular"],["promesa","Promesa"],["suplente","Suplente"]].forEach(([k,n])=>{
+          const b=el("button","ficha",n); b.setAttribute("aria-pressed",oferta.rol===k?"true":"false");
+          b.onclick=()=>{ oferta.rol=k; pintar(); }; fr.appendChild(b);
+        });
+        c.appendChild(fr);
+        const b=el("button","btn-aqua ancho verde","Enviar oferta"); b.style.marginTop="8px";
+        b.onclick=evaluar; c.appendChild(b);
+      } else if(paso===2){
+        c.appendChild(el("div","resul mitad","<b>Respuesta (ronda "+ronda+"):</b><br>"+contra.msg));
+        if(contra.precio||contra.sueldo){
+          const ba=el("button","btn-aqua ancho verde","Aceptar la contraoferta"); ba.onclick=aceptarContra; c.appendChild(ba);
+          const bi=el("button","btn-aqua ancho"); bi.textContent="Insistir con mi oferta"; bi.style.marginTop="6px"; bi.onclick=insistir; c.appendChild(bi);
+        } else {
+          const bv=el("button","btn-aqua ancho"); bv.textContent="Volver a la mesa"; bv.onclick=()=>{ paso=1; pintar(); }; c.appendChild(bv);
+        }
+      } else { /* paso 3: se cayó */
+        c.appendChild(el("div","resul mal","El club se levantó de la mesa: insististe demasiado y se enfriaron. Probá con otro objetivo."));
       }
-      readout();
+      const x=el("button","btn-aqua ancho gris",paso===3?"Cerrar":"Dejarlo pasar"); x.style.marginTop="6px"; x.onclick=cerrarModal;
+      c.appendChild(x);
     };
     pintar();
   });

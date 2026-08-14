@@ -429,7 +429,7 @@ function vistaPlantel(){
   const tb=el("tbody");
   E.plantel.filter(j=>!j.vendido).sort((a,b)=>b.nivel-a.nivel).forEach(j=>{
     const tr=el("tr");
-    tr.innerHTML="<td>"+(j.real?"● ":"")+j.n+(j.lesion>0?" 🩹":"")+"</td><td>"+j.pos+"</td><td class='n'>"+j.edad+
+    tr.innerHTML="<td>"+(j.real?"● ":"")+j.n+(j.lesion>0?" 🩹":"")+(j.cedido?" 🔄":"")+"</td><td>"+j.pos+"</td><td class='n'>"+j.edad+
       "</td><td class='n'>"+j.nivel+"</td><td class='n'>"+Math.round(j.forma)+"</td><td class='n'>"+j.goles+
       "</td><td class='n'>"+plata(j.sueldo)+"</td>";
     tr.style.cursor="pointer";
@@ -451,11 +451,21 @@ function fichaJugador(j){
     c.appendChild(fila("Contrato","hasta "+j.contrato.hasta));
     if(j.rasgos.length) c.appendChild(el("p","mini","Rasgos: "+j.rasgos.join(", ")));
     if(j.lesion>0) c.appendChild(el("p","mini","Lesionado: fuera unas "+j.lesion+" semanas."));
-    const tieneOferta=E.ofertasPend&&E.ofertasPend.some(o=>o.jid===j.n);
-    const bv=el("button","btn-aqua ancho verde"+(tieneOferta?" gris":""),tieneOferta?"Ya hay una oferta abierta":"Buscar comprador");
-    bv.disabled=tieneOferta;
-    bv.onclick=()=>{ cerrarModal(); buscarComprador(j); };
-    c.appendChild(bv);
+    if(j.cedido){ c.appendChild(el("div","resul mitad","🔄 Cedido a "+j.cedido.club+" hasta "+j.cedido.hasta+". Vuelve mejorado.")); }
+    if(!j.cedido){
+      const tieneOferta=E.ofertasPend&&E.ofertasPend.some(o=>o.jid===j.n);
+      const bv=el("button","btn-aqua ancho verde"+(tieneOferta?" gris":""),tieneOferta?"Ya hay una oferta abierta":"Buscar comprador");
+      bv.disabled=tieneOferta; bv.onclick=()=>{ cerrarModal(); buscarComprador(j); };
+      c.appendChild(bv);
+      const br=el("button","btn-aqua ancho rojo","Rematar (~"+plata(Math.round(j.valor*0.47))+")"); br.style.marginTop="6px";
+      br.onclick=()=>{ if(confirm("¿Rematar a "+j.n+"? El directorio no lo perdona.")){ ventaFlash(j); cerrarModal(); render(); } };
+      c.appendChild(br);
+      if(typeof puedeCeder==="function" && puedeCeder(j)){
+        const bc=el("button","btn-aqua ancho","🔄 Ceder a préstamo"); bc.style.marginTop="6px";
+        bc.onclick=()=>{ cederPrestamo(j); cerrarModal(); render(); };
+        c.appendChild(bc);
+      }
+    }
     const b=el("button","btn-aqua ancho gris","Cerrar"); b.style.marginTop="6px"; b.onclick=cerrarModal; c.appendChild(b);
   });
 }

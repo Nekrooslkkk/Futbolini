@@ -73,7 +73,7 @@ function formaLibre(piz){
   };
 }
 function onceIdeal(){
-  const disp=E.plantel.filter(j=>!j.vendido&&j.lesion<=0);
+  const disp=E.plantel.filter(j=>!j.vendido&&!j.cedido&&j.lesion<=0);
   const f=FORMACIONES[E.tactica.form]||FORMACIONES["4-4-2"];
   const pick=(pos,n)=>disp.filter(j=>j.pos===pos).sort((a,b)=>(b.nivel*0.75+b.forma*0.25)-(a.nivel*0.75+a.forma*0.25)).slice(0,n);
   let once=pick("ARQ",1).concat(pick("DEF",f.def),pick("VOL",f.vol),pick("DEL",f.del));

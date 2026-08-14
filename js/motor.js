@@ -426,7 +426,7 @@ function venderJugador(j){
   return "Se vende a "+j.n+" por "+plata(monto)+".";
 }
 /* ---------------- economía ---------------- */
-function planillaAnual(){ return E.plantel.filter(j=>!j.vendido).reduce((s,j)=>s+j.sueldo,0); }
+function planillaAnual(){ return E.plantel.filter(j=>!j.vendido&&!j.cedido).reduce((s,j)=>s+j.sueldo,0); }
 
 /* Sectores del estadio: cada uno con su cuota de aforo, precio de referencia y
    elasticidad (la galería es la más sensible al precio; la marquesina, la que
@@ -599,6 +599,15 @@ function nuevoAnio(){
     else if(j.edad>=30) j.nivel=clamp(j.nivel-ri(1,4),20,97);
     j.goles=0;j.partidos=0;j.tarjetas=0;j.lesion=0;j.forma=68;
   });
+  /* vuelven los cedidos, mejorados por el rodaje */
+  const vueltos=[];
+  E.plantel.forEach(j=>{
+    if(j.cedido && j.cedido.hasta<=E.anio){
+      const boost=ri(3,8); j.nivel=clamp(j.nivel+boost,20,97); j.proy=clamp(Math.max(j.proy,j.nivel+2),28,97);
+      vueltos.push(j.n+" (+"+boost+" → "+j.nivel+")"); j.cedido=null;
+    }
+  });
+  if(vueltos.length) notificar({t:"Vuelven los cedidos",tipo:"bueno",d:"Regresan del préstamo con más rodaje: "+vueltos.join(", ")+".",bandeja:false});
   /* retiros: los muy veteranos cuelgan los botines y suben regens de la cantera */
   const retirados=E.plantel.filter(j=>j.edad>=37);
   if(retirados.length){
@@ -637,7 +646,7 @@ function nuevoAnio(){
   guardar();
 }
 function mediaPlantel(){
-  const l=E.plantel.filter(j=>!j.vendido).sort((a,b)=>b.nivel-a.nivel).slice(0,14);
+  const l=E.plantel.filter(j=>!j.vendido&&!j.cedido).sort((a,b)=>b.nivel-a.nivel).slice(0,14);
   return l.reduce((s,j)=>s+j.nivel,0)/Math.max(1,l.length);
 }
 function capitalAnual(){
