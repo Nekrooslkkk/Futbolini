@@ -1,0 +1,129 @@
+# FUTBOLINI 3.0 — Bitácora de parches
+
+Registro de todo lo que se fue construyendo sobre la Fase A, para tenerlo a mano
+en futuras actualizaciones. Cada bloque dice **qué se hizo**, **qué archivos toca**
+y **funciones/datos clave**. Al final: cómo **editar planteles** y cómo **encender la IA**.
+
+> Red de seguridad: la carpeta es un repo git. `git log --oneline` lista los commits.
+> Para volver al estado anterior a los cambios: `git checkout c29776a -- .`
+
+---
+
+## Mejora 1 · Eventos encadenados (efecto mariposa)
+**Archivos:** `motor.js`, `data-eventos.js`, `data-decisiones.js`, `ui.js`
+- `encadena:{id,en}` en una opción/desenlace agenda otra decisión N fechas después.
+  Cola en `E.pendientesEncadenadas`, madura en `procesarEncadenadas()`.
+- Banderas: `flag:"x"` / `flags:{x:true}` en una opción; otros eventos las leen con `peso:E=>E.flags.x?...:0`.
+  Acción `limpiaBandera:x` para consumirlas.
+- Mala racha: `E.temporada.sinGanar` (cuenta partidos sin ganar); a 4 dispara `enc_racha`.
+- Oferta de medianoche antes de semifinal/final → `enc_medianoche` → secuela `enc_factura`.
+- Pool de decisiones disparadas: `ENCADENADAS` en `data-eventos.js`.
+- Contexto semanal: `eventosDeContexto()` (se llama en `avanzar()`).
+
+## Mejora 2 · Motor de partido
+**Archivos:** `partido.js`, `data-liga.js`, `ui-partido.js`
+- Penales reales: `cobrarPenal(pateador,arquero)` (~78% base, ajusta por nivel; tope 55–92%).
+- Polémica arbitral en minutos calientes: `polemicaArbitral()` (penal dudoso / gol anulado), sesgada por `modSuma("arbitraje")`.
+- Clima por fecha: `CLIMAS` + `climaDeFecha(mes)` en `data-liga.js`; `part.clima` afecta cansancio y precisión.
+- Atajos de teclado (modo dirigir/seguir): `partidoTeclas()` en `ui-partido.js` — Espacio = pausa, 1/2/3 = orden rápida.
+
+## Mejora 5 · Mercado (base) → **Mercado 2.0**
+**Archivos:** `mercado.js` (nuevo), `ui.js`, `index.html`
+- Negociación de 4 pilares: precio · sueldo · rol · interés del jugador (`interesJugador`, `clubAcepta`, `cerrarFichaje`).
+- **Barras editables** de precio y sueldo (`<input type=range class="rango">`) con lectura en vivo.
+- Ofertas entrantes **persistentes** en `E.ofertasPend`, llegan como **notificación accionable** (`generarOfertasSemana()` en `avanzar()`).
+- Rechazo con **enfriamiento**: `E.mercadoLog.rechazadas[jid]`; caducan a 3 fechas (`caducarOfertas()`).
+- Vender proactivamente: `buscarComprador(j)` (botón en Mercado y en la ficha del jugador).
+- Ventana por mes: `mercadoAbierto()` (ene-feb y jun-jul).
+
+## Centro de notificaciones
+**Archivos:** `motor.js`, `ui.js`, `index.html`, `css/base.css`
+- `notificar({t,d,tipo,acc,extra})` → registro persistente en `E.notifs` (tope 80) + bandeja semanal.
+- Campana con badge (`#btnAvisos`) + sección **Avisos** (`vistaAvisos`) con avisos accionables arriba.
+- **Todo** rutea por acá: resultados de partido, decisiones, eventos, crisis, copa, mercado, cierre de temporada, retiros, redes, promesas.
+
+## Decisiones · variedad y arreglos
+**Archivos:** `data-decisiones.js`, `data-eventos.js`
+- 6 decisiones nuevas en `BOLSA`: `b_joya`, `b_sponsor_gris`, `b_dt_ultimatum`, `b_clasico`, `b_estrella_lesion` (+ variantes).
+- Reescritos los desenlaces "a media máquina" / "no pasó nada" para que impliquen consecuencia y muevan indicadores.
+
+## Mejora 3 · Sistema de eras (1991 / 2026)
+**Archivos:** `data-liga.js`, `data-plantel.js`, `motor.js`, `partido.js`, `ui.js`, `util.js`
+- `ERA={1991,2026}` con `puntosVictoria` (2 vs 3) e `inflacion`. `puntosVictoria()` reemplaza los 2 pts hardcodeados.
+- `LIGA_2026` (16 clubes reales) + `activarLiga(base)` que setea `LIGA_ACT` y `CLUB_POR_ID` según la época. `baseEra(anio)`, `eraDe(base)`.
+- Club por época: `CLUB_INFO_2026`, `IND_BASE_2026`, `CAJA_BASE_2026`; selección en `datosEra(base)` y `nuevaPartida`.
+- Planteles 2026 reales (aprox.) en `data-plantel.js`; inflación aplicada a jugadores **generados** (`inflacionEra()`).
+- Retiros (edad ≥ 37) + regens de cantera en `nuevoAnio()`.
+- Inicio con selección de época (`elegirEpoca`); `vistaHistoria` adaptada para 2026.
+
+## Mejora 4 · Redes del club + roleo (OFFLINE)
+**Archivos:** `ia.js` (nuevo), `ui.js`, `ui-partido.js`, `partido.js`, `motor.js`, `index.html`, `css/base.css`
+- Sección **Redes** (`vistaRedes`): barra de texto libre + frases predefinidas (`POSTS_PREDEF`).
+- Análisis **offline** por palabras clave: `analizarOffline(texto)` → `{sentimiento, promesa, consecuencia}`.
+- `aplicarPost(texto,ev)` mueve moral/hinchada/prensa/rep y registra en `E.redes`.
+- Promesas públicas con condición (`E.promesas`): "gano o me voy" → `chequearPromesas()` al terminar el partido → si no cumple, `destituir()`.
+- Roleo con el capitán antes de finales: `charlaCapitan(tono)` (evalúa según la moral). Botón en Redes y en la previa.
+- **Hook de API apagado** (ver abajo).
+
+---
+
+## ✏️ Cómo editar / agregar PLANTELES (fácil, sin tocar lógica)
+
+Todo está en **`js/data-plantel.js`**, arriba del archivo, en arrays. Formato de cada jugador:
+
+```
+["Nombre Apellido", "POS", edad, nivel, proy, sueldo, valor, ["rasgo1","rasgo2"]]
+```
+- **POS**: `"ARQ"`, `"DEF"`, `"VOL"`, `"DEL"`.
+- **nivel / proy**: 28–97 (proy = techo del jugador). **sueldo / valor**: en millones (MM$).
+- **rasgos**: texto libre; algunos tienen efecto de juego (`"capitán"`, `"ídolo"`, `"penales"`, `"definición"`, `"goleador"`, `"de la cantera"`).
+
+**Editar un plantel 2026:** cambiá el array correspondiente (`PLANTEL_CC_2026`, `PLANTEL_UCH_2026`, `PLANTEL_UC_2026`, `PLANTEL_PAL_2026`).
+**Agregar plantel a un club que hoy se genera (ej. Limache 2026):**
+1. Creá `const PLANTEL_LIM_2026=[ ... ];` con el mismo formato.
+2. En `PLANTELES_REALES`, agregá `LIM:{2026:PLANTEL_LIM_2026}`.
+Los huecos hasta 22 jugadores se completan solos con generados.
+
+**Editar clubes de la liga 2026:** `js/data-liga.js` → array `LIGA_2026`
+(`{id, n, c, fuerza, aforo, est, ciudad}`). `fuerza` 0–100 calibra el nivel del rival.
+**Datos base de un club jugable 2026:** `js/motor.js` → `CLUB_INFO_2026`, `IND_BASE_2026`, `CAJA_BASE_2026`.
+
+> Los 5 clubes jugables son `CC`, `UCH`, `UC`, `PAL`, `LIM`. Mantené esos ids.
+
+> **Pendiente / a mejorar:** hoy los planteles 2026 son *aproximados*. Cuando subas los
+> definitivos, se pegan en los arrays de arriba. (Idea futura: pantalla "Editor/Admin"
+> para editar planteles dentro del juego y guardarlos en localStorage — pedir si se quiere.)
+
+---
+
+## 🔌 Encender la IA (queda APAGADA por defecto, no gasta nada)
+
+Todo el hook está en **`js/ia.js`**. Para activarlo cuando haya backend con llave:
+
+```js
+IA_CONFIG.activa   = true;
+IA_CONFIG.endpoint = "https://tu-backend/evaluar"; // NUNCA pongas la API key acá
+```
+
+El juego hará `POST` a ese endpoint con:
+```json
+{ "tarea":"post_red_club", "club":"...", "texto":"...", "contexto":{...} }
+```
+y espera de vuelta:
+```json
+{ "sentimiento": -100..100, "promesa": {"hay":true,"texto":"...","tipo":"...","castigo":"destitucion|reputacion"} , "consecuencia":"texto corto" }
+```
+- La **llave de la API vive en el backend**, nunca en el HTML.
+- Si `IA_CONFIG.activa` es `false` o el endpoint falla, cae automáticamente al análisis **offline** (nunca se rompe ni gasta).
+- Función que decide: `evaluarPost(texto)` → usa API si `iaDisponible()`, si no `analizarOffline()`.
+
+---
+
+## 🧪 Testing
+Hay un harness de Node que corre la lógica sin navegador (no está en el repo del juego,
+vive en la carpeta scratchpad de la sesión). Carga los archivos de `js/` que no tocan el
+DOM y permite simular temporadas completas. Para probar en el navegador:
+```
+python -m http.server 8891
+```
+y abrir `http://localhost:8891/`.

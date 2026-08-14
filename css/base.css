@@ -182,3 +182,8 @@ input[type=range]{width:100%}
 
 /* Barras editables del mercado */
 input.rango{width:100%;margin:4px 0 10px;accent-color:#4fbf3f;height:22px;cursor:pointer}
+
+/* Redes del club (Mejora 4) */
+textarea.entrada{background:rgba(255,255,255,.06);border:1px solid var(--linea);border-radius:10px;
+  color:inherit;padding:8px 10px;font:inherit;resize:vertical;margin:4px 0 8px}
+textarea.entrada:focus{outline:2px solid #39b7e0}

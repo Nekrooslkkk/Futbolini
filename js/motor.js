@@ -87,6 +87,7 @@ function nuevaPartida(clubId,anio,modo){
     mods:[], flags:{}, plantel:[], calendario:[], idx:0,
     tabla:{}, decPend:[], decHechas:{}, bandeja:[], cronica:[], titulos:[],
     pendientesEncadenadas:[], notifs:[], ofertasPend:[], mercadoLog:{rechazadas:{},vendidos:[]},
+    redes:[], promesas:[],
     tactica:{form:"4-4-2",estilo:"Equilibrado",presion:"Media"},
     precioEntrada:1, presupuesto:null, temporada:{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0},
     carrera:{club:clubId,desde:anio,despidos:0,clubes:[],evaluacion:null,fin:false},
@@ -122,6 +123,8 @@ function normalizarEstado(){
   if(!Array.isArray(E.notifs)) E.notifs=[];
   if(!Array.isArray(E.ofertasPend)) E.ofertasPend=[];
   if(!E.mercadoLog) E.mercadoLog={rechazadas:{},vendidos:[]};
+  if(!Array.isArray(E.redes)) E.redes=[];
+  if(!Array.isArray(E.promesas)) E.promesas=[];
 }
 /* ============================================================
    Centro de notificaciones: TODO lo importante deja un aviso
@@ -543,7 +546,7 @@ function nuevoAnio(){
   GRUPOS.forEach(g=>{ const x=E.grupos[g.id]; x.aprob=Math.round(x.aprob*0.72); });
   E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0};
   E.idx=0; E.decPend=[]; E.bandeja=[]; E.pendientesEncadenadas=[]; E.mercado=null; E.flags.copaCampeon=false;
-  E.ofertasPend=[]; E.mercadoLog={rechazadas:{},vendidos:[]};
+  E.ofertasPend=[]; E.mercadoLog={rechazadas:{},vendidos:[]}; E.promesas=[];
   notificar({t:"Arranca la temporada "+E.anio,tipo:"neutro",
     d:"Nuevo año, nuevo campeonato. El plantel se renovó, los objetivos se reajustan y la caja arranca de cero en lo semanal.",bandeja:false});
   /* banderas que solo valen dentro de una temporada */

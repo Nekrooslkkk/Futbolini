@@ -253,6 +253,7 @@ function terminarPartido(P){
   if(E.temporada.sinGanar===undefined) E.temporada.sinGanar=0;
   if(yo>otro){ E.temporada.sinGanar=0; E.flags.rachaLiquida=false; }
   else E.temporada.sinGanar++;
+  if(typeof chequearPromesas==="function") chequearPromesas(yo,otro);
   notificar({
     t:(yo>otro?"Victoria ":(yo<otro?"Derrota ":"Empate "))+yo+"-"+otro+" ante "+part.rivalNombre,
     tipo:(yo>otro?"bueno":(yo<otro?"malo":"neutro")),

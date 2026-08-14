@@ -6,7 +6,7 @@
 let SEC="escritorio";
 const SECCIONES=[
  ["escritorio","🗂️","Escritorio"],["institucion","🏛️","Institución"],["finanzas","💰","Finanzas"],
- ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["calendario","📅","Calendario"],["historia","📚","Historia"],
+ ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["redes","📱","Redes"],["calendario","📅","Calendario"],["historia","📚","Historia"],
  ["carrera","🎖️","Carrera"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
 ];
 function irA(s){ SEC=s; render(); window.scrollTo({top:0}); }
@@ -54,7 +54,7 @@ function render(){
   if(E.carrera.fin){ v.appendChild(pantallaFinCarrera()); return; }
   if(E.carrera.enParo){ v.appendChild(pantallaSinClub()); return; }
   ({escritorio:vistaEscritorio,institucion:vistaInstitucion,finanzas:vistaFinanzas,plantel:vistaPlantel,
-    mercado:vistaMercado,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,
+    mercado:vistaMercado,redes:vistaRedes,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,
     avisos:vistaAvisos,ajustes:vistaAjustes}[SEC]||vistaEscritorio)();
 }
 /* ---------------- inicio ---------------- */
@@ -559,6 +559,92 @@ function pantallaFinCarrera(){
   b.onclick=async()=>{ await Store.del(LLAVE); E=null; render(); };
   p.cuerpo.appendChild(b);
   return p;
+}
+/* ---------------- redes del club + roleo ---------------- */
+const POSTS_PREDEF=[
+ {t:"Bancar al plantel a muerte", texto:"Banco a este grupo a muerte. Van a dejar todo en la cancha.",
+  ev:{sentimiento:34, consecuencia:"El camarín siente el respaldo público."}},
+ {t:"Prometer pelear el título", texto:"Vamos a pelear este campeonato hasta la última fecha, con todo.",
+  ev:{sentimiento:26, consecuencia:"La hinchada se ilusiona con la promesa."}},
+ {t:"Pedir calma y paciencia", texto:"Pido calma y paciencia: esto es un proceso y hay que sostenerlo.",
+  ev:{sentimiento:2, grupos:{prensa:6,hinchada:-3}, consecuencia:"Bajás la euforia; la prensa lo valora, la tribuna menos."}},
+ {t:"Salir a criticar el arbitraje", texto:"Nos están perjudicando y lo vamos a decir con nombre y apellido.",
+  ev:{sentimiento:8, grupos:{hinchada:8,anfp:-12,prensa:-6}, ef:{riesgo:4}, consecuencia:"La hinchada te aplaude; la ANFP toma nota."}},
+ {t:"«Gano el próximo o me voy»", texto:"Les prometo algo: o ganamos el próximo o me voy a mi casa.",
+  ev:{sentimiento:30, promesa:{hay:true,tipo:"ganarProximoGrande",castigo:"destitucion",texto:"Ganar el próximo partido o dejar el cargo"},
+      consecuencia:"Pusiste tu cargo sobre la mesa en público."}}
+];
+function vistaRedes(){
+  const v=$("#vista");
+  const p=panel("Red del club","📱","agua");
+  p.cuerpo.appendChild(el("p","mini","Lo que publiques mueve la moral del camarín, el ánimo de la hinchada y tu relación con la prensa. "+
+    (iaDisponible()?"IA conectada.":"Modo offline: análisis por palabras clave + frases con efecto conocido.")));
+  const ta=el("textarea"); ta.className="entrada"; ta.rows=2; ta.placeholder="Escribí un posteo (ej: «Vamos con todo, este grupo tiene alma»)…";
+  ta.style.width="100%";
+  p.cuerpo.appendChild(ta);
+  const bp=el("button","btn-aqua ancho verde","Publicar");
+  bp.onclick=()=>{
+    const txt=(ta.value||"").trim(); if(!txt){ aviso("Escribí algo primero"); return; }
+    bp.disabled=true;
+    evaluarPost(txt).then(ev=>{ aplicarPost(txt,ev); irA("redes"); });
+  };
+  p.cuerpo.appendChild(bp);
+  p.cuerpo.appendChild(el("h3","sub","Publicaciones rápidas"));
+  const fr=el("div","ops");
+  POSTS_PREDEF.forEach(pp=>{
+    const b=el("button","op");
+    b.innerHTML='<div class="t">'+pp.t+'</div><div class="d">"'+pp.texto+'"</div>';
+    b.onclick=()=>{ aplicarPost(pp.texto, Object.assign({},pp.ev)); irA("redes"); };
+    fr.appendChild(b);
+  });
+  p.cuerpo.appendChild(fr);
+  v.appendChild(p);
+
+  /* roleo con el capitán */
+  const pc=panel("Charla con el capitán","🧑‍✈️");
+  const part=proximoPartido();
+  const esFinal=part&&(part.ronda==="FINAL"||part.ronda==="Semifinal");
+  pc.cuerpo.appendChild(el("p","mini",esFinal?"Se viene un partido grande. Una buena charla puede cambiar el ánimo del grupo.":"Podés hablar con el referente del plantel para mover la moral antes del próximo partido."));
+  const bc=el("button","btn-aqua ancho"+(esFinal?" verde":""),"Hablar con el capitán");
+  bc.onclick=modalCharlaCapitan;
+  pc.cuerpo.appendChild(bc);
+  v.appendChild(pc);
+
+  /* promesas activas */
+  if(E.promesas&&E.promesas.length){
+    const pp=panel("Promesas en juego","⏳","alerta");
+    E.promesas.forEach(pr=>pp.cuerpo.appendChild(el("div","resul mitad","<b>"+pr.texto+"</b><br><span class='mini'>Se juega en el próximo partido. Si no la cumplís, "+(pr.castigo==="destitucion"?"te cuesta el cargo.":"golpea tu credibilidad.")+"</span>")));
+    v.appendChild(pp);
+  }
+
+  /* feed */
+  const pf=panel("Tu muro","🗒️");
+  if(!E.redes||!E.redes.length) pf.cuerpo.appendChild(el("p","mini","Todavía no publicaste nada."));
+  (E.redes||[]).forEach(r=>{
+    const d=el("div","resul "+(r.s>15?"bien":(r.s<-15?"mal":"mitad")));
+    d.innerHTML="<div class='mini' style='opacity:.7'>"+r.fecha+" · "+r.anio+(r.ia?" · IA":"")+"</div>«"+r.texto+"»<br><span class='mini'>"+r.cons+(r.promesa?" · Promesa: "+r.promesa:"")+"</span>";
+    pf.cuerpo.appendChild(d);
+  });
+  v.appendChild(pf);
+}
+function modalCharlaCapitan(){
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">🧑‍✈️</span><span>Charla con el capitán</span>'));
+    const c=el("div","cuerpo"); box.appendChild(c);
+    c.appendChild(el("p",null,"El referente del plantel te escucha. El tono correcto depende de cómo está el ánimo del grupo (moral actual: "+E.ind.moral+")."));
+    const ops=el("div","ops");
+    [["arenga","Arenga encendida","Subir la temperatura y salir a matar."],
+     ["calma","Bajar la ansiedad","Tranquilizar y ordenar la cabeza."],
+     ["exigencia","Exigir y marcar autoridad","Dejar claro qué se espera de cada uno."]].forEach(([k,n,d])=>{
+      const b=el("button","op");
+      b.innerHTML='<div class="t">'+n+'</div><div class="d">'+d+'</div>';
+      b.onclick=()=>{ const r=charlaCapitan(k); cerrarModal(); render(); aviso(r.txt); };
+      ops.appendChild(b);
+    });
+    c.appendChild(ops);
+    const x=el("button","btn-aqua ancho gris","Dejarlo para después"); x.style.marginTop="6px"; x.onclick=cerrarModal;
+    c.appendChild(x);
+  });
 }
 /* ---------------- avisos (centro de notificaciones) ---------------- */
 function claseTipo(t){ return t==="bueno"?"bien":(t==="malo"?"mal":"mitad"); }

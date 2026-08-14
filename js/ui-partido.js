@@ -78,6 +78,11 @@ function pantallaPrevia(part){
     bs.appendChild(b);
   });
   p2.cuerpo.appendChild(bs);
+  if((part.ronda==="FINAL"||part.ronda==="Semifinal")&&typeof modalCharlaCapitan==="function"){
+    const bc=el("button","btn-aqua ancho","🧑‍✈️ Charla con el capitán antes de salir");
+    bc.onclick=modalCharlaCapitan;
+    p2.cuerpo.appendChild(bc);
+  }
   p2.cuerpo.appendChild(el("p","mini","Seguir: barra espaciadora para pausar. Dirigir: teclas 1 / 2 / 3 en cada decisión."));
   rej.appendChild(p2);
   v.appendChild(rej);
