@@ -66,10 +66,11 @@ function pantallaPrevia(part){
   const cl=(typeof CLIMAS!=="undefined"&&CLIMAS[part.clima])||null;
   if(cl) p2.cuerpo.appendChild(el("p","mini",cl.ic+" Clima: "+cl.n+". "+cl.d));
   if(part.local) p2.cuerpo.appendChild(el("p","mini","Se espera buena taquilla: la gente está "+(E.ind.hinchada>65?"encendida":"tibia")+"."));
-  p2.cuerpo.appendChild(fila("Precio de la entrada",["Popular","Normal","Alto"][E.precioEntrada]));
-  const cambia=el("button","btn-aqua chico gris","Cambiar precio");
-  cambia.onclick=()=>{ E.precioEntrada=(E.precioEntrada+1)%3; guardar(); pantallaPrevia(part); };
-  p2.cuerpo.appendChild(cambia);
+  if(part.local){
+    const tq=ingresoPartidoLocal(part);
+    p2.cuerpo.appendChild(fila("Taquilla proyectada",tq.gente.toLocaleString("es-CL")+" personas · "+plata(tq.ingreso)));
+    p2.cuerpo.appendChild(el("p","mini","Ajustás el precio de cada sector en Finanzas."));
+  }
   p2.cuerpo.appendChild(el("h3","sub","¿Cómo lo vivís?"));
   const bs=el("div");
   [["Simular","simular","Resultado y crónica corta."],

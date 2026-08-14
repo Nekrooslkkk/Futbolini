@@ -31,7 +31,7 @@ function evaluarMandato(pos,campeon,copa){
     insuficiente:{dir:-14,rep:-8,cap:-8},fracaso:{dir:-28,rep:-16,cap:-14}}[nivel];
   aplicarGrupos({directorio:efectos.dir,socios:Math.round(efectos.dir*0.6),hinchada:Math.round(efectos.dir*0.8)});
   aplicarRep({publica:efectos.rep,credibilidad:Math.round(efectos.rep*0.6)});
-  E.capital=clamp(E.capital+efectos.cap,0,100);
+  E.capital=Math.max(0,E.capital+efectos.cap);
   E.carrera.evaluacion={nivel:nivel,txt:texto,anio:E.anio,pos:pos};
   E.carrera.malos=(nivel==="insuficiente"||nivel==="fracaso")?(E.carrera.malos||0)+1:0;
   return {nivel:nivel,txt:texto};

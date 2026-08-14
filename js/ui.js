@@ -278,10 +278,11 @@ function abrirDecision(d,enModal){
 function vistaInstitucion(){
   const v=$("#vista");
   const p=panel("Capital institucional","⚖️","agua");
-  p.cuerpo.appendChild(el("h2","tit",E.capital+" / 100"));
+  p.cuerpo.appendChild(el("h2","tit",E.capital>100?(E.capital+" 💪"):(E.capital+" / 100")));
   p.cuerpo.appendChild(el("div",null,barrita(E.capital,"#39b7e0")));
-  p.cuerpo.appendChild(el("p","mini","Es lo que podés imponer sin que se te caiga el club encima. Se gasta forzando decisiones y cambiando estatutos. "+
-    "Este año vas a generar aproximadamente <b>"+signo(capitalAnual())+"</b>."));
+  p.cuerpo.appendChild(el("p","mini","Es lo que podés imponer sin que se te caiga el club encima. Se gasta forzando decisiones y cambiando estatutos."+
+    (E.capital>100?" Pasaste los 100: tenés un poder político enorme para hacer lo que quieras.":"")+
+    " Este año vas a generar aproximadamente <b>"+signo(capitalAnual())+"</b>."));
   v.appendChild(p);
 
   const pg=panel("Grupos de interés","👥");
@@ -357,20 +358,54 @@ function vistaFinanzas(){
   p.cuerpo.appendChild(fila("Sale por semana",plata(costoSemanal())));
   const neto=ingresoSemanal()-costoSemanal();
   p.cuerpo.appendChild(fila("Resultado semanal",plata(neto),neto<0?"":""));
+  if(E.flags&&E.flags.sueldosAtrasados) p.cuerpo.appendChild(el("div","resul mal","⚠ Sueldos atrasados: la moral del plantel cae cada semana hasta que regularices la caja."));
+  if(E.flags&&E.flags.clausura) p.cuerpo.appendChild(el("div","resul mal","⚠ Estadio con sectores clausurados por la deuda: perdés aforo y taquilla."));
   p.cuerpo.appendChild(el("p","mini","Los partidos de local suman taquilla aparte. Todos los montos están en millones de pesos de la época."));
   v.appendChild(p);
 
-  const pe=panel("Entradas","🎫","agua");
-  pe.cuerpo.appendChild(el("p","mini","El precio cambia cuánta gente entra y cuánto deja cada partido. También cambia lo que piensa la hinchada."));
-  const f=el("div","fichas");
-  ["Popular","Normal","Alto"].forEach((n,i)=>{
-    const b=el("button","ficha",n+" ($"+[900,1500,2500][i].toLocaleString("es-CL")+")");
-    b.setAttribute("aria-pressed",E.precioEntrada===i?"true":"false");
-    b.onclick=()=>{ E.precioEntrada=i; aplicarGrupos({hinchada:i===0?3:(i===2?-5:0)}); guardar(); render(); };
-    f.appendChild(b);
+  /* --- precios por sector con sliders y proyección en vivo --- */
+  const pe=panel("Precios de entradas","🎫","agua");
+  pe.cuerpo.appendChild(el("p","mini","Fijá el precio de cada sector. Subir el precio deja más por entrada pero espanta público (la galería es la más sensible). La proyección se actualiza al instante."));
+  const proy=el("div","resul mitad"); proy.id="proyTaq";
+  const refrescarProy=()=>{
+    const r=proyeccionTaquilla(E.precios);
+    const club=CLUB_POR_ID[E.club]||{aforo:30000};
+    const ocupPct=Math.round(100*r.gente/Math.max(1,club.aforo*clausuraFactor()));
+    proy.innerHTML="Partido de local tipo → <b>"+r.gente.toLocaleString("es-CL")+"</b> personas ("+ocupPct+"% del aforo) · ingreso <b>"+plata(r.ingreso)+"</b>"+
+      (precioPromedioRatio()>1.3?"<br><span class='mini'>Precios altos: la hinchada se va a ir enojando.</span>":
+       (precioPromedioRatio()<0.85?"<br><span class='mini'>Precios populares: la gente lo valora.</span>":""));
+  };
+  SECTORES.forEach(s=>{
+    pe.cuerpo.appendChild(el("label","lb",s.ic+" "+s.n+" — <b id='pr_"+s.id+"'>$"+(E.precios[s.id]||0).toLocaleString("es-CL")+"</b>"));
+    const r=el("input"); r.type="range"; r.min=s.min; r.max=s.max; r.step=Math.max(50,Math.round(s.ref*0.05)); r.value=E.precios[s.id]||s.ref; r.className="rango";
+    r.oninput=()=>{ E.precios[s.id]=parseInt(r.value,10); const lab=document.getElementById("pr_"+s.id); if(lab) lab.textContent="$"+E.precios[s.id].toLocaleString("es-CL"); refrescarProy(); };
+    r.onchange=()=>{ guardar(); };
+    pe.cuerpo.appendChild(r);
   });
-  pe.cuerpo.appendChild(f);
+  pe.cuerpo.appendChild(proy); refrescarProy();
   v.appendChild(pe);
+
+  /* --- inversiones de club --- */
+  const pin=panel("Inversiones","🏗️");
+  pin.cuerpo.appendChild(el("p","mini","Plata que sale hoy para tener un club más grande mañana."));
+  const inv=[
+   ["Mejorar el estadio",350,"+ estado del estadio (más aforo y menos sanciones)",()=>{ aplicarEfectos({plata:-350,estadio:12}); }],
+   ["Campaña de propaganda",180,"+ hinchada y socios (más gente, más ingreso fijo)",()=>{ aplicarEfectos({plata:-180,hinchada:6,socios:4,prestigio:2}); }],
+   E.staff.cm?["Community Manager (contratado)",0,"Ya tenés CM. Se maneja desde Redes.",null]
+            :["Contratar Community Manager",120,"Profesionaliza la comunicación: + prestigio y desbloquea campañas en Redes",()=>{ aplicarEfectos({plata:-120,prestigio:2}); E.staff.cm=true; }]
+  ];
+  inv.forEach(([n,costo,desc,fn])=>{
+    const d=el("div","resul mitad");
+    d.innerHTML="<b>"+n+"</b> "+(costo?"· "+plata(costo):"")+"<br><span class='mini'>"+desc+"</span>";
+    if(fn){
+      const b=el("button","btn-aqua chico"+(E.plata<costo?" gris":" verde"),"Invertir"); b.style.marginTop="5px";
+      b.disabled=E.plata<costo;
+      b.onclick=()=>{ fn(); guardar(); render(); aviso(n+" · "+plata(costo)); };
+      d.appendChild(b);
+    }
+    pin.cuerpo.appendChild(d);
+  });
+  v.appendChild(pin);
 
   const pd=panel("Deuda","🏦",E.deuda>3000?"grave":"");
   pd.cuerpo.appendChild(el("p","mini","Los intereses se pagan todas las semanas y no perdonan. Podés abonar cuando tengas caja."));

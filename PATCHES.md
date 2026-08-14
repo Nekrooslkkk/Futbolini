@@ -120,8 +120,22 @@ Orden de programación acordado: **Pizarra/Timer → Economía/Sliders → Histo
 - Guardas anti-crash: `pintarPartido`/`cerrarPartido` chequean `P_ACTUAL` nulo; `P.cerrado`
   evita doble cierre (un solo `terminarPartido` por partido).
 
+## 4.0 · Bloque 2 — Economía viva, sliders e inversiones
+**Archivos:** `motor.js`, `ui.js`, `ui-partido.js`, `carrera.js`
+- **Capital sin tope:** `aplicarEfectos`/`nuevoAnio`/`evaluarMandato` ya no clampean el capital a 100
+  (se guarda y muestra sin techo). Su EFECTO en el motor de decisiones se suaviza con `capEf=Math.min(120,E.capital)`.
+- **Sectores del estadio con sliders:** `SECTORES` (galería/tribuna/marquesina, cada uno con cuota, precio
+  de referencia y elasticidad). `taquilla(part)` reemplaza al viejo `ingresoPartidoLocal` de 3 tiers.
+  `E.precios={galeria,tribuna,marquesina}` (default `preciosDefault()`, escala con `inflacionEra()`).
+  UI: sliders en Finanzas con **proyección en vivo** (`proyeccionTaquilla`) — público, % de aforo e ingreso.
+- **Deuda con impacto real:** en `tickSemana`, si la caja no cubre planilla → `flags.sueldosAtrasados`
+  (moral cae semana a semana + aviso); deuda > 4000 → `flags.clausura` + `clausuraFactor()` baja el aforo/taquilla.
+  Precios altos/baratos derivan la hinchada (`precioPromedioRatio()`).
+- **Inversiones** (panel en Finanzas): mejorar estadio, campaña de propaganda, y **contratar Community Manager**
+  (`E.staff.cm`) — el CM se usará en el bloque de Redes.
+- Nota: el viejo `E.precioEntrada` quedó obsoleto (se mantiene por compatibilidad, ya no se usa).
+
 ## 4.0 · Pendiente (próximos bloques)
-- **Economía/Sliders:** capital sin tope, sliders de precios con proyección en vivo, penalizaciones reales por deuda, inversiones (estadio/propaganda/CM).
 - **Historial:** `E.historialAnual` (copia profunda de la tabla por año) + vista; tabla en vivo mientras se simula la fecha; caja de resumen post-partido (goles/min/tarjetas/hitos); toggle prensa manual/automática.
 - **Mercado profundo:** panic sell, préstamos (`cedido`), lluvia de ofertas semanal, negociación en 2-3 pasos.
 - **Redes (`js/redes.js`):** timeline tipo Twitter, generador procedural de posts (hinchas/prensa/jugadores), campañas del CM, ingresos por seguidores/sponsor digital.

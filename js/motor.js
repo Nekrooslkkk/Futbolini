@@ -91,7 +91,7 @@ function nuevaPartida(clubId,anio,modo){
     tactica:{form:"4-4-2",estilo:"Equilibrado",presion:"Media"},
     precioEntrada:1, presupuesto:null, temporada:{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0},
     carrera:{club:clubId,desde:anio,despidos:0,clubes:[],evaluacion:null,fin:false},
-    divergencias:[], coincidencias:[], staff:{deportivo:62,tesorero:60,prensa:58}
+    divergencias:[], coincidencias:[], staff:{deportivo:62,tesorero:60,prensa:58,cm:false}
   };
   GRUPOS.forEach(g=>{
     const poder=(PODER_CLUB[clubId]||{})[g.id]||45;
@@ -100,6 +100,7 @@ function nuevaPartida(clubId,anio,modo){
   });
   E.plantel=armarPlantel(clubId,anio,D.ind[clubId].plantel);
   E.calendario=construirCalendario(clubId,anio,true);
+  E.precios=preciosDefault();
   reiniciarTabla();
   repartirDecisiones();
   guardar();
@@ -125,6 +126,9 @@ function normalizarEstado(){
   if(!E.mercadoLog) E.mercadoLog={rechazadas:{},vendidos:[]};
   if(!Array.isArray(E.redes)) E.redes=[];
   if(!Array.isArray(E.promesas)) E.promesas=[];
+  if(!E.precios) E.precios=preciosDefault();
+  if(!E.staff) E.staff={deportivo:62,tesorero:60,prensa:58,cm:false};
+  if(E.staff.cm===undefined) E.staff.cm=false;
 }
 /* ============================================================
    Centro de notificaciones: TODO lo importante deja un aviso
@@ -167,7 +171,7 @@ function aplicarEfectos(ef){
     const v=ef[k];
     if(k==="plata") E.plata+=v;
     else if(k==="deuda") E.deuda=Math.max(0,E.deuda+v);
-    else if(k==="capital") E.capital=clamp(E.capital+v,0,100);
+    else if(k==="capital") E.capital=Math.max(0,E.capital+v);   /* sin tope superior */
     else if(E.ind[k]!==undefined) E.ind[k]=clamp(E.ind[k]+v,0,100);
   }
   if(E.plata<0){ E.deuda+=Math.abs(E.plata)*1.2; E.plata=0; E.ind.riesgo=clamp(E.ind.riesgo+3,0,100); }
@@ -301,12 +305,13 @@ function resolverDecision(dec,idx){
   const chk=requisitoCumplido(op); if(!chk.ok) return null;
   let score=58;
   score-=(op.dif||40)*0.55;
-  const rel={institucional:E.capital,refuerzos:E.ind.prestigio,finanzas:100-clamp(E.deuda/40,0,70),
+  const capEf=Math.min(120,E.capital);   /* el capital ya no tiene tope, pero su efecto sí */
+  const rel={institucional:capEf,refuerzos:E.ind.prestigio,finanzas:100-clamp(E.deuda/40,0,70),
     camarin:E.ind.moral,preparacion:E.ind.plantel,hinchada:E.ind.hinchada,cantera:E.ind.cantera,
     prensa:E.rep.prensa,gris:E.rep.dureza};
   const base=rel[dec.buzon]!=null?rel[dec.buzon]:55;
   score+=(base-50)*0.30;
-  score+=(E.capital-45)*0.12;
+  score+=(capEf-45)*0.12;
   score+=apoyoPonderado(dec.posturas)*0.10;
   score+=(E.rep.credibilidad-50)*0.10;
   score-=Math.max(0,E.ind.riesgo-45)*0.20;
@@ -401,20 +406,58 @@ function venderJugador(j){
 }
 /* ---------------- economía ---------------- */
 function planillaAnual(){ return E.plantel.filter(j=>!j.vendido).reduce((s,j)=>s+j.sueldo,0); }
-function ingresoPartidoLocal(part){
-  const precioTab=[900,1500,2500][E.precioEntrada];
+
+/* Sectores del estadio: cada uno con su cuota de aforo, precio de referencia y
+   elasticidad (la galería es la más sensible al precio; la marquesina, la que
+   menos). El jugador fija el precio de cada sector con sliders en Finanzas. */
+const SECTORES=[
+ {id:"galeria",   n:"Galería popular", ic:"🎉", cuota:0.55, ref:1200, elast:1.5, min:300,  max:5000},
+ {id:"tribuna",   n:"Tribuna",         ic:"🪑", cuota:0.33, ref:2500, elast:1.0, min:800,  max:9000},
+ {id:"marquesina",n:"Marquesina",      ic:"🥂", cuota:0.12, ref:6000, elast:0.6, min:2000, max:22000}
+];
+function preciosDefault(){
+  const f=(typeof inflacionEra==="function"&&E)?inflacionEra():1;
+  const o={}; SECTORES.forEach(s=>o[s.id]=Math.round(s.ref*f)); return o;
+}
+function ocupBase(part){
+  let o=0.30+E.ind.hinchada/220+E.ind.estadio/500;
+  if(part){ if(part.tipo==="copa") o+=0.20; if(part.ronda==="FINAL"||part.ronda==="Semifinal") o+=0.18; }
+  if(E.temporada&&E.temporada.pts>E.temporada.pj*1.6) o+=0.08;
+  o+=modSuma("local")/100;
+  o*=(1+(modSuma("taquilla")||0));
+  return o;
+}
+/* deuda alta → se clausuran sectores del estadio y cae el aforo disponible */
+function clausuraFactor(){ return E.deuda>4000?0.75:(E.deuda>3000?0.90:1); }
+function taquilla(part){
   const club=CLUB_POR_ID[E.club]||{aforo:30000};
-  let ocup=0.22+E.ind.hinchada/220+E.ind.estadio/500;
-  if(part.tipo==="copa") ocup+=0.22;
-  if(part.ronda==="FINAL"||part.ronda==="Semifinal") ocup+=0.18;
-  ocup+=(E.temporada.pts>E.temporada.pj*1.6?0.08:0);
-  ocup-=[0.05,0,0.12][E.precioEntrada];
-  ocup+=modSuma("local")/100;
-  ocup*=(1+(modSuma("taquilla")||0));
-  ocup=clamp(ocup,0.06,0.98);
-  const gente=Math.round(club.aforo*ocup*(E.ind.estadio/100*0.5+0.5));
-  const ingreso=gente*precioTab/1000000;
-  return {gente:gente,ingreso:Math.round(ingreso)};
+  const base=ocupBase(part);
+  const infl=(typeof inflacionEra==="function")?inflacionEra():1;
+  const precios=E.precios||preciosDefault();
+  const clau=clausuraFactor();
+  let gente=0, ingreso=0;
+  SECTORES.forEach(s=>{
+    const cap=Math.round(club.aforo*s.cuota*clau*(E.ind.estadio/100*0.4+0.6));
+    const precio=precios[s.id]||Math.round(s.ref*infl);
+    const factorPrecio=Math.pow((s.ref*infl)/Math.max(1,precio), s.elast);
+    const ocup=clamp(base*factorPrecio, 0.04, 0.99);
+    const g=Math.round(cap*ocup);
+    gente+=g; ingreso+=g*precio;
+  });
+  return {gente:gente, ingreso:Math.round(ingreso/1000000)};
+}
+function ingresoPartidoLocal(part){ return taquilla(part); }
+/* proyección para la UI: taquilla de un partido de local "tipo" con precios dados */
+function proyeccionTaquilla(precios){
+  const guard=E.precios; if(precios) E.precios=precios;
+  const r=taquilla({tipo:"liga"});
+  E.precios=guard; return r;
+}
+function precioPromedioRatio(){
+  const infl=(typeof inflacionEra==="function")?inflacionEra():1;
+  const precios=E.precios||preciosDefault();
+  let num=0,den=0; SECTORES.forEach(s=>{ num+=(precios[s.id]/(s.ref*infl))*s.cuota; den+=s.cuota; });
+  return den?num/den:1;
 }
 function ingresosAnuales(){
   const tv=(120+E.ind.prestigio*3)*(1+(modSuma("tv")||0));
@@ -460,6 +503,20 @@ function tickSemana(){
   E.plantel.forEach(j=>{ if(j.lesion>0) j.lesion--; });
   /* deriva natural */
   if(E.ind.riesgo>0&&Math.random()<0.3) E.ind.riesgo=clamp(E.ind.riesgo-1,0,100);
+  /* impacto tangible de las finanzas: sueldos atrasados y estadio clausurado */
+  if(E.plata<50 && E.deuda>1500){
+    aplicarEfectos({moral:-2});
+    if(!E.flags.sueldosAtrasados){ E.flags.sueldosAtrasados=true;
+      notificar({t:"Sueldos atrasados",tipo:"malo",d:"La caja no cubre la planilla. El plantel lo siente: la moral baja semana a semana hasta que se regularice.",bandeja:false}); }
+  } else if(E.flags.sueldosAtrasados && E.plata>200){ E.flags.sueldosAtrasados=false;
+    notificar({t:"Sueldos al día",tipo:"bueno",d:"Se regularizaron los pagos. El camarín respira.",bandeja:false}); }
+  if(E.deuda>4000 && !E.flags.clausura){ E.flags.clausura=true;
+    notificar({t:"Clausura parcial del estadio",tipo:"malo",d:"Con la deuda por las nubes, se clausuraron sectores por garantías impagas: baja el aforo disponible y la taquilla.",bandeja:false}); }
+  else if(E.deuda<=3500 && E.flags.clausura){ E.flags.clausura=false; }
+  /* precios: caros molestan a la hinchada, baratos la enamoran (de a poco) */
+  const ratio=precioPromedioRatio();
+  if(ratio>1.35 && Math.random()<0.5) E.ind.hinchada=clamp(E.ind.hinchada-1,0,100);
+  else if(ratio<0.8 && Math.random()<0.5) E.ind.hinchada=clamp(E.ind.hinchada+1,0,100);
   return neto;
 }
 function tirarEvento(){
@@ -540,7 +597,7 @@ function nuevoAnio(){
   }
   E.ind.plantel=clamp(Math.round(mediaPlantel()),0,100);
   E.ind.moral=clamp(Math.round(E.ind.moral+(55-E.ind.moral)*0.25),0,100);
-  E.capital=clamp(Math.round(E.capital+capitalAnual()),0,100);
+  E.capital=Math.max(0,Math.round(E.capital+capitalAnual()));
   /* el fútbol olvida: nadie te quiere ni te odia para siempre */
   for(const k in E.rep) E.rep[k]=Math.round(E.rep[k]+(50-E.rep[k])*0.12);
   GRUPOS.forEach(g=>{ const x=E.grupos[g.id]; x.aprob=Math.round(x.aprob*0.72); });
