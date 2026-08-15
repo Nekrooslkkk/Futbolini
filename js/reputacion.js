@@ -160,6 +160,9 @@ function vistaVida(){
   }
   v.appendChild(ps);
 
+  /* --- Casino (Bloque 2) --- */
+  if(typeof panelCasino==="function") v.appendChild(panelCasino());
+
   /* --- Dinastía --- */
   const pd=panel("Dinastía","👑","agua");
   pd.cuerpo.appendChild(el("p","mini","Tu carrera cruza generaciones hasta el año "+E.dinastia.limiteAnio+". Cuando el DT se retira o fallece, un familiar toma la posta y conserva el patrimonio y la historia."));

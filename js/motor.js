@@ -428,6 +428,14 @@ function ejecutarAccion(a){
       if(arg) delete E.flags[arg];
       return "";
     }
+    case "limpiaDesfalco":{
+      E.flags.desfalco=0; E.flags.investigacionAbierta=false;
+      return "Se regularizaron los fondos y se cierra la causa.";
+    }
+    case "cierraInvestigacion":{
+      E.flags.investigacionAbierta=false;
+      return "La investigación se archiva por ahora.";
+    }
   }
   return "";
 }

@@ -273,3 +273,17 @@ E.perfil, E.dinastia, E.personal, E.flags.desfalco.
 - **B4** Paneles institucionales + conferencias de prensa interactivas.
 - **B5** Modo histórico Colo-Colo 1989/1991→2008 (selector de inicio, línea temporal continua, hitos: quiebra 2002, camada Borghi 2006-07).
 - **B6** Registro de goles completo (asistencia/tipo), filtros de mercado, timer 1x/2x/4x configurable.
+
+## 5.0 · Bloque 2 — Casino, corrupción y redención  ✅ (2026-08-15)
+**Archivos:** `js/casino.js` (nuevo), `motor.js`, `ui.js`, `data-eventos.js`, `index.html`
+- **Casino** (`js/casino.js`): ruleta europea con odds reales (`APUESTAS_CASINO`, ventaja de casa ~2,7% verificada).
+  `girarRuleta(apId,monto,pleno)` mueve `E.personal.bolsillo`. UI `modalCasino()` + `panelCasino()` (sección Vida).
+- **Desfalco**: `desviarFondos(monto)` transfiere de `E.plata` (club) a `E.personal.bolsillo`, sube `E.flags.desfalco`
+  y `E.ind.riesgo`. Se ofrece cuando `bolsillo<=0` (en Casino/Vida). `modalDesviar()`.
+- **Auditoría**: `chequearDesfalco()` (semanal, en `avanzar`) — prob. crece con lo desviado y baja con credibilidad;
+  dispara la encadenada `enc_investigacion_dirigencial` (data-eventos.js, 3 respuestas: colaborar / dilatar con imagen / negar).
+  Acciones `cierraInvestigacion` y `limpiaDesfalco` en `ejecutarAccion`.
+- **Redención** (`panelDesfalco()` en Finanzas, solo si hay desfalco): `procesoRedencion("devolver")` (monto ×1.2, cierra causa,
+  sube credibilidad) o `("donar")` (donaciones comunitarias, cierra causa, sube comunidad). Ambas limpian `E.flags.desfalco`
+  e `investigacionAbierta` → sin callejón sin salida.
+- Verificado: harness (RTP ruleta, desvío, auditoría, decisión, redención) + UI + regresión 4.0/5.0-B1 sin errores.

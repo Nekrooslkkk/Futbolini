@@ -337,5 +337,27 @@ const ENCADENADAS=[
    bien:{txt:"Le jugaste al farol y no tenía tanto como decía. Se fue con las manos vacías.",ef:{riesgo:-8}},
    mitad:{txt:"Filtró algo, no todo. Dos días feos y a seguir.",ef:{riesgo:6},grupos:{prensa:-10}},
    mal:{txt:"Tenía todo. Salió publicado y ahora hay una causa abierta.",ef:{riesgo:24,plata:-140},rep:{publica:-18},grupos:{directorio:-18,prensa:-15}}}
+ ]},
+
+{id:"enc_investigacion_dirigencial",buzon:"gris",peso:"alto",tipo:"malo",
+ t:"Investigación por los fondos del club",
+ d:"La auditoría detectó plata que salió de la tesorería y no aparece en ningún lado. Hay periodistas en la puerta y un fiscal haciendo preguntas. Vos sabés perfectamente dónde está esa plata.",
+ posturas:{prensa:-25,directorio:-30,anfp:-15},
+ consejo:{deportivo:"Yo de plata no sé nada, arreglate vos.",
+   tesorero:"Los números no cuadran, y lo sabés mejor que yo.",
+   prensa:"Esto puede ser el fin o un papelón manejable. Depende 100% de cómo lo cuentes."},
+ op:[
+  {t:"Colaborar y dar la cara",dif:38,grupos:{prensa:12,socios:8,directorio:-10},rep:{credibilidad:10,publica:4},
+   bien:{txt:"Te adelantaste, mostraste voluntad de regularizar y la causa se enfría. Ahora hay que devolver la plata (Proceso de Redención en Finanzas).",ef:{riesgo:-14},accion:"cierraInvestigacion"},
+   mitad:{txt:"Colaboraste a medias: la investigación baja un cambio, pero sigue ahí.",ef:{riesgo:-6},accion:"cierraInvestigacion"},
+   mal:{txt:"Tu colaboración se leyó como confesión y encima faltaron papeles.",ef:{riesgo:-2,prestigio:-6},rep:{publica:-6}}},
+  {t:"Usar tu imagen para dilatar el juicio",dif:58,grupos:{prensa:-10,anfp:-10},rep:{dureza:8,publica:-4},
+   bien:{txt:"Moviste contactos y popularidad, y el tema se diluye en el ruido. Zafaste por ahora, pero la plata sigue sin volver.",ef:{riesgo:-6},accion:"cierraInvestigacion"},
+   mitad:{txt:"Ganaste tiempo, nada más. Van a volver a golpear la puerta.",ef:{riesgo:4}},
+   mal:{txt:"El intento de tapar quedó grabado y ahora sos el villano de la película.",ef:{riesgo:16},rep:{publica:-14},grupos:{prensa:-15,directorio:-15}}},
+  {t:"Negar todo con cara de piedra",dif:64,rep:{credibilidad:-10},grupos:{prensa:-20},
+   bien:{txt:"Nadie pudo probar nada… todavía.",ef:{riesgo:8},accion:"cierraInvestigacion"},
+   mitad:{txt:"La negación se sostiene con alfileres.",ef:{riesgo:14},rep:{publica:-8}},
+   mal:{txt:"Salieron los comprobantes. Mentir en cadena nacional se paga carísimo.",ef:{riesgo:22,prestigio:-10},rep:{publica:-22,credibilidad:-15},grupos:{directorio:-25,prensa:-20}}}
  ]}
 ];

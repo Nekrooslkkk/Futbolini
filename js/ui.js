@@ -444,6 +444,8 @@ function vistaFinanzas(){
     pd.cuerpo.appendChild(b);
   });
   v.appendChild(pd);
+  /* fondos desviados / redención (Bloque 2) */
+  if(typeof panelDesfalco==="function"){ const pdf=panelDesfalco(); if(pdf) v.appendChild(pdf); }
 }
 /* ---------------- plantel ---------------- */
 function vistaPlantel(){
@@ -847,6 +849,7 @@ function avanzar(){
   const part=proximoPartido();
   if(!part){ cerrarTemporada(); return; }
   const neto=tickSemana();
+  if(typeof chequearDesfalco==="function") chequearDesfalco();
   repartirDecisiones();
   const ctx=eventosDeContexto();
   generarOfertasSemana();
