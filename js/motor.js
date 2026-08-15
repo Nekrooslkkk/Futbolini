@@ -104,6 +104,7 @@ function nuevaPartida(clubId,anio,modo){
   E.precios=preciosDefault();
   reiniciarTabla();
   repartirDecisiones();
+  normalizarEstado();
   guardar();
 }
 function reiniciarTabla(){
@@ -135,6 +136,14 @@ function normalizarEstado(){
   if(E.prensaAuto===undefined) E.prensaAuto=false;
   if(!Array.isArray(E.timeline)) E.timeline=[];
   if(E.seguidores===undefined) E.seguidores=Math.round((E.ind.hinchada+E.ind.prestigio)*280);
+  /* 5.0 · Bloque 1 — perfil, vida social, dinastía y patrimonio personal */
+  if(!E.perfil) E.perfil={nombre:"DT",nacimiento:((E.anio||2026)-38)+"-05-12",avatar:"🧑‍💼",orientacion:"Libre",vidaSocial:{publica:true,agenda:[]}};
+  if(!E.perfil.vidaSocial) E.perfil.vidaSocial={publica:true,agenda:[]};
+  if(!Array.isArray(E.perfil.vidaSocial.agenda)) E.perfil.vidaSocial.agenda=[];
+  if(!E.dinastia) E.dinastia={generacion:1,linaje:"Tu linaje",limiteAnio:2100,historial:[],sucesionPendiente:false};
+  if(!Array.isArray(E.dinastia.historial)) E.dinastia.historial=[];
+  if(!E.personal) E.personal={bolsillo:50,propiedades:[],autos:[]};
+  if(E.flags.desfalco===undefined) E.flags.desfalco=0;
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){
@@ -647,6 +656,7 @@ function nuevoAnio(){
   E.calendario=construirCalendario(E.club,E.anio,E.anio===1992);
   reiniciarTabla();
   repartirDecisiones();
+  if(typeof chequearSucesion==="function") chequearSucesion();
   guardar();
 }
 function mediaPlantel(){

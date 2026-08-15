@@ -247,3 +247,29 @@ y abrir `http://localhost:8891/`.
 - try/catch al armar briefing y al pulsar «Empezar».
 - Si falla, muestra el error en aviso y en consola; no cierra el modal a ciegas.
 - Orden: `nuevaPartida` primero → validar `E` → `cerrarModal` → `render`.
+
+# ─────────────── FUTBOLINI 5.0 (Beta jugable) ───────────────
+Orden: 6 bloques. Ejecución incremental. Estado global nuevo en normalizarEstado (motor.js):
+E.perfil, E.dinastia, E.personal, E.flags.desfalco.
+
+## 5.0 · Bloque 1 — Vida social, perfil y dinastía  ✅ (2026-08-15, autónomo)
+**Archivos:** `js/reputacion.js` (nuevo), `motor.js`, `ui.js`, `index.html`, `css/aero.css`
+- **Estado**: `E.perfil{nombre,nacimiento,avatar,orientacion,vidaSocial{publica,agenda[]}}`,
+  `E.dinastia{generacion,linaje,limiteAnio:2100,historial[],sucesionPendiente}`,
+  `E.personal{bolsillo,propiedades[],autos[]}`, `E.flags.desfalco=0`. Se inicializan en `normalizarEstado`
+  (y `nuevaPartida` ahora la llama al final).
+- **Perfil Aero** (`vistaVida`, sección "Vida" 🪪): ventana `.aero-window` con `.aero-avatar` (emoji ciclable),
+  nombre/fecha de nacimiento (edad derivada)/orientación editables. `edadDT()`.
+- **Vida social**: `salir()` → `resolverSalida(ev,modo)`. Pública sube prensa/pública con ~28% de filtración
+  (escándalo + post de prensa); privada cuesta `E.personal.bolsillo` y bloquea prensa. Agenda en `E.perfil.vidaSocial.agenda`.
+- **Dinastía**: `chequearSucesion()` en `nuevoAnio` (muerte/retiro por edad ≥74 con prob creciente, tope 90;
+  año > limiteAnio → `finDeCarrera`). `sucesionPendiente` → `pantallaSucesion()` (guard en render, antes de enParo) →
+  `asumirSucesor()` (gen++, conserva apellido/linaje/patrimonio/historia; hereda bolsillo; edad ~30).
+- Verificado: harness (estado, salidas, sucesión con herencia, horizonte 2100, envejecimiento) + UI + regresión 4.0 sin errores.
+
+## 5.0 · Pendiente
+- **B2** Casino + corrupción/desfalco + redención (`js/casino.js`).
+- **B3** Ticker de redes en vivo durante el partido.
+- **B4** Paneles institucionales + conferencias de prensa interactivas.
+- **B5** Modo histórico Colo-Colo 1989/1991→2008 (selector de inicio, línea temporal continua, hitos: quiebra 2002, camada Borghi 2006-07).
+- **B6** Registro de goles completo (asistencia/tipo), filtros de mercado, timer 1x/2x/4x configurable.

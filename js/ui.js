@@ -7,7 +7,7 @@ let SEC="escritorio";
 const SECCIONES=[
  ["escritorio","🗂️","Escritorio"],["institucion","🏛️","Institución"],["finanzas","💰","Finanzas"],
  ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["redes","📱","Redes"],["calendario","📅","Calendario"],["historia","📚","Historia"],
- ["carrera","🎖️","Carrera"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
+ ["carrera","🎖️","Carrera"],["vida","🪪","Vida"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
 ];
 function irA(s){ SEC=s; render(); window.scrollTo({top:0}); }
 
@@ -52,10 +52,11 @@ function render(){
   $("#btnAvanzar").classList.toggle("oculto",!E);
   if(!E){ pantallaInicio(); return; }
   if(E.carrera.fin){ v.appendChild(pantallaFinCarrera()); return; }
+  if(E.dinastia&&E.dinastia.sucesionPendiente){ v.appendChild(pantallaSucesion()); return; }
   if(E.carrera.enParo){ v.appendChild(pantallaSinClub()); return; }
   ({escritorio:vistaEscritorio,institucion:vistaInstitucion,finanzas:vistaFinanzas,plantel:vistaPlantel,
     mercado:vistaMercado,redes:vistaRedes,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,
-    avisos:vistaAvisos,ajustes:vistaAjustes}[SEC]||vistaEscritorio)();
+    vida:vistaVida,avisos:vistaAvisos,ajustes:vistaAjustes}[SEC]||vistaEscritorio)();
 }
 /* ---------------- inicio ---------------- */
 function pantallaInicio(){
