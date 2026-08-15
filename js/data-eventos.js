@@ -1,46 +1,79 @@
 "use strict";
 /* ============================================================
-   FUTBOLINI 3.0 · data-eventos.js
-   El mundo vivo: cosas que pasan solas entre fecha y fecha.
-   peso(E) devuelve cuánta probabilidad tiene ese evento según
-   el estado del club. Si devuelve 0, no puede ocurrir.
-   Los que traen "op" se transforman en una decisión rápida.
+   FUTBOLINI · data-eventos.js
+   ─── GUÍA RÁPIDA PARA EDITAR ───────────────────────────────
+   EVENTOS  = mundo vivo entre fechas (peso(E)=>probabilidad)
+   CRISIS   = interrumpen; hay que resolverlas (dispara:E=>bool)
+   ENCADENADAS = no aparecen solas; las agenda otra decisión
+                 con encadena:{id,en} (en = fechas después)
+   CAMPOS de un evento simple:
+     id, tipo("bueno"|"malo"|"neutro"), peso:E=>n,
+     t, d, ef?, grupos?, rep?, accion?("lesionAlAzar"|…)
+   Con decisión rápida: mismos campos + op:[{t,dif,bien,mitad,mal}]
+   TOKENS: {JUGADOR} {IDOLO} {GOLEADOR} {CLUB}
+   peso 0 = no puede salir. Más peso = más chance relativa.
+   Para AGREGAR evento: copiá un bloque similar del mismo tipo,
+   cambiale id/t/d/ef. No hace falta tocar motor.js.
+   ─── ÍNDICE EVENTOS ────────────────────────────────────────
+   deportivos:  ev_lesion · ev_racha · ev_juvenil · ev_pelea
+   institucion: ev_dirigente · ev_asamblea · ev_anfp · ev_multa
+   económicos:  ev_sponsor · ev_proveedor · ev_taquilla · ev_gira
+   hinchada:    ev_lienzo · ev_fiesta · ev_incidentes
+   prensa:      ev_portada · ev_rumor · ev_elogio · ev_pais · ev_clima
+   oportunidades: ev_libre · ev_agente · ev_juicio · ev_donacion · ev_museo
+   flags:       ev_pintas · ev_barra_aliento · ev_dt_firme
+   ─── ÍNDICE CRISIS ─────────────────────────────────────────
+   cr_paro · cr_embargo · cr_escandalo · cr_cisma
+   ─── ÍNDICE ENCADENADAS ────────────────────────────────────
+   enc_racha · enc_medianoche · enc_factura
    ============================================================ */
 
 const EVENTOS=[
-/* ---- deportivos ---- */
+/* ========== DEPORTIVOS ========== */
+/* --- ev_lesion --- */
 {id:"ev_lesion",tipo:"malo",peso:E=>3+(E.mods.some(m=>m.ef&&m.ef.desgaste)?3:0),
  t:"Lesión en el entrenamiento",d:"{JUGADOR} se resintió y estará fuera unas semanas.",accion:"lesionAlAzar"},
+/* --- ev_racha --- */
 {id:"ev_racha",tipo:"bueno",peso:E=>E.ind.moral>65?2.5:0.6,
  t:"El equipo está fino",d:"El grupo entrena a un ritmo que hace rato no se veía.",ef:{plantel:2,moral:3}},
+/* --- ev_juvenil --- */
 {id:"ev_juvenil",tipo:"bueno",peso:E=>E.ind.cantera>60?2.2:0.5,
  t:"Aparece un juvenil",d:"En las inferiores hay un cabro que ya no tiene nada que aprender ahí.",accion:"subirJuvenil"},
+/* --- ev_pelea --- */
 {id:"ev_pelea",tipo:"malo",peso:E=>E.ind.moral<50?2.6:0.5,
  t:"Pelea en el camarín",d:"Dos jugadores llegaron a las manos después del entrenamiento. Alguien filtró la historia.",
  ef:{moral:-8,riesgo:6},grupos:{prensa:-6}},
-/* ---- institucionales ---- */
+/* ========== INSTITUCIONALES ========== */
+/* --- ev_dirigente --- */
 {id:"ev_dirigente",tipo:"neutro",peso:E=>1.4,
  t:"Renuncia un dirigente",d:"Un director del club renuncia por razones personales y deja una vacante incómoda.",
  grupos:{directorio:-6},ef:{capital:-4}},
+/* --- ev_asamblea --- */
 {id:"ev_asamblea",tipo:"neutro",peso:E=>E.grupos.socios.aprob<-20?2.4:0.4,
  t:"Los socios piden asamblea extraordinaria",d:"Un grupo de socios juntó firmas para exigir explicaciones públicas.",
  ef:{capital:-8},grupos:{socios:-4,prensa:5}},
+/* --- ev_anfp --- */
 {id:"ev_anfp",tipo:"malo",peso:E=>E.grupos.anfp.aprob<-25?2.2:0.3,
  t:"Calendario en contra",d:"La programación te dejó tres partidos de visita seguidos y un viaje al norte a mitad de semana.",
  ef:{plantel:-2,moral:-3}},
+/* --- ev_multa --- */
 {id:"ev_multa",tipo:"malo",peso:E=>E.ind.riesgo>45?2.4:0.4,
  t:"Multa del Tribunal de Disciplina",d:"Sanción económica por incidentes en el último partido de local.",
  ef:{plata:-90,riesgo:-4}},
-/* ---- económicos ---- */
+/* ========== ECONÓMICOS ========== */
+/* --- ev_sponsor --- */
 {id:"ev_sponsor",tipo:"bueno",peso:E=>E.ind.prestigio>60?2:0.8,
  t:"Una marca quiere entrar",d:"Aparece una empresa interesada en poner su nombre en la camiseta alterna.",
  ef:{plata:140},grupos:{sponsors:8}},
+/* --- ev_proveedor --- */
 {id:"ev_proveedor",tipo:"malo",peso:E=>E.deuda>1500?2.6:0.4,
  t:"Un proveedor corta el crédito",d:"La empresa que abastece al club dejó de despachar hasta que se pague lo atrasado.",
  ef:{plata:-120,riesgo:6},grupos:{directorio:-8}},
+/* --- ev_taquilla --- */
 {id:"ev_taquilla",tipo:"bueno",peso:E=>E.ind.hinchada>70?2:0.6,
  t:"Récord de público",d:"El último partido de local llenó el estadio y la recaudación superó todo lo previsto.",
  ef:{plata:120,hinchada:3}},
+/* --- ev_gira --- */
 {id:"ev_gira",tipo:"neutro",peso:E=>E.ind.prestigio>65?1.8:0.4,
  t:"Invitación a una gira",d:"Ofrecen partidos amistosos pagados en el extranjero, justo en medio del calendario.",
  op:[
@@ -51,32 +84,43 @@ const EVENTOS=[
    mitad:{txt:"Se dejó pasar plata fácil y el tesorero lo anotó para la próxima pelea de presupuesto.",ef:{},grupos:{directorio:-5}},mal:{txt:"El directorio no perdonó dejar ese dinero sobre la mesa.",ef:{},grupos:{directorio:-10}}}
  ]},
 /* ---- hinchada y calle ---- */
+/* ========== HINCHADA / BARRA ========== */
+/* --- ev_lienzo --- */
 {id:"ev_lienzo",tipo:"malo",peso:E=>E.grupos.hinchada.aprob<-25?2.8:0.3,
  t:"Lienzos en contra",d:"Aparecieron lienzos con tu nombre en la entrada del complejo deportivo.",
  ef:{moral:-4},rep:{publica:-5}},
+/* --- ev_fiesta --- */
 {id:"ev_fiesta",tipo:"bueno",peso:E=>E.grupos.hinchada.aprob>35?2:0.4,
  t:"Fiesta en la tribuna",d:"La hinchada armó un recibimiento que dio la vuelta a los noticieros.",
  ef:{hinchada:5,moral:4},grupos:{prensa:5}},
+/* --- ev_incidentes --- */
 {id:"ev_incidentes",tipo:"malo",peso:E=>E.ind.riesgo>50?2.6:0.4,
  t:"Incidentes en el estadio",d:"Hubo desmanes en el último partido y la ANFP abrió un sumario.",
  ef:{riesgo:8,plata:-70},grupos:{anfp:-10,prensa:-8}},
 /* ---- prensa y país ---- */
+/* ========== PRENSA / PAÍS ========== */
+/* --- ev_portada --- */
 {id:"ev_portada",tipo:"neutro",peso:E=>2,
  t:"Portada para {IDOLO}",d:"Una revista le dedicó la portada al ídolo del plantel. En el camarín hay quienes sonríen y quienes no.",
  ef:{prestigio:2,moral:-1}},
+/* --- ev_rumor --- */
 {id:"ev_rumor",tipo:"neutro",peso:E=>1.8,
  t:"Rumor de cambio de técnico",d:"Una radio aseguró que el club ya busca reemplazante. Nadie sabe de dónde salió.",
  grupos:{tecnico:-8},ef:{moral:-3}},
+/* --- ev_elogio --- */
 {id:"ev_elogio",tipo:"bueno",peso:E=>E.rep.prensa>60?2:0.6,
  t:"Buena prensa",d:"Una columna te trata de la administración más seria del fútbol chileno.",
  rep:{publica:5,credibilidad:4},ef:{capital:5}},
+/* --- ev_pais --- */
 {id:"ev_pais",tipo:"neutro",peso:E=>1.2,
  t:"El país se mete en la cancha",d:"La contingencia nacional se comió toda la agenda y el fútbol pasó a segundo plano esta semana.",
  ef:{plata:-40,hinchada:-2}},
+/* --- ev_clima --- */
 {id:"ev_clima",tipo:"neutro",peso:E=>1,
  t:"Temporal",d:"Un frente de mal tiempo dejó la cancha impracticable y obligó a reprogramar.",
  ef:{plata:-50}},
-/* ---- oportunidades ---- */
+/* ========== OPORTUNIDADES ========== */
+/* --- ev_libre --- */
 {id:"ev_libre",tipo:"bueno",peso:E=>1.6,
  t:"Un jugador queda libre",d:"Un futbolista con recorrido quedó sin club por un conflicto de contrato y está disponible.",
  op:[
@@ -87,6 +131,7 @@ const EVENTOS=[
   {t:"Dejarlo pasar",dif:8,bien:{txt:"Se fue lejos y el tema se cerró sin costo. A veces no meter la mano también es administrar bien.",ef:{}},
    mitad:{txt:"Terminó en un rival directo y suma minutos. Cada vez que lo enfrentes, alguien te lo va a recordar.",ef:{moral:-2}},mal:{txt:"Explotó en un rival directo y ahora es figura. La prensa te cobra el ojo que no tuviste.",ef:{hinchada:-4},grupos:{prensa:-8}}}
  ]},
+/* --- ev_agente --- */
 {id:"ev_agente",tipo:"neutro",peso:E=>E.ind.riesgo>30?1.8:0.8,
  t:"Un agente ofrece un negocio",d:"Un representante propone triangular un pase con un club chico y repartir la diferencia.",
  op:[
@@ -99,28 +144,41 @@ const EVENTOS=[
    mitad:{txt:"Entró menos de lo prometido y quedó un cabo suelto.",ef:{plata:-60,riesgo:8}},
    mal:{txt:"El triangulado quedó documentado en un fax que alguien guardó.",ef:{riesgo:20},grupos:{prensa:-12}}}
  ]},
+/* --- ev_juicio --- */
 {id:"ev_juicio",tipo:"malo",peso:E=>E.ind.riesgo>60?2.5:0.2,
  t:"Citación judicial",d:"Un ex funcionario del club declaró ante la fiscalía sobre pagos irregulares.",
  ef:{riesgo:10,plata:-140},rep:{publica:-10},grupos:{directorio:-12,prensa:-10}},
+/* --- ev_donacion --- */
 {id:"ev_donacion",tipo:"bueno",peso:E=>E.grupos.comunidad.aprob>30?2:0.3,
  t:"Aporte de la comunidad",d:"La comunidad que sostiene al club organizó una colecta y entregó los fondos a la tesorería.",
  ef:{plata:160},grupos:{comunidad:6}},
+/* --- ev_museo --- */
 {id:"ev_museo",tipo:"bueno",peso:E=>E.ind.prestigio>70?1.4:0.3,
  t:"El club como patrimonio",d:"Una universidad propone armar el archivo histórico del club con acceso público.",
  ef:{prestigio:4},rep:{publica:4},grupos:{socios:8,comunidad:8}},
 /* ---- eventos que leen banderas dejadas por decisiones anteriores (efecto mariposa) ---- */
+/* ========== FLAGS (solo si hay bandera) ========== */
+/* --- ev_pintas --- */
 {id:"ev_pintas",tipo:"malo",peso:E=>E.flags.barraDolida?3.2:0,
  t:"Pintas contra la dirigencia",d:"Aparecieron rayados con tu nombre en los muros del estadio. Es la respuesta de la barra a la mano dura de hace unas semanas.",
  ef:{hinchada:-6,moral:-3},rep:{publica:-4},accion:"limpiaBandera:barraDolida"},
+/* --- ev_barra_aliento --- */
 {id:"ev_barra_aliento",tipo:"bueno",peso:E=>E.flags.barraAliada?2.8:0,
  t:"La barra copa el estadio",d:"Después del acuerdo, la barra armó un recibimiento que empujó al plantel los noventa minutos.",
  ef:{hinchada:5,moral:4},grupos:{hinchada:6},accion:"limpiaBandera:barraAliada"},
+/* --- ev_dt_firme --- */
 {id:"ev_dt_firme",tipo:"bueno",peso:E=>E.flags.dtFirme?2.4:0,
  t:"Plantel motivado por un DT firme",d:"La postura dura del cuerpo técnico prendió al camarín: se entrena distinto desde que quedó claro quién manda.",
  ef:{moral:6,plantel:2},accion:"limpiaBandera:dtFirme"}
 ];
 
-/* ---------- CRISIS: interrumpen y hay que resolverlas sí o sí ---------- */
+/* ========== CRISIS (obligatorias si dispara) ==========
+   dispara:E=>bool  — si true, entra a la bandeja forzada.
+   PLANTILLA crisis:
+   {id:"cr_nueva",dispara:E=>E.deuda>9999,
+    t:"Título",d:"Contexto.",
+    op:[{t:"Opción",dif:40,bien:{txt:"…",ef:{}},mitad:{txt:"…",ef:{}},mal:{txt:"…",ef:{}}}]}
+*/
 const CRISIS=[
 {id:"cr_paro",dispara:E=>E.grupos.camarin.aprob<-55,
  t:"El plantel se declara en paro",
@@ -200,12 +258,14 @@ const CLUBES_COMPRADORES=[
  "Racing Club","Universidad Católica","Cobreloa","Unión Española","Puebla","Necaxa"
 ];
 
-/* ============================================================
-   ENCADENADAS: decisiones que NO aparecen solas. Las dispara la
-   cola de encadenados (campo `encadena` de otra decisión) o el
-   contexto (mala racha, oferta de medianoche). Misma estructura
-   que las decisiones normales: el motor las resuelve igual.
-   ============================================================ */
+/* ========== ENCADENADAS (no aparecen solas) ==========
+   Las agenda otra opción con  encadena:{id:"enc_xxx",en:N}
+   N = fechas después. Maduran en procesarEncadenadas().
+   PLANTILLA:
+   {id:"enc_nueva",buzon:"prensa",peso:"alto",tipo:"neutro",
+    t:"Título",d:"…",
+    op:[{t:"…",dif:40,bien:{txt:"…",ef:{}},mitad:{txt:"…",ef:{}},mal:{txt:"…",ef:{}}}]}
+*/
 const ENCADENADAS=[
 {id:"enc_racha",buzon:"prensa",peso:"alto",tipo:"malo",
  t:"La racha ya es tema de portada",

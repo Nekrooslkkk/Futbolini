@@ -1,11 +1,30 @@
 "use strict";
 /* ============================================================
-   FUTBOLINI 3.0 · data-decisiones.js
-   Decisiones sin porcentajes a la vista.
-   Cada opción tiene: requisitos (visibles), reacción inmediata de
-   los grupos (visible) y tres desenlaces posibles (ocultos) que
-   el motor resuelve con el estado real del club.
-   dif = qué tan difícil es ejecutarla bien (0 fácil, 100 imposible).
+   FUTBOLINI · data-decisiones.js
+   ─── GUÍA RÁPIDA PARA EDITAR ───────────────────────────────
+   DÓNDE:  DECISIONES = fijas por club/año
+           BOLSA       = pueden tocarle a cualquier club
+           ENCADENADAS = viven en data-eventos.js (disparadas)
+   CAMPOS de una decisión:
+     id, club?, anio?, buzon, peso("alto"|"medio"|"bajo"), mes?,
+     t (título), d (cuerpo), historia? (spoiler histórico),
+     posturas?{grupo:n}, consejo?{deportivo,tesorero,prensa},
+     cuando?:E=>bool  (solo BOLSA),
+     op:[{ t, d?, hist?, dif(0-100), grupos?, rep?,
+           bien:{txt,ef?,mods?,grupos?,accion?},
+           mitad:{...}, mal:{...},
+           encadena?:{id,en}  }]
+   TOKENS en textos: {JUGADOR} {IDOLO} {GOLEADOR} {CLUB}
+   dif bajo = fácil de salir bien. hist:true = opción histórica.
+   Para AGREGAR: copiá el bloque PLANTILLA al final de DECISIONES
+   o BOLSA, cambiale el id, y listo. No hace falta tocar motor.
+   ─── ÍNDICE DECISIONES (club/año) ──────────────────────────
+   cc91_objetivo · cc91_pretemporada · cc91_refuerzos · cc91_premios
+   cc91_monumental · cc91_oferta_margas · cc91_entradas · cc91_barra
+   cc91_martinez · cc91_intermediario · cc91_cadetes · cc91_discurso
+   ─── ÍNDICE BOLSA ──────────────────────────────────────────
+   b_sueldos · b_oferta · b_prensa · b_camarin · b_estadio · b_tv
+   b_joya · b_sponsor_gris · b_dt_ultimatum · b_clasico · b_estrella_lesion
    ============================================================ */
 
 const BUZONES={
@@ -15,8 +34,27 @@ const BUZONES={
   cantera:{n:"Cantera",ic:"🌱"}, prensa:{n:"Prensa",ic:"🎙️"}, gris:{n:"Zona gris",ic:"🕶️"}
 };
 
+/* PLANTILLA (copiar y pegar para una decisión nueva):
+{id:"xx_nueva",club:"CC",anio:1991,buzon:"institucional",peso:"medio",mes:4,
+ t:"Título corto",
+ d:"Párrafo de contexto. Qué está en juego y por qué ahora.",
+ historia:"Qué pasó en la realidad (solo si es año histórico).",
+ posturas:{tecnico:0,hinchada:0,directorio:0,prensa:0},
+ consejo:{deportivo:"…",tesorero:"…",prensa:"…"},
+ op:[
+  {t:"Opción A",d:"Detalle visible.",hist:false,dif:40,
+   grupos:{tecnico:0},rep:{},
+   bien:{txt:"Qué pasa si sale bien.",ef:{moral:2}},
+   mitad:{txt:"Resultado tibio.",ef:{}},
+   mal:{txt:"Qué pasa si sale mal.",ef:{moral:-2}}},
+  {t:"Opción B",d:"…",dif:50,grupos:{},
+   bien:{txt:"…",ef:{}},mitad:{txt:"…",ef:{}},mal:{txt:"…",ef:{}}}
+ ]},
+*/
+
 const DECISIONES=[
-/* ---------------- COLO-COLO 1991 ---------------- */
+/* ========== COLO-COLO 1991 ========== */
+/* --- cc91_objetivo | institucional | mes 2 | peso alto --- */
 {id:"cc91_objetivo",club:"CC",anio:1991,buzon:"institucional",peso:"alto",mes:2,
  t:"El objetivo de la temporada",
  d:"Mirko Jozić ya lo dijo en público: quiere la Copa Libertadores. El campeonato nacional se juega desde abril y la Copa arranca en febrero. Hay que decidir dónde se pone el peso del año, porque el plantel no da para los dos frentes al mismo tiempo.",
@@ -50,6 +88,7 @@ const DECISIONES=[
    mal:{txt:"El técnico se sintió desautorizado y el camarín tomó nota.",ef:{moral:-8},grupos:{tecnico:-20}}}
  ]},
 
+/* --- cc91_pretemporada | preparacion | mes 2 --- */
 {id:"cc91_pretemporada",club:"CC",anio:1991,buzon:"preparacion",peso:"medio",mes:2,
  t:"La pretemporada en La Leonera",
  d:"El cuerpo técnico planificó doble jornada, control de peso y trabajo físico a la europea. Lizardo Garrido y Patricio Yáñez, los que más años tienen encima, ya hicieron saber que la carga es demasiada.",
@@ -78,6 +117,7 @@ const DECISIONES=[
    mal:{txt:"El equipo arrancó la Copa a medio gas y lo pagó afuera de casa.",ef:{plantel:-7,moral:2}}}
  ]},
 
+/* --- cc91_refuerzos | refuerzos | mes 2 --- */
 {id:"cc91_refuerzos",club:"CC",anio:1991,buzon:"refuerzos",peso:"alto",mes:2,
  t:"Los tres nombres que pidió el técnico",
  d:"El cuerpo técnico quiere cerrar el plantel con Gabriel Mendoza desde O'Higgins, Patricio Yáñez desde Universidad de Chile y Luis Pérez a préstamo desde Universidad Católica. Los tres cuestan plata que hoy no sobra.",
@@ -105,6 +145,7 @@ const DECISIONES=[
    mal:{txt:"Faltó oficio en los partidos importantes y el técnico lo dijo en conferencia.",ef:{plantel:-6},grupos:{tecnico:-18,prensa:-8}}}
  ]},
 
+/* --- cc91_premios | finanzas | mes 3 --- */
 {id:"cc91_premios",club:"CC",anio:1991,buzon:"finanzas",peso:"medio",mes:3,
  t:"Premios por avanzar en la Copa",
  d:"El plantel, con {CAPITAN} como vocero, pide premios escalonados por cada ronda de Libertadores. La caja está apretada por la deuda del Monumental.",
@@ -134,6 +175,7 @@ const DECISIONES=[
      ef:{plata:70,moral:-16},grupos:{camarin:-18,prensa:-10},mods:[{id:"camarin_dolido",n:"Camarín dolido",anios:2,ef:{aguante:-6}}]}}
  ]},
 
+/* --- cc91_monumental | institucional | mes 3 --- */
 {id:"cc91_monumental",club:"CC",anio:1991,buzon:"institucional",peso:"alto",mes:3,
  t:"La deuda del Monumental",
  d:"El estadio se reinauguró hace poco y dejó un pasivo pesado que se come una parte grande del presupuesto todos los años. Los bancos quieren sentarse a conversar antes de que empiece el torneo local.",
@@ -167,6 +209,7 @@ const DECISIONES=[
      mods:[{id:"vendio_idolo",n:"Vendió a un ídolo",anios:4,ef:{taquilla:-0.1}}]}}
  ]},
 
+/* --- cc91_oferta_margas | refuerzos | mes 4 --- */
 {id:"cc91_oferta_margas",club:"CC",anio:1991,buzon:"refuerzos",peso:"alto",mes:4,
  t:"Oferta europea por {DEFENSA_JOVEN}",
  d:"Llega una oferta formal desde Europa por el central joven del plantel. El monto cubriría buena parte del pasivo del estadio. Tiene 22 años y ya es titular fijo en plena Copa Libertadores.",
@@ -200,6 +243,7 @@ const DECISIONES=[
    mal:{txt:"La operación se cayó por las condiciones y quedó todo el mundo incómodo.",ef:{moral:-5},grupos:{directorio:-15}}}
  ]},
 
+/* --- cc91_entradas | hinchada | mes 5 --- */
 {id:"cc91_entradas",club:"CC",anio:1991,buzon:"hinchada",peso:"medio",mes:5,
  t:"El precio de las entradas para la serie decisiva",
  d:"El Monumental se va a llenar igual. La pregunta es a cuánto se vende la entrada cuando todo Chile quiere estar adentro.",
@@ -230,6 +274,7 @@ const DECISIONES=[
      ef:{socios:5,plata:-60},grupos:{directorio:-18}}}
  ]},
 
+/* --- cc91_barra | hinchada | mes 4 --- */
 {id:"cc91_barra",club:"CC",anio:1991,buzon:"hinchada",peso:"medio",mes:4,
  t:"La barra pide su parte",
  d:"La barra pide entradas, viajes pagados a los partidos de Copa y que nadie se meta con su sector. También ofrece, a cambio, que el estadio esté a full en cada partido.",
@@ -263,6 +308,7 @@ const DECISIONES=[
      ef:{hinchada:6,riesgo:24},grupos:{prensa:-15,anfp:-12}}}
  ]},
 
+/* --- cc91_martinez | camarin | mes 7 --- */
 {id:"cc91_martinez",club:"CC",anio:1991,buzon:"camarin",peso:"medio",mes:7,
  t:"{GOLEADOR} pide que le mejoren el contrato",
  d:"El goleador del plantel viene de ser el máximo artillero del torneo el año pasado y va camino a repetirlo. Su representante dice que tiene ofertas y que el sueldo que gana no corresponde a lo que rinde.",
@@ -293,6 +339,7 @@ const DECISIONES=[
      ef:{moral:-12},grupos:{camarin:-20,prensa:-8}}}
  ]},
 
+/* --- cc91_intermediario | gris | mes 5 --- */
 {id:"cc91_intermediario",club:"CC",anio:1991,buzon:"gris",peso:"medio",mes:5,
  t:"Un intermediario con propuesta",
  d:"Un tipo que se mueve entre dirigentes ofrece «facilitar cosas» de cara a las rondas decisivas. No entra en detalles, no quiere papeles y deja un número anotado en una servilleta.",
@@ -325,6 +372,7 @@ const DECISIONES=[
      mods:[{id:"pacto_sucio",n:"Compromiso impagable",anios:8,ef:{crisis:0.5}}]}}
  ]},
 
+/* --- cc91_cadetes | cantera | mes 6 --- */
 {id:"cc91_cadetes",club:"CC",anio:1991,buzon:"cantera",peso:"bajo",mes:6,
  t:"Plata para el fútbol joven",
  d:"El fútbol joven pide canchas, buses y sueldos dignos para los formadores. Nadie va a aplaudir esta decisión en la prensa, pero define de qué va a estar hecho el plantel en cuatro años.",
@@ -351,6 +399,7 @@ const DECISIONES=[
      ef:{plata:80,cantera:-20},grupos:{prensa:-10,comunidad:-15}}}
  ]},
 
+/* --- cc91_discurso | prensa | mes 5 --- */
 {id:"cc91_discurso",club:"CC",anio:1991,buzon:"prensa",peso:"bajo",mes:5,
  t:"El discurso antes de la final",
  d:"Micrófonos en el aeropuerto, todo Chile mirando y un plantel que nunca vivió algo así. Lo que se dice acá se repite durante veinte años.",
@@ -380,8 +429,12 @@ const DECISIONES=[
  ]}
 ];
 
-/* ---------------- BOLSA COMÚN: le puede tocar a cualquier club ---------------- */
+/* ========== BOLSA COMÚN (cualquier club) ==========
+   Se filtran por `cuando:E=>…`. Si no matchea, no aparece.
+   Para agregar: pegá una copia de la PLANTILLA del tope y
+   cambiale id + cuando + textos. */
 const BOLSA=[
+/* --- b_sueldos | finanzas | si plata<120 --- */
 {id:"b_sueldos",buzon:"finanzas",peso:"alto",cuando:E=>E.plata<120,
  t:"No alcanza para la planilla",
  d:"Fin de mes y los sueldos no están cubiertos. El delegado del plantel ya preguntó dos veces.",
@@ -407,6 +460,7 @@ const BOLSA=[
    mal:{txt:"Remate total: se fue un titular por menos de la mitad de lo que vale.",
      ef:{plata:140,plantel:-9,moral:-8},accion:"venderTitular"}}
  ]},
+/* --- b_oferta | refuerzos --- */
 {id:"b_oferta",buzon:"refuerzos",peso:"medio",cuando:E=>E.ind.plantel>55,
  t:"Oferta por {CRACK}",
  d:"Llega una oferta formal del extranjero por la figura del plantel. El representante ya habló con la prensa antes que con el club.",
@@ -430,6 +484,7 @@ const BOLSA=[
    mitad:{txt:"Se cayó la operación. El jugador se queda incómodo.",ef:{moral:-4}},
    mal:{txt:"Se cayó, el jugador se enojó y el club quedó como especulador.",ef:{moral:-8},grupos:{camarin:-12,prensa:-8}}}
  ]},
+/* --- b_prensa | prensa --- */
 {id:"b_prensa",buzon:"prensa",peso:"medio",cuando:E=>E.ind.riesgo>35,
  t:"Un reportaje incómodo",
  d:"Un medio prepara una investigación sobre contratos, comisiones y gastos del club. Pidieron entrevista y una lista de documentos.",
@@ -455,6 +510,7 @@ const BOLSA=[
    mal:{txt:"El ataque multiplicó la cobertura y ahora son cuatro medios en vez de uno.",
      ef:{riesgo:22},grupos:{prensa:-20},rep:{publica:-14}}}
  ]},
+/* --- b_camarin | camarin --- */
 {id:"b_camarin",buzon:"camarin",peso:"alto",cuando:E=>E.ind.moral<38,
  t:"El camarín está roto",
  d:"Hay grupos enfrentados, filtraciones diarias y entrenamientos que terminan antes de la hora.",
@@ -477,6 +533,7 @@ const BOLSA=[
    mitad:{txt:"Siguió igual toda la temporada.",ef:{moral:-4}},
    mal:{txt:"El conflicto escaló hasta la cancha y se vio en los partidos.",ef:{moral:-14,plantel:-5}}}
  ]},
+/* --- b_estadio | institucional --- */
 {id:"b_estadio",buzon:"institucional",peso:"medio",cuando:E=>E.ind.estadio<48,
  t:"Informe técnico del estadio",
  d:"Butacas, baños, iluminación y accesos están al límite de la norma. La delegación de seguridad puso plazo.",
@@ -498,6 +555,7 @@ const BOLSA=[
    mitad:{txt:"Multa y advertencia final.",ef:{plata:-90,riesgo:12}},
    mal:{txt:"Clausura parcial del estadio: se pierde aforo y taquilla.",ef:{estadio:-10,plata:-160,riesgo:16},grupos:{hinchada:-15}}}
  ]},
+/* --- b_tv | institucional --- */
 {id:"b_tv",buzon:"institucional",peso:"medio",
  t:"Se negocia el contrato de televisión",
  d:"La ANFP abre la discusión por el reparto de los derechos de transmisión. Cada club llega con su calculadora.",
@@ -525,6 +583,7 @@ const BOLSA=[
  ]},
 
 /* ---- lote de variedad: situaciones que abren consecuencias, no callejones ---- */
+/* --- b_joya | cantera --- */
 {id:"b_joya",buzon:"cantera",peso:"medio",cuando:E=>E.ind.cantera>55,
  t:"Una joya de la cantera prende las alarmas",
  d:"{JOVEN} tiene 17 años y ya no desentona en los entrenamientos del primer equipo. Un par de clubes grandes mandaron ojeadores a las últimas prácticas. Hay que decidir qué hacer con el proyecto antes de que decida el mercado por vos.",
@@ -552,6 +611,7 @@ const BOLSA=[
    mal:{txt:"Se sintió postergado, se peleó con el club y forzó su salida libre a fin de año.",ef:{cantera:-6},grupos:{comunidad:-10}}}
  ]},
 
+/* --- b_sponsor_gris | finanzas --- */
 {id:"b_sponsor_gris",buzon:"finanzas",peso:"medio",cuando:E=>E.plata<400,
  t:"Un sponsor con olor a problema",
  d:"Una empresa de rubro discutido (apuestas online, sin regular todavía en el país) ofrece el mejor contrato que vio el club en años. El logo iría en la camiseta titular. La plata resuelve el semestre; la imagen es otra historia.",
@@ -580,6 +640,7 @@ const BOLSA=[
    mal:{txt:"El directorio no te perdonó dejar pasar esa plata con la caja en rojo.",ef:{},grupos:{directorio:-18}}}
  ]},
 
+/* --- b_dt_ultimatum | camarin --- */
 {id:"b_dt_ultimatum",buzon:"camarin",peso:"alto",cuando:E=>E.grupos.tecnico.aprob<-15,
  t:"El técnico pone el cargo a disposición",
  d:"El cuerpo técnico está harto: siente que no le respaldaron los refuerzos y que las decisiones se toman por arriba suyo. Puso el cargo a disposición en privado. Si se filtra, es un incendio.",
@@ -607,6 +668,7 @@ const BOLSA=[
      ef:{moral:-12,plantel:-3},grupos:{tecnico:-25,prensa:-15},rep:{publica:-10}}}
  ]},
 
+/* --- b_clasico | hinchada --- */
 {id:"b_clasico",buzon:"hinchada",peso:"medio",cuando:E=>E.ind.hinchada>45,
  t:"Semana de clásico",
  d:"Se viene el partido más pesado del año. La barra pide coparlo todo, la ANFP amenaza con aforo reducido por seguridad, y la ciudad ya está caliente tres días antes. Cómo se juega la previa define mucho.",
@@ -633,6 +695,7 @@ const BOLSA=[
    mal:{txt:"Les diste la tribuna y te la cobraron con negocios en las puertas.",ef:{riesgo:18},grupos:{prensa:-12},flags:{barraDolida:false}}}
  ]},
 
+/* --- b_estrella_lesion | preparacion --- */
 {id:"b_estrella_lesion",buzon:"preparacion",peso:"medio",cuando:E=>E.ind.plantel>50,
  t:"El referente al borde de una recaída",
  d:"El {IDOLO} arrastra una molestia y el médico es claro: si juega esta fecha clave, hay riesgo de recaída larga. Él quiere jugar igual. La decisión es tuya y de nadie más.",

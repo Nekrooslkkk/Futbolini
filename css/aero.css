@@ -93,3 +93,27 @@ body[data-tema="aero"] .ficha[aria-pressed="true"]{background:linear-gradient(18
 body[data-tema="aero"] .modal{background:linear-gradient(180deg,#fbfff7,#e6f6dc);
   border:1px solid rgba(28,110,44,.4);box-shadow:0 18px 50px rgba(0,40,15,.5)}
 body[data-tema="aero"] .etq{background:rgba(255,255,255,.6)}
+
+/* --- pulido XP / Luna (bordes duros, profundidad clásica) --- */
+body[data-tema="aero"] .panel{
+  border:1px solid #2a7a28;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.55) inset,
+    0 -1px 0 rgba(0,40,10,.12) inset,
+    0 6px 16px rgba(8,50,15,.28);
+}
+body[data-tema="aero"] .panel > .cab{
+  border-bottom:1px solid rgba(20,90,30,.35);
+  text-shadow:0 1px 0 rgba(255,255,255,.35);
+}
+body[data-tema="aero"] .btn-aqua{
+  border:1px solid #1a6a4a;
+  border-radius:4px;
+}
+body[data-tema="aero"] .btn-aqua:active{
+  box-shadow:inset 0 2px 6px rgba(0,40,20,.35);
+}
+body[data-tema="aero"] .op{
+  border:1px solid rgba(30,100,40,.28);
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset;
+}

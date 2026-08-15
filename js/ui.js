@@ -89,7 +89,20 @@ function elegirEpoca(id){
   modal(box=>{
     const pintar=()=>{
       box.innerHTML="";
-      const D=datosEra(base), info=D.info[id];
+      let D, info, ib, cb;
+      try{
+        D=datosEra(base);
+        info=D.info[id];
+        ib=D.ind[id]; cb=D.caja[id];
+        if(!info||!ib||!cb) throw new Error("Club sin datos en época "+base+": "+id);
+      }catch(err){
+        box.appendChild(el("div","cab","Error"));
+        const c=el("div","cuerpo"); box.appendChild(c);
+        c.appendChild(el("p",null,"No se pudo armar el briefing: "+err.message));
+        const bx=el("button","btn-aqua ancho","Cerrar"); bx.onclick=cerrarModal; c.appendChild(bx);
+        console.error(err);
+        return;
+      }
       box.appendChild(el("div","cab",'<span class="ic">'+info.esc+'</span><span>'+info.n+'</span>'));
       const c=el("div","cuerpo"); box.appendChild(c);
 
@@ -102,8 +115,8 @@ function elegirEpoca(id){
         fe.appendChild(btn);
       });
       c.appendChild(fe);
-      c.appendChild(el("p","mini",ERA[base].desc));
-      c.appendChild(el("p",null,info.desc));
+      c.appendChild(el("p","mini",(ERA[base]&&ERA[base].desc)||""));
+      c.appendChild(el("p",null,info.desc||""));
 
       c.appendChild(el("h3","sub","2 · Elegí modo"));
       const f=el("div","fichas");
@@ -118,7 +131,6 @@ function elegirEpoca(id){
       c.appendChild(f);
 
       c.appendChild(el("h3","sub","3 · Briefing"));
-      const ib=D.ind[id], cb=D.caja[id];
       c.appendChild(fila("Época","Campeonato de "+(base===2026?LIGA_2026.length:LIGA91.length)+" equipos · victoria vale "+ERA[base].puntosVictoria+" puntos"));
       c.appendChild(fila("Deportivo","plantel "+ib.plantel+" · cantera "+ib.cantera));
       c.appendChild(fila("Económico",plata(cb.plata)+" en caja · "+plata(cb.deuda)+" de deuda"));
@@ -127,8 +139,21 @@ function elegirEpoca(id){
 
       const go=el("button","btn-aqua ancho verde","Empezar en "+anioDe(base));
       go.style.marginTop="12px";
-      go.onclick=()=>{ cerrarModal(); nuevaPartida(id,anioDe(base),modo); SEC="escritorio"; render();
-        aviso("Empieza la temporada "+anioDe(base)); };
+      go.onclick=()=>{
+        try{
+          const anio=anioDe(base);
+          nuevaPartida(id, anio, modo);
+          if(!E || !E.club) throw new Error("nuevaPartida no dejó estado E");
+          cerrarModal();
+          SEC="escritorio";
+          render();
+          aviso("Empieza la temporada "+anio);
+        }catch(err){
+          console.error("Error al empezar partida:", err);
+          aviso("Error al empezar: "+err.message, 6000);
+          /* dejar el modal abierto para que se vea el fallo */
+        }
+      };
       c.appendChild(go);
     };
     pintar();
@@ -780,10 +805,12 @@ function tarjetaAviso(n,conAcciones){
   if(conAcciones&&n.acc&&n.acc.tipo==="ofertaJugador"){
     const cont=el("div"); cont.style.marginTop="6px";
     const ba=el("button","btn-aqua chico verde","Aceptar venta");
-    ba.onclick=()=>{ if(typeof responderOferta==="function"){ responderOferta(n,true); render(); } };
+    ba.onclick=()=>{ if(typeof responderOferta==="function"){ responderOferta(n,"aceptar"); render(); } };
+    const bc=el("button","btn-aqua chico","Pedir más plata"); bc.style.marginLeft="6px";
+    bc.onclick=()=>{ if(typeof responderOferta==="function"){ responderOferta(n,"contra"); render(); } };
     const br=el("button","btn-aqua chico gris","Rechazar"); br.style.marginLeft="6px";
-    br.onclick=()=>{ if(typeof responderOferta==="function"){ responderOferta(n,false); render(); } };
-    cont.appendChild(ba); cont.appendChild(br);
+    br.onclick=()=>{ if(typeof responderOferta==="function"){ responderOferta(n,"rechazar"); render(); } };
+    cont.appendChild(ba); cont.appendChild(bc); cont.appendChild(br);
     d.appendChild(cont);
   }
   return d;

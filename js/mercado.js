@@ -89,9 +89,11 @@ function ventaFlash(j){
   aplicarRep({credibilidad:-4});
   E.ofertasPend=(E.ofertasPend||[]).filter(o=>o.jid!==j.n);
   E.mercadoLog.vendidos.push({n:j.n,monto:monto,anio:E.anio,flash:true});
-  notificar({t:"Venta de urgencia: "+j.n,tipo:"malo",
-    d:"Remataste a "+j.n+" por "+plata(monto)+" ("+Math.round(pct*100)+"% de su valor). Entra plata rápida, pero el directorio lo lee como manotazo de ahogado"+(ref?" y la hinchada no perdona malvender a un referente.":".")});
-  if(typeof redesReaccion==="function") redesReaccion("venta",{n:j.n,flash:true,ref:ref});
+  const txtFlash=ref
+    ?("Remataste a "+j.n+" por "+plata(monto)+" ("+Math.round(pct*100)+"% de su valor). Plata rápida, pero el directorio y la hinchada lo leen como manotazo de ahogado sobre un referente.")
+    :("Remataste a "+j.n+" por "+plata(monto)+" ("+Math.round(pct*100)+"% de su valor). Entra plata ya; el directorio frunce el ceño por el precio, no necesariamente por la salida.");
+  notificar({t:"Venta de urgencia: "+j.n,tipo:"malo",d:txtFlash});
+  if(typeof redesReaccion==="function") redesReaccion("venta",{n:j.n,flash:true,ref:ref,edad:j.edad,nivel:j.nivel});
   guardar();
 }
 /* ---------- préstamos ---------- */
@@ -119,12 +121,55 @@ function caducarOfertas(){
   E.ofertasPend=vivos;
 }
 function ofertaPorId(id){ return (E.ofertasPend||[]).find(o=>o.id===id)||null; }
-/* Responder una oferta entrante (desde Avisos o Mercado). */
-function responderOferta(notif, aceptar){
-  const of=ofertaPorId(notif.acc.ofertaId);
+/* Responder oferta: aceptar | rechazar | contra (pedir más plata).
+   modo: true/"aceptar" | false/"rechazar" | "contra" */
+function responderOferta(notif, modo){
+  const of=ofertaPorId(notif.acc&&notif.acc.ofertaId);
   if(!of){ if(notif.acc) notif.acc.resuelta=true; guardar(); return; }
   const j=E.plantel.find(x=>x.n===of.jid && !x.vendido);
-  notif.acc.resuelta=true;
+  const aceptar=modo===true||modo==="aceptar";
+  const contra=modo==="contra";
+
+  /* --- contraoferta: el otro club puede subir o retirarse --- */
+  if(contra){
+    if(of._contraHecha){
+      if(typeof aviso==="function") aviso("Ya pediste más por esta oferta.");
+      return;
+    }
+    of._contraHecha=true;
+    const rr=Math.random();
+    if(rr<0.42){
+      /* aceptan subir ~12-22% */
+      const sube=Math.round(of.monto*(0.12+Math.random()*0.10));
+      of.monto+=sube;
+      notificar({t:of.comprador+" mejora la oferta",tipo:"mercado",
+        d:of.comprador+" aceptó negociar y subió a "+plata(of.monto)+" por "+of.jid+
+          ". La oferta sigue abierta: podés aceptar o rechazar desde Avisos.",
+        acc:{tipo:"ofertaJugador", ofertaId:of.id, resuelta:false}});
+      /* la notif original queda resuelta; la nueva es la viva */
+      if(notif.acc) notif.acc.resuelta=true;
+    } else if(rr<0.72){
+      /* se mantienen firmes */
+      notificar({t:of.comprador+" no sube",tipo:"neutro",
+        d:of.comprador+" se mantiene en "+plata(of.monto)+" por "+of.jid+
+          ". Última chance: aceptar o rechazar.",
+        acc:{tipo:"ofertaJugador", ofertaId:of.id, resuelta:false}});
+      if(notif.acc) notif.acc.resuelta=true;
+    } else {
+      /* se retiran ofendidos */
+      E.ofertasPend=E.ofertasPend.filter(o=>o.id!==of.id);
+      E.mercadoLog.rechazadas[of.jid]=E.idx;
+      if(notif.acc) notif.acc.resuelta=true;
+      notificar({t:of.comprador+" se retiró",tipo:"malo",
+        d:"Al pedir más plata, "+of.comprador+" se ofendió y retiró la oferta por "+of.jid+
+          ". No van a volver a llamar en un tiempo."});
+    }
+    guardar();
+    return;
+  }
+
+  /* --- aceptar / rechazar (cierra la oferta) --- */
+  if(notif.acc) notif.acc.resuelta=true;
   E.ofertasPend=E.ofertasPend.filter(o=>o.id!==of.id);
   if(aceptar && j){
     j.vendido=true; E.plata+=of.monto;
@@ -132,10 +177,19 @@ function responderOferta(notif, aceptar){
     E.ind.plantel=clamp(E.ind.plantel-Math.round(j.nivel/14),0,100);
     aplicarGrupos({hinchada:ref?-12:-2, directorio:8});
     E.mercadoLog.vendidos.push({n:j.n,monto:of.monto,anio:E.anio});
-    notificar({t:"Vendiste a "+j.n,tipo:"bueno",
-      d:"Se cerró la salida de "+j.n+" a "+of.comprador+" por "+plata(of.monto)+". Entra la plata a la caja"+
-        (ref?", pero la hinchada no perdona que se vaya un referente.":" y el plantel baja un poco de nivel.")});
-    if(typeof redesReaccion==="function") redesReaccion("venta",{n:j.n,ref:ref});
+    let txt;
+    if(ref){
+      txt="Se cerró la salida de "+j.n+" a "+of.comprador+" por "+plata(of.monto)+
+        ". Entra plata seria, pero vender a un referente siempre deja herida abierta en la hinchada. El directorio, en cambio, celebra el ingreso.";
+    } else if(j.edad>=32){
+      txt="Se cerró la salida de "+j.n+" ("+j.edad+" años) a "+of.comprador+" por "+plata(of.monto)+
+        ". Operación de ciclo: se libera sueldo y entra caja. Pocos discuten la lógica.";
+    } else {
+      txt="Se cerró la salida de "+j.n+" a "+of.comprador+" por "+plata(of.monto)+
+        ". Entra la plata a la caja y el plantel baja un poco de nivel. Decisión fría de conducción.";
+    }
+    notificar({t:"Vendiste a "+j.n,tipo:"bueno",d:txt});
+    if(typeof redesReaccion==="function") redesReaccion("venta",{n:j.n,ref:ref,edad:j.edad,nivel:j.nivel});
   } else {
     E.mercadoLog.rechazadas[of.jid]=E.idx;
     notificar({t:"Rechazaste la oferta por "+of.jid,tipo:"neutro",
@@ -219,11 +273,14 @@ function vistaMercado(){
     d.innerHTML="<b>"+of.comprador+" quiere a "+j.n+"</b><br>"+
       j.pos+" · nivel "+j.nivel+" · ofrecen <b>"+plata(of.monto)+"</b> (valor "+plata(j.valor)+")";
     const cont=el("div"); cont.style.marginTop="6px";
+    const nOf=()=>(E.notifs||[]).find(x=>x.acc&&x.acc.ofertaId===of.id&&!x.acc.resuelta);
     const ba=el("button","btn-aqua chico verde","Vender por "+plata(of.monto));
-    ba.onclick=()=>{ const n=(E.notifs||[]).find(x=>x.acc&&x.acc.ofertaId===of.id); if(n){responderOferta(n,true);} render(); };
+    ba.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"aceptar"); render(); };
+    const bc=el("button","btn-aqua chico","Pedir más"); bc.style.marginLeft="6px";
+    bc.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"contra"); render(); };
     const br=el("button","btn-aqua chico gris","Rechazar"); br.style.marginLeft="6px";
-    br.onclick=()=>{ const n=(E.notifs||[]).find(x=>x.acc&&x.acc.ofertaId===of.id); if(n){responderOferta(n,false);} render(); };
-    cont.appendChild(ba); cont.appendChild(br); d.appendChild(cont);
+    br.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"rechazar"); render(); };
+    cont.appendChild(ba); cont.appendChild(bc); cont.appendChild(br); d.appendChild(cont);
     pe.cuerpo.appendChild(d);
   });
   v.appendChild(pe);
@@ -375,11 +432,15 @@ function modalVender(of,j,abierto){
     box.appendChild(el("div","cab",'<span class="ic">📥</span><span>Oferta por '+j.n+'</span>'));
     const c=el("div","cuerpo"); box.appendChild(c);
     c.appendChild(el("p",null,of.comprador+" ofrece <b>"+plata(of.monto)+"</b> por "+j.n+"."));
+    const nOf=()=>(E.notifs||[]).find(x=>x.acc&&x.acc.ofertaId===of.id&&!x.acc.resuelta);
     const b=el("button","btn-aqua ancho verde","Vender por "+plata(of.monto));
-    b.onclick=()=>{ const n=(E.notifs||[]).find(x=>x.acc&&x.acc.ofertaId===of.id); if(n) responderOferta(n,true); cerrarModal(); render(); };
+    b.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"aceptar"); cerrarModal(); render(); };
     c.appendChild(b);
+    const bc=el("button","btn-aqua ancho","Pedir más plata"); bc.style.marginTop="6px";
+    bc.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"contra"); cerrarModal(); render(); };
+    c.appendChild(bc);
     const x=el("button","btn-aqua ancho gris","Rechazar"); x.style.marginTop="6px";
-    x.onclick=()=>{ const n=(E.notifs||[]).find(x=>x.acc&&x.acc.ofertaId===of.id); if(n) responderOferta(n,false); cerrarModal(); render(); };
+    x.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"rechazar"); cerrarModal(); render(); };
     c.appendChild(x);
   });
 }

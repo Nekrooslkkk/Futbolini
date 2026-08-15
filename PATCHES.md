@@ -208,3 +208,42 @@ DOM y permite simular temporadas completas. Para probar en el navegador:
 python -m http.server 8891
 ```
 y abrir `http://localhost:8891/`.
+
+---
+
+# ─────────────── PULIDOS POST-4.0 ───────────────
+
+## Pulido v1 · Narrativa, ventas y Aero XP (2026-08-14)
+**Archivos:** `js/redes.js` (reescritura), `js/mercado.js` (`ventaFlash`, `responderOferta`), `css/aero.css`
+- `redesReaccion("venta")` con ramas: flash+ref / flash / ref mixto / normal / veterano. Ya no siempre "amurrado".
+- Timeline más denso: más handles, frases contextuales en partido/ficha/precio, likes por tipo de autor.
+- Notificaciones de venta varían por referente y edad (≥32 = ciclo natural).
+- Aero: bordes duros + inset shadow estilo Luna/XP, botones con `:active`.
+
+## Pulido v2 · Motor de partido narrativo (2026-08-14)
+**Archivos:** `js/partido.js` (`tickPartido`, nuevas `fraseChance`/`fraseRelato`), `js/ui-partido.js` (reloj)
+- Chance y color dejan de ser frases fijas: miran marcador, minuto, cansancio y clima.
+- Más densidad de relato (0.18 vs 0.12) → menos ticks “vacíos” en modo dirigir/seguir.
+- Reloj muestra 1T / 2T / FT.
+- No se tocó la firma de `tickPartido` ni el loop de auto-pausa (penal/tiro libre/lesión).
+
+## Pulido v3 · Ofertas con contraoferta + momentos tácticos (2026-08-14)
+**Archivos:** `js/mercado.js` (`responderOferta` modo aceptar/contra/rechazar), `js/ui.js` (`tarjetaAviso`), `js/partido.js` (`momentoActual`), `js/ui-partido.js`
+- Avisos y Mercado: 3 botones — Aceptar / Pedir más plata / Rechazar.
+- Contraoferta: 42% suben 12-22%, 30% se mantienen, 28% se retiran ofendidos. Una sola contra por oferta (`of._contraHecha`).
+- Momentos tácticos: 4ª opción de “confiar en el plan” en cada situación (menos sensación de solo reaccionar a botones).
+- Teclas 1-4 ya soportadas por el handler existente.
+
+## Pulido v4 · Textos editables (decisiones + eventos) (2026-08-14)
+**Archivos:** `js/data-decisiones.js`, `js/data-eventos.js`
+- Guía de edición al tope de cada archivo (campos, tokens, dónde va cada cosa).
+- PLANTILLA copy-paste para decisiones nuevas y para crisis/encadenadas.
+- Índice de todos los ids (DECISIONES, BOLSA, EVENTOS, CRISIS, ENCADENADAS).
+- Marcadores `/* --- id | buzon | mes --- */` antes de cada bloque para buscar rápido.
+- **No se cambió ningún campo ni lógica del motor** — solo organización y comentarios.
+
+## Fix · Empezar partida (2026-08-14)
+**Archivos:** `js/ui.js` (`elegirEpoca`)
+- try/catch al armar briefing y al pulsar «Empezar».
+- Si falla, muestra el error en aviso y en consola; no cierra el modal a ciegas.
+- Orden: `nuevaPartida` primero → validar `E` → `cerrarModal` → `render`.

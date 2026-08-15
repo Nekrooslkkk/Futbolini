@@ -236,18 +236,80 @@ function tickPartido(P){
   if(min>60&&Math.random()<0.012){ polemicaArbitral(P); return {tipo:"polemica",min:min}; }
   /* tarjeta */
   if(Math.random()<0.03){ const j=elige(P.once); j.tarjetas++; P.tarjetas.push(j.n);
-    linea(P,min,"Amarilla para "+j.n+".",min>70?"grave":""); return {tipo:"tarjeta",min:min}; }
-  /* chance perdida */
-  if(Math.random()<0.13){ linea(P,min,elige(["Tiro de media distancia que se va apenas afuera.",
-    "El arquero rival manda al córner una que iba adentro.","Se pierde una clarísima en el área chica.",
-    P.part.rivalNombre+" avisa con un cabezazo que pasa cerca.","Se salva en la línea. El estadio se agarra la cabeza."]));
-    return {tipo:"chance",min:min}; }
-  /* color */
-  if(Math.random()<0.12){ linea(P,min,elige(["Juego trabado en la mitad de la cancha.",
-    "El árbitro cobra falta y la tribuna reclama.","Cambio de ritmo: el partido se abrió.",
-    "Se juega con el balón parado como única arma.","Momento de estudio: nadie quiere equivocarse."]));
-    return {tipo:"relato",min:min}; }
+    linea(P,min,min>75
+      ?("Amarilla para "+j.n+". En este tramo duele más.")
+      :("Amarilla para "+j.n+"."),min>70?"grave":"");
+    return {tipo:"tarjeta",min:min}; }
+  /* chance perdida — con contexto de marcador y minuto */
+  if(Math.random()<0.14){
+    linea(P,min,fraseChance(P,min));
+    return {tipo:"chance",min:min};
+  }
+  /* color / relato — más denso, menos “nada” */
+  if(Math.random()<0.18){
+    linea(P,min,fraseRelato(P,min));
+    return {tipo:"relato",min:min};
+  }
   return {tipo:"nada",min:min};
+}
+/* frases de chance según marcador y tramo */
+function fraseChance(P,min){
+  const [yo,otro]=miMarcador(P);
+  const dif=yo-otro;
+  const riv=P.part.rivalNombre||"el rival";
+  if(dif<0&&min>60) return elige([
+    "Ocasión clara y se va afuera. El empate estaba ahí.",
+    "El arquero rival saca un milagro. La tribuna se agarra la cabeza.",
+    "Se pierde una mano a mano. El partido se está yendo.",
+    riv+" se salva en la línea. Parecía el  gol del empate."
+  ]);
+  if(dif>0&&min>70) return elige([
+    "Casi el segundo que lo liquida. Se fue rozando el palo.",
+    "Contraataque limpio y el delantero la manda afuera. Sigue vivo el rival.",
+    "El arquero rival vuela otra vez. Todavía no está cerrado."
+  ]);
+  return elige([
+    "Tiro de media distancia que se va apenas afuera.",
+    "El arquero rival manda al córner una que iba adentro.",
+    "Se pierde una clarísima en el área chica.",
+    riv+" avisa con un cabezazo que pasa cerca.",
+    "Se salva en la línea. El estadio se agarra la cabeza.",
+    "Centro peligroso y nadie llega al remate. Se pierde la chance."
+  ]);
+}
+/* color del partido según cansancio, minuto y clima */
+function fraseRelato(P,min){
+  const cans=P.cansancio||0;
+  const riv=P.part.rivalNombre||"el rival";
+  if(min<15) return elige([
+    "El partido recién arranca. Los dos se estudian.",
+    "Primeros toques, todavía sin profundidad.",
+    "La tribuna empuja desde el primer minuto."
+  ]);
+  if(cans>7) return elige([
+    "Se nota el desgaste. Las piernas ya no responden igual.",
+    "El ritmo bajó. El físico empieza a mandar.",
+    "Hay más errores por cansancio que por falta de ideas."
+  ]);
+  if(min>75) return elige([
+    "Último tramo. Cada pelota parece la definitiva.",
+    "El árbitro mira el reloj. La tensión sube en la platea.",
+    "Se juega con el corazón más que con la cabeza."
+  ]);
+  if(P.precClima&&P.precClima<0.95) return elige([
+    "El clima complica. La pelota no corre limpia.",
+    "Cancha pesada. Cuesta encontrar espacios.",
+    "El viento desvía un centro. El partido se pone trabado."
+  ]);
+  return elige([
+    "Juego trabado en la mitad de la cancha.",
+    "El árbitro cobra falta y la tribuna reclama.",
+    "Cambio de ritmo: el partido se abrió.",
+    "Se juega con el balón parado como única arma.",
+    "Momento de estudio: nadie quiere equivocarse.",
+    riv+" recupera y tira un pelotazo largo. Se diluye la jugada.",
+    "Buen intercambio de pases, pero sin llegada clara."
+  ]);
 }
 function lesionEnPartido(P){
   const j=elige(P.once.filter(x=>x.pos!=="ARQ"));
@@ -289,7 +351,8 @@ function momentoActual(P){
     op:[
      {t:"Salir a comerse el partido",ef:{ataque:3,riesgoPlan:2}},
      {t:"Empezar de menos a más",ef:{orden:3,ataque:-1}},
-     {t:"Recordarles lo que está en juego",ef:{ataque:1.5,orden:1.5,desgaste:1}}
+     {t:"Recordarles lo que está en juego",ef:{ataque:1.5,orden:1.5,desgaste:1}},
+     {t:"Confiar en el plan y no tocar nada",ef:{orden:1}}
     ]};
   if(dif<0) return {
     t:"Vas abajo en el marcador",
@@ -297,7 +360,8 @@ function momentoActual(P){
     op:[
      {t:"Meter otro delantero y tirarse encima",ef:{ataque:5,riesgoPlan:3,desgaste:2}},
      {t:"Sostener el orden y esperar el error",ef:{orden:3,ataque:1}},
-     {t:"Cambiar el sistema completo",ef:{ataque:3,orden:-1,riesgoPlan:1.5}}
+     {t:"Cambiar el sistema completo",ef:{ataque:3,orden:-1,riesgoPlan:1.5}},
+     {t:"No alterar el plan: aguantar la idea",ef:{orden:1.5}}
     ]};
   if(dif>0) return {
     t:"Vas arriba",
@@ -305,7 +369,8 @@ function momentoActual(P){
     op:[
      {t:"Cerrarse atrás y aguantar",ef:{orden:4,ataque:-3,riesgoPlan:-1}},
      {t:"Ir por otro para liquidarlo",ef:{ataque:4,riesgoPlan:2}},
-     {t:"Manejar el partido con la pelota",ef:{orden:2,ataque:1,desgaste:-1}}
+     {t:"Manejar el partido con la pelota",ef:{orden:2,ataque:1,desgaste:-1}},
+     {t:"Confiar en lo que viene funcionando",ef:{orden:1,desgaste:-0.5}}
     ]};
   return {
     t:"Está empatado",
@@ -313,7 +378,8 @@ function momentoActual(P){
     op:[
      {t:"Meter un cambio ofensivo",ef:{ataque:4,riesgoPlan:2}},
      {t:"Refrescar el mediocampo",ef:{orden:2,ataque:1,desgaste:-2}},
-     {t:"Dejarlo como está",ef:{}}
+     {t:"Dejarlo como está",ef:{}},
+     {t:"Una consigna corta y seguir",ef:{orden:1,ataque:0.5}}
     ]};
 }
 function aplicarMomento(P,ef){

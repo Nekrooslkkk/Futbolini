@@ -151,7 +151,8 @@ function pintarPartido(){
     '<div class="go">'+P.gl+" - "+P.gv+'</div>'+
     '<div class="eq">'+(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>';
   p.cuerpo.appendChild(marc);
-  p.cuerpo.appendChild(el("div","reloj",P.terminado?"Final del partido":((PAUSADO?"⏸ ":"")+"Minuto "+P.min)));
+  const tramo=P.min<=45?"1T":(P.min<90?"2T":"FT");
+  p.cuerpo.appendChild(el("div","reloj",P.terminado?"Final del partido":((PAUSADO?"⏸ ":"")+"Minuto "+P.min+" · "+tramo)));
   if(!P.terminado&&P.modo!=="simular"){
     const ctrl=el("div","ctrlPartido");
     const bp=el("button","btn-aqua chico",PAUSADO?"▶ Seguir":"⏸ Pausa");
@@ -216,7 +217,7 @@ function mostrarMomento(){
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);
-  p.cuerpo.appendChild(el("p","mini","Decidí con 1 / 2 / 3."));
+  p.cuerpo.appendChild(el("p","mini","Decidí con 1 / 2 / 3 / 4."));
   $("#vista").appendChild(p);
 }
 /* jugada de peligro que el DT resuelve en el acto */
