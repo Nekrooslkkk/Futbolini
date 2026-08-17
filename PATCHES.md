@@ -323,3 +323,17 @@ E.perfil, E.dinastia, E.personal, E.flags.desfalco.
 - Verificado: harness (planteles, quiebra por club/año, camada, timeline continua) + UI (selector) + regresión OK.
 
 ## FUTBOLINI 5.0: B1·B2·B3·B5·B6 hechos. Falta solo **B4** (paneles institucionales + conferencias de prensa).
+
+## 5.0 · Bloque 4 — Institución profunda + conferencias de prensa  ✅ (2026-08-15)
+**Archivos:** `data-grupos.js`, `motor.js`, `ui.js`, `ui-partido.js`
+- **Interacción directa** (`INTERACCIONES` en data-grupos.js): panel en Institución con acciones por actor
+  (Barra brava, Directorio, Prensa, Ex-jugadores, Anónimos). `aplicarInteraccion(op)` cobra capital/plata,
+  mueve grupos/rep/ind/flags. Anónimos → `soploAnonimo()` (útil / humo / trampa).
+- **Conferencia de prensa PRE-partido** (`modalConferencia` en ui-partido.js): botón en la previa, 3 respuestas
+  (humildad / confianza / palo al rival-árbitros) que mueven prensa/credibilidad/hinchada/moral. Una por fecha
+  (`E.flags["conf_"+idx]`, se limpia en `nuevoAnio`). La conferencia POST ya existía (seccionPrensa).
+- Verificado: harness (interacciones, costos, soplo, limpieza de flags) + UI + regresión OK.
+
+# ═══════════ FUTBOLINI 5.0 COMPLETO (Bloques 1-6) ═══════════
+B1 Vida/Perfil/Dinastía · B2 Casino/Corrupción · B3 Ticker en vivo · B4 Institución/Prensa ·
+B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresiones sin errores.

@@ -357,6 +357,27 @@ function vistaInstitucion(){
     pe.cuerpo.appendChild(d);
   });
   v.appendChild(pe);
+
+  /* interacción directa con los actores del club (Bloque 4) */
+  if(typeof INTERACCIONES!=="undefined"){
+    const pi=panel("Interacción directa","🤝");
+    pi.cuerpo.appendChild(el("p","mini","Movete en los pasillos: cada actor tiene su precio y su reacción."));
+    INTERACCIONES.forEach(gr=>{
+      pi.cuerpo.appendChild(el("h3","sub",gr.ic+" "+gr.g));
+      gr.ops.forEach(op=>{
+        const b=el("button","op");
+        const costo=op.capital?(Math.abs(op.capital)+" capital"):(op.plata?plata(Math.abs(op.plata)):"gratis");
+        b.innerHTML='<div class="t">'+op.t+'</div><div class="d">'+(op.d||"")+' · <b>'+costo+'</b></div>';
+        b.onclick=()=>{
+          const r=aplicarInteraccion(op);
+          if(!r.ok){ aviso(r.msg); return; }
+          render(); aviso(r.soplo?("Soplo: "+r.soplo):op.t);
+        };
+        pi.cuerpo.appendChild(b);
+      });
+    });
+    v.appendChild(pi);
+  }
 }
 function cambiarEstatuto(cat,op,costo){
   if(E.capital<costo){ aviso("No te alcanza el capital institucional ("+costo+" necesarios)"); return; }

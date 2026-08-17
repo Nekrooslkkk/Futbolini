@@ -87,6 +87,10 @@ function pantallaPrevia(part){
     bc.onclick=modalCharlaCapitan;
     p2.cuerpo.appendChild(bc);
   }
+  const confHecha=E.flags["conf_"+E.idx];
+  const bconf=el("button","btn-aqua ancho"+(confHecha?" gris":""),confHecha?"🎤 Ya diste la conferencia":"🎤 Conferencia de prensa");
+  bconf.disabled=confHecha; bconf.onclick=()=>modalConferencia(part);
+  p2.cuerpo.appendChild(bconf);
   p2.cuerpo.appendChild(el("p","mini","Seguir: barra espaciadora para pausar. Dirigir: teclas 1 / 2 / 3 en cada decisión."));
   rej.appendChild(p2);
   v.appendChild(rej);
@@ -133,6 +137,36 @@ function modalPizarra(part){
       c.appendChild(q);
     };
     pintar();
+  });
+}
+/* Conferencia de prensa PRE-partido (Bloque 4): 3 respuestas que mueven prensa,
+   credibilidad y moral, con contexto de favorito/underdog. Una por partido. */
+function modalConferencia(part){
+  const fz=fuerzaEquipo(onceIdeal());
+  const favorito=fz.base>part.fuerzaRival+4;
+  const opciones=[
+   {t:"Bajar el perfil y pedir humildad",d:"Paños fríos: sacarle presión al grupo.",grupos:{prensa:6,camarin:4},rep:{credibilidad:4},ef:{moral:4}},
+   {t:"Salir con confianza total",d:"«Vamos a ganar, no hay con qué».",grupos:{hinchada:7,prensa:3},rep:{publica:3},ef:{moral:2}},
+   {t:"Tirar un palo al rival y a los árbitros",d:"Calentar la previa a lo grande.",grupos:{hinchada:8,anfp:-8,prensa:-6},rep:{dureza:6,credibilidad:-2},ef:{}}
+  ];
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">🎤</span><span>Conferencia de prensa</span>'));
+    const c=el("div","cuerpo"); box.appendChild(c);
+    c.appendChild(el("p",null,"Previa ante "+part.rivalNombre+". "+(favorito?"Sos favorito: ojo con la relajación y la vara alta.":"Sos el que menos tiene que perder: usalo.")));
+    const ops=el("div","ops");
+    opciones.forEach(o=>{
+      const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div><div class="d">'+o.d+'</div>';
+      b.onclick=()=>{
+        if(o.grupos) aplicarGrupos(o.grupos); if(o.rep) aplicarRep(o.rep); if(o.ef) aplicarEfectos(o.ef);
+        E.flags["conf_"+E.idx]=true;
+        notificar({t:"Conferencia de prensa",tipo:"neutro",d:"Elegiste: «"+o.t+"» antes de enfrentar a "+part.rivalNombre+".",bandeja:false});
+        guardar(); cerrarModal(); pantallaPrevia(part); aviso("Declaraciones dadas");
+      };
+      ops.appendChild(b);
+    });
+    c.appendChild(ops);
+    const x=el("button","btn-aqua ancho gris","No hablar con la prensa"); x.style.marginTop="6px"; x.onclick=cerrarModal;
+    c.appendChild(x);
   });
 }
 function arrancarPartido(part,modo){

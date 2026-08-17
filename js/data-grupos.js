@@ -126,3 +126,25 @@ const REPUTACION=[
  {id:"prensa",      n:"Trato con la prensa", ic:"🎤", d:"Cuánto te cubren las espaldas cuando se pone fea."},
  {id:"dureza",      n:"Mano dura",      ic:"✊", d:"Fama de imponerte. Sirve con el camarín, asusta a los socios."}
 ];
+
+/* ---------- 5.0 · Bloque 4 — Interacción institucional directa ---------- */
+const INTERACCIONES=[
+ {g:"Barra brava",ic:"🚩",ops:[
+   {t:"Darles entradas y viajes",d:"Un gesto que garantiza aliento… y ata al club a un grupo que no rinde cuentas.",plata:-60,grupos:{hinchada:10,prensa:-5},ef:{riesgo:6}},
+   {t:"Mano dura con la barra",d:"Cero privilegios, desalojo si hace falta.",grupos:{hinchada:-12,prensa:8,anfp:6},ef:{riesgo:-8},rep:{dureza:6}}
+ ]},
+ {g:"Directorio",ic:"🎩",ops:[
+   {t:"Rendir cuentas con transparencia",d:"Abrir los números y ordenar la casa.",capital:-6,grupos:{directorio:12,socios:6},rep:{credibilidad:5}},
+   {t:"Prometer refuerzos de peso",d:"Ilusionar a la mesa con nombres grandes.",grupos:{directorio:8},flags:{prometioRefuerzos:true}}
+ ]},
+ {g:"Prensa",ic:"🎙️",ops:[
+   {t:"Off the record con los periodistas",d:"Darles material y cercanía a cambio de buena onda.",grupos:{prensa:12},rep:{prensa:6,credibilidad:-3}},
+   {t:"Cerrarles la puerta",d:"Ni una declaración. Que escriban lo que quieran.",grupos:{prensa:-15},rep:{dureza:6}}
+ ]},
+ {g:"Ex-jugadores",ic:"🎖️",ops:[
+   {t:"Invitar a un ídolo a la práctica",d:"Un histórico que le habla al plantel. La mística no se compra… casi.",plata:-30,ef:{moral:6,hinchada:4},grupos:{hinchada:6,comunidad:4}}
+ ]},
+ {g:"Anónimos",ic:"🕵️",ops:[
+   {t:"Escuchar a un informante anónimo",d:"Alguien que dice tener data del vestuario rival o de los pasillos de la ANFP.",soplo:true}
+ ]}
+];

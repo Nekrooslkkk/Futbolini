@@ -188,6 +188,34 @@ function notificar(n){
   }
   return item;
 }
+/* ---------- 5.0 · Bloque 4 — interacción institucional ---------- */
+function aplicarInteraccion(op){
+  if(op.capital && E.capital+op.capital<0) return {ok:false,msg:"No te alcanza el capital institucional."};
+  if(op.plata && E.plata+op.plata<0) return {ok:false,msg:"No te alcanza la caja."};
+  if(op.capital) aplicarEfectos({capital:op.capital});
+  if(op.plata) aplicarEfectos({plata:op.plata});
+  if(op.ef) aplicarEfectos(op.ef);
+  if(op.grupos) aplicarGrupos(op.grupos);
+  if(op.rep) aplicarRep(op.rep);
+  if(op.flags) for(const k in op.flags) E.flags[k]=op.flags[k];
+  if(op.soplo){ const s=soploAnonimo(); guardar(); return {ok:true,soplo:s}; }
+  notificar({t:"Interacción: "+op.t,tipo:"neutro",d:op.d||"",bandeja:false});
+  guardar(); return {ok:true};
+}
+function soploAnonimo(){
+  const r=Math.random();
+  if(r<0.4){
+    agregarMod({id:"soplo_ventaja",n:"Data del rival",anios:1,ef:{liga:2}});
+    notificar({t:"Soplo útil",tipo:"bueno",d:"El informante te pasó debilidades de los próximos rivales. Pequeña ventaja este año.",bandeja:false});
+    return "útil";
+  } else if(r<0.7){
+    notificar({t:"Soplo sin valor",tipo:"neutro",d:"Puro humo. El tipo hablaba de memoria.",bandeja:false});
+    return "humo";
+  }
+  E.ind.riesgo=clamp(E.ind.riesgo+6,0,100);
+  notificar({t:"Soplo envenenado",tipo:"malo",d:"El «informante» quería sacarte plata y quedó dando vueltas con lo que le contaste. Sube el riesgo.",bandeja:false});
+  return "trampa";
+}
 function notifsNoLeidas(){ return (E.notifs||[]).filter(n=>!n.leido).length; }
 function notifsAccionables(){ return (E.notifs||[]).filter(n=>n.acc&&!n.acc.resuelta); }
 function marcarLeidas(){ (E.notifs||[]).forEach(n=>{ n.leido=true; }); }
@@ -673,7 +701,7 @@ function nuevoAnio(){
     d:"Nuevo año, nuevo campeonato. El plantel se renovó, los objetivos se reajustan y la caja arranca de cero en lo semanal.",bandeja:false});
   /* banderas que solo valen dentro de una temporada */
   E.flags.rachaLiquida=false;
-  Object.keys(E.flags).forEach(k=>{ if(k.indexOf("medianoche_")===0) delete E.flags[k]; });
+  Object.keys(E.flags).forEach(k=>{ if(k.indexOf("medianoche_")===0||k.indexOf("conf_")===0) delete E.flags[k]; });
   E.calendario=construirCalendario(E.club,E.anio,E.anio===1992);
   reiniciarTabla();
   repartirDecisiones();
