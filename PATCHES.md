@@ -299,3 +299,12 @@ E.perfil, E.dinastia, E.personal, E.flags.desfalco.
 - Verificado: harness (tipos de gol, asistencia 59,6%, filtros, config) + UI + regresión sin errores.
 
 ## ✅ FUTBOLINI 5.0: Bloques 1, 2 y 6 hechos. Pendientes: B3 (ticker en vivo), B4 (institución + conferencias), B5 (histórico 1989→2008, best-effort con datos a validar).
+
+## 5.0 · Bloque 3 — Ticker de redes EN VIVO (FutbolGram)  ✅ (2026-08-15)
+**Archivos:** `js/redes.js`, `ui-partido.js`, `partido.js`, `css/base.css`
+- `tickerPost(P,ev)` (redes.js): genera posts cortos de hinchas/prensa por cada tick del partido según el evento
+  (gol, gol rival, penal/penal rival, tiro libre, tarjeta, lesión, polémica, chance). Se acumulan en `P.ticker`
+  (feed local del partido, no toca E.timeline).
+- Hook en `pasoEnVivo` (después de `tickPartido`). `P.ticker` se inicializa en `iniciarPartido`.
+- Render en `pintarPartido`: sección "📱 FutbolGram · en vivo" con los últimos posts (solo modos Seguir/Dirigir). CSS `.ticker/.tk`.
+- Verificado: harness (genera por tipo de evento, se puebla en vivo) + UI + regresión sin errores.

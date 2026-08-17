@@ -180,6 +180,17 @@ function pintarPartido(){
   P.lineas.slice().reverse().forEach(l=>rel.appendChild(el("div","rel "+l.c,'<span class="m">'+l.m+"'</span><span>"+l.t+"</span>")));
   if(!P.lineas.length) rel.appendChild(el("div","rel","<span class='m'>0'</span><span>Rueda la pelota en "+P.part.sede+".</span>"));
   p.cuerpo.appendChild(rel);
+  /* ticker de redes en vivo (FutbolGram) */
+  if(P.modo!=="simular" && P.ticker && P.ticker.length){
+    p.cuerpo.appendChild(el("h3","sub","📱 FutbolGram · en vivo"));
+    const tk=el("div","ticker");
+    P.ticker.slice(0,10).forEach(t=>{
+      const d=el("div","tk "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"")));
+      d.innerHTML="<b>"+t.autor+"</b> <span class='mini'>"+t.m+"'</span><br>"+t.texto;
+      tk.appendChild(d);
+    });
+    p.cuerpo.appendChild(tk);
+  }
   v.appendChild(p);
   $("#vista").appendChild(el("div","",""));
 }
@@ -198,6 +209,7 @@ function pasoEnVivo(){
     clearInterval(TIMER); pintarPartido(); mostrarMomento(); return;
   }
   const ev=tickPartido(P);
+  if(typeof tickerPost==="function") tickerPost(P,ev);
   if(ev.tipo==="penalRival"){ resolverEventoAuto(P,ev); pintarPartido(); return; }
   if(ev.tipo==="penal"||ev.tipo==="lesion"||ev.tipo==="tiroLibre"){
     const autoP=!E.config||E.config.autoPausa!==false;

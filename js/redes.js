@@ -249,3 +249,49 @@ function campanaCM(tipo){
 function ingresoDigital(){
   return (E.staff&&E.staff.cm)?Math.round((E.seguidores||0)*0.02):0;
 }
+
+/* ============================================================
+   5.0 · Bloque 3 — Ticker EN VIVO durante el partido (FutbolGram)
+   Se llama por cada tick del partido; empuja posts cortos a
+   P.ticker (feed local del partido). No toca E.timeline.
+   ============================================================ */
+function tickerPost(P, ev){
+  if(!P || !ev) return;
+  P.ticker=P.ticker||[];
+  const m=ev.min||P.min||0;
+  const club=(typeof E!=="undefined"&&E.clubNombre)?E.clubNombre:"el club";
+  const rival=(P.part&&P.part.rivalNombre)||"el rival";
+  let autor=elige(HANDLES_HINCHA), texto=null, tono="neutro";
+  switch(ev.tipo){
+    case "gol":
+      autor=elige(HANDLES_HINCHA); tono="bueno";
+      texto=elige(["¡GOOOOL NUESTRO! "+m+"' 🔥🔥","¡LA METIÓ! "+m+"', vamos carajo 💪","Golazo. Se grita con todo, "+m+"' ⚽","¡ARRIBA! "+m+"' pura garra ❤️"]); break;
+    case "golRival":
+      autor=elige(HANDLES_HINCHA); tono="malo";
+      texto=elige(["Nos hicieron gol... "+m+"' 😩","Uh no, gol del rival. A despertar, "+m+"'.","Otra vez mal parados atrás, "+m+"' 😡","Gol de "+rival+". Duele, "+m+"'."]); break;
+    case "penal":
+      autor=elige(HANDLES_PRENSA); tono="bueno";
+      texto="🚨 ¡PENAL para "+club+" en el "+m+"'! El VAR lo mira con lupa…"; break;
+    case "penalRival":
+      autor=elige(HANDLES_PRENSA); tono="malo";
+      texto="🚨 Penal en contra, "+m+"'. Polémico: la banca protesta y las redes explotan."; break;
+    case "tiroLibre":
+      autor=elige(HANDLES_HINCHA); tono="neutro";
+      texto="Tiro libre peligrosísimo, "+m+"'. A meterla de una 🙏"; break;
+    case "tarjeta":
+      autor=elige(HANDLES_PRENSA); tono="neutro";
+      texto="🟨 Amarilla en el "+m+"'. Ojo con la próxima."; break;
+    case "lesion":
+      autor=elige(HANDLES_HINCHA); tono="malo";
+      texto="Uno quedó tirado en el "+m+"'… ojalá no sea grave 🤕"; break;
+    case "chance":
+      if(Math.random()<0.45){ autor=elige(HANDLES_HINCHA); texto="¡UHHH la que se perdió! "+m+"' 😱"; tono="neutro"; }
+      break;
+    case "polemica":
+      autor=elige(HANDLES_PRENSA); texto="📺 Repiten la jugada del "+m+"'… el árbitro ya es tendencia."; tono="neutro"; break;
+    default: return;
+  }
+  if(!texto) return;
+  P.ticker.unshift({m:m, autor:autor, texto:texto, tono:tono});
+  if(P.ticker.length>18) P.ticker.length=18;
+}

@@ -113,7 +113,7 @@ function iniciarPartido(part,modo){
     desgaste:fz.desgaste+(cl.desgaste||0), cansancio:0, rival:rivalBase, empuje:0, riesgoPlan:0,
     recup:pr.recup||0, expo:pr.expo||0,
     precClima:cl.precision||1, arb:arb,
-    lineas:[], goleadores:[], tarjetas:[], lesionados:[], terminado:false,
+    lineas:[], goleadores:[], tarjetas:[], lesionados:[], ticker:[], terminado:false,
     momentos:momentosPartido(part), momentoIdx:0
   };
 }
