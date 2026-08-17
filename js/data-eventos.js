@@ -169,7 +169,11 @@ const EVENTOS=[
 /* --- ev_dt_firme --- */
 {id:"ev_dt_firme",tipo:"bueno",peso:E=>E.flags.dtFirme?2.4:0,
  t:"Plantel motivado por un DT firme",d:"La postura dura del cuerpo técnico prendió al camarín: se entrena distinto desde que quedó claro quién manda.",
- ef:{moral:6,plantel:2},accion:"limpiaBandera:dtFirme"}
+ ef:{moral:6,plantel:2},accion:"limpiaBandera:dtFirme"},
+/* --- hito histórico: camada Borghi (Colo-Colo ~2006-2007) --- */
+{id:"ev_camada",tipo:"bueno",peso:E=>(E.club==="CC"&&E.anio>=2006&&E.anio<=2008&&!E.flags.camadaBorghi)?6:0,
+ t:"Estalla una camada histórica",d:"Las inferiores largaron una generación que no se ve todos los días. El mundo va a hablar de estos pibes, y las ofertas de Europa no van a tardar.",
+ accion:"camadaBorghi"}
 ];
 
 /* ========== CRISIS (obligatorias si dispara) ==========
@@ -248,6 +252,23 @@ const CRISIS=[
    mitad:{txt:"El quiebre fue total.",ef:{socios:-25,hinchada:-25},accion:"cisma"},
    mal:{txt:"El quiebre fue total y te transformaste en enemigo público del fútbol chileno.",
      ef:{socios:-30,hinchada:-30},rep:{publica:-30},accion:"cisma"}}
+ ]},
+{id:"cr_quiebra",dispara:E=>E.club==="CC"&&E.anio===2002&&!E.flags.crisis_cr_quiebra,
+ t:"La quiebra: administración judicial",
+ d:"El club entra en administración judicial. Las deudas son impagables y la justicia exige un plan de saneamiento. La caja rápida son los canteranos que valen oro. Antes de que aparezca la concesionaria, hay que decidir cómo sobrevivir.",
+ op:[
+  {t:"Vender canteranos para saldar deudas",dif:30,grupos:{directorio:12,hinchada:-18,comunidad:-10},rep:{credibilidad:4},
+   bien:{txt:"Se salda lo urgente vendiendo joyas. Duele en la cancha, pero el club respira y evita la liquidación.",ef:{deuda:-1200,plantel:-8,plata:400},accion:"venderTitular"},
+   mitad:{txt:"Se vende a medias y la deuda sigue pesando.",ef:{deuda:-700,plantel:-8,plata:250},accion:"venderTitular"},
+   mal:{txt:"Se malvendió y ni así alcanzó.",ef:{deuda:-400,plantel:-10,plata:150,riesgo:8},accion:"venderTitular"}},
+  {t:"Negociar un convenio con los acreedores",dif:52,
+   bien:{txt:"Se firma un convenio y el club esquiva lo peor, con años de ajuste por delante.",ef:{deuda:-500,plata:-100},mods:[{id:"ajuste_quiebra",n:"Plan de saneamiento",anios:4,ef:{capitalAnual:-3}}]},
+   mitad:{txt:"Convenio caro y con garantías pesadas.",ef:{deuda:-200,plata:-150}},
+   mal:{txt:"Rechazado: la administración judicial toma el control total.",ef:{riesgo:16,plata:-300},grupos:{directorio:-15}}},
+  {t:"Resistir y apostar a la gente",dif:64,grupos:{hinchada:15,comunidad:15,socios:10},rep:{publica:8},
+   bien:{txt:"La hinchada salió a bancar con colectas y socios nuevos. Épica pura: el club se sostiene desde abajo.",ef:{socios:12,plata:300}},
+   mitad:{txt:"El aguante ayudó, pero no alcanza para tapar el agujero.",ef:{socios:6,riesgo:8}},
+   mal:{txt:"La resistencia romántica chocó con la realidad de los números.",ef:{riesgo:18,deuda:200}}}
  ]}
 ];
 

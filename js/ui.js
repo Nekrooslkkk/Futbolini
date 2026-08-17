@@ -85,8 +85,8 @@ function pantallaInicio(){
   v.appendChild(paso1);
 }
 function elegirEpoca(id){
-  let base=1991, modo="historico";
-  const anioDe=b=>b===2026?2026:1991;
+  let base=1991, modo="historico", anioInicio=1991;
+  const anioDe=b=>b===2026?2026:anioInicio;
   modal(box=>{
     const pintar=()=>{
       box.innerHTML="";
@@ -118,6 +118,20 @@ function elegirEpoca(id){
       c.appendChild(fe);
       c.appendChild(el("p","mini",(ERA[base]&&ERA[base].desc)||""));
       c.appendChild(el("p",null,info.desc||""));
+
+      /* punto de inicio histórico (solo Colo-Colo en la época 1991) */
+      if(base===1991 && id==="CC"){
+        c.appendChild(el("h3","sub","Punto de inicio"));
+        const fp=el("div","fichas");
+        [[1989,"1989 · La Reconstrucción"],[1991,"1991 · La Gloria Libertadores"]].forEach(([y,n])=>{
+          const b=el("button","ficha",n); b.setAttribute("aria-pressed",anioInicio===y?"true":"false");
+          b.onclick=()=>{ anioInicio=y; pintar(); }; fp.appendChild(b);
+        });
+        c.appendChild(fp);
+        c.appendChild(el("p","mini",anioInicio===1989
+          ? "Tomás el club en 1989: ordená el camarín, saneá las finanzas y armá la base para volver a la gloria. Tu carrera sigue año a año."
+          : "Arrancás en 1991 con la base consagrada, lista para ir por la Copa Libertadores."));
+      } else if(base===1991) { anioInicio=1991; }
 
       c.appendChild(el("h3","sub","2 · Elegí modo"));
       const f=el("div","fichas");

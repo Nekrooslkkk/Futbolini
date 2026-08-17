@@ -308,3 +308,18 @@ E.perfil, E.dinastia, E.personal, E.flags.desfalco.
 - Hook en `pasoEnVivo` (después de `tickPartido`). `P.ticker` se inicializa en `iniciarPartido`.
 - Render en `pintarPartido`: sección "📱 FutbolGram · en vivo" con los últimos posts (solo modos Seguir/Dirigir). CSS `.ticker/.tk`.
 - Verificado: harness (genera por tipo de evento, se puebla en vivo) + UI + regresión sin errores.
+
+## 5.0 · Bloque 5 — Modo histórico Colo-Colo 1989→2008  ✅ (2026-08-15)
+**Archivos:** `data-plantel.js`, `data-eventos.js`, `motor.js`, `ui.js`
+- **Planteles históricos reales** (stats estimadas): `PLANTEL_CC_1989`, `PLANTEL_CC_2002`, `PLANTEL_CC_2006`
+  (en `PLANTELES_REALES.CC` bajo 1989/2002/2006/2007). Datos cruzados aportados por el usuario (fuentes públicas).
+  Joyas con proyección alta para ventas (Margas 92, Bravo 94, Vidal 96, Alexis 97, Matías F. 95).
+- **Selector de punto de inicio** (en `elegirEpoca`, solo CC época 1991): **1989 "La Reconstrucción"** o
+  **1991 "La Gloria Libertadores"**. `anioInicio`. 1989 arranca sin Copa (calendario solo liga), eraBase 1991 (2 pts).
+- **Línea temporal continua**: se juega año a año (nuevoAnio). Verificado 1989→2007 sin crashes.
+- **Hitos**: crisis `cr_quiebra` (solo CC, año 2002 — administración judicial, 3 caminos: vender canteranos /
+  convenio / resistir); evento `ev_camada` + acción `camadaBorghi` (CC 2006-2008: inyecta a Fernández, Vidal,
+  Alexis, Valdivia, Suazo si no están, +cantera).
+- Verificado: harness (planteles, quiebra por club/año, camada, timeline continua) + UI (selector) + regresión OK.
+
+## FUTBOLINI 5.0: B1·B2·B3·B5·B6 hechos. Falta solo **B4** (paneles institucionales + conferencias de prensa).

@@ -437,6 +437,18 @@ function ejecutarAccion(a){
       E.flags.investigacionAbierta=false;
       return "La investigación se archiva por ahora.";
     }
+    case "camadaBorghi":{
+      E.flags.camadaBorghi=true;
+      E.ind.cantera=clamp(E.ind.cantera+8,0,100);
+      if(typeof PLANTEL_CC_2006==="undefined") return "Aparece una generación dorada en las inferiores.";
+      const joyas=["Matías Fernández","Arturo Vidal","Alexis Sánchez","Jorge Valdivia","Humberto Suazo"];
+      const sumados=[];
+      PLANTEL_CC_2006.filter(a=>joyas.indexOf(a[0])>=0).forEach(a=>{
+        if(E.plantel.some(j=>j.n===a[0]&&!j.vendido)) return;
+        const j=jugadorDesde(a); j.contrato.hasta=E.anio+4; j.real=true; E.plantel.push(j); sumados.push(j.n);
+      });
+      return sumados.length?("Irrumpen desde las inferiores: "+sumados.join(", ")+". Proyección de venta al extranjero.") :"Aparece una generación dorada en las inferiores.";
+    }
   }
   return "";
 }
