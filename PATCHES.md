@@ -337,3 +337,18 @@ E.perfil, E.dinastia, E.personal, E.flags.desfalco.
 # ═══════════ FUTBOLINI 5.0 COMPLETO (Bloques 1-6) ═══════════
 B1 Vida/Perfil/Dinastía · B2 Casino/Corrupción · B3 Ticker en vivo · B4 Institución/Prensa ·
 B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresiones sin errores.
+
+## 5.0 · Vida 2.0 — pulido de la sección Personal  ✅ (2026-08-15)
+**Archivos:** `reputacion.js` (reescritura), `motor.js`, `css/aero.css`
+- **Avatares tipo MSN/Vista**: esferas vidriosas 3D en CSS (`.aero-orb` + colores `orb-azul/verde/celeste/morado/naranja/rosa`).
+  Se quitaron todos los emojis del avatar SALVO los lentes 😎. Migración automática en `normalizarEstado`. `pintarAvatarBtn`.
+- **Nombre heredado**: `E.dinastia.raiz` + `nombreGeneracion(raiz,gen)` → Juan → **Juan Jr.** → **Juan III** → **Juan IV**…
+  (`romano()`). El retiro es **por edad, NO muerte** (textos y panel `pantallaSucesion` reformulados a "se retira").
+- **Dinero personal que se mueve**: `ingresoPersonalSemanal()` (sueldo del cargo, escala con prestigio/títulos/generación)
+  entra al `E.personal.bolsillo` en `tickSemana`. Gastos: salidas, casino, citas, lujos.
+- **Tinder / parejas** (`CANDIDATOS` pool DIVERSO y respetuoso — mujer/hombre/no binarie/trans/travesti, todes escrites
+  con la misma picardía, nadie es el chiste): `modalTinder` (deslizar Paso/Me gusta) → `likeCandidato` (match) →
+  `invitarSalir` (cita → `E.perfil.pareja`, o infidelidad si ya tenés pareja) → `romperPareja`. Pareja estable baja el
+  riesgo de escándalo en salidas.
+- **Lujos** (`LUJOS`): propiedades/autos que cuestan bolsillo y dan estatus (`comprarLujo`, `E.personal.propiedades/autos`).
+- Verificado: harness (nombre heredado, sucesión, dinero, tinder→pareja→ruptura, lujos, pool) + UI + regresión sin errores.

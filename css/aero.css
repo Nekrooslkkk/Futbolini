@@ -129,3 +129,27 @@ body[data-tema="aero"] .op{
 .aero-avatar:active{transform:scale(.96)}
 .aero-info{flex:1;min-width:0}
 .aero-info .lb{margin-top:6px}
+
+/* 5.0 · Vida 2.0 — avatares orbe estilo MSN/Windows Vista (esfera vidriosa 3D) */
+.aero-orb{display:inline-block;border-radius:50%;
+  background:
+    radial-gradient(circle at 33% 26%, rgba(255,255,255,.95), rgba(255,255,255,0) 42%),
+    radial-gradient(circle at 68% 78%, rgba(0,0,0,.30), rgba(0,0,0,0) 60%),
+    radial-gradient(circle at 50% 55%, var(--c2,#5aa8ff), var(--c1,#0a4fa0));
+  box-shadow:inset 0 -6px 14px rgba(0,0,0,.40), inset 0 4px 9px rgba(255,255,255,.55), 0 4px 10px rgba(0,0,0,.40)}
+.aero-orb.orb-azul{--c1:#0a4fa0;--c2:#5aa8ff}
+.aero-orb.orb-verde{--c1:#1f7a2e;--c2:#63d06e}
+.aero-orb.orb-celeste{--c1:#0a7ea0;--c2:#57d9ff}
+.aero-orb.orb-morado{--c1:#5a2a8a;--c2:#ab74ff}
+.aero-orb.orb-naranja{--c1:#b25a00;--c2:#ffb457}
+.aero-orb.orb-rosa{--c1:#a01f6a;--c2:#ff77c4}
+/* el botón-avatar cuando es orbe (redondo y grande) */
+.aero-avatar.aero-orb{width:74px;height:74px;min-width:74px}
+.aero-orb.orb-grande{width:64px;height:64px;display:block;margin:0 auto}
+.aero-orb.orb-chico{width:20px;height:20px;vertical-align:middle;margin-right:4px}
+/* tarjeta de Tinder */
+.tinder-card{border:1px solid var(--linea);border-radius:14px;padding:12px;
+  background:linear-gradient(160deg,rgba(255,255,255,.28),rgba(180,220,255,.14));
+  box-shadow:0 4px 14px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.6);margin-bottom:8px}
+.tinder-acc{display:flex;gap:8px;margin-top:8px}
+.centro{text-align:center}

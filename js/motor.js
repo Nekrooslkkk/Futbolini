@@ -137,14 +137,21 @@ function normalizarEstado(){
   if(!Array.isArray(E.timeline)) E.timeline=[];
   if(E.seguidores===undefined) E.seguidores=Math.round((E.ind.hinchada+E.ind.prestigio)*280);
   /* 5.0 · Bloque 1 — perfil, vida social, dinastía y patrimonio personal */
-  if(!E.perfil) E.perfil={nombre:"DT",nacimiento:((E.anio||2026)-38)+"-05-12",avatar:"🧑‍💼",orientacion:"Libre",vidaSocial:{publica:true,agenda:[]}};
+  if(!E.perfil) E.perfil={nombre:"DT",nacimiento:((E.anio||2026)-38)+"-05-12",avatar:"orb-azul",orientacion:"Libre",vidaSocial:{publica:true,agenda:[]}};
   if(!E.perfil.vidaSocial) E.perfil.vidaSocial={publica:true,agenda:[]};
   if(!Array.isArray(E.perfil.vidaSocial.agenda)) E.perfil.vidaSocial.agenda=[];
   if(!E.dinastia) E.dinastia={generacion:1,linaje:"Tu linaje",limiteAnio:2100,historial:[],sucesionPendiente:false};
   if(!Array.isArray(E.dinastia.historial)) E.dinastia.historial=[];
+  if(!E.dinastia.raiz) E.dinastia.raiz=E.perfil.nombre||"DT";
   if(!E.personal) E.personal={bolsillo:50,propiedades:[],autos:[]};
+  if(E.personal.sueldo===undefined) E.personal.sueldo=8;
   if(E.flags.desfalco===undefined) E.flags.desfalco=0;
   if(!E.config) E.config={autoPausa:true};
+  /* Vida 2.0: tinder/parejas y migración de avatar a orbes MSN (solo se mantiene 😎) */
+  if(!E.perfil.tinder) E.perfil.tinder={matches:[]};
+  if(!Array.isArray(E.perfil.tinder.matches)) E.perfil.tinder.matches=[];
+  if(E.perfil.pareja===undefined) E.perfil.pareja=null;
+  if(E.perfil.avatar && E.perfil.avatar!=="😎" && String(E.perfil.avatar).indexOf("orb-")!==0) E.perfil.avatar="orb-azul";
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){
@@ -583,6 +590,8 @@ function tickSemana(){
   /* plata que entra y sale entre partido y partido */
   const neto=ingresoSemanal()-costoSemanal();
   aplicarEfectos({plata:neto});
+  /* plata personal del DT: entra su sueldo del cargo (menos si renunció por redención) */
+  if(E.personal && typeof ingresoPersonalSemanal==="function"){ E.personal.bolsillo=Math.max(0,Math.round(E.personal.bolsillo+ingresoPersonalSemanal())); }
   E.plantel.forEach(j=>{ if(j.lesion>0) j.lesion--; });
   /* deriva natural */
   if(E.ind.riesgo>0&&Math.random()<0.3) E.ind.riesgo=clamp(E.ind.riesgo-1,0,100);
