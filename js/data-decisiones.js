@@ -727,5 +727,6 @@ const BOLSA=[
 /* índice rápido */
 function decisionPorId(id){
   return DECISIONES.find(d=>d.id===id)||BOLSA.find(d=>d.id===id)||
-    (typeof ENCADENADAS!=="undefined"?ENCADENADAS.find(d=>d.id===id):null)||null;
+    (typeof ENCADENADAS!=="undefined"?ENCADENADAS.find(d=>d.id===id):null)||
+    (typeof E!=="undefined"&&E&&E.decProc?E.decProc[id]:null)||null;
 }

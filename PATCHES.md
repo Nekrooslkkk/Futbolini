@@ -352,3 +352,16 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
   riesgo de escándalo en salidas.
 - **Lujos** (`LUJOS`): propiedades/autos que cuestan bolsillo y dan estatus (`comprarLujo`, `E.personal.propiedades/autos`).
 - Verificado: harness (nombre heredado, sucesión, dinero, tinder→pareja→ruptura, lujos, pool) + UI + regresión sin errores.
+
+## Motor de variedad — decisiones procedurales + tácticas ampliadas  ✅ (2026-08-17)
+**Archivos:** `js/data-proc.js` (nuevo), `data-decisiones.js`, `motor.js`, `ui.js`, `partido.js`, `mercado.js`, `index.html`
+- **Decisiones procedurales** (`DEC_PROC`, 8 plantillas): renovación, rumor de salida, conflicto entre dos jugadores,
+  indisciplina, juvenil pide minutos, marca de imagen, bajón de forma, la hinchada canta por un ídolo. Cada una toma
+  jugador(es) AL AZAR del plantel (`jugAzar`) → el sujeto varía (ya no siempre el mismo). `generarDecisionProc()` crea
+  una instancia única en `E.decProc[id]`; `sembrarDecisionProc()` la siembra en `avanzar` (~cada 2 semanas, tope 2
+  simultáneas). `decisionPorId` la encuentra; `resolverDecision` la limpia; `nuevoAnio`/`normalizarEstado` la resetean.
+- **Tácticas de partido ampliadas**: `TACTICAS_INICIO/ABAJO/ARRIBA/EMPATE` (8 opciones c/u con efectos distintos);
+  `momentoActual` elige 4 al azar → variedad en cada partido (presión asfixiante, doble 9, congelar ritmo, gambeteador,
+  centros, contención, etc.), no solo "aguantar".
+- **Ofertas de mercado más variadas**: peso de `crearOfertaEntrante` aplanado → reciben ofertas más jugadores, no siempre el crack.
+- Verificado: harness (17 jugadores distintos citados, 8 tácticas, siembra con tope, limpieza) + UI + regresión sin errores.

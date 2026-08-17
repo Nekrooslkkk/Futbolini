@@ -48,7 +48,8 @@ function crearOfertaEntrante(rr){
     && !E.ofertasPend.some(o=>o.jid===j.n)                     // no dos ofertas por el mismo
     && (E.mercadoLog.rechazadas[j.n]==null || E.idx-E.mercadoLog.rechazadas[j.n]>=4)); // enfriamiento tras rechazo
   if(!cand.length) return false;
-  const j=eligePeso(cand, x=>clamp(x.valor/300+(x.proy>x.nivel+4?0.4:0)+(x.edad<24?0.3:0),0.05,2));
+  /* peso más plano: reciben ofertas más jugadores, no siempre el crack */
+  const j=eligePeso(cand, x=>clamp(0.4+x.valor/700+(x.proy>x.nivel+4?0.35:0)+(x.edad<24?0.25:0),0.15,1.6));
   if(!j) return false;
   const comprador=CLUBES_COMPRADORES[Math.floor(rr()*CLUBES_COMPRADORES.length)];
   const monto=Math.round(j.valor*(0.8+rr()*0.8)*inflacionEra());

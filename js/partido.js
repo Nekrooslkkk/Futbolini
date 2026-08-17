@@ -359,45 +359,57 @@ function correrHasta(P,hasta){
   if(P.min>=90&&!P.terminado) P.min=90;
 }
 /* momentos de decisión del modo dirigir */
+/* Pools tácticos grandes por situación. momentoActual elige 4 al azar
+   cada vez → variedad real, no siempre las mismas opciones. */
+const TACTICAS_INICIO=[
+ {t:"Salir a comerse el partido",ef:{ataque:3,riesgoPlan:2}},
+ {t:"Empezar de menos a más",ef:{orden:3,ataque:-1}},
+ {t:"Recordarles lo que está en juego",ef:{ataque:1.5,orden:1.5,desgaste:1}},
+ {t:"Presión alta desde el pitazo",ef:{ataque:2,riesgoPlan:2,desgaste:3}},
+ {t:"Orden atrás y salir de contra",ef:{orden:3,ataque:1,desgaste:-1}},
+ {t:"Pelota al piso y paciencia",ef:{orden:2,ataque:1,desgaste:1}},
+ {t:"Meterle huevo y aguante físico",ef:{ataque:1,orden:1,desgaste:2}},
+ {t:"Confiar en el plan y no tocar nada",ef:{orden:1}}
+];
+const TACTICAS_ABAJO=[
+ {t:"Meter otro delantero y tirarse encima",ef:{ataque:5,riesgoPlan:3,desgaste:2}},
+ {t:"Sostener el orden y esperar el error",ef:{orden:3,ataque:1}},
+ {t:"Cambiar el sistema completo",ef:{ataque:3,orden:-1,riesgoPlan:1.5}},
+ {t:"Volcar el juego por las bandas",ef:{ataque:3,desgaste:1}},
+ {t:"Buscarlo por arriba, centros al área",ef:{ataque:2,orden:-1,riesgoPlan:1}},
+ {t:"Meter un gambeteador para romper",ef:{ataque:4,riesgoPlan:2,desgaste:1}},
+ {t:"Presión asfixiante, todo o nada",ef:{ataque:3,riesgoPlan:4,desgaste:4,orden:-2}},
+ {t:"No alterar el plan: aguantar la idea",ef:{orden:1.5}}
+];
+const TACTICAS_ARRIBA=[
+ {t:"Cerrarse atrás y aguantar",ef:{orden:4,ataque:-3,riesgoPlan:-1}},
+ {t:"Ir por otro para liquidarlo",ef:{ataque:4,riesgoPlan:2}},
+ {t:"Manejar el partido con la pelota",ef:{orden:2,ataque:1,desgaste:-1}},
+ {t:"Congelar el ritmo y quemar tiempo",ef:{orden:3,ataque:-2,desgaste:-1}},
+ {t:"Refrescar piernas atrás",ef:{orden:2,desgaste:-2}},
+ {t:"Bajar un volante de contención",ef:{orden:3,ataque:-1}},
+ {t:"Salir de contra con los rápidos",ef:{ataque:3,orden:1,riesgoPlan:1}},
+ {t:"Confiar en lo que viene funcionando",ef:{orden:1,desgaste:-0.5}}
+];
+const TACTICAS_EMPATE=[
+ {t:"Meter un cambio ofensivo",ef:{ataque:4,riesgoPlan:2}},
+ {t:"Refrescar el mediocampo",ef:{orden:2,ataque:1,desgaste:-2}},
+ {t:"Arriesgar con doble nueve",ef:{ataque:5,orden:-2,riesgoPlan:2}},
+ {t:"Jugar por las bandas y tirar centros",ef:{ataque:3,desgaste:1}},
+ {t:"Pedir intensidad y presión",ef:{ataque:2,riesgoPlan:2,desgaste:2}},
+ {t:"Ordenarse y esperar el momento",ef:{orden:3,ataque:-1}},
+ {t:"Dejarlo como está",ef:{}},
+ {t:"Una consigna corta y seguir",ef:{orden:1,ataque:0.5}}
+];
 function momentoActual(P){
   const [yo,otro]=miMarcador(P);
   const dif=yo-otro;
-  if(P.min<5) return {
-    t:"Antes de salir a la cancha",
-    d:"Última charla en el camarín. El plan está armado, falta el mensaje.",
-    op:[
-     {t:"Salir a comerse el partido",ef:{ataque:3,riesgoPlan:2}},
-     {t:"Empezar de menos a más",ef:{orden:3,ataque:-1}},
-     {t:"Recordarles lo que está en juego",ef:{ataque:1.5,orden:1.5,desgaste:1}},
-     {t:"Confiar en el plan y no tocar nada",ef:{orden:1}}
-    ]};
-  if(dif<0) return {
-    t:"Vas abajo en el marcador",
-    d:"Minuto "+P.min+". El partido se está yendo y en la tribuna ya se escucha el murmullo.",
-    op:[
-     {t:"Meter otro delantero y tirarse encima",ef:{ataque:5,riesgoPlan:3,desgaste:2}},
-     {t:"Sostener el orden y esperar el error",ef:{orden:3,ataque:1}},
-     {t:"Cambiar el sistema completo",ef:{ataque:3,orden:-1,riesgoPlan:1.5}},
-     {t:"No alterar el plan: aguantar la idea",ef:{orden:1.5}}
-    ]};
-  if(dif>0) return {
-    t:"Vas arriba",
-    d:"Minuto "+P.min+". Hay ventaja, pero el rival empujó los últimos diez minutos.",
-    op:[
-     {t:"Cerrarse atrás y aguantar",ef:{orden:4,ataque:-3,riesgoPlan:-1}},
-     {t:"Ir por otro para liquidarlo",ef:{ataque:4,riesgoPlan:2}},
-     {t:"Manejar el partido con la pelota",ef:{orden:2,ataque:1,desgaste:-1}},
-     {t:"Confiar en lo que viene funcionando",ef:{orden:1,desgaste:-0.5}}
-    ]};
-  return {
-    t:"Está empatado",
-    d:"Minuto "+P.min+". El partido está para cualquiera.",
-    op:[
-     {t:"Meter un cambio ofensivo",ef:{ataque:4,riesgoPlan:2}},
-     {t:"Refrescar el mediocampo",ef:{orden:2,ataque:1,desgaste:-2}},
-     {t:"Dejarlo como está",ef:{}},
-     {t:"Una consigna corta y seguir",ef:{orden:1,ataque:0.5}}
-    ]};
+  let t,d,pool;
+  if(P.min<5){ t="Antes de salir a la cancha"; d="Última charla en el camarín. El plan está armado, falta el mensaje."; pool=TACTICAS_INICIO; }
+  else if(dif<0){ t="Vas abajo en el marcador"; d="Minuto "+P.min+". El partido se está yendo y en la tribuna ya hay murmullo."; pool=TACTICAS_ABAJO; }
+  else if(dif>0){ t="Vas arriba"; d="Minuto "+P.min+". Hay ventaja, pero el rival empujó los últimos minutos."; pool=TACTICAS_ARRIBA; }
+  else { t="Está empatado"; d="Minuto "+P.min+". El partido está para cualquiera."; pool=TACTICAS_EMPATE; }
+  return {t:t, d:d, op:mezcla(pool).slice(0,4)};
 }
 function aplicarMomento(P,ef){
   if(!ef) return;

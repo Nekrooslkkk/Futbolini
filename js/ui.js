@@ -888,6 +888,7 @@ function avanzar(){
   repartirDecisiones();
   const ctx=eventosDeContexto();
   generarOfertasSemana();
+  if(typeof sembrarDecisionProc==="function") sembrarDecisionProc();
   const ev=tirarEvento();
   if(ev&&ev.tipo==="decision"){ abrirEventoDecision(ev.ev); return; }
   irA("escritorio");

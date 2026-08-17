@@ -121,6 +121,7 @@ function normalizarEstado(){
   if(typeof activarLiga==="function") activarLiga(E.eraBase);
   if(!E.flags) E.flags={};
   if(!Array.isArray(E.pendientesEncadenadas)) E.pendientesEncadenadas=[];
+  if(!E.decProc||typeof E.decProc!=="object") E.decProc={};
   if(!E.temporada) E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0};
   if(E.temporada.sinGanar===undefined) E.temporada.sinGanar=0;
   if(!Array.isArray(E.notifs)) E.notifs=[];
@@ -406,6 +407,7 @@ function resolverDecision(dec,idx){
   }
   E.decHechas[dec.id+"_"+E.anio]={op:idx,tier:tier,txt:res.txt,t:op.t,hist:!!op.hist,extra:extra};
   E.decPend=E.decPend.filter(x=>x.id!==dec.id);
+  if(E.decProc&&E.decProc[dec.id]) delete E.decProc[dec.id];
   guardar();
   return {tier:tier,txt:res.txt,extra:extra,hist:!!op.hist};
 }
@@ -704,7 +706,7 @@ function nuevoAnio(){
   for(const k in E.rep) E.rep[k]=Math.round(E.rep[k]+(50-E.rep[k])*0.12);
   GRUPOS.forEach(g=>{ const x=E.grupos[g.id]; x.aprob=Math.round(x.aprob*0.72); });
   E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0};
-  E.idx=0; E.decPend=[]; E.bandeja=[]; E.pendientesEncadenadas=[]; E.mercado=null; E.flags.copaCampeon=false;
+  E.idx=0; E.decPend=[]; E.bandeja=[]; E.pendientesEncadenadas=[]; E.decProc={}; E.mercado=null; E.flags.copaCampeon=false;
   E.ofertasPend=[]; E.mercadoLog={rechazadas:{},vendidos:[]}; E.promesas=[];
   notificar({t:"Arranca la temporada "+E.anio,tipo:"neutro",
     d:"Nuevo año, nuevo campeonato. El plantel se renovó, los objetivos se reajustan y la caja arranca de cero en lo semanal.",bandeja:false});
