@@ -1,0 +1,3 @@
+Dejá acá los datos que quieras que integre (planteles, listas, textos).
+Formato libre: yo los leo y los convierto. Ej: planteles_2026.txt, ideas_grok.txt.
+Después decime "los datos están en data/<archivo>" y los pego al juego.
