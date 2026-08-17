@@ -144,6 +144,7 @@ function normalizarEstado(){
   if(!Array.isArray(E.dinastia.historial)) E.dinastia.historial=[];
   if(!E.personal) E.personal={bolsillo:50,propiedades:[],autos:[]};
   if(E.flags.desfalco===undefined) E.flags.desfalco=0;
+  if(!E.config) E.config={autoPausa:true};
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){

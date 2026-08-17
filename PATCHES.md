@@ -287,3 +287,15 @@ E.perfil, E.dinastia, E.personal, E.flags.desfalco.
   sube credibilidad) o `("donar")` (donaciones comunitarias, cierra causa, sube comunidad). Ambas limpian `E.flags.desfalco`
   e `investigacionAbierta` → sin callejón sin salida.
 - Verificado: harness (RTP ruleta, desvío, auditoría, decisión, redención) + UI + regresión 4.0/5.0-B1 sin errores.
+
+## 5.0 · Bloque 6 — Motor, registro y mercado  ✅ (2026-08-15)
+**Archivos:** `partido.js`, `ui-partido.js`, `mercado.js`, `motor.js`
+- **Registro de goles completo:** `regGol(P,min,quien,propio,tipo,asist)`. Tipos: `jugada` (con **asistencia** ~60%),
+  `penal`, `tiro libre`, `cabeza` (centro en dirigir), `autogol` (raro, ambos arcos, en `tickPartido`). El resumen
+  post-partido muestra `[tipo]` y `(asist. X)`.
+- **Filtros de mercado:** en "Objetivos" — Posición (ARQ/DEF/VOL/DEL), Jóvenes (≤23), Dentro de mi caja. `MERC_FILTRO`.
+- **Timer 1x/2x/4x** (relabel de VEL_PARTIDO 420/240/110) + **auto-pausa configurable** (`E.config.autoPausa`, toggle en
+  controles de Dirigir): con OFF, penal/tiro libre/lesión se resuelven solos sin frenar el partido.
+- Verificado: harness (tipos de gol, asistencia 59,6%, filtros, config) + UI + regresión sin errores.
+
+## ✅ FUTBOLINI 5.0: Bloques 1, 2 y 6 hechos. Pendientes: B3 (ticker en vivo), B4 (institución + conferencias), B5 (histórico 1989→2008, best-effort con datos a validar).

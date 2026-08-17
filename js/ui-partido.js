@@ -158,12 +158,20 @@ function pintarPartido(){
     const bp=el("button","btn-aqua chico",PAUSADO?"▶ Seguir":"⏸ Pausa");
     bp.onclick=()=>{ PAUSADO=!PAUSADO; if(!MOMENTO_OPS.length) pintarPartido(); };
     ctrl.appendChild(bp);
-    [["Lento",420],["Normal",260],["Rápido",120]].forEach(([n,vv])=>{
+    [["1x",420],["2x",240],["4x",110]].forEach(([n,vv])=>{
       const b=el("button","btn-aqua chico"+(VEL_PARTIDO===vv?"":" gris"),n);
       b.onclick=()=>{ VEL_PARTIDO=vv; if(!MOMENTO_OPS.length&&!PAUSADO) correrEnVivo(); pintarPartido(); };
       ctrl.appendChild(b);
     });
     p.cuerpo.appendChild(ctrl);
+    if(P.modo==="dirigir"){
+      if(!E.config) E.config={autoPausa:true};
+      const bap=el("button","btn-aqua chico"+(E.config.autoPausa?"":" gris"),
+        E.config.autoPausa?"⏸ Auto-pausa: ON":"▶ Auto-pausa: OFF");
+      bap.title="Si está OFF, las jugadas (penal/tiro libre/lesión) se resuelven solas sin frenar el partido";
+      bap.onclick=()=>{ E.config.autoPausa=!E.config.autoPausa; guardar(); pintarPartido(); };
+      p.cuerpo.appendChild(bap);
+    }
     const stam=clamp(100-P.cansancio*6,0,100);
     p.cuerpo.appendChild(el("div","mini","Físico del equipo"));
     p.cuerpo.appendChild(el("div",null,barrita(stam,stam>50?"#4fbf3f":(stam>25?"#e0a92a":"#c9392c"))));
@@ -192,7 +200,8 @@ function pasoEnVivo(){
   const ev=tickPartido(P);
   if(ev.tipo==="penalRival"){ resolverEventoAuto(P,ev); pintarPartido(); return; }
   if(ev.tipo==="penal"||ev.tipo==="lesion"||ev.tipo==="tiroLibre"){
-    if(P.modo==="dirigir"){ clearInterval(TIMER); pintarPartido(); mostrarAccion(ev); return; }
+    const autoP=!E.config||E.config.autoPausa!==false;
+    if(P.modo==="dirigir"&&autoP){ clearInterval(TIMER); pintarPartido(); mostrarAccion(ev); return; }
     resolverEventoAuto(P,ev);
   }
   pintarPartido();
@@ -230,7 +239,7 @@ function centroTiroLibre(P){
   const aereo=P.once.filter(j=>j.rasgos&&j.rasgos.includes("juego aéreo"))[0]||elige(P.once.filter(j=>j.pos==="DEF"||j.pos==="DEL"))||P.once[0];
   linea(P,P.min,"Centro al área, sube "+(aereo?aereo.n:"la defensa")+" a cabecear…");
   const prob=clamp(0.14+((aereo&&aereo.rasgos&&aereo.rasgos.includes("juego aéreo"))?0.10:0),0.06,0.28);
-  if(Math.random()<prob){ if(aereo){aereo.goles++;P.goleadores.push(aereo.n);regGol(P,P.min,aereo.n,true);} if(P.part.local)P.gl++;else P.gv++;
+  if(Math.random()<prob){ if(aereo){aereo.goles++;P.goleadores.push(aereo.n);regGol(P,P.min,aereo.n,true,"cabeza");} if(P.part.local)P.gl++;else P.gv++;
     linea(P,P.min,"¡Gol de cabeza"+(aereo?" de "+aereo.n:"")+"! "+marcadorTxt(P),"gol"); }
   else linea(P,P.min,"Despeja la defensa rival de cabeza.");
 }
@@ -291,7 +300,9 @@ function cerrarPartido(){
   const cajita=el("div","resul mitad");
   let html="";
   const goles=(res.golesDetalle||[]).slice().sort((a,b)=>a.min-b.min);
-  if(goles.length) html+="<b>Goles</b><br>"+goles.map(g=>g.min+"' "+(g.propio?"":"("+P.part.rivalNombre+") ")+g.quien).join("<br>")+"<br>";
+  if(goles.length) html+="<b>Goles</b><br>"+goles.map(g=>g.min+"' "+(g.propio?"":"("+P.part.rivalNombre+") ")+g.quien+
+    (g.tipo&&g.tipo!=="jugada"?" <span class='mini'>["+g.tipo+"]</span>":"")+
+    (g.asist?" <span class='mini'>(asist. "+g.asist+")</span>":"")).join("<br>")+"<br>";
   else html+="<b>Sin goles.</b><br>";
   if(res.tarjetas&&res.tarjetas.length) html+="<span class='mini'>Amarillas: "+res.tarjetas.join(", ")+"</span><br>";
   if(res.lesionados&&res.lesionados.length) html+="<span class='mini'>Lesionados: "+res.lesionados.join(", ")+"</span><br>";

@@ -137,14 +137,14 @@ function penalEnPartido(P,aFavor,motivo,patElegido){
     const pat=patElegido||pateadorDe(P.once), arq=arqueroDe(P.rivalPlantel);
     linea(P,min,(motivo||"Penal para "+E.clubNombre+".")+" Toma la pelota "+pat.n+"…");
     if(cobrarPenal(pat,arq)){
-      pat.goles++; P.goleadores.push(pat.n); regGol(P,min,pat.n,true); if(P.part.local)P.gl++; else P.gv++;
+      pat.goles++; P.goleadores.push(pat.n); regGol(P,min,pat.n,true,"penal"); if(P.part.local)P.gl++; else P.gv++;
       linea(P,min,"¡Gol de penal de "+pat.n+"! "+marcadorTxt(P),"gol");
     } else { linea(P,min,"¡Atajadón! "+(arq?arq.n:"el arquero")+" le contiene el penal a "+pat.n+".","grave"); P.empuje-=0.4; }
   } else {
     const pat=elige(P.rivalPlantel.filter(x=>x.pos!=="ARQ"))||P.rivalPlantel[0], arq=arqueroDe(P.once);
     linea(P,min,(motivo||"Penal para "+P.part.rivalNombre+".")+" Va a patear "+pat.n+"…");
     if(cobrarPenal(pat,arq)){
-      if(P.part.local)P.gv++; else P.gl++; regGol(P,min,pat.n,false);
+      if(P.part.local)P.gv++; else P.gl++; regGol(P,min,pat.n,false,"penal");
       linea(P,min,"Gol de penal de "+P.part.rivalNombre+": "+pat.n+". "+marcadorTxt(P),"gol");
     } else { linea(P,min,"¡"+(arq?arq.n:"el arquero")+" le ataja el penal! El estadio explota.","gol"); P.empuje+=0.5; }
   }
@@ -172,18 +172,21 @@ function momentosPartido(part){
 }
 function linea(P,min,txt,clase){ P.lineas.push({m:min,t:txt,c:clase||""}); }
 /* registra un gol con minuto y autor, para la caja de resumen (efemérides) */
-function regGol(P,min,quien,propio){ P.golesDetalle=P.golesDetalle||[]; P.golesDetalle.push({min:min,quien:quien,propio:!!propio}); }
+function regGol(P,min,quien,propio,tipo,asist){ P.golesDetalle=P.golesDetalle||[]; P.golesDetalle.push({min:min,quien:quien,propio:!!propio,tipo:tipo||"jugada",asist:asist||null}); }
 function anotaPropio(P,min){
   const cand=P.once.filter(j=>j.pos==="DEL").concat(P.once.filter(j=>j.pos==="VOL"));
   const j=eligePeso(cand,x=>(x.pos==="DEL"?3:1)*(x.nivel/50))||elige(P.once);
-  j.goles++; P.goleadores.push(j.n); regGol(P,min,j.n,true);
+  /* asistencia en ~60% de los goles de jugada */
+  let asist=null;
+  if(Math.random()<0.6){ const otros=P.once.filter(x=>x!==j&&x.pos!=="ARQ"); const a=eligePeso(otros,x=>(x.pos==="VOL"?2:1))||elige(otros); asist=a?a.n:null; }
+  j.goles++; P.goleadores.push(j.n); regGol(P,min,j.n,true,"jugada",asist);
   if(P.part.local) P.gl++; else P.gv++;
-  linea(P,min,"¡Gol de "+j.n+"! "+marcadorTxt(P),"gol");
+  linea(P,min,"¡Gol de "+j.n+"!"+(asist?" (asistencia de "+asist+")":"")+" "+marcadorTxt(P),"gol");
 }
 function anotaRival(P,min){
   const j=elige(P.rivalPlantel.filter(x=>x.pos!=="ARQ"));
   if(P.part.local) P.gv++; else P.gl++;
-  regGol(P,min,j.n,false);
+  regGol(P,min,j.n,false,"jugada",null);
   linea(P,min,"Gol de "+P.part.rivalNombre+": "+j.n+". "+marcadorTxt(P),"gol");
 }
 function marcadorTxt(P){
@@ -232,6 +235,20 @@ function tickPartido(P){
   if(min>20&&Math.random()<0.006){ return {tipo:"lesion",min:min}; }
   /* acción: tiro libre peligroso propio */
   if(Math.random()<0.010){ return {tipo:"tiroLibre",min:min}; }
+  /* autogol (raro), en cualquiera de los dos arcos */
+  if(Math.random()<0.004){
+    if(Math.random()<0.5){ /* el rival se la mete solo → gol propio */
+      const rd=elige(P.rivalPlantel.filter(x=>x.pos!=="ARQ"))||{n:"un defensor rival"};
+      if(P.part.local)P.gl++; else P.gv++; regGol(P,min,rd.n,true,"autogol",null);
+      linea(P,min,"¡AUTOGOL de "+rd.n+" ("+P.part.rivalNombre+")! Regalo insólito. "+marcadorTxt(P),"gol");
+      return {tipo:"gol",min:min};
+    } else { /* uno tuyo la manda a tu propia red → gol rival */
+      const md=elige(P.once.filter(x=>x.pos==="DEF"))||elige(P.once)||{n:"un defensor"};
+      if(P.part.local)P.gv++; else P.gl++; regGol(P,min,md.n,false,"autogol",null);
+      linea(P,min,"Autogol de "+md.n+"… se la mandó a su propio arco. "+marcadorTxt(P),"grave");
+      return {tipo:"golRival",min:min};
+    }
+  }
   /* polémica en el tramo caliente */
   if(min>60&&Math.random()<0.012){ polemicaArbitral(P); return {tipo:"polemica",min:min}; }
   /* tarjeta */
@@ -320,7 +337,7 @@ function tiroLibreAuto(P){
   const j=pateadorDe(P.once);
   linea(P,P.min,"Tiro libre peligroso para "+E.clubNombre+", lo toma "+j.n+"…");
   const prob=clamp(0.11+((j.nivel||70)-70)*0.004+((j.rasgos&&j.rasgos.includes("tiro libre"))?0.10:0),0.05,0.32);
-  if(Math.random()<prob){ j.goles++; P.goleadores.push(j.n); regGol(P,P.min,j.n,true); if(P.part.local)P.gl++; else P.gv++;
+  if(Math.random()<prob){ j.goles++; P.goleadores.push(j.n); regGol(P,P.min,j.n,true,"tiro libre"); if(P.part.local)P.gl++; else P.gv++;
     linea(P,P.min,"¡GOLAZO de tiro libre de "+j.n+"! "+marcadorTxt(P),"gol"); return true; }
   linea(P,P.min,elige(["La barrera la desvía al córner.","¡Al travesaño! Por un pelo.",
     "El arquero vuela y la manda al córner.","Se fue rozando el palo."])); return false;

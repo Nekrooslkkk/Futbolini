@@ -323,11 +323,30 @@ function vistaMercado(){
   } else if(!cedidos.length){ pc.cuerpo.appendChild(el("p","mini","No tenés juveniles para ceder ahora mismo.")); }
   v.appendChild(pc);
 
-  /* --- objetivos para comprar --- */
+  /* --- objetivos para comprar (con filtros) --- */
   const po=panel("Objetivos en el mercado","📤");
   if(!abierto) po.cuerpo.appendChild(el("div","resul mal","La ventana está cerrada: podés mirar y negociar, pero no cerrar compras hasta "+proximaVentana()+"."));
+  /* filtros */
+  po.cuerpo.appendChild(el("label","lb","Posición"));
+  const fp=el("div","fichas");
+  [["","Todas"],["ARQ","ARQ"],["DEF","DEF"],["VOL","VOL"],["DEL","DEL"]].forEach(([k,n])=>{
+    const b=el("button","ficha",n); b.setAttribute("aria-pressed",MERC_FILTRO.pos===k?"true":"false");
+    b.onclick=()=>{ MERC_FILTRO.pos=k; render(); }; fp.appendChild(b);
+  });
+  po.cuerpo.appendChild(fp);
+  const fx=el("div","fichas");
+  [["joven","Jóvenes (≤23)"],["barato","Dentro de mi caja"]].forEach(([k,n])=>{
+    const b=el("button","ficha",n); b.setAttribute("aria-pressed",MERC_FILTRO[k]?"true":"false");
+    b.onclick=()=>{ MERC_FILTRO[k]=!MERC_FILTRO[k]; render(); }; fx.appendChild(b);
+  });
+  po.cuerpo.appendChild(fx);
   const merc=mercadoSemana();
-  merc.objetivos.forEach(j=>{
+  const lista=merc.objetivos.filter(j=>
+    (!MERC_FILTRO.pos||j.pos===MERC_FILTRO.pos) &&
+    (!MERC_FILTRO.joven||j.edad<=23) &&
+    (!MERC_FILTRO.barato||j.precio<=E.plata));
+  if(!lista.length) po.cuerpo.appendChild(el("p","mini","Ningún objetivo cumple los filtros esta semana."));
+  lista.forEach(j=>{
     const d=el("div","resul mitad");
     d.innerHTML="<b>"+j.n+" <span class='mini'>("+j.club+")</span></b><br>"+
       j.pos+" · "+j.edad+" años · nivel "+j.nivel+(j.proy>j.nivel+4?" · proy "+j.proy:"")+
@@ -339,6 +358,7 @@ function vistaMercado(){
   });
   v.appendChild(po);
 }
+var MERC_FILTRO={pos:"",joven:false,barato:false};
 
 /* Negociación de compra en 2-3 pasos: tu oferta → contraoferta → cierre.
    Insistir cuesta (suben lo que piden); a las 3 rondas se levantan de la mesa. */
