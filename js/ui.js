@@ -891,10 +891,11 @@ function avanzar(){
   if(typeof sembrarDecisionProc==="function") sembrarDecisionProc();
   const ev=tirarEvento();
   if(ev&&ev.tipo==="decision"){ abrirEventoDecision(ev.ev); return; }
+  const vp=(typeof dispararVidaProc==="function")?dispararVidaProc():false;
   irA("escritorio");
   if(ctx.length) aviso(ctx[0]);
   else if(ev) aviso(ev.item.t);
-  else aviso("Semana tranquila · "+plata(neto));
+  else if(!vp) aviso("Semana tranquila · "+plata(neto));
 }
 function abrirEventoDecision(ev){
   const d={id:"ev_"+ev.id,buzon:"institucional",t:ev.t,d:ev.d,op:ev.op,posturas:ev.posturas,consejo:ev.consejo};

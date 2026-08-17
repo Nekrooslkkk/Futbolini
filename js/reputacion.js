@@ -172,7 +172,7 @@ function invitarSalir(match){
   } else {
     const prob=clamp(0.42+(match.afin||0)+E.rep.publica/300,0.2,0.85);
     if(Math.random()<prob){
-      E.perfil.pareja={n:match.n,id:match.id,orb:match.orb,desde:E.anio};
+      E.perfil.pareja={n:match.n,id:match.id,orb:match.orb,desde:E.anio,nivel:65,casades:false};
       E.perfil.tinder.matches=E.perfil.tinder.matches.filter(m=>m.n!==match.n);
       aplicarEfectos({moral:6});
       notificar({t:"¡De novies con "+match.n+"!",tipo:"bueno",d:"La cita salió redonda: ahora son pareja. Una relación estable te da paz y menos riesgo de escándalo.",bandeja:false});
@@ -227,13 +227,16 @@ function chequearSucesion(){
 function asumirSucesor(){
   E.dinastia.generacion++;
   const gen=E.dinastia.generacion;
-  E.perfil.nombre=nombreGeneracion(E.dinastia.raiz, gen);
+  /* el heredero es tu hije mayor si tuviste familia; si no, la sangre nueva del linaje */
+  const hije=(E.perfil.hijos&&E.perfil.hijos.length)?E.perfil.hijos[0]:null;
+  E.perfil.nombre = hije ? hije.nombre : nombreGeneracion(E.dinastia.raiz, gen);
   E.perfil.nacimiento=(E.anio-ri(28,34))+"-06-15";
   if(E.dinastia.linaje==="Tu linaje"){ const ape=apellidoDinastia(); E.dinastia.linaje="Familia "+(ape||E.dinastia.raiz); }
-  E.perfil.pareja=null;                 /* nueva generación, nueva vida */
-  E.perfil.tinder={matches:[]};
+  E.perfil.pareja=null; E.perfil.tinder={matches:[]}; E.perfil.hijos=[]; E.perfil.bienestar=72;
+  let extra="";
+  if(hije){ E.capital=Math.min(200,(E.capital||0)+6); aplicarRep({publica:4}); extra=" Criade dentro del club, llega con respaldo y capital institucional."; }
   notificar({t:"Nueva generación al mando",tipo:"neutro",
-    d:E.perfil.nombre+" ("+relacionSucesor(gen)+") toma la posta de la "+E.dinastia.linaje+". Hereda el patrimonio y la historia; el club sigue su curso.",bandeja:false});
+    d:(hije?"Tu "+relacionSucesor(gen)+" ":"")+E.perfil.nombre+" toma la posta de la "+E.dinastia.linaje+". Hereda el patrimonio y la historia; el club sigue su curso."+extra,bandeja:false});
   E.dinastia.sucesionPendiente=false;
   guardar(); render();
 }
@@ -242,9 +245,10 @@ function pantallaSucesion(){
   const ultimo=E.dinastia.historial[E.dinastia.historial.length-1]||{};
   p.cuerpo.appendChild(el("h2","tit","Se retira una generación"));
   p.cuerpo.appendChild(el("p",null,(ultimo.nombre||"El DT")+" se retira por edad a los "+(ultimo.edad||"")+" años, tras "+(ultimo.titulos||0)+" títulos. La "+E.dinastia.linaje+" no se detiene: la sangre nueva toma la posta."));
-  const prox=nombreGeneracion(E.dinastia.raiz, E.dinastia.generacion+1);
+  const hije=(E.perfil.hijos&&E.perfil.hijos.length)?E.perfil.hijos[0]:null;
+  const prox=hije?hije.nombre:nombreGeneracion(E.dinastia.raiz, E.dinastia.generacion+1);
   p.cuerpo.appendChild(fila("Linaje",E.dinastia.linaje));
-  p.cuerpo.appendChild(fila("Al mando ahora",prox+" · "+relacionSucesor(E.dinastia.generacion+1)));
+  p.cuerpo.appendChild(fila("Al mando ahora",prox+" · "+relacionSucesor(E.dinastia.generacion+1)+(hije?" (tu hije, criade en el club)":"")));
   p.cuerpo.appendChild(fila("Patrimonio heredado",plata(E.personal.bolsillo)+" + "+(E.personal.propiedades.length)+" propiedades + "+(E.personal.autos.length)+" autos"));
   const b=el("button","btn-aqua ancho verde","Asumir la conducción");
   b.onclick=asumirSucesor;
@@ -283,6 +287,11 @@ function vistaVida(){
   p.cuerpo.appendChild(fila("Sueldo del cargo","+"+plata(ingresoPersonalSemanal())+" por semana"));
   p.cuerpo.appendChild(fila("Pareja",E.perfil.pareja?(E.perfil.pareja.n+" (desde "+E.perfil.pareja.desde+")"):"soltere"));
   p.cuerpo.appendChild(fila("Dinastía",E.dinastia.linaje+" · "+relacionSucesor(E.dinastia.generacion)+" (gen. "+E.dinastia.generacion+")"));
+  /* bienestar / estrés */
+  const bien=E.perfil.bienestar||70;
+  p.cuerpo.appendChild(el("div",null,'<div class="fila" style="border:none;padding:2px 0"><span>Bienestar '+(bien<30?"(quemado 🥵)":bien<55?"(cansado)":"(pleno)")+'</span><b>'+Math.round(bien)+'/100</b></div>'+barrita(bien,bien>55?"#4fbf3f":(bien>30?"#e0a92a":"#c9392c"))));
+  const bresp=el("button","btn-aqua chico","🏝️ Tomarse un respiro"); bresp.onclick=tomarRespiro;
+  p.cuerpo.appendChild(bresp);
   v.appendChild(p);
 
   /* --- Vida Social --- */
@@ -303,14 +312,24 @@ function vistaVida(){
   /* --- Tinder / parejas --- */
   const pt=panel("Vida amorosa","💘","agua");
   if(E.perfil.pareja){
-    const par=E.perfil.pareja;
-    const d=el("div","resul bien");
-    d.innerHTML='<span class="aero-orb '+(par.orb||"orb-rosa")+' orb-chico"></span> <b>'+par.n+'</b>'+(par.id?" <span class='mini'>("+par.id+")</span>":"")+"<br>En pareja desde "+par.desde+". Estabilidad emocional: menos escándalos, más paz.";
+    const par=E.perfil.pareja; const niv=par.nivel||65;
+    const d=el("div","resul "+(niv>=50?"bien":"mal"));
+    d.innerHTML='<span class="aero-orb '+(par.orb||"orb-rosa")+' orb-chico"></span> <b>'+par.n+'</b>'+(par.id?" <span class='mini'>("+par.id+")</span>":"")+
+      (par.casades?" 💍":"")+"<br>"+(par.casades?"Casades":"En pareja")+" desde "+par.desde+". "+
+      (niv<30?"La relación está en crisis: si no la cuidás, se termina.":niv<55?"La relación necesita atención.":"Relación sólida: menos escándalos, más paz.")+
+      '<div style="margin-top:4px"><span class="mini">Relación</span>'+barrita(niv,niv>50?"#e0563f":"#c9392c")+'</div>';
     pt.cuerpo.appendChild(d);
-    const br=el("button","btn-aqua ancho rojo","Terminar la relación"); br.onclick=romperPareja;
-    pt.cuerpo.appendChild(br);
+    const bc=el("button","btn-aqua chico verde","💕 Cita romántica"); bc.onclick=citaConPareja; pt.cuerpo.appendChild(bc);
+    if(!par.casades){ const bm=el("button","btn-aqua chico"); bm.textContent="💍 Casarse"; bm.style.marginLeft="6px"; bm.onclick=casarse; pt.cuerpo.appendChild(bm); }
+    if(E.perfil.hijos.length<4){ const bh=el("button","btn-aqua chico"); bh.textContent="👶 Tener un hije"; bh.style.marginLeft="6px"; bh.onclick=tenerHijo; pt.cuerpo.appendChild(bh); }
+    const br=el("button","btn-aqua chico rojo","Terminar"); br.style.marginLeft="6px"; br.onclick=romperPareja; pt.cuerpo.appendChild(br);
   } else {
     pt.cuerpo.appendChild(el("p","mini","Soltere y a la búsqueda. Deslizá en el Match: si hay química, después le invitás a salir."));
+  }
+  /* hijes (futura dinastía) */
+  if(E.perfil.hijos && E.perfil.hijos.length){
+    pt.cuerpo.appendChild(el("h3","sub","Familia"));
+    E.perfil.hijos.forEach(h=>pt.cuerpo.appendChild(fila("👶 "+h.nombre,"nacide en "+h.nacido+((E.perfil.hijos[0]===h)?" · heredere":""))));
   }
   const bt=el("button","btn-aqua ancho verde","💘 Abrir Match (Tinder)"); bt.style.marginTop="6px"; bt.onclick=modalTinder;
   pt.cuerpo.appendChild(bt);
@@ -353,4 +372,118 @@ function vistaVida(){
     E.dinastia.historial.forEach(h=>pd.cuerpo.appendChild(fila(relacionSucesor(h.generacion)+" · "+h.nombre,"hasta "+h.hasta+" · "+h.titulos+" títulos")));
   }
   v.appendChild(pd);
+}
+
+/* ============================================================
+   5.0 · Vida 3.0 — relación que evoluciona, familia, bienestar
+   y eventos de vida personales (más profundo que cualquier manager)
+   ============================================================ */
+function citaConPareja(){
+  if(!E.perfil.pareja) return;
+  const costo=ri(8,30); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
+  E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel||65)+15,0,100);
+  aplicarEfectos({moral:3}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+6,0,100);
+  notificar({t:"Cita con "+E.perfil.pareja.n,tipo:"bueno",d:"Una noche linda: la relación se fortalece y recargás energía. Costó "+plata(costo)+".",bandeja:false});
+  guardar(); render();
+}
+function casarse(){
+  if(!E.perfil.pareja || E.perfil.pareja.casades) return;
+  if((E.perfil.pareja.nivel||0)<60){ if(typeof aviso==="function") aviso("La relación aún no está para tanto: fortalecela con citas."); return; }
+  const costo=ri(25,70);
+  if(E.personal.bolsillo<costo){ if(typeof aviso==="function") aviso("No te alcanza para el casorio ("+plata(costo)+")"); return; }
+  E.personal.bolsillo-=costo; E.perfil.pareja.casades=true; E.perfil.pareja.nivel=clamp(E.perfil.pareja.nivel+15,0,100);
+  aplicarEfectos({moral:8}); aplicarRep({publica:5}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+10,0,100);
+  notificar({t:"Te casaste con "+E.perfil.pareja.n,tipo:"bueno",d:"Bodón del año. La relación se afianza (se enfría más lento) y tu imagen pública lo agradece.",bandeja:false});
+  if(typeof postProc==="function") postProc(elige(typeof HANDLES_PRENSA!=="undefined"?HANDLES_PRENSA:["@prensa"]),"prensa","El DT de "+E.clubNombre+" pasó por el altar. Farándula en fiesta.","bueno");
+  guardar(); render();
+}
+function tenerHijo(){
+  if(!E.perfil.pareja){ if(typeof aviso==="function") aviso("Primero necesitás pareja."); return; }
+  if((E.perfil.pareja.nivel||0)<55){ if(typeof aviso==="function") aviso("La relación necesita estar más sólida para dar ese paso."); return; }
+  if(E.perfil.hijos.length>=4){ if(typeof aviso==="function") aviso("Ya tenés una familia numerosa."); return; }
+  const costo=ri(10,30); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
+  var nombre;
+  if(E.perfil.hijos.length===0) nombre=nombreGeneracion(E.dinastia.raiz, E.dinastia.generacion+1);
+  else { const nom=(typeof NOMBRES_PILA!=="undefined")?elige(NOMBRES_PILA):"Nuevo"; nombre=nom+" "+(apellidoDinastia()||E.dinastia.raiz); }
+  E.perfil.hijos.push({nombre:nombre,nacido:E.anio});
+  aplicarEfectos({moral:5}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+8,0,100);
+  E.perfil.pareja.nivel=clamp(E.perfil.pareja.nivel+8,0,100);
+  notificar({t:"Nació "+nombre,tipo:"bueno",d:"Sumás un integrante a la familia. El día de mañana podría tomar la posta de la dinastía. Costó "+plata(costo)+" y te llena el alma.",bandeja:false});
+  guardar(); render();
+}
+function tomarRespiro(){
+  const costo=ri(15,40);
+  if(E.personal.bolsillo<costo){ if(typeof aviso==="function") aviso("No te alcanza para el respiro ("+plata(costo)+")"); return; }
+  E.personal.bolsillo-=costo; E.perfil.bienestar=clamp((E.perfil.bienestar||70)+22,0,100); aplicarEfectos({moral:2});
+  notificar({t:"Te tomaste un respiro",tipo:"bueno",d:"Unos días para vos: bajás el estrés y volvés con la cabeza fresca. Costó "+plata(costo)+".",bandeja:false});
+  guardar(); render();
+}
+/* eventos de vida personales (procedurales) */
+const VIDA_PROC=[
+ {t:"Un viejo amigo te pide plata",d:"Un amigo de toda la vida te pide un préstamo para salir de un apuro.",
+  op:[
+   {t:"Prestarle sin dudar",run:function(){ const m=ri(20,50); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); aplicarEfectos({moral:3}); return "Le prestaste "+plata(m)+". Los amigos son los amigos."; }},
+   {t:"Ayudarlo con la mitad",run:function(){ const m=ri(10,25); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); return "Le diste una mano parcial ("+plata(m)+")."; }},
+   {t:"Decirle que no",run:function(){ E.perfil.bienestar=clamp((E.perfil.bienestar||70)-4,0,100); return "Le dijiste que no. Quedó raro, pero es tu plata."; }}
+  ]},
+ {t:"Reaparece un amor del pasado",d:"Un ex de otra época te escribe de la nada. La nostalgia golpea.",
+  op:[
+   {t:"Reconectar o cerrar la puerta",run:function(){ if(E.perfil.pareja){ E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel||65)+8,0,100); aplicarEfectos({moral:2}); return "Cerraste la puerta por respeto a tu pareja. Lo valora."; } aplicarEfectos({moral:3}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+6,0,100); return "Sin pareja, reconectaron. La ilusión revive."; }},
+   {t:"Dejarlo en visto",run:function(){ return "Ni fu ni fa. La vida sigue."; }}
+  ]},
+ {t:"Los paparazzi te persiguen",d:"Un fotógrafo te sigue buscando la nota del fin de semana.",
+  op:[
+   {t:"Sonreír y posar",run:function(){ aplicarRep({publica:5,prensa:3}); return "Saliste simpático en las fotos. Buena prensa."; }},
+   {t:"Escaparte",run:function(){ if(Math.random()<0.5){ aplicarRep({publica:-4}); return "Igual sacaron una foto fea."; } return "Zafaste sin fotos."; }}
+  ]},
+ {t:"Susto de salud",d:"Un dolor te manda al médico de urgencia. Nada grave, pero un aviso.",
+  op:[
+   {t:"Hacerte todos los chequeos",run:function(){ const m=ri(10,30); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+12,0,100); return "Te cuidaste ("+plata(m)+"). El cuerpo lo agradece."; }},
+   {t:"Ignorarlo y seguir",run:function(){ E.perfil.bienestar=clamp((E.perfil.bienestar||70)-10,0,100); return "Lo dejaste pasar. El estrés va a pasar la cuenta."; }}
+  ]},
+ {t:"Premio a la trayectoria",d:"Una revista te elige entre las personalidades del año del deporte.",
+  op:[
+   {t:"Ir a recibirlo con orgullo",run:function(){ aplicarRep({publica:8,credibilidad:4}); aplicarEfectos({moral:3}); return "Discurso emotivo y buena imagen. Bien merecido."; }},
+   {t:"Mandar a alguien en tu lugar",run:function(){ aplicarRep({publica:2}); return "No fuiste. Gesto humilde… o desinterés, según quién lo cuente."; }}
+  ]},
+ {t:"Un familiar necesita ayuda",d:"Un familiar la está pasando mal y recurre a vos.",
+  op:[
+   {t:"Estar presente y bancarlo",run:function(){ const m=ri(15,35); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); aplicarEfectos({moral:4}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+4,0,100); return "La familia primero. Diste una mano ("+plata(m)+")."; }},
+   {t:"Estar poco por el trabajo",run:function(){ E.perfil.bienestar=clamp((E.perfil.bienestar||70)-6,0,100); return "El fútbol te comió el tiempo. Te quedó la culpa."; }}
+  ]},
+ {t:"Te ofrecen un negocio",d:"Un conocido te propone invertir en un negocio que «no puede fallar».",
+  op:[
+   {t:"Meterle plata",run:function(){ const m=ri(30,70); if(E.personal.bolsillo<m) return "No te alcanzaba, quedó en nada."; E.personal.bolsillo-=m; if(Math.random()<0.45){ const g=Math.round(m*(1.4+Math.random())); E.personal.bolsillo+=g; return "¡Salió bien! Recuperaste "+plata(g)+"."; } return "Se fue todo al tacho. Adiós "+plata(m)+"."; }},
+   {t:"Pasar, huele a humo",run:function(){ return "Mejor no. La plata en el bolsillo."; }}
+  ]},
+ {t:"Crisis de la mediana edad",d:"Te da por replantearte todo. ¿Y si te das ese capricho?",
+  op:[
+   {t:"Darte el gusto",run:function(){ const m=ri(20,50); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+10,0,100); return "Te diste el gusto ("+plata(m)+"). Terapia cara pero efectiva."; }},
+   {t:"Aguantar y meditar",run:function(){ E.perfil.bienestar=clamp((E.perfil.bienestar||70)+4,0,100); return "Respiraste hondo y se pasó. Gratis."; }}
+  ]},
+ {t:"Un perro te elige en el refugio",d:"En un refugio te mira un perro con cara de «llevame».",
+  op:[
+   {t:"Adoptarlo",run:function(){ aplicarEfectos({moral:4}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+10,0,100); return "Nuevo mejor amigo. La casa se llena de alegría."; }},
+   {t:"Ahora no",run:function(){ return "Lo dejaste pasar. Igual te quedaste pensando."; }}
+  ]}
+];
+function dispararVidaProc(){
+  if(!E.perfil) return false;
+  if(Math.random()>0.14) return false;
+  modalVidaProc(elige(VIDA_PROC));
+  return true;
+}
+function modalVidaProc(ev){
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">🎭</span><span>Vida personal</span>'));
+    const c=el("div","cuerpo"); box.appendChild(c);
+    c.appendChild(el("h3","sub",ev.t)); c.appendChild(el("p",null,ev.d));
+    const ops=el("div","ops");
+    ev.op.forEach(o=>{
+      const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
+      b.onclick=()=>{ const txt=(o.run&&o.run())||""; notificar({t:"Vida personal: "+ev.t,tipo:"neutro",d:txt,bandeja:false}); guardar(); cerrarModal(); render(); };
+      ops.appendChild(b);
+    });
+    c.appendChild(ops);
+  },{cerrarFuera:false});
 }

@@ -365,3 +365,17 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
   centros, contención, etc.), no solo "aguantar".
 - **Ofertas de mercado más variadas**: peso de `crearOfertaEntrante` aplanado → reciben ofertas más jugadores, no siempre el crack.
 - Verificado: harness (17 jugadores distintos citados, 8 tácticas, siembra con tope, limpieza) + UI + regresión sin errores.
+
+## 5.0 · Vida 3.0 — vida personal con profundidad (mejor que EA/FIFA)  ✅ (2026-08-17)
+**Archivos:** `reputacion.js`, `motor.js`, `ui.js`
+- **La relación EVOLUCIONA**: `E.perfil.pareja.nivel` (0-100) sube con `citaConPareja()` y se enfría solo en `tickSemana`
+  (más lento si `casades`). Nivel bajo → crisis/ruptura. `casarse()` (nivel≥60) afianza y da imagen pública.
+- **Familia → dinastía**: `tenerHijo()` (el primogénito hereda el nombre = `nombreGeneracion`, ej. "Juan Jr."). En
+  `asumirSucesor()` el heredero es tu **hije mayor** (nombre real) con bonus de capital/imagen; si no tuviste, cae al Jr./III.
+  `pantallaSucesion` muestra "tu hije, criade en el club".
+- **Bienestar / estrés** (`E.perfil.bienestar` 0-100): deriva y baja con mala racha (`tickSemana`); `tomarRespiro()` lo sube.
+  Barra en el perfil.
+- **Eventos de vida procedurales** (`VIDA_PROC`, 9): viejo amigo pide plata, ex reaparece, paparazzi, susto de salud,
+  premio, familiar en apuros, negocio dudoso, crisis de mediana edad, adoptar un perro. `dispararVidaProc()` en `avanzar`
+  (~1/7 semanas) abre `modalVidaProc`.
+- Verificado: harness (relación, casarse, hije heredere, bienestar, tickSemana, 9 eventos) + UI + regresión sin errores.

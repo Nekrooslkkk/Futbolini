@@ -152,6 +152,10 @@ function normalizarEstado(){
   if(!E.perfil.tinder) E.perfil.tinder={matches:[]};
   if(!Array.isArray(E.perfil.tinder.matches)) E.perfil.tinder.matches=[];
   if(E.perfil.pareja===undefined) E.perfil.pareja=null;
+  /* Vida 3.0: bienestar, familia y evolución de la relación */
+  if(E.perfil.bienestar===undefined) E.perfil.bienestar=70;
+  if(!Array.isArray(E.perfil.hijos)) E.perfil.hijos=[];
+  if(E.perfil.pareja && E.perfil.pareja.nivel===undefined){ E.perfil.pareja.nivel=65; E.perfil.pareja.casades=!!E.perfil.pareja.casades; }
   if(E.perfil.avatar && E.perfil.avatar!=="😎" && String(E.perfil.avatar).indexOf("orb-")!==0) E.perfil.avatar="orb-azul";
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
@@ -594,6 +598,12 @@ function tickSemana(){
   aplicarEfectos({plata:neto});
   /* plata personal del DT: entra su sueldo del cargo (menos si renunció por redención) */
   if(E.personal && typeof ingresoPersonalSemanal==="function"){ E.personal.bolsillo=Math.max(0,Math.round(E.personal.bolsillo+ingresoPersonalSemanal())); }
+  /* Vida 3.0: la relación se enfría si no la cuidás; el bienestar deriva y sufre con la mala racha */
+  if(E.perfil){
+    if(E.perfil.pareja) E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel||65)-(E.perfil.pareja.casades?0.4:0.9),0,100);
+    if(E.perfil.bienestar===undefined) E.perfil.bienestar=70;
+    E.perfil.bienestar=clamp(E.perfil.bienestar+(58-E.perfil.bienestar)*0.05-((E.temporada&&E.temporada.sinGanar>=3)?1.5:0),0,100);
+  }
   E.plantel.forEach(j=>{ if(j.lesion>0) j.lesion--; });
   /* deriva natural */
   if(E.ind.riesgo>0&&Math.random()<0.3) E.ind.riesgo=clamp(E.ind.riesgo-1,0,100);

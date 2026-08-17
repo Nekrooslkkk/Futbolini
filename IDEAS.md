@@ -14,5 +14,6 @@
 - [ ]
 
 ## Hecho
+- [x] Vida 3.0 (relación evoluciona, familia hereda la dinastía, bienestar, eventos de vida) — commit ver git
 - [x] Motor de variedad (decisiones procedurales + tácticas ampliadas) — commit adbac16.
 - [x] Vida 2.0 (avatares orbe MSN, dinastía heredada, Tinder/parejas, dinero personal, lujos) — commit 8cfdcc3.
