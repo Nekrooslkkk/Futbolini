@@ -460,6 +460,7 @@ function terminarPartido(P){
     bandeja:false});
   const posDespues=(part.tipo==="liga")?posicionEnTabla():null;
   if(typeof redesReaccion==="function") redesReaccion("partido",{yo:yo,otro:otro,rival:part.rivalNombre});
+  if(typeof golpeBolsa==="function") golpeBolsa(yo>otro?1:(yo<otro?-1:0));
   /* post-partido: siempre asegura al menos una decisión DEPORTIVA sobre la mesa */
   if(typeof sembrarDecisionProcDeCategoria==="function" && typeof pilarDeBuzon==="function"){
     const hayDep=(E.decPend||[]).some(x=>{ const d=(E.decProc&&E.decProc[x.id])||(typeof decisionPorId==="function"&&decisionPorId(x.id)); return d&&pilarDeBuzon(d.buzon).id==="DEPORTIVO"; });

@@ -159,6 +159,8 @@ function normalizarEstado(){
   if(!Array.isArray(E.perfil.hijos)) E.perfil.hijos=[];
   if(E.perfil.pareja && E.perfil.pareja.nivel===undefined){ E.perfil.pareja.nivel=65; E.perfil.pareja.casades=!!E.perfil.pareja.casades; }
   if(E.perfil.avatar && E.perfil.avatar!=="😎" && String(E.perfil.avatar).indexOf("orb-")!==0) E.perfil.avatar="orb-azul";
+  /* 5.0 · bolsa de valores del club + finanzas avanzadas */
+  if(typeof normalizarBolsa==="function") normalizarBolsa();
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){
@@ -598,6 +600,8 @@ function tickSemana(){
   /* plata que entra y sale entre partido y partido */
   const neto=ingresoSemanal()-costoSemanal();
   aplicarEfectos({plata:neto});
+  if(typeof actualizarBolsa==="function") actualizarBolsa();
+  if(typeof gestionTesorero==="function") gestionTesorero();
   /* plata personal del DT: entra su sueldo del cargo (menos si renunció por redención) */
   if(E.personal && typeof ingresoPersonalSemanal==="function"){ E.personal.bolsillo=Math.max(0,Math.round(E.personal.bolsillo+ingresoPersonalSemanal())); }
   /* Vida 3.0: la relación se enfría si no la cuidás; el bienestar deriva y sufre con la mala racha */
@@ -648,6 +652,7 @@ function finDeTemporada(){
   const t=E.temporada;
   const pos=posicionEnTabla();
   const campeon=pos===1;
+  if(typeof dividendoBolsa==="function") dividendoBolsa(pos);
   /* premios */
   let premio=[0,420,260,180,120][Math.min(4,pos)]||70;
   aplicarEfectos({plata:premio});

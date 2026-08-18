@@ -218,3 +218,14 @@ textarea.entrada:focus{outline:2px solid #39b7e0}
 .btn-aqua.amarillo{background:#e6b422;color:#3a2c00;border-color:#b58a10}
 .btn-aqua.rojo{background:#c0392b;color:#fff;border-color:#8a2411}
 .btn-aqua.morado{background:#7d3cc0;color:#fff;border-color:#5a2790}
+
+/* 5.0 · bolsa de valores + flujo de caja */
+.cotiza{display:flex;align-items:baseline;gap:10px;margin:2px 0 6px}
+.cotiza .precio{font-family:var(--f-dato,monospace);font-size:26px;font-weight:800}
+.cotiza .var{font-family:var(--f-dato,monospace);font-size:13px;font-weight:700;padding:1px 6px;border-radius:4px}
+.cotiza .var.sube{color:#0d6b2c;background:#1e9e4622}
+.cotiza .var.baja{color:#a12318;background:#c0392b22}
+.spark{margin:4px 0 8px;border:1px solid rgba(0,0,0,.12);border-radius:5px;padding:2px;background:rgba(255,255,255,.35)}
+table.flujo{width:100%;border-collapse:collapse;font-size:13px}
+table.flujo td,table.flujo th{padding:3px 6px;border-bottom:1px solid rgba(0,0,0,.08);text-align:left}
+table.flujo td.n,table.flujo th.n{text-align:right;font-family:var(--f-dato,monospace)}

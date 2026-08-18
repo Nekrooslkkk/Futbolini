@@ -427,8 +427,27 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
 - Verificado: harness Node (pilares OK, 200/200 negociaciones sin crash, siembra DEPORTIVO OK) + smoke navegador
   puerto 8791 (chip DEPORTIVO verde renderiza, modal con 4 botones de severidad, consola limpia).
 
+## 5.0 spec · Bolsa de valores del club + finanzas avanzadas  ✅ (2026-08-18)
+**Archivos:** `js/bolsa.js` (nuevo modulo), `js/motor.js` (hooks tick/finTemporada/normalizar),
+`js/partido.js` (golpe post-partido), `js/ui.js` (vistaFinanzas + sparkline), `css/base.css`, `index.html`
+- **Bolsa de valores**: el club es una sociedad anonima que cotiza (Blanco y Negro S.A., Azul Azul S.A.D.P.,
+  Cruzados SADP...). `fundamentoBolsa` deriva el valor de prestigio/hinchada/moral/titulos/deuda/racha.
+  `actualizarBolsa` (semanal, en tickSemana) persigue el fundamento con inercia + ruido especulativo;
+  `golpeBolsa` (en terminarPartido) hace saltar la accion segun el resultado — ganar sube, perder hunde.
+- **Especulacion con bolsillo personal** (conflicto de interes satirico: el DT sabe los resultados antes que
+  el mercado): `invertirBolsa` compra acciones fraccionarias, `liquidarBolsa` vende %, con ganancia latente y
+  costo invertido. `dividendoBolsa` paga dividendo anual a accionistas si la campana termina top-6.
+- **Cotizacion en vivo** con sparkline SVG (sin librerias, area+linea verde/roja), variacion % semanal.
+- **Flujo de caja semanal itemizado**: TV/sponsors/socios/digital vs planilla/operacion/intereses/comision,
+  con resultado neto (usa ingresosAnuales/egresosAnuales /40).
+- **Prestamo estructurado** (`tomarPrestamo`): caja inmediata a cambio de deuda con recargo 8%; intereses corren.
+- **Delegar caja al Tesorero** (`gestionTesorero` en tickSemana): abona deuda con el excedente y cobra comision
+  semanal (mayor si el tesorero es poco honesto). Toggle en el panel de Deuda.
+- Verificado: harness Node (precio simula 25 sem, golpes suben/bajan bien, invertir/liquidar/dividendo/prestamo/
+  tesorero OK, estable 120 semanas) + smoke navegador puerto 8793 (cotizacion, sparkline SVG, flujo 6 filas,
+  todos los botones, consola limpia).
+
 ### 5.0 spec · PENDIENTE
 - Corrección Avanzar/Simular (respetar calendario + modal Aero "¿dejar el progreso al azar?").
-- Bolsa de valores del club + finanzas avanzadas (gastos delegables al Tesorero, flujo de caja semanal).
 - Blackjack en el casino. Barras de apoyo en vivo (Ánimo Hinchada/Confianza Plantel/Criterio DT) + ticker lateral.
 - Redes en 2 pestañas (Cuenta Oficial del Club vs Perfil Personal del DT con like/retuit/responder).

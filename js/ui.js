@@ -410,6 +410,22 @@ function cambiarEstatuto(cat,op,costo){
   });
 }
 /* ---------------- finanzas ---------------- */
+/* sparkline SVG de la cotización (sin librerías) */
+function sparkNode(hist){
+  const w=260,h=54,pad=3;
+  const arr=(hist&&hist.length?hist:[1]).slice(-40);
+  const min=Math.min.apply(null,arr), max=Math.max.apply(null,arr), rng=(max-min)||1;
+  const dx=(w-pad*2)/Math.max(1,arr.length-1);
+  const pts=arr.map((v,i)=>[pad+i*dx, h-pad-((v-min)/rng)*(h-pad*2)]);
+  const d=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+  const sube=arr[arr.length-1]>=arr[0];
+  const col=sube?"#1e9e46":"#c0392b";
+  const cont=el("div","spark");
+  cont.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" preserveAspectRatio="none">'+
+    '<path d="'+d+' L '+pts[pts.length-1][0].toFixed(1)+' '+(h-pad)+' L '+pad+' '+(h-pad)+' Z" fill="'+col+'22"/>'+
+    '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round"/></svg>';
+  return cont;
+}
 function vistaFinanzas(){
   const v=$("#vista");
   const p=panel("Caja","💰");
@@ -424,6 +440,60 @@ function vistaFinanzas(){
   if(E.flags&&E.flags.clausura) p.cuerpo.appendChild(el("div","resul mal","⚠ Estadio con sectores clausurados por la deuda: perdés aforo y taquilla."));
   p.cuerpo.appendChild(el("p","mini","Los partidos de local suman taquilla aparte. Todos los montos están en millones de pesos de la época."));
   v.appendChild(p);
+
+  /* --- flujo de caja semanal itemizado --- */
+  if(typeof ingresosAnuales==="function" && typeof egresosAnuales==="function"){
+    const ia=ingresosAnuales(), ea=egresosAnuales();
+    const s=x=>Math.round(x/40); /* anual → semanal */
+    const pf=panel("Flujo de caja semanal","📊","agua");
+    const t=el("table"); t.className="flujo";
+    t.innerHTML="<thead><tr><th>Concepto</th><th class='n'>Semanal</th></tr></thead>";
+    const tb=el("tbody");
+    const linea=(n,val,neg)=>{ const tr=el("tr"); tr.innerHTML="<td>"+n+"</td><td class='n' style='color:"+(neg?"#b23":"#178a3a")+"'>"+(neg?"−":"+")+plata(Math.abs(val))+"</td>"; tb.appendChild(tr); };
+    linea("Derechos de TV",s(ia.tv)); linea("Sponsors",s(ia.sponsors)); linea("Socios/abonos",s(ia.socios));
+    if(ia.digital) linea("Digital/redes",s(ia.digital));
+    linea("Planilla (sueldos)",s(ea.planilla),true); linea("Operación/estadio",s(ea.operacion),true); linea("Intereses de deuda",s(ea.intereses),true);
+    if(E.flags&&E.flags.feeTesoreroUlt) linea("Comisión del Tesorero",E.flags.feeTesoreroUlt,true);
+    t.appendChild(tb); pf.cuerpo.appendChild(t);
+    const neto2=ingresoSemanal()-costoSemanal();
+    pf.cuerpo.appendChild(el("div","resul "+(neto2>=0?"bien":"mal"),"<b>Resultado neto semanal: "+(neto2>=0?"+":"−")+plata(Math.abs(neto2))+"</b>"));
+    v.appendChild(pf);
+  }
+
+  /* --- bolsa de valores del club --- */
+  if(E.bolsa){
+    const pb=panel("Bolsa de valores — "+E.bolsa.sociedad,"📈",gananciaBolsa()<0?"alerta":"agua");
+    const vr=variacionBolsa();
+    const cot=el("div","cotiza");
+    cot.innerHTML="<span class='precio'>"+plata(E.bolsa.precio)+"</span> <span class='var "+(vr>=0?"sube":"baja")+"'>"+(vr>=0?"▲ +":"▼ ")+vr+"%</span>";
+    pb.cuerpo.appendChild(cot);
+    pb.cuerpo.appendChild(sparkNode(E.bolsa.historia));
+    pb.cuerpo.appendChild(el("p","mini","Vos sabés los resultados antes que el mercado. Ganar hace subir la acción; perder la hunde. Especulás con tu bolsillo personal."));
+    pb.cuerpo.appendChild(fila("Bolsillo personal",plata(E.personal.bolsillo)));
+    if(E.bolsa.acciones>0){
+      pb.cuerpo.appendChild(fila("Tu tenencia",plata(valorTenencia())+" ("+(E.bolsa.acciones).toFixed(2)+" acc.)"));
+      const g=gananciaBolsa();
+      pb.cuerpo.appendChild(el("div","resul "+(g>=0?"bien":"mal"),"Ganancia latente: <b>"+(g>=0?"+":"−")+plata(Math.abs(Math.round(g)))+"</b> (invertido "+plata(Math.round(E.bolsa.invertido))+")"));
+    }
+    const compra=el("div"); compra.style.margin="6px 0";
+    [["Invertir 10",10],["Invertir 25",25],["Invertir 50",50]].forEach(([n,m])=>{
+      const b=el("button","btn-aqua chico verde"+(E.personal.bolsillo<m?" gris":"")); b.textContent=n; b.style.marginRight="5px";
+      b.disabled=E.personal.bolsillo<m;
+      b.onclick=()=>{ if(invertirBolsa(m)){ guardar(); render(); aviso("Compraste acciones por "+plata(m)); } };
+      compra.appendChild(b);
+    });
+    pb.cuerpo.appendChild(compra);
+    if(E.bolsa.acciones>0){
+      const venta=el("div");
+      [["Vender 25%",0.25],["Vender 50%",0.5],["Vender todo",1]].forEach(([n,f])=>{
+        const b=el("button","btn-aqua chico rojo"); b.textContent=n; b.style.marginRight="5px";
+        b.onclick=()=>{ const ing=liquidarBolsa(f); guardar(); render(); aviso("Liquidaste por "+plata(ing)); };
+        venta.appendChild(b);
+      });
+      pb.cuerpo.appendChild(venta);
+    }
+    v.appendChild(pb);
+  }
 
   /* --- precios por sector con sliders y proyección en vivo --- */
   const pe=panel("Precios de entradas","🎫","agua");
@@ -479,6 +549,27 @@ function vistaFinanzas(){
       aplicarGrupos({directorio:3}); guardar(); render(); aviso("Abonaste "+plata(pagar)); };
     pd.cuerpo.appendChild(b);
   });
+  /* préstamo estructurado: caja ahora a cambio de más deuda */
+  if(typeof tomarPrestamo==="function"){
+    pd.cuerpo.appendChild(el("p","mini","¿Necesitás caja ya? Pedí un crédito: entra plata al toque, pero la deuda sube con recargo (8%) y los intereses corren igual."));
+    const pr=el("div");
+    [300,600,1000].forEach(m=>{
+      const b=el("button","btn-aqua chico amarillo","Pedir "+plata(m)); b.style.marginRight="6px";
+      b.onclick=()=>{ tomarPrestamo(m); guardar(); render(); aviso("Crédito por "+plata(m)); };
+      pr.appendChild(b);
+    });
+    pd.cuerpo.appendChild(pr);
+  }
+  /* delegar la gestión financiera al Tesorero */
+  if(E.finanzas){
+    const dl=el("div","resul mitad"); dl.style.marginTop="8px";
+    dl.innerHTML="<b>Delegar caja al Tesorero</b><br><span class='mini'>Abona la deuda solo con el excedente y te saca la pega de encima, pero cobra una comisión semanal (más alta si es poco honesto).</span>";
+    const b=el("button","btn-aqua chico "+(E.finanzas.delegado?"rojo":"verde"),E.finanzas.delegado?"Retomar el control":"Delegar al Tesorero");
+    b.style.marginTop="5px";
+    b.onclick=()=>{ E.finanzas.delegado=!E.finanzas.delegado; guardar(); render(); aviso(E.finanzas.delegado?"Delegaste la caja al Tesorero":"Retomaste el control de la caja"); };
+    dl.appendChild(b);
+    pd.cuerpo.appendChild(dl);
+  }
   v.appendChild(pd);
   /* fondos desviados / redención (Bloque 2) */
   if(typeof panelDesfalco==="function"){ const pdf=panelDesfalco(); if(pdf) v.appendChild(pdf); }
