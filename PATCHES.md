@@ -396,3 +396,17 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
 - **Diálogo/negociación con jugadores** (Persuadir/Prometer/Forzar/Convencer) con severidad de color en botones.
 - **Bolsa de valores del club** + finanzas avanzadas (gastos delegables, flujo de caja).
 - **Blackjack** en el casino. **Redes en 2 pestañas** (club oficial vs perfil personal del DT).
+
+## 5.0 spec · Estética Windows Vista/7 (Aero Glass)  ✅ (2026-08-17)
+**Archivos:** `css/aero.css` (bloque Vista/7 al final, override del tema aero)
+- **Botones glossy Vista** (`.btn-aqua`): rectangulares (radio 5px), gradiente con corte especular al 50%
+  (blanco arriba, azul abajo), :hover glow cian #00d2ff, :active hundimiento inset. Variantes de severidad:
+  verde/amarillo/rojo/morado/gris (para el futuro sistema de negociación por color).
+- **Barras de título azul metálico** (`.panel > .cab`): degradado glossy #5b9be6→#00317a con corte al 50%.
+  Variantes agua/alerta/grave conservadas en estilo Vista.
+- **Paneles cristal** (`.panel`): rectangulares (radio 7px), `backdrop-filter:blur(12px)`, biselado inset.
+- Rectangularización general (radio 4-8px): fichas, .op, menú, modal, ventanas, tinder-card (adiós pastillas 999px).
+- **Progress bars Vista**: `.barrita` hundida con borde; nueva `.aero-progress` animada estilo copia de Windows
+  (`@keyframes vistaProgress`, bloque verde con brillo que se desliza).
+- **Pizarra táctica**: fichas de cristal con marco plateado estilo WMP11/Wii (`.pizarra .chip`).
+- Solo CSS (cero riesgo de lógica). Verificado por computed-styles (radios, gradientes, blur, animación) + consola limpia.
