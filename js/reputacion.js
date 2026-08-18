@@ -94,14 +94,14 @@ function resolverSalida(ev,modo){
 
 /* ============================================================
    Tinder / parejas · pool diverso, escrito con respeto
-   (todes son personas reales del abanico; la picardía es pareja
-    para todes, nadie es el chiste)
+   (todos son personas reales del abanico; la picardía es pareja
+    para todos, nadie es el chiste)
    ============================================================ */
 const CANDIDATOS=[
  {n:"Javiera",edad:29,id:"",bio:"Bailarina de cumbia. Busca a alguien que no hable de fútbol 24/7… pero te va a tocar igual."},
  {n:"Camilo",edad:33,id:"",bio:"Ingeniero e hincha del rival. Amor prohibido a la vista, tribuna en contra."},
  {n:"Antonia",edad:27,id:"mujer trans",bio:"Diseñadora y reina indiscutida del karaoke. Directa, sin vueltas ni medias tintas."},
- {n:"Sol",edad:25,id:"persona no binaria",bio:"Fotógrafe. Colecciona plantas y malas decisiones. Le da exactamente igual quién ganó el clásico."},
+ {n:"Sol",edad:25,id:"persona no binaria",bio:"Fotógrafa. Colecciona plantas y malas decisiones. Le da exactamente igual quién ganó el clásico."},
  {n:"Maca",edad:31,id:"travesti",bio:"Artista de cabaret, leyenda de la noche santiaguina. Si te presentás, te presentás en serio."},
  {n:"Benja",edad:28,id:"hombre trans",bio:"Profe de historia. Hace un asado de campeonato y discute de táctica mejor que tu ayudante."},
  {n:"Fran",edad:34,id:"",bio:"Periodista deportiva. Peligrosa: todo lo que digas puede terminar en la portada del lunes."},
@@ -110,13 +110,31 @@ const CANDIDATOS=[
  {n:"Vale",edad:32,id:"",bio:"Empresaria. Te va a invitar a cenar «sin compromiso». Ya sabés cómo termina eso."},
  {n:"Renata",edad:24,id:"mujer trans",bio:"Tatuadora y coleccionista de camisetas viejas. Te va a pedir la del ascenso del 86."},
  {n:"Tomás",edad:29,id:"",bio:"Chef. Cocina como los dioses y celebra los goles con postre. Riesgo de subir de peso."},
- {n:"Ale",edad:35,id:"persona no binaria",bio:"Arquitecte. Serie, tranquile, y con una paciencia santa para bancar tus malas rachas."},
+ {n:"Ale",edad:35,id:"persona no binaria",bio:"Arquitecta. Seria, tranquila, y con una paciencia santa para bancar tus malas rachas."},
  {n:"Pau",edad:27,id:"",bio:"Enfermera del turno noche. Los dos duermen de día: alma gemela horaria."},
  {n:"Coni",edad:30,id:"",bio:"Abogada. Si te metés en un lío dirigencial, mejor tenerla de tu lado que enfrente."},
  {n:"Dani",edad:23,id:"hombre trans",bio:"Estudiante de cine, sueña con dirigir el documental de tu dinastía. Optimista incurable."}
 ];
+/* género aproximado del candidato (para el filtro de orientación) */
+function generoCandidato(c){
+  const id=(c.id||"").toLowerCase();
+  if(id.indexOf("no binaria")>=0||id.indexOf("travesti")>=0) return "X";
+  if(id.indexOf("mujer")>=0) return "F";
+  if(id.indexOf("hombre")>=0) return "M";
+  return (["Javiera","Fran","Ignacia","Vale","Pau","Coni"].indexOf(c.n)>=0)?"F":"M";
+}
+function candidatoPasaFiltro(c){
+  const o=E.perfil.orientacion||"Libre", g=E.perfil.genero||"M", cg=generoCandidato(c);
+  if(o==="Bi"||o==="Libre") return true;
+  if(cg==="X") return true;               /* diverso aparece para todos */
+  if(o==="Hetero") return cg!==g;
+  if(o==="Gay") return cg===g;
+  return true;
+}
 function generarTinder(){
-  return mezcla(CANDIDATOS).slice(0,6).map(c=>Object.assign({},c,{orb:elige(ORBES),afin:(Math.random()*0.25)}));
+  let pool=CANDIDATOS.filter(candidatoPasaFiltro);
+  if(pool.length<3) pool=CANDIDATOS.slice();   /* fallback si el filtro deja pocos */
+  return mezcla(pool).slice(0,6).map(c=>Object.assign({},c,{orb:elige(ORBES),afin:(Math.random()*0.25)}));
 }
 function modalTinder(){
   const cartas=generarTinder(); let i=0;
@@ -175,7 +193,7 @@ function invitarSalir(match){
       E.perfil.pareja={n:match.n,id:match.id,orb:match.orb,desde:E.anio,nivel:65,casades:false};
       E.perfil.tinder.matches=E.perfil.tinder.matches.filter(m=>m.n!==match.n);
       aplicarEfectos({moral:6});
-      notificar({t:"¡De novies con "+match.n+"!",tipo:"bueno",d:"La cita salió redonda: ahora son pareja. Una relación estable te da paz y menos riesgo de escándalo.",bandeja:false});
+      notificar({t:"¡De novios con "+match.n+"!",tipo:"bueno",d:"La cita salió redonda: ahora son pareja. Una relación estable te da paz y menos riesgo de escándalo.",bandeja:false});
     } else { aplicarEfectos({moral:1});
       notificar({t:"Linda cita con "+match.n,tipo:"neutro",d:"La pasaron bien, pero quedó ahí. A veces es solo una linda noche.",bandeja:false}); }
   }
@@ -227,16 +245,16 @@ function chequearSucesion(){
 function asumirSucesor(){
   E.dinastia.generacion++;
   const gen=E.dinastia.generacion;
-  /* el heredero es tu hije mayor si tuviste familia; si no, la sangre nueva del linaje */
-  const hije=(E.perfil.hijos&&E.perfil.hijos.length)?E.perfil.hijos[0]:null;
-  E.perfil.nombre = hije ? hije.nombre : nombreGeneracion(E.dinastia.raiz, gen);
+  /* el heredero es tu hijo mayor si tuviste familia; si no, la sangre nueva del linaje */
+  const hijo=(E.perfil.hijos&&E.perfil.hijos.length)?E.perfil.hijos[0]:null;
+  E.perfil.nombre = hijo ? hijo.nombre : nombreGeneracion(E.dinastia.raiz, gen);
   E.perfil.nacimiento=(E.anio-ri(28,34))+"-06-15";
   if(E.dinastia.linaje==="Tu linaje"){ const ape=apellidoDinastia(); E.dinastia.linaje="Familia "+(ape||E.dinastia.raiz); }
   E.perfil.pareja=null; E.perfil.tinder={matches:[]}; E.perfil.hijos=[]; E.perfil.bienestar=72;
   let extra="";
-  if(hije){ E.capital=Math.min(200,(E.capital||0)+6); aplicarRep({publica:4}); extra=" Criade dentro del club, llega con respaldo y capital institucional."; }
+  if(hijo){ E.capital=Math.min(200,(E.capital||0)+6); aplicarRep({publica:4}); extra=" Criade dentro del club, llega con respaldo y capital institucional."; }
   notificar({t:"Nueva generación al mando",tipo:"neutro",
-    d:(hije?"Tu "+relacionSucesor(gen)+" ":"")+E.perfil.nombre+" toma la posta de la "+E.dinastia.linaje+". Hereda el patrimonio y la historia; el club sigue su curso."+extra,bandeja:false});
+    d:(hijo?"Tu "+relacionSucesor(gen)+" ":"")+E.perfil.nombre+" toma la posta de la "+E.dinastia.linaje+". Hereda el patrimonio y la historia; el club sigue su curso."+extra,bandeja:false});
   E.dinastia.sucesionPendiente=false;
   guardar(); render();
 }
@@ -245,10 +263,10 @@ function pantallaSucesion(){
   const ultimo=E.dinastia.historial[E.dinastia.historial.length-1]||{};
   p.cuerpo.appendChild(el("h2","tit","Se retira una generación"));
   p.cuerpo.appendChild(el("p",null,(ultimo.nombre||"El DT")+" se retira por edad a los "+(ultimo.edad||"")+" años, tras "+(ultimo.titulos||0)+" títulos. La "+E.dinastia.linaje+" no se detiene: la sangre nueva toma la posta."));
-  const hije=(E.perfil.hijos&&E.perfil.hijos.length)?E.perfil.hijos[0]:null;
-  const prox=hije?hije.nombre:nombreGeneracion(E.dinastia.raiz, E.dinastia.generacion+1);
+  const hijo=(E.perfil.hijos&&E.perfil.hijos.length)?E.perfil.hijos[0]:null;
+  const prox=hijo?hijo.nombre:nombreGeneracion(E.dinastia.raiz, E.dinastia.generacion+1);
   p.cuerpo.appendChild(fila("Linaje",E.dinastia.linaje));
-  p.cuerpo.appendChild(fila("Al mando ahora",prox+" · "+relacionSucesor(E.dinastia.generacion+1)+(hije?" (tu hije, criade en el club)":"")));
+  p.cuerpo.appendChild(fila("Al mando ahora",prox+" · "+relacionSucesor(E.dinastia.generacion+1)+(hijo?" (tu hijo, criado en el club)":"")));
   p.cuerpo.appendChild(fila("Patrimonio heredado",plata(E.personal.bolsillo)+" + "+(E.personal.propiedades.length)+" propiedades + "+(E.personal.autos.length)+" autos"));
   const b=el("button","btn-aqua ancho verde","Asumir la conducción");
   b.onclick=asumirSucesor;
@@ -277,15 +295,25 @@ function vistaVida(){
   inNac.onchange=()=>{ if(inNac.value){ E.perfil.nacimiento=inNac.value; guardar(); render(); } };
   info.appendChild(el("label","lb","Fecha de nacimiento (edad "+edadDT()+")"));
   info.appendChild(inNac);
-  const inOri=el("input"); inOri.className="entrada"; inOri.value=E.perfil.orientacion||"Libre"; inOri.style.width="100%"; inOri.placeholder="Libre";
-  inOri.onchange=()=>{ E.perfil.orientacion=inOri.value.trim()||"Libre"; guardar(); };
-  info.appendChild(el("label","lb","Orientación / estilo de vida"));
-  info.appendChild(inOri);
+  info.appendChild(el("label","lb","Género"));
+  const fg=el("div","fichas");
+  [["M","Hombre"],["F","Mujer"]].forEach(([k,n])=>{
+    const b=el("button","ficha",n); b.setAttribute("aria-pressed",(E.perfil.genero||"M")===k?"true":"false");
+    b.onclick=()=>{ E.perfil.genero=k; guardar(); render(); }; fg.appendChild(b);
+  });
+  info.appendChild(fg);
+  info.appendChild(el("label","lb","Orientación (filtra el Match)"));
+  const fo=el("div","fichas");
+  ["Hetero","Gay","Bi","Libre"].forEach(k=>{
+    const b=el("button","ficha",k); b.setAttribute("aria-pressed",(E.perfil.orientacion||"Libre")===k?"true":"false");
+    b.onclick=()=>{ E.perfil.orientacion=k; guardar(); render(); }; fo.appendChild(b);
+  });
+  info.appendChild(fo);
   win.appendChild(info);
   p.cuerpo.appendChild(win);
   p.cuerpo.appendChild(fila("Bolsillo personal",plata(E.personal.bolsillo)));
   p.cuerpo.appendChild(fila("Sueldo del cargo","+"+plata(ingresoPersonalSemanal())+" por semana"));
-  p.cuerpo.appendChild(fila("Pareja",E.perfil.pareja?(E.perfil.pareja.n+" (desde "+E.perfil.pareja.desde+")"):"soltere"));
+  p.cuerpo.appendChild(fila("Pareja",E.perfil.pareja?(E.perfil.pareja.n+" (desde "+E.perfil.pareja.desde+")"):"soltero"));
   p.cuerpo.appendChild(fila("Dinastía",E.dinastia.linaje+" · "+relacionSucesor(E.dinastia.generacion)+" (gen. "+E.dinastia.generacion+")"));
   /* bienestar / estrés */
   const bien=E.perfil.bienestar||70;
@@ -321,15 +349,15 @@ function vistaVida(){
     pt.cuerpo.appendChild(d);
     const bc=el("button","btn-aqua chico verde","💕 Cita romántica"); bc.onclick=citaConPareja; pt.cuerpo.appendChild(bc);
     if(!par.casades){ const bm=el("button","btn-aqua chico"); bm.textContent="💍 Casarse"; bm.style.marginLeft="6px"; bm.onclick=casarse; pt.cuerpo.appendChild(bm); }
-    if(E.perfil.hijos.length<4){ const bh=el("button","btn-aqua chico"); bh.textContent="👶 Tener un hije"; bh.style.marginLeft="6px"; bh.onclick=tenerHijo; pt.cuerpo.appendChild(bh); }
+    if(E.perfil.hijos.length<4){ const bh=el("button","btn-aqua chico"); bh.textContent="👶 Tener un hijo"; bh.style.marginLeft="6px"; bh.onclick=tenerHijo; pt.cuerpo.appendChild(bh); }
     const br=el("button","btn-aqua chico rojo","Terminar"); br.style.marginLeft="6px"; br.onclick=romperPareja; pt.cuerpo.appendChild(br);
   } else {
     pt.cuerpo.appendChild(el("p","mini","Soltere y a la búsqueda. Deslizá en el Match: si hay química, después le invitás a salir."));
   }
-  /* hijes (futura dinastía) */
+  /* hijos (futura dinastía) */
   if(E.perfil.hijos && E.perfil.hijos.length){
     pt.cuerpo.appendChild(el("h3","sub","Familia"));
-    E.perfil.hijos.forEach(h=>pt.cuerpo.appendChild(fila("👶 "+h.nombre,"nacide en "+h.nacido+((E.perfil.hijos[0]===h)?" · heredere":""))));
+    E.perfil.hijos.forEach(h=>pt.cuerpo.appendChild(fila("👶 "+h.nombre,"nacido en "+h.nacido+((E.perfil.hijos[0]===h)?" · heredero":""))));
   }
   const bt=el("button","btn-aqua ancho verde","💘 Abrir Match (Tinder)"); bt.style.marginTop="6px"; bt.onclick=modalTinder;
   pt.cuerpo.appendChild(bt);

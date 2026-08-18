@@ -379,3 +379,20 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
   premio, familiar en apuros, negocio dudoso, crisis de mediana edad, adoptar un perro. `dispararVidaProc()` en `avanzar`
   (~1/7 semanas) abre `modalVidaProc`.
 - Verificado: harness (relación, casarse, hije heredere, bienestar, tickSemana, 9 eventos) + UI + regresión sin errores.
+
+## 5.0 spec · lenguaje estándar + orientación en Tinder + Modo Dios  ✅ (2026-08-17)
+**Archivos:** `reputacion.js`, `motor.js`, `ui.js`
+- **Sin lenguaje inclusivo**: se pasó todo a español estándar (hije→hijo, heredere→heredero, etc.), por pedido del usuario.
+- **Filtro de orientación en Tinder** (Hetero/Gay/Bi/Libre) + Género (Hombre/Mujer) en el perfil: `generoCandidato`,
+  `candidatoPasaFiltro`, `generarTinder` filtra el pool. La diversidad (trans/travesti/no binario) se mantiene presente.
+- **Modo Dios (panel de cheats)** en Ajustes (`E.flags.modoDios`): caja/bolsillo/capital/deuda/riesgo, plantel +5,
+  moral/hinchada, curar lesionados, grupos +30, bienestar, inyectar decisión procedural / evento de vida / título.
+- Verificado: harness (filtro por orientación con diversidad) + UI (cheats operativos) + regresión sin errores.
+
+## 5.0 spec · PENDIENTE (próximas pasadas, una por turno)
+- **Aero visual Vista/7** (CSS grande): botones glossy con corte especular, barras de título degradado azul, progress bars
+  animadas estilo copia de Windows, radios 4-8px, pizarra táctica tipo WMP11/Wii. (Alto impacto, hacer con screenshot.)
+- **3 pilares de decisión con color** ([DEPORTIVO] verde / [PERSONAL] azul / [EJECUTIVO] dorado) + post-partido fuerza uno DEPORTIVO.
+- **Diálogo/negociación con jugadores** (Persuadir/Prometer/Forzar/Convencer) con severidad de color en botones.
+- **Bolsa de valores del club** + finanzas avanzadas (gastos delegables, flujo de caja).
+- **Blackjack** en el casino. **Redes en 2 pestañas** (club oficial vs perfil personal del DT).

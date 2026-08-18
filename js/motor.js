@@ -154,6 +154,8 @@ function normalizarEstado(){
   if(E.perfil.pareja===undefined) E.perfil.pareja=null;
   /* Vida 3.0: bienestar, familia y evolución de la relación */
   if(E.perfil.bienestar===undefined) E.perfil.bienestar=70;
+  if(E.perfil.genero===undefined) E.perfil.genero="M";
+  if(["Hetero","Gay","Bi","Libre"].indexOf(E.perfil.orientacion)<0) E.perfil.orientacion="Libre";
   if(!Array.isArray(E.perfil.hijos)) E.perfil.hijos=[];
   if(E.perfil.pareja && E.perfil.pareja.nivel===undefined){ E.perfil.pareja.nivel=65; E.perfil.pareja.casades=!!E.perfil.pareja.casades; }
   if(E.perfil.avatar && E.perfil.avatar!=="😎" && String(E.perfil.avatar).indexOf("orb-")!==0) E.perfil.avatar="orb-azul";

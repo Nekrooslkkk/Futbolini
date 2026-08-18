@@ -874,6 +874,36 @@ function vistaAjustes(){
   b2.onclick=async()=>{ if(confirm("¿Borrar la partida guardada?")){ await Store.del(LLAVE); E=null; render(); } };
   p.cuerpo.appendChild(b1); p.cuerpo.appendChild(b2);
   v.appendChild(p);
+
+  /* ---- Modo Dios (panel de cheats) ---- */
+  const pg=panel("Modo Dios","😇","alerta");
+  pg.cuerpo.appendChild(el("p","mini","Panel de trucos para jugar como quieras. Cambiá todo a mano; no hay reglas acá."));
+  const tog=el("button","btn-aqua chico"+(E.flags.modoDios?"":" gris"),E.flags.modoDios?"Modo Dios: ON":"Activar Modo Dios");
+  tog.onclick=()=>{ E.flags.modoDios=!E.flags.modoDios; guardar(); render(); };
+  pg.cuerpo.appendChild(tog);
+  if(E.flags.modoDios){
+    const cheat=(label,fn)=>{ const b=el("button","btn-aqua chico"); b.textContent=label; b.style.margin="4px 4px 0 0"; b.onclick=()=>{ fn(); guardar(); render(); }; pg.cuerpo.appendChild(b); };
+    pg.cuerpo.appendChild(el("h3","sub","Plata y club"));
+    cheat("Caja club +1000",()=>aplicarEfectos({plata:1000}));
+    cheat("Bolsillo +500",()=>{ E.personal.bolsillo+=500; });
+    cheat("Capital +50",()=>{ E.capital=Math.min(999,(E.capital||0)+50); });
+    cheat("Deuda = 0",()=>{ E.deuda=0; });
+    cheat("Riesgo = 0",()=>{ E.ind.riesgo=0; });
+    cheat("Desfalco = 0",()=>{ E.flags.desfalco=0; E.flags.investigacionAbierta=false; });
+    pg.cuerpo.appendChild(el("h3","sub","Plantel y ánimo"));
+    cheat("Plantel +5 nivel",()=>{ E.plantel.forEach(j=>{ if(!j.vendido) j.nivel=clamp(j.nivel+5,0,99); }); E.ind.plantel=clamp(Math.round(mediaPlantel()),0,100); });
+    cheat("Moral / hinchada 90",()=>{ E.ind.moral=90; E.ind.hinchada=90; });
+    cheat("Curar lesionados",()=>{ E.plantel.forEach(j=>j.lesion=0); });
+    cheat("Todos los grupos +30",()=>{ GRUPOS.forEach(g=>{ E.grupos[g.id].aprob=clamp(E.grupos[g.id].aprob+30,-100,100); }); });
+    cheat("Bienestar 100",()=>{ if(E.perfil) E.perfil.bienestar=100; });
+    pg.cuerpo.appendChild(el("h3","sub","Inyectar eventos"));
+    cheat("Decisión al azar",()=>{ if(typeof generarDecisionProc==="function"){ const d=generarDecisionProc(); if(d) E.decPend.push({id:d.id,clave:d.id+"_"+E.anio,peso:d.peso}); } });
+    const bve=el("button","btn-aqua chico"); bve.textContent="Evento de vida"; bve.style.margin="4px 4px 0 0";
+    bve.onclick=()=>{ if(typeof modalVidaProc==="function"&&typeof VIDA_PROC!=="undefined") modalVidaProc(elige(VIDA_PROC)); };
+    pg.cuerpo.appendChild(bve);
+    cheat("Sumar un título",()=>{ E.titulos.push("Título (Modo Dios) "+E.anio); });
+  }
+  v.appendChild(pg);
 }
 /* ---------------- avanzar ---------------- */
 function avanzar(){
