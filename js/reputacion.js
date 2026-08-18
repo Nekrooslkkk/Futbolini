@@ -252,7 +252,7 @@ function asumirSucesor(){
   if(E.dinastia.linaje==="Tu linaje"){ const ape=apellidoDinastia(); E.dinastia.linaje="Familia "+(ape||E.dinastia.raiz); }
   E.perfil.pareja=null; E.perfil.tinder={matches:[]}; E.perfil.hijos=[]; E.perfil.bienestar=72;
   let extra="";
-  if(hijo){ E.capital=Math.min(200,(E.capital||0)+6); aplicarRep({publica:4}); extra=" Criade dentro del club, llega con respaldo y capital institucional."; }
+  if(hijo){ E.capital=Math.min(200,(E.capital||0)+6); aplicarRep({publica:4}); extra=" Criado dentro del club, llega con respaldo y capital institucional."; }
   notificar({t:"Nueva generación al mando",tipo:"neutro",
     d:(hijo?"Tu "+relacionSucesor(gen)+" ":"")+E.perfil.nombre+" toma la posta de la "+E.dinastia.linaje+". Hereda el patrimonio y la historia; el club sigue su curso."+extra,bandeja:false});
   E.dinastia.sucesionPendiente=false;

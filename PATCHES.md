@@ -410,3 +410,25 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
   (`@keyframes vistaProgress`, bloque verde con brillo que se desliza).
 - **Pizarra táctica**: fichas de cristal con marco plateado estilo WMP11/Wii (`.pizarra .chip`).
 - Solo CSS (cero riesgo de lógica). Verificado por computed-styles (radios, gradientes, blur, animación) + consola limpia.
+
+## 5.0 spec · 3 pilares de decisión + negociación cara a cara  ✅ (2026-08-18)
+**Archivos:** `js/data-proc.js` (motor), `js/ui.js` (render + modal + hook), `js/partido.js` (siembra post-partido),
+`js/reputacion.js` (fix "Criade"→"Criado"), `css/base.css` (chip .pilar + severidad base)
+- **3 pilares con color**: `pilarDeBuzon(buzon)` clasifica cada decisión en DEPORTIVO (verde, camarin/preparacion/cantera),
+  PERSONAL (azul, prensa/gris/hinchada) o EJECUTIVO (dorado, institucional/refuerzos/finanzas/anfp). Chip rectangular
+  `.pilar` renderizado en `abrirDecision` sobre el título.
+- **Post-partido fuerza DEPORTIVO**: `terminarPartido` siembra una decisión procedural DEPORTIVA si no hay ninguna
+  pendiente (`sembrarDecisionProcDeCategoria("DEPORTIVO")`), así siempre hay algo táctico que resolver tras jugar.
+- **Negociación cara a cara** (`NEGOCIACIONES`, `generarNegociacion`, `resolverNegociacion`, `modalNegociacion`):
+  jugador te encara (exige titularidad / pide renovar / amenaza con irse) y respondés con 4 enfoques de severidad:
+  Persuadir (verde/seguro), Prometer aumento (amarillo/riesgo medio, cuesta planilla + flag prometido_), 
+  Forzar permanencia (rojo/alto riesgo), Convencer (morado/impredecible, alta varianza). Efectos proporcionales
+  (moral ±3-8, sin castigos catastróficos). Disparo ~11% al avanzar (`dispararNegociacion` tras vida proc).
+- Verificado: harness Node (pilares OK, 200/200 negociaciones sin crash, siembra DEPORTIVO OK) + smoke navegador
+  puerto 8791 (chip DEPORTIVO verde renderiza, modal con 4 botones de severidad, consola limpia).
+
+### 5.0 spec · PENDIENTE
+- Corrección Avanzar/Simular (respetar calendario + modal Aero "¿dejar el progreso al azar?").
+- Bolsa de valores del club + finanzas avanzadas (gastos delegables al Tesorero, flujo de caja semanal).
+- Blackjack en el casino. Barras de apoyo en vivo (Ánimo Hinchada/Confianza Plantel/Criterio DT) + ticker lateral.
+- Redes en 2 pestañas (Cuenta Oficial del Club vs Perfil Personal del DT con like/retuit/responder).

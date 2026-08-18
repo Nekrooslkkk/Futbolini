@@ -257,6 +257,7 @@ function abrirDecision(d,enModal){
     cont.innerHTML="";
     const p=panel(BUZONES[d.buzon].n,BUZONES[d.buzon].ic,d.peso==="alto"?"alerta":"");
     p.classList.add("dec");
+    if(typeof pilarDeBuzon==="function"){ const pil=pilarDeBuzon(d.buzon); p.cuerpo.appendChild(el("span","pilar "+pil.c,pil.id)); }
     p.cuerpo.appendChild(el("h2","tit",resolverTokens(d.t,E)));
     p.cuerpo.appendChild(el("div","ctx",resolverTokens(d.d,E)));
     if(d.posturas){
@@ -922,6 +923,7 @@ function avanzar(){
   const ev=tirarEvento();
   if(ev&&ev.tipo==="decision"){ abrirEventoDecision(ev.ev); return; }
   const vp=(typeof dispararVidaProc==="function")?dispararVidaProc():false;
+  if(!vp && typeof dispararNegociacion==="function" && dispararNegociacion()) return;
   irA("escritorio");
   if(ctx.length) aviso(ctx[0]);
   else if(ev) aviso(ev.item.t);
@@ -951,6 +953,31 @@ function abrirEventoDecision(ev){
     });
     p.cuerpo.appendChild(ops);
     cont.appendChild(p);
+  },{cerrarFuera:false});
+}
+/* 5.0 · negociación cara a cara con jugadores (Persuadir/Prometer/Forzar/Convencer) */
+function modalNegociacion(neg){
+  const OPCS=[
+    {k:"persuadir",sev:"verde", t:"Persuadir",       d:"Apelás a la razón y al proyecto. Seguro, efecto moderado."},
+    {k:"prometer", sev:"amarillo",t:"Prometer aumento",d:"Le tirás plata futura. Suele funcionar, pero pesa en la planilla."},
+    {k:"forzar",   sev:"rojo",  t:"Forzar permanencia",d:"Sacás la chapa de autoridad. Alto riesgo si sale mal."},
+    {k:"convencer",sev:"morado",t:"Convencer",       d:"Charla larga y personal. Impredecible: puede salir redondo o peor."}
+  ];
+  modal(box=>{
+    box.classList.remove("panel");
+    const p=panel("Cara a cara","🗣️","alerta"); p.classList.add("dec");
+    p.cuerpo.appendChild(el("span","pilar per","PERSONAL"));
+    p.cuerpo.appendChild(el("h2","tit",neg.j.n+" quiere hablar"));
+    p.cuerpo.appendChild(el("div","ctx",neg.j.n+" ("+neg.j.pos+", "+neg.j.edad+" años) "+neg.tpl.pedido+". Lo tenés enfrente, hay que responder ahora."));
+    const ops=el("div","ops");
+    OPCS.forEach(o=>{
+      const b=el("button","btn-aqua ancho "+o.sev);
+      b.innerHTML='<b>'+o.t+'</b><br><span class="mini">'+o.d+'</span>';
+      b.onclick=()=>{ const txt=resolverNegociacion(neg,o.k); cerrarModal(); irA("escritorio"); };
+      ops.appendChild(b);
+    });
+    p.cuerpo.appendChild(ops);
+    box.appendChild(p);
   },{cerrarFuera:false});
 }
 function abrirCrisis(cr){

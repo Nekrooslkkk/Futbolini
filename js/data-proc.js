@@ -211,3 +211,69 @@ function sembrarDecisionProc(){
   E.decPend.push({id:dec.id,clave:dec.id+"_"+E.anio,peso:dec.peso});
   return dec;
 }
+
+/* ============================================================
+   5.0 · 3 PILARES DE DECISIÓN (color) + NEGOCIACIÓN CARA A CARA
+   ============================================================ */
+function pilarDeBuzon(b){
+  const dep=["camarin","preparacion","cantera"];
+  const per=["prensa","gris","hinchada"];
+  if(dep.indexOf(b)>=0) return {id:"DEPORTIVO",c:"dep"};
+  if(per.indexOf(b)>=0) return {id:"PERSONAL",c:"per"};
+  return {id:"EJECUTIVO",c:"eje"};
+}
+/* siembra una decisión procedural de una categoría concreta (post-partido exige DEPORTIVO) */
+function sembrarDecisionProcDeCategoria(cat){
+  if(!E.decPend) return null;
+  E.decProc=E.decProc||{};
+  const orden=mezcla(DEC_PROC.filter(t=>pilarDeBuzon(t.buzon).id===cat));
+  for(let i=0;i<orden.length;i++){
+    let cont=null; try{ cont=orden[i].gen(); }catch(e){ cont=null; }
+    if(!cont) continue;
+    const id="proc_"+(E._procId=(E._procId||0)+1);
+    const dec=Object.assign({id:id,buzon:orden[i].buzon,peso:orden[i].peso||"medio"},cont);
+    E.decProc[id]=dec; E.decPend.push({id:id,clave:id+"_"+E.anio,peso:dec.peso});
+    return dec;
+  }
+  return null;
+}
+
+/* ---- negociación directa con jugadores (Persuadir/Prometer/Forzar/Convencer) ---- */
+const NEGOCIACIONES=[
+ {tipo:"titularidad",pedido:"te encara: exige ser titular sí o sí",filtro:x=>x.nivel>=68},
+ {tipo:"renovacion",pedido:"pide renovar con mejor sueldo, cara a cara",filtro:x=>x.nivel>=66},
+ {tipo:"salida",pedido:"te dice a la cara que quiere irse a fin de año",filtro:x=>x.valor>=200||x.proy>x.nivel+3}
+];
+function generarNegociacion(){
+  const t=elige(NEGOCIACIONES); const j=jugAzar(t.filtro);
+  return j?{j:j,tpl:t}:null;
+}
+/* proporcionalidad lógica: efectos ponderados, sin castigos catastróficos */
+function resolverNegociacion(neg,approach){
+  const j=neg.j; const carisma=(E.rep.publica+E.rep.credibilidad)/2;
+  let txt="", tono="neutro";
+  if(approach==="persuadir"){
+    if(Math.random()<clamp(0.45+carisma/250,0.3,0.85)){ aplicarEfectos({moral:3}); aplicarGrupos({camarin:6}); txt=j.n+" entró en razón. Clima recompuesto."; tono="bueno"; }
+    else txt=j.n+" escuchó, pero no quedó del todo convencido.";
+  } else if(approach==="prometer"){
+    if(Math.random()<clamp(0.7+carisma/400,0.5,0.92)){ aplicarEfectos({moral:5,deuda:60}); aplicarGrupos({camarin:8,directorio:-6}); txt=j.n+" firma feliz, pero la planilla pesa más."; tono="bueno"; E.flags["prometido_"+j.n]=E.idx; }
+    else { aplicarEfectos({moral:-2}); txt="No alcanzó ni con la promesa. Sigue incómodo."; }
+  } else if(approach==="forzar"){
+    if(Math.random()<clamp(0.4+E.rep.dureza/200,0.25,0.8)){ aplicarEfectos({plantel:2}); aplicarGrupos({tecnico:6,camarin:-4}); txt=j.n+" agachó la cabeza. Quedó claro quién manda."; }
+    else { aplicarEfectos({moral:-6}); aplicarGrupos({camarin:-12,prensa:-6}); txt=j.n+" explotó y el vestuario tomó nota."; tono="malo"; }
+  } else { /* convencer: impredecible (morado) */
+    const r=Math.random();
+    if(r<0.4){ aplicarEfectos({moral:8,plantel:2}); aplicarGrupos({camarin:12}); txt=j.n+" salió más motivado que nunca. Redondo."; tono="bueno"; }
+    else if(r<0.72){ txt="Charla larga de resultado incierto. Habrá que ver."; }
+    else { aplicarEfectos({moral:-5}); aplicarGrupos({camarin:-8}); txt="Se malinterpretó todo y quedó peor que antes."; tono="malo"; }
+  }
+  notificar({t:"Cara a cara con "+j.n,tipo:tono,d:txt,bandeja:false});
+  guardar(); return txt;
+}
+function dispararNegociacion(){
+  if(!E||!E.plantel) return false;
+  if(Math.random()>0.11) return false;
+  const neg=generarNegociacion(); if(!neg) return false;
+  if(typeof modalNegociacion==="function"){ modalNegociacion(neg); return true; }
+  return false;
+}

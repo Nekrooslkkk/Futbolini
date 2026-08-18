@@ -207,3 +207,14 @@ textarea.entrada:focus{outline:2px solid #39b7e0}
   border-radius:8px;padding:6px 8px;font-size:12.5px}
 .ticker .tk.bien{border-left-color:#4fbf3f}
 .ticker .tk.mal{border-left-color:#e0563f}
+
+/* 5.0 · chip de pilar de decisión (DEPORTIVO/PERSONAL/EJECUTIVO) */
+.pilar{display:inline-block;font-family:var(--f-dato,monospace);font-size:10px;font-weight:800;letter-spacing:.6px;padding:2px 8px;border-radius:4px;color:#fff;margin:0 0 6px 0;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.pilar.dep{background:linear-gradient(to bottom,#46d16a,#1c9e3a);border:1px solid #157a2c}
+.pilar.per{background:linear-gradient(to bottom,#57cbff,#1483c8);border:1px solid #0f6aa3}
+.pilar.eje{background:linear-gradient(to bottom,#ffc24b,#e0930f);border:1px solid #b0710a;color:#3a2600;text-shadow:none}
+/* severidad de botones fuera del tema aero */
+.btn-aqua.verde{background:#2fa84f;color:#fff;border-color:#1c7a37}
+.btn-aqua.amarillo{background:#e6b422;color:#3a2c00;border-color:#b58a10}
+.btn-aqua.rojo{background:#c0392b;color:#fff;border-color:#8a2411}
+.btn-aqua.morado{background:#7d3cc0;color:#fff;border-color:#5a2790}
