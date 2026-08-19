@@ -556,10 +556,20 @@ function terminarPartido(P){
   const posDespues=(part.tipo==="liga")?posicionEnTabla():null;
   if(typeof redesReaccion==="function") redesReaccion("partido",{yo:yo,otro:otro,rival:part.rivalNombre});
   if(typeof golpeBolsa==="function") golpeBolsa(yo>otro?1:(yo<otro?-1:0));
-  if(yo>otro && typeof esClasico==="function" && esClasico(part)){
-    const primera=!E.flags.clasicoGanado; E.flags.clasicoGanado=true;
-    if(primera && E.objetivos && E.objetivos.some(o=>o.tipo==="clasico"))
-      notificar({t:"¡Meta cumplida!",tipo:"bueno",d:"Ganaste el clásico: cumpliste tu objetivo institucional del año.",bandeja:false});
+  if(typeof esClasico==="function" && esClasico(part)){
+    if(yo>otro){
+      const primera=!E.flags.clasicoGanado; E.flags.clasicoGanado=true;
+      if(typeof recordar==="function") recordar("clasico","le ganaste el clásico a "+part.rivalNombre+" "+yo+"-"+otro,{peso:"alto",tono:"bueno"});
+      if(primera && E.objetivos && E.objetivos.some(o=>o.tipo==="clasico"))
+        notificar({t:"¡Meta cumplida!",tipo:"bueno",d:"Ganaste el clásico: cumpliste tu objetivo institucional del año.",bandeja:false});
+    } else if(yo<otro && typeof recordar==="function"){
+      recordar("clasico","perdiste el clásico con "+part.rivalNombre+" "+otro+"-"+yo,{peso:"alto",tono:"malo"});
+    }
+  }
+  /* goleadas memorables (para bien y para mal) */
+  if(typeof recordar==="function"){
+    if(yo-otro>=3) recordar("goleada","goleaste "+yo+"-"+otro+" a "+part.rivalNombre,{peso:"medio",tono:"bueno"});
+    else if(otro-yo>=3) recordar("paliza","te golearon "+otro+"-"+yo+" de visita ante "+part.rivalNombre,{peso:"medio",tono:"malo"});
   }
   /* loop de aprendizaje: avisar si el resultado te acerca o aleja de tu meta deportiva */
   if(typeof avisoObjetivoPartido==="function") avisoObjetivoPartido(posAntes,posDespues);

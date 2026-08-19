@@ -606,3 +606,23 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
   históricos/eventos/mecánicas). Todos con la regla de no inventar nombres como reales.
 - Verificado: navegador puerto 8824 — partido y decisión lado a lado en escritorio, apilados en angosto,
   relato con scroll, consola limpia.
+
+## 6.1 · E.memoria — el club recuerda lo que hiciste (corazón Fase 1)  ✅ (2026-08-19)
+**Archivos:** `js/memoria.js` (nuevo motor), `js/motor.js`/`js/partido.js`/`js/data-proc.js` (puntos de grabado),
+`js/ui.js` (panel + decisiones como modal), `css/base.css`, `css/aero.css`, `index.html`
+- **Motor de memoria** (`E.memoria`, registro rodante máx 60): `recordar(tipo,txt,opts)` graba hechos salientes
+  siempre en 2ª persona ("vendiste", "prometiste", "ganaste"); `memoriaReciente`, `citarMemoria` (marca usado,
+  evita repetir), `cuandoMemoria` ("hace 3 fechas"/"el año pasado"), `promesaPendiente`.
+- **Puntos de grabado**: promesa de aumento (negociación), clásico ganado/perdido, goleada/paliza (±3),
+  venta de jugador (peso alto si es ídolo/crack), campeón nacional y Copa Libertadores.
+- **Payoff visible** — panel **"El club no olvida"** en el escritorio: últimos 5 hechos con tu firma, punto de
+  color por tono y "cuándo". Le da al jugador la sensación de que la historia depende de él.
+- **Decisión-callback** (la killer feature): nueva plantilla en DEC_PROC que **existe por lo que hiciste** —
+  "«Fulano» te cobra la promesa" cita el hecho real de memoria y ofrece Cumplir / Pedir tiempo / Negar,
+  con consecuencias proporcionales sobre credibilidad y camarín.
+- **UX "volvés a donde estabas"**: las decisiones del menú ahora se abren como **modal** sobre la vista actual
+  (el escritorio queda detrás) y al cerrar se refresca en el mismo lugar; la negociación también deja de
+  patearte al escritorio. Cumple el pedido de volver donde estabas al terminar una acción.
+- Verificado: harness (recordar/dedup/citar/cuándo/promesaPendiente/callback OK) + navegador (panel con hechos
+  en 2ª persona, decisión como modal con escritorio detrás, temporada completa acumula 14 recuerdos reales,
+  consola limpia).

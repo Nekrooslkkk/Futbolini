@@ -183,6 +183,30 @@ const DEC_PROC=[
        mitad:{txt:"Mensaje frío, recibido a medias.",ef:{}},
        mal:{txt:"La tribuna lo tomó como desprecio a su ídolo.",ef:{hinchada:-4},grupos:{hinchada:-12}}}
      ]};
+ }},
+ /* 6.0 · CALLBACK DE MEMORIA: la promesa que te cobran (existe por lo que vos hiciste) */
+ {buzon:"camarin",peso:"medio",gen:function(){
+   if(typeof promesaPendiente!=="function") return null;
+   const m=promesaPendiente(); if(!m) return null;
+   const quien=m.quien; m.usado=(m.usado||0)+1; /* no la vuelve a disparar */
+   const j=(E.plantel||[]).find(x=>x.n===quien);
+   return {t:quien+" te cobra la promesa",
+     d:cuandoMemoria(m).charAt(0).toUpperCase()+cuandoMemoria(m).slice(1)+" "+m.txt+". "+quien+" no se olvidó: lo pregunta en el camarín, delante de todos. La memoria del grupo es larga y esto lleva tu firma.",
+     posturas:{camarin:22,directorio:-12},
+     op:[
+      {t:"Cumplir lo prometido",dif:24,req:{plata:60},ef:{plata:-60,moral:6},grupos:{camarin:14,directorio:-8},
+       bien:{txt:"Cumpliste tu palabra. "+quien+" y el grupo lo registran: con vos se puede confiar.",ef:{moral:4},rep:{credibilidad:6}},
+       mitad:{txt:"Cumpliste, aunque tarde. Quedó saldado sin aplausos.",ef:{}},
+       mal:{txt:"Cumpliste, pero el resto ya arma fila con el mismo reclamo.",ef:{deuda:40}}},
+      {t:"Pedir un poco más de tiempo",dif:44,grupos:{camarin:-6},
+       bien:{txt:quien+" lo entendió: sabe que la caja está justa.",ef:{}},
+       mitad:{txt:"Aceptó a regañadientes. La cuenta sigue abierta.",ef:{moral:-2}},
+       mal:{txt:"Sintió que le diste el vamos y ahora te esquiva.",ef:{moral:-6},grupos:{camarin:-10}}},
+      {t:"Negar que lo hayas prometido",dif:58,grupos:{camarin:-16,prensa:-8},rep:{credibilidad:-8,dureza:4},
+       bien:{txt:"Te hiciste el desentendido y por ahora zafaste.",ef:{}},
+       mitad:{txt:quien+" no te cree, pero se la guarda.",ef:{moral:-5}},
+       mal:{txt:"Lo negaste y salió a contarlo. Quedaste como alguien que no cumple.",ef:{moral:-8},grupos:{camarin:-14,prensa:-10},rep:{credibilidad:-6}}}
+     ]};
  }}
 ];
 
@@ -256,7 +280,8 @@ function resolverNegociacion(neg,approach){
     if(Math.random()<clamp(0.45+carisma/250,0.3,0.85)){ aplicarEfectos({moral:3}); aplicarGrupos({camarin:6}); txt=j.n+" entró en razón. Clima recompuesto."; tono="bueno"; }
     else txt=j.n+" escuchó, pero no quedó del todo convencido.";
   } else if(approach==="prometer"){
-    if(Math.random()<clamp(0.7+carisma/400,0.5,0.92)){ aplicarEfectos({moral:5,deuda:60}); aplicarGrupos({camarin:8,directorio:-6}); txt=j.n+" firma feliz, pero la planilla pesa más."; tono="bueno"; E.flags["prometido_"+j.n]=E.idx; }
+    if(Math.random()<clamp(0.7+carisma/400,0.5,0.92)){ aplicarEfectos({moral:5,deuda:60}); aplicarGrupos({camarin:8,directorio:-6}); txt=j.n+" firma feliz, pero la planilla pesa más."; tono="bueno"; E.flags["prometido_"+j.n]=E.idx;
+      if(typeof recordar==="function") recordar("promesa","le prometiste un aumento a "+j.n,{quien:j.n,peso:"alto",tono:"riesgo"}); }
     else { aplicarEfectos({moral:-2}); txt="No alcanzó ni con la promesa. Sigue incómodo."; }
   } else if(approach==="forzar"){
     if(Math.random()<clamp(0.4+E.rep.dureza/200,0.25,0.8)){ aplicarEfectos({plantel:2}); aplicarGrupos({tecnico:6,camarin:-4}); txt=j.n+" agachó la cabeza. Quedó claro quién manda."; }

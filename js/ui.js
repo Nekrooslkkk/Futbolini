@@ -251,7 +251,7 @@ function vistaEscritorio(){
     const b=el("button","op");
     b.innerHTML='<div class="t">'+BUZONES[d.buzon].ic+" "+resolverTokens(d.t,E)+'</div>'+
       '<div class="d">'+BUZONES[d.buzon].n+(x.peso==="alto"?" · <b>hay que resolverla antes del próximo partido</b>":"")+'</div>';
-    b.onclick=()=>abrirDecision(d);
+    b.onclick=()=>abrirDecision(d,true);
     pd.cuerpo.appendChild(b);
   });
   izq.appendChild(pd);
@@ -289,11 +289,29 @@ function vistaEscritorio(){
   pt.cuerpo.appendChild(fila("Goles",t.gf+" a favor · "+t.gc+" en contra"));
   der.appendChild(pt);
 
+  /* 6.0 · el club no olvida — memoria de tus decisiones */
+  if(typeof memoriaReciente==="function"){
+    const hechos=memoriaReciente(null,5);
+    if(hechos.length){
+      const pmem=panel("El club no olvida","🧵");
+      pmem.cuerpo.appendChild(el("p","mini","Lo que hiciste queda. El vestuario, la prensa y la gente tienen memoria — y esto lleva tu firma."));
+      const TONO={bueno:"#2fa84f",malo:"#c0392b",riesgo:"#d68a1f",neutro:"#5b7086"};
+      hechos.forEach(m=>{
+        const d=el("div","mem-item");
+        d.innerHTML="<span class='mem-punto' style='background:"+(TONO[m.tono]||TONO.neutro)+"'></span>"+
+          "<span class='mem-txt'>"+m.txt.charAt(0).toUpperCase()+m.txt.slice(1)+"</span>"+
+          "<span class='mem-cuando'>"+cuandoMemoria(m)+"</span>";
+        pmem.cuerpo.appendChild(d);
+      });
+      der.appendChild(pmem);
+    }
+  }
+
   rej.appendChild(izq); rej.appendChild(der); v.appendChild(rej);
 }
 function bloqueoDecisiones(){
   const b=decisionesBloqueantes();
-  if(b.length){ aviso("Primero hay que resolver: "+resolverTokens(decisionPorId(b[0].id).t,E)); abrirDecision(decisionPorId(b[0].id)); return true; }
+  if(b.length){ aviso("Primero hay que resolver: "+resolverTokens(decisionPorId(b[0].id).t,E)); abrirDecision(decisionPorId(b[0].id),true); return true; }
   return false;
 }
 /* ---------------- decisión ---------------- */
@@ -331,7 +349,7 @@ function abrirDecision(d,enModal){
       p.cuerpo.appendChild(r);
       if(d.historia && E.config && E.config.spoiler) p.cuerpo.appendChild(el("p","mini","<b>En la vida real:</b> "+d.historia));
       const b=el("button","btn-aqua ancho gris","Cerrar");
-      b.onclick=()=>{ if(enModal) cerrarModal(); else irA("escritorio"); };
+      b.onclick=()=>{ if(enModal){ cerrarModal(); render(); } else irA("escritorio"); };
       p.cuerpo.appendChild(b);
     } else {
       const ops=el("div","ops");
@@ -1309,7 +1327,7 @@ function modalNegociacion(neg){
     OPCS.forEach(o=>{
       const b=el("button","btn-aqua ancho "+o.sev);
       b.innerHTML='<b>'+o.t+'</b><br><span class="mini">'+o.d+'</span>';
-      b.onclick=()=>{ const txt=resolverNegociacion(neg,o.k); cerrarModal(); irA("escritorio"); };
+      b.onclick=()=>{ const txt=resolverNegociacion(neg,o.k); cerrarModal(); render(); };
       ops.appendChild(b);
     });
     p.cuerpo.appendChild(ops);

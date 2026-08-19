@@ -264,3 +264,7 @@ body[data-tema="aero"] .ticker .tk.mal{color:#ffc2bc}
 /* 5.0 · objetivos de temporada (cristal Vista) */
 body[data-tema="aero"] .obj{background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(210,232,255,.28));border:1px solid rgba(30,90,160,.22);box-shadow:0 1px 0 rgba(255,255,255,.6) inset}
 body[data-tema="aero"] .obj-porque{opacity:.8}
+
+/* 6.0 · memoria (cristal) */
+body[data-tema="aero"] .mem-item{border-bottom-color:rgba(30,90,160,.14)}
+body[data-tema="aero"] .mem-punto{box-shadow:0 0 6px rgba(0,190,255,.4)}

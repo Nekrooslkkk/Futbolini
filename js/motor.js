@@ -206,6 +206,8 @@ function normalizarEstado(){
   if(!Array.isArray(E.objetivos)||!E.objetivos.length){
     E.objetivos=(typeof generarObjetivos==="function")?generarObjetivos():[];
   }
+  /* 6.0 · motor de memoria */
+  if(typeof normalizarMemoria==="function") normalizarMemoria();
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){
@@ -546,6 +548,8 @@ function venderJugador(j){
   const monto=Math.round(j.valor*rnd(.75,1.2));
   j.vendido=true; E.plata+=monto;
   E.ind.plantel=clamp(E.ind.plantel-Math.round(j.nivel/14),0,100);
+  if(typeof recordar==="function") recordar("venta","vendiste a "+j.n+" por "+plata(monto),
+    {quien:j.n,peso:(j.nivel>=80||(j.rasgos&&j.rasgos.indexOf("ídolo")>=0))?"alto":"medio",tono:"riesgo"});
   return "Se vende a "+j.n+" por "+plata(monto)+".";
 }
 /* ---------------- economía ---------------- */
@@ -719,11 +723,13 @@ function finDeTemporada(){
   /* premios */
   let premio=[0,420,260,180,120][Math.min(4,pos)]||70;
   aplicarEfectos({plata:premio});
-  if(campeon){ E.titulos.push(E.anio+" · Campeón del Campeonato Nacional"); aplicarEfectos({prestigio:7,hinchada:7,moral:6}); aplicarRep({publica:8,credibilidad:6}); }
+  if(campeon){ E.titulos.push(E.anio+" · Campeón del Campeonato Nacional"); aplicarEfectos({prestigio:7,hinchada:7,moral:6}); aplicarRep({publica:8,credibilidad:6});
+    if(typeof recordar==="function") recordar("titulo","saliste campeón nacional en "+E.anio,{peso:"alto",tono:"bueno"}); }
   /* copa */
   const copa=E.calendario.filter(p=>p.tipo==="copa");
   const copaGanada=E.flags.copaCampeon;
-  if(copaGanada){ E.titulos.push(E.anio+" · Copa Libertadores"); aplicarEfectos({prestigio:14,plata:600,hinchada:10}); aplicarRep({publica:14,credibilidad:10}); }
+  if(copaGanada){ E.titulos.push(E.anio+" · Copa Libertadores"); aplicarEfectos({prestigio:14,plata:600,hinchada:10}); aplicarRep({publica:14,credibilidad:10});
+    if(typeof recordar==="function") recordar("titulo","levantaste la Copa Libertadores con "+E.clubNombre,{peso:"alto",tono:"bueno"}); }
   /* evaluación del mandato */
   const ev=evaluarMandato(pos,campeon,copaGanada);
   /* balance y crónica */

@@ -321,3 +321,10 @@ table.flujo td.n,table.flujo th.n{text-align:right;font-family:var(--f-dato,mono
   .arr-bar i{animation:none!important;width:100%}
   .arr-btns{opacity:1;transform:none}
 }
+
+/* 6.0 · memoria: el club no olvida */
+.mem-item{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.mem-item:last-child{border-bottom:none}
+.mem-punto{width:9px;height:9px;border-radius:3px;box-shadow:0 0 5px rgba(0,0,0,.15)}
+.mem-txt{font-size:12.5px;line-height:1.35}
+.mem-cuando{font-size:10.5px;opacity:.6;font-family:var(--f-dato,monospace);white-space:nowrap}
