@@ -26,28 +26,147 @@ const LIGA91=[
  {id:"OSO",n:"Provincial Osorno",     c:"P. Osorno",   fuerza:50, aforo:10000, est:"Estadio Municipal",             ciudad:"Osorno"},
  {id:"SW", n:"Santiago Wanderers",    c:"Wanderers",   fuerza:50, aforo:20000, est:"Estadio Playa Ancha",           ciudad:"Valparaíso"}
 ];
-/* ---------- Primera División 2026 (segunda época jugable) ----------
-   Datos APROXIMADOS: clubes de la Primera chilena y fuerzas estimadas a
-   partir de las últimas temporadas. Se marca en el juego que hay que
-   verificarlos, porque los planteles cambian cada mercado. */
+/* ---------- Liga de Primera 2026 · 16 equipos reales (Wikipedia / ANFP)
+   Descendieron Iquique y Unión Española. Ascendieron U. de Concepción y D. Concepción. */
 const LIGA_2026=[
- {id:"CC", n:"Colo-Colo",             c:"Colo-Colo",   fuerza:82, aforo:47000, est:"Estadio Monumental",           ciudad:"Santiago"},
- {id:"UC", n:"Universidad Católica",  c:"U. Católica", fuerza:80, aforo:20000, est:"Claro Arena",                  ciudad:"Santiago"},
- {id:"UCH",n:"Universidad de Chile",  c:"U. de Chile", fuerza:81, aforo:48000, est:"Estadio Nacional",              ciudad:"Santiago"},
- {id:"COQ",n:"Coquimbo Unido",        c:"Coquimbo",    fuerza:74, aforo:18000, est:"Estadio Francisco Sánchez R.",  ciudad:"Coquimbo"},
- {id:"AUD",n:"Audax Italiano",        c:"Audax",       fuerza:73, aforo:20000, est:"Estadio La Florida",            ciudad:"Santiago"},
- {id:"NUB",n:"Ñublense",              c:"Ñublense",    fuerza:71, aforo:22000, est:"Estadio Bicentenario Nelson O.",ciudad:"Chillán"},
- {id:"UES",n:"Unión Española",        c:"U. Española", fuerza:70, aforo:20000, est:"Estadio Santa Laura",           ciudad:"Santiago"},
- {id:"HUA",n:"Huachipato",            c:"Huachipato",  fuerza:72, aforo:10500, est:"Estadio CAP",                   ciudad:"Talcahuano"},
- {id:"OHI",n:"O'Higgins",             c:"O'Higgins",   fuerza:70, aforo:14000, est:"Estadio El Teniente",           ciudad:"Rancagua"},
- {id:"PAL",n:"Palestino",             c:"Palestino",   fuerza:70, aforo:12000, est:"Municipal de La Cisterna",      ciudad:"Santiago"},
- {id:"COB",n:"Cobresal",              c:"Cobresal",    fuerza:69, aforo:12000, est:"Estadio El Cobre",              ciudad:"El Salvador"},
- {id:"EVE",n:"Everton",               c:"Everton",     fuerza:66, aforo:22000, est:"Estadio Sausalito",             ciudad:"Viña del Mar"},
- {id:"IQQ",n:"Deportes Iquique",      c:"D. Iquique",  fuerza:63, aforo:10000, est:"Estadio Tierra de Campeones",   ciudad:"Iquique"},
- {id:"CAL",n:"Unión La Calera",       c:"La Calera",   fuerza:67, aforo:9000,  est:"Estadio Nicolás Chahuán",       ciudad:"La Calera"},
- {id:"LSE",n:"Deportes La Serena",    c:"La Serena",   fuerza:64, aforo:18000, est:"Estadio La Portada",            ciudad:"La Serena"},
- {id:"LIM",n:"Deportes Limache",      c:"Limache",     fuerza:60, aforo:9000,  est:"Estadio Lucio Fariña",          ciudad:"Limache"}
+ {id:"CC", n:"Colo-Colo",             c:"Colo-Colo",   fuerza:86, aforo:43667, est:"Estadio Monumental",           ciudad:"Santiago"},
+ {id:"UCH",n:"Universidad de Chile",  c:"U. de Chile", fuerza:81, aforo:46190, est:"Estadio Nacional",              ciudad:"Santiago"},
+ {id:"UC", n:"Universidad Católica",  c:"U. Católica", fuerza:78, aforo:20249, est:"Claro Arena",                  ciudad:"Santiago"},
+ {id:"EVE",n:"Everton",               c:"Everton",     fuerza:72, aforo:21754, est:"Estadio Sausalito",             ciudad:"Viña del Mar"},
+ {id:"PAL",n:"Palestino",             c:"Palestino",   fuerza:72, aforo:8000,  est:"Municipal de La Cisterna",      ciudad:"Santiago"},
+ {id:"COQ",n:"Coquimbo Unido",        c:"Coquimbo",    fuerza:73, aforo:15809, est:"Estadio Francisco Sánchez R.",  ciudad:"Coquimbo"},
+ {id:"AUD",n:"Audax Italiano",        c:"Audax",       fuerza:70, aforo:11637, est:"Estadio La Florida",            ciudad:"Santiago"},
+ {id:"HUA",n:"Huachipato",            c:"Huachipato",  fuerza:71, aforo:10032, est:"Estadio CAP",                   ciudad:"Talcahuano"},
+ {id:"OHI",n:"O'Higgins",             c:"O'Higgins",   fuerza:70, aforo:12476, est:"Estadio El Teniente",           ciudad:"Rancagua"},
+ {id:"NUB",n:"Ñublense",              c:"Ñublense",    fuerza:68, aforo:11319, est:"Estadio Nelson Oyarzún",        ciudad:"Chillán"},
+ {id:"COB",n:"Cobresal",              c:"Cobresal",    fuerza:68, aforo:11240, est:"Estadio El Cobre",              ciudad:"El Salvador"},
+ {id:"CAL",n:"Unión La Calera",       c:"La Calera",   fuerza:67, aforo:8353,  est:"Estadio Nicolás Chahuán",       ciudad:"La Calera"},
+ {id:"LSE",n:"Deportes La Serena",    c:"La Serena",   fuerza:66, aforo:17134, est:"Estadio La Portada",            ciudad:"La Serena"},
+ {id:"DCO",n:"Deportes Concepción",   c:"D. Concep.",  fuerza:64, aforo:30448, est:"Estadio Ester Roa",             ciudad:"Concepción"},
+ {id:"UDC",n:"Universidad de Concepción",c:"U. Concepción",fuerza:62,aforo:30448,est:"Estadio Ester Roa",           ciudad:"Concepción"},
+ {id:"LIM",n:"Deportes Limache",      c:"Limache",     fuerza:63, aforo:7680,  est:"Estadio Lucio Fariña",          ciudad:"Limache"}
 ];
+/* Fixture oficial Colo-Colo 2026 (Wikipedia, congelado 18/08/2026). real=null si no se jugó. */
+const LIGA_CC_2026=[
+ {fecha:1,  f:{m:1,d:31}, rival:"LIM", local:false, real:"3-1"},
+ {fecha:2,  f:{m:2,d:7},  rival:"EVE", local:true,  real:"2-0"},
+ {fecha:3,  f:{m:2,d:15}, rival:"CAL", local:true,  real:"1-0"},
+ {fecha:4,  f:{m:2,d:21}, rival:"OHI", local:false, real:"0-1"},
+ {fecha:5,  f:{m:3,d:1},  rival:"UCH", local:true,  real:"0-1"},
+ {fecha:6,  f:{m:3,d:7},  rival:"AUD", local:false, real:"0-1"},
+ {fecha:7,  f:{m:3,d:16}, rival:"HUA", local:true,  real:"2-0"},
+ {fecha:8,  f:{m:4,d:5},  rival:"DCO", local:false, real:"0-1"},
+ {fecha:9,  f:{m:5,d:3},  rival:"COQ", local:true,  real:"3-1"},
+ {fecha:10, f:{m:4,d:19}, rival:"PAL", local:true,  real:"0-1"},
+ {fecha:11, f:{m:4,d:26}, rival:"UDC", local:false, real:"1-2"},
+ {fecha:12, f:{m:5,d:17}, rival:"NUB", local:true,  real:"6-2"},
+ {fecha:13, f:{m:5,d:24}, rival:"UC",  local:false, real:"1-2"},
+ {fecha:14, f:{m:5,d:30}, rival:"LSE", local:false, real:"2-4"},
+ {fecha:15, f:{m:6,d:13}, rival:"COB", local:true,  real:"3-0"},
+ {fecha:16, f:{m:7,d:24}, rival:"LIM", local:true,  real:"3-1"},
+ {fecha:17, f:{m:8,d:1},  rival:"EVE", local:false, real:"3-4"},
+ {fecha:18, f:{m:8,d:9},  rival:"CAL", local:false, real:"1-2"},
+ {fecha:19, f:{m:8,d:16}, rival:"OHI", local:true,  real:"2-2"},
+ {fecha:20, f:{m:8,d:23}, rival:"UCH", local:false, real:null},
+ {fecha:21, f:{m:8,d:30}, rival:"AUD", local:true,  real:null},
+ {fecha:22, f:{m:9,d:6},  rival:"HUA", local:false, real:null},
+ {fecha:23, f:{m:9,d:13}, rival:"DCO", local:true,  real:null},
+ {fecha:24, f:{m:10,d:11},rival:"COQ", local:false, real:null},
+ {fecha:25, f:{m:10,d:25},rival:"PAL", local:false, real:null},
+ {fecha:26, f:{m:11,d:1}, rival:"UDC", local:true,  real:null},
+ {fecha:27, f:{m:11,d:8}, rival:"NUB", local:false, real:null},
+ {fecha:28, f:{m:11,d:22},rival:"UC",  local:true,  real:null},
+ {fecha:29, f:{m:11,d:29},rival:"LSE", local:true,  real:null},
+ {fecha:30, f:{m:12,d:6}, rival:"COB", local:false, real:null}
+];
+const LIGA_UCH_2026=[
+ {fecha:1,  f:{m:1,d:30}, rival:"AUD", local:true,  real:"0-0"},
+ {fecha:2,  f:{m:2,d:8},  rival:"HUA", local:false, real:"2-1"},
+ {fecha:3,  f:{m:2,d:13}, rival:"PAL", local:false, real:"0-0"},
+ {fecha:4,  f:{m:2,d:22}, rival:"LIM", local:true,  real:"2-2"},
+ {fecha:5,  f:{m:3,d:1},  rival:"CC",  local:false, real:"0-1"},
+ {fecha:6,  f:{m:3,d:9},  rival:"UDC", local:true,  real:"1-1"},
+ {fecha:7,  f:{m:3,d:14}, rival:"COQ", local:false, real:"0-1"},
+ {fecha:8,  f:{m:4,d:5},  rival:"LSE", local:true,  real:"4-0"},
+ {fecha:9,  f:{m:4,d:12}, rival:"NUB", local:false, real:"1-0"},
+ {fecha:10, f:{m:4,d:18}, rival:"EVE", local:false, real:"0-0"},
+ {fecha:11, f:{m:4,d:25}, rival:"UC",  local:true,  real:"1-0"},
+ {fecha:12, f:{m:5,d:17}, rival:"COB", local:false, real:"1-0"},
+ {fecha:13, f:{m:6,d:18}, rival:"OHI", local:true,  real:"2-0"},
+ {fecha:14, f:{m:5,d:30}, rival:"DCO", local:true,  real:"2-1"},
+ {fecha:15, f:{m:6,d:14}, rival:"CAL", local:false, real:"2-2"},
+ {fecha:16, f:{m:7,d:26}, rival:"AUD", local:false, real:"1-2"},
+ {fecha:17, f:{m:8,d:2},  rival:"HUA", local:true,  real:"2-0"},
+ {fecha:18, f:{m:8,d:9},  rival:"PAL", local:true,  real:"2-1"},
+ {fecha:19, f:{m:8,d:15}, rival:"LIM", local:false, real:"1-3"},
+ {fecha:20, f:{m:8,d:23}, rival:"CC",  local:true,  real:null},
+ {fecha:21, f:{m:8,d:30}, rival:"UDC", local:false, real:null},
+ {fecha:22, f:{m:9,d:6},  rival:"COQ", local:true,  real:null},
+ {fecha:23, f:{m:9,d:13}, rival:"LSE", local:false, real:null},
+ {fecha:24, f:{m:10,d:9}, rival:"NUB", local:true,  real:null},
+ {fecha:25, f:{m:10,d:25},rival:"EVE", local:true,  real:null},
+ {fecha:26, f:{m:11,d:1}, rival:"UC",  local:false, real:null},
+ {fecha:27, f:{m:11,d:8}, rival:"COB", local:true,  real:null},
+ {fecha:28, f:{m:11,d:22},rival:"OHI", local:false, real:null},
+ {fecha:29, f:{m:11,d:29},rival:"DCO", local:false, real:null},
+ {fecha:30, f:{m:12,d:6}, rival:"CAL", local:true,  real:null}
+];
+const LIGA_UC_2026=[
+ {fecha:1,  f:{m:2,d:1},  rival:"LSE", local:false, real:"2-2"},
+ {fecha:2,  f:{m:2,d:8},  rival:"DCO", local:true,  real:"2-0"},
+ {fecha:3,  f:{m:2,d:14}, rival:"COB", local:false, real:"3-2"},
+ {fecha:4,  f:{m:2,d:21}, rival:"COQ", local:true,  real:"3-1"},
+ {fecha:5,  f:{m:3,d:1},  rival:"NUB", local:false, real:"1-2"},
+ {fecha:6,  f:{m:3,d:7},  rival:"OHI", local:false, real:"1-0"},
+ {fecha:7,  f:{m:3,d:14}, rival:"EVE", local:true,  real:"2-2"},
+ {fecha:8,  f:{m:4,d:2},  rival:"PAL", local:true,  real:"6-1"},
+ {fecha:9,  f:{m:4,d:11}, rival:"AUD", local:false, real:"3-4"},
+ {fecha:10, f:{m:4,d:20}, rival:"CAL", local:true,  real:"1-2"},
+ {fecha:11, f:{m:4,d:25}, rival:"UCH", local:false, real:"1-0"},
+ {fecha:12, f:{m:5,d:16}, rival:"LIM", local:false, real:"0-2"},
+ {fecha:13, f:{m:5,d:24}, rival:"CC",  local:true,  real:"1-2"},
+ {fecha:14, f:{m:5,d:31}, rival:"HUA", local:false, real:"0-3"},
+ {fecha:15, f:{m:6,d:14}, rival:"UDC", local:true,  real:"5-1"},
+ {fecha:16, f:{m:7,d:25}, rival:"LSE", local:true,  real:"3-3"},
+ {fecha:17, f:{m:8,d:2},  rival:"DCO", local:false, real:"3-0"},
+ {fecha:18, f:{m:8,d:7},  rival:"COB", local:true,  real:"2-0"},
+ {fecha:20, f:{m:8,d:22}, rival:"NUB", local:true,  real:null},
+ {fecha:19, f:{m:8,d:26}, rival:"COQ", local:false, real:null},
+ {fecha:21, f:{m:8,d:31}, rival:"OHI", local:true,  real:null},
+ {fecha:22, f:{m:9,d:5},  rival:"EVE", local:false, real:null},
+ {fecha:23, f:{m:9,d:12}, rival:"PAL", local:false, real:null},
+ {fecha:24, f:{m:10,d:10},rival:"AUD", local:true,  real:null},
+ {fecha:25, f:{m:10,d:25},rival:"CAL", local:false, real:null},
+ {fecha:26, f:{m:11,d:1}, rival:"UCH", local:true,  real:null},
+ {fecha:27, f:{m:11,d:8}, rival:"LIM", local:true,  real:null},
+ {fecha:28, f:{m:11,d:22},rival:"CC",  local:false, real:null},
+ {fecha:29, f:{m:11,d:29},rival:"HUA", local:true,  real:null},
+ {fecha:30, f:{m:12,d:6}, rival:"UDC", local:false, real:null}
+];
+/* OJO: FIXTURES_OFICIALES se declara más abajo, después de LIGA_CC_1991.
+   No se puede declarar acá: `const` tiene zona muerta temporal (TDZ) y ni
+   siquiera `typeof` la esquiva — referenciar LIGA_CC_1991 antes de su línea
+   tira ReferenceError y mata el archivo entero al cargar. */
+/* Corte 18/08/2026. CC pts documentados; el resto de la tabla es referencia. */
+const CORTE_2026={m:8,d:18};
+const TABLA_2026_CORTE={
+ CC:{pj:19,pg:15,pe:1,pp:3,gf:40,gc:19,pts:46},
+ UCH:{pj:19,pg:10,pe:6,pp:3,gf:26,gc:13,pts:36},
+ UC:{pj:18,pg:9,pe:3,pp:6,gf:40,gc:26,pts:30},
+ COQ:{pj:18,pg:8,pe:5,pp:5,gf:24,gc:20,pts:29},
+ EVE:{pj:19,pg:7,pe:6,pp:6,gf:28,gc:22,pts:27},
+ PAL:{pj:18,pg:8,pe:3,pp:7,gf:26,gc:26,pts:27},
+ AUD:{pj:18,pg:7,pe:5,pp:6,gf:22,gc:22,pts:26},
+ HUA:{pj:18,pg:7,pe:4,pp:7,gf:23,gc:24,pts:25},
+ OHI:{pj:19,pg:6,pe:6,pp:7,gf:22,gc:25,pts:24},
+ NUB:{pj:18,pg:6,pe:5,pp:7,gf:20,gc:24,pts:23},
+ COB:{pj:18,pg:6,pe:4,pp:8,gf:21,gc:26,pts:22},
+ CAL:{pj:19,pg:5,pe:6,pp:8,gf:18,gc:25,pts:21},
+ LSE:{pj:18,pg:5,pe:5,pp:8,gf:19,gc:26,pts:20},
+ DCO:{pj:18,pg:5,pe:4,pp:9,gf:18,gc:27,pts:19},
+ UDC:{pj:18,pg:4,pe:5,pp:9,gf:16,gc:28,pts:17},
+ LIM:{pj:18,pg:4,pe:4,pp:10,gf:17,gc:30,pts:16}
+};
 
 /* ---------- ERAS: reglas que cambian con la época ----------
    puntos por victoria (2 en 1991, 3 hoy), inflación económica y cupos. */
@@ -88,27 +207,72 @@ const HECHOS_91={
    Grupo 2 con Deportes Concepción, Barcelona SC y LDU de Quito.
    Resultados reales guardados como referencia histórica. */
 const COPA91=[
- {ronda:"Grupo 2", rival:"Deportes Concepción", sede:"Estadio Collao", local:false, f:{m:2},  real:"0-0", fuerza:64},
- {ronda:"Grupo 2", rival:"Barcelona SC",        sede:"Monumental",     local:true,  f:{m:2},  real:"3-1", fuerza:70},
- {ronda:"Grupo 2", rival:"Deportes Concepción", sede:"Monumental",     local:true,  f:{m:3},  real:"2-0", fuerza:64},
- {ronda:"Grupo 2", rival:"LDU de Quito",        sede:"Monumental",     local:true,  f:{m:3},  real:"3-0", fuerza:68},
- {ronda:"Grupo 2", rival:"Barcelona SC",        sede:"Guayaquil",      local:false, f:{m:3},  real:"2-2", fuerza:74},
- {ronda:"Grupo 2", rival:"LDU de Quito",        sede:"Quito (altura)", local:false, f:{m:4},  real:"0-0", fuerza:76},
- {ronda:"Octavos", rival:"Universitario",       sede:"Lima",           local:false, f:{m:4},  real:"0-0", fuerza:72},
- {ronda:"Octavos", rival:"Universitario",       sede:"Monumental",     local:true,  f:{m:4},  real:"2-1", fuerza:72},
+ {ronda:"Grupo 2", rival:"Deportes Concepción", sede:"Estadio Collao", local:false, f:{m:2,d:20}, real:"0-0", fuerza:64},
+ {ronda:"Grupo 2", rival:"Barcelona SC",        sede:"Monumental",     local:true,  f:{m:3,d:1},  real:"3-1", fuerza:70},
+ {ronda:"Grupo 2", rival:"Deportes Concepción", sede:"Monumental",     local:true,  f:{m:3,d:13}, real:"2-0", fuerza:64},
+ {ronda:"Grupo 2", rival:"LDU de Quito",        sede:"Monumental",     local:true,  f:{m:3,d:22}, real:"3-0", fuerza:68},
+ {ronda:"Grupo 2", rival:"Barcelona SC",        sede:"Guayaquil",      local:false, f:{m:4,d:2},  real:"2-2", fuerza:74},
+ {ronda:"Grupo 2", rival:"LDU de Quito",        sede:"Quito (altura)", local:false, f:{m:4,d:5},  real:"0-0", fuerza:76},
+ {ronda:"Octavos", rival:"Universitario",       sede:"Lima",           local:false, f:{m:4,d:17}, real:"0-0", fuerza:72},
+ {ronda:"Octavos", rival:"Universitario",       sede:"Monumental",     local:true,  f:{m:4,d:24}, real:"2-1", fuerza:72},
  {ronda:"Cuartos", rival:"Nacional",            sede:"Monumental",     local:true,  f:{m:5,d:3},  real:"4-0", fuerza:78},
  {ronda:"Cuartos", rival:"Nacional",            sede:"Montevideo",     local:false, f:{m:5,d:8},  real:"0-2", fuerza:80},
- {ronda:"Semifinal",rival:"Boca Juniors",       sede:"La Bombonera",   local:false, f:{m:5,d:15}, real:"0-1", fuerza:84},
+ {ronda:"Semifinal",rival:"Boca Juniors",       sede:"La Bombonera",   local:false, f:{m:5,d:16}, real:"0-1", fuerza:84},
  {ronda:"Semifinal",rival:"Boca Juniors",       sede:"Monumental",     local:true,  f:{m:5,d:22}, real:"3-1", fuerza:84, apodo:"Batalla de Macul"},
- {ronda:"FINAL",   rival:"Olimpia",             sede:"Asunción",       local:false, f:{m:5,d:29}, real:"0-0", fuerza:80},
+ {ronda:"FINAL",   rival:"Olimpia",             sede:"Defensores del Chaco", local:false, f:{m:5,d:29}, real:"0-0", fuerza:80},
  {ronda:"FINAL",   rival:"Olimpia",             sede:"Monumental",     local:true,  f:{m:6,d:5},  real:"3-0", fuerza:80}
 ];
+/* Intercontinental 8/12/1991 Tokio — resultado real 0-3 */
+const INTERC91={ronda:"Intercontinental", rival:"Estrella Roja", sede:"Estadio Nacional de Tokio", local:false, f:{m:12,d:8}, real:"0-3", fuerza:88};
+/* Campeonato Nacional 1991 · 30 partidos de Colo-Colo (fechas reales, historiadecolocolo / Wikipedia)
+   fechaN = número oficial de fecha. real = marcador histórico CC-rival si local, rival-CC si visita. */
+const LIGA_CC_1991=[
+ {fecha:1,  f:{m:4,d:27}, rival:"CBS", local:true,  real:"3-1"},
+ {fecha:3,  f:{m:5,d:12}, rival:"EVE", local:false, real:"1-0"},
+ {fecha:6,  f:{m:6,d:9},  rival:"UC",  local:true,  real:"4-1"},
+ {fecha:7,  f:{m:6,d:16}, rival:"LSE", local:false, real:"1-5"},
+ {fecha:8,  f:{m:7,d:28}, rival:"OHI", local:true,  real:"1-1"},
+ {fecha:2,  f:{m:8,d:1},  rival:"UES", local:true,  real:"4-1"},
+ {fecha:9,  f:{m:8,d:4},  rival:"COB", local:false, real:"2-0"},
+ {fecha:4,  f:{m:8,d:8},  rival:"DCO", local:true,  real:"1-2"},
+ {fecha:10, f:{m:8,d:11}, rival:"SW",  local:true,  real:"2-0"},
+ {fecha:11, f:{m:8,d:15}, rival:"FV",  local:false, real:"0-1"},
+ {fecha:12, f:{m:8,d:18}, rival:"OSO", local:true,  real:"2-2"},
+ {fecha:13, f:{m:8,d:24}, rival:"PAL", local:false, real:"0-1"},
+ {fecha:14, f:{m:9,d:1},  rival:"COQ", local:true,  real:"0-0"},
+ {fecha:15, f:{m:9,d:8},  rival:"ANT", local:false, real:"0-0"},
+ {fecha:16, f:{m:9,d:15}, rival:"CBS", local:false, real:"1-3"},
+ {fecha:5,  f:{m:9,d:17}, rival:"UCH", local:false, real:"0-2"},
+ {fecha:17, f:{m:9,d:22}, rival:"UES", local:false, real:"1-5"},
+ {fecha:18, f:{m:9,d:28}, rival:"EVE", local:true,  real:"2-1"},
+ {fecha:19, f:{m:10,d:6}, rival:"DCO", local:false, real:"1-1"},
+ {fecha:20, f:{m:10,d:13},rival:"UCH", local:true,  real:"2-0"},
+ {fecha:21, f:{m:10,d:20},rival:"UC",  local:false, real:"0-2"},
+ {fecha:22, f:{m:10,d:27},rival:"LSE", local:true,  real:"3-1"},
+ {fecha:23, f:{m:11,d:3}, rival:"OHI", local:false, real:"1-0"},
+ {fecha:24, f:{m:11,d:9}, rival:"COB", local:true,  real:"4-2"},
+ {fecha:25, f:{m:11,d:17},rival:"SW",  local:false, real:"0-1"},
+ {fecha:26, f:{m:11,d:23},rival:"FV",  local:true,  real:"4-2"},
+ {fecha:27, f:{m:11,d:28},rival:"OSO", local:false, real:"2-2"},
+ {fecha:28, f:{m:11,d:30},rival:"PAL", local:true,  real:"1-1"},
+ {fecha:29, f:{m:12,d:18},rival:"COQ", local:false, real:"0-0"},
+ {fecha:30, f:{m:12,d:22},rival:"ANT", local:true,  real:"1-0"}
+];
+/* Fixtures reales por club y año. Va acá (y no arriba) porque necesita que
+   LIGA_CC_1991 ya esté declarada. Solo se lee dentro de funciones, así que
+   no hay problema en definirla a esta altura del archivo. */
+const FIXTURES_OFICIALES={
+  CC:{1991:LIGA_CC_1991, 2026:LIGA_CC_2026},
+  UCH:{2026:LIGA_UCH_2026},
+  UC:{2026:LIGA_UC_2026}
+};
 /* Notas históricas que se muestran después de jugar cada partido de copa */
 const NOTAS_COPA={
  "Semifinal-1":"En la vuelta de semifinales, el 22 de mayo de 1991 en el Monumental, Colo-Colo ganó 3-1. El partido pasó a la historia como la «Batalla de Macul» por los incidentes: fueron expulsados Patricio Yáñez y Blas Giunta.",
  "FINAL-1":"El 5 de junio de 1991 Colo-Colo ganó 3-0 en el Monumental ante Olimpia, con doblete de Luis Pérez y gol de Leonel Herrera, y se consagró campeón de América. Es el único título de Copa Libertadores del fútbol chileno.",
  "Cuartos-0":"El 3 de mayo de 1991 Colo-Colo goleó 4-0 a Nacional de Montevideo, con goles de Rubén Martínez, dos de Ricardo Dabrowski y uno de Rubén Espinoza.",
- "Octavos-1":"En la vuelta de octavos, Colo-Colo venció 2-1 a Universitario de Lima con dos goles de Rubén Espinoza."
+ "Octavos-1":"En la vuelta de octavos, Colo-Colo venció 2-1 a Universitario de Lima con dos goles de Rubén Espinoza.",
+ "INTERC-0":"El 8 de diciembre de 1991 en Tokio, Estrella Roja ganó 3-0 la Copa Intercontinental. Resultado real documentado."
 };
 
 /* ---------- clima ---------- */
@@ -160,6 +324,40 @@ function fechasTemporada(){
   return out;
 }
 /* Construye el calendario completo del año para el club del jugador */
+function ordenFecha(f){ return (f.m||1)*100+(f.d||1); }
+function shuffleSeed(arr,seed){
+  const a=arr.slice(); let s=seed||1;
+  for(let i=a.length-1;i>0;i--){
+    s=(s*9301+49297)%233280;
+    const j=Math.floor((s/233280)*(i+1));
+    const t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+/* Arma los 8 partidos de una fecha: usa fixtures oficiales si hay, el resto se empareja con semilla fija. */
+function emparejarFecha(anio,nFecha,clubId,rivalId){
+  const pares=[]; const used={};
+  const add=(a,b)=>{
+    if(!a||!b||a===b) return;
+    const k=a<b?a+"-"+b:b+"-"+a;
+    if(used[k]) return;
+    used[k]=1; pares.push([a,b]);
+  };
+  if(clubId&&rivalId) add(clubId,rivalId);
+  if(typeof FIXTURES_OFICIALES==="object"){
+    Object.keys(FIXTURES_OFICIALES).forEach(cid=>{
+      const fx=(FIXTURES_OFICIALES[cid]||{})[anio];
+      if(!fx) return;
+      const m=fx.find(x=>x.fecha===nFecha);
+      if(!m) return;
+      add(m.local?cid:m.rival, m.local?m.rival:cid);
+    });
+  }
+  const ids=(typeof LIGA_ACT!=="undefined"?LIGA_ACT:[]).map(c=>c.id).filter(id=>!pares.some(p=>p[0]===id||p[1]===id));
+  const rest=shuffleSeed(ids,(anio||0)*100+(nFecha||1)*17+3);
+  for(let i=0;i+1<rest.length;i+=2) add(rest[i],rest[i+1]);
+  return pares;
+}
 function construirCalendario(clubId, anio, conCopa){
   const cal=[];
   if(conCopa && anio===1991 && clubId==="CC"){
@@ -168,6 +366,40 @@ function construirCalendario(clubId, anio, conCopa){
       fuerzaRival:p.fuerza, local:p.local, sede:p.sede, f:p.f, jugado:false, clima:climaDeFecha(p.f.m,"copa"+anio+i),
       real:p.real, apodo:p.apodo||null, notaId:p.ronda+"-"+(cal.filter(x=>x.ronda===p.ronda).length)
     }));
+    cal.push({
+      tipo:"copa", torneo:"Copa Intercontinental", ronda:INTERC91.ronda, rivalNombre:INTERC91.rival, rivalId:null,
+      fuerzaRival:INTERC91.fuerza, local:false, sede:INTERC91.sede, f:INTERC91.f, jugado:false,
+      clima:"frio", real:INTERC91.real, apodo:"Tokio 1991", notaId:"INTERC-0"
+    });
+  }
+  const fxOf=(typeof FIXTURES_OFICIALES!=="undefined"&&FIXTURES_OFICIALES[clubId])?FIXTURES_OFICIALES[clubId][anio]:null;
+  if(fxOf){
+    fxOf.forEach((p,i)=>{
+      const riv=CLUB_POR_ID[p.rival]; if(!riv) return;
+      cal.push({tipo:"liga", torneo:anio>=2010?"Liga de Primera":"Campeonato Nacional", fecha:p.fecha, rivalId:p.rival,
+        rivalNombre:riv.n, fuerzaRival:riv.fuerza, local:p.local,
+        sede:p.local?CLUB_POR_ID[clubId].est:riv.est,
+        f:p.f, jugado:false, clima:climaDeFecha(p.f.m,"liga"+clubId+anio+i), real:p.real,
+        jornada:emparejarFecha(anio,p.fecha,clubId,p.rival)});
+    });
+    cal.sort((a,b)=>ordenFecha(a.f)-ordenFecha(b.f));
+    return cal;
+  }
+  if(anio===2026 && typeof LIGA_CC_2026!=="undefined"){
+    LIGA_CC_2026.forEach(p=>{
+      const pares=emparejarFecha(anio,p.fecha,clubId,null);
+      const mio=pares.find(x=>x[0]===clubId||x[1]===clubId);
+      if(!mio) return;
+      const local=mio[0]===clubId, rival=local?mio[1]:mio[0];
+      const riv=CLUB_POR_ID[rival]; if(!riv) return;
+      cal.push({tipo:"liga", torneo:"Liga de Primera", fecha:p.fecha, rivalId:rival,
+        rivalNombre:riv.n, fuerzaRival:riv.fuerza, local:local,
+        sede:local?CLUB_POR_ID[clubId].est:riv.est,
+        f:p.f, jugado:false, clima:climaDeFecha(p.f.m,"liga"+clubId+anio+p.fecha),
+        jornada:pares});
+    });
+    cal.sort((a,b)=>ordenFecha(a.f)-ordenFecha(b.f));
+    return cal;
   }
   const fx=fixturesLiga(LIGA_ACT), fechas=fechasTemporada();
   fx.forEach((jornada,i)=>{

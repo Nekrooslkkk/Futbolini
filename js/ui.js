@@ -4,6 +4,7 @@
    Todo lo que se ve, más el arranque del juego.
    ============================================================ */
 let SEC="escritorio";
+let REDES_PEST="club";
 const SECCIONES=[
  ["escritorio","🗂️","Escritorio"],["institucion","🏛️","Institución"],["finanzas","💰","Finanzas"],
  ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["redes","📱","Redes"],["calendario","📅","Calendario"],["historia","📚","Historia"],
@@ -85,7 +86,7 @@ function pantallaInicio(){
   v.appendChild(paso1);
 }
 function elegirEpoca(id){
-  let base=1991, modo="historico", anioInicio=1991;
+  let base=1991, modo="historico", anioInicio=1991, corte=false;
   const anioDe=b=>b===2026?2026:anioInicio;
   modal(box=>{
     const pintar=()=>{
@@ -150,14 +151,26 @@ function elegirEpoca(id){
       c.appendChild(fila("Deportivo","plantel "+ib.plantel+" · cantera "+ib.cantera));
       c.appendChild(fila("Económico",plata(cb.plata)+" en caja · "+plata(cb.deuda)+" de deuda"));
       c.appendChild(fila("Interno","hinchada "+ib.hinchada+" · socios "+ib.socios+" · riesgo "+ib.riesgo));
-      if(base===2026) c.appendChild(el("div","resul mitad","<b>Aviso.</b> Los planteles 2026 son <b>aproximados</b> y pueden haber cambiado en el mercado: verificá los nombres. Los tres grandes traen plantel de referencia; el resto se completa con jugadores generados."));
+      if(base===2026){
+        c.appendChild(el("div","resul mitad","<b>Aviso.</b> Los planteles 2026 son <b>aproximados</b> y pueden haber cambiado en el mercado. Stats estimadas."));
+        c.appendChild(el("h3","sub","Punto de la temporada"));
+        const fc=el("div","fichas");
+        [["no","Temporada completa (enero)"],["si","Desde ahora (18 ago, resultados ya jugados)"]].forEach(([k,n])=>{
+          const b=el("button","ficha",n);
+          b.setAttribute("aria-pressed",(k==="si")===corte?"true":"false");
+          b.onclick=()=>{ corte=(k==="si"); pintar(); };
+          fc.appendChild(b);
+        });
+        c.appendChild(fc);
+        if(corte) c.appendChild(el("p","mini","Se cargan los partidos ya jugados del fixture (con marcador real si está) y una tabla de referencia al 18/08. Seguis desde el próximo. Colo-Colo tiene el fixture completo; los otros clubes usan la misma tabla semilla."));
+      }
 
-      const go=el("button","btn-aqua ancho verde","Empezar en "+anioDe(base));
+      const go=el("button","btn-aqua ancho verde",base===2026&&corte?"Seguir desde agosto 2026":("Empezar en "+anioDe(base)));
       go.style.marginTop="12px";
       go.onclick=()=>{
         try{
           const anio=anioDe(base);
-          nuevaPartida(id, anio, modo);
+          nuevaPartida(id, anio, modo, base===2026&&corte?{corte:true}:null);
           if(!E || !E.club) throw new Error("nuevaPartida no dejó estado E");
           cerrarModal();
           SEC="escritorio";
@@ -197,6 +210,10 @@ function vistaEscritorio(){
     p.cuerpo.appendChild(b);
   }
   izq.appendChild(p);
+  const cer=panel("Cerebro local","🧠");
+  cer.cuerpo.appendChild(el("p","mini","Sin internet. Sin créditos. Lee caja, moral, tabla y el próximo rival."));
+  cer.cuerpo.appendChild(el("p",null,typeof consejoLocal==="function"?consejoLocal():"…"));
+  izq.appendChild(cer);
 
   /* decisiones */
   const pd=panel("Decisiones sobre la mesa","📥",E.decPend.some(x=>x.peso==="alto")?"alerta":"");
@@ -284,7 +301,7 @@ function abrirDecision(d,enModal){
       const r=el("div","resul "+(ya.tier==="bien"?"bien":ya.tier==="mitad"?"mitad":"mal"));
       r.innerHTML="<b>"+ya.t+"</b><br>"+ya.txt+(ya.extra?"<br><span class='mini'>"+ya.extra+"</span>":"");
       p.cuerpo.appendChild(r);
-      if(d.historia) p.cuerpo.appendChild(el("p","mini","<b>En la vida real:</b> "+d.historia));
+      if(d.historia && E.config && E.config.spoiler) p.cuerpo.appendChild(el("p","mini","<b>En la vida real:</b> "+d.historia));
       const b=el("button","btn-aqua ancho gris","Cerrar");
       b.onclick=()=>{ if(enModal) cerrarModal(); else irA("escritorio"); };
       p.cuerpo.appendChild(b);
@@ -436,6 +453,10 @@ function vistaFinanzas(){
   p.cuerpo.appendChild(fila("Sale por semana",plata(costoSemanal())));
   const neto=ingresoSemanal()-costoSemanal();
   p.cuerpo.appendChild(fila("Resultado semanal",plata(neto),neto<0?"":""));
+  const neto0=ingresoSemanal()-costoSemanal();
+  const semanas=neto0>=0?99:Math.max(0,Math.floor((E.plata||0)/Math.max(1,-neto0)));
+  if(semanas<8) p.cuerpo.appendChild(el("div","resul mal","Con este ritmo la caja dura ±"+semanas+" semanas. La planilla te come vivo."));
+  else if(neto0<0) p.cuerpo.appendChild(el("p","mini","Estás en rojo semanal, pero hay colchón para un rato."));
   if(E.flags&&E.flags.sueldosAtrasados) p.cuerpo.appendChild(el("div","resul mal","⚠ Sueldos atrasados: la moral del plantel cae cada semana hasta que regularices la caja."));
   if(E.flags&&E.flags.clausura) p.cuerpo.appendChild(el("div","resul mal","⚠ Estadio con sectores clausurados por la deuda: perdés aforo y taquilla."));
   p.cuerpo.appendChild(el("p","mini","Los partidos de local suman taquilla aparte. Todos los montos están en millones de pesos de la época."));
@@ -575,16 +596,69 @@ function vistaFinanzas(){
   if(typeof panelDesfalco==="function"){ const pdf=panelDesfalco(); if(pdf) v.appendChild(pdf); }
 }
 /* ---------------- plantel ---------------- */
+let PLANTEL_FILT="todos";
+function rolProbable(j){
+  if(j.lesion>0) return "lesionado";
+  if(j.cedido) return "cedido";
+  const same=E.plantel.filter(x=>!x.vendido&&!x.cedido&&x.pos===j.pos).sort((a,b)=>b.nivel-a.nivel);
+  const i=same.findIndex(x=>x.n===j.n);
+  if(i===0) return "titular";
+  if(i===1) return "suplente";
+  return "fondo";
+}
+function lecturaJugador(j){
+  const bits=[];
+  bits.push(j.real?"Nombre documentado de esa temporada. Nivel, sueldo y valor son estimación.":"No está en el plantel público: es relleno de cantera.");
+  const rol=rolProbable(j);
+  if(rol==="titular") bits.push("Hoy sería el primero en su puesto.");
+  if(rol==="fondo") bits.push("Está atrás en la fila: si no juega, la moral se come sola.");
+  if(j.moral<45) bits.push("Cortado. Una venta mal hecha o un banco largo te explota el camarín.");
+  if(j.forma>=82) bits.push("En racha.");
+  if(j.edad>=33) bits.push("El cuerpo ya no da para 40 partidos.");
+  if(j.proy-j.nivel>=8 && j.edad<=23) bits.push("Todavía puede subir si suma minutos.");
+  if(j.contrato.hasta<=E.anio) bits.push("El contrato se vence este año.");
+  return bits.join(" ");
+}
+function renovarContrato(j){
+  const extra=Math.max(8,Math.round(j.sueldo*0.12));
+  if(E.fin.caja<extra){ aviso("No hay caja para el aumento ("+plata(extra)+")"); return false; }
+  E.fin.caja-=extra;
+  j.sueldo+=extra;
+  j.contrato.hasta=Math.max(j.contrato.hasta,E.anio)+2;
+  j.moral=clamp((j.moral||70)+8,0,100);
+  if(typeof pushNotif==="function") pushNotif("Renové a "+j.n,j.n+" firmó hasta "+j.contrato.hasta+". Costó "+plata(extra)+" de caja.","bueno");
+  guardar(); return true;
+}
+function charlaJugador(j,tipo){
+  if(tipo==="banco"){ j.moral=clamp((j.moral||70)+7,0,100); if(E.ind) E.ind.moral=clamp((E.ind.moral||50)+1,0,100); aviso(j.n+" sale más tranquilo."); }
+  else { j.forma=clamp((j.forma||70)+5,0,100); j.moral=clamp((j.moral||70)-5,0,100); aviso(j.n+" se queda pensando."); }
+  guardar();
+}
 function vistaPlantel(){
   const v=$("#vista");
   const p=panel("Plantel "+E.anio,"👥");
-  p.cuerpo.appendChild(el("p","mini","● son jugadores reales de esa temporada. Nivel, forma, sueldo y valor son estimaciones del juego."));
+  p.cuerpo.appendChild(el("p","mini","● nombre documentado. Sin punto: cantera / relleno. Stats estimadas."));
+  const f=el("div","fichas");
+  [["todos","Todos"],["ARQ","Arqueros"],["DEF","Defensas"],["VOL","Volantes"],["DEL","Delanteros"],["real","Documentados"],["fondo","Cantera"]].forEach(([k,n])=>{
+    const b=el("button","ficha",n);
+    b.setAttribute("aria-pressed",PLANTEL_FILT===k?"true":"false");
+    b.onclick=()=>{ PLANTEL_FILT=k; irA("plantel"); };
+    f.appendChild(b);
+  });
+  p.cuerpo.appendChild(f);
   const t=el("table");
-  t.innerHTML="<thead><tr><th>Jugador</th><th>Pos</th><th class='n'>Ed</th><th class='n'>Niv</th><th class='n'>For</th><th class='n'>Gol</th><th class='n'>Sueldo</th></tr></thead>";
+  t.innerHTML="<thead><tr><th>Jugador</th><th>Pos</th><th>Rol</th><th class='n'>Ed</th><th class='n'>Niv</th><th class='n'>For</th><th class='n'>Gol</th><th class='n'>Sueldo</th></tr></thead>";
   const tb=el("tbody");
-  E.plantel.filter(j=>!j.vendido).sort((a,b)=>b.nivel-a.nivel).forEach(j=>{
+  E.plantel.filter(j=>{
+    if(j.vendido) return false;
+    if(PLANTEL_FILT==="real") return !!j.real;
+    if(PLANTEL_FILT==="fondo") return !j.real;
+    if(PLANTEL_FILT!=="todos") return j.pos===PLANTEL_FILT;
+    return true;
+  }).sort((a,b)=>b.nivel-a.nivel).forEach(j=>{
     const tr=el("tr");
-    tr.innerHTML="<td>"+(j.real?"● ":"")+j.n+(j.lesion>0?" 🩹":"")+(j.cedido?" 🔄":"")+"</td><td>"+j.pos+"</td><td class='n'>"+j.edad+
+    const rol=rolProbable(j);
+    tr.innerHTML="<td>"+(j.real?"● ":"")+j.n+(j.lesion>0?" 🩹":"")+(j.cedido?" 🔄":"")+"</td><td>"+j.pos+"</td><td class='mini'>"+rol+"</td><td class='n'>"+j.edad+
       "</td><td class='n'>"+j.nivel+"</td><td class='n'>"+Math.round(j.forma)+"</td><td class='n'>"+j.goles+
       "</td><td class='n'>"+plata(j.sueldo)+"</td>";
     tr.style.cursor="pointer";
@@ -596,10 +670,11 @@ function vistaPlantel(){
 }
 function fichaJugador(j){
   modal(box=>{
-    box.appendChild(el("div","cab",'<span class="ic">👤</span><span>'+j.n+'</span>'));
+    box.appendChild(el("div","cab",'<span class="ic">👤</span><span>'+j.n+(j.real?"":" · cantera")+'</span>'));
     const c=el("div","cuerpo"); box.appendChild(c);
-    c.appendChild(fila("Posición / edad",j.pos+" · "+j.edad+" años"));
-    c.appendChild(fila("Nivel / proyección",j.nivel+" / "+j.proy));
+    c.appendChild(el("p","mini",lecturaJugador(j)));
+    c.appendChild(fila("Puesto",j.pos+" · "+j.edad+" años · "+rolProbable(j)));
+    c.appendChild(fila("Nivel / proyección",j.nivel+" / "+j.proy+(j.real?" · aprox.":"")));
     c.appendChild(fila("Forma / moral",Math.round(j.forma)+" / "+Math.round(j.moral)));
     c.appendChild(fila("Sueldo anual",plata(j.sueldo)));
     c.appendChild(fila("Valor estimado",plata(j.valor)));
@@ -608,8 +683,16 @@ function fichaJugador(j){
     if(j.lesion>0) c.appendChild(el("p","mini","Lesionado: fuera unas "+j.lesion+" semanas."));
     if(j.cedido){ c.appendChild(el("div","resul mitad","🔄 Cedido a "+j.cedido.club+" hasta "+j.cedido.hasta+". Vuelve mejorado.")); }
     if(!j.cedido){
+      const bch=el("button","btn-aqua chico","Hablar y bancar");
+      bch.onclick=()=>{ charlaJugador(j,"banco"); cerrarModal(); render(); };
+      const bex=el("button","btn-aqua chico","Exigir más"); bex.style.marginLeft="6px";
+      bex.onclick=()=>{ charlaJugador(j,"exigir"); cerrarModal(); render(); };
+      const brn=el("button","btn-aqua chico verde","Renovar (+2 años)"); brn.style.marginLeft="6px";
+      brn.onclick=()=>{ if(renovarContrato(j)){ cerrarModal(); render(); } };
+      c.appendChild(bch); c.appendChild(bex); c.appendChild(brn);
       const tieneOferta=E.ofertasPend&&E.ofertasPend.some(o=>o.jid===j.n);
       const bv=el("button","btn-aqua ancho verde"+(tieneOferta?" gris":""),tieneOferta?"Ya hay una oferta abierta":"Buscar comprador");
+      bv.style.marginTop="8px";
       bv.disabled=tieneOferta; bv.onclick=()=>{ cerrarModal(); buscarComprador(j); };
       c.appendChild(bv);
       const br=el("button","btn-aqua ancho rojo","Rematar (~"+plata(Math.round(j.valor*0.47))+")"); br.style.marginTop="6px";
@@ -633,14 +716,24 @@ function vistaCalendario(){
     const marc=c.jugado?(c.gf+"-"+c.gc):"—";
     const est=c.jugado?(c.gf>c.gc?"ok":(c.gf<c.gc?"mal":"neu")):"neu";
     d.innerHTML='<span>'+(i===E.idx?"▶ ":"")+(c.tipo==="copa"?"🏆 ":"")+
-      (c.local?"vs ":"a ")+c.rivalNombre+' <span class="mini">'+fechaTxt(c.f)+(c.tipo==="copa"?" · "+c.ronda:"")+'</span></span>'+
+      (c.local?"vs ":"a ")+c.rivalNombre+' <span class="mini">'+fechaTxt(c.f)+
+      (c.tipo==="copa"?" · "+c.ronda:"")+(c.fecha?" · F"+c.fecha:"")+
+      (!c.jugado&&c.real&&E.config&&E.config.spoiler?" · hist. "+c.real:"")+'</span></span>'+
       '<b class="etq '+est+'">'+marc+'</b>';
     p.cuerpo.appendChild(d);
   });
   v.appendChild(p);
+  if(E.ultimaFecha&&E.ultimaFecha.length){
+    const pr=panel("Resto de la fecha","⚽");
+    E.ultimaFecha.forEach(x=>{
+      pr.cuerpo.appendChild(el("div","fila","<span>"+x.a+" vs "+x.b+"</span><b>"+x.ga+"-"+x.gb+"</b>"));
+    });
+    pr.cuerpo.appendChild(el("p","mini","Se simula con la fuerza de cada club. Los cruce oficiales (CC/UCH/UC) se respetan; el resto es emparejamiento fijo de la fecha."));
+    v.appendChild(pr);
+  }
 
   const pt=panel("Tabla de posiciones","📊","agua");
-  const arr=LIGA91.map(c=>Object.assign({id:c.id,n:c.n},E.tabla[c.id]));
+  const arr=LIGA_ACT.map(c=>Object.assign({id:c.id,n:c.n},E.tabla[c.id]||{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}));
   arr.sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc));
   const t=el("table");
   t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>G</th><th class='n'>E</th><th class='n'>P</th><th class='n'>GF</th><th class='n'>GC</th><th class='n'>Pts</th></tr></thead>";
@@ -801,30 +894,86 @@ const POSTS_PREDEF=[
   ev:{sentimiento:30, promesa:{hay:true,tipo:"ganarProximoGrande",castigo:"destitucion",texto:"Ganar el próximo partido o dejar el cargo"},
       consecuencia:"Pusiste tu cargo sobre la mesa en público."}}
 ];
+function pestañasRedes(cont){
+  const f=el("div","fichas");
+  [["club","Cuenta oficial del club"],["yo","Perfil personal del DT"]].forEach(([k,n])=>{
+    const b=el("button","ficha",n);
+    b.setAttribute("aria-pressed",REDES_PEST===k?"true":"false");
+    b.onclick=()=>{ REDES_PEST=k; irA("redes"); };
+    f.appendChild(b);
+  });
+  cont.appendChild(f);
+}
+let REDES_TAB="inicio";
+function reaccionarPost(t,tipo){
+  t.likes=t.likes||0; t.rts=t.rts||0; t.replies=t.replies||0; t.hilo=t.hilo||[];
+  if(tipo==="like"){
+    if(t._like) return aviso("Ya le diste like");
+    t._like=true; t.likes+=ri(4,40);
+    if(t.tipo==="hincha") aplicarGrupos({hinchada:1});
+  } else if(tipo==="rt"){
+    if(t._rt) return aviso("Ya lo retuiteaste");
+    t._rt=true; t.rts=(t.rts||0)+1; t.likes+=ri(10,80);
+    if(t.tono==="malo") aplicarRep({prensa:-1}); else aplicarRep({publica:1});
+    if(typeof postProc==="function") postProc(E.dt||"DT","dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"neutro");
+  } else {
+    const r=prompt("Responder a "+t.autor,"");
+    if(r===null) return;
+    const txt=(r||"").trim()||elige(["Te leí.","Se trabaja.","Gracias por el banco."]);
+    t.replies++;
+    t.hilo.push({autor:E.dt||"DT",texto:txt,fecha:"ahora"});
+    if(typeof postProc==="function") postProc(E.dt||"DT","dt","@"+String(t.autor||"").replace(/^@/,"")+" "+txt,"neutro");
+    aplicarRep({prensa:1});
+  }
+  guardar(); irA("redes");
+}
 function vistaRedes(){
+  if(typeof sembrarRedes==="function" && (!E.timeline||E.timeline.length<3)) sembrarRedes();
   const v=$("#vista");
-  const p=panel("Red del club","📱","agua");
-  p.cuerpo.appendChild(el("p","mini","Lo que publiques mueve la moral del camarín, el ánimo de la hinchada y tu relación con la prensa. "+
-    (iaDisponible()?"IA conectada.":"Modo offline: análisis por palabras clave + frases con efecto conocido.")));
-  const ta=el("textarea"); ta.className="entrada"; ta.rows=2; ta.placeholder="Escribí un posteo (ej: «Vamos con todo, este grupo tiene alma»)…";
+  const cab=panel("Chirp · 2008","🐦","agua");
+  pestañasRedes(cab.cuerpo);
+  const tabs=el("div","fichas");
+  [["inicio","Inicio"],["menciones","Menciones"],["tendencias","Tendencias"]].forEach(([k,n])=>{
+    const b=el("button","ficha",n);
+    b.setAttribute("aria-pressed",REDES_TAB===k?"true":"false");
+    b.onclick=()=>{ REDES_TAB=k; irA("redes"); };
+    tabs.appendChild(b);
+  });
+  cab.cuerpo.appendChild(tabs);
+  cab.cuerpo.appendChild(el("p","mini",
+    (E.seguidores||0).toLocaleString("es-CL")+" seguidores · "+
+    (REDES_PEST==="club"?"cuenta @ oficial del club":"perfil personal del DT")));
+  v.appendChild(cab);
+
+  const p=panel(REDES_PEST==="club"?"Publicar como club":"Publicar como DT","✍️");
+  const ta=el("textarea"); ta.className="entrada"; ta.rows=2; ta.maxLength=140;
+  ta.placeholder=REDES_PEST==="club"?"Comunicado oficial… (140)":"Qué estás pensando… (140)";
   ta.style.width="100%";
-  p.cuerpo.appendChild(ta);
-  const bp=el("button","btn-aqua ancho verde","Publicar");
+  const cnt=el("p","mini","0 / 140");
+  ta.oninput=()=>{ cnt.textContent=(ta.value||"").length+" / 140"; };
+  p.cuerpo.appendChild(ta); p.cuerpo.appendChild(cnt);
+  const bp=el("button","btn-aqua ancho verde",REDES_PEST==="club"?"Publicar en la cuenta oficial":"Publicar en tu perfil");
   bp.onclick=()=>{
-    const txt=(ta.value||"").trim(); if(!txt){ aviso("Escribí algo primero"); return; }
+    const txt=(ta.value||"").trim().slice(0,140); if(!txt){ aviso("Escribí algo primero"); return; }
     bp.disabled=true;
-    evaluarPost(txt).then(ev=>{ aplicarPost(txt,ev); irA("redes"); });
+    evaluarPost(txt).then(ev=>{
+      aplicarPost(txt,ev);
+      if(typeof postProc==="function") postProc(REDES_PEST==="club"?handleClub():(E.dt||"DT"), REDES_PEST==="club"?"club":"dt", txt, ev.sentimiento>10?"bueno":(ev.sentimiento<-10?"malo":"neutro"));
+      irA("redes");
+    });
   };
   p.cuerpo.appendChild(bp);
-  p.cuerpo.appendChild(el("h3","sub","Publicaciones rápidas"));
-  const fr=el("div","ops");
-  POSTS_PREDEF.forEach(pp=>{
-    const b=el("button","op");
-    b.innerHTML='<div class="t">'+pp.t+'</div><div class="d">"'+pp.texto+'"</div>';
-    b.onclick=()=>{ aplicarPost(pp.texto, Object.assign({},pp.ev)); irA("redes"); };
-    fr.appendChild(b);
-  });
-  p.cuerpo.appendChild(fr);
+  if(REDES_PEST==="club"){
+    p.cuerpo.appendChild(el("h3","sub","Comunicados rápidos"));
+    const fr=el("div","ops");
+    POSTS_PREDEF.forEach(pp=>{
+      const b=el("button","op");
+      b.innerHTML='<div class="t">'+pp.t+'</div><div class="d">"'+pp.texto+'"</div>';
+      b.onclick=()=>{ aplicarPost(pp.texto, Object.assign({},pp.ev)); irA("redes"); };
+      fr.appendChild(b);
+    });
+    p.cuerpo.appendChild(fr);
+  }
   v.appendChild(p);
 
   /* comunidad digital: seguidores, ingreso y campañas del CM */
@@ -844,14 +993,41 @@ function vistaRedes(){
   }
   v.appendChild(pcd);
 
-  /* timeline procedural */
-  const pt=panel("Timeline","🐦");
-  if(!E.timeline||!E.timeline.length) pt.cuerpo.appendChild(el("p","mini","Todavía no hay movimiento en las redes. Jugá, fichá o cambiá precios y la gente va a empezar a hablar."));
-  (E.timeline||[]).slice(0,25).forEach(t=>{
-    const ic=t.tipo==="prensa"?"🎙️":(t.tipo==="jugador"?"⚽":(t.tipo==="club"?"🏟️":(t.tipo==="dt"?"🧑‍💼":"👤")));
+  if(REDES_TAB==="tendencias"){
+    const pt=panel("Tendencias en Chile","#️⃣");
+    (typeof tendencias==="function"?tendencias():[]).forEach((x,i)=>{
+      pt.cuerpo.appendChild(el("div","fila","<span>"+(i+1)+". <b>"+x.tag+"</b></span><b class='mini'>"+x.n.toLocaleString("es-CL")+"</b>"));
+    });
+    pt.cuerpo.appendChild(el("p","mini","Se arma con el próximo rival, el club y el clima del camarín. No es una API real."));
+    v.appendChild(pt);
+    return;
+  }
+  const yo=String(E.dt||"DT").toLowerCase();
+  const feed=(E.timeline||[]).filter(t=>{
+    if(REDES_TAB!=="menciones") return true;
+    const tx=(t.texto||"").toLowerCase();
+    return tx.indexOf("@"+yo.replace(/\s/g,""))>=0 || tx.indexOf("@dt")>=0 || t.tipo==="prensa";
+  });
+  const pt=panel(REDES_TAB==="menciones"?"Menciones y prensa":"Inicio","🐦");
+  if(!feed.length) pt.cuerpo.appendChild(el("p","mini","El feed está quieto. Jugá un partido o publicá algo."));
+  feed.slice(0,28).forEach(t=>{
+    const ic=t.tipo==="prensa"?"🎙️":(t.tipo==="jugador"?"⚽":(t.tipo==="club"?"🏟️":(t.tipo==="dt"?"🧑‍💼":(t.tipo==="rival"?"🆚":"👤"))));
     const d=el("div","resul "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"mitad")));
     d.innerHTML="<b>"+ic+" "+t.autor+"</b> <span class='mini'>· "+t.fecha+" "+t.anio+"</span><br>"+t.texto+
-      "<div class='mini' style='opacity:.6;margin-top:2px'>♡ "+(t.likes||0).toLocaleString("es-CL")+"</div>";
+      "<div class='mini' style='opacity:.6;margin-top:2px'>♡ "+(t.likes||0).toLocaleString("es-CL")+
+      (t.rts?" · RT "+t.rts:"")+(t.replies?" · "+t.replies+" resp.":"")+"</div>";
+    if(t.hilo&&t.hilo.length){
+      t.hilo.slice(-3).forEach(h=>{
+        d.appendChild(el("p","mini","↳ <b>"+h.autor+"</b> "+h.texto));
+      });
+    }
+    const acc=el("div"); acc.style.marginTop="6px";
+    [["like","♡"],["rt","RT"],["reply","Responder"]].forEach(([k,n])=>{
+      const b=el("button","btn-aqua chico",n); b.style.marginRight="5px";
+      b.onclick=()=>reaccionarPost(t,k);
+      acc.appendChild(b);
+    });
+    d.appendChild(acc);
     pt.cuerpo.appendChild(d);
   });
   v.appendChild(pt);
@@ -948,6 +1124,10 @@ function tarjetaAviso(n,conAcciones){
 /* ---------------- ajustes ---------------- */
 function vistaAjustes(){
   const v=$("#vista");
+  const don=panel("El proyecto","💚");
+  don.cuerpo.appendChild(el("p",null,"Futbolini es gratis. Se sostiene con tiempo y, si alguien quiere, con donaciones para pagar IA y seguir construyendo."));
+  don.cuerpo.appendChild(el("p","mini","Todavía no hay pasarela. Cuando esté, va a vivir en esta misma pantalla. Si querés ayudar ahora: compartí el juego o escribile al autor."));
+  v.appendChild(don);
   const p=panel("Ajustes","⚙️");
   p.cuerpo.appendChild(el("label","lb","Tema visual"));
   const f=el("div","fichas");
@@ -958,6 +1138,16 @@ function vistaAjustes(){
     f.appendChild(b);
   });
   p.cuerpo.appendChild(f);
+  p.cuerpo.appendChild(el("label","lb","Spoilers históricos"));
+  const fs=el("div","fichas");
+  [["si","Con spoiler (dice qué pasó)"],["no","Sin spoiler"]].forEach(([k,n])=>{
+    const on=k==="si";
+    const b=el("button","ficha",n);
+    b.setAttribute("aria-pressed",!!E.config.spoiler===on?"true":"false");
+    b.onclick=()=>{ E.config.spoiler=on; guardar(); render(); };
+    fs.appendChild(b);
+  });
+  p.cuerpo.appendChild(fs);
   p.cuerpo.appendChild(el("div","resul mitad","<b>Aviso.</b> Clubes, jugadores y dirigentes reales aparecen con su nombre. "+
     "Resultados, títulos y fechas se apoyan en registros públicos. Todo lo demás (conversaciones, negociaciones, conflictos internos, frases) "+
     "es ficción escrita para el juego."));
@@ -998,13 +1188,7 @@ function vistaAjustes(){
   v.appendChild(pg);
 }
 /* ---------------- avanzar ---------------- */
-function avanzar(){
-  if(!E||E.carrera.fin||E.carrera.enParo) return;
-  const cr=crisisActiva();
-  if(cr){ abrirCrisis(cr); return; }
-  if(bloqueoDecisiones()) return;
-  const part=proximoPartido();
-  if(!part){ cerrarTemporada(); return; }
+function procesarSemanaPostPartido(){
   const neto=tickSemana();
   if(typeof chequearDesfalco==="function") chequearDesfalco();
   repartirDecisiones();
@@ -1012,13 +1196,46 @@ function avanzar(){
   generarOfertasSemana();
   if(typeof sembrarDecisionProc==="function") sembrarDecisionProc();
   const ev=tirarEvento();
-  if(ev&&ev.tipo==="decision"){ abrirEventoDecision(ev.ev); return; }
+  if(ev&&ev.tipo==="decision"){ abrirEventoDecision(ev.ev); return {neto:neto,ctx:ctx,ev:ev}; }
   const vp=(typeof dispararVidaProc==="function")?dispararVidaProc():false;
-  if(!vp && typeof dispararNegociacion==="function" && dispararNegociacion()) return;
+  if(!vp && typeof dispararNegociacion==="function" && dispararNegociacion()) return {neto:neto,ctx:ctx,ev:ev};
+  return {neto:neto,ctx:ctx,ev:ev,vp:vp};
+}
+function modalAvancePartido(part){
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">📅</span><span>Hay un partido en el calendario</span>'));
+    const c=el("div","cuerpo"); box.appendChild(c);
+    c.appendChild(el("h2","tit",(part.local?"vs ":"visita a ")+part.rivalNombre));
+    c.appendChild(el("p","mini",(part.tipo==="copa"?"Copa Libertadores · "+part.ronda:"Campeonato Nacional · fecha "+part.fecha)+
+      " · "+fechaTxt(part.f)+" · "+part.sede));
+    c.appendChild(el("p",null,"Avanzar no salta fechas. O lo dirigís, o lo dejás al azar con la táctica que ya armaste."));
+    const b1=el("button","btn-aqua ancho verde","Dirigir el partido");
+    b1.onclick=()=>{ cerrarModal(); if(typeof pantallaPrevia==="function") pantallaPrevia(part); };
+    const b2=el("button","btn-aqua ancho","Simular (dejar al azar)");
+    b2.onclick=()=>{
+      cerrarModal();
+      if(typeof iniciarPartido==="function") iniciarPartido(part,"simular");
+      else if(typeof pantallaPrevia==="function") pantallaPrevia(part);
+    };
+    const b3=el("button","btn-aqua ancho gris","Volver al escritorio");
+    b3.style.marginTop="6px";
+    b3.onclick=()=>{ cerrarModal(); irA("escritorio"); };
+    c.appendChild(b1); c.appendChild(b2); c.appendChild(b3);
+  },{cerrarFuera:false});
+}
+function avanzar(){
+  if(!E||E.carrera.fin||E.carrera.enParo) return;
+  const cr=crisisActiva();
+  if(cr){ abrirCrisis(cr); return; }
+  if(bloqueoDecisiones()) return;
+  const part=proximoPartido();
+  if(!part){ cerrarTemporada(); return; }
+  if(!part.jugado){ modalAvancePartido(part); return; }
+  const r=procesarSemanaPostPartido();
   irA("escritorio");
-  if(ctx.length) aviso(ctx[0]);
-  else if(ev) aviso(ev.item.t);
-  else if(!vp) aviso("Semana tranquila · "+plata(neto));
+  if(r.ctx&&r.ctx.length) aviso(r.ctx[0]);
+  else if(r.ev) aviso(r.ev.item?r.ev.item.t:"");
+  else if(!r.vp) aviso("Semana · "+plata(r.neto));
 }
 function abrirEventoDecision(ev){
   const d={id:"ev_"+ev.id,buzon:"institucional",t:ev.t,d:ev.d,op:ev.op,posturas:ev.posturas,consejo:ev.consejo};

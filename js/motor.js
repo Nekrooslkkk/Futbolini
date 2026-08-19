@@ -45,13 +45,13 @@ const CLUB_INFO={
 const CLUB_INFO_2026={
  CC:{n:"Colo-Colo",esc:"⚪",est:"Estadio Monumental",dt:"el cuerpo técnico",
   desc:"El club más popular de Chile en la era de las sociedades anónimas. Plantel caro, hinchada enorme y una deuda que siempre ronda."},
- UCH:{n:"Universidad de Chile",esc:"🔵",est:"Estadio Nacional (arrendado)",dt:"el cuerpo técnico",
+ UCH:{n:"Universidad de Chile",esc:"🔵",est:"Estadio Nacional (arrendado)",dt:"Fernando Gago",
   desc:"Volvió a pelear arriba tras años irregulares. Masa social gigante y todavía sin estadio propio."},
- UC:{n:"Universidad Católica",esc:"🔷",est:"Claro Arena",dt:"el cuerpo técnico",
+ UC:{n:"Universidad Católica",esc:"🔷",est:"Claro Arena",dt:"Daniel Garnero",
   desc:"Estrena estadio propio y arrastra una camada ganadora. Administración ordenada y cantera fuerte."},
  PAL:{n:"Palestino",esc:"🟩",est:"Municipal de La Cisterna",dt:"el cuerpo técnico",
   desc:"Club de colonia, competitivo y con buena formación, siempre peleando con presupuesto acotado."},
- LIM:{n:"Deportes Limache",esc:"🟨",est:"Estadio Lucio Fariña",dt:"el cuerpo técnico",
+ LIM:{n:"Deportes Limache",esc:"🟨",est:"Estadio Lucio Fariña",dt:"Víctor Rivero",
   desc:"Recién ascendido a Primera. El objetivo es claro: aguantar la categoría y no morir en el intento."}
 };
 const IND_BASE_2026={
@@ -72,13 +72,43 @@ function datosEra(base){
 function infoClub(clubId){ return datosEra(E?E.eraBase:1991).info[clubId] || CLUB_INFO[clubId]; }
 
 /* ---------------- arranque ---------------- */
-function nuevaPartida(clubId,anio,modo){
+function parseMarcadorReal(real,local){
+  if(!real) return null;
+  const p=String(real).split(/[-–]/).map(n=>parseInt(n,10));
+  if(p.length<2||isNaN(p[0])||isNaN(p[1])) return null;
+  return local?{gf:p[0],gc:p[1]}:{gf:p[1],gc:p[0]};
+}
+/* Carga resultados ya jugados hasta el corte (18/08/2026) y la tabla de referencia.
+   No inventa partidos: usa `real` del fixture. El resto de la tabla es semilla. */
+function aplicarCorte2026(){
+  if(!E||E.anio!==2026) return;
+  const corte=(typeof CORTE_2026!=="undefined")?CORTE_2026:{m:8,d:18};
+  if(typeof TABLA_2026_CORTE==="object"){
+    Object.keys(TABLA_2026_CORTE).forEach(id=>{
+      if(E.tabla[id]) Object.assign(E.tabla[id], TABLA_2026_CORTE[id]);
+    });
+  }
+  (E.calendario||[]).forEach(p=>{
+    if((p.f.m*100+(p.f.d||1))>(corte.m*100+(corte.d||1))) return;
+    if(!p.real) return;
+    const sc=parseMarcadorReal(p.real,p.local);
+    if(!sc) return;
+    p.jugado=true; p.gf=sc.gf; p.gc=sc.gc;
+  });
+  const i=(E.calendario||[]).findIndex(p=>!p.jugado);
+  E.idx=i<0?(E.calendario||[]).length:i;
+  const yo=E.tabla[E.club];
+  if(yo) E.temporada=Object.assign({sinGanar:0},yo);
+  E.flags=E.flags||{}; E.flags.corte2026=true;
+  if(typeof pushNotif==="function") pushNotif("Cortás en agosto","El campeonato ya se jugó hasta el 18/08. Los partidos anteriores están cargados. El próximo es el que sigue.","neutro");
+}
+function nuevaPartida(clubId,anio,modo,extra){
   const base=baseEra(anio);
   activarLiga(base);
   const D=datosEra(base);
   const info=D.info[clubId];
   E={
-    v:3, club:clubId, eraBase:base, clubNombre:info.n, dt:info.dt, anio:anio, modo:modo||"historico",
+    v:4, club:clubId, eraBase:base, clubNombre:info.n, dt:info.dt, anio:anio, modo:modo||"historico",
     ind:Object.assign({},D.ind[clubId]),
     plata:D.caja[clubId].plata, deuda:D.caja[clubId].deuda,
     capital:45,
@@ -105,6 +135,8 @@ function nuevaPartida(clubId,anio,modo){
   reiniciarTabla();
   repartirDecisiones();
   normalizarEstado();
+  if(extra&&extra.corte&&anio===2026) aplicarCorte2026();
+  if(typeof sembrarRedes==="function") sembrarRedes();
   guardar();
 }
 function reiniciarTabla(){
@@ -148,6 +180,7 @@ function normalizarEstado(){
   if(E.personal.sueldo===undefined) E.personal.sueldo=8;
   if(E.flags.desfalco===undefined) E.flags.desfalco=0;
   if(!E.config) E.config={autoPausa:true};
+  if(E.config.spoiler===undefined) E.config.spoiler=(E.modo!=="libre");
   /* Vida 2.0: tinder/parejas y migración de avatar a orbes MSN (solo se mantiene 😎) */
   if(!E.perfil.tinder) E.perfil.tinder={matches:[]};
   if(!Array.isArray(E.perfil.tinder.matches)) E.perfil.tinder.matches=[];
@@ -161,6 +194,14 @@ function normalizarEstado(){
   if(E.perfil.avatar && E.perfil.avatar!=="😎" && String(E.perfil.avatar).indexOf("orb-")!==0) E.perfil.avatar="orb-azul";
   /* 5.0 · bolsa de valores del club + finanzas avanzadas */
   if(typeof normalizarBolsa==="function") normalizarBolsa();
+  /* v4: planteles viejos con nombres inventados tipo "Luis Aránguiz" */
+  if((E.v||0)<4){
+    const hayFantasma=(E.plantel||[]).some(j=>!j.real && j.n && j.n.indexOf("Canterano")!==0);
+    if(hayFantasma && typeof armarPlantel==="function"){
+      E.plantel=armarPlantel(E.club,E.anio,(E.ind&&E.ind.plantel)||60);
+    }
+    E.v=4;
+  }
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){
@@ -607,6 +648,7 @@ function tickSemana(){
   /* Vida 3.0: la relación se enfría si no la cuidás; el bienestar deriva y sufre con la mala racha */
   if(E.perfil){
     if(E.perfil.pareja) E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel||65)-(E.perfil.pareja.casades?0.4:0.9),0,100);
+  if(typeof tickFamilia==="function") tickFamilia();
     if(E.perfil.bienestar===undefined) E.perfil.bienestar=70;
     E.perfil.bienestar=clamp(E.perfil.bienestar+(58-E.perfil.bienestar)*0.05-((E.temporada&&E.temporada.sinGanar>=3)?1.5:0),0,100);
   }
@@ -627,11 +669,28 @@ function tickSemana(){
   const ratio=precioPromedioRatio();
   if(ratio>1.35 && Math.random()<0.5) E.ind.hinchada=clamp(E.ind.hinchada-1,0,100);
   else if(ratio<0.8 && Math.random()<0.5) E.ind.hinchada=clamp(E.ind.hinchada+1,0,100);
+  const gh=E.grupos&&E.grupos.hinchada, gs=E.grupos&&E.grupos.socios;
+  if(gh&&gs&&gh.aprob<-45&&gs.aprob<-45){
+    E.flags.semanasCensura=(E.flags.semanasCensura||0)+1;
+    if(E.flags.semanasCensura===1){
+      notificar({t:"Asamblea extraordinaria",tipo:"malo",
+        d:"Hinchada y socios están juntos en contra. Si no revertís el clima en dos semanas, hay moción de censura.",bandeja:true});
+    } else if(E.flags.semanasCensura>=3 && typeof destituir==="function"){
+      destituir("moción de censura de socios e hinchada");
+    }
+  } else E.flags.semanasCensura=0;
   return neto;
+}
+function umbralEvento(){
+  /* histórico: mundo más estable · libre: ruido medio · caos: casi no hay semana muerta */
+  const m=(E&&E.modo)||"historico";
+  if(m==="caos") return 0.18;
+  if(m==="libre") return 0.32;
+  return 0.48;
 }
 function tirarEvento(){
   const posibles=EVENTOS.filter(ev=>ev.peso(E)>0);
-  if(!posibles.length||Math.random()>0.42) return null;
+  if(!posibles.length||Math.random()>umbralEvento()) return null;
   const ev=eligePeso(posibles,x=>x.peso(E));
   if(!ev) return null;
   if(ev.op) return {tipo:"decision",ev:ev};

@@ -26,17 +26,54 @@ function handleClub(){
   const n=(E.clubNombre||"club").replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ]/g,"");
   return "@"+n+"_oficial";
 }
+function cuentaPrensa(){
+  E.cuentas=E.cuentas||{};
+  HANDLES_PRENSA.forEach(h=>{ if(!E.cuentas[h]) E.cuentas[h]={linea:ri(-1,1)}; });
+  const h=elige(HANDLES_PRENSA);
+  return {h:h, linea:(E.cuentas[h]&&E.cuentas[h].linea)||0};
+}
 
-function postProc(autor,tipo,texto,tono){
+function uidPost(){ return "p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function postProc(autor,tipo,texto,tono,extra){
   E.timeline=E.timeline||[];
   const part=typeof proximoPartido==="function"?proximoPartido():null;
-  const likesBase=tipo==="prensa"?ri(80,2800):tipo==="club"?ri(200,4500):ri(5,1800);
-  E.timeline.unshift({
-    autor:autor, tipo:tipo, texto:texto, tono:tono||"neutro",
+  const likesBase=tipo==="prensa"?ri(80,2800):tipo==="club"?ri(200,4500):tipo==="rival"?ri(40,900):ri(5,1800);
+  const item={
+    id:uidPost(),
+    autor:autor, handle:autor, tipo:tipo, texto:texto, tono:tono||"neutro",
     fecha:(part&&part.f?fechaTxt(part.f):"hoy"), anio:E.anio,
-    likes:likesBase
-  });
-  if(E.timeline.length>50) E.timeline.length=50;
+    likes:likesBase, rts:ri(0,tipo==="prensa"?400:80), replies:0,
+    hilo:[], menciones:[]
+  };
+  if(extra) Object.assign(item,extra);
+  E.timeline.unshift(item);
+  if(E.timeline.length>80) E.timeline.length=80;
+  return item;
+}
+function tendencias(){
+  const t=[];
+  const part=typeof proximoPartido==="function"?proximoPartido():null;
+  if(part) t.push({tag:"#"+String(part.rivalNombre||"rival").replace(/\s+/g,""), n:ri(1200,18000)});
+  t.push({tag:"#"+(E.clubNombre||"Club").replace(/\s+/g,""), n:ri(3000,40000)});
+  t.push({tag:"#LigaDePrimera", n:ri(8000,55000)});
+  if(E.anio===1991) t.push({tag:"#Libertadores91", n:ri(2000,22000)});
+  if((E.ind&&E.ind.moral)<45) t.push({tag:"#RenunciaYa", n:ri(900,9000)});
+  t.push({tag:"#ANFP", n:ri(400,7000)});
+  return t;
+}
+function sembrarRedes(){
+  if(!E) return;
+  E.timeline=E.timeline||[];
+  if(E.timeline.length>8) return;
+  const part=typeof proximoPartido==="function"?proximoPartido():null;
+  const riv=part?part.rivalNombre:"el próximo";
+  postProc(elige(HANDLES_PRENSA),"prensa",
+    "Arranca la semana en "+(E.clubNombre||"el club")+". El entorno mira el plantel y la tabla.","neutro");
+  postProc(elige(HANDLES_HINCHA),"hincha",
+    part?("Se viene "+riv+". Si no ponemos huevos esta vez, la tribuna se va a vaciar."):"Otro ciclo. A bancar, como siempre.","neutro");
+  postProc(handleJugador(),"jugador","Enfocados. El grupo está trabajando.","neutro");
+  postProc("@hincha_rival","rival","Cuando vengan acá se van a enterar. No son el equipo de la tele.", "malo");
+  if(part&&part.tipo==="copa") postProc(elige(HANDLES_PRENSA),"prensa","Copa de por medio. Un tropiezo y el año se pone cuesta arriba.","neutro");
 }
 function moverSeguidores(n){
   E.seguidores=Math.max(0,Math.round((E.seguidores||0)+n));
@@ -60,9 +97,12 @@ function redesReaccion(tipo,data){
       ];
       postProc(elige(HANDLES_HINCHA),"hincha",elige(frasesH),"bueno");
       if(dif>=3){
-        postProc(elige(HANDLES_PRENSA),"prensa",
-          "Goleada contundente: "+data.yo+"-"+data.otro+" ante "+rival+". El equipo se afirma en la tabla.",
-          "bueno");
+        const pr=cuentaPrensa();
+        postProc(pr.h,"prensa",
+          pr.linea<0
+            ?"Goleada "+data.yo+"-"+data.otro+" ante "+rival+". No se emocionen: esto no tapa el resto."
+            :"Goleada contundente: "+data.yo+"-"+data.otro+" ante "+rival+". El equipo se afirma.",
+          pr.linea<0?"neutro":"bueno");
         postProc(handleJugador(),"jugador",elige([
           "Feliz por el triunfo del grupo. Seguimos 👊",
           "Buen trabajo de todos. A disfrutar un rato y después a pensar en lo que viene."

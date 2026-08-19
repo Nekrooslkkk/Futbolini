@@ -243,3 +243,20 @@ body[data-tema="aero"] .mi[aria-selected="true"]{ color:#fff; text-shadow:0 -1px
   box-shadow:inset 0 1px 0 #fff, 0 2px 5px rgba(0,20,50,.35); color:#123a5e; text-shadow:0 1px 0 rgba(255,255,255,.6); }
 .pizarra .chip.arq{ background:linear-gradient(to bottom,#fff7d8 0%,#ffe89a 48%,#f0cf5a 52%,#fff3c0 100%); border-color:#c9a63a; }
 .pizarra .chip.sel{ outline:2px solid #00d2ff; box-shadow:0 0 12px #00d2ff, inset 0 1px 0 #fff; }
+
+/* 5.0 · ticker dark-glass + barras de apoyo cristal (Vista) */
+body[data-tema="aero"] .apoyo-live{
+  background:linear-gradient(to bottom,rgba(20,44,80,.86),rgba(10,26,52,.92));
+  border:1px solid #0a2a52;box-shadow:inset 0 1px 0 rgba(120,190,255,.35);
+}
+body[data-tema="aero"] .apoyo-n,body[data-tema="aero"] .apoyo-v{color:#eaf4ff;text-shadow:0 1px 1px rgba(0,0,0,.5)}
+body[data-tema="aero"] .ticker{
+  background:linear-gradient(to bottom,rgba(14,26,44,.9),rgba(6,14,28,.94));
+  border:1px solid #0a1f3c;border-radius:7px;padding:8px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:inset 0 1px 0 rgba(110,170,240,.28),0 2px 8px rgba(0,0,0,.35);
+}
+body[data-tema="aero"] .ticker .tk{color:#dbe9fb;border-bottom:1px solid rgba(120,170,240,.14);padding:5px 2px}
+body[data-tema="aero"] .ticker .tk b{color:#8fd0ff}
+body[data-tema="aero"] .ticker .tk.bien{color:#b6f0c4}
+body[data-tema="aero"] .ticker .tk.mal{color:#ffc2bc}

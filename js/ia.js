@@ -40,8 +40,13 @@ function analizarOffline(texto){
   let s=0;
   IA_POS.forEach(w=>{ if(t.includes(w)) s+=12; });
   IA_NEG.forEach(w=>{ if(t.includes(w)) s-=14; });
-  if(/[A-ZÁÉÍÓÚÑ]{6,}/.test(texto||"")) s+=(s>=0?6:-6);   // gritar amplifica el tono
-  s=clamp(s,-60,60);
+  if(/árbitro|arbitro|robo|nos robaron/.test(t)) s+=4;
+  if(/directorio|blanco|plata|sueldo/.test(t)) s-=6;
+  if(/cantera|pibe|joven/.test(t)) s+=5;
+  if(/[A-ZÁÉÍÓÚÑ]{6,}/.test(texto||"")) s+=(s>=0?6:-6);
+  if(E&&E.ind&&E.ind.moral<40 && s>0) s-=8;
+  if(E&&E.ind&&E.ind.hinchada>70 && s>0) s+=6;
+  s=clamp(s,-70,70);
   let promesa=null;
   const irse=/(o me voy|si no.*(me voy|renunci)|renuncio si no|dejo el cargo)/.test(t);
   const ganar=/(gano|ganamos|vamos a ganar|le ganamos|campe|prometo|aseguro)/.test(t);
@@ -49,8 +54,40 @@ function analizarOffline(texto){
     texto:"Ganar el próximo partido o dejar el cargo"};
   else if(ganar && s>18) promesa={hay:true, tipo:"noPerderProximo", castigo:"reputacion",
     texto:"No perder el próximo partido"};
-  return { sentimiento:s, promesa:promesa,
-    consecuencia: s>20?"La gente se prende con el mensaje.":(s<-20?"El mensaje cae mal y la prensa lo toma.":"Repercusión tibia, sin grandes olas.") };
+  const part=typeof proximoPartido==="function"?proximoPartido():null;
+  let cons=s>20?"La gente se prende con el mensaje.":(s<-20?"El mensaje cae mal y la prensa lo toma.":"Repercusión tibia, sin grandes olas.");
+  if(part&&/clásico|u de chile|colo/.test(t)) cons+=" Con un clásico encima, cada palabra pesa doble.";
+  return { sentimiento:s, promesa:promesa, consecuencia:cons, offline:true };
+}
+function consejoLocal(){
+  if(!E) return "Sin partida.";
+  const bits=[];
+  const part=typeof proximoPartido==="function"?proximoPartido():null;
+  if((E.plata||0)<80) bits.push("La caja está flaca: no firmés renovaciones caras esta semana.");
+  if((E.deuda||0)>(E.plata||0)*3) bits.push("La deuda te come. Un préstamo más y el directorio se pone nervioso.");
+  if(E.ind&&E.ind.moral<45) bits.push("El camarín está cortado. Una charla o un once que no sea de castigo.");
+  if(E.ind&&E.ind.hinchada<40) bits.push("La hinchada se está yendo. Un resultado o un precio de entrada más bajo.");
+  if(part) bits.push("Siguiente: "+(part.local?"vs ":"en ")+part.rivalNombre+(part.real?" (hist. "+part.real+")":"")+".");
+  const yo=E.tabla&&E.tabla[E.club];
+  if(yo&&yo.pj>=5){
+    const arr=typeof tablaOrdenada==="function"?tablaOrdenada():[];
+    const pos=arr.findIndex(c=>c.id===E.club)+1;
+    if(pos) bits.push("Vas "+pos+"° con "+yo.pts+" pts.");
+  }
+  if(E.perfil&&E.perfil.pareja&&(E.perfil.pareja.nivel||65)<40) bits.push("En casa está cortado. Una cita o se te arma otra crisis.");
+  if(E.perfil&&E.perfil.hijos&&E.perfil.hijos.some(h=>!h.enPlantel&&((E.anio-h.nacido)>=17))) bits.push("Tenés un hijo en edad de firmar en cantera.");
+  if(!bits.length) bits.push("No hay fuego. Podés mover un estatuto o mirar el mercado.");
+  return bits.join(" ");
+}
+function pensarOffline(tarea,ctx){
+  ctx=ctx||{};
+  if(tarea==="tinder"){
+    if((ctx.pts||0)>=20) return "Cerebro local: hubo química. No prometas titularidad en la primera cita.";
+    if((ctx.pts||0)>=8) return "Cerebro local: todavía se puede. No hables del directorio.";
+    return "Cerebro local: esa charla no sumó. Mejor otra semana.";
+  }
+  if(tarea==="sucesor") return "Cerebro local: el hijo llega con capital; el de afuera llega sin el apellido y sin perdón.";
+  return consejoLocal();
 }
 
 /* devuelve siempre una promesa que resuelve a {sentimiento, promesa, consecuencia} */

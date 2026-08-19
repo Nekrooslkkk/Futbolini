@@ -447,7 +447,126 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
   tesorero OK, estable 120 semanas) + smoke navegador puerto 8793 (cotizacion, sparkline SVG, flujo 6 filas,
   todos los botones, consola limpia).
 
+## 5.0 spec · Barras de apoyo en vivo + ticker dark-glass  ✅ (2026-08-18)
+**Archivos:** `js/partido.js` (actualizarApoyo), `js/ui-partido.js` (render + hooks), `css/base.css`, `css/aero.css`
+- **Tres barras en vivo durante el partido**: 🎪 Ánimo hinchada, 👥 Confianza plantel, 🧠 Criterio DT.
+  Se recalculan cada minuto persiguiendo un objetivo (inercia 0.20-0.25) según marcador, físico del equipo
+  y minuto: ir ganando las sube, ir perdiendo tarde las hunde, la fatiga castiga la confianza del plantel.
+- **Criterio DT** arranca del nivel de la gerencia deportiva y **sube +6 cada vez que resolvés un momento táctico**,
+  así que premia dirigir en vez de mirar. Color por tramo (verde >=60, ámbar >=35, rojo abajo).
+- **Ticker dark-glass** (FutbolGram en vivo): panel de cristal oscuro con blur, borde Vista y autores en cian.
+- Verificado: harness Node (rango 0-100 durante los 90 minutos, sube ganando 2-0 → 84/70/49 a 99/92/63,
+  baja perdiendo 0-3 tarde → 37/37/28) + smoke navegador (3 barras renderizando, fondo cristal aero, consola limpia).
+
+## FIX CRÍTICO · data-liga.js no cargaba (juego no arrancaba)  ✅ (2026-08-18)
+**Archivo:** `js/data-liga.js`
+- `const FIXTURES_OFICIALES` estaba declarada **antes** de `const LIGA_CC_1991` y la referenciaba. El guard
+  `typeof LIGA_CC_1991!=="undefined"` **no protege**: en `const`/`let` la zona muerta temporal (TDZ) hace que
+  hasta `typeof` tire ReferenceError. Resultado: el archivo entero moría al cargar y **el juego no arrancaba**
+  (`nuevaPartida` → "Cannot access 'LIGAS' before initialization"; se perdían LIGAS, LIGA_ACT, CLUB_POR_ID,
+  CORTE_2026, TABLA_2026_CORTE y los fixtures).
+- **Fix:** mover la declaración de `FIXTURES_OFICIALES` a después de `LIGA_CC_1991` (solo se lee dentro de
+  funciones, así que es seguro) y sacar el guard, que ya no hace falta. Comentario en el archivo para que no
+  vuelva a pasar.
+- Verificado en navegador: 1991 arranca (calendario 45), 2026 arranca con el corte de agosto (idx 19, 19 jugados),
+  fixture CC 1991 con sus 30 fechas, consola limpia.
+
 ### 5.0 spec · PENDIENTE
 - Corrección Avanzar/Simular (respetar calendario + modal Aero "¿dejar el progreso al azar?").
-- Blackjack en el casino. Barras de apoyo en vivo (Ánimo Hinchada/Confianza Plantel/Criterio DT) + ticker lateral.
+- Blackjack en el casino.
 - Redes en 2 pestañas (Cuenta Oficial del Club vs Perfil Personal del DT con like/retuit/responder).
+
+## 5.1 · Loop de calendario + casino vivo + servidor (2026-08-18)
+**Archivos:** `ui.js`, `ui-partido.js`, `motor.js`, `js/casino.js`, `css/base.css`, `servidor.js`
+- Avanzar ya no come semanas sin partido: si hay fixture, modal Dirigir / Simular al azar.
+- Tras el partido, "Cerrar y seguir la semana" corre `procesarSemanaPostPartido` (plata, eventos, vida).
+- Modos: `umbralEvento()` — histórico más calmo, libre medio, caos casi sin semana muerta.
+- Casino: ruleta con giro + historial de fichas; **blackjack** (dealer 17, BJ 3:2).
+- `servidor.js`: Node local (`node servidor.js`) — mismo archivo para el host 1.0. `/api/health`.
+
+## 5.1b · Redes 2 pestañas + Vista/7 + Limache + donaciones (2026-08-18)
+**Archivos:** `ui.js`, `css/base.css`, `data-plantel.js`, `motor.js`, `index.html`
+- Redes: pestaña **club oficial** vs **perfil del DT**. En el perfil: Like / RT / Responder.
+- Radios de botones/paneles/fichas bajados a 5–6px (deja de verse “pill”).
+- Plantel LIM 2026 (nombres públicos, stats estimadas). DT 2026: Víctor Rivero.
+- Ajustes: pantalla del proyecto / donaciones (sin pasarela todavía).
+
+## 5.1c · Calendario y plantel Colo-Colo 1991 exactos (2026-08-18)
+**Archivos:** `data-liga.js`, `data-plantel.js`
+- Libertadores 1991: día exacto de cada partido (20/02 a 05/06).
+- Nacional 1991: 30 partidos reales de CC (rival, localía, fecha, marcador histórico).
+- Se agrega Intercontinental Tokio 8/12/1991 (0-3).
+- El calendario se ordena por fecha real (copa y liga intercaladas).
+- Plantel CC 1991: se suman recambios documentados (Verdirame, Letelier, Salvatierra, Castro, Soto).
+- 2026 sigue aproximado: el fixture ANFP cambia cada fecha.
+
+## 5.1d · Liga 2026 real + fixture CC 2026 + planteles (2026-08-18)
+**Archivos:** `data-liga.js`, `data-plantel.js`, `motor.js`
+- Liga 2026: 16 equipos correctos (salen Iquique y U. Española; entran D. Concepción y U. de Concepción).
+- Fixture oficial de Colo-Colo 2026, 30 fechas (Wikipedia, congelado al 18/08/2026) con marcadores reales hasta la 19.
+- Planteles CC/UCH/UC 2026 actualizados a nombres públicos de agosto 2026. Stats estimadas.
+- DT 2026: UCH Fernando Gago, UC Daniel Garnero.
+
+## 5.1e · Planteles: nada de nombres inventados como reales (2026-08-18)
+**Archivos:** `data-plantel.js`
+- `generarJugador` ya no arma "Luis Aránguiz": sale "Canterano POS N" con `real:false`.
+- Si hay 16+ nombres documentados, no se rellena el plantel.
+- PAL 2026 reescrito (Pérez, Roco, Garguez, Abrigo, Munder, etc.).
+- CC 2026: Pastrán, Alarcón, Román, Ulloa.
+
+## 5.1f · Ficha de jugador + tabla 2026 (2026-08-18)
+**Archivos:** `ui.js`
+- Plantel: filtros, rol (titular/suplente/fondo), ficha con lectura, charla y renovación.
+- Calendario: muestra marcador histórico si existe; la tabla usa `LIGA_ACT` (ya no LIGA91 en 2026).
+- Arrancar en fecha actual: NO. Queda para un bloque aparte con resultados reales del club.
+
+## 5.1g · Corte agosto 2026 + fases de partido + save v4 (2026-08-18)
+**Archivos:** `data-liga.js`, `motor.js`, `ui.js`, `partido.js`
+- Nueva partida 2026: opción "Desde ahora" carga fixture jugado + tabla de referencia al 18/08.
+- Partido: fases dominio / equilibrio / ahogo (pesan el peligro y el relato).
+- Save v4: si el plantel tiene nombres inventados, se rearma.
+
+## 5.1h · Fixture UCH 2026 + cerebro local (2026-08-18)
+**Archivos:** `data-liga.js`, `ia.js`, `ui.js`, `servidor.js`, `data-plantel.js`
+- Fixture oficial Universidad de Chile 2026 (30 fechas). Corte agosto también le aplica.
+- Cerebro local en el escritorio: heurística, cero red, cero créditos.
+- `/api/pensar` en localhost (POST) usa la misma idea, no llama modelos de pago.
+- Assadi/Vargas + Reyna en UCH.
+
+## 5.1i · Fixture UC 2026 + pista de caja (2026-08-18)
+**Archivos:** `data-liga.js`, `data-plantel.js`, `ia.js`, `ui.js`
+- Fixture oficial Universidad Católica 2026 (30 fechas, resultados hasta la 18).
+- Finanzas avisa cuántas semanas dura la caja si el flujo es rojo.
+- Cerebro local también mira la deuda.
+- Lucero en UCH.
+
+## 5.1j · Chirp 2008 + listado (2026-08-18)
+**Archivos:** `redes.js`, `ui.js`, `motor.js`, `LISTADO.md`
+- Feed con hilos, RT que cita, menciones, tendencias.
+- Semilla al crear partida.
+- Lista de mejora A–I para la beta.
+
+## 5.1k · Liga completa por fecha (2026-08-18)
+**Archivos:** `data-liga.js`, `partido.js`, `ui.js`, `redes.js`
+- Al terminar un partido de liga se actualiza también el rival.
+- El resto de la fecha se simula (empareja fixtures oficiales CC/UCH/UC + el resto con semilla fija).
+- Calendario muestra "Resto de la fecha".
+- Prensa con línea persistente (te banca o te funde).
+
+## 5.1l · Once vivo + rivales honestos + spoiler + asamblea (2026-08-18)
+**Archivos:** `data-plantel.js`, `data-liga.js`, `partido.js`, `motor.js`, `ui.js`, `LISTADO.md`, `ANALISIS.md`
+- XI rival usa plantel documentado (CC/UCH/UC/PAL/LIM). Si no hay, “el 9 de Coquimbo” — no inventa nombres.
+- PAL/LIM 2026: calendario con las fechas reales de CC + empareje de jornada.
+- Once pesa moral, rol y cansancio. El titular se cansa; la banca recupera.
+- Lesión: entra alguien frío (forma -8). Clásico/copa pesan. Relato cita jugadores.
+- Ajustes: spoiler on/off. Chirp: 140 caracteres.
+- Hinchada + socios < -45 → asamblea; a las 3 semanas, moción de censura.
+- **Build no entregó zip.** Este parche es el que quedó pendiente.
+
+## 5.1m · Tinder con charla, dinastía viva, cerebro en la vida (2026-08-18)
+**Archivos:** `reputacion.js`, `motor.js`, `ia.js`, `LISTADO.md`, `ANALISIS.md`
+- Match: charla de 3 preguntas antes de invitar. El puntaje decide si hay cita.
+- Citas: ~62% abre dilema (llegás tarde / clásico / foto).
+- Hijos envejecen. A los 17 pueden firmar en cantera.
+- Sucesión: hijo o DT de afuera.
+- `pensarOffline` cubre tinder/sucesor. IA de pago sigue APAGADA.

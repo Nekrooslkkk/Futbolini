@@ -210,6 +210,20 @@ function pintarPartido(){
     p.cuerpo.appendChild(el("div","mini","Físico del equipo"));
     p.cuerpo.appendChild(el("div",null,barrita(stam,stam>50?"#4fbf3f":(stam>25?"#e0a92a":"#c9392c"))));
   }
+  /* 5.0 · barras de apoyo en vivo */
+  if(P.modo!=="simular"){
+    if(typeof actualizarApoyo==="function" && !P.apoyo) actualizarApoyo(P);
+    if(P.apoyo){
+      const ap=el("div","apoyo-live");
+      const col=v=>v>=60?"#4fbf3f":(v>=35?"#e0a92a":"#c9392c");
+      [["🎪 Ánimo hinchada",P.apoyo.hinchada],["👥 Confianza plantel",P.apoyo.plantel],["🧠 Criterio DT",P.apoyo.criterio]].forEach(([n,val])=>{
+        const row=el("div","apoyo-row");
+        row.innerHTML="<span class='apoyo-n'>"+n+"</span>"+barrita(val,col(val))+"<span class='apoyo-v'>"+Math.round(val)+"</span>";
+        ap.appendChild(row);
+      });
+      p.cuerpo.appendChild(ap);
+    }
+  }
   const rel=el("div","relato");
   P.lineas.slice().reverse().forEach(l=>rel.appendChild(el("div","rel "+l.c,'<span class="m">'+l.m+"'</span><span>"+l.t+"</span>")));
   if(!P.lineas.length) rel.appendChild(el("div","rel","<span class='m'>0'</span><span>Rueda la pelota en "+P.part.sede+".</span>"));
@@ -243,6 +257,7 @@ function pasoEnVivo(){
     clearInterval(TIMER); pintarPartido(); mostrarMomento(); return;
   }
   const ev=tickPartido(P);
+  if(typeof actualizarApoyo==="function") actualizarApoyo(P);
   if(typeof tickerPost==="function") tickerPost(P,ev);
   if(ev.tipo==="penalRival"){ resolverEventoAuto(P,ev); pintarPartido(); return; }
   if(ev.tipo==="penal"||ev.tipo==="lesion"||ev.tipo==="tiroLibre"){
@@ -268,7 +283,9 @@ function mostrarMomento(){
   m.op.forEach((o,i)=>{
     const b=el("button","op");
     b.innerHTML='<div class="t"><span class="tecla">'+(i+1)+'</span> '+o.t+'</div>';
-    b.onclick=()=>{ MOMENTO_OPS=[]; aplicarMomento(P,o.ef); P.momentoIdx++; correrEnVivo(); };
+    b.onclick=()=>{ MOMENTO_OPS=[]; aplicarMomento(P,o.ef); P.momentoIdx++;
+      if(P.apoyo){ P.apoyo.momentos=(P.apoyo.momentos||0)+1; P.apoyo.criterio=clamp(P.apoyo.criterio+6,0,99); }
+      correrEnVivo(); };
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);
@@ -391,8 +408,15 @@ function cerrarPartido(){
   /* rueda de prensa: manual (mini-decisión) o automática (ayudante) */
   seccionPrensa(p,res);
 
-  const b=el("button","btn-aqua ancho verde","Volver al escritorio");
-  b.onclick=()=>{ P_ACTUAL=null; irA("escritorio"); };
+  const b=el("button","btn-aqua ancho verde","Cerrar y seguir la semana");
+  b.onclick=()=>{
+    P_ACTUAL=null;
+    if(typeof procesarSemanaPostPartido==="function"){
+      const r=procesarSemanaPostPartido();
+      if(r&&r.ev&&r.ev.tipo==="decision") return;
+    }
+    irA("escritorio");
+  };
   p.cuerpo.appendChild(b);
   $("#vista").appendChild(p);
   window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});

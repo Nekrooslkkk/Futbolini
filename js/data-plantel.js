@@ -27,7 +27,12 @@ const PLANTEL_CC_1991=[
  ["Patricio Yáñez","DEL",30,78,78,66,180,["experiencia internacional","carácter"]],
  ["Ricardo Dabrowski","DEL",28,80,80,58,280,["extranjero","juego aéreo"]],
  ["Sergio Salgado","DEL",24,70,78,18,110,["recambio"]],
- ["Juan Carlos Peralta","DEF",26,70,72,20,90,["recambio"]]
+ ["Juan Carlos Peralta","DEF",26,70,72,20,90,["recambio"]],
+ ["Sergio Verdirame","VOL",22,71,82,18,140,["zurdo","recambio"]],
+ ["José Letelier","ARQ",24,64,70,10,40,["recambio"]],
+ ["Agustín Salvatierra","DEF",24,66,72,12,50,["recambio"]],
+ ["Raúl Castro","VOL",23,62,68,8,30,["recambio"]],
+ ["Leonardo Soto","DEL",22,63,70,8,35,["recambio"]]
 ];
 
 const PLANTEL_UCH_1994=[
@@ -47,51 +52,95 @@ const PLANTEL_UCH_1994=[
    pueden haber cambiado en el mercado. Los huecos se completan con
    jugadores generados. */
 const PLANTEL_CC_2026=[
- ["Fernando de Paul","ARQ",34,76,76,90,120,["experiencia"]],
- ["Alan Saldivia","DEF",24,78,84,110,520,["proyección","juego aéreo"]],
- ["Emiliano Amor","DEF",31,76,76,120,220,["extranjero","liderazgo"]],
- ["Sebastián Vegas","DEF",29,76,76,130,240,["marca"]],
- ["Erick Wiemberg","DEF",29,74,74,100,180,["lateral"]],
- ["Vicente Pizarro","VOL",23,80,88,140,760,["cerebro","canterano"]],
- ["Esteban Pavez","VOL",34,74,74,110,120,["capitán","veterano"]],
- ["Arturo Vidal","VOL",38,78,78,260,180,["ídolo","carácter","experiencia internacional"]],
- ["Claudio Aquino","VOL",30,79,79,180,420,["extranjero","desequilibrio"]],
- ["Lucas Cepeda","DEL",23,81,89,150,900,["gambeta","proyección europea"]],
- ["Javier Correa","DEL",32,78,78,170,300,["extranjero","goleador"]],
- ["Salomón Rodríguez","DEL",26,74,76,130,260,["extranjero"]]
+ ["Fernando de Paul","ARQ",35,76,76,90,110,["experiencia"]],
+ ["Vozinha","ARQ",40,70,70,40,30,["veterano"]],
+ ["Erick Wiemberg","DEF",32,74,74,100,160,["lateral"]],
+ ["Javier Méndez","DEF",31,75,75,110,180,["marca"]],
+ ["Jonathan Villagra","DEF",25,76,82,120,420,["proyección"]],
+ ["Jeyson Rojas","DEF",24,72,76,80,200,["lateral"]],
+ ["Joaquín Sosa","DEF",24,73,78,90,260,["extranjero"]],
+ ["Arturo Vidal","VOL",39,76,76,200,80,["ídolo","carácter","experiencia internacional"]],
+ ["Claudio Aquino","VOL",35,78,78,160,280,["extranjero","desequilibrio"]],
+ ["Álvaro Madrid","VOL",31,74,74,110,160,["orden"]],
+ ["Víctor Méndez","VOL",26,73,76,100,220,["contención"]],
+ ["Marcos Bolados","DEL",30,74,74,120,180,["velocidad"]],
+ ["Javier Correa","DEL",33,78,78,170,260,["extranjero","goleador"]],
+ ["Maximiliano Romero","DEL",27,77,80,150,360,["extranjero","definición"]],
+ ["Leandro Hernández","DEL",21,74,84,80,420,["joven","proyección"]],
+ ["Francisco Marchant","DEL",20,70,80,50,220,["canterano"]],
+ ["Lautaro Pastrán","DEL",24,73,78,90,280,["extranjero"]],
+ ["Tomás Alarcón","VOL",27,73,74,90,200,["contención"]],
+ ["Iván Román","DEF",20,72,84,70,400,["proyección"]],
+ ["Diego Ulloa","DEF",23,70,76,60,160,["lateral"]]
 ];
 const PLANTEL_UCH_2026=[
- ["Gabriel Castellón","ARQ",31,78,78,130,260,["reflejos"]],
- ["Matías Zaldivia","DEF",34,75,75,120,140,["experiencia"]],
- ["Franco Calderón","DEF",25,74,80,100,260,["proyección"]],
- ["Fabián Hormazábal","DEF",30,76,76,120,240,["lateral ofensivo"]],
- ["Marcelo Díaz","VOL",39,74,74,150,80,["capitán","ídolo","veterano"]],
- ["Charles Aránguiz","VOL",37,79,79,220,160,["ídolo","cerebro","experiencia internacional"]],
+ ["Gabriel Castellón","ARQ",32,78,78,130,220,["reflejos"]],
+ ["Cristopher Toselli","ARQ",38,70,70,60,30,["veterano"]],
+ ["Igor Lichnovsky","DEF",32,77,77,140,240,["selección"]],
+ ["Nicolás Ramírez","DEF",29,76,76,120,240,["marca"]],
+ ["Matías Zaldivia","DEF",35,74,74,110,100,["experiencia"]],
+ ["Marcelo Morales","DEF",23,76,84,100,480,["lateral","proyección"]],
+ ["Fabián Hormazábal","DEF",30,76,76,120,280,["lateral ofensivo"]],
+ ["Charles Aránguiz","VOL",37,79,79,200,140,["ídolo","cerebro","experiencia internacional"]],
+ ["Marcelo Díaz","VOL",39,72,72,120,40,["ídolo","veterano"]],
  ["Israel Poblete","VOL",31,73,73,100,140,["orden"]],
- ["Lucas Assadi","VOL",22,79,88,120,720,["enganche","proyección","canterano"]],
- ["Maximiliano Guerrero","DEL",25,76,80,120,360,["velocidad"]],
- ["Leandro Fernández","DEL",34,75,75,140,160,["extranjero","definición"]],
- ["Rodrigo Contreras","DEL",31,77,77,160,300,["extranjero","goleador"]]
+ ["Lucas Assadi","VOL",22,80,88,140,720,["enganche","proyección","canterano"]],
+ ["Agustín Arce","VOL",21,72,80,70,260,["canterano"]],
+ ["Eduardo Vargas","DEL",36,78,78,180,160,["ídolo","experiencia internacional"]],
+ ["Maximiliano Guerrero","DEL",26,76,80,120,360,["velocidad"]],
+ ["Octavio Rivero","DEL",34,74,74,130,140,["extranjero"]],
+ ["Gonzalo Reyna","DEL",22,72,80,80,260,["extranjero","proyección"]],
+ ["Juan Martín Lucero","DEL",34,76,76,140,180,["extranjero","goleador"]]
 ];
 const PLANTEL_UC_2026=[
- ["Vicente Bernedo","ARQ",23,73,80,90,300,["proyección"]],
- ["Daniel González","DEF",27,78,80,140,420,["salida limpia","selección"]],
- ["Cristian Cuevas","DEF",30,74,74,120,200,["lateral"]],
- ["Branco Ampuero","DEF",23,72,80,90,260,["proyección"]],
- ["Alfred Canales","VOL",21,74,85,90,420,["proyección","canterano"]],
- ["Gary Medel","VOL",38,76,76,200,120,["ídolo","carácter","experiencia internacional"]],
- ["Clemente Montes","DEL",24,77,82,120,480,["velocidad","canterano"]],
- ["Fernando Zampedri","DEL",37,82,82,220,340,["capitán","goleador","olfato"]],
- ["Gastón Lezcano","DEL",31,74,74,130,220,["extranjero"]],
- ["Tomás Asta-Buruaga","VOL",22,71,80,80,220,["proyección"]]
+ ["Vicente Bernedo","ARQ",25,74,80,90,280,["proyección"]],
+ ["Darío Melo","ARQ",33,68,68,50,40,["recambio"]],
+ ["Daniel González","DEF",24,78,82,140,420,["salida limpia"]],
+ ["Eugenio Mena","DEF",38,72,72,80,50,["veterano","lateral"]],
+ ["Branco Ampuero","DEF",32,73,73,90,140,["marca"]],
+ ["Tomás Asta-Buruaga","DEF",29,72,72,80,140,["recambio"]],
+ ["Gary Medel","VOL",39,75,75,180,80,["ídolo","carácter"]],
+ ["Alfred Canales","VOL",26,74,80,90,320,["contención"]],
+ ["Cristián Cuevas","VOL",31,72,72,100,160,["lateral"]],
+ ["Fernando Zuqui","VOL",34,73,73,120,140,["extranjero"]],
+ ["Clemente Montes","DEL",25,77,82,120,420,["velocidad","canterano"]],
+ ["Fernando Zampedri","DEL",38,80,80,200,220,["capitán","goleador"]],
+ ["Diego Valencia","DEL",26,72,74,100,200,["definición"]],
+ ["Juan Rossel","DEL",21,70,80,60,220,["proyección"]]
 ];
 const PLANTEL_PAL_2026=[
- ["Fernando Cordero","DEF",30,73,73,100,170,["lateral"]],
- ["Sebastián Cabrera","DEF",29,72,72,90,150,["marca"]],
- ["César Pérez","VOL",27,73,74,100,190,["orden"]],
- ["Bryan Carrasco","VOL",34,72,72,110,120,["experiencia"]],
- ["Maximiliano Salas","DEL",28,76,76,150,320,["goleador"]],
- ["Junior Marabel","DEL",30,74,74,120,220,["extranjero","juego aéreo"]]
+ ["Sebastián Pérez","ARQ",35,74,74,80,90,["experiencia"]],
+ ["Sebastián Salas","ARQ",25,66,72,30,50,["recambio"]],
+ ["Enzo Roco","DEF",34,75,75,110,140,["experiencia internacional"]],
+ ["José Bizama","DEF",32,72,72,80,90,["marca"]],
+ ["Dilan Zúñiga","DEF",30,73,73,90,180,["lateral"]],
+ ["Ian Garguez","DEF",21,72,82,60,280,["proyección"]],
+ ["Vicente Espinoza","DEF",22,70,76,50,160,["lateral"]],
+ ["Dylan Glaby","VOL",30,73,73,90,160,["extranjero","orden"]],
+ ["Joe Abrigo","VOL",31,75,75,110,200,["desequilibrio"]],
+ ["Sebastián Gallegos","VOL",34,72,72,80,90,["experiencia"]],
+ ["Nicolás Meza","VOL",24,68,74,40,80,["recambio"]],
+ ["Bryan Carrasco","DEL",35,72,72,90,80,["veterano"]],
+ ["Ronnie Fernández","DEL",35,73,73,100,110,["goleador"]],
+ ["César Munder","DEL",26,74,76,90,200,["velocidad"]],
+ ["Jonathan Benítez","DEL",34,72,72,80,90,["extranjero"]],
+ ["Nelson Da Silva","DEL",29,73,74,90,140,["extranjero"]]
+];
+/* Deportes Limache 2026 · nombres públicos de referencia, stats estimadas */
+const PLANTEL_LIM_2026=[
+ ["Claudio González","ARQ",36,72,72,70,80,["experiencia"]],
+ ["Matías Bórquez","ARQ",27,70,72,55,90,["reflejos"]],
+ ["Alfonso Parot","DEF",36,74,74,90,100,["capitán","veterano"]],
+ ["Augusto Aguirre","DEF",26,72,76,80,180,["extranjero"]],
+ ["Dylan Escobar","DEF",25,70,74,60,140,["marca"]],
+ ["Javier Rojas","DEF",20,68,78,40,160,["joven"]],
+ ["César Fuentes","VOL",33,71,71,80,90,["orden"]],
+ ["Leonardo Valencia","VOL",35,74,74,100,110,["experiencia","pegada"]],
+ ["Jean Meneses","VOL",33,76,76,120,200,["desequilibrio"]],
+ ["Misael Llantén","VOL",27,70,72,60,120,["pulmón"]],
+ ["Daniel Castro","DEL",32,75,75,110,220,["goleador"]],
+ ["Marcos Arturia","DEL",28,72,74,90,180,["extranjero"]],
+ ["Gonzalo Sosa","DEL",21,71,80,70,240,["proyección"]]
 ];
 /* ---------- planteles históricos Colo-Colo (datos reales cruzados, stats estimadas) ---------- */
 const PLANTEL_CC_1989=[  /* Campeón Nacional + Copa Chile · DT Arturo Salah */
@@ -153,7 +202,8 @@ const PLANTELES_REALES={
   CC:{1989:PLANTEL_CC_1989, 1991:PLANTEL_CC_1991, 2002:PLANTEL_CC_2002, 2006:PLANTEL_CC_2006, 2007:PLANTEL_CC_2006, 2026:PLANTEL_CC_2026},
   UCH:{1994:PLANTEL_UCH_1994, 2026:PLANTEL_UCH_2026},
   UC:{2026:PLANTEL_UC_2026},
-  PAL:{2026:PLANTEL_PAL_2026}
+  PAL:{2026:PLANTEL_PAL_2026},
+  LIM:{2026:PLANTEL_LIM_2026}
 };
 
 const NOMBRES_PILA=["Luis","Carlos","Jorge","Mauricio","Cristián","Rodrigo","Felipe","Marcelo","Sebastián","Iván",
@@ -175,33 +225,60 @@ function generarJugador(rr,nivelBase,pos,edad){
   const edd=edad||18+Math.floor(rr()*16);
   const proy=clamp(nivel+(edd<23?Math.round(rr()*12):0),28,95);
   const infl=(typeof inflacionEra==="function" && typeof E!=="undefined" && E)?inflacionEra():1;
-  return {n:NOMBRES_PILA[Math.floor(rr()*NOMBRES_PILA.length)]+" "+APELLIDOS[Math.floor(rr()*APELLIDOS.length)],
+  const nro=1+Math.floor(rr()*80);
+  return {n:"Canterano "+pos+" "+nro,
     pos:pos,edad:edd,nivel:nivel,proy:proy,
     sueldo:Math.round(nivel*nivel/110*infl),valor:Math.round((nivel*nivel/16+(proy-nivel)*10)*infl),
-    rasgos:[],forma:65+Math.round(rr()*15),moral:65+Math.round(rr()*15),real:false,
+    rasgos:["cantera"],forma:65+Math.round(rr()*15),moral:65+Math.round(rr()*15),real:false,
     contrato:{hasta:0},lesion:0,goles:0,partidos:0,tarjetas:0};
 }
-/* Arma un plantel: usa los nombres reales si existen y completa con generados */
+/* Arma un plantel: nombres reales si hay. No rellena con gente inventada si ya hay 16+. */
 function armarPlantel(clubId,anio,nivelBase){
   const out=[];
   const reales=(PLANTELES_REALES[clubId]||{})[anio];
   if(reales) reales.forEach(a=>out.push(jugadorDesde(a)));
   const rr=azarFijo(semilla(clubId+"-"+anio));
-  const faltan=["ARQ","DEF","DEF","VOL","VOL","DEL","DEF","VOL","DEL","VOL"];
-  let i=0;
-  while(out.length<22 && i<faltan.length*3){
-    out.push(generarJugador(rr,nivelBase||60,faltan[i%faltan.length]));
-    i++;
+  if(!reales || out.length<16){
+    const faltan=["ARQ","DEF","DEF","VOL","VOL","DEL","DEF","VOL","DEL","VOL"];
+    let i=0;
+    const tope=reales?18:22;
+    while(out.length<tope && i<faltan.length*3){
+      out.push(generarJugador(rr,nivelBase||60,faltan[i%faltan.length]));
+      i++;
+    }
   }
   out.forEach(j=>{ if(!j.contrato.hasta) j.contrato.hasta=anio+1+Math.floor(rr()*3); });
   return out;
 }
-/* Plantel corto para rivales, solo para narrar goles con nombre */
+function idClubDe(idOrNombre){
+  if(!idOrNombre) return null;
+  if(typeof CLUB_POR_ID==="object" && CLUB_POR_ID[idOrNombre]) return idOrNombre;
+  const keys=typeof CLUB_POR_ID==="object"?Object.keys(CLUB_POR_ID):[];
+  return keys.find(k=>{
+    const c=CLUB_POR_ID[k];
+    return c&&(c.n===idOrNombre||c.c===idOrNombre);
+  })||null;
+}
+/* XI rival: plantel documentado si existe. Si no, apodos del club (no inventa nombres). */
 function plantelRival(idOrNombre,fuerza){
-  const rr=azarFijo(semilla("riv-"+idOrNombre));
-  const out=[];
-  for(let i=0;i<11;i++) out.push(generarJugador(rr,fuerza-4,["ARQ","DEF","DEF","DEF","DEF","VOL","VOL","VOL","DEL","DEL","DEL"][i]));
-  return out;
+  const id=idClubDe(idOrNombre);
+  const anio=(typeof E!=="undefined"&&E&&E.anio)||2026;
+  const pack=id&&PLANTELES_REALES[id];
+  const reales=pack&&(pack[anio]||pack[2026]||pack[1991]);
+  if(reales&&reales.length>=11){
+    const pick=(pos,n)=>reales.filter(a=>a[1]===pos).slice(0,n);
+    const filas=pick("ARQ",1).concat(pick("DEF",4),pick("VOL",4),pick("DEL",2));
+    while(filas.length<11) filas.push(reales[filas.length%reales.length]);
+    return filas.slice(0,11).map(a=>jugadorDesde(a));
+  }
+  const tag=(id&&CLUB_POR_ID[id]&&(CLUB_POR_ID[id].c||CLUB_POR_ID[id].n))||String(idOrNombre||"rival");
+  const pos=["ARQ","DEF","DEF","DEF","DEF","VOL","VOL","VOL","DEL","DEL","DEL"];
+  const rol=["el 1","el 2","el 3","el 4","el 5","el 6","el 8","el 10","el 7","el 9","el 11"];
+  return pos.map((p,i)=>({
+    n:rol[i]+" de "+tag, pos:p, edad:25, nivel:clamp((fuerza||60)-4,40,86),
+    proy:70, sueldo:40, valor:80, rasgos:[], forma:70, moral:70, real:false,
+    contrato:{hasta:0}, lesion:0, goles:0, partidos:0, tarjetas:0, cansancio:0
+  }));
 }
 /* ---------- tokens: las decisiones nombran jugadores de verdad ---------- */
 function resolverTokens(txt,E){

@@ -54,7 +54,7 @@ button{background:none;border:none}
 #menu{position:sticky;top:52px;z-index:45;display:flex;gap:5px;padding:6px 10px;
   overflow-x:auto;scrollbar-width:none}
 #menu::-webkit-scrollbar{display:none}
-.mi{flex:0 0 auto;display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:11px;
+.mi{flex:0 0 auto;display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:5px;
   cursor:pointer;font-size:12.5px;font-weight:600;white-space:nowrap;position:relative}
 .mi .pip{min-width:16px;height:16px;border-radius:9px;font-family:var(--f-dato);font-size:10px;
   display:grid;place-items:center;background:#e8453a;color:#fff;padding:0 4px}
@@ -66,7 +66,7 @@ button{background:none;border:none}
   .rejilla.dos{grid-template-columns:1.25fr .75fr;align-items:start}
   .rejilla.tres{grid-template-columns:repeat(3,1fr);align-items:start}
 }
-.panel{border-radius:14px;overflow:hidden;margin-bottom:10px}
+.panel{border-radius:6px;overflow:hidden;margin-bottom:10px}
 .panel > .cab{display:flex;align-items:center;gap:8px;padding:8px 12px;font-family:var(--f-titulo);
   font-weight:700;font-size:13.5px;letter-spacing:.2px}
 .panel > .cab .ic{font-size:15px}
@@ -77,9 +77,9 @@ h2.tit{font-family:var(--f-titulo);font-size:19px;letter-spacing:-.2px;margin-bo
 h3.sub{font-family:var(--f-titulo);font-size:14px;margin-bottom:4px}
 
 /* ---------- botones ---------- */
-.btn-aqua{position:relative;border-radius:999px;padding:8px 17px;font-weight:700;font-size:13px;
+.btn-aqua{position:relative;border-radius:5px;padding:8px 17px;font-weight:700;font-size:13px;
   cursor:pointer;border:1px solid rgba(255,255,255,.6);overflow:hidden;transition:filter .12s,transform .1s}
-.btn-aqua::after{content:"";position:absolute;top:1px;left:7%;right:7%;height:44%;border-radius:999px;
+.btn-aqua::after{content:"";position:absolute;top:1px;left:7%;right:7%;height:44%;border-radius:4px;
   background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,0));pointer-events:none}
 .btn-aqua:hover{filter:brightness(1.08)}
 .btn-aqua:active{transform:translateY(1px)}
@@ -118,14 +118,14 @@ tr.yo td{font-weight:800;background:var(--resalte)}
 .consejo{border-left:3px solid var(--linea);padding:7px 0 7px 10px;font-size:12.5px;line-height:1.45;margin-top:8px}
 .consejo .quien{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.4px;opacity:.75}
 .ops{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-.op{text-align:left;padding:11px 12px;border-radius:12px;cursor:pointer;border:1px solid var(--linea);
+.op{text-align:left;padding:11px 12px;border-radius:6px;cursor:pointer;border:1px solid var(--linea);
   transition:transform .12s;width:100%}
 .op:hover:not(:disabled){transform:translateX(3px)}
 .op:disabled{opacity:.55;cursor:not-allowed}
 .op .t{font-weight:700;font-size:13.5px}
 .op .d{font-size:12px;opacity:.8;margin-top:2px;line-height:1.4}
 .op .req{font-size:10.5px;margin-top:6px;font-family:var(--f-dato)}
-.resul{padding:11px;border-radius:11px;font-size:13px;line-height:1.5;margin-top:11px;border-left:5px solid}
+.resul{padding:11px;border-radius:6px;font-size:13px;line-height:1.5;margin-top:11px;border-left:5px solid}
 .resul.bien{border-color:#2f9c46} .resul.mitad{border-color:#d79a1a} .resul.mal{border-color:#c93a2c}
 
 /* ---------- partido ---------- */
@@ -143,12 +143,12 @@ tr.yo td{font-weight:800;background:var(--resalte)}
 #capa-modal:empty{display:none}
 .modal-fondo{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-start;justify-content:center;
   padding:14px;overflow-y:auto;background:rgba(4,32,20,.5);backdrop-filter:blur(6px)}
-.modal{max-width:680px;width:100%;margin:auto 0;border-radius:16px;overflow:hidden}
+.modal{max-width:680px;width:100%;margin:auto 0;border-radius:6px;overflow:hidden}
 
 /* ---------- avisos ---------- */
 #avisos{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:90;display:flex;
   flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:min(92vw,440px)}
-.aviso{padding:9px 15px;border-radius:999px;font-size:12.5px;font-weight:600;color:#fff;
+.aviso{padding:9px 15px;border-radius:6px;font-size:12.5px;font-weight:600;color:#fff;
   background:rgba(10,54,30,.93);box-shadow:0 6px 18px rgba(0,0,0,.32);animation:sube .28s ease}
 @keyframes sube{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
@@ -163,10 +163,10 @@ input[type=text],input[type=number],select{width:100%;padding:9px 11px;border-ra
   border:1px solid var(--linea);background:rgba(255,255,255,.72)}
 input[type=range]{width:100%}
 .fichas{display:flex;flex-wrap:wrap;gap:6px}
-.ficha{padding:6px 12px;border-radius:999px;border:1px solid var(--linea);cursor:pointer;font-size:12px}
+.ficha{padding:6px 12px;border-radius:5px;border:1px solid var(--linea);cursor:pointer;font-size:12px}
 .ficha[aria-pressed="true"]{color:#fff}
 .iconos{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
-.icono{border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;border:1px solid var(--linea)}
+.icono{border-radius:6px;padding:10px 6px;text-align:center;cursor:pointer;border:1px solid var(--linea)}
 .icono .g{font-size:22px;display:block;line-height:1.1}
 .icono .n{font-size:10.5px;font-weight:600;margin-top:3px;display:block}
 
@@ -229,3 +229,31 @@ textarea.entrada:focus{outline:2px solid #39b7e0}
 table.flujo{width:100%;border-collapse:collapse;font-size:13px}
 table.flujo td,table.flujo th{padding:3px 6px;border-bottom:1px solid rgba(0,0,0,.08);text-align:left}
 table.flujo td.n,table.flujo th.n{text-align:right;font-family:var(--f-dato,monospace)}
+
+/* 5.0 · barras de apoyo en vivo del partido */
+.apoyo-live{margin:8px 0;padding:8px 10px;border-radius:6px;background:rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.08)}
+.apoyo-row{display:grid;grid-template-columns:130px 1fr 30px;align-items:center;gap:8px;margin:4px 0}
+.apoyo-n{font-size:12px;font-weight:700}
+.apoyo-v{font-family:var(--f-dato,monospace);font-size:12px;font-weight:800;text-align:right}
+.apoyo-row .barrita{margin:0}
+
+/* ---- casino / ruleta / blackjack ---- */
+.rueda-wrap{display:flex;flex-direction:column;align-items:center;margin:8px 0 12px}
+.rueda-disco{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;
+  font-size:32px;font-weight:700;color:#fff;border:6px solid #c9b37a;
+  box-shadow:inset 0 2px 8px rgba(255,255,255,.45),0 6px 16px rgba(0,0,0,.35);
+  background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.45),transparent 40%),#222}
+.rueda-disco.rojo{background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.4),transparent 40%),#b11}
+.rueda-disco.negro{background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.25),transparent 40%),#1a1a1a}
+.rueda-disco.verde{background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.4),transparent 40%),#0a7a2a}
+.rueda-disco.gira{animation:giroRueda .7s linear infinite}
+@keyframes giroRueda{to{transform:rotate(360deg)}}
+.rueda-punta{font-size:14px;margin-top:2px;opacity:.7}
+.ruleta-hist{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 10px}
+.chip-n{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 4px;
+  border-radius:4px;font-size:11px;font-weight:700;color:#fff}
+.chip-n.rojo{background:#c12}
+.chip-n.negro{background:#222}
+.chip-n.verde{background:#0a7}
+.bj-mano{padding:8px 10px;margin:6px 0;border:1px solid var(--linea);border-radius:6px;font-size:13px}
+.bj-cards{font-size:20px;letter-spacing:2px}

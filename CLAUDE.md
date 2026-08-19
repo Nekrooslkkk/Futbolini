@@ -17,7 +17,9 @@ estado cuelga del objeto global `E` (localStorage vía `Store`). Épocas: 1991, 
 - Diversidad sí, burla no (pool de citas escrito con respeto para todes).
 
 ## Fuentes de verdad (LEER antes de tocar)
+- `ANALISIS.md` — diagnóstico 5.1l y qué falta para la beta. LEER PRIMERO.
 - `PATCHES.md` — qué hace cada parche, qué archivos toca, cómo editar planteles, cómo encender la IA.
+- `LISTADO.md` — checklist A–I (actualizar si cerrás un ítem).
 - `BRIEFING.md` — memoria portátil (para delegar a otras IA).
 - `IDEAS.md` — wishlist del usuario: pendientes por hacer. Trabajá de acá cuando te digan "seguí con IDEAS".
 

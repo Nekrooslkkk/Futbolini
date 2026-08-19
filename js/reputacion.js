@@ -268,9 +268,13 @@ function pantallaSucesion(){
   p.cuerpo.appendChild(fila("Linaje",E.dinastia.linaje));
   p.cuerpo.appendChild(fila("Al mando ahora",prox+" · "+relacionSucesor(E.dinastia.generacion+1)+(hijo?" (tu hijo, criado en el club)":"")));
   p.cuerpo.appendChild(fila("Patrimonio heredado",plata(E.personal.bolsillo)+" + "+(E.personal.propiedades.length)+" propiedades + "+(E.personal.autos.length)+" autos"));
-  const b=el("button","btn-aqua ancho verde","Asumir la conducción");
-  b.onclick=asumirSucesor;
+  const b=el("button","btn-aqua ancho verde",(hijo?"Que tome el cargo "+hijo.nombre:"Asumir la sangre"));
+  b.onclick=()=>elegirSucesor("hijo");
   p.cuerpo.appendChild(b);
+  const be=el("button","btn-aqua ancho","Traer un DT de afuera");
+  be.style.marginTop="6px"; be.onclick=()=>elegirSucesor("externo");
+  p.cuerpo.appendChild(be);
+  p.cuerpo.appendChild(el("p","mini","El de afuera no hereda el nombre. El club sigue; la familia cede el escritorio."));
   return p;
 }
 
@@ -357,7 +361,16 @@ function vistaVida(){
   /* hijos (futura dinastía) */
   if(E.perfil.hijos && E.perfil.hijos.length){
     pt.cuerpo.appendChild(el("h3","sub","Familia"));
-    E.perfil.hijos.forEach(h=>pt.cuerpo.appendChild(fila("👶 "+h.nombre,"nacido en "+h.nacido+((E.perfil.hijos[0]===h)?" · heredero":""))));
+    E.perfil.hijos.forEach(h=>{
+      const ed=typeof edadHijo==="function"?edadHijo(h):(E.anio-h.nacido);
+      const extra=(E.perfil.hijos[0]===h?" · heredero":"")+(h.enPlantel?" · en el plantel":"");
+      pt.cuerpo.appendChild(fila("👶 "+h.nombre,ed+" años · nacido "+h.nacido+extra));
+      if(ed>=17 && !h.enPlantel){
+        const bh=el("button","btn-aqua chico","Firmarlo en cantera");
+        bh.onclick=()=>incorporarHijoCantera(h);
+        pt.cuerpo.appendChild(bh);
+      }
+    });
   }
   const bt=el("button","btn-aqua ancho verde","💘 Abrir Match (Tinder)"); bt.style.marginTop="6px"; bt.onclick=modalTinder;
   pt.cuerpo.appendChild(bt);
@@ -367,7 +380,7 @@ function vistaVida(){
     ms.slice(0,8).forEach(m=>{
       const row=el("div","fila");
       row.innerHTML='<span><span class="aero-orb '+(m.orb||"orb-azul")+' orb-chico"></span> '+m.n+(m.id?" <span class='mini'>("+m.id+")</span>":"")+'</span>';
-      const b=el("button","btn-aqua chico","Invitar a salir"); b.onclick=()=>invitarSalir(m);
+      const b=el("button","btn-aqua chico","Charlar"); b.onclick=()=>chatMatch(m);
       row.appendChild(b); pt.cuerpo.appendChild(row);
     });
   }
@@ -408,6 +421,8 @@ function vistaVida(){
    ============================================================ */
 function citaConPareja(){
   if(!E.perfil.pareja) return;
+  E.perfil.pareja.semanasSinCita=0;
+  if(Math.random()<0.62 && typeof dilemaCita==="function"){ dilemaCita(); return; }
   const costo=ri(8,30); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
   E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel||65)+15,0,100);
   aplicarEfectos({moral:3}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+6,0,100);
@@ -514,4 +529,125 @@ function modalVidaProc(ev){
     });
     c.appendChild(ops);
   },{cerrarFuera:false});
+}
+
+/* ============================================================
+   5.1m · Tinder con charla, citas con dilema, hijos que crecen
+   ============================================================ */
+const CHARLAS_MATCH=[
+ {q:"¿El fútbol es trabajo o religión?",
+  op:[{t:"Trabajo. A las 7 corto.","n":8},{t:"Religión. Perdón.","n":2},{t:"Los dos, y me va a matar.","n":12}]},
+ {q:"Si perdés un clásico, ¿aparecés a cenar?",
+  op:[{t:"Aparezco, aunque esté mudo.","n":14},{t:"Me escondo dos días.","n":0},{t:"Te invito igual y pago yo.","n":10}]},
+ {q:"¿Qué hacés con un domingo libre?",
+  op:[{t:"Cancha, asado, siesta.","n":6},{t:"Te lo dedico entero.","n":14},{t:"Duermo y no hablo.","n":4}]}
+];
+const DILEMAS_CITA=[
+ {t:"Llegás tarde de la conferencia",d:"Te espera hace 40 minutos. La cara no es de chiste.",
+  op:[{t:"Pedir perdón y apagar el teléfono",ok:12},{t:"Contar el partido en detalle",ok:-6},{t:"Invitar postre y callarte",ok:8}]},
+ {t:"Quiere ir al clásico con vos",d:"Platea, cámaras, la hinchada del otro lado.",
+  op:[{t:"Llevarle y presentarle",ok:10},{t:"Conseguirle un palco discreto",ok:6},{t:"Decirle que es mala idea",ok:-8}]},
+ {t:"Un hincha te pide una foto en la cita",d:"El momento se corta. Tu pareja te mira.",
+  op:[{t:"Una foto y volvés a la mesa",ok:4},{t:"«Hoy no, estoy ocupado»",ok:10},{t:"Te quedás charlando cinco minutos",ok:-10}]}
+];
+function chatMatch(match){
+  let i=0, pts=0;
+  modal(box=>{
+    const pintar=()=>{
+      box.innerHTML="";
+      box.appendChild(el("div","cab",'<span class="ic">💬</span><span>Charla con '+match.n+'</span>'));
+      const c=el("div","cuerpo"); box.appendChild(c);
+      if(i>=CHARLAS_MATCH.length){
+        const txt=typeof pensarOffline==="function"?pensarOffline("tinder",{n:match.n,pts:pts}):"";
+        c.appendChild(el("p",null,pts>=20?match.n+" se ríe: «ok, invítame ya».":(pts>=8?match.n+" queda a medias. Todavía se puede.":match.n+" se enfría. «escribime otro día».")));
+        if(txt) c.appendChild(el("p","mini",txt));
+        match.charla=pts;
+        if(pts>=8){
+          const b=el("button","btn-aqua ancho verde","Invitar a salir");
+          b.onclick=()=>{ cerrarModal(); invitarSalir(match); };
+          c.appendChild(b);
+        }
+        const x=el("button","btn-aqua ancho gris","Cerrar"); x.style.marginTop="6px";
+        x.onclick=()=>{ guardar(); cerrarModal(); render(); }; c.appendChild(x);
+        return;
+      }
+      const q=CHARLAS_MATCH[i];
+      c.appendChild(el("p",null,q.q));
+      q.op.forEach(o=>{
+        const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
+        b.onclick=()=>{ pts+=o.n; i++; pintar(); };
+        c.appendChild(b);
+      });
+    };
+    pintar();
+  });
+}
+function dilemaCita(){
+  if(!E.perfil.pareja) return;
+  const ev=elige(DILEMAS_CITA);
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">💕</span><span>Cita con '+E.perfil.pareja.n+'</span>'));
+    const c=el("div","cuerpo"); box.appendChild(c);
+    c.appendChild(el("h3","sub",ev.t)); c.appendChild(el("p",null,ev.d));
+    ev.op.forEach(o=>{
+      const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
+      b.onclick=()=>{
+        const costo=ri(8,28); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
+        E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel||65)+o.ok,0,100);
+        E.perfil.bienestar=clamp((E.perfil.bienestar||70)+(o.ok>0?5:-2),0,100);
+        aplicarEfectos({moral:o.ok>0?2:-1});
+        notificar({t:"Cita: "+ev.t,tipo:o.ok>=0?"bueno":"malo",
+          d:(o.ok>=0?E.perfil.pareja.n+" lo toma bien.":E.perfil.pareja.n+" se queda callada.")+" Costó "+plata(costo)+".",bandeja:false});
+        guardar(); cerrarModal(); render();
+      };
+      c.appendChild(b);
+    });
+  });
+}
+function edadHijo(h){ return Math.max(0,(E.anio||2026)-(h.nacido||E.anio)); }
+function incorporarHijoCantera(h){
+  if(h.enPlantel){ if(typeof aviso==="function") aviso(h.nombre+" ya está en el plantel."); return; }
+  const pos=elige(["VOL","DEL","DEF"]);
+  E.plantel.push({
+    n:h.nombre, pos:pos, edad:edadHijo(h)||17, nivel:58, proy:84,
+    sueldo:18, valor:80, rasgos:["de la cantera","dinastía"], forma:70, moral:80,
+    real:false, contrato:{hasta:(E.anio||2026)+4}, lesion:0, goles:0, partidos:0, tarjetas:0, cansancio:0
+  });
+  h.enPlantel=true; h.cantera=true;
+  aplicarEfectos({moral:3,cantera:2});
+  notificar({t:h.nombre+" firma con el club",tipo:"bueno",
+    d:"Entra a la cantera. Nivel bajo, techo alto. Si lo quemás, la familia te lo cobra.",bandeja:false});
+  guardar(); render();
+}
+function tickFamilia(){
+  if(!E||!E.perfil) return;
+  (E.perfil.hijos||[]).forEach(h=>{
+    const ed=edadHijo(h);
+    if(ed===17 && !h.aviso17){
+      h.aviso17=true;
+      notificar({t:h.nombre+" cumple 17",tipo:"neutro",
+        d:"Puede entrar a la cantera del club. Está en Vida → Familia.",bandeja:true});
+    }
+  });
+  if(E.perfil.pareja){
+    E.perfil.pareja.semanasSinCita=(E.perfil.pareja.semanasSinCita||0)+1;
+    if(E.perfil.pareja.semanasSinCita>=5){
+      E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel||65)-3,0,100);
+    }
+    if((E.perfil.pareja.nivel||65)<22 && Math.random()<0.35) romperPareja();
+  }
+}
+function elegirSucesor(tipo){
+  if(tipo==="hijo"){ asumirSucesor(); return; }
+  if(tipo==="externo"){
+    E.dinastia.historial.push({generacion:E.dinastia.generacion,nombre:E.perfil.nombre,hasta:E.anio,edad:edadDT(),titulos:(E.titulos||[]).length,nota:"la sangre no tomó el cargo"});
+    E.dinastia.generacion++;
+    E.perfil.nombre=elige(["Andrea","Ricardo","Elena","Martín"])+" "+(apellidoDinastia()||"López");
+    E.perfil.nacimiento=(E.anio-ri(38,46))+"-03-20";
+    E.perfil.pareja=null; E.perfil.tinder={matches:[]}; E.perfil.hijos=[]; E.perfil.bienestar=68;
+    E.dinastia.sucesionPendiente=false;
+    aplicarRep({publica:-3}); aplicarEfectos({capital:-8});
+    notificar({t:"Llegó un DT de afuera",tipo:"neutro",d:E.perfil.nombre+" toma el cargo. La familia cede el escritorio, no el linaje.",bandeja:false});
+    guardar(); render();
+  }
 }
