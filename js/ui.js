@@ -1377,12 +1377,75 @@ $("#btnTemas").onclick=()=>{
   const i=(orden.indexOf(document.body.dataset.tema)+1)%orden.length;
   document.body.dataset.tema=orden[i]; Store.set("futbolini3_tema",orden[i]); render();
 };
+/* ---------- pantalla de arranque (que entrar no sea fome) ---------- */
+function pantallaArranque(haySave){
+  const ov=el("div",""); ov.id="arranque";
+  const inner=el("div","arr-inner");
+  inner.innerHTML=
+    '<div class="arr-logo"><span class="arr-glifo">⚽</span><span class="arr-word">FUTBOLINI</span></div>'+
+    '<div class="arr-sub">No manejás un equipo. Manejás una institución.</div>'+
+    '<div class="arr-bar"><i></i></div>'+
+    '<div class="arr-cargando">Preparando la cancha…</div>';
+  const btns=el("div","arr-btns");
+  const salir=cb=>{ ov.classList.add("fuera"); setTimeout(()=>{ if(ov.parentNode) ov.remove(); },430); if(cb) cb(); render(); };
+  if(haySave){
+    const sub=E&&E.clubNombre?(" · "+E.clubNombre+" "+E.anio):"";
+    const bc=el("button","btn-aqua ancho verde arranque-btn"); bc.innerHTML="▶ Continuar mi carrera"+(sub?"<span class='arr-mini'>"+sub+"</span>":"");
+    bc.onclick=()=>salir();
+    const bn=el("button","btn-aqua ancho arranque-btn"); bn.textContent="Empezar de nuevo";
+    bn.onclick=()=>salir(()=>{ E=null; });
+    btns.appendChild(bc); btns.appendChild(bn);
+  } else {
+    const be=el("button","btn-aqua ancho verde arranque-btn"); be.textContent="▶ Entrar al juego";
+    be.onclick=()=>salir();
+    btns.appendChild(be);
+  }
+  inner.appendChild(btns);
+  const hint=el("div","arr-hint"); hint.innerHTML="<b>Enter</b> para entrar · <b>← →</b> para elegir";
+  inner.appendChild(hint);
+  ov.appendChild(inner);
+  document.body.appendChild(ov);
+  const revelar=()=>{ if(ov.dataset.listo) return; ov.dataset.listo="1";
+    ov.classList.add("listo"); const first=btns.querySelector(".arranque-btn"); if(first) first.focus(); };
+  const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  setTimeout(revelar, reduce?60:1250);
+  ov.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!ov.dataset.listo){ e.preventDefault(); revelar(); } });
+}
+
+/* ---------- navegación por teclado: flechas para moverse, Enter para elegir ---------- */
+function navContenedor(){
+  const capa=$("#capa-modal"); if(capa&&capa.children.length) return capa;
+  const arr=$("#arranque"); if(arr) return arr;
+  return $("#vista");
+}
+function navegables(cont){
+  if(!cont) return [];
+  return Array.prototype.slice.call(
+    cont.querySelectorAll(".op:not([disabled]),.icono:not([disabled]),.ficha:not([disabled]),.arranque-btn,.btn-aqua.ancho:not([disabled])")
+  ).filter(b=>b.offsetParent!==null);
+}
+document.addEventListener("keydown",function(e){
+  const tag=(e.target.tagName||"").toLowerCase();
+  if(tag==="input"||tag==="textarea"||tag==="select") return;
+  const k=e.key;
+  if(k!=="ArrowDown"&&k!=="ArrowUp"&&k!=="ArrowLeft"&&k!=="ArrowRight"&&k!=="Enter") return;
+  const items=navegables(navContenedor());
+  if(!items.length) return;
+  const cur=document.activeElement, idx=items.indexOf(cur);
+  if(k==="Enter"){ if(idx>=0){ e.preventDefault(); cur.click(); } return; }
+  e.preventDefault();
+  if(idx<0){ items[0].focus(); return; }
+  const fwd=(k==="ArrowDown"||k==="ArrowRight");
+  items[(idx+(fwd?1:-1)+items.length)%items.length].focus();
+});
+
 (async function init(){
   burbujas();
   const t=await Store.get("futbolini3_tema");
   document.body.dataset.tema=t||"aero";
   const g=await cargar();
-  if(g&&g.club&&g.v===3){ E=g; normalizarEstado(); aplicarEstatutosMod(); }
-  render();
+  const haySave=!!(g&&g.club);
+  if(haySave){ E=g; normalizarEstado(); aplicarEstatutosMod(); }
+  pantallaArranque(haySave);
 })();
 window.addEventListener("resize",()=>{ clearTimeout(window._rb); window._rb=setTimeout(burbujas,400); });

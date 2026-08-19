@@ -104,6 +104,18 @@ function progresoObjetivo(o){
   }
   return {pct:pct,txt:txt,cumplido:cumplido,estado:estado};
 }
+/* loop de aprendizaje: el partido avisa cuando te mete o te saca de la zona de tu meta */
+function avisoObjetivoPartido(posAntes,posDespues){
+  if(!E.objetivos||!posAntes||!posDespues||posAntes===posDespues) return;
+  const dep=E.objetivos.find(o=>o.tipo==="pos"); if(!dep) return;
+  const antesOk=posAntes<=dep.meta, ahoraOk=posDespues<=dep.meta;
+  if(!antesOk&&ahoraOk)
+    notificar({t:"Zona de objetivo",tipo:"bueno",bandeja:false,
+      d:"Trepás al "+ordinal(posDespues)+" y entrás en zona de tu meta: «"+dep.t+"». Si lo sostenés, la temporada va bien encaminada."});
+  else if(antesOk&&!ahoraOk)
+    notificar({t:"Te salís de la zona",tipo:"malo",bandeja:false,
+      d:"Caés al "+ordinal(posDespues)+" y te quedás afuera de «"+dep.t+"». Ojo, porque esto es lo que te va a evaluar el directorio."});
+}
 function evaluarMandato(pos,campeon,copa){
   const objs=(E.objetivos&&E.objetivos.length)?E.objetivos:generarObjetivos();
   let puntos=0, total=0, cumplidos=0, detalle=[];

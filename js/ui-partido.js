@@ -279,7 +279,7 @@ function mostrarMomento(){
   const m=momentoActual(P);
   const p=panel(m.t,"🧠","alerta");
   p.cuerpo.appendChild(el("p",null,m.d));
-  const ops=el("div","ops"); MOMENTO_OPS=[];
+  const ops=el("div","ops ops-part"); MOMENTO_OPS=[];
   m.op.forEach((o,i)=>{
     const b=el("button","op");
     b.innerHTML='<div class="t"><span class="tecla">'+(i+1)+'</span> '+o.t+'</div>';
@@ -329,7 +329,7 @@ function mostrarAccion(ev){
     ];
   }
   const p=panel(titulo,"⚡","alerta");
-  const ops=el("div","ops"); MOMENTO_OPS=[];
+  const ops=el("div","ops ops-part"); MOMENTO_OPS=[];
   opciones.forEach((o,i)=>{
     const b=el("button","op");
     b.innerHTML='<div class="t"><span class="tecla">'+(i+1)+'</span> '+o.t+'</div>';

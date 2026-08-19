@@ -556,7 +556,13 @@ function terminarPartido(P){
   const posDespues=(part.tipo==="liga")?posicionEnTabla():null;
   if(typeof redesReaccion==="function") redesReaccion("partido",{yo:yo,otro:otro,rival:part.rivalNombre});
   if(typeof golpeBolsa==="function") golpeBolsa(yo>otro?1:(yo<otro?-1:0));
-  if(yo>otro && typeof esClasico==="function" && esClasico(part)){ E.flags.clasicoGanado=true; }
+  if(yo>otro && typeof esClasico==="function" && esClasico(part)){
+    const primera=!E.flags.clasicoGanado; E.flags.clasicoGanado=true;
+    if(primera && E.objetivos && E.objetivos.some(o=>o.tipo==="clasico"))
+      notificar({t:"¡Meta cumplida!",tipo:"bueno",d:"Ganaste el clásico: cumpliste tu objetivo institucional del año.",bandeja:false});
+  }
+  /* loop de aprendizaje: avisar si el resultado te acerca o aleja de tu meta deportiva */
+  if(typeof avisoObjetivoPartido==="function") avisoObjetivoPartido(posAntes,posDespues);
   /* post-partido: siempre asegura al menos una decisión DEPORTIVA sobre la mesa */
   if(typeof sembrarDecisionProcDeCategoria==="function" && typeof pilarDeBuzon==="function"){
     const hayDep=(E.decPend||[]).some(x=>{ const d=(E.decProc&&E.decProc[x.id])||(typeof decisionPorId==="function"&&decisionPorId(x.id)); return d&&pilarDeBuzon(d.buzon).id==="DEPORTIVO"; });

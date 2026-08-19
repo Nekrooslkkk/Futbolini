@@ -571,3 +571,24 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
 - Objetivos se regeneran cada `nuevoAnio` y el clásico ganado se marca en `terminarPartido`.
 - Verificado: harness Node (metas correctas por tamaño de club, progreso en vivo, evaluación campeón=excelente /
   15º sin nada=fracaso con resumen ✓/✗) + smoke navegador (panel con 3 objetivos, barras, estados, consola limpia).
+
+## 6.0b · Pantalla de arranque + teclado + partido horizontal + fixes  ✅ (2026-08-19)
+**Archivos:** `js/ui.js` (arranque, navegación, fix guardado), `js/ui-partido.js` (ops horizontales),
+`js/partido.js` + `js/carrera.js` (loop de aprendizaje), `css/base.css`, `index.html`
+- **Pantalla de arranque** (`pantallaArranque`): que entrar no sea fome. Splash Frutiger Aero con logo animado,
+  barra de carga estilo Vista y botones que aparecen al terminar. Con partida guardada ofrece
+  «Continuar mi carrera · <club> <año>» + «Empezar de nuevo»; sin guardado, «Entrar al juego».
+- **FIX guardado crítico:** el arranque solo cargaba `g.v===3`, pero las partidas se guardan `v:4` → no se
+  podía retomar la carrera. Ahora carga cualquier save con club y `normalizarEstado` migra.
+- **Navegación por teclado** (`navContenedor`/`navegables` + handler global): flechas ← → ↑ ↓ mueven el foco
+  entre opciones (menú de inicio, decisiones, botones anchos) y **Enter** elige. Foco visible con glow cian.
+  Convive con las teclas 1/2/3 y Espacio del partido.
+- **Decisiones del partido en horizontal** (`.ops.ops-part`): los momentos tácticos y las jugadas ahora se
+  muestran en fila (2–4 lado a lado, con wrap), así no empujan el marcador y el relato hacia abajo. Las
+  decisiones del menú siguen verticales.
+- **Loop de aprendizaje**: al terminar un partido, si el resultado te mete o te saca de la zona de tu meta
+  deportiva, te avisa («Trepás al 4°, entrás en zona de tu meta» / «Caés al 6°, te salís de…»). Ganar el
+  clásico dispara el aviso de meta institucional cumplida.
+- Verificado: navegador puerto 8820 — arranque con/sin save, teclado moviendo foco, partido horizontal en fila,
+  guardado v4 recargable, avisos de objetivo entrar/salir de zona, decisiones de menú siguen verticales,
+  consola limpia.
