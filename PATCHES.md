@@ -648,3 +648,23 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
   ~88). Cuando no hay más que mejorar, muestra "Tope alcanzado".
 - Verificado: navegador puerto 8834 — barras animadas, PLOP! con tabs/reportar/impulsar, like +2 / RT hostil −6
   con memoria, reportar elimina, impulsar sube seguidores, inversiones con tope, consola limpia.
+
+## 6.3 · Sliders Aero + butacas documentadas + PLOP con vida + changas honestas  ✅ (2026-08-19)
+**Archivos:** `js/motor.js` (taquillaPorSector, init), `js/ui.js` (sliders/butacas/PLOP), `js/redes.js`
+(handleDT/verificado/botPost), `js/reputacion.js` (avatar foto + changas), `css/base.css`
+- **Sliders Aero** (adiós look "Paint"): track glossy con relleno vía `--fill`, pulgar de cristal, y llegan
+  hasta el final (bug de que no llegaban). Estilados para WebKit y Firefox.
+- **Butacas documentadas**: tabla en Precios de entradas con cada sector (Galería 55% / Tribuna 33% /
+  Marquesina 12% del aforo), su capacidad, precio, ocupación y **ganancia estimada por partido** (con total).
+  Se actualiza en vivo al mover los sliders (`taquillaPorSector`).
+- **PLOP con más vida**:
+  · **Tu usuario**: elegís tu @handle (ya no firmás como "el cuerpo técnico"). RT/respuestas/posteos salen
+    con tu nombre (`handleDT`).
+  · **Comprar verificado** ✔ (con plata) para tu cuenta — más alcance y estatus; prensa y club vienen verificados.
+  · **Bots que se mueven solos**: el feed suma posts cada ~5s como Twitter (hinchas/prensa/rival), con animación
+    de entrada. Se frena solo al salir de PLOP (sin fugas de interval).
+- **Vida — foto de avatar propia**: subís una imagen (se achica a 96px para no pesar en el guardado) o la quitás.
+- **Vida — changas honestas**: 5 formas de ganar plata sin casino (columna, clínica, charla, TV, publicidad),
+  una por semana, algunas piden imagen pública. Pagan al bolsillo personal.
+- Verificado: navegador puerto 8840 — sliders con fill, butacas 3 filas, RT firmado @dtcrack, verificado,
+  bots sumando post a los 5s y frenando al salir, changas pagan, subir foto, consola limpia.

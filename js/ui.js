@@ -48,6 +48,7 @@ function pintarMenu(){
 }
 /* ---------------- render ---------------- */
 function render(){
+  if(typeof detenerPlopBots==="function") detenerPlopBots();
   pintarBarra(); pintarMenu();
   const v=$("#vista"); v.innerHTML="";
   $("#btnAvanzar").classList.toggle("oculto",!E);
@@ -591,6 +592,8 @@ function vistaFinanzas(){
   const pe=panel("Precios de entradas","🎫","agua");
   pe.cuerpo.appendChild(el("p","mini","Fijá el precio de cada sector. Subir el precio deja más por entrada pero espanta público (la galería es la más sensible). La proyección se actualiza al instante."));
   const proy=el("div","resul mitad"); proy.id="proyTaq";
+  const doc=el("div"); doc.id="docButacas";
+  const setFill=(r,s)=>{ const pct=Math.round((r.value-s.min)/Math.max(1,(s.max-s.min))*100); r.style.setProperty("--fill",pct+"%"); };
   const refrescarProy=()=>{
     const r=proyeccionTaquilla(E.precios);
     const club=CLUB_POR_ID[E.club]||{aforo:30000};
@@ -598,15 +601,28 @@ function vistaFinanzas(){
     proy.innerHTML="Partido de local tipo → <b>"+r.gente.toLocaleString("es-CL")+"</b> personas ("+ocupPct+"% del aforo) · ingreso <b>"+plata(r.ingreso)+"</b>"+
       (precioPromedioRatio()>1.3?"<br><span class='mini'>Precios altos: la hinchada se va a ir enojando.</span>":
        (precioPromedioRatio()<0.85?"<br><span class='mini'>Precios populares: la gente lo valora.</span>":""));
+    /* tabla documentada de butacas: aforo, precio y ganancia estimada por sector */
+    if(typeof taquillaPorSector==="function"){
+      const sec=taquillaPorSector(proximoPartido());
+      let html="<h3 class='sub'>Butacas del estadio · ganancia estimada por partido</h3>"+
+        "<table class='butacas'><thead><tr><th>Sector</th><th class='n'>Butacas</th><th class='n'>Precio</th><th class='n'>Ocup.</th><th class='n'>Gana ~</th></tr></thead><tbody>";
+      let tot=0;
+      sec.forEach(x=>{ tot+=x.ingreso;
+        html+="<tr><td>"+x.ic+" "+x.n+"</td><td class='n'>"+x.cap.toLocaleString("es-CL")+"</td><td class='n'>$"+x.precio.toLocaleString("es-CL")+"</td><td class='n'>"+x.ocup+"%</td><td class='n'>"+plata(x.ingreso)+"</td></tr>"; });
+      html+="</tbody><tfoot><tr><td>Total taquilla</td><td class='n'></td><td class='n'></td><td class='n'></td><td class='n'>"+plata(tot)+"</td></tr></tfoot></table>"+
+        "<p class='mini'>La galería es la más barata y la que más entra (55% del aforo); la marquesina es cara y chica (12%). Subir precios sube la ganancia por entrada pero baja la ocupación — y enoja a la hinchada.</p>";
+      doc.innerHTML=html;
+    }
   };
   SECTORES.forEach(s=>{
     pe.cuerpo.appendChild(el("label","lb",s.ic+" "+s.n+" — <b id='pr_"+s.id+"'>$"+(E.precios[s.id]||0).toLocaleString("es-CL")+"</b>"));
     const r=el("input"); r.type="range"; r.min=s.min; r.max=s.max; r.step=Math.max(50,Math.round(s.ref*0.05)); r.value=E.precios[s.id]||s.ref; r.className="rango";
-    r.oninput=()=>{ E.precios[s.id]=parseInt(r.value,10); const lab=document.getElementById("pr_"+s.id); if(lab) lab.textContent="$"+E.precios[s.id].toLocaleString("es-CL"); refrescarProy(); };
+    setFill(r,s);
+    r.oninput=()=>{ E.precios[s.id]=parseInt(r.value,10); const lab=document.getElementById("pr_"+s.id); if(lab) lab.textContent="$"+E.precios[s.id].toLocaleString("es-CL"); setFill(r,s); refrescarProy(); };
     r.onchange=()=>{ if(typeof redesReaccion==="function") redesReaccion("precio",{ratio:precioPromedioRatio()}); guardar(); };
     pe.cuerpo.appendChild(r);
   });
-  pe.cuerpo.appendChild(proy); refrescarProy();
+  pe.cuerpo.appendChild(proy); pe.cuerpo.appendChild(doc); refrescarProy();
   v.appendChild(pe);
 
   /* --- inversiones de club --- */
@@ -985,6 +1001,45 @@ function pestañasRedes(cont){
   cont.appendChild(f);
 }
 let REDES_TAB="inicio";
+/* 6.3 · render de un post (reutilizable por el feed y por los bots que entran solos) */
+function renderPostEl(t){
+  const ic=t.tipo==="prensa"?"🎙️":(t.tipo==="jugador"?"⚽":(t.tipo==="club"?"🏟️":(t.tipo==="dt"?"🧑‍💼":(t.tipo==="rival"?"🆚":"👤"))));
+  const verif=(typeof esVerificado==="function"&&esVerificado(t))?" <span class='verif' title='Cuenta verificada'>✔</span>":"";
+  const d=el("div","resul "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"mitad")));
+  d.innerHTML="<b>"+ic+" "+t.autor+verif+"</b> <span class='mini'>· "+(t.fecha||"hoy")+" "+(t.anio||"")+"</span><br>"+t.texto+
+    "<div class='mini' style='opacity:.6;margin-top:2px'>♡ "+(t.likes||0).toLocaleString("es-CL")+
+    (t.rts?" · RT "+t.rts:"")+(t.replies?" · "+t.replies+" resp.":"")+"</div>";
+  if(t.hilo&&t.hilo.length){
+    t.hilo.slice(-3).forEach(h=>{ d.appendChild(el("p","mini","↳ <b>"+h.autor+"</b> "+h.texto)); });
+  }
+  const acc=el("div"); acc.style.marginTop="6px";
+  [["like",t._like?"❤ Te gusta":"♡ Me gusta"],["rt",t._rt?"🔁 Reposteado":"RT"],["reply","Responder"],["report","🚩 Reportar"]].forEach(([k,n])=>{
+    const b=el("button","btn-aqua chico"+(k==="report"?" gris":""),n); b.style.marginRight="5px"; b.style.marginTop="4px";
+    b.onclick=()=>reaccionarPost(t,k);
+    acc.appendChild(b);
+  });
+  d.appendChild(acc);
+  return d;
+}
+/* bots que hacen que el feed se mueva solo, como en Twitter */
+let PLOP_TIMER=null;
+function detenerPlopBots(){ if(PLOP_TIMER){ clearInterval(PLOP_TIMER); PLOP_TIMER=null; } }
+function arrancarPlopBots(){
+  detenerPlopBots();
+  if(!E || (E.config&&E.config.plopBots===false)) return;
+  PLOP_TIMER=setInterval(()=>{
+    if(!E || SEC!=="redes" || REDES_TAB!=="inicio"){ detenerPlopBots(); return; }
+    const capa=$("#capa-modal"); if(capa&&capa.children.length) return; /* no molestar en un modal */
+    if(typeof botPost!=="function") return;
+    const item=botPost();
+    const feedBox=$("#plopFeed");
+    if(feedBox&&item){
+      const node=renderPostEl(item); node.classList.add("plop-nuevo");
+      feedBox.insertBefore(node, feedBox.firstChild);
+      while(feedBox.children.length>40) feedBox.removeChild(feedBox.lastChild);
+    }
+  }, 5000);
+}
 function reaccionarPost(t,tipo){
   t.likes=t.likes||0; t.rts=t.rts||0; t.replies=t.replies||0; t.hilo=t.hilo||[];
   const amistoso=(t.tipo==="hincha"||t.tipo==="club"||t.tipo==="jugador"||t.tono==="bueno");
@@ -1009,11 +1064,11 @@ function reaccionarPost(t,tipo){
       /* te auto-troleaste: amplificaste a un hostil */
       aplicarGrupos({hinchada:-6,prensa:-4}); aplicarRep({credibilidad:-6});
       if(typeof recordar==="function") recordar("plop","reposteaste a "+t.autor+", un hostil (te auto-troleaste)",{peso:"medio",tono:"malo"});
-      if(typeof postProc==="function") postProc(E.dt||"DT","dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"malo");
+      if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"malo");
       aviso("🤦 Reposteaste a un hostil. Te auto-troleaste: la gente y la prensa te caen encima.");
     } else {
       aplicarGrupos({hinchada:3}); aplicarRep({publica:2}); moverSeguidores&&moverSeguidores(ri(40,260));
-      if(typeof postProc==="function") postProc(E.dt||"DT","dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"bueno");
+      if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"bueno");
       aviso("🔁 Repost al aire — sumás a los tuyos (+3 hinchada)");
     }
   } else if(tipo==="report"){
@@ -1027,8 +1082,8 @@ function reaccionarPost(t,tipo){
     if(r===null) return;
     const txt=(r||"").trim()||elige(["Te leí.","Se trabaja.","Gracias por el banco."]);
     t.replies++;
-    t.hilo.push({autor:E.dt||"DT",texto:txt,fecha:"ahora"});
-    if(typeof postProc==="function") postProc(E.dt||"DT","dt","@"+String(t.autor||"").replace(/^@/,"")+" "+txt,"neutro");
+    t.hilo.push({autor:handleDT(),texto:txt,fecha:"ahora"});
+    if(typeof postProc==="function") postProc(handleDT(),"dt","@"+String(t.autor||"").replace(/^@/,"")+" "+txt,"neutro");
     aplicarRep({prensa:1});
   }
   guardar(); irA("redes");
@@ -1083,7 +1138,7 @@ function vistaRedes(){
     bp.disabled=true;
     evaluarPost(txt).then(ev=>{
       aplicarPost(txt,ev);
-      if(typeof postProc==="function") postProc(REDES_PEST==="club"?handleClub():(E.dt||"DT"), REDES_PEST==="club"?"club":"dt", txt, ev.sentimiento>10?"bueno":(ev.sentimiento<-10?"malo":"neutro"));
+      if(typeof postProc==="function") postProc(REDES_PEST==="club"?handleClub():(handleDT()), REDES_PEST==="club"?"club":"dt", txt, ev.sentimiento>10?"bueno":(ev.sentimiento<-10?"malo":"neutro"));
       irA("redes");
     });
   };
@@ -1115,6 +1170,22 @@ function vistaRedes(){
     pcd.cuerpo.appendChild(bh); pcd.cuerpo.appendChild(bs);
   } else {
     pcd.cuerpo.appendChild(el("div","resul mitad","Contratá un <b>Community Manager</b> en Finanzas para monetizar seguidores (sponsor digital) y lanzar campañas."));
+  }
+  /* tu identidad en PLOP: usuario y verificado */
+  E.plopVerif=E.plopVerif||{};
+  const miHandle=(typeof handleDT==="function")?handleDT():"@dt";
+  const verifOwn=!!E.plopVerif[miHandle];
+  pcd.cuerpo.appendChild(el("h3","sub","Tu cuenta: "+miHandle+(verifOwn?" ✔":"")));
+  const inU=el("input"); inU.type="text"; inU.maxLength=16; inU.className="entrada"; inU.style.width="100%";
+  inU.placeholder="Tu usuario (ej: @dtcrack)"; inU.value=(E.perfil&&E.perfil.plopUser)||"";
+  const bU=el("button","btn-aqua chico verde","Guardar usuario"); bU.style.marginTop="5px";
+  bU.onclick=()=>{ let u=(inU.value||"").trim().replace(/\s/g,"").replace(/^@*/,"@").slice(0,16); if(u.length<2){ aviso("Poné un usuario válido"); return; } E.perfil=E.perfil||{}; E.perfil.plopUser=u; guardar(); render(); aviso("Ahora firmás como "+u); };
+  pcd.cuerpo.appendChild(inU); pcd.cuerpo.appendChild(bU);
+  if(!verifOwn){
+    const bV=el("button","btn-aqua chico"+(E.plata<150?" gris":""),"✔ Comprar verificado · "+plata(150)); bV.style.marginLeft="6px"; bV.style.marginTop="5px";
+    bV.disabled=E.plata<150;
+    bV.onclick=()=>{ if(E.plata<150) return aviso("No te alcanza"); aplicarEfectos({plata:-150}); E.plopVerif[handleDT()]=true; aplicarRep({publica:3}); moverSeguidores&&moverSeguidores(ri(300,1500)); guardar(); render(); aviso("✔ Cuenta verificada — más alcance y estatus"); };
+    pcd.cuerpo.appendChild(bV);
   }
   /* crecer para comerte todo: impulsar la cuenta con plata */
   pcd.cuerpo.appendChild(el("p","mini","Impulsá tu cuenta: plata a cambio de alcance y seguidores. El que domina la conversación domina la calle."));
@@ -1152,35 +1223,19 @@ function vistaRedes(){
     v.appendChild(pt);
     return;
   }
-  const yo=String(E.dt||"DT").toLowerCase();
+  const yo=String(handleDT()).toLowerCase().replace(/^@/,"");
   const feed=(E.timeline||[]).filter(t=>{
     if(REDES_TAB!=="menciones") return true;
     const tx=(t.texto||"").toLowerCase();
     return tx.indexOf("@"+yo.replace(/\s/g,""))>=0 || tx.indexOf("@dt")>=0 || t.tipo==="prensa";
   });
   const pt=panel(REDES_TAB==="menciones"?"Menciones y prensa":"Inicio","🐦");
+  const feedBox=el("div"); feedBox.id="plopFeed";
   if(!feed.length) pt.cuerpo.appendChild(el("p","mini","El feed está quieto. Jugá un partido o publicá algo."));
-  feed.slice(0,28).forEach(t=>{
-    const ic=t.tipo==="prensa"?"🎙️":(t.tipo==="jugador"?"⚽":(t.tipo==="club"?"🏟️":(t.tipo==="dt"?"🧑‍💼":(t.tipo==="rival"?"🆚":"👤"))));
-    const d=el("div","resul "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"mitad")));
-    d.innerHTML="<b>"+ic+" "+t.autor+"</b> <span class='mini'>· "+t.fecha+" "+t.anio+"</span><br>"+t.texto+
-      "<div class='mini' style='opacity:.6;margin-top:2px'>♡ "+(t.likes||0).toLocaleString("es-CL")+
-      (t.rts?" · RT "+t.rts:"")+(t.replies?" · "+t.replies+" resp.":"")+"</div>";
-    if(t.hilo&&t.hilo.length){
-      t.hilo.slice(-3).forEach(h=>{
-        d.appendChild(el("p","mini","↳ <b>"+h.autor+"</b> "+h.texto));
-      });
-    }
-    const acc=el("div"); acc.style.marginTop="6px";
-    [["like",t._like?"❤ Te gusta":"♡ Me gusta"],["rt",t._rt?"🔁 Reposteado":"RT"],["reply","Responder"],["report","🚩 Reportar"]].forEach(([k,n])=>{
-      const b=el("button","btn-aqua chico"+(k==="report"?" gris":""),n); b.style.marginRight="5px"; b.style.marginTop="4px";
-      b.onclick=()=>reaccionarPost(t,k);
-      acc.appendChild(b);
-    });
-    d.appendChild(acc);
-    pt.cuerpo.appendChild(d);
-  });
+  feed.slice(0,28).forEach(t=>feedBox.appendChild(renderPostEl(t)));
+  pt.cuerpo.appendChild(feedBox);
   v.appendChild(pt);
+  if(REDES_TAB==="inicio" && typeof arrancarPlopBots==="function") arrancarPlopBots();
 
   /* roleo con el capitán */
   const pc=panel("Charla con el capitán","🧑‍✈️");

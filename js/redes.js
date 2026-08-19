@@ -94,6 +94,37 @@ function sembrarRedes(){
 function moverSeguidores(n){
   E.seguidores=Math.max(0,Math.round((E.seguidores||0)+n));
 }
+/* 6.3 · tu usuario de PLOP (elegís cómo firmás; ya no "el cuerpo técnico") */
+function handleDT(){
+  if(E&&E.perfil&&E.perfil.plopUser) return E.perfil.plopUser;
+  const base=String((E&&E.dt)||"DT").toLowerCase().replace(/[^a-z0-9ñ]/g,"").slice(0,15);
+  return "@"+(base||"dt");
+}
+/* verificado: prensa y club vienen verificados; el resto se compra (E.plopVerif) */
+function esVerificado(t){
+  if(!t) return false;
+  const h=(typeof t==="string")?t:t.autor;
+  if(!(typeof t==="string") && (t.tipo==="prensa"||t.tipo==="club")) return true;
+  return !!(E&&E.plopVerif&&E.plopVerif[h]);
+}
+/* un post de "bot" para que el feed se mueva solo, como Twitter */
+function botPost(){
+  const part=typeof proximoPartido==="function"?proximoPartido():null;
+  const riv=part?part.rivalNombre:"el próximo rival";
+  const dados=[
+    ()=>postProc(elige(HANDLES_HINCHA),"hincha",elige(TWEETS_HINCHA).x,"bueno"),
+    ()=>postProc(elige(HANDLES_PRENSA),"prensa",elige([
+        "Rumores de mercado en "+((E&&E.clubNombre)||"el club")+". Seguimos de cerca.",
+        "El plantel entrena pensando en "+riv+".",
+        "Se habla de cambios en la formación para el finde.",
+        "La tabla aprieta y cada punto vale oro."]),"neutro"),
+    ()=>postProc("@hincha_rival","rival",elige([
+        "Los vamos a pasar por arriba 😎","Puro humo el rival de la fecha.","Acá se viene a sufrir, avisados están."]),"malo"),
+    ()=>postProc(elige(HANDLES_HINCHA),"hincha",elige(TWEETS_HINCHA).x,"bueno"),
+    ()=>{ const ho=elige(TWEETS_HOSTIL); return postProc(elige(["@bancado_de_sillon","@el_verdadero_hincha","@critico_del_club"]),"hincha",ho.x,"malo"); }
+  ];
+  return elige(dados)();
+}
 
 /* ---------- reacciones con contexto ---------- */
 function redesReaccion(tipo,data){

@@ -208,6 +208,9 @@ function normalizarEstado(){
   }
   /* 6.0 · motor de memoria */
   if(typeof normalizarMemoria==="function") normalizarMemoria();
+  /* 6.3 · PLOP: usuario, verificados y likes */
+  if(!E.plopVerif) E.plopVerif={};
+  if(!Array.isArray(E.plopLikes)) E.plopLikes=[];
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){
@@ -593,6 +596,23 @@ function taquilla(part){
     gente+=g; ingreso+=g*precio;
   });
   return {gente:gente, ingreso:Math.round(ingreso/1000000)};
+}
+/* 6.3 · desglose por butaca (para documentar aforo, precio y ganancia estimada de cada sector) */
+function taquillaPorSector(part){
+  const club=CLUB_POR_ID[E.club]||{aforo:30000};
+  const base=ocupBase(part);
+  const infl=(typeof inflacionEra==="function")?inflacionEra():1;
+  const precios=E.precios||preciosDefault();
+  const clau=clausuraFactor();
+  return SECTORES.map(s=>{
+    const cap=Math.round(club.aforo*s.cuota*clau*(E.ind.estadio/100*0.4+0.6));
+    const precio=precios[s.id]||Math.round(s.ref*infl);
+    const factorPrecio=Math.pow((s.ref*infl)/Math.max(1,precio), s.elast);
+    const ocup=clamp(base*factorPrecio, 0.04, 0.99);
+    const g=Math.round(cap*ocup);
+    return {id:s.id, n:s.n, ic:s.ic, cap:cap, precio:precio, gente:g, ocup:Math.round(ocup*100),
+      ingreso:Math.round(g*precio/1000000)};
+  });
 }
 function ingresoPartidoLocal(part){ return taquilla(part); }
 /* proyección para la UI: taquilla de un partido de local "tipo" con precios dados */

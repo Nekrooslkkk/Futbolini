@@ -340,3 +340,28 @@ table.flujo td.n,table.flujo th.n{text-align:right;font-family:var(--f-dato,mono
   animation:barLoad 850ms linear infinite;
 }
 @keyframes barLoad{ from{background-position:0 0, 0 0, 0 0} to{background-position:0 0, 25.5px 0, 0 0} }
+
+/* 6.3 · sliders Aero (reemplaza el look nativo "Paint"; llegan hasta el final) */
+input.rango{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;cursor:pointer;margin:5px 0 6px}
+input.rango:focus{outline:none}
+input.rango::-webkit-slider-runnable-track{height:13px;border-radius:7px;border:1px solid rgba(20,72,132,.55);
+  background:linear-gradient(90deg,#4fd06a 0 var(--fill,50%),#c6d5e2 var(--fill,50%) 100%);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.28)}
+input.rango::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-5px;border-radius:6px;
+  border:1px solid #10406e;background:linear-gradient(180deg,#f2fbff,#c8e6ff 47%,#4aa3e6 53%,#1c67bb);
+  box-shadow:0 1px 3px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.85)}
+input.rango::-webkit-slider-thumb:active{background:linear-gradient(180deg,#d8f0ff,#1c67bb)}
+input.rango::-moz-range-track{height:13px;border-radius:7px;border:1px solid rgba(20,72,132,.55);background:#c6d5e2;box-shadow:inset 0 1px 2px rgba(0,0,0,.28)}
+input.rango::-moz-range-progress{height:13px;border-radius:7px;background:#4fd06a}
+input.rango::-moz-range-thumb{width:22px;height:22px;border-radius:6px;border:1px solid #10406e;
+  background:linear-gradient(180deg,#f2fbff,#c8e6ff 47%,#4aa3e6 53%,#1c67bb);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+/* documentación de butacas */
+table.butacas{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+table.butacas th,table.butacas td{padding:5px 7px;border-bottom:1px solid rgba(20,72,132,.14);text-align:left}
+table.butacas td.n,table.butacas th.n{text-align:right;font-family:var(--f-dato,monospace)}
+table.butacas tfoot td{font-weight:800;border-top:2px solid rgba(20,72,132,.3)}
+
+/* 6.3 · PLOP: verificado + post nuevo que entra */
+.verif{display:inline-block;color:#1c8fe6;font-weight:900;font-size:12px;margin-left:1px}
+.plop-nuevo{animation:plopIn .45s ease}
+@keyframes plopIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}

@@ -288,7 +288,8 @@ function vistaVida(){
   const win=el("div","aero-window");
   const av=el("button","aero-avatar"); av.title="Cambiar avatar (estilo MSN)";
   pintarAvatarBtn(av, E.perfil.avatar);
-  av.onclick=()=>{ const i=(AVATARES.indexOf(E.perfil.avatar)+1)%AVATARES.length; E.perfil.avatar=AVATARES[i]; guardar(); render(); };
+  if(E.perfil.avatarImg){ av.textContent=""; av.style.backgroundImage="url("+E.perfil.avatarImg+")"; av.style.backgroundSize="cover"; av.style.backgroundPosition="center"; }
+  av.onclick=()=>{ if(E.perfil.avatarImg) return; const i=(AVATARES.indexOf(E.perfil.avatar)+1)%AVATARES.length; E.perfil.avatar=AVATARES[i]; guardar(); render(); };
   win.appendChild(av);
   const info=el("div","aero-info");
   const inNombre=el("input"); inNombre.className="entrada"; inNombre.value=E.perfil.nombre; inNombre.style.width="100%"; inNombre.placeholder="Tu nombre";
@@ -324,7 +325,49 @@ function vistaVida(){
   p.cuerpo.appendChild(el("div",null,'<div class="fila" style="border:none;padding:2px 0"><span>Bienestar '+(bien<30?"(quemado 🥵)":bien<55?"(cansado)":"(pleno)")+'</span><b>'+Math.round(bien)+'/100</b></div>'+barrita(bien,bien>55?"#4fbf3f":(bien>30?"#e0a92a":"#c9392c"))));
   const bresp=el("button","btn-aqua chico","🏝️ Tomarse un respiro"); bresp.onclick=tomarRespiro;
   p.cuerpo.appendChild(bresp);
+  /* subir tu propia foto de avatar (se achica a 96px para no pesar en el guardado) */
+  const upWrap=el("div"); upWrap.style.marginTop="6px";
+  const fileIn=el("input"); fileIn.type="file"; fileIn.accept="image/*"; fileIn.style.display="none";
+  fileIn.onchange=()=>{ const f=fileIn.files&&fileIn.files[0]; if(!f) return;
+    const rd=new FileReader(); rd.onload=e=>{ const img=new Image(); img.onload=()=>{
+      const c=document.createElement("canvas"); c.width=c.height=96; const g=c.getContext("2d");
+      const s=Math.min(img.width,img.height); g.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,96,96);
+      try{ E.perfil.avatarImg=c.toDataURL("image/jpeg",0.82); guardar(); render(); aviso("Foto de perfil actualizada"); }
+      catch(err){ aviso("No se pudo procesar la imagen"); } }; img.src=e.target.result; }; rd.readAsDataURL(f); };
+  const bUp=el("button","btn-aqua chico","📷 Subir foto"); bUp.style.marginLeft="6px"; bUp.onclick=()=>fileIn.click();
+  upWrap.appendChild(bUp); upWrap.appendChild(fileIn);
+  if(E.perfil.avatarImg){ const bx=el("button","btn-aqua chico gris","Quitar foto"); bx.style.marginLeft="6px"; bx.onclick=()=>{ delete E.perfil.avatarImg; guardar(); render(); }; upWrap.appendChild(bx); }
+  p.cuerpo.appendChild(upWrap);
   v.appendChild(p);
+
+  /* --- Changas honestas: ganar plata sin depender del casino --- */
+  const pin=panel("Changas honestas","💼","agua");
+  pin.cuerpo.appendChild(el("p","mini","Plata honesta para tu bolsillo, aparte del sueldo. Cada una se puede hacer una vez por semana; algunas piden que tengas nombre (imagen pública)."));
+  const CHANGAS=[
+    {id:"columna",t:"Columna en un diario",d:"Escribís de fútbol. Pagan poco, pero es fijo.",pago:[3,8],req:0},
+    {id:"clinica",t:"Clínica de fútbol para chicos",d:"Un día enseñando. Suma cariño de la comunidad y algo de plata.",pago:[5,12],req:0},
+    {id:"charla",t:"Charla motivacional en una empresa",d:"Liderazgo y trabajo en equipo. Buena plata por un rato.",pago:[10,22],req:35},
+    {id:"tv",t:"Comentar un partido en la tele",d:"Panelista por una noche. Necesitás algo de figura.",pago:[7,16],req:40},
+    {id:"publicidad",t:"Publicidad de una marca",d:"Prestás tu cara. Cuanto más conocido, más pagan.",pago:[12,28],req:55}
+  ];
+  CHANGAS.forEach(ch=>{
+    const hecha=E.flags["changa_"+ch.id]===E.idx;
+    const faltaFama=(E.rep.publica||50)<ch.req;
+    const d=el("div","resul mitad");
+    d.innerHTML="<b>"+ch.t+"</b><br><span class='mini'>"+ch.d+(ch.req?" · pide "+ch.req+" de imagen pública":"")+"</span>";
+    const b=el("button","btn-aqua chico"+(hecha||faltaFama?" gris":" verde"), hecha?"Ya lo hiciste esta semana":(faltaFama?"Te falta figura":"Aceptar")); b.style.marginTop="5px";
+    b.disabled=hecha||faltaFama;
+    b.onclick=()=>{
+      const pago=ri(ch.pago[0],ch.pago[1]); E.personal.bolsillo+=pago; E.flags["changa_"+ch.id]=E.idx;
+      if(ch.id==="clinica") aplicarGrupos({comunidad:3});
+      if(ch.id==="tv"||ch.id==="publicidad") aplicarRep({publica:2});
+      if(typeof recordar==="function"&&pago>=15) recordar("changa","te hiciste unos pesos: "+ch.t.toLowerCase(),{peso:"bajo"});
+      guardar(); render(); aviso("💵 +"+plata(pago)+" al bolsillo");
+    };
+    d.appendChild(b);
+    pin.cuerpo.appendChild(d);
+  });
+  v.appendChild(pin);
 
   /* --- Vida Social --- */
   const ps=panel("Vida social","🌙");
