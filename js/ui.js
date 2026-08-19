@@ -107,6 +107,7 @@ function elegirEpoca(id){
       }
       box.appendChild(el("div","cab",'<span class="ic">'+info.esc+'</span><span>'+info.n+'</span>'));
       const c=el("div","cuerpo"); box.appendChild(c);
+      try{
 
       c.appendChild(el("h3","sub","1 · Elegí época"));
       const fe=el("div","fichas");
@@ -183,6 +184,10 @@ function elegirEpoca(id){
         }
       };
       c.appendChild(go);
+      }catch(err){
+        console.error(err);
+        c.appendChild(el("div","resul mal","Error al armar el briefing: "+err.message));
+      }
     };
     pintar();
   });

@@ -143,10 +143,11 @@ const LIGA_UC_2026=[
  {fecha:29, f:{m:11,d:29},rival:"HUA", local:true,  real:null},
  {fecha:30, f:{m:12,d:6}, rival:"UDC", local:false, real:null}
 ];
-/* OJO: FIXTURES_OFICIALES se declara más abajo, después de LIGA_CC_1991.
-   No se puede declarar acá: `const` tiene zona muerta temporal (TDZ) y ni
-   siquiera `typeof` la esquiva — referenciar LIGA_CC_1991 antes de su línea
-   tira ReferenceError y mata el archivo entero al cargar. */
+const FIXTURES_OFICIALES={
+  CC:{2026:LIGA_CC_2026},
+  UCH:{2026:LIGA_UCH_2026},
+  UC:{2026:LIGA_UC_2026}
+};
 /* Corte 18/08/2026. CC pts documentados; el resto de la tabla es referencia. */
 const CORTE_2026={m:8,d:18};
 const TABLA_2026_CORTE={
@@ -258,14 +259,7 @@ const LIGA_CC_1991=[
  {fecha:29, f:{m:12,d:18},rival:"COQ", local:false, real:"0-0"},
  {fecha:30, f:{m:12,d:22},rival:"ANT", local:true,  real:"1-0"}
 ];
-/* Fixtures reales por club y año. Va acá (y no arriba) porque necesita que
-   LIGA_CC_1991 ya esté declarada. Solo se lee dentro de funciones, así que
-   no hay problema en definirla a esta altura del archivo. */
-const FIXTURES_OFICIALES={
-  CC:{1991:LIGA_CC_1991, 2026:LIGA_CC_2026},
-  UCH:{2026:LIGA_UCH_2026},
-  UC:{2026:LIGA_UC_2026}
-};
+FIXTURES_OFICIALES.CC[1991]=LIGA_CC_1991;
 /* Notas históricas que se muestran después de jugar cada partido de copa */
 const NOTAS_COPA={
  "Semifinal-1":"En la vuelta de semifinales, el 22 de mayo de 1991 en el Monumental, Colo-Colo ganó 3-1. El partido pasó a la historia como la «Batalla de Macul» por los incidentes: fueron expulsados Patricio Yáñez y Blas Giunta.",

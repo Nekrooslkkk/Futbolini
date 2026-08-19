@@ -447,33 +447,9 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
   tesorero OK, estable 120 semanas) + smoke navegador puerto 8793 (cotizacion, sparkline SVG, flujo 6 filas,
   todos los botones, consola limpia).
 
-## 5.0 spec · Barras de apoyo en vivo + ticker dark-glass  ✅ (2026-08-18)
-**Archivos:** `js/partido.js` (actualizarApoyo), `js/ui-partido.js` (render + hooks), `css/base.css`, `css/aero.css`
-- **Tres barras en vivo durante el partido**: 🎪 Ánimo hinchada, 👥 Confianza plantel, 🧠 Criterio DT.
-  Se recalculan cada minuto persiguiendo un objetivo (inercia 0.20-0.25) según marcador, físico del equipo
-  y minuto: ir ganando las sube, ir perdiendo tarde las hunde, la fatiga castiga la confianza del plantel.
-- **Criterio DT** arranca del nivel de la gerencia deportiva y **sube +6 cada vez que resolvés un momento táctico**,
-  así que premia dirigir en vez de mirar. Color por tramo (verde >=60, ámbar >=35, rojo abajo).
-- **Ticker dark-glass** (FutbolGram en vivo): panel de cristal oscuro con blur, borde Vista y autores en cian.
-- Verificado: harness Node (rango 0-100 durante los 90 minutos, sube ganando 2-0 → 84/70/49 a 99/92/63,
-  baja perdiendo 0-3 tarde → 37/37/28) + smoke navegador (3 barras renderizando, fondo cristal aero, consola limpia).
-
-## FIX CRÍTICO · data-liga.js no cargaba (juego no arrancaba)  ✅ (2026-08-18)
-**Archivo:** `js/data-liga.js`
-- `const FIXTURES_OFICIALES` estaba declarada **antes** de `const LIGA_CC_1991` y la referenciaba. El guard
-  `typeof LIGA_CC_1991!=="undefined"` **no protege**: en `const`/`let` la zona muerta temporal (TDZ) hace que
-  hasta `typeof` tire ReferenceError. Resultado: el archivo entero moría al cargar y **el juego no arrancaba**
-  (`nuevaPartida` → "Cannot access 'LIGAS' before initialization"; se perdían LIGAS, LIGA_ACT, CLUB_POR_ID,
-  CORTE_2026, TABLA_2026_CORTE y los fixtures).
-- **Fix:** mover la declaración de `FIXTURES_OFICIALES` a después de `LIGA_CC_1991` (solo se lee dentro de
-  funciones, así que es seguro) y sacar el guard, que ya no hace falta. Comentario en el archivo para que no
-  vuelva a pasar.
-- Verificado en navegador: 1991 arranca (calendario 45), 2026 arranca con el corte de agosto (idx 19, 19 jugados),
-  fixture CC 1991 con sus 30 fechas, consola limpia.
-
 ### 5.0 spec · PENDIENTE
 - Corrección Avanzar/Simular (respetar calendario + modal Aero "¿dejar el progreso al azar?").
-- Blackjack en el casino.
+- Blackjack en el casino. Barras de apoyo en vivo (Ánimo Hinchada/Confianza Plantel/Criterio DT) + ticker lateral.
 - Redes en 2 pestañas (Cuenta Oficial del Club vs Perfil Personal del DT con like/retuit/responder).
 
 ## 5.1 · Loop de calendario + casino vivo + servidor (2026-08-18)
@@ -570,3 +546,8 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
 - Hijos envejecen. A los 17 pueden firmar en cantera.
 - Sucesión: hijo o DT de afuera.
 - `pensarOffline` cubre tinder/sucesor. IA de pago sigue APAGADA.
+
+## 5.1n · Fix modal de inicio (2026-08-18)
+**Archivos:** `data-liga.js`, `ui.js`
+- `FIXTURES_OFICIALES` no toca `LIGA_CC_1991` antes de declararla (TDZ). El modal volvía a cortarse en «Elegí época».
+- `pintar` del briefing ahora atrapa el error y lo muestra.
