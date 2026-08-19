@@ -268,11 +268,14 @@ table.flujo td.n,table.flujo th.n{text-align:right;font-family:var(--f-dato,mono
 .obj-dato{font-family:var(--f-dato,monospace);font-size:12px;font-weight:700;opacity:.85}
 .obj-porque{font-size:11.5px;opacity:.72;margin-top:5px;line-height:1.4}
 
-/* 6.0 · decisiones del partido en horizontal (no empujan el marcador) */
-.ops.ops-part{flex-direction:row;flex-wrap:wrap;gap:8px}
-.ops.ops-part .op{flex:1 1 140px;min-width:128px;text-align:center}
+/* 6.0 · partido: el panel de decisión va AL LADO del partido (no agranda la página) */
+.partido-wrap{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.partido-wrap>*{flex:1 1 300px;min-width:280px;margin:0}
+.partido-wrap>*:first-child{flex-grow:1.6}         /* el partido, un poco más ancho */
+.partido-wrap .relato{max-height:240px;overflow-y:auto}   /* relato con scroll propio: la página no crece */
+.ops.ops-part{gap:8px}
+.ops.ops-part .op{text-align:left}
 .ops.ops-part .op:hover:not(:disabled){transform:translateY(-2px)}
-.ops.ops-part .op .t{font-size:13px}
 
 /* 6.0 · foco visible para navegación por teclado */
 .op:focus-visible,.icono:focus-visible,.ficha:focus-visible,.btn-aqua:focus-visible,.arranque-btn:focus-visible,

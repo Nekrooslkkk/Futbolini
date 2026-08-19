@@ -592,3 +592,17 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
 - Verificado: navegador puerto 8820 — arranque con/sin save, teclado moviendo foco, partido horizontal en fila,
   guardado v4 recargable, avisos de objetivo entrar/salir de zona, decisiones de menú siguen verticales,
   consola limpia.
+
+## 6.0c · Partido lado a lado + prompts para Grok  ✅ (2026-08-19)
+**Archivos:** `js/ui-partido.js` (.partido-wrap), `css/base.css`, `GROK_PROMPTS.md` (nuevo)
+- **Panel de partido y decisión LADO A LADO** (`.partido-wrap`, flex): la charla táctica / jugada aparece a
+  la derecha del partido, no debajo. Así se ve todo sin que la página crezca. En pantalla angosta se apila.
+  El relato ahora tiene scroll propio (max 240px) para que el panel no se estire.
+- Corrección del pedido anterior: en vez de decisiones "horizontales" (que igual empujaban), ahora van
+  al costado, que era lo que el usuario realmente quería.
+- **`GROK_PROMPTS.md`**: 4 prompts autónomos para que Grok genere contenido con el formato exacto del juego
+  y pegue directo — (1) planteles 2026 de los clubes que faltan, (2) planteles 1991, (3) fixtures+resultados
+  reales (con regla "el resultado real solo si se sabe, si no null"), (4) "sorprendeme" (rasgos/planteles
+  históricos/eventos/mecánicas). Todos con la regla de no inventar nombres como reales.
+- Verificado: navegador puerto 8824 — partido y decisión lado a lado en escritorio, apilados en angosto,
+  relato con scroll, consola limpia.

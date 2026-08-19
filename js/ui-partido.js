@@ -239,8 +239,7 @@ function pintarPartido(){
     });
     p.cuerpo.appendChild(tk);
   }
-  v.appendChild(p);
-  $("#vista").appendChild(el("div","",""));
+  const wrap=el("div","partido-wrap"); wrap.appendChild(p); v.appendChild(wrap);
 }
 /* Loop fluido: el reloj corre y se auto-pausa SOLO cuando hay una jugada de
    peligro que decidir (penal, tiro libre, lesión) o un momento táctico. */
@@ -289,8 +288,8 @@ function mostrarMomento(){
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);
-  p.cuerpo.appendChild(el("p","mini","Decidí con 1 / 2 / 3 / 4."));
-  $("#vista").appendChild(p);
+  p.cuerpo.appendChild(el("p","mini","Elegí con 1 / 2 / 3 / 4 · flechas y Enter."));
+  (document.querySelector(".partido-wrap")||$("#vista")).appendChild(p);
 }
 /* jugada de peligro que el DT resuelve en el acto */
 function candidatosPenal(P){
@@ -337,8 +336,8 @@ function mostrarAccion(ev){
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);
-  p.cuerpo.appendChild(el("p","mini","Decidí con 1 / 2 / 3."));
-  $("#vista").appendChild(p);
+  p.cuerpo.appendChild(el("p","mini","Elegí con 1 / 2 / 3 · flechas y Enter."));
+  (document.querySelector(".partido-wrap")||$("#vista")).appendChild(p);
 }
 function hitosPartido(res){
   const h=[], yo=res.yo, otro=res.otro, dif=Math.abs(yo-otro);
