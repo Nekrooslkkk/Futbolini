@@ -626,3 +626,25 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
 - Verificado: harness (recordar/dedup/citar/cuándo/promesaPendiente/callback OK) + navegador (panel con hechos
   en 2ª persona, decisión como modal con escritorio detrás, temporada completa acumula 14 recuerdos reales,
   consola limpia).
+
+## 6.2 · Barras vivas + PLOP! + pasillos con consecuencia + inversiones con tope  ✅ (2026-08-19)
+**Archivos:** `css/base.css` (barras), `js/ui.js` (PLOP/pasillos/inversiones), `js/redes.js` (tweets)
+- **Movimiento en TODAS las barras**: rayas diagonales que corren estilo "descargando de Windows"
+  (`@keyframes barLoad` sobre `.barrita i`). Respeta prefers-reduced-motion.
+- **Chirp → PLOP!** (en honor al ¡Plop! de Condorito). Rediseño de la red social:
+  · **Reportar** mensaje (baja alcance a hostiles / lo saca del feed).
+  · **Likes que importan**: darle me gusta a un hincha sube la barra hinchada (+2) y la cuenta te responde
+    ("¡le gustó al DT!"); a un hostil te resta. Se guardan en la tab **"Me gusta"**, donde podés **quitarlos**
+    (revierte el acercamiento).
+  · **Reposts que importan**: repostear a un hostil = **te auto-troleaste** (−6 hinchada, −prensa, queda en la
+    memoria); repostear a los tuyos suma. Feedback claro en cada acción.
+  · **Crecer para comerte todo**: "Impulsá tu cuenta" con plata → alcance y seguidores.
+  · Tweets nuevos con sabor: aliento ("¡Vamos a ganarles, madres kla!") y hostiles para aprender a no repostear.
+- **Pasillos con consecuencia visible**: al mover un pasillo aparece un modal con **lo que se movió**
+  (deltas concretos de grupos/caja/capital/riesgo), queda en la memoria, y hay **límite de una vez por
+  temporada** (antes se podía apretar sin que "pasara nada").
+- **Inversiones con topes realistas y precios altos, SIN cooldown de tiempo**: el estadio se pone más caro y
+  rinde menos a medida que sube (tope ~92); la campaña de marketing pierde efecto con la hinchada alta (tope
+  ~88). Cuando no hay más que mejorar, muestra "Tope alcanzado".
+- Verificado: navegador puerto 8834 — barras animadas, PLOP! con tabs/reportar/impulsar, like +2 / RT hostil −6
+  con memoria, reportar elimina, impulsar sube seguidores, inversiones con tope, consola limpia.

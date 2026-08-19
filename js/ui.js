@@ -426,22 +426,47 @@ function vistaInstitucion(){
   if(typeof INTERACCIONES!=="undefined"){
     const pi=panel("Interacción directa","🤝");
     pi.cuerpo.appendChild(el("p","mini","Movete en los pasillos: cada actor tiene su precio y su reacción."));
-    INTERACCIONES.forEach(gr=>{
+    INTERACCIONES.forEach((gr,gi)=>{
       pi.cuerpo.appendChild(el("h3","sub",gr.ic+" "+gr.g));
-      gr.ops.forEach(op=>{
-        const b=el("button","op");
+      gr.ops.forEach((op,oi)=>{
+        const key="pasillo_"+gi+"_"+oi+"_"+E.anio;
+        const usado=!op.soplo && !!(E.flags&&E.flags[key]);
+        const b=el("button","op"); b.disabled=usado;
         const costo=op.capital?(Math.abs(op.capital)+" capital"):(op.plata?plata(Math.abs(op.plata)):"gratis");
-        b.innerHTML='<div class="t">'+op.t+'</div><div class="d">'+(op.d||"")+' · <b>'+costo+'</b></div>';
+        b.innerHTML='<div class="t">'+op.t+(usado?" · <span class='mini'>ya lo hiciste esta temporada</span>":"")+'</div><div class="d">'+(op.d||"")+' · <b>'+costo+'</b></div>';
         b.onclick=()=>{
           const r=aplicarInteraccion(op);
           if(!r.ok){ aviso(r.msg); return; }
-          render(); aviso(r.soplo?("Soplo: "+r.soplo):op.t);
+          if(!op.soplo){ E.flags[key]=true; if(typeof recordar==="function") recordar("pasillo","moviste los pasillos: "+op.t.toLowerCase(),{peso:"bajo"}); }
+          guardar();
+          modalResultadoInteraccion(gr,op,r);
         };
         pi.cuerpo.appendChild(b);
       });
     });
     v.appendChild(pi);
   }
+}
+/* 6.2 · resultado visible de mover los pasillos (que se note que pasó algo) */
+function modalResultadoInteraccion(gr,op,r){
+  modal(box=>{
+    box.classList.remove("panel");
+    const p=panel(gr.ic+" "+gr.g,"🤝","agua"); p.classList.add("dec");
+    p.cuerpo.appendChild(el("h2","tit",op.t));
+    if(op.d) p.cuerpo.appendChild(el("p","ctx",op.d));
+    if(r.soplo) p.cuerpo.appendChild(el("div","resul mitad","🕵️ <b>Soplo:</b> "+r.soplo));
+    const dl=[];
+    if(op.plata) dl.push((op.plata<0?"−":"+")+plata(Math.abs(op.plata))+" caja");
+    if(op.capital) dl.push(signo(op.capital)+" capital");
+    if(op.grupos) for(const k in op.grupos){ const g=GRUPO_POR_ID[k]; if(g) dl.push(g.ic+" "+g.n+" "+signo(op.grupos[k])); }
+    if(op.ef) for(const k in op.ef){ dl.push(k.charAt(0).toUpperCase()+k.slice(1)+" "+signo(op.ef[k])); }
+    if(op.rep) for(const k in op.rep){ dl.push("Reputación "+k+" "+signo(op.rep[k])); }
+    if(dl.length) p.cuerpo.appendChild(el("div","resul bien","<b>Lo que se movió:</b> "+dl.join(" · ")));
+    else if(!r.soplo) p.cuerpo.appendChild(el("div","resul mitad","Quedó registrado. Los efectos se ven en los grupos de interés."));
+    const b=el("button","btn-aqua ancho verde","Listo"); b.onclick=()=>{ cerrarModal(); render(); };
+    p.cuerpo.appendChild(b);
+    box.appendChild(p);
+  });
 }
 function cambiarEstatuto(cat,op,costo){
   if(E.capital<costo){ aviso("No te alcanza el capital institucional ("+costo+" necesarios)"); return; }
@@ -586,21 +611,30 @@ function vistaFinanzas(){
 
   /* --- inversiones de club --- */
   const pin=panel("Inversiones","🏗️");
-  pin.cuerpo.appendChild(el("p","mini","Plata que sale hoy para tener un club más grande mañana."));
+  pin.cuerpo.appendChild(el("p","mini","Plata que sale hoy para tener un club más grande mañana. No hay atajos infinitos: cada mejora tiene un techo realista y se pone más cara a medida que subís."));
+  const estTope=E.ind.estadio>=92, hinTope=E.ind.hinchada>=88;
+  const costoEst=Math.round(420+E.ind.estadio*6), ganEst=Math.max(4,Math.round(14-E.ind.estadio/12));
   const inv=[
-   ["Mejorar el estadio",350,"+ estado del estadio (más aforo y menos sanciones)",()=>{ aplicarEfectos({plata:-350,estadio:12}); }],
-   ["Campaña de propaganda",180,"+ hinchada y socios (más gente, más ingreso fijo)",()=>{ aplicarEfectos({plata:-180,hinchada:6,socios:4,prestigio:2}); }],
-   E.staff.cm?["Community Manager (contratado)",0,"Ya tenés CM. Se maneja desde Redes.",null]
-            :["Contratar Community Manager",120,"Profesionaliza la comunicación: + prestigio y desbloquea campañas en Redes",()=>{ aplicarEfectos({plata:-120,prestigio:2}); E.staff.cm=true; }]
+   {n:"Ampliar el estadio",costo:costoEst,disp:!estTope,
+    desc:estTope?"El estadio ya es de primer nivel: no hay obra chica que lo mejore.":"+"+ganEst+" estado del estadio (más aforo, menos sanciones). Cada ampliación cuesta más y rinde menos.",
+    fn:()=>aplicarEfectos({plata:-costoEst,estadio:ganEst})},
+   {n:"Campaña de marketing",costo:250,disp:!hinTope,
+    desc:hinTope?"La hinchada ya está a full: gastar en publicidad ahora es tirar la plata.":"+ hinchada, socios y algo de prestigio. Pierde efecto cuando la gente ya está prendida.",
+    fn:()=>aplicarEfectos({plata:-250,hinchada:Math.max(2,Math.round((88-E.ind.hinchada)/6)),socios:4,prestigio:2})},
+   E.staff.cm?{n:"Community Manager (contratado)",costo:0,disp:false,desc:"Ya tenés CM. Se maneja desde PLOP.",fn:null}
+             :{n:"Contratar Community Manager",costo:180,disp:true,desc:"Profesionaliza la comunicación: + prestigio y desbloquea campañas en PLOP.",fn:()=>{ aplicarEfectos({plata:-180,prestigio:2}); E.staff.cm=true; }}
   ];
-  inv.forEach(([n,costo,desc,fn])=>{
+  inv.forEach(o=>{
     const d=el("div","resul mitad");
-    d.innerHTML="<b>"+n+"</b> "+(costo?"· "+plata(costo):"")+"<br><span class='mini'>"+desc+"</span>";
-    if(fn){
-      const b=el("button","btn-aqua chico"+(E.plata<costo?" gris":" verde"),"Invertir"); b.style.marginTop="5px";
-      b.disabled=E.plata<costo;
-      b.onclick=()=>{ fn(); guardar(); render(); aviso(n+" · "+plata(costo)); };
+    d.innerHTML="<b>"+o.n+"</b> "+(o.costo?"· "+plata(o.costo):"")+"<br><span class='mini'>"+o.desc+"</span>";
+    if(o.fn && o.disp){
+      const sinCaja=E.plata<o.costo;
+      const b=el("button","btn-aqua chico"+(sinCaja?" gris":" verde"),"Invertir"); b.style.marginTop="5px";
+      b.disabled=sinCaja;
+      b.onclick=()=>{ o.fn(); guardar(); render(); aviso(o.n+" · "+plata(o.costo)); };
       d.appendChild(b);
+    } else if(!o.disp && o.n.indexOf("contratado")<0){
+      d.appendChild(el("span","etq neu","Tope alcanzado"));
     }
     pin.cuerpo.appendChild(d);
   });
@@ -953,15 +987,41 @@ function pestañasRedes(cont){
 let REDES_TAB="inicio";
 function reaccionarPost(t,tipo){
   t.likes=t.likes||0; t.rts=t.rts||0; t.replies=t.replies||0; t.hilo=t.hilo||[];
+  const amistoso=(t.tipo==="hincha"||t.tipo==="club"||t.tipo==="jugador"||t.tono==="bueno");
+  const hostil=(t.tipo==="rival"||t.tono==="malo");
   if(tipo==="like"){
     if(t._like) return aviso("Ya le diste like");
     t._like=true; t.likes+=ri(4,40);
-    if(t.tipo==="hincha") aplicarGrupos({hinchada:1});
+    E.plopLikes=E.plopLikes||[]; if(E.plopLikes.indexOf(t.id)<0) E.plopLikes.push(t.id);
+    if(amistoso){
+      aplicarGrupos({hinchada:2}); moverSeguidores&&moverSeguidores(ri(20,120));
+      /* la cuenta reacciona al like del DT: te acerca a la gente */
+      t.replies++; t.hilo=t.hilo||[]; t.hilo.push({autor:t.autor,texto:elige(["¡Le gustó al mismísimo DT! 🙌","Nos leyó el técnico, grande.","Bancado desde arriba. Vamos."]),fecha:"ahora"});
+      aviso("❤ Le llegó tu like — la hinchada lo festeja (+2)");
+    } else if(hostil){
+      aplicarRep({credibilidad:-2}); aplicarGrupos({hinchada:-2});
+      aviso("😬 Le diste like a un hostil… mal mirado por la gente (−2 hinchada)");
+    } else aviso("❤ Like");
   } else if(tipo==="rt"){
-    if(t._rt) return aviso("Ya lo retuiteaste");
+    if(t._rt) return aviso("Ya lo reposteaste");
     t._rt=true; t.rts=(t.rts||0)+1; t.likes+=ri(10,80);
-    if(t.tono==="malo") aplicarRep({prensa:-1}); else aplicarRep({publica:1});
-    if(typeof postProc==="function") postProc(E.dt||"DT","dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"neutro");
+    if(hostil){
+      /* te auto-troleaste: amplificaste a un hostil */
+      aplicarGrupos({hinchada:-6,prensa:-4}); aplicarRep({credibilidad:-6});
+      if(typeof recordar==="function") recordar("plop","reposteaste a "+t.autor+", un hostil (te auto-troleaste)",{peso:"medio",tono:"malo"});
+      if(typeof postProc==="function") postProc(E.dt||"DT","dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"malo");
+      aviso("🤦 Reposteaste a un hostil. Te auto-troleaste: la gente y la prensa te caen encima.");
+    } else {
+      aplicarGrupos({hinchada:3}); aplicarRep({publica:2}); moverSeguidores&&moverSeguidores(ri(40,260));
+      if(typeof postProc==="function") postProc(E.dt||"DT","dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"bueno");
+      aviso("🔁 Repost al aire — sumás a los tuyos (+3 hinchada)");
+    }
+  } else if(tipo==="report"){
+    if(t._report) return aviso("Ya lo reportaste");
+    t._report=true; t.reportado=true;
+    if(hostil){ aviso("🚩 Reportado. Le bajaste el alcance a un hostil."); moverSeguidores&&moverSeguidores(ri(5,40)); }
+    else aviso("🚩 Reportado. Igual reportar a cualquiera no queda bien si no molestaba.");
+    E.timeline=(E.timeline||[]).filter(x=>x!==t);
   } else {
     const r=prompt("Responder a "+t.autor,"");
     if(r===null) return;
@@ -973,13 +1033,32 @@ function reaccionarPost(t,tipo){
   }
   guardar(); irA("redes");
 }
+/* quitar un me gusta: revierte parte del acercamiento */
+function quitarLike(t){
+  if(!t||!t._like) return;
+  t._like=false; t.likes=Math.max(0,(t.likes||0)-ri(4,30));
+  E.plopLikes=(E.plopLikes||[]).filter(id=>id!==t.id);
+  const amistoso=(t.tipo==="hincha"||t.tipo==="club"||t.tipo==="jugador"||t.tono==="bueno");
+  if(amistoso){ aplicarGrupos({hinchada:-1}); aviso("Quitaste el like. La gente lo nota (−1 hinchada)."); }
+  else aviso("Like retirado.");
+  guardar(); irA("redes");
+}
+/* impulsar tu cuenta con plata (crecer para comerte todo) */
+function impulsarPlop(monto){
+  if(E.plata<monto) return aviso("No te alcanza la caja");
+  aplicarEfectos({plata:-monto});
+  const nuevos=Math.round(monto*ri(90,160)); moverSeguidores&&moverSeguidores(nuevos);
+  aplicarRep({publica:Math.round(monto/120)});
+  if(typeof recordar==="function" && monto>=200) recordar("plop","metiste plata para inflar tu cuenta de PLOP",{peso:"bajo"});
+  guardar(); render(); aviso("📈 +"+nuevos.toLocaleString("es-CL")+" seguidores por la campaña");
+}
 function vistaRedes(){
   if(typeof sembrarRedes==="function" && (!E.timeline||E.timeline.length<3)) sembrarRedes();
   const v=$("#vista");
-  const cab=panel("Chirp · 2008","🐦","agua");
+  const cab=panel("PLOP! · 2008","🐦","agua");
   pestañasRedes(cab.cuerpo);
   const tabs=el("div","fichas");
-  [["inicio","Inicio"],["menciones","Menciones"],["tendencias","Tendencias"]].forEach(([k,n])=>{
+  [["inicio","Inicio"],["menciones","Menciones"],["megusta","Me gusta"],["tendencias","Tendencias"]].forEach(([k,n])=>{
     const b=el("button","ficha",n);
     b.setAttribute("aria-pressed",REDES_TAB===k?"true":"false");
     b.onclick=()=>{ REDES_TAB=k; irA("redes"); };
@@ -1037,8 +1116,33 @@ function vistaRedes(){
   } else {
     pcd.cuerpo.appendChild(el("div","resul mitad","Contratá un <b>Community Manager</b> en Finanzas para monetizar seguidores (sponsor digital) y lanzar campañas."));
   }
+  /* crecer para comerte todo: impulsar la cuenta con plata */
+  pcd.cuerpo.appendChild(el("p","mini","Impulsá tu cuenta: plata a cambio de alcance y seguidores. El que domina la conversación domina la calle."));
+  const imp=el("div");
+  [["Impulso chico",80],["Campaña",200],["Ofensiva total",500]].forEach(([n,m])=>{
+    const b=el("button","btn-aqua chico"+(E.plata<m?" gris":" verde"),n+" · "+plata(m)); b.style.marginRight="5px"; b.style.marginTop="4px";
+    b.disabled=E.plata<m; b.onclick=()=>impulsarPlop(m);
+    imp.appendChild(b);
+  });
+  pcd.cuerpo.appendChild(imp);
   v.appendChild(pcd);
 
+  if(REDES_TAB==="megusta"){
+    const pl=panel("Tus Me gusta","❤");
+    const ids=E.plopLikes||[];
+    const likeados=(E.timeline||[]).filter(t=>t._like||ids.indexOf(t.id)>=0);
+    if(!likeados.length) pl.cuerpo.appendChild(el("p","mini","Todavía no le diste me gusta a nada. Tus likes acercan (o alejan) a la gente: elegí bien a quién bancás."));
+    likeados.forEach(t=>{
+      const d=el("div","resul "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"mitad")));
+      d.innerHTML="<b>"+t.autor+"</b> <span class='mini'>· "+t.fecha+"</span><br>"+t.texto;
+      const b=el("button","btn-aqua chico gris","Quitar me gusta"); b.style.marginTop="5px";
+      b.onclick=()=>quitarLike(t);
+      d.appendChild(b);
+      pl.cuerpo.appendChild(d);
+    });
+    v.appendChild(pl);
+    return;
+  }
   if(REDES_TAB==="tendencias"){
     const pt=panel("Tendencias en Chile","#️⃣");
     (typeof tendencias==="function"?tendencias():[]).forEach((x,i)=>{
@@ -1068,8 +1172,8 @@ function vistaRedes(){
       });
     }
     const acc=el("div"); acc.style.marginTop="6px";
-    [["like","♡"],["rt","RT"],["reply","Responder"]].forEach(([k,n])=>{
-      const b=el("button","btn-aqua chico",n); b.style.marginRight="5px";
+    [["like",t._like?"❤ Te gusta":"♡ Me gusta"],["rt",t._rt?"🔁 Reposteado":"RT"],["reply","Responder"],["report","🚩 Reportar"]].forEach(([k,n])=>{
+      const b=el("button","btn-aqua chico"+(k==="report"?" gris":""),n); b.style.marginRight="5px"; b.style.marginTop="4px";
       b.onclick=()=>reaccionarPost(t,k);
       acc.appendChild(b);
     });

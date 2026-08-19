@@ -328,3 +328,15 @@ table.flujo td.n,table.flujo th.n{text-align:right;font-family:var(--f-dato,mono
 .mem-punto{width:9px;height:9px;border-radius:3px;box-shadow:0 0 5px rgba(0,0,0,.15)}
 .mem-txt{font-size:12.5px;line-height:1.35}
 .mem-cuando{font-size:10.5px;opacity:.6;font-family:var(--f-dato,monospace);white-space:nowrap}
+
+/* 6.2 · MOVIMIENTO en todas las barras: rayas diagonales que corren (estilo "descargando" de Windows) */
+.barrita i{
+  background-image:
+    linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,0) 62%),
+    repeating-linear-gradient(45deg,rgba(255,255,255,.20) 0 9px,rgba(255,255,255,0) 9px 18px),
+    linear-gradient(var(--c,#5ec94f),var(--c,#5ec94f));
+  background-size:auto, 25.5px 25.5px, auto;
+  background-repeat:no-repeat, repeat, no-repeat;
+  animation:barLoad 850ms linear infinite;
+}
+@keyframes barLoad{ from{background-position:0 0, 0 0, 0 0} to{background-position:0 0, 25.5px 0, 0 0} }

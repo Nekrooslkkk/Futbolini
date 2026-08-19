@@ -61,6 +61,19 @@ function tendencias(){
   t.push({tag:"#ANFP", n:ri(400,7000)});
   return t;
 }
+/* pools de tweets con sabor: aliento, calor de clásico y hostiles (para el auto-troleo) */
+const TWEETS_HINCHA=[
+  {x:"¡Vamos a ganarles, MADRES KLA! Esta la ganamos sí o sí 🔥",t:"bueno"},
+  {x:"Si el equipo deja todo, nosotros dejamos la garganta. VAMOS.",t:"bueno"},
+  {x:"Confío en el proceso. Paso a paso, pero para arriba.",t:"bueno"},
+  {x:"Bancamos al DT hasta las últimas. El que se baja no es hincha.",t:"bueno"},
+  {x:"Otra vez a llenar el estadio. Que sepan lo que es jugar acá.",t:"bueno"}
+];
+const TWEETS_HOSTIL=[
+  {x:"Este DT no sabe ni formar el equipo. Que se vaya YA. 🤡",t:"malo"},
+  {x:"Con esta dirigencia no llegamos a ningún lado. Vendehúmos.",t:"malo"},
+  {x:"Los de la tele otra vez con los penales regalados. Vergüenza.",t:"malo"}
+];
 function sembrarRedes(){
   if(!E) return;
   E.timeline=E.timeline||[];
@@ -69,10 +82,13 @@ function sembrarRedes(){
   const riv=part?part.rivalNombre:"el próximo";
   postProc(elige(HANDLES_PRENSA),"prensa",
     "Arranca la semana en "+(E.clubNombre||"el club")+". El entorno mira el plantel y la tabla.","neutro");
-  postProc(elige(HANDLES_HINCHA),"hincha",
-    part?("Se viene "+riv+". Si no ponemos huevos esta vez, la tribuna se va a vaciar."):"Otro ciclo. A bancar, como siempre.","neutro");
+  const h1=elige(TWEETS_HINCHA);
+  postProc(elige(HANDLES_HINCHA),"hincha", part?(h1.x):"Otro ciclo. A bancar, como siempre.", h1.t);
   postProc(handleJugador(),"jugador","Enfocados. El grupo está trabajando.","neutro");
   postProc("@hincha_rival","rival","Cuando vengan acá se van a enterar. No son el equipo de la tele.", "malo");
+  /* un hostil interno para que el jugador aprenda a NO repostearlo */
+  if(Math.random()<0.6){ const ho=elige(TWEETS_HOSTIL); postProc(elige(["@bancado_de_sillon","@el_verdadero_hincha","@critico_del_club"]),"hincha",ho.x,ho.t); }
+  if(Math.random()<0.5){ const h2=elige(TWEETS_HINCHA); postProc(elige(HANDLES_HINCHA),"hincha",h2.x,h2.t); }
   if(part&&part.tipo==="copa") postProc(elige(HANDLES_PRENSA),"prensa","Copa de por medio. Un tropiezo y el año se pone cuesta arriba.","neutro");
 }
 function moverSeguidores(n){
