@@ -257,3 +257,13 @@ table.flujo td.n,table.flujo th.n{text-align:right;font-family:var(--f-dato,mono
 .chip-n.verde{background:#0a7}
 .bj-mano{padding:8px 10px;margin:6px 0;border:1px solid var(--linea);border-radius:6px;font-size:13px}
 .bj-cards{font-size:20px;letter-spacing:2px}
+
+/* 5.0 · objetivos de temporada */
+.obj{border:1px solid rgba(0,0,0,.10);border-radius:7px;padding:11px 12px;margin:9px 0;background:rgba(0,0,0,.025)}
+.obj-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.obj-cat{font-size:10px;font-weight:800;letter-spacing:.4px;color:#fff;padding:2px 8px;border-radius:4px;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.obj-est{font-size:11px;font-weight:800;letter-spacing:.3px}
+.obj-t{font-size:15px;font-weight:700;margin:2px 0 6px}
+.obj .barrita{margin:0 0 5px}
+.obj-dato{font-family:var(--f-dato,monospace);font-size:12px;font-weight:700;opacity:.85}
+.obj-porque{font-size:11.5px;opacity:.72;margin-top:5px;line-height:1.4}

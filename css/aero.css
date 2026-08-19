@@ -260,3 +260,7 @@ body[data-tema="aero"] .ticker .tk{color:#dbe9fb;border-bottom:1px solid rgba(12
 body[data-tema="aero"] .ticker .tk b{color:#8fd0ff}
 body[data-tema="aero"] .ticker .tk.bien{color:#b6f0c4}
 body[data-tema="aero"] .ticker .tk.mal{color:#ffc2bc}
+
+/* 5.0 · objetivos de temporada (cristal Vista) */
+body[data-tema="aero"] .obj{background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(210,232,255,.28));border:1px solid rgba(30,90,160,.22);box-shadow:0 1px 0 rgba(255,255,255,.6) inset}
+body[data-tema="aero"] .obj-porque{opacity:.8}

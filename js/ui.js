@@ -215,6 +215,29 @@ function vistaEscritorio(){
     p.cuerpo.appendChild(b);
   }
   izq.appendChild(p);
+
+  /* 5.0 · objetivos de temporada — lo que se espera de vos */
+  if(Array.isArray(E.objetivos)&&E.objetivos.length&&typeof progresoObjetivo==="function"){
+    const cumplidasN=E.objetivos.filter(o=>progresoObjetivo(o).cumplido).length;
+    const po=panel("Lo que se espera de vos","📋",E.objetivos.some(o=>progresoObjetivo(o).estado==="riesgo")?"alerta":"agua");
+    po.cuerpo.appendChild(el("p","mini","Las metas que te puso la dirigencia para "+E.anio+". Se evalúan al cierre de la temporada. Vas <b>"+cumplidasN+" de "+E.objetivos.length+"</b> en curso."));
+    const CAT={deportivo:{ic:"⚽",n:"Deportivo",c:"#2f7dd0"},economico:{ic:"💰",n:"Económico",c:"#3aa049"},institucional:{ic:"🏛️",n:"Institucional",c:"#9a6fe0"}};
+    const EST={cumplido:{n:"Cumplido",c:"#2fa84f"},encamino:{n:"En camino",c:"#d68a1f"},riesgo:{n:"En riesgo",c:"#c0392b"}};
+    E.objetivos.forEach(o=>{
+      const pr=progresoObjetivo(o), cat=CAT[o.cat]||CAT.deportivo, est=EST[pr.estado]||EST.encamino;
+      const box=el("div","obj");
+      box.innerHTML=
+        "<div class='obj-top'><span class='obj-cat' style='background:"+cat.c+"'>"+cat.ic+" "+cat.n+"</span>"+
+        "<span class='obj-est' style='color:"+est.c+"'>"+(pr.cumplido?"✓ ":"")+est.n+"</span></div>"+
+        "<div class='obj-t'>"+o.t+"</div>"+
+        barrita(pr.pct,est.c)+
+        "<div class='obj-dato'>"+pr.txt+"</div>"+
+        "<div class='obj-porque'>💡 "+o.porque+"</div>";
+      po.cuerpo.appendChild(box);
+    });
+    izq.appendChild(po);
+  }
+
   const cer=panel("Cerebro local","🧠");
   cer.cuerpo.appendChild(el("p","mini","Sin internet. Sin créditos. Lee caja, moral, tabla y el próximo rival."));
   cer.cuerpo.appendChild(el("p",null,typeof consejoLocal==="function"?consejoLocal():"…"));

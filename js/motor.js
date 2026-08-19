@@ -202,6 +202,10 @@ function normalizarEstado(){
     }
     E.v=4;
   }
+  /* 5.0 · objetivos de temporada */
+  if(!Array.isArray(E.objetivos)||!E.objetivos.length){
+    E.objetivos=(typeof generarObjetivos==="function")?generarObjetivos():[];
+  }
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){
@@ -784,6 +788,9 @@ function nuevoAnio(){
   E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0};
   E.idx=0; E.decPend=[]; E.bandeja=[]; E.pendientesEncadenadas=[]; E.decProc={}; E.mercado=null; E.flags.copaCampeon=false;
   E.ofertasPend=[]; E.mercadoLog={rechazadas:{},vendidos:[]}; E.promesas=[];
+  /* 5.0 · nuevas metas de la dirigencia para el año que arranca */
+  E.flags.clasicoGanado=false;
+  if(typeof generarObjetivos==="function") E.objetivos=generarObjetivos();
   notificar({t:"Arranca la temporada "+E.anio,tipo:"neutro",
     d:"Nuevo año, nuevo campeonato. El plantel se renovó, los objetivos se reajustan y la caja arranca de cero en lo semanal.",bandeja:false});
   /* banderas que solo valen dentro de una temporada */

@@ -551,3 +551,23 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
 **Archivos:** `data-liga.js`, `ui.js`
 - `FIXTURES_OFICIALES` no toca `LIGA_CC_1991` antes de declararla (TDZ). El modal volvía a cortarse en «Elegí época».
 - `pintar` del briefing ahora atrapa el error y lo muestra.
+
+## 6.0 · Objetivos de temporada (juego estratégico + enseñable)  ✅ (2026-08-18)
+**Archivos:** `js/carrera.js` (motor), `js/motor.js` (init/nuevoAnio), `js/partido.js` (flag clásico),
+`js/ui.js` (panel escritorio), `css/base.css`, `css/aero.css`
+- **Primer paso del plan de pulido 6.0 (Fase 0 — jugable de verdad).** La dirigencia ahora fija metas
+  concretas en 3 frentes y el jugador las ve progresar: hace el juego estratégico (hay un plan que perseguir)
+  y enseñable (cada meta dice QUÉ se pide y POR QUÉ importa).
+- `generarObjetivos()`: 3 objetivos según contexto del club —
+  · Deportivo (siempre, por prestigio): título / Libertadores (top4) / mitad de arriba (top8) / mantener categoría.
+  · Económico: bajar la deuda 25% si es alta, o cerrar el año en azul si la caja está sana.
+  · Institucional: reconquistar hinchada (<55), ganar un clásico (grandes) o mantener al directorio.
+- `progresoObjetivo()`: progreso en vivo con estado cumplido/encamino/riesgo, leyendo tabla, deuda, caja,
+  hinchada, directorio y el flag de clásico ganado.
+- Panel **"Lo que se espera de vos"** en el escritorio (arriba): chip de categoría, estado, barra de progreso,
+  el dato en vivo y una línea 💡 "por qué importa" que enseña la prioridad de la institución.
+- `evaluarMandato()` reescrito: en vez de una sola posición, pondera cuántos objetivos se cumplieron
+  (el deportivo pesa doble) y da un balance que **lista con ✓/✗ qué metas cumpliste** — feedback que enseña.
+- Objetivos se regeneran cada `nuevoAnio` y el clásico ganado se marca en `terminarPartido`.
+- Verificado: harness Node (metas correctas por tamaño de club, progreso en vivo, evaluación campeón=excelente /
+  15º sin nada=fracaso con resumen ✓/✗) + smoke navegador (panel con 3 objetivos, barras, estados, consola limpia).
