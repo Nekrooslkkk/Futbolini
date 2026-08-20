@@ -64,8 +64,14 @@ function pantallaPrevia(part){
     row.appendChild(sel);
     p1.cuerpo.appendChild(row);
   });
+  const manualOn=E.tactica.xiManual&&E.tactica.xiManual.length;
+  const bali=el("button","btn-aqua ancho"+(manualOn?" verde":""),
+    "👥 Alinear el equipo · "+(manualOn?"manual":"automático"));
+  bali.onclick=()=>modalAlineacion(part);
+  p1.cuerpo.appendChild(bali);
   const bpiz=el("button","btn-aqua ancho"+(E.tactica.pizarra&&E.tactica.pizarra.length?" verde":""),
     "🎯 Pizarra libre"+(E.tactica.pizarra&&E.tactica.pizarra.length?" · activa":""));
+  bpiz.style.marginTop="6px";
   bpiz.onclick=()=>modalPizarra(part);
   p1.cuerpo.appendChild(bpiz);
   rej.appendChild(p1);
@@ -111,6 +117,53 @@ function pantallaPrevia(part){
 /* ---------- pizarra libre (posicionar los 11 en la cancha) ---------- */
 function apodoJug(n){ const p=(n||"").split(" "); return (p[p.length-1]||n).slice(0,9); }
 function mismaGente(piz,once){ if(!piz||piz.length!==once.length) return false; const set=new Set(once.map(j=>j.n)); return piz.every(p=>set.has(p.n)); }
+/* 6.8 · editor de alineación: armá tu XI a mano (meté suplentes, sacá titulares) */
+function modalAlineacion(part){
+  const disp=E.plantel.filter(j=>!j.vendido&&!j.cedido&&(j.lesion||0)<=0)
+    .sort((a,b)=>scoreOnce(b)-scoreOnce(a));
+  let sel=(E.tactica.xiManual&&E.tactica.xiManual.length)
+    ? E.tactica.xiManual.filter(n=>disp.find(j=>j.n===n))
+    : onceIdeal().map(j=>j.n);
+  const POS=[["ARQ","Arqueros"],["DEF","Defensas"],["VOL","Volantes"],["DEL","Delanteros"]];
+  modal(box=>{
+    const pintar=()=>{
+      box.innerHTML="";
+      box.appendChild(el("div","cab",'<span class="ic">👥</span><span>Alinear el equipo</span>'));
+      const c=el("div","cuerpo"); box.appendChild(c);
+      const arqs=sel.filter(n=>{const j=disp.find(x=>x.n===n);return j&&j.pos==="ARQ";}).length;
+      const ok=(sel.length===11&&arqs>=1);
+      const info=el("div","resul "+(ok?"bien":"mitad"));
+      info.innerHTML="<b>"+sel.length+" / 11</b> titulares"+
+        (arqs<1?" · <b style='color:#c0392b'>falta un arquero</b>":"")+
+        (sel.length>11?" · sacá "+(sel.length-11):"")+
+        (sel.length<11?" · elegí "+(11-sel.length)+" más":"");
+      c.appendChild(info);
+      c.appendChild(el("p","mini","Tocá un jugador para meterlo o sacarlo del once. Los que no elijas van a la banca. 🩹 = lesionado (no disponible)."));
+      POS.forEach(([p,lab])=>{
+        const grupo=disp.filter(j=>j.pos===p);
+        if(!grupo.length) return;
+        const enPos=grupo.filter(j=>sel.indexOf(j.n)>=0).length;
+        c.appendChild(el("h3","sub",lab+" · <span class='mini'>"+enPos+" en el XI</span>"));
+        const cont=el("div","align-grid");
+        grupo.forEach(j=>{
+          const on=sel.indexOf(j.n)>=0;
+          const b=el("button","align-jug"+(on?" on":""));
+          b.innerHTML="<b>"+(on?"✓ ":"")+j.n+(j.real?" ●":"")+"</b><span class='mini'>niv "+j.nivel+" · forma "+Math.round(j.forma)+(j.rasgos&&j.rasgos.length?" · "+j.rasgos[0]:"")+"</span>";
+          b.onclick=()=>{ const i=sel.indexOf(j.n); if(i>=0) sel.splice(i,1); else { if(sel.length>=11){ aviso("Ya tenés 11. Sacá a alguien primero."); return; } sel.push(j.n); } pintar(); };
+          cont.appendChild(b);
+        });
+        c.appendChild(cont);
+      });
+      const g=el("button","btn-aqua ancho verde","Guardar mi alineación"); g.disabled=!ok;
+      g.onclick=()=>{ E.tactica.xiManual=sel.slice(); guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Alineación guardada"); };
+      c.appendChild(g);
+      const a=el("button","btn-aqua ancho gris","Volver a automático (el juego elige)"); a.style.marginTop="6px";
+      a.onclick=()=>{ E.tactica.xiManual=null; guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Alineación automática"); };
+      c.appendChild(a);
+    };
+    pintar();
+  },{cerrarFuera:false});
+}
 function modalPizarra(part){
   const once=onceIdeal();
   if(!E.tactica.pizarra || !mismaGente(E.tactica.pizarra,once)) E.tactica.pizarra=pizarraDesdeFormacion(once);

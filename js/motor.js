@@ -215,7 +215,8 @@ function normalizarEstado(){
   if(E.tactica){ if(!E.tactica.mentalidad) E.tactica.mentalidad="Equilibrado";
     if(E.tactica.penalista===undefined) E.tactica.penalista=null;
     if(E.tactica.tiroLibre===undefined) E.tactica.tiroLibre=null;
-    if(E.tactica.corner===undefined) E.tactica.corner=null; }
+    if(E.tactica.corner===undefined) E.tactica.corner=null;
+    if(E.tactica.xiManual===undefined) E.tactica.xiManual=null; }
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){

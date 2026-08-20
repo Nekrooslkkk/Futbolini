@@ -93,6 +93,15 @@ function scoreOnce(j){
 }
 function onceIdeal(){
   const disp=E.plantel.filter(j=>!j.vendido&&!j.cedido&&(j.lesion||0)<=0);
+  /* 6.8 · XI manual: si el DT armó su once, se respeta (y se completa si alguno se lesionó/vendió) */
+  if(E.tactica && Array.isArray(E.tactica.xiManual) && E.tactica.xiManual.length){
+    let once=E.tactica.xiManual.map(n=>disp.find(j=>j.n===n)).filter(Boolean);
+    if(once.length<11){
+      const resto=disp.filter(j=>once.indexOf(j)<0).sort((a,b)=>scoreOnce(b)-scoreOnce(a));
+      once=once.concat(resto.slice(0,11-once.length));
+    }
+    if(once.length>=11) return once.slice(0,11);
+  }
   const f=FORMACIONES[E.tactica.form]||FORMACIONES["4-4-2"];
   const pick=(pos,n)=>disp.filter(j=>j.pos===pos).sort((a,b)=>scoreOnce(b)-scoreOnce(a)).slice(0,n);
   let once=pick("ARQ",1).concat(pick("DEF",f.def),pick("VOL",f.vol),pick("DEL",f.del));

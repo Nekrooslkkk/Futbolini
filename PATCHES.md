@@ -741,3 +741,19 @@ HECHO en esta tanda:
 - Presión/estilo con aún más opciones; roles/duties por jugador (Attack/Support/Defend) al estilo FM.
 - Conferencia de prensa más viva (motor de personajes/memoria).
 - Ofertas de mercado con más variedad + "caras largas" solucionables con plata.
+
+## 6.8 · Alineación manual (armá tu XI, meté suplentes)  ✅ (2026-08-19)
+**Archivos:** `js/partido.js` (onceIdeal), `js/ui-partido.js` (modalAlineacion + botón), `js/motor.js`, `css/base.css`
+- **Editor de alineación** (`modalAlineacion`): la queja principal resuelta — ahora **elegís tu once a mano**,
+  metiendo suplentes y sacando titulares. Jugadores agrupados por posición (con nivel/forma/rasgo), toggle
+  para entrar/salir del XI, contador 11/11 y validación (necesita arquero). Coordinado con los planteles reales.
+- **`onceIdeal` respeta el XI manual** (`E.tactica.xiManual`) y **se autocompleta con inteligencia** si un
+  titular elegido se lesiona o se vende (sigue siendo 11, sin el lesionado). Botón "Volver a automático".
+- Botón "👥 Alinear el equipo · manual/automático" en la previa, junto a la pizarra.
+- Verificado: navegador puerto 8862 — 20 jugadores, 11 titulares, meter suplente respeta el once, fallback por
+  lesión mantiene 11, consola limpia.
+- Resuelve el pendiente clave del escritorio (b): "poder añadir más jugadores, coordinado con los planteles".
+
+### Sigue pendiente
+- Pizarra 100% drag&drop; roles/duties por jugador (Attack/Support/Defend); conferencia más viva;
+  variedad de ofertas de mercado + "caras largas" con plata.
