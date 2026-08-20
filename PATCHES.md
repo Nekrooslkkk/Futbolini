@@ -795,3 +795,15 @@ HECHO en esta tanda:
 - Profundiza el motor anti-robótico (Fase 1/2 del plan): el feed deja de ser genérico y se ata a tu historia.
 - Verificado: navegador puerto 8874 — tweets citando ventas/clásicos/goleadas/títulos en 3ª persona correcta,
   balance cita memorias, consola limpia.
+
+## 6.12 · Variedad en las decisiones de mercado  ✅ (2026-08-19)
+**Archivos:** `js/data-proc.js`
+- Tres tipos nuevos de operación procedural, cada uno con jugador y club distintos cada vez:
+  **préstamo con opción de compra** (por un joven), **intercambio/trueque** (con posturas según si es ídolo) y
+  **sondeo de un grande por tu joya**. Antes la oferta era casi siempre por el mismo jugador.
+- Cada uno con 2-3 opciones y consecuencias proporcionales (sin castigos catastróficos), en el tono del juego.
+- Verificado: harness (55 variantes distintas en 200 tiradas, jugadores/clubes/tipos variados, estructura OK) +
+  navegador (renderiza como modal con 3 opciones, consola limpia).
+
+### Sigue pendiente
+- Pizarra 100% drag&drop tipo FIFA; roles/duties por jugador (Attack/Support/Defend).

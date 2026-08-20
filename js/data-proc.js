@@ -207,6 +207,68 @@ const DEC_PROC=[
        mitad:{txt:quien+" no te cree, pero se la guarda.",ef:{moral:-5}},
        mal:{txt:"Lo negaste y salió a contarlo. Quedaste como alguien que no cumple.",ef:{moral:-8},grupos:{camarin:-14,prensa:-10},rep:{credibilidad:-6}}}
      ]};
+ }},
+ /* 6.12 · MERCADO con variedad: distintos tipos de operación, distinto jugador cada vez */
+ /* préstamo con opción de compra por un joven */
+ {buzon:"refuerzos",peso:"bajo",gen:function(){
+   const j=jugAzar(x=>x.edad<=23&&x.nivel>=64); if(!j) return null;
+   const club=otroClub();
+   return {t:club+" quiere a "+j.n+" a préstamo",
+     d:club+" ofrece llevarse a "+j.n+" ("+j.edad+" años) cedido por un año, con opción de compra. Se foguea afuera, pero lo perdés esta temporada.",
+     posturas:{directorio:8,comunidad:-6},
+     op:[
+      {t:"Cederlo con opción",dif:24,grupos:{directorio:8},
+       bien:{txt:"Vuelve rodado y revalorizado. Buen negocio.",ef:{cantera:4},flags:{}},
+       mitad:{txt:"Sumó minutos, nada del otro mundo.",ef:{}},
+       mal:{txt:"Casi no jugó y volvió frío.",ef:{cantera:-2}}},
+      {t:"Cederlo sin opción (te lo asegurás)",dif:30,
+       bien:{txt:"Se fogueó y vuelve tuyo, más caro.",ef:{cantera:5}},
+       mitad:{txt:"Rodó a medias, pero es tuyo.",ef:{}},
+       mal:{txt:"No jugó y encima se resintió.",ef:{cantera:-2}}},
+      {t:"No, lo quiero acá",dif:20,grupos:{comunidad:6},
+       bien:{txt:"Le diste minutos vos y explotó en casa.",ef:{cantera:4,plantel:2}},
+       mitad:{txt:"Jugó poco, se quedó en el molde.",ef:{}},
+       mal:{txt:"No sumó y se frustró en la banca.",ef:{moral:-3}}}
+     ]};
+ }},
+ /* intercambio propuesto (dos jugadores) */
+ {buzon:"refuerzos",peso:"medio",gen:function(){
+   const sale=jugAzar(x=>x.nivel>=66); const club=otroClub(); if(!sale) return null;
+   return {t:"Propuesta de intercambio por "+sale.n,
+     d:club+" propone un trueque: te llevan a "+sale.n+" ("+sale.pos+", nivel "+sale.nivel+") y te mandan un jugador de su plantel de nivel parecido. Cambia caras sin mover plata.",
+     posturas:{directorio:10,camarin:-8,hinchada:sale.rasgos&&sale.rasgos.includes("ídolo")?-15:-4},
+     op:[
+      {t:"Aceptar el trueque",dif:34,grupos:{directorio:8,camarin:-6},
+       bien:{txt:"El que llegó rinde más. Salió el cambio.",ef:{plantel:2}},
+       mitad:{txt:"Cambio neutro: ni mejor ni peor.",ef:{}},
+       mal:{txt:"El que llegó no encajó y perdiste a un querido.",ef:{plantel:-3,moral:-5},grupos:{hinchada:-6}}},
+      {t:"Pedir que sumen plata",dif:44,grupos:{directorio:10},
+       bien:{txt:"Aceptaron poner diferencia. Trueque + caja.",ef:{plata:120}},
+       mitad:{txt:"Regatearon y quedó en nada.",ef:{}},
+       mal:{txt:"Se ofendieron y cerraron la puerta.",ef:{}}},
+      {t:"Rechazar, acá no se cambia gente",dif:22,grupos:{camarin:8,hinchada:5},rep:{dureza:3},
+       bien:{txt:"El grupo valoró que bancaste a los tuyos.",ef:{moral:3}},
+       mitad:{txt:"Quedó ahí, sin ruido.",ef:{}},
+       mal:{txt:"El jugador quería irse y quedó dolido.",ef:{moral:-3}}}
+     ]};
+ }},
+ /* sondeo de un grande por tu joya */
+ {buzon:"refuerzos",peso:"medio",gen:function(){
+   const j=jugAzar(x=>x.edad<=22&&(x.proy>=x.nivel+4)); if(!j) return null;
+   const club=otroClub();
+   return {t:club+" sondea a la joya "+j.n,
+     d:club+" mandó a preguntar por "+j.n+" ("+j.edad+" años, proyección "+j.proy+"). Todavía no hay oferta formal, pero el entorno del pibe ya se ilusiona.",
+     posturas:{hinchada:8,directorio:-6,prensa:8},
+     op:[
+      {t:"Ponerle una cláusula alta y blindarlo",dif:32,req:{plata:60},ef:{plata:-60},grupos:{hinchada:10},
+       bien:{txt:"Blindado y contento. Si se va, se va carísimo.",ef:{prestigio:2}},
+       mitad:{txt:"Firmó, pero el ruido sigue.",ef:{}},
+       mal:{txt:"Se sintió una mercancía y bajó el rendimiento.",ef:{moral:-4}}},
+      {t:"Dejar correr, si llega la oferta se ve",dif:26,grupos:{directorio:6},
+       bien:{txt:"Llegó una oferta grande y la caja lo agradeció.",ef:{plata:200}},
+       mitad:{txt:"Quedó en sondeo, nada concreto.",ef:{}},
+       mal:{txt:"El pibe se distrajo pensando en irse.",ef:{plantel:-2,moral:-3}}}
+     ]};
  }}
 ];
 
