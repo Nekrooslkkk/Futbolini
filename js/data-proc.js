@@ -276,21 +276,22 @@ function generarNegociacion(){
 function resolverNegociacion(neg,approach){
   const j=neg.j; const carisma=(E.rep.publica+E.rep.credibilidad)/2;
   let txt="", tono="neutro";
+  const setMoral=d=>{ if(j) j.moral=clamp((j.moral||70)+d,0,100); };
   if(approach==="persuadir"){
-    if(Math.random()<clamp(0.45+carisma/250,0.3,0.85)){ aplicarEfectos({moral:3}); aplicarGrupos({camarin:6}); txt=j.n+" entró en razón. Clima recompuesto."; tono="bueno"; }
-    else txt=j.n+" escuchó, pero no quedó del todo convencido.";
+    if(Math.random()<clamp(0.45+carisma/250,0.3,0.85)){ aplicarEfectos({moral:3}); aplicarGrupos({camarin:6}); setMoral(15); txt=j.n+" entró en razón. Clima recompuesto."; tono="bueno"; }
+    else { setMoral(-8); txt=j.n+" escuchó, pero no quedó del todo convencido. Quedó con la cara larga."; }
   } else if(approach==="prometer"){
-    if(Math.random()<clamp(0.7+carisma/400,0.5,0.92)){ aplicarEfectos({moral:5,deuda:60}); aplicarGrupos({camarin:8,directorio:-6}); txt=j.n+" firma feliz, pero la planilla pesa más."; tono="bueno"; E.flags["prometido_"+j.n]=E.idx;
+    if(Math.random()<clamp(0.7+carisma/400,0.5,0.92)){ aplicarEfectos({moral:5,deuda:60}); aplicarGrupos({camarin:8,directorio:-6}); setMoral(20); txt=j.n+" firma feliz, pero la planilla pesa más."; tono="bueno"; E.flags["prometido_"+j.n]=E.idx;
       if(typeof recordar==="function") recordar("promesa","le prometiste un aumento a "+j.n,{quien:j.n,peso:"alto",tono:"riesgo"}); }
-    else { aplicarEfectos({moral:-2}); txt="No alcanzó ni con la promesa. Sigue incómodo."; }
+    else { aplicarEfectos({moral:-2}); setMoral(-12); txt="No alcanzó ni con la promesa. Sigue incómodo."; }
   } else if(approach==="forzar"){
-    if(Math.random()<clamp(0.4+E.rep.dureza/200,0.25,0.8)){ aplicarEfectos({plantel:2}); aplicarGrupos({tecnico:6,camarin:-4}); txt=j.n+" agachó la cabeza. Quedó claro quién manda."; }
-    else { aplicarEfectos({moral:-6}); aplicarGrupos({camarin:-12,prensa:-6}); txt=j.n+" explotó y el vestuario tomó nota."; tono="malo"; }
+    if(Math.random()<clamp(0.4+E.rep.dureza/200,0.25,0.8)){ aplicarEfectos({plantel:2}); aplicarGrupos({tecnico:6,camarin:-4}); setMoral(-6); txt=j.n+" agachó la cabeza. Quedó claro quién manda, pero no contento."; }
+    else { aplicarEfectos({moral:-6}); aplicarGrupos({camarin:-12,prensa:-6}); setMoral(-24); txt=j.n+" explotó y el vestuario tomó nota. Quedó dolido."; tono="malo"; }
   } else { /* convencer: impredecible (morado) */
     const r=Math.random();
-    if(r<0.4){ aplicarEfectos({moral:8,plantel:2}); aplicarGrupos({camarin:12}); txt=j.n+" salió más motivado que nunca. Redondo."; tono="bueno"; }
+    if(r<0.4){ aplicarEfectos({moral:8,plantel:2}); aplicarGrupos({camarin:12}); setMoral(25); txt=j.n+" salió más motivado que nunca. Redondo."; tono="bueno"; }
     else if(r<0.72){ txt="Charla larga de resultado incierto. Habrá que ver."; }
-    else { aplicarEfectos({moral:-5}); aplicarGrupos({camarin:-8}); txt="Se malinterpretó todo y quedó peor que antes."; tono="malo"; }
+    else { aplicarEfectos({moral:-5}); aplicarGrupos({camarin:-8}); setMoral(-18); txt="Se malinterpretó todo y "+j.n+" quedó peor que antes."; tono="malo"; }
   }
   notificar({t:"Cara a cara con "+j.n,tipo:tono,d:txt,bandeja:false});
   guardar(); return txt;

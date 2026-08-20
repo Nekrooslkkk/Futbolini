@@ -559,6 +559,20 @@ function ejecutarAccion(a){
   }
   return "";
 }
+/* 6.10 · caras largas: reconquistar jugadores descontentos con plata */
+function jugadoresDescontentos(){
+  return E.plantel.filter(j=>!j.vendido&&!j.cedido&&(j.moral||70)<55).sort((a,b)=>(a.moral||70)-(b.moral||70));
+}
+function costoReconquista(j){ return Math.round(30+(j.valor||100)*0.05+(j.nivel||60)*0.6); }
+function reconquistarJugador(j){
+  const costo=costoReconquista(j);
+  if(E.plata<costo) return {ok:false,msg:"No te alcanza la caja ("+plata(costo)+")"};
+  aplicarEfectos({plata:-costo});
+  j.moral=clamp((j.moral||70)+ri(22,32),0,100);
+  aplicarGrupos({camarin:4});
+  if(typeof recordar==="function") recordar("camarin","le pusiste un plus para reconquistar a "+j.n,{quien:j.n,peso:"bajo",tono:"bueno"});
+  return {ok:true,costo:costo};
+}
 function venderJugador(j){
   const monto=Math.round(j.valor*rnd(.75,1.2));
   j.vendido=true; E.plata+=monto;

@@ -728,6 +728,25 @@ function vistaFinanzas(){
   }
   v.appendChild(pd);
   /* fondos desviados / redención (Bloque 2) */
+  /* 6.10 · camarín descontento: reconquistar caras largas con plata */
+  if(typeof jugadoresDescontentos==="function"){
+    const desc=jugadoresDescontentos();
+    if(desc.length){
+      const pc=panel("Camarín descontento","😤","alerta");
+      pc.cuerpo.appendChild(el("p","mini","Jugadores con la cara larga (poca moral, casi siempre por una negociación que salió mal). Un plus los reconquista y suma al grupo — si no, los vas perdiendo de a poco."));
+      desc.slice(0,6).forEach(j=>{
+        const costo=costoReconquista(j);
+        const d=el("div","resul mitad");
+        d.innerHTML="<b>"+j.n+"</b> <span class='mini'>· "+j.pos+" · nivel "+j.nivel+" · moral "+Math.round(j.moral)+"/100</span>";
+        const b=el("button","btn-aqua chico"+(E.plata<costo?" gris":" verde"),"💵 Acercarlo al plantel · "+plata(costo));
+        b.style.marginTop="5px"; b.disabled=E.plata<costo;
+        b.onclick=()=>{ const r=reconquistarJugador(j); if(!r.ok){ aviso(r.msg); return; } guardar(); render(); aviso("Reconquistaste a "+j.n+" (+moral)"); };
+        d.appendChild(b);
+        pc.cuerpo.appendChild(d);
+      });
+      v.appendChild(pc);
+    }
+  }
   if(typeof panelDesfalco==="function"){ const pdf=panelDesfalco(); if(pdf) v.appendChild(pdf); }
 }
 /* ---------------- plantel ---------------- */

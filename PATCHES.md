@@ -770,3 +770,17 @@ HECHO en esta tanda:
 - Resuelve el pendiente de la conferencia (se sentía poco cercana y repetitiva).
 - Verificado: navegador puerto 8866 — pregunta por la derrota / por la promesa / por el clásico según contexto,
   periodista con nombre, 3 opciones, consola limpia.
+
+## 6.10 · Caras largas con plata (reconquistar descontentos)  ✅ (2026-08-19)
+**Archivos:** `js/data-proc.js` (moral individual), `js/motor.js` (reconquista), `js/ui.js` (panel Finanzas)
+- Las negociaciones cara a cara ahora mueven la **moral individual** del jugador (antes solo la del equipo):
+  forzar mal / promesa fallida / convencer mal lo dejan **con la cara larga** (moral baja); persuadir/prometer/
+  convencer bien lo levantan.
+- **Panel "Camarín descontento" en Finanzas**: lista a los jugadores con poca moral y un botón
+  **"💵 Acercarlo al plantel"** que gasta plata (según valor/nivel) para reconquistarlo (+moral, +camarín).
+  Justo lo pedido: dar plata para que los jugadores se acerquen al plantel.
+- Verificado: navegador puerto 8870 — forzar fallido baja la moral individual, panel aparece con descontentos,
+  reconquistar gasta plata, sube la moral y saca al jugador de la lista, consola limpia.
+
+### Sigue pendiente
+- Variedad de jugador ofertado en el mercado; pizarra drag&drop; roles/duties por jugador.
