@@ -681,3 +681,16 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
 - **Comodidad en PC:** las decisiones del escritorio ahora van en **2 columnas** en pantalla ancha (≥1000px),
   ordenadas con las urgentes primero, con un contador arriba. Menos scroll eterno.
 - Verificado: harness (sin duplicados año 1/2, lesión cae en el ídolo Barticciotto) + navegador (grid, consola limpia).
+
+## 6.5 · Contenido de Grok integrado: planteles reales + fixtures  ✅ (2026-08-19)
+**Archivos:** `js/data-grok.js` (nuevo), `index.html`
+- Integrados los datos que devolvió Grok: **planteles 2026 de 11 clubes** (EVE, COQ, AUD, HUA, OHI, NUB, COB,
+  CAL, LSE, DCO, UDC), **planteles 1991 de 8 clubes** (UC, COQ, OHI, COB, UES, UCH, FV, DCO) y **fixtures
+  reales 2026 de Palestino y Deportes Limache** (30 fechas c/u con resultados hasta agosto). 346 jugadores reales.
+- Se cargan en un archivo propio `data-grok.js` (después de data-liga/plantel) y se enchufan por **mutación** a
+  `PLANTELES_REALES` y `FIXTURES_OFICIALES` — sin tocar los archivos base, sin zona muerta temporal, y sin pisar
+  lo existente (UC/UCH conservan sus años previos).
+- Ahora **18 clubes con plantel documentado** y 5 con fixture oficial. PAL/LIM dejan de usar el calendario
+  prestado de Colo-Colo.
+- Verificado: navegador puerto 8850 — 18 clubes en el mapa, AUD 22/22 reales, UC 1991 con Toledo, PAL/LIM 30
+  fechas, temporada 2026 completa simulada sin crashes, U. Española 1991 con 17 reales, consola limpia.
