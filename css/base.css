@@ -397,3 +397,12 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
   border:1px solid var(--linea);cursor:pointer;opacity:.6}
 .rol-b.on{opacity:1;color:#fff;background:linear-gradient(180deg,#3f95e6,#0b3f86);border-color:#0b3f86}
 .rol-b:hover{opacity:.9}
+
+/* 6.14 · pizarra drag & drop */
+.pizarra .chip.arrastrable{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.pizarra .chip.arrastrable:active{cursor:grabbing}
+.pizarra .chip.dragging{opacity:.3}
+.celda.hover{outline:2px dashed #0bbce6;outline-offset:-3px;background:rgba(11,188,230,.18)!important}
+.chip-ghost{position:fixed;transform:translate(-50%,-50%);z-index:10000;pointer-events:none;
+  padding:5px 9px;border-radius:6px;font-size:11px;font-weight:800;color:#fff;white-space:nowrap;
+  background:linear-gradient(180deg,#4aa3e6,#0b3f86);box-shadow:0 5px 16px rgba(0,0,0,.45);opacity:.94}

@@ -821,3 +821,14 @@ HECHO en esta tanda:
 
 ### Sigue pendiente
 - Pizarra 100% drag&drop tipo FIFA (la última feature grande de UI).
+
+## 6.14 · Pizarra drag & drop tipo FIFA  ✅ (2026-08-19)
+**Archivos:** `js/ui-partido.js` (modalPizarra), `css/base.css`
+- La pizarra dejó de ser "tocar y tocar": ahora **arrastrás a los jugadores por la cancha** con el dedo o el
+  mouse (pointer events → funciona en PC y celular). Ghost que sigue el puntero, celda de destino resaltada,
+  y **swap** automático si soltás sobre otro jugador.
+- Mantiene la detección de formación (incl. bizarras) y el efecto táctico en vivo mientras acomodás.
+- Verificado: navegador puerto 8886 — 11 chips arrastrables, mover a celda vacía OK, swap OK, formación
+  detectada se actualiza, consola limpia.
+- **Con esto queda cerrada la última feature grande del plan de pulido.** Táctica completa: formaciones,
+  mentalidad, roles por jugador, designados, alineación manual y pizarra drag&drop.

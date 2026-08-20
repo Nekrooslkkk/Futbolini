@@ -195,26 +195,53 @@ function modalAlineacion(part){
 function modalPizarra(part){
   const once=onceIdeal();
   if(!E.tactica.pizarra || !mismaGente(E.tactica.pizarra,once)) E.tactica.pizarra=pizarraDesdeFormacion(once);
-  let sel=null;
   modal(box=>{
+    let drag=null;
+    const celdaBajo=(x,y)=>{ const e=document.elementFromPoint(x,y); return e?e.closest(".celda"):null; };
     const pintar=()=>{
       box.innerHTML="";
-      box.appendChild(el("div","cab",'<span class="ic">🎯</span><span>Pizarra libre</span>'));
+      box.appendChild(el("div","cab",'<span class="ic">🎯</span><span>Pizarra táctica</span>'));
       const c=el("div","cuerpo"); box.appendChild(c);
-      c.appendChild(el("p","mini","Tocá un jugador y después una celda para moverlo. Se permiten esquemas asimétricos o bizarros. ⬆ arriba es el arco rival."));
+      c.appendChild(el("p","mini","🖐️ Arrastrá a los jugadores por la cancha para acomodarlos. Se permiten esquemas asimétricos o bizarros. ⬆ arriba es el arco rival."));
       const grid=el("div","pizarra");
       for(let rr=PIZ_FILAS-1; rr>=0; rr--){
         for(let cc=0; cc<PIZ_COLS; cc++){
           const cell=el("div","celda"+(rr===0?" propia":(rr>=3?" ataque":"")));
+          cell.dataset.r=rr; cell.dataset.c=cc;
           const ocup=E.tactica.pizarra.find(p=>p.r===rr&&p.c===cc);
           if(ocup){
-            const chip=el("div","chip"+(sel===ocup?" sel":"")+(ocup.pos==="ARQ"?" arq":""));
+            const chip=el("div","chip"+(ocup.pos==="ARQ"?" arq":"")+" arrastrable");
             chip.textContent=apodoJug(ocup.n);
-            chip.onclick=(e)=>{ e.stopPropagation(); sel=(sel===ocup?null:ocup); pintar(); };
+            chip.style.touchAction="none";
+            chip.addEventListener("pointerdown",ev=>{ ev.preventDefault();
+              drag={entry:ocup,moved:false,sx:ev.clientX,sy:ev.clientY,ghost:null};
+              try{ chip.setPointerCapture(ev.pointerId); }catch(_){}
+            });
+            chip.addEventListener("pointermove",ev=>{ if(!drag||drag.entry!==ocup) return;
+              if(!drag.moved && Math.hypot(ev.clientX-drag.sx,ev.clientY-drag.sy)>5){ drag.moved=true;
+                chip.classList.add("dragging");
+                drag.ghost=document.createElement("div"); drag.ghost.className="chip-ghost"; drag.ghost.textContent=chip.textContent;
+                document.body.appendChild(drag.ghost);
+              }
+              if(drag.moved){ drag.ghost.style.left=ev.clientX+"px"; drag.ghost.style.top=ev.clientY+"px";
+                [].forEach.call(document.querySelectorAll(".celda.hover"),x=>x.classList.remove("hover"));
+                const cl=celdaBajo(ev.clientX,ev.clientY); if(cl) cl.classList.add("hover");
+              }
+            });
+            const soltar=ev=>{ if(!drag||drag.entry!==ocup) return;
+              const wasMoved=drag.moved, ghost=drag.ghost;
+              if(wasMoved){ const cl=celdaBajo(ev.clientX,ev.clientY);
+                if(cl){ const rr2=+cl.dataset.r, cc2=+cl.dataset.c;
+                  const otro=E.tactica.pizarra.find(p=>p.r===rr2&&p.c===cc2&&p!==ocup);
+                  if(otro){ otro.r=ocup.r; otro.c=ocup.c; }   /* swap */
+                  ocup.r=rr2; ocup.c=cc2; } }
+              if(ghost) ghost.remove(); drag=null;
+              if(wasMoved) pintar();
+            };
+            chip.addEventListener("pointerup",soltar);
+            chip.addEventListener("pointercancel",soltar);
             cell.appendChild(chip);
           }
-          cell.onclick=()=>{ if(sel){ const otro=E.tactica.pizarra.find(p=>p.r===rr&&p.c===cc&&p!==sel);
-            if(otro){ otro.r=sel.r; otro.c=sel.c; } sel.r=rr; sel.c=cc; sel=null; pintar(); } };
           grid.appendChild(cell);
         }
       }
