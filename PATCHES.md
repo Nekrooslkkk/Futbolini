@@ -784,3 +784,14 @@ HECHO en esta tanda:
 
 ### Sigue pendiente
 - Variedad de jugador ofertado en el mercado; pizarra drag&drop; roles/duties por jugador.
+
+## 6.11 · El mundo recuerda TU historia (memoria en PLOP + balance)  ✅ (2026-08-19)
+**Archivos:** `js/redes.js` (tweetDesdeMemoria), `js/ui.js` (balance de año)
+- **PLOP cita tus hechos reales**: ~30% de los posts-bot ahora comentan algo que VOS hiciste, tomado de la
+  memoria ([[E.memoria]]) y convertido a 3ª persona (`memoriaEn3a`): "Nadie olvida que el DT vendió a Vidal 👀",
+  "El que dude que se acuerde: el DT le ganó el clásico a la U 2-0 💙". Hinchas festejan lo bueno, cuentas
+  críticas te cobran lo malo, la prensa comenta lo neutro. Cada hecho se cita hasta 3 veces (no satura).
+- **Balance de fin de año** lista "Lo que quedó del año" con tus momentos de más peso (títulos, clásicos, ventas).
+- Profundiza el motor anti-robótico (Fase 1/2 del plan): el feed deja de ser genérico y se ata a tu historia.
+- Verificado: navegador puerto 8874 — tweets citando ventas/clásicos/goleadas/títulos en 3ª persona correcta,
+  balance cita memorias, consola limpia.

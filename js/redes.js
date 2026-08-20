@@ -107,10 +107,44 @@ function esVerificado(t){
   if(!(typeof t==="string") && (t.tipo==="prensa"||t.tipo==="club")) return true;
   return !!(E&&E.plopVerif&&E.plopVerif[h]);
 }
+/* 6.11 · convierte un recuerdo (2ª persona) en algo que la gente comenta (3ª persona) */
+function memoriaEn3a(txt){
+  let t=" "+txt;
+  const map={ganaste:"ganó",perdiste:"perdió",goleaste:"goleó",vendiste:"vendió",prometiste:"prometió",
+    saliste:"salió",levantaste:"levantó",reposteaste:"reposteó",moviste:"movió",forzaste:"forzó",
+    metiste:"metió"};
+  Object.keys(map).forEach(k=>{ t=t.replace(new RegExp("\\b"+k+"\\b","g"),map[k]); });
+  t=t.replace(/\bte golearon\b/g,"lo golearon").replace(/\bte hiciste\b/g,"se hizo").replace(/\bte cobra\b/g,"le cobra");
+  t=t.trim();
+  return "el DT "+t;
+}
+/* un tweet que cita un hecho REAL de tu historia (memoria) */
+function tweetDesdeMemoria(){
+  if(typeof memoriaReciente!=="function") return null;
+  const hechos=memoriaReciente(m=>(m.usado||0)<3, 8);
+  if(!hechos.length) return null;
+  const m=elige(hechos); m.usado=(m.usado||0)+1;
+  const frase=memoriaEn3a(m.txt);
+  if(m.tono==="bueno"){
+    return postProc(elige(HANDLES_HINCHA),"hincha",elige([
+      "Todavía me acuerdo cuando "+frase+". Grande 🙌",
+      "El que dude que se acuerde: "+frase+" 💙",
+      "Momentos que no se olvidan: "+frase+"."]),"bueno");
+  }
+  if(m.tono==="malo"||m.tono==="riesgo"){
+    return postProc(elige(["@bancado_de_sillon","@el_verdadero_hincha","@memoria_de_hincha","@critico_del_club"]),"hincha",elige([
+      "Nadie olvida que "+frase+". Ojo con eso 👀",
+      "El hincha tiene memoria: "+frase+".",
+      "Todavía duele que "+frase+"."]),"malo");
+  }
+  return postProc(elige(HANDLES_PRENSA),"prensa","Se sigue comentando que "+frase+".","neutro");
+}
 /* un post de "bot" para que el feed se mueva solo, como Twitter */
 function botPost(){
   const part=typeof proximoPartido==="function"?proximoPartido():null;
   const riv=part?part.rivalNombre:"el próximo rival";
+  /* ~30%: que la gente comente algo que VOS hiciste (si hay memoria) */
+  if(Math.random()<0.3){ const m=tweetDesdeMemoria(); if(m) return m; }
   const dados=[
     ()=>postProc(elige(HANDLES_HINCHA),"hincha",elige(TWEETS_HINCHA).x,"bueno"),
     ()=>postProc(elige(HANDLES_PRENSA),"prensa",elige([

@@ -1592,6 +1592,16 @@ function cerrarTemporada(){
     p.cuerpo.appendChild(el("div","resul "+(r.ev.nivel==="excelente"||r.ev.nivel==="cumplido"?"bien":"mal"),"<b>El directorio:</b> "+r.ev.txt));
     const tot=E.coincidencias.length+E.divergencias.length;
     if(tot) p.cuerpo.appendChild(el("p","mini","Fidelidad histórica del año: "+Math.round(E.coincidencias.length*100/tot)+"%."));
+    /* 6.11 · lo que quedó del año: los momentos que dejaron huella (memoria) */
+    if(typeof memoriaReciente==="function"){
+      const delAnio=(E.memoria||[]).filter(m=>m.anio===E.anio && (m.peso==="alto"||m.peso==="medio")).slice(-4).reverse();
+      if(delAnio.length){
+        p.cuerpo.appendChild(el("h3","sub","Lo que quedó del año"));
+        const ul=el("div");
+        delAnio.forEach(m=>ul.appendChild(el("div","mini","• "+m.txt.charAt(0).toUpperCase()+m.txt.slice(1)+".")));
+        p.cuerpo.appendChild(ul);
+      }
+    }
     if(riesgoDestitucion()){
       const b=el("button","btn-aqua ancho rojo","Ver qué decidió el directorio");
       b.onclick=()=>{ cerrarModal(); destituir("Después de la temporada "+E.anio+", el directorio decidió terminar el ciclo. "+r.ev.txt); render(); };
