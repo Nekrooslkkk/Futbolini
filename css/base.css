@@ -370,3 +370,10 @@ table.butacas tfoot td{font-weight:800;border-top:2px solid rgba(20,72,132,.3)}
 .grid-comodo{display:grid;grid-template-columns:1fr;gap:8px}
 @media(min-width:1000px){ .grid-comodo{grid-template-columns:1fr 1fr} }
 .grid-comodo .op{margin:0}
+
+/* 6.6 · preview del rival en el escritorio */
+details.rival-prev{border:1px solid var(--linea);border-radius:6px;padding:6px 10px;margin:2px 0}
+details.rival-prev>summary{cursor:pointer;font-weight:700;font-size:12.5px;list-style:none}
+details.rival-prev>summary::-webkit-details-marker{display:none}
+details.rival-prev[open]>summary{margin-bottom:6px;border-bottom:1px solid var(--linea);padding-bottom:5px}
+details.rival-prev table{font-size:11.5px}

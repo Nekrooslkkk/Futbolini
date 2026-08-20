@@ -694,3 +694,27 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
   prestado de Colo-Colo.
 - Verificado: navegador puerto 8850 — 18 clubes en el mapa, AUD 22/22 reales, UC 1991 con Toledo, PAL/LIM 30
   fechas, temporada 2026 completa simulada sin crashes, U. Española 1991 con 17 reales, consola limpia.
+
+## 6.6 · Revisiones del ESCRITORIO (flujo de partido) — parte 1  ✅ (2026-08-19)
+**Archivos:** `js/ui.js`, `js/ui-partido.js`, `js/data-decisiones.js`, `js/data-plantel.js`, `css/base.css`
+HECHO en esta tanda:
+- **(a) Próximo compromiso**: título "Próximo partido con X" (antes "visita a X") + subtítulo local/visita.
+  Nuevo desplegable **"👁️ Ver el once probable del rival"** (usa `plantelRival`, muestra XI con nivel; ● = real).
+- **(c) Antes de salir**: solo 3 acciones — **Simular**, **Dirigir**, **Conferencia**. El botón "Seguir" se fusionó:
+  "⚡ Simular" abre el partido en vivo y adentro hay **"⏩ Al resultado"** para saltar al final al toque.
+- **(d parte 1 · clásico)**: "Semana de clásico" ahora dispara **solo cuando el próximo partido es un clásico**
+  (antes salía al azar con hinchada>45). Texto usa el token nuevo {RIVAL}. Token RIVAL agregado a resolverTokens.
+- **(b parte 1 · entrenamiento)**: botón **"🏃 Entrenar fuerte"** (una vez por semana): sube la forma del plantel
+  (más chance de ganar) con **riesgo bajo (~12%) de lesión** realista. Los lesionados ya se excluían del once.
+- Verificado: navegador puerto 8854 — título nuevo, XI rival 11 filas, entrenar sube forma, 2 botones de modo,
+  clásico dispara solo con rival clásico, "⏩ Al resultado" en vivo, consola limpia.
+
+### PENDIENTE de las revisiones del escritorio (para próximas tandas)
+- **(b) Pizarra estilo FIFA**: interactiva, que detecte el tipo de formación (incl. bizarras tipo 2-4-4) y que
+  eso dé tácticas/estrategias reales; más formaciones clásicas; coordinada con los planteles reales.
+- **(b) Designados**: pateador de penales, tiros libres y córners elegibles en la previa.
+- **(b) Presión y estilo**: más opciones que realmente cambien el partido.
+- **(c) Conferencia de prensa**: más viva y variada (hoy repite las mismas preguntas) — engancharla al motor de
+  personajes/memoria del plan.
+- **(d) Ofertas de mercado**: más variedad de jugador ofertado; y las "caras largas" solucionables metiendo plata
+  (institución/finanzas) para reconquistar al jugador.

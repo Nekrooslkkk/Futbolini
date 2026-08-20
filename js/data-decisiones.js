@@ -669,9 +669,9 @@ const BOLSA=[
  ]},
 
 /* --- b_clasico | hinchada --- */
-{id:"b_clasico",buzon:"hinchada",peso:"medio",cuando:E=>E.ind.hinchada>45,
+{id:"b_clasico",buzon:"hinchada",peso:"medio",cuando:E=>typeof proximoPartido==="function"&&typeof esClasico==="function"&&esClasico(proximoPartido()),
  t:"Semana de clásico",
- d:"Se viene el partido más pesado del año. La barra pide coparlo todo, la ANFP amenaza con aforo reducido por seguridad, y la ciudad ya está caliente tres días antes. Cómo se juega la previa define mucho.",
+ d:"Se viene el clásico ante {RIVAL}, el partido más pesado del año. La barra pide coparlo todo, la ANFP amenaza con aforo reducido por seguridad, y la ciudad ya está caliente tres días antes. Cómo se juega la previa define mucho.",
  posturas:{hinchada:35,anfp:-20,prensa:5},
  consejo:{deportivo:"El ambiente ayuda, pero un jugador expulsado por la calentura nos hunde.",
    tesorero:"Un clásico a estadio lleno es la mejor taquilla del año. No la regalemos.",

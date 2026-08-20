@@ -297,6 +297,7 @@ function resolverTokens(txt,E){
     CRACK:(mejor(j=>j.valor)||{}).n,
     DT:(E.dt||"el cuerpo técnico"),
     CLUB:(E.clubNombre||"el club"),
+    RIVAL:((typeof proximoPartido==="function"&&proximoPartido()&&proximoPartido().rivalNombre)||"el rival"),
     ANIO:E.anio
   };
   return txt.replace(/\{([A-Z_]+)\}/g,(m,k)=> val[k]!=null?val[k]:m);

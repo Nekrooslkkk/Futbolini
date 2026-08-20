@@ -194,6 +194,23 @@ function elegirEpoca(id){
   });
 }
 /* ---------------- escritorio ---------------- */
+/* 6.6 · entrenamiento de la semana: mejora la forma del plantel con riesgo bajo de lesión */
+function entrenarSemana(){
+  if(E.flags["entreno_"+E.idx]){ aviso("Ya entrenaron fuerte esta semana"); return; }
+  E.flags["entreno_"+E.idx]=true;
+  const sanos=E.plantel.filter(j=>!j.vendido&&!j.cedido&&!(j.lesion>0));
+  sanos.forEach(j=>{ j.forma=clamp(j.forma+ri(2,6),30,99); });
+  aplicarEfectos({moral:2});
+  let msg="El equipo llegó más fino al partido (+forma).";
+  let tono="bueno";
+  if(Math.random()<0.12 && sanos.length){
+    const vv=elige(sanos); vv.lesion=ri(1,2); aplicarEfectos({moral:-2}); tono="malo";
+    msg=vv.n+" se resintió en la práctica y queda "+vv.lesion+" fecha(s) afuera. Los riesgos del rigor físico.";
+    if(typeof recordar==="function") recordar("entreno","forzaste la carga y "+vv.n+" se lesionó entrenando",{quien:vv.n,peso:"bajo",tono:"malo"});
+  }
+  notificar({t:"Entrenamiento de la semana",tipo:tono,d:msg,bandeja:false});
+  guardar(); render(); aviso("🏃 "+msg.slice(0,54));
+}
 function vistaEscritorio(){
   const v=$("#vista");
   const rej=el("div","rejilla dos");
@@ -203,12 +220,31 @@ function vistaEscritorio(){
   const part=proximoPartido();
   const p=panel("Próximo compromiso","📌",part&&part.tipo==="copa"?"agua":"");
   if(part){
-    p.cuerpo.appendChild(el("h2","tit",(part.local?"vs ":"visita a ")+part.rivalNombre));
-    p.cuerpo.appendChild(el("p","mini",(part.tipo==="copa"?"Copa Libertadores · "+part.ronda:"Campeonato Nacional · fecha "+part.fecha)+
+    p.cuerpo.appendChild(el("h2","tit","Próximo partido con "+part.rivalNombre));
+    p.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" · "+(part.tipo==="copa"?"Copa Libertadores · "+part.ronda:"Campeonato Nacional · fecha "+part.fecha)+
       " · "+fechaTxt(part.f)+" · "+part.sede));
+    /* ver el once probable del rival antes de entrar */
+    if(typeof plantelRival==="function"){
+      const det=el("details"); det.className="rival-prev";
+      det.appendChild(el("summary","","👁️ Ver el once probable de "+part.rivalNombre));
+      try{
+        const xi=plantelRival(part.rivalId||part.rivalNombre, part.fuerzaRival);
+        const t=el("table"); t.innerHTML="<thead><tr><th>Rival</th><th>Pos</th><th class='n'>Nivel</th></tr></thead>";
+        const tb=el("tbody");
+        xi.forEach(j=>tb.appendChild(el("tr",null,"<td>"+(j.real?"● ":"")+j.n+"</td><td>"+j.pos+"</td><td class='n'>"+j.nivel+"</td>")));
+        t.appendChild(tb); det.appendChild(t);
+        det.appendChild(el("p","mini","● jugador real documentado. Es una lectura estimada: la formación final del rival puede cambiar."));
+      }catch(e){ det.appendChild(el("p","mini","No se pudo leer el rival.")); }
+      p.cuerpo.appendChild(det);
+    }
     const b=el("button","btn-aqua ancho verde","Ir al partido");
     b.onclick=()=>{ if(bloqueoDecisiones()) return; pantallaPrevia(part); };
     p.cuerpo.appendChild(b);
+    /* entrenamiento de la semana: mejora la forma, con riesgo bajo de lesión */
+    const yaEntreno=E.flags["entreno_"+E.idx];
+    const bent=el("button","btn-aqua ancho"+(yaEntreno?" gris":""),yaEntreno?"🏃 Ya entrenaron fuerte esta semana":"🏃 Entrenar fuerte · mejora la forma (riesgo bajo de lesión)");
+    bent.disabled=yaEntreno; bent.style.marginTop="6px"; bent.onclick=entrenarSemana;
+    p.cuerpo.appendChild(bent);
   } else {
     p.cuerpo.appendChild(el("p",null,"No quedan partidos. Toca cerrar la temporada "+E.anio+"."));
     const b=el("button","btn-aqua ancho verde","Cerrar temporada");

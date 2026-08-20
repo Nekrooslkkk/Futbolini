@@ -73,9 +73,8 @@ function pantallaPrevia(part){
   }
   p2.cuerpo.appendChild(el("h3","sub","¿Cómo lo vivís?"));
   const bs=el("div");
-  [["Simular","simular","Resultado y crónica corta."],
-   ["Seguir","seguir","El partido en vivo, sin intervenir."],
-   ["Dirigir","dirigir","Vos decidís en los momentos clave."]].forEach(([n,m,d])=>{
+  [["⚡ Simular","seguir","Lo ves en vivo. Adentro decidís: saltar al resultado al toque o seguirlo minuto a minuto."],
+   ["🎯 Dirigir","dirigir","Intervenís en los momentos clave, con las barras de apoyo en vivo."]].forEach(([n,m,d])=>{
     const b=el("button","btn-aqua ancho"+(m==="dirigir"?" verde":""),n+" · <span style='font-weight:400;font-size:11.5px'>"+d+"</span>");
     b.style.marginBottom="7px";
     b.onclick=()=>arrancarPartido(part,m);
@@ -91,7 +90,7 @@ function pantallaPrevia(part){
   const bconf=el("button","btn-aqua ancho"+(confHecha?" gris":""),confHecha?"🎤 Ya diste la conferencia":"🎤 Conferencia de prensa");
   bconf.disabled=confHecha; bconf.onclick=()=>modalConferencia(part);
   p2.cuerpo.appendChild(bconf);
-  p2.cuerpo.appendChild(el("p","mini","Seguir: barra espaciadora para pausar. Dirigir: teclas 1 / 2 / 3 en cada decisión."));
+  p2.cuerpo.appendChild(el("p","mini","En el partido: barra espaciadora pausa · «⏩ Al resultado» lo termina al toque · Dirigir usa teclas 1 / 2 / 3."));
   rej.appendChild(p2);
   v.appendChild(rej);
   window.scrollTo({top:0});
@@ -197,6 +196,10 @@ function pintarPartido(){
       b.onclick=()=>{ VEL_PARTIDO=vv; if(!MOMENTO_OPS.length&&!PAUSADO) correrEnVivo(); pintarPartido(); };
       ctrl.appendChild(b);
     });
+    /* saltar al resultado: la parte "instantánea" fusionada en el mismo partido */
+    const bfin=el("button","btn-aqua chico verde","⏩ Al resultado"); bfin.style.marginLeft="4px";
+    bfin.onclick=()=>{ clearInterval(TIMER); MOMENTO_OPS=[]; correrHasta(P,90); pintarPartido(); cerrarPartido(); };
+    ctrl.appendChild(bfin);
     p.cuerpo.appendChild(ctrl);
     if(P.modo==="dirigir"){
       if(!E.config) E.config={autoPausa:true};
