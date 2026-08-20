@@ -64,6 +64,34 @@ function pantallaPrevia(part){
     row.appendChild(sel);
     p1.cuerpo.appendChild(row);
   });
+  /* 6.13 · roles/duties por jugador (estilo FM), colapsable, con update local */
+  const detRol=el("details"); detRol.className="rival-prev";
+  detRol.appendChild(el("summary","","🎭 Roles de los jugadores · Defensivo / Equilibrado / Ofensivo"));
+  const balance=el("p","mini");
+  const refrescarBalance=()=>{
+    const cnt={def:0,eq:0,ofe:0};
+    once.filter(j=>j.pos!=="ARQ").forEach(j=>{ cnt[(E.tactica.roles&&E.tactica.roles[j.n])||"eq"]++; });
+    balance.innerHTML="<b>Balance:</b> "+cnt.ofe+" ofensivos · "+cnt.eq+" equilibrados · "+cnt.def+" defensivos. "+
+      (cnt.ofe>=6?"Muy volcado al ataque: vas a generar, pero quedás abierto atrás.":
+       cnt.def>=6?"Muy replegado: seguro atrás, pero te va a costar crear.":"Reparto sano.");
+  };
+  once.filter(j=>j.pos!=="ARQ").forEach(j=>{
+    const row=el("div","rol-row");
+    row.appendChild(el("span","rol-n",j.n));
+    const bg=el("div","rol-btns");
+    [["def","DEF","Defensivo: cuida atrás"],["eq","EQ","Equilibrado"],["ofe","OFE","Ofensivo: pisa el área"]].forEach(([k,lab,ti])=>{
+      const cur=(E.tactica.roles&&E.tactica.roles[j.n])||"eq";
+      const b=el("button","rol-b"+(cur===k?" on":""),lab); b.title=ti;
+      b.onclick=(e)=>{ e.preventDefault(); E.tactica.roles=E.tactica.roles||{}; E.tactica.roles[j.n]=k; guardar();
+        [].forEach.call(bg.children,c=>c.classList.remove("on")); b.classList.add("on"); refrescarBalance(); };
+      bg.appendChild(b);
+    });
+    row.appendChild(bg);
+    detRol.appendChild(row);
+  });
+  refrescarBalance();
+  detRol.appendChild(balance);
+  p1.cuerpo.appendChild(detRol);
   const manualOn=E.tactica.xiManual&&E.tactica.xiManual.length;
   const bali=el("button","btn-aqua ancho"+(manualOn?" verde":""),
     "👥 Alinear el equipo · "+(manualOn?"manual":"automático"));

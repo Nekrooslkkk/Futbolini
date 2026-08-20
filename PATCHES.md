@@ -807,3 +807,17 @@ HECHO en esta tanda:
 
 ### Sigue pendiente
 - Pizarra 100% drag&drop tipo FIFA; roles/duties por jugador (Attack/Support/Defend).
+
+## 6.13 · Roles/duties por jugador (lo más profundo de FM)  ✅ (2026-08-19)
+**Archivos:** `js/partido.js` (fuerzaEquipo), `js/ui-partido.js` (previa), `js/motor.js`, `css/base.css`
+- Cada jugador de campo puede tener un **duty**: **Defensivo / Equilibrado / Ofensivo** (estilo Attack/Support/
+  Defend de Football Manager). La suma de duties inclina al equipo: más ofensivos = más ataque pero menos orden.
+- Sección colapsable **"🎭 Roles de los jugadores"** en la previa, con selector de 3 por jugador y una lectura
+  de **balance/fluidez** ("Muy volcado al ataque: vas a generar pero quedás abierto atrás" / "Reparto sano").
+  Update local (no cierra el colapsable al elegir).
+- Enganchado al motor: verificado que 11 ofensivos suben ataque y bajan orden (86/63) vs 11 defensivos (61/89).
+- Verificado: navegador puerto 8882 — roles cambian el partido, sección con 30 botones (10×3), consola limpia.
+- Con esto quedan cubiertas las dos capas tácticas grandes de FM (mentalidad de equipo + roles por jugador).
+
+### Sigue pendiente
+- Pizarra 100% drag&drop tipo FIFA (la última feature grande de UI).

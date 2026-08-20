@@ -124,10 +124,16 @@ function fuerzaEquipo(once){
   const me=MENTALIDADES[E.tactica.mentalidad]||MENTALIDADES["Equilibrado"];
   const libre=(E.tactica.pizarra&&E.tactica.pizarra.length)?formaLibre(E.tactica.pizarra):null;
   const shape=libre||f.ef;
+  /* 6.13 · roles/duties por jugador (estilo FM): la suma de duties inclina al equipo */
+  let rolA=0, rolO=0;
+  if(E.tactica.roles){
+    once.forEach(j=>{ const d=E.tactica.roles[j.n];
+      if(d==="ofe"){ rolA+=1.3; rolO-=1.0; } else if(d==="def"){ rolA-=1.0; rolO+=1.3; } });
+  }
   return {
     base:base,
-    ataque:base+((shape.ataque||0)+es.ataque+pr.ataque+me.ataque)*1.2+(E.ind.moral-55)*0.08+(shape.ancho||0)*0.6,
-    orden:base+((shape.orden||0)+es.orden+pr.orden+me.orden)*1.2+(E.ind.plantel-55)*0.05,
+    ataque:base+((shape.ataque||0)+es.ataque+pr.ataque+me.ataque)*1.2+(E.ind.moral-55)*0.08+(shape.ancho||0)*0.6+rolA*1.1,
+    orden:base+((shape.orden||0)+es.orden+pr.orden+me.orden)*1.2+(E.ind.plantel-55)*0.05+rolO*1.1,
     desgaste:es.desgaste+pr.desgaste+me.desgaste
   };
 }
