@@ -668,3 +668,16 @@ B5 Histórico 1989→2008 · B6 Motor/registro/mercado. Todo verificado, regresi
   una por semana, algunas piden imagen pública. Pagan al bolsillo personal.
 - Verificado: navegador puerto 8840 — sliders con fill, butacas 3 filas, RT firmado @dtcrack, verificado,
   bots sumando post a los 5s y frenando al salir, changas pagan, subir foto, consola limpia.
+
+## 6.4 · FIX brutal de duplicación + continuidad del jugador + comodidad PC  ✅ (2026-08-19)
+**Archivos:** `js/motor.js` (repartirDecisiones, lesionAToken), `js/data-decisiones.js`, `js/ui.js`, `css/base.css`
+- **FIX BRUTAL (decisiones que se multiplican en el 2do año):** `repartirDecisiones` armaba un Set de **ids**
+  (`x.id`) pero comparaba contra la **clave** (`d.id+"_"+anio`) — nunca coincidían, así que cada semana
+  re-agregaba las decisiones ya pendientes y se multiplicaban. Fix: dedup por `d.id`. Verificado: 10 repartos
+  seguidos en año 1 y año 2 → sin duplicados.
+- **Continuidad del jugador:** la decisión "El referente al borde de una recaída" nombra al {IDOLO} (ej. Vidal)
+  pero lesionaba a otro al azar (Jeyson Rojas). Nueva acción `lesionAToken:IDOLO` que lesiona al MISMO jugador
+  que nombra el texto. Se dejó `lesionAlAzar` donde el texto dice "un titular" (genérico).
+- **Comodidad en PC:** las decisiones del escritorio ahora van en **2 columnas** en pantalla ancha (≥1000px),
+  ordenadas con las urgentes primero, con un contador arriba. Menos scroll eterno.
+- Verificado: harness (sin duplicados año 1/2, lesión cae en el ídolo Barticciotto) + navegador (grid, consola limpia).

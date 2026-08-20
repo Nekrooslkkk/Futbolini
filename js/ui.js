@@ -247,14 +247,17 @@ function vistaEscritorio(){
   /* decisiones */
   const pd=panel("Decisiones sobre la mesa","📥",E.decPend.some(x=>x.peso==="alto")?"alerta":"");
   if(!E.decPend.length) pd.cuerpo.appendChild(el("p","mini","Nada pendiente. Por ahora."));
-  E.decPend.forEach(x=>{
+  else pd.cuerpo.appendChild(el("p","mini",E.decPend.length+" sobre la mesa. Las urgentes van primero; el resto puede esperar."));
+  const gridDec=el("div","grid-comodo");  /* 2 columnas en pantalla ancha: menos scroll */
+  E.decPend.slice().sort((a,b)=>(b.peso==="alto")-(a.peso==="alto")).forEach(x=>{
     const d=decisionPorId(x.id); if(!d) return;
     const b=el("button","op");
     b.innerHTML='<div class="t">'+BUZONES[d.buzon].ic+" "+resolverTokens(d.t,E)+'</div>'+
       '<div class="d">'+BUZONES[d.buzon].n+(x.peso==="alto"?" · <b>hay que resolverla antes del próximo partido</b>":"")+'</div>';
     b.onclick=()=>abrirDecision(d,true);
-    pd.cuerpo.appendChild(b);
+    gridDec.appendChild(b);
   });
+  pd.cuerpo.appendChild(gridDec);
   izq.appendChild(pd);
 
   /* bandeja de novedades */

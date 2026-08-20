@@ -365,3 +365,8 @@ table.butacas tfoot td{font-weight:800;border-top:2px solid rgba(20,72,132,.3)}
 .verif{display:inline-block;color:#1c8fe6;font-weight:900;font-size:12px;margin-left:1px}
 .plop-nuevo{animation:plopIn .45s ease}
 @keyframes plopIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+
+/* 6.4 · comodidad en PC: listas en 2 columnas en pantalla ancha (menos scroll) */
+.grid-comodo{display:grid;grid-template-columns:1fr;gap:8px}
+@media(min-width:1000px){ .grid-comodo{grid-template-columns:1fr 1fr} }
+.grid-comodo .op{margin:0}

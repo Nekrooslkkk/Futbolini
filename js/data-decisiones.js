@@ -712,15 +712,15 @@ const BOLSA=[
   {t:"Ponerlo, es un grande",d:"Los grandes aparecen en los grandes partidos.",dif:56,
    grupos:{hinchada:12,camarin:6},
    bien:{txt:"Apretó los dientes, la sacó barata y fue figura. Salió la jugada.",ef:{moral:8,hinchada:6}},
-   mitad:{txt:"Rindió a medias y salió tocado; hay que monitorearlo día a día.",ef:{plantel:-2},accion:"lesionAlAzar"},
+   mitad:{txt:"Rindió a medias y salió tocado; hay que monitorearlo día a día.",ef:{plantel:-2},accion:"lesionAToken:IDOLO"},
    mal:{txt:"Recayó a los veinte minutos. Se pierde el tramo decisivo y el médico te lo advirtió.",
-     ef:{plantel:-5,moral:-6},accion:"lesionAlAzar",grupos:{prensa:-8}}},
+     ef:{plantel:-5,moral:-6},accion:"lesionAToken:IDOLO",grupos:{prensa:-8}}},
   {t:"Infiltrarlo para este partido",d:"Solución de corto plazo, riesgo de largo.",dif:60,
    rep:{dureza:4},grupos:{camarin:-6},
    bien:{txt:"Aguantó infiltrado y cumplió, aunque el cuerpo médico dejó constancia de su desacuerdo.",ef:{moral:4,riesgo:4}},
    mitad:{txt:"Cumplió a medias y arrastró la molestia varias semanas más.",ef:{plantel:-3}},
    mal:{txt:"La infiltración salió mal y la lesión se agravó. Se abrió un debate feo sobre cómo se cuida a los jugadores.",
-     ef:{plantel:-7,moral:-8,riesgo:6},accion:"lesionAlAzar",grupos:{prensa:-10}}}
+     ef:{plantel:-7,moral:-8,riesgo:6},accion:"lesionAToken:IDOLO",grupos:{prensa:-10}}}
  ]}
 ];
 

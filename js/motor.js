@@ -404,7 +404,7 @@ function repartirDecisiones(){
   const ya=new Set(E.decPend.map(x=>x.id));
   decisionesDisponibles().forEach(d=>{
     const clave=d.id+"_"+E.anio;
-    if(E.decHechas[clave]||ya.has(clave)) return;
+    if(E.decHechas[clave]||ya.has(d.id)) return;   /* FIX: dedup por id (antes comparaba id-set vs clave, no coincidía nunca → duplicaba) */
     const mesActual=E.calendario[E.idx]?E.calendario[E.idx].f.m:2;
     if(d.mes && d.mes>mesActual) return;
     E.decPend.push({id:d.id,clave:clave,peso:d.peso||"medio"});
@@ -478,6 +478,12 @@ function ejecutarAccion(a){
       if(!sanos.length) return "";
       const j=elige(sanos); j.lesion=ri(2,6);
       return j.n+" queda fuera unas semanas por lesión.";
+    }
+    case "lesionAToken":{  /* lesiona al MISMO jugador que nombra el texto (continuidad) */
+      let j=jugadorPorToken(arg,E);
+      if(!j||j.vendido){ const sanos=E.plantel.filter(x=>!x.lesion&&!x.vendido); if(!sanos.length) return ""; j=elige(sanos); }
+      j.lesion=ri(3,7);
+      return j.n+" recayó y queda fuera unas semanas. Te lo habían advertido.";
     }
     case "venderTitular":{
       const l=E.plantel.filter(j=>!j.vendido).sort((a,b)=>b.valor-a.valor);
