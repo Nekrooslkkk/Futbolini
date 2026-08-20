@@ -30,7 +30,8 @@ function pantallaPrevia(part){
   const rej=el("div","rejilla dos");
   /* --- plan --- */
   const p1=panel("Plan de partido","📋");
-  [["form","Formación",Object.keys(FORMACIONES)],["estilo","Estilo",Object.keys(ESTILOS)],["presion","Presión",Object.keys(PRESIONES)]]
+  [["form","Formación",Object.keys(FORMACIONES)],["mentalidad","Mentalidad",Object.keys(MENTALIDADES)],
+   ["estilo","Estilo",Object.keys(ESTILOS)],["presion","Presión",Object.keys(PRESIONES)]]
    .forEach(([k,lab,ops])=>{
     p1.cuerpo.appendChild(el("label","lb",lab));
     const f=el("div","fichas");
@@ -51,6 +52,18 @@ function pantallaPrevia(part){
   t.appendChild(tb); p1.cuerpo.appendChild(t);
   const les=E.plantel.filter(j=>j.lesion>0&&!j.vendido);
   if(les.length) p1.cuerpo.appendChild(el("p","mini","No disponibles: "+les.map(j=>j.n).join(", ")));
+  /* 6.7 · designados de balón parado (penal / tiro libre / córner) */
+  p1.cuerpo.appendChild(el("h3","sub","Balón parado"));
+  [["penalista","🎯 Penales"],["tiroLibre","🎯 Tiros libres"],["corner","🚩 Córners"]].forEach(([k,lab])=>{
+    const row=el("div"); row.style.margin="4px 0";
+    row.appendChild(el("label","lb",lab));
+    const sel=document.createElement("select"); sel.className="entrada"; sel.style.width="100%";
+    const auto=document.createElement("option"); auto.value=""; auto.textContent="Automático (el mejor disponible)"; sel.appendChild(auto);
+    once.filter(j=>j.pos!=="ARQ").forEach(j=>{ const o=document.createElement("option"); o.value=j.n; o.textContent=j.n+" ("+j.pos+", niv "+j.nivel+")"; if(E.tactica[k]===j.n) o.selected=true; sel.appendChild(o); });
+    sel.onchange=()=>{ E.tactica[k]=sel.value||null; guardar(); };
+    row.appendChild(sel);
+    p1.cuerpo.appendChild(row);
+  });
   const bpiz=el("button","btn-aqua ancho"+(E.tactica.pizarra&&E.tactica.pizarra.length?" verde":""),
     "🎯 Pizarra libre"+(E.tactica.pizarra&&E.tactica.pizarra.length?" · activa":""));
   bpiz.onclick=()=>modalPizarra(part);
@@ -126,7 +139,10 @@ function modalPizarra(part){
       }
       c.appendChild(grid);
       const forma=formaLibre(E.tactica.pizarra)||{ataque:0,orden:0,ancho:0};
-      c.appendChild(el("div","resul mitad","Forma resultante — ataque <b>"+signo(Math.round(forma.ataque))+
+      const detec=(typeof formacionDetectada==="function")?formacionDetectada(E.tactica.pizarra):null;
+      c.appendChild(el("div","resul bien","Formación detectada: <b style='font-size:16px'>"+(detec||"—")+"</b>"+
+        (detec&&["4-4-2","4-3-3","4-5-1","5-3-2","5-4-1","3-5-2","3-4-3","4-2-4"].indexOf(detec)<0?" <span class='mini'>(esquema no clásico: el equipo lo sentirá raro los primeros minutos)</span>":"")));
+      c.appendChild(el("div","resul mitad","Efecto táctico — ataque <b>"+signo(Math.round(forma.ataque))+
         "</b> · orden <b>"+signo(Math.round(forma.orden))+"</b> · ancho <b>"+signo(Math.round(forma.ancho))+"</b>"));
       const g=el("button","btn-aqua ancho verde","Guardar pizarra");
       g.onclick=()=>{ guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Pizarra guardada"); };
@@ -298,11 +314,24 @@ function mostrarMomento(){
 function candidatosPenal(P){
   const c=P.once.filter(j=>j.pos!=="ARQ");
   const punt=j=>(j.nivel||60)+((j.rasgos&&j.rasgos.includes("penales"))?30:0)+((j.rasgos&&j.rasgos.includes("definición"))?12:0);
-  return c.slice().sort((a,b)=>punt(b)-punt(a)).slice(0,3);
+  let lista=c.slice().sort((a,b)=>punt(b)-punt(a)).slice(0,3);
+  /* 6.7 · el pateador designado en la previa va primero si está en cancha */
+  const des=E.tactica&&E.tactica.penalista;
+  if(des){ const dj=P.once.find(j=>j.n===des); if(dj){ lista=[dj].concat(lista.filter(j=>j.n!==des)).slice(0,3); } }
+  return lista;
 }
 function centroTiroLibre(P){
+  /* 6.7 · el ejecutante de tiro libre designado tira si está en cancha */
+  const desTL=E.tactica&&E.tactica.tiroLibre&&P.once.find(j=>j.n===E.tactica.tiroLibre);
+  const ejecuta=desTL||P.once.filter(j=>j.rasgos&&(j.rasgos.includes("tiro libre")||j.rasgos.includes("desequilibrio")))[0];
   const aereo=P.once.filter(j=>j.rasgos&&j.rasgos.includes("juego aéreo"))[0]||elige(P.once.filter(j=>j.pos==="DEF"||j.pos==="DEL"))||P.once[0];
-  linea(P,P.min,"Centro al área, sube "+(aereo?aereo.n:"la defensa")+" a cabecear…");
+  if(ejecuta&&ejecuta.rasgos&&ejecuta.rasgos.includes("tiro libre")){
+    linea(P,P.min,"Tiro libre para "+ejecuta.n+", especialista, se para sobre la pelota…");
+    const pd=clamp(0.16+(ejecuta.nivel-70)/200,0.08,0.30);
+    if(Math.random()<pd){ ejecuta.goles++; P.goleadores.push(ejecuta.n); regGol(P,P.min,ejecuta.n,true,"tiro libre"); if(P.part.local)P.gl++;else P.gv++;
+      linea(P,P.min,"¡GOLAZO de tiro libre de "+ejecuta.n+"! "+marcadorTxt(P),"gol"); return; }
+  }
+  linea(P,P.min,"Centro al área"+(ejecuta?" de "+ejecuta.n:"")+", sube "+(aereo?aereo.n:"la defensa")+" a cabecear…");
   const prob=clamp(0.14+((aereo&&aereo.rasgos&&aereo.rasgos.includes("juego aéreo"))?0.10:0),0.06,0.28);
   if(Math.random()<prob){ if(aereo){aereo.goles++;P.goleadores.push(aereo.n);regGol(P,P.min,aereo.n,true,"cabeza");} if(P.part.local)P.gl++;else P.gv++;
     linea(P,P.min,"¡Gol de cabeza"+(aereo?" de "+aereo.n:"")+"! "+marcadorTxt(P),"gol"); }

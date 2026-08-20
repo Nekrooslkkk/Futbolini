@@ -8,9 +8,21 @@
 const FORMACIONES={
  "4-4-2":{def:4,vol:4,del:2,ef:{orden:2,ataque:0}},
  "4-3-3":{def:4,vol:3,del:3,ef:{orden:-1,ataque:4}},
+ "4-5-1":{def:4,vol:5,del:1,ef:{orden:5,ataque:-2}},
  "5-3-2":{def:5,vol:3,del:2,ef:{orden:5,ataque:-3}},
+ "5-4-1":{def:5,vol:4,del:1,ef:{orden:8,ataque:-5}},
  "3-5-2":{def:3,vol:5,del:2,ef:{orden:-2,ataque:3}},
+ "3-4-3":{def:3,vol:4,del:3,ef:{orden:-3,ataque:6}},
  "4-2-4":{def:4,vol:2,del:4,ef:{orden:-5,ataque:7}}
+};
+/* 6.7 · MENTALIDAD (estilo Football Manager): sesgo global de riesgo del equipo.
+   Más ofensivo = más ataque y desgaste pero menos orden y más exposición atrás. */
+const MENTALIDADES={
+ "Ultradefensivo":{ataque:-6,orden:8, desgaste:-2,expo:-6,recup:-3},
+ "Defensivo":     {ataque:-3,orden:4, desgaste:-1,expo:-3,recup:-1},
+ "Equilibrado":   {ataque:0, orden:0, desgaste:0, expo:0, recup:0},
+ "Ofensivo":      {ataque:5, orden:-3,desgaste:2, expo:4, recup:3},
+ "Ultraofensivo": {ataque:9, orden:-6,desgaste:4, expo:8, recup:5}
 };
 const ESTILOS={
  "Equilibrado":{ataque:1,orden:1,desgaste:1},
@@ -100,14 +112,25 @@ function fuerzaEquipo(once){
   const f=FORMACIONES[E.tactica.form]||FORMACIONES["4-4-2"];
   const es=ESTILOS[E.tactica.estilo]||ESTILOS["Equilibrado"];
   const pr=PRESIONES[E.tactica.presion]||PRESIONES["Media"];
+  const me=MENTALIDADES[E.tactica.mentalidad]||MENTALIDADES["Equilibrado"];
   const libre=(E.tactica.pizarra&&E.tactica.pizarra.length)?formaLibre(E.tactica.pizarra):null;
   const shape=libre||f.ef;
   return {
     base:base,
-    ataque:base+((shape.ataque||0)+es.ataque+pr.ataque)*1.2+(E.ind.moral-55)*0.08+(shape.ancho||0)*0.6,
-    orden:base+((shape.orden||0)+es.orden+pr.orden)*1.2+(E.ind.plantel-55)*0.05,
-    desgaste:es.desgaste+pr.desgaste
+    ataque:base+((shape.ataque||0)+es.ataque+pr.ataque+me.ataque)*1.2+(E.ind.moral-55)*0.08+(shape.ancho||0)*0.6,
+    orden:base+((shape.orden||0)+es.orden+pr.orden+me.orden)*1.2+(E.ind.plantel-55)*0.05,
+    desgaste:es.desgaste+pr.desgaste+me.desgaste
   };
+}
+/* 6.7 · detecta la formación desde la pizarra (incl. bizarras tipo 2-4-4) */
+function formacionDetectada(piz){
+  if(!piz||!piz.length) return null;
+  const out=piz.filter(p=>p.pos!=="ARQ");
+  if(out.length<9) return null;
+  const def=out.filter(p=>p.r<=1).length;
+  const del=out.filter(p=>p.r>=3).length;
+  const vol=out.length-def-del;
+  return def+"-"+vol+"-"+del;
 }
 function iniciarPartido(part,modo){
   const once=onceIdeal();
@@ -118,11 +141,12 @@ function iniciarPartido(part,modo){
   const rivalBase=part.fuerzaRival+(part.local?0:3);
   const cl=(typeof CLIMAS!=="undefined"&&CLIMAS[part.clima])||{desgaste:0,precision:1};
   const pr=PRESIONES[E.tactica.presion]||PRESIONES["Media"];
+  const me=MENTALIDADES[E.tactica.mentalidad]||MENTALIDADES["Equilibrado"];
   const P={
     part:part, modo:modo||"simular", min:0, gl:0, gv:0, once:once, rivalPlantel:plantelRival(part.rivalNombre||part.rivalId,part.fuerzaRival),
     ataque:fz.ataque+bonoLocal+bonoTorneo+arb, orden:fz.orden+bonoLocal*0.6+bonoTorneo+arb,
     desgaste:fz.desgaste+(cl.desgaste||0), cansancio:0, rival:rivalBase, empuje:0, riesgoPlan:0,
-    recup:pr.recup||0, expo:pr.expo||0,
+    recup:(pr.recup||0)+(me.recup||0), expo:(pr.expo||0)+(me.expo||0),
     precClima:cl.precision||1, arb:arb,
     lineas:[], goleadores:[], tarjetas:[], lesionados:[], ticker:[], terminado:false,
     momentos:momentosPartido(part), momentoIdx:0, fase:"equilibrio",

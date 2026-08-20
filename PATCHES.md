@@ -718,3 +718,26 @@ HECHO en esta tanda:
   personajes/memoria del plan.
 - **(d) Ofertas de mercado**: más variedad de jugador ofertado; y las "caras largas" solucionables metiendo plata
   (institución/finanzas) para reconquistar al jugador.
+
+## 6.7 · Profundidad táctica estilo Football Manager  ✅ (2026-08-19)
+**Archivos:** `js/partido.js`, `js/ui-partido.js`, `js/motor.js`
+**Investigación:** mecánicas de Football Manager (mentalidad, roles/duties, shape) — comunidad Sports Interactive.
+- **MENTALIDAD** (nuevo eje táctico global, estilo FM): Ultradefensivo → Defensivo → Equilibrado → Ofensivo →
+  Ultraofensivo. Sesga ataque/orden/desgaste/exposición del equipo. Verificado: ofensivo sube ataque y baja
+  orden (64/84 → 82/67). Enganchada al motor (`fuerzaEquipo` + `P.expo/recup`).
+- **Más formaciones**: se suman 4-5-1, 5-4-1 y 3-4-3 (ahora 8 clásicas).
+- **Detección de formación en la pizarra** (`formacionDetectada`): lee la grilla y muestra el esquema (incl.
+  bizarros tipo **2-4-4**), avisando si no es clásico (el equipo "lo siente raro"). Ahora la pizarra libre
+  tiene consecuencia real y legible.
+- **Designados de balón parado**: pateador de **penales**, **tiros libres** y **córners** elegibles en la previa
+  (selects del once). El designado tiene prioridad en el partido; con especialista de tiro libre puede haber
+  golazo directo. Verificado: el penalista designado va primero aunque no sea el mejor.
+- Resuelve parte del pendiente (b) de las revisiones del escritorio (designados + más formaciones + detección).
+- Verificado: navegador puerto 8858 — mentalidad cambia el partido, 8 formaciones, 2-4-4 detectado, 3 selects
+  de designados, penalista designado primero, consola limpia.
+
+### Sigue pendiente del escritorio
+- Pizarra 100% drag&drop tipo FIFA + poder meter suplentes al once (selección manual de XI).
+- Presión/estilo con aún más opciones; roles/duties por jugador (Attack/Support/Defend) al estilo FM.
+- Conferencia de prensa más viva (motor de personajes/memoria).
+- Ofertas de mercado con más variedad + "caras largas" solucionables con plata.

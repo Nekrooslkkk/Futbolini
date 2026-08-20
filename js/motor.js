@@ -211,6 +211,11 @@ function normalizarEstado(){
   /* 6.3 · PLOP: usuario, verificados y likes */
   if(!E.plopVerif) E.plopVerif={};
   if(!Array.isArray(E.plopLikes)) E.plopLikes=[];
+  /* 6.7 · táctica: mentalidad estilo FM y designados de balón parado */
+  if(E.tactica){ if(!E.tactica.mentalidad) E.tactica.mentalidad="Equilibrado";
+    if(E.tactica.penalista===undefined) E.tactica.penalista=null;
+    if(E.tactica.tiroLibre===undefined) E.tactica.tiroLibre=null;
+    if(E.tactica.corner===undefined) E.tactica.corner=null; }
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){
