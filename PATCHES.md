@@ -757,3 +757,16 @@ HECHO en esta tanda:
 ### Sigue pendiente
 - Pizarra 100% drag&drop; roles/duties por jugador (Attack/Support/Defend); conferencia más viva;
   variedad de ofertas de mercado + "caras largas" con plata.
+
+## 6.9 · Conferencia de prensa VIVA (reactiva + con periodistas)  ✅ (2026-08-19)
+**Archivos:** `js/ui-partido.js`
+- La conferencia dejó de repetir las mismas 3 opciones genéricas. Ahora un **periodista con nombre** (Tironi,
+  la Kari, el Chico Sotomayor…) te hace una **pregunta reactiva** al contexto real: la derrota de la fecha
+  pasada, la racha sin ganar, una **promesa que recuerda la memoria** ({QUIEN}), el clásico que se viene, ser
+  favorito, estar lejos del objetivo, o venir encendido. Cada pregunta trae 3 respuestas con su tono (calma /
+  autocrítica / confianza / palo) y efectos.
+- Usa el motor de memoria ([[E.memoria]]) y `postProc` para que tus dichos aparezcan en PLOP. "No hablar" ahora
+  cuesta un poco con la prensa.
+- Resuelve el pendiente de la conferencia (se sentía poco cercana y repetitiva).
+- Verificado: navegador puerto 8866 — pregunta por la derrota / por la promesa / por el clásico según contexto,
+  periodista con nombre, 3 opciones, consola limpia.

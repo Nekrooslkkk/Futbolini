@@ -209,31 +209,73 @@ function modalPizarra(part){
 }
 /* Conferencia de prensa PRE-partido (Bloque 4): 3 respuestas que mueven prensa,
    credibilidad y moral, con contexto de favorito/underdog. Una por partido. */
-function modalConferencia(part){
+/* 6.9 · conferencia de prensa VIVA: periodista con nombre + pregunta reactiva
+   a lo que pasó (derrota, racha, promesa de la memoria, clásico, objetivo). */
+const PERIODISTAS=[
+ {n:"Tironi",m:"Deporte Total"},{n:"la Kari Fuentes",m:"Radio Gol"},
+ {n:"el Chico Sotomayor",m:"El Balonazo"},{n:"Marcela Ríos",m:"Crónica FC"},
+ {n:"el Colo Pérez",m:"Golpe de Arco"},{n:"don Aníbal",m:"La Tercera del Deporte"}
+];
+const CONF_ARQ={
+ calma:{grupos:{prensa:6,camarin:4},rep:{credibilidad:4},ef:{moral:3},txt:"Bajaste el perfil. La prensa y el camarín lo valoran."},
+ mea :{grupos:{prensa:8,camarin:-2},rep:{credibilidad:6},ef:{moral:1},txt:"La autocrítica te subió crédito, aunque el grupo quedó algo tocado."},
+ confianza:{grupos:{hinchada:7,prensa:2},rep:{publica:3},ef:{moral:2},txt:"Saliste confiado. La hinchada se ilusiona."},
+ palo:{grupos:{hinchada:8,anfp:-6,prensa:-6},rep:{dureza:6,credibilidad:-2},ef:{},txt:"Calentaste la previa: la gente lo festeja, la ANFP y la prensa no."}
+};
+function preguntasConferencia(part){
   const fz=fuerzaEquipo(onceIdeal());
-  const favorito=fz.base>part.fuerzaRival+4;
-  const opciones=[
-   {t:"Bajar el perfil y pedir humildad",d:"Paños fríos: sacarle presión al grupo.",grupos:{prensa:6,camarin:4},rep:{credibilidad:4},ef:{moral:4}},
-   {t:"Salir con confianza total",d:"«Vamos a ganar, no hay con qué».",grupos:{hinchada:7,prensa:3},rep:{publica:3},ef:{moral:2}},
-   {t:"Tirar un palo al rival y a los árbitros",d:"Calentar la previa a lo grande.",grupos:{hinchada:8,anfp:-8,prensa:-6},rep:{dureza:6,credibilidad:-2},ef:{}}
-  ];
+  const favorito=fz.base>part.fuerzaRival+6;
+  const sinGanar=(E.temporada&&E.temporada.sinGanar)||0;
+  const ult=(E.idx>0)?E.calendario[E.idx-1]:null, ultJugado=ult&&ult.jugado;
+  const perdioUlt=ultJugado&&((ult.gf||0)<(ult.gc||0));
+  const ganoUlt=ultJugado&&((ult.gf||0)>(ult.gc||0));
+  const prom=(typeof promesaPendiente==="function")?promesaPendiente():null;
+  const clasico=(typeof esClasico==="function")&&esClasico(part);
+  const dep=(E.objetivos||[]).find(o=>o.tipo==="pos");
+  const bajoObj=dep&&(typeof posicionEnTabla==="function")&&E.temporada.pj>4&&posicionEnTabla()>dep.meta+2;
+  const L=[];
+  if(perdioUlt) L.push({q:"Después de la caída ante "+ult.rivalNombre+", ¿sigue creyendo en el proceso o hay para preocuparse?",ops:[
+     {t:"Bancar el proceso, la mano no tiembla",k:"calma"},{t:"Autocrítica: me hago cargo yo",k:"mea"},{t:"Palo: el que dude que se baje",k:"palo"}]});
+  if(sinGanar>=3) L.push({q:"Son "+sinGanar+" fechas sin ganar. ¿Siente que su puesto está en discusión?",ops:[
+     {t:"Poner el pecho, me hago cargo",k:"calma"},{t:"Pedir tiempo y respaldo",k:"confianza"},{t:"Calentar: acá el que trabaja soy yo",k:"palo"}]});
+  if(prom) L.push({q:"Se comenta que le prometió un arreglo a "+prom.quien+". ¿Verdad o versión?",ops:[
+     {t:"Confirmar y bancar al jugador",k:"confianza"},{t:"«De los temas internos no hablo»",k:"calma"},{t:"Negar todo de plano",k:"palo"}]});
+  if(clasico) L.push({q:"Se viene el clásico ante "+part.rivalNombre+". ¿Qué mensaje le deja a la gente?",ops:[
+     {t:"Paños fríos, foco en el fútbol",k:"calma"},{t:"Encender a la hinchada",k:"confianza"},{t:"Tirarle un palo al rival",k:"palo"}]});
+  if(favorito) L.push({q:"Son favoritos claros ante "+part.rivalNombre+". ¿No los relaja la vara alta?",ops:[
+     {t:"Humildad y respeto al rival",k:"calma"},{t:"Confianza total, vamos por todo",k:"confianza"},{t:"«Favorito se es en la cancha»",k:"palo"}]});
+  if(bajoObj) L.push({q:"Están lejos del objetivo del año. ¿Le preocupa su continuidad?",ops:[
+     {t:"Asumir la responsabilidad de frente",k:"mea"},{t:"Pedir que se banque el proyecto",k:"confianza"},{t:"Palo a la dirigencia por los refuerzos",k:"palo"}]});
+  if(ganoUlt&&sinGanar===0) L.push({q:"Vienen encendidos tras ganarle a "+ult.rivalNombre+". ¿Hasta dónde sueñan?",ops:[
+     {t:"Pies en la tierra, paso a paso",k:"calma"},{t:"Ilusionar a la gente",k:"confianza"},{t:"«El que quiera soñar, que sueñe»",k:"palo"}]});
+  L.push({q:"Previa ante "+part.rivalNombre+". ¿Con qué se queda de cara al partido?",ops:[
+     {t:"Bajar el perfil y pedir humildad",k:"calma"},{t:"Salir con confianza total",k:"confianza"},{t:"Un palo al rival y a los árbitros",k:"palo"}]});
+  return L;
+}
+function modalConferencia(part){
+  const L=preguntasConferencia(part);
+  const q=(L.length>1)?elige(L.slice(0,-1)):L[0];   /* preferí la pregunta contextual */
+  const per=elige(PERIODISTAS);
   modal(box=>{
     box.appendChild(el("div","cab",'<span class="ic">🎤</span><span>Conferencia de prensa</span>'));
     const c=el("div","cuerpo"); box.appendChild(c);
-    c.appendChild(el("p",null,"Previa ante "+part.rivalNombre+". "+(favorito?"Sos favorito: ojo con la relajación y la vara alta.":"Sos el que menos tiene que perder: usalo.")));
+    c.appendChild(el("div","resul mitad","<b>"+per.n+"</b> <span class='mini'>· "+per.m+"</span><br>"+q.q));
     const ops=el("div","ops");
-    opciones.forEach(o=>{
-      const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div><div class="d">'+o.d+'</div>';
+    q.ops.forEach(o=>{
+      const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
       b.onclick=()=>{
-        if(o.grupos) aplicarGrupos(o.grupos); if(o.rep) aplicarRep(o.rep); if(o.ef) aplicarEfectos(o.ef);
+        const a=CONF_ARQ[o.k]||CONF_ARQ.calma;
+        if(a.grupos) aplicarGrupos(a.grupos); if(a.rep) aplicarRep(a.rep); if(a.ef) aplicarEfectos(a.ef);
         E.flags["conf_"+E.idx]=true;
-        notificar({t:"Conferencia de prensa",tipo:"neutro",d:"Elegiste: «"+o.t+"» antes de enfrentar a "+part.rivalNombre+".",bandeja:false});
+        if(typeof postProc==="function") postProc("@"+per.m.replace(/\s/g,""),"prensa","«"+o.t+"», dijo el DT en conferencia ante "+part.rivalNombre+".","neutro");
+        notificar({t:"Conferencia con "+per.n,tipo:"neutro",d:"«"+o.t+"». "+a.txt,bandeja:false});
         guardar(); cerrarModal(); pantallaPrevia(part); aviso("Declaraciones dadas");
       };
       ops.appendChild(b);
     });
     c.appendChild(ops);
-    const x=el("button","btn-aqua ancho gris","No hablar con la prensa"); x.style.marginTop="6px"; x.onclick=cerrarModal;
+    const x=el("button","btn-aqua ancho gris","No hablar con la prensa"); x.style.marginTop="6px";
+    x.onclick=()=>{ aplicarGrupos({prensa:-4}); E.flags["conf_"+E.idx]=true; guardar(); cerrarModal(); pantallaPrevia(part); aviso("Te fuiste sin hablar"); };
     c.appendChild(x);
   });
 }
