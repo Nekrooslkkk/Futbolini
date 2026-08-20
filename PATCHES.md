@@ -832,3 +832,16 @@ HECHO en esta tanda:
   detectada se actualiza, consola limpia.
 - **Con esto queda cerrada la última feature grande del plan de pulido.** Táctica completa: formaciones,
   mentalidad, roles por jugador, designados, alineación manual y pizarra drag&drop.
+
+## 6.15 · Pulido de interfaz  ✅ (2026-08-19)
+**Archivos:** `js/ui.js` (irA), `css/base.css`
+- **Transición suave (fade + slide) al cambiar de sección**: el juego se siente más premium al navegar.
+- **Micro-interacciones**: hover lift en las pestañas del menú y en los íconos de club, transición en filas.
+- Todo respeta prefers-reduced-motion.
+- Verificado: navegador puerto 8890 — la transición aparece al navegar, las 11 vistas cargan sin error, consola limpia.
+
+## Estado del plan de pulido: COMPLETO ✅
+Táctica (formaciones, mentalidad, roles, designados, alineación manual, pizarra drag&drop), motor de memoria
+(el mundo recuerda y cita tu historia), objetivos, PLOP vivo con bots, finanzas + bolsa, vida con changas,
+planteles reales de 18 clubes, arranque, conferencia viva, caras largas, y pulido de interfaz. Los pendientes
+del plan original quedaron cerrados. Lo que sigue es contenido (Grok) y lo que salga de jugarlo.

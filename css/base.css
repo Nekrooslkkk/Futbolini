@@ -406,3 +406,13 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 .chip-ghost{position:fixed;transform:translate(-50%,-50%);z-index:10000;pointer-events:none;
   padding:5px 9px;border-radius:6px;font-size:11px;font-weight:800;color:#fff;white-space:nowrap;
   background:linear-gradient(180deg,#4aa3e6,#0b3f86);box-shadow:0 5px 16px rgba(0,0,0,.45);opacity:.94}
+
+/* 6.14 · pulido de interfaz: transición suave al cambiar de sección + micro-interacciones */
+@keyframes fxIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+#vista.fx-in{animation:fxIn .22s ease}
+.mi{transition:background .14s,color .14s,transform .1s}
+.mi:hover{transform:translateY(-1px)}
+.icono{transition:transform .12s,box-shadow .12s}
+.icono:hover{transform:translateY(-2px)}
+.fila{transition:background .12s}
+@media (prefers-reduced-motion:reduce){#vista.fx-in{animation:none}.mi:hover,.icono:hover{transform:none}}

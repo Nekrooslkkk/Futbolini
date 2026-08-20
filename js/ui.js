@@ -10,7 +10,7 @@ const SECCIONES=[
  ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["redes","📱","Redes"],["calendario","📅","Calendario"],["historia","📚","Historia"],
  ["carrera","🎖️","Carrera"],["vida","🪪","Vida"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
 ];
-function irA(s){ SEC=s; render(); window.scrollTo({top:0}); }
+function irA(s){ SEC=s; render(); const v=$("#vista"); if(v){ v.classList.remove("fx-in"); void v.offsetWidth; v.classList.add("fx-in"); } window.scrollTo({top:0}); }
 
 /* ---------------- barra y menú ---------------- */
 function pintarBarra(){
