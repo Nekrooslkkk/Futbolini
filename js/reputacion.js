@@ -595,12 +595,20 @@ const DILEMAS_CITA=[
 ];
 function chatMatch(match){
   let i=0, pts=0;
+  /* 6.23 · pregunta del CLUB con opción de mentir (si mentís, se filtra a la prensa) */
+  const joven=(E.plantel||[]).filter(j=>!j.vendido&&!j.cedido&&j.edad<=23&&j.proy>=j.nivel+2).sort((a,b)=>b.proy-a.proy)[0];
+  const preguntas=[];
+  if(joven) preguntas.push({q:"Entre nosotros… ¿es verdad que vas a vender a "+joven.n+"?", club:true, quien:joven.n,
+    op:[{t:"La verdad: capaz, si llega una oferta grande.",n:6,miente:false},
+        {t:"Jamás, es intocable. Palabra.",n:11,miente:true},
+        {t:"No hablo de laburo ni en la cama.",n:8,miente:false}]});
+  CHARLAS_MATCH.forEach(q=>preguntas.push(q));
   modal(box=>{
     const pintar=()=>{
       box.innerHTML="";
       box.appendChild(el("div","cab",'<span class="ic">💬</span><span>Charla con '+match.n+'</span>'));
       const c=el("div","cuerpo"); box.appendChild(c);
-      if(i>=CHARLAS_MATCH.length){
+      if(i>=preguntas.length){
         const txt=typeof pensarOffline==="function"?pensarOffline("tinder",{n:match.n,pts:pts}):"";
         c.appendChild(el("p",null,pts>=20?match.n+" se ríe: «ok, invítame ya».":(pts>=8?match.n+" queda a medias. Todavía se puede.":match.n+" se enfría. «escribime otro día».")));
         if(txt) c.appendChild(el("p","mini",txt));
@@ -614,16 +622,32 @@ function chatMatch(match){
         x.onclick=()=>{ guardar(); cerrarModal(); render(); }; c.appendChild(x);
         return;
       }
-      const q=CHARLAS_MATCH[i];
+      const q=preguntas[i];
       c.appendChild(el("p",null,q.q));
+      if(q.club) c.appendChild(el("p","mini","Ojo: lo que digas en la intimidad también se filtra."));
       q.op.forEach(o=>{
         const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
-        b.onclick=()=>{ pts+=o.n; i++; pintar(); };
+        b.onclick=()=>{ pts+=o.n; if(q.club&&o.miente){ E.flags.tinderMentira={quien:q.quien,con:match.n,idx:E.idx}; } i++; pintar(); };
         c.appendChild(b);
       });
     };
     pintar();
   });
+}
+/* 6.23 · a las ~4 fechas de mentir en una cita, se filtra a la prensa */
+function chequearTinderMentira(){
+  const m=E&&E.flags&&E.flags.tinderMentira;
+  if(!m) return false;
+  if((E.idx-(m.idx||0))<3) return false;
+  delete E.flags.tinderMentira;
+  aplicarRep({credibilidad:-4}); aplicarGrupos({prensa:-4});
+  if(typeof postProc==="function"&&typeof HANDLES_PRENSA!=="undefined")
+    postProc(elige(HANDLES_PRENSA),"prensa","Trascendió que el DT le juró a alguien, en la intimidad, que "+m.quien+" era intocable. En el club nadie lo confirma… ni lo desmiente. 👀","malo");
+  if(typeof recordar==="function") recordar("prensa","se filtró que le mentiste sobre "+m.quien+" en una cita",{peso:"medio",tono:"malo"});
+  if(typeof notificar==="function") notificar({t:"Se filtró tu vida privada",tipo:"malo",bandeja:false,
+    d:"Algo que dijiste en una cita sobre "+m.quien+" llegó a la prensa. Golpe a tu credibilidad. Con la vida pública, hasta la almohada habla."});
+  guardar();
+  return true;
 }
 function dilemaCita(){
   if(!E.perfil.pareja) return;

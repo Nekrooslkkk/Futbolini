@@ -1550,6 +1550,7 @@ function avanzar(){
   if(!part){ cerrarTemporada(); return; }
   if(!part.jugado){ modalAvancePartido(part); return; }
   const r=procesarSemanaPostPartido();
+  if(typeof chequearTinderMentira==="function") chequearTinderMentira();
   irA("escritorio");
   if(r.ctx&&r.ctx.length) aviso(r.ctx[0]);
   else if(r.ev) aviso(r.ev.item?r.ev.item.t:"");

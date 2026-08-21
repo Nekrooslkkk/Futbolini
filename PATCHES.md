@@ -934,3 +934,17 @@ desmentir). El 8º ("puerta 8") ya existía como consecuencia de romper un pacto
 **Qué probar:** aparecen en el escritorio y renderizan como decisión (modal); las 3 opciones resuelven sin
 romper; "La Roja" con ceder-mal lesiona al jugador nombrado (lesionFicha). Verificado: 11 variantes, 0 errores.
 **Riesgos:** data-proc.js (7 gen nuevos), motor.js (2 acciones que leen dec.ficha). No dupliqué nada.
+
+## 6.23 · Tinder: pregunta del club + filtración (Section 7)  ✅ (2026-08-19)
+**Archivos:** `js/reputacion.js` (chatMatch + chequearTinderMentira), `js/ui.js` (hook en avanzar)
+**Funciones:** chatMatch ahora antepone una pregunta del CLUB ("¿vas a vender a {joven}?") con opción de mentir;
+`chequearTinderMentira()` (llamado en avanzar) filtra a la prensa a las ~4 fechas si mentiste.
+**Qué probar:** abrí una charla de Tinder → primera pregunta es sobre un joven real del plantel → elegí "Jamás,
+es intocable" → a ~4 fechas de avanzar aparece un tuit de prensa citando al jugador y baja tu credibilidad.
+**1 línea:** con la vida pública, hasta la almohada habla: mentir en una cita sobre el club te sale caro.
+**Riesgos:** reputacion.js (chatMatch usa lista local de preguntas, no rompe CHARLAS_MATCH), ui.js (1 hook en avanzar).
+No inflé el Tinder: extendí lo que ya existía (E.perfil.tinder).
+
+## ESTADO SPEC INGENIERO: Sections 1-7 hechas
+Pendiente fino: Section 8 (minutosTemporada/dorsal/pie — el core banca/cambios ya está en 6.18) y Section 9
+(más eventos con semilla — ya hay varios: puerta de barra, La Roja, concierto, promesa).
