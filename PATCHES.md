@@ -1050,3 +1050,19 @@ clásico y la meta de hinchada/directorio; tocar una tarjeta despliega el "💡 
 aplican desde una temporada nueva; las partidas ya empezadas mantienen sus 3 metas hasta el próximo año.)
 **1 línea:** más objetivos, ordenados por sección y en pestañas para no scrolear, y el clásico ya es meta fija.
 **Riesgos:** carrera.js (nuevos tipos victorias/grupo en progresoObjetivo), ui.js (panel con tabs). Bajo.
+
+## 6.30 · Química en la pizarra: los que se llevan bien dan nivel  ✅ (2026-08-21)
+**Archivos:** `js/partido.js` (motor de química + bono al partido), `js/ui-partido.js` (líneas + lectura), `js/css/base.css` (cancha linda)
+**Qué:** la pizarra táctica ahora tiene **química real**:
+- `quimicaPar(a,b)` es determinística (no azar por partido): edad parecida, rasgos compartidos, ambos "de
+  la casa", partidos juntos, y un "click/roce" fijo por par. Da 5-99.
+- `quimicaEquipo(once)` mira los pares **conectados** (vecinos en la pizarra, o misma línea si no movés
+  nada), saca el promedio y un **bono de nivel** (−3 a +5) que entra al partido en `P.empuje`/`P.orden`
+  → afecta de verdad la chance de ganar. Juntar a los que congenian sube el nivel.
+- En la pizarra se **dibujan las líneas**: verde = se llevan bien, roja punteada = hay roce. Debajo, una
+  barra de "Química del equipo" con el promedio, el bono, y quiénes congenian / chocan.
+- La cancha quedó **más linda**: pasto con franjas de corte, círculo central y línea de mitad.
+**Qué probar:** abrir la pizarra → líneas verdes entre jugadores + barra de química; mover a un jugador
+al lado de otro con el que congenia sube el promedio; el bono se siente en el partido.
+**1 línea:** la pizarra ahora muestra quién se lleva bien con quién, y juntarlos te da nivel de verdad.
+**Riesgos:** partido.js (química en iniciarPartido → empuje/orden), ui-partido.js (overlay SVG de lazos). Bajo.

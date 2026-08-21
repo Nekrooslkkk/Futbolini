@@ -147,9 +147,54 @@ function formacionDetectada(piz){
   const vol=out.length-def-del;
   return def+"-"+vol+"-"+del;
 }
+/* ============================================================
+   6.30 · QUÍMICA DEL EQUIPO
+   Los que se llevan bien rinden más. La química de un par es
+   determinística (edad, rasgos compartidos, de la casa, partidos
+   juntos, y un "click/roce" fijo por par) → estable, no azar por
+   partido. Se dibuja en la pizarra y suma/resta nivel real.
+   ============================================================ */
+function hashStr(s){ let h=0; for(let i=0;i<(s||"").length;i++){ h=(h*31+s.charCodeAt(i))|0; } return h; }
+function quimicaPar(a,b){
+  if(!a||!b||a===b) return 50;
+  const key=a.n<b.n?a.n+"|"+b.n:b.n+"|"+a.n;
+  let q=52;
+  const de=Math.abs((a.edad||25)-(b.edad||25));
+  q+= de<=3?12:(de<=6?4:(de>=10?-10:0));
+  const rs=(a.rasgos||[]).filter(r=>(b.rasgos||[]).indexOf(r)>=0).length;
+  q+= rs*6;
+  if((a.rasgos||[]).indexOf("de la casa")>=0 && (b.rasgos||[]).indexOf("de la casa")>=0) q+=10;
+  q+= Math.min(10,(Math.min(a.partidos||0,b.partidos||0))/8);
+  q+= (Math.abs(hashStr(key))%25)-12;   /* click (+) o roce (−) fijo del par */
+  return clamp(Math.round(q),5,99);
+}
+/* pares "conectados": vecinos en la pizarra (dist<=2) o, si no hay, misma línea */
+function paresConectados(once){
+  const piz=E.tactica&&E.tactica.pizarra;
+  const posDe={};
+  if(piz){ piz.forEach(p=>{ posDe[p.n]={r:p.r,c:p.c}; }); }
+  const pares=[];
+  for(let i=0;i<once.length;i++) for(let j=i+1;j<once.length;j++){
+    const a=once[i],b=once[j]; let conecta=false;
+    if(piz && posDe[a.n] && posDe[b.n]){
+      const d=Math.abs(posDe[a.n].r-posDe[b.n].r)+Math.abs(posDe[a.n].c-posDe[b.n].c);
+      conecta=d<=2;
+    } else { conecta=(a.pos===b.pos); }
+    if(conecta) pares.push([a,b]);
+  }
+  return pares;
+}
+function quimicaEquipo(once){
+  const pares=paresConectados(once);
+  const lazos=pares.map(([a,b])=>{ const q=quimicaPar(a,b); return {a:a.n,b:b.n,q:q,bueno:q>=64,malo:q<=42}; });
+  const prom=lazos.length?Math.round(lazos.reduce((s,l)=>s+l.q,0)/lazos.length):55;
+  const bono=clamp((prom-55)/7,-3,5);
+  return {prom:prom,bono:bono,lazos:lazos};
+}
 function iniciarPartido(part,modo){
   const once=onceIdeal();
   const fz=fuerzaEquipo(once);
+  const qui=quimicaEquipo(once);   /* 6.30 · la química suma nivel real */
   let bonoLocal=part.local?4.5+modSuma("local"):-2;
   let bonoTorneo=part.tipo==="copa"?modSuma("copa"):modSuma("liga");
   const arb=modSuma("arbitraje");
@@ -169,6 +214,7 @@ function iniciarPartido(part,modo){
     cambios:0, cambiosMax:((E&&E.anio)||2026)>=2010?3:2   /* 6.18 · tope de cambios por era */
   };
   P.once.forEach(j=>{ j.estado="once"; });
+  P.quimica=qui; P.empuje+=qui.bono; P.orden+=qui.bono*0.5;   /* 6.30 · química al ruedo */
   if(P.clasico){ P.empuje+=1.4; P.desgaste+=1.2; P.rival+=1.5;
     const casa=P.once.filter(j=>j.rasgos&&j.rasgos.indexOf("de la casa")>=0).length;   /* 6.20 · los de la casa se agrandan en el clásico */
     if(casa) P.empuje+=Math.min(4,casa*2);

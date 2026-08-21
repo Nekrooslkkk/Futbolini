@@ -192,6 +192,33 @@ function modalAlineacion(part){
     pintar();
   },{cerrarFuera:false});
 }
+/* 6.30 · dibuja las líneas de química sobre la pizarra (verde=congenia, rojo=roce) */
+function dibujarLazos(grid,qui){
+  const NS="http://www.w3.org/2000/svg";
+  const viejo=grid.querySelector(".lazos-svg"); if(viejo) viejo.remove();
+  requestAnimationFrame(()=>{
+    const gr=grid.getBoundingClientRect();
+    const svg=document.createElementNS(NS,"svg"); svg.setAttribute("class","lazos-svg");
+    svg.style.cssText="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1";
+    qui.lazos.forEach(l=>{
+      if(!l.bueno && !l.malo) return;
+      const ca=grid.querySelector('.chip[data-nombre="'+l.a.replace(/"/g,'')+'"]');
+      const cb=grid.querySelector('.chip[data-nombre="'+l.b.replace(/"/g,'')+'"]');
+      if(!ca||!cb) return;
+      const ra=ca.getBoundingClientRect(), rb=cb.getBoundingClientRect();
+      const ln=document.createElementNS(NS,"line");
+      ln.setAttribute("x1",ra.left+ra.width/2-gr.left); ln.setAttribute("y1",ra.top+ra.height/2-gr.top);
+      ln.setAttribute("x2",rb.left+rb.width/2-gr.left); ln.setAttribute("y2",rb.top+rb.height/2-gr.top);
+      ln.setAttribute("stroke", l.bueno?"rgba(50,200,90,.75)":"rgba(220,70,60,.7)");
+      ln.setAttribute("stroke-width", l.bueno?"3":"2");
+      ln.setAttribute("stroke-linecap","round");
+      if(l.malo) ln.setAttribute("stroke-dasharray","4 5");
+      svg.appendChild(ln);
+    });
+    grid.style.position="relative";
+    grid.insertBefore(svg, grid.firstChild);
+  });
+}
 function modalPizarra(part){
   const once=onceIdeal();
   if(!E.tactica.pizarra || !mismaGente(E.tactica.pizarra,once)) E.tactica.pizarra=pizarraDesdeFormacion(once);
@@ -212,6 +239,7 @@ function modalPizarra(part){
           if(ocup){
             const chip=el("div","chip"+(ocup.pos==="ARQ"?" arq":"")+" arrastrable");
             chip.textContent=apodoJug(ocup.n);
+            chip.dataset.nombre=ocup.n;   /* 6.30 · para dibujar los lazos de química */
             chip.style.touchAction="none";
             chip.addEventListener("pointerdown",ev=>{ ev.preventDefault();
               drag={entry:ocup,moved:false,sx:ev.clientX,sy:ev.clientY,ghost:null};
@@ -252,6 +280,21 @@ function modalPizarra(part){
         (detec&&["4-4-2","4-3-3","4-5-1","5-3-2","5-4-1","3-5-2","3-4-3","4-2-4"].indexOf(detec)<0?" <span class='mini'>(esquema no clásico: el equipo lo sentirá raro los primeros minutos)</span>":"")));
       c.appendChild(el("div","resul mitad","Efecto táctico — ataque <b>"+signo(Math.round(forma.ataque))+
         "</b> · orden <b>"+signo(Math.round(forma.orden))+"</b> · ancho <b>"+signo(Math.round(forma.ancho))+"</b>"));
+      /* 6.30 · química del equipo: lazos dibujados + lectura */
+      if(typeof quimicaEquipo==="function"){
+        const qui=quimicaEquipo(once);
+        const col=qui.prom>=64?"#3ac04f":(qui.prom>=48?"#d68a1f":"#c0392b");
+        const buenos=qui.lazos.filter(l=>l.bueno).sort((a,b)=>b.q-a.q).slice(0,2);
+        const malos=qui.lazos.filter(l=>l.malo).sort((a,b)=>a.q-b.q).slice(0,1);
+        const qbox=el("div","resul mitad");
+        qbox.innerHTML="Química del equipo — <b style='color:"+col+"'>"+qui.prom+"</b>/100 · nivel <b>"+(qui.bono>=0?"+":"")+qui.bono.toFixed(1)+"</b>"+
+          barrita(qui.prom,col)+
+          (buenos.length?"<div class='mini'>💚 Se llevan bien: "+buenos.map(l=>apodoJug(l.a)+" & "+apodoJug(l.b)).join(", ")+"</div>":"")+
+          (malos.length?"<div class='mini'>💢 Hay roce: "+malos.map(l=>apodoJug(l.a)+" & "+apodoJug(l.b)).join(", ")+"</div>":"")+
+          "<div class='mini'>Líneas verdes = congenian; rojas punteadas = roce. Juntá a los que se llevan bien para subir el nivel.</div>";
+        c.appendChild(qbox);
+        dibujarLazos(grid,qui);
+      }
       const g=el("button","btn-aqua ancho verde","Guardar pizarra");
       g.onclick=()=>{ guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Pizarra guardada"); };
       c.appendChild(g);
