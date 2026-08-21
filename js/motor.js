@@ -210,6 +210,12 @@ function normalizarEstado(){
   if(typeof normalizarMemoria==="function") normalizarMemoria();
   /* 6.21 · mesa de la barra */
   if(typeof normalizarBarra==="function") normalizarBarra();
+  /* 6.24 · estado del jugador: minutos, estado y pie (pie determinístico por nombre) */
+  (E.plantel||[]).forEach(j=>{
+    if(j.minutosTemporada===undefined) j.minutosTemporada=0;
+    if(!j.estado) j.estado=j.vendido?"vendido":(j.cedido?"cedido":(j.lesion>0?"lesion":"banca"));
+    if(!j.pie && typeof semilla==="function") j.pie=(semilla(j.n)%4===0)?"izquierdo":"derecho";
+  });
   /* 6.3 · PLOP: usuario, verificados y likes */
   if(!E.plopVerif) E.plopVerif={};
   if(!Array.isArray(E.plopLikes)) E.plopLikes=[];
@@ -843,7 +849,7 @@ function nuevoAnio(){
     j.edad++;
     if(j.edad<=25) j.nivel=clamp(j.nivel+ri(0,4),20,97);
     else if(j.edad>=30) j.nivel=clamp(j.nivel-ri(1,4),20,97);
-    j.goles=0;j.partidos=0;j.tarjetas=0;j.lesion=0;j.forma=68;
+    j.goles=0;j.partidos=0;j.tarjetas=0;j.lesion=0;j.forma=68;j.minutosTemporada=0;
   });
   /* vuelven los cedidos, mejorados por el rodaje */
   const vueltos=[];

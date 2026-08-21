@@ -189,6 +189,8 @@ function hacerCambio(P,sale,entra){
   if(P.once.indexOf(sale)<0 || P.once.indexOf(entra)>=0) return false;
   P.once=P.once.map(x=>x===sale?entra:x);
   entra.estado="once"; sale.estado="banca";
+  sale.minutosTemporada=(sale.minutosTemporada||0)+(P.min-(sale.minEntrada||0));   /* 6.24 · minutos del que sale */
+  entra.minEntrada=P.min;                                                          /* el que entra arranca su cuenta acá */
   entra.cansancio=Math.max(0,(entra.cansancio||0)-3);
   P.cambios=(P.cambios||0)+1;
   linea(P,P.min,entra.n+" entra por "+sale.n+".","cambio");
@@ -593,6 +595,8 @@ function terminarPartido(P){
   part.goleadores=(P.goleadores||[]).slice();   /* 6.19 · para que los tuits citen al goleador real */
   P.once.forEach(j=>{
     j.partidos++;
+    j.minutosTemporada=(j.minutosTemporada||0)+(90-(j.minEntrada||0));   /* 6.24 · minutos jugados en la temporada */
+    j.minEntrada=0;
     j.forma=clamp(j.forma+(yo>otro?4:(yo<otro?-4:0))+ri(-3,3),30,99);
     j.cansancio=clamp((j.cansancio||0)+4,0,30);
   });

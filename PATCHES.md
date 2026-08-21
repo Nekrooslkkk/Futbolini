@@ -948,3 +948,15 @@ No inflé el Tinder: extendí lo que ya existía (E.perfil.tinder).
 ## ESTADO SPEC INGENIERO: Sections 1-7 hechas
 Pendiente fino: Section 8 (minutosTemporada/dorsal/pie — el core banca/cambios ya está en 6.18) y Section 9
 (más eventos con semilla — ya hay varios: puerta de barra, La Roja, concierto, promesa).
+
+## 6.24 · Estado del jugador: minutosTemporada + pie (Section 8)  ✅ (2026-08-19)
+**Archivos:** `js/partido.js` (minutos), `js/motor.js` (init/reset + pie), `js/ui.js` (fichaJugador)
+**Qué:** cada jugador acumula `minutosTemporada` (contabilidad exacta: sale al 60' = 60', entra al 60' = 30',
+titular completo = 90'), se resetea cada año; `estado` (once/banca/lesion/cedido/vendido) y `pie`
+(determinístico por nombre, ~25% zurdos) se inicializan en normalizarEstado. Se muestran en `fichaJugador`.
+**Qué probar:** ficha de un jugador muestra "Minutos en la temporada · pie X"; tras un cambio al 60', el que
+sale suma 60', el que entra 30', el titular 90'.
+**1 línea:** ya se sabe quién juega de verdad (minutos por temporada) y con qué pie.
+**Riesgos:** partido.js (minEntrada por partido), motor.js (init en normalizarEstado + reset anual). Bajo.
+
+## SPEC INGENIERO: Sections 1-8 hechas + 8 eventos locales. Section 9 (eventos con semilla) satisfecha en varios.

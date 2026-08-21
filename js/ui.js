@@ -872,6 +872,7 @@ function fichaJugador(j){
     c.appendChild(fila("Forma / moral",Math.round(j.forma)+" / "+Math.round(j.moral)));
     c.appendChild(fila("Sueldo anual",plata(j.sueldo)));
     c.appendChild(fila("Valor estimado",plata(j.valor)));
+    c.appendChild(fila("Minutos en la temporada",(j.minutosTemporada||0)+"' en "+(j.partidos||0)+" partidos"+(j.pie?" · pie "+j.pie:"")));
     c.appendChild(fila("Contrato","hasta "+j.contrato.hasta));
     if(j.rasgos.length) c.appendChild(el("p","mini","Rasgos: "+j.rasgos.join(", ")));
     /* 6.20 · qué hacen los rasgos con hook */
