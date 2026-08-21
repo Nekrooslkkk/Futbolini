@@ -44,7 +44,7 @@ const ARCOS_EQUIPO = {
        ]},
       {id:"uch_3", t:"Permisos y vecinos", ctx:"El terreno tiene dueños, vecinos y permisos. Acá muchos proyectos mueren.",
        ops:[
-        {t:"Negociar de frente, ceder algo", d:"Caro y lento, pero sale bien parado.", ef:{capital:-6,prestigio:8}, grupos:{comunidad:10,hinchada:16,directorio:6,socios:8}, mem:"sacaste adelante el estadio propio de la U", cierra:true},
+        {t:"Negociar de frente, ceder algo", d:"Caro y lento, pero sale bien parado.", ef:{capital:-6,prestigio:8}, grupos:{comunidad:10,hinchada:16,directorio:6,socios:8}, mem:"sacaste adelante el estadio propio de la U", logro:"arquitecto", cierra:true},
         {t:"Forzar con contactos y presión", d:"Rápido pero deja olor a favor turbio.", ef:{prestigio:6}, grupos:{hinchada:12,anfp:-8,comunidad:-12}, rep:{dureza:6}, mem:"forzaste los permisos del estadio a lo bruto", cierra:true},
         {t:"El proyecto se cae", d:"No dieron los tiempos ni la plata. Otra vez a fojas cero.", grupos:{hinchada:-16,socios:-8,directorio:-6}, mem:"el sueño del estadio de la U quedó en humo, otra vez", cierra:true}
        ]}
@@ -67,7 +67,7 @@ const ARCOS_EQUIPO = {
        ]},
       {id:"cc_3", t:"El Cacique y la calle", ctx:"La hinchada más grande del país te pide un gesto: entradas populares, o bancar un reclamo social del barrio. La concesionaria dice que no es asunto del club.",
        ops:[
-        {t:"Hacer el gesto con la gente", d:"Te ganás la calle para siempre; algunos socios se incomodan.", ef:{prestigio:8,capital:-4}, grupos:{hinchada:18,comunidad:14,directorio:-6}, mem:"pusiste a Colo del lado de su gente", cierra:true},
+        {t:"Hacer el gesto con la gente", d:"Te ganás la calle para siempre; algunos socios se incomodan.", ef:{prestigio:8,capital:-4}, grupos:{hinchada:18,comunidad:14,directorio:-6}, mem:"pusiste a Colo del lado de su gente", logro:"de_la_comunidad", cierra:true},
         {t:"Mantener al club al margen", d:"Ordenado y frío. El pueblo toma nota.", grupos:{directorio:8,sponsors:6,hinchada:-12,comunidad:-8}, rep:{credibilidad:-3}, mem:"mantuviste a Colo lejos de su hinchada por conveniencia", cierra:true}
        ]}
     ]
@@ -111,7 +111,7 @@ const ARCOS_EQUIPO = {
        ]},
       {id:"pal_3", t:"Chico de plata, grande de alma", ctx:"Palestino compite con clubes de más recursos. La comunidad banca, pero la caja obliga a vender. La pregunta de siempre: ¿hasta dónde se puede soñar sin traicionar la identidad?",
        ops:[
-        {t:"Formar, competir y bancar la identidad", d:"El camino difícil pero fiel. La gente te sigue a todos lados.", ef:{prestigio:8}, grupos:{comunidad:12,camarin:8,socios:8}, rep:{credibilidad:6}, mem:"hiciste de Palestino un chico de plata pero grande de alma", cierra:true},
+        {t:"Formar, competir y bancar la identidad", d:"El camino difícil pero fiel. La gente te sigue a todos lados.", ef:{prestigio:8}, grupos:{comunidad:12,camarin:8,socios:8}, rep:{credibilidad:6}, mem:"hiciste de Palestino un chico de plata pero grande de alma", logro:"de_la_comunidad", cierra:true},
         {t:"Priorizar la caja sobre todo", d:"Sano en los números, frío para la gente.", ef:{plata:80}, grupos:{directorio:10,sponsors:8,comunidad:-12,hinchada:-8}, mem:"pusiste la caja de Palestino por encima de su identidad", cierra:true}
        ]}
     ]
@@ -133,7 +133,7 @@ const ARCOS_EQUIPO = {
        ]},
       {id:"lim_3", t:"Pase lo que pase", ctx:"Fin de temporada, se juega la permanencia o el batacazo. El pueblo llenó la cancha modesta. Sea cual sea el resultado, hay que dejarle un mensaje a la gente que creyó.",
        ops:[
-        {t:"Gracias, pase lo que pase esto es histórico", d:"Humildad y cariño. El pueblo te adopta para siempre.", ef:{prestigio:8}, grupos:{comunidad:16,hinchada:12,socios:6}, mem:"le dejaste a Limache un recuerdo histórico, pasara lo que pasara", cierra:true},
+        {t:"Gracias, pase lo que pase esto es histórico", d:"Humildad y cariño. El pueblo te adopta para siempre.", ef:{prestigio:8}, grupos:{comunidad:16,hinchada:12,socios:6}, mem:"le dejaste a Limache un recuerdo histórico, pasara lo que pasara", logro:"de_la_comunidad", cierra:true},
         {t:"Prometer que esto recién empieza", d:"Ambición pura. Si no cumplís, duele el doble.", ef:{prestigio:5}, grupos:{hinchada:12,directorio:-4}, mem:"le prometiste a Limache que el sueño recién empezaba", cierra:true}
        ]}
     ]

@@ -54,8 +54,10 @@ function resolverStoryline(op){
   if(op.grupos && typeof aplicarGrupos==="function") aplicarGrupos(op.grupos);
   if(op.rep && typeof aplicarRep==="function") aplicarRep(op.rep);
   if(op.mem && typeof recordar==="function") recordar("storyline",op.mem,{peso:"alto"});
+  if(op.logro && typeof desbloquear==="function") desbloquear(op.logro);   /* 7.0 · logro por elección de arco */
   const S=E.storyline, a=ctx.arco;
   const cerrar=()=>{ S.hechos[a.id]={anio:E.anio}; S.activo=null; S.cap=0; S.cd=6;
+    if(Object.keys(S.hechos).length>=3 && typeof desbloquear==="function") desbloquear("novelero");
     if(typeof notificar==="function") notificar({t:"Se cerró un capítulo del club",tipo:"neutro",bandeja:false,
       d:"«"+a.t+"» quedó saldado. Lo que decidiste ya es parte de la historia del club."}); };
   if(op.cierra){ cerrar(); }

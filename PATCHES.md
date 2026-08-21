@@ -1241,3 +1241,15 @@ fiel a lo que hiciste.
 **Qué probar:** resolver capítulos de la historia del club y entrar a Historia → aparece la saga con tus decisiones.
 **1 línea:** la vista Historia ahora muestra la saga de tu club: los arcos que resolviste y qué elegiste.
 **Riesgos:** solo lectura de la memoria + un panel nuevo. Bajo.
+
+## 7.0-g · Logros conectados a las storylines  ✅ (2026-08-21)
+**Archivos:** `js/logros.js`, `js/data-storylines.js`, `js/storylines.js`
+**Qué:** los dos sistemas nuevos se premian entre sí. 3 logros nuevos (16 en total):
+- **"El que construyó la casa"** — sacar adelante el estadio propio en la historia de la U.
+- **"Esto es más que fútbol"** — cerrar una historia poniendo la identidad del club por delante de la caja
+  (Colo con su gente, Palestino con su comunidad, Limache con su pueblo).
+- **"Culebrón de primera"** — completar 3 historias de equipo.
+Se disparan con un campo `logro` en la opción de cierre del arco + un contador de arcos completados.
+**Qué probar:** construir el estadio de la U → salta «El que construyó la casa»; completar 3 arcos → «Culebrón de primera».
+**1 línea:** resolver las historias de tu club ahora también te da logros.
+**Riesgos:** data + un hook en resolverStoryline. Bajo.

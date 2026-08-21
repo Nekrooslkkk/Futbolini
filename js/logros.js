@@ -17,7 +17,10 @@ const LOGROS=[
  {id:"reconquista",   n:"El que sabe, sabe",         d:"Reconquistá a 3 jugadores descontentos con plata."},
  {id:"goleada_clasico",n:"Baile en el patio grande", d:"Ganale un clásico por 4 goles o más de diferencia."},
  {id:"caja_sana",     n:"Manos limpias",             d:"Terminá una temporada con la caja en azul y sin desfalco."},
- {id:"quimico",       n:"El químico",                 d:"Recurrí a un «preparado especial»… y que te estalle el escándalo encima. No estás orgulloso."}
+ {id:"quimico",       n:"El químico",                 d:"Recurrí a un «preparado especial»… y que te estalle el escándalo encima. No estás orgulloso."},
+ {id:"arquitecto",    n:"El que construyó la casa",   d:"Sacá adelante el estadio propio en la historia de la U."},
+ {id:"de_la_comunidad",n:"Esto es más que fútbol",    d:"Cerrá una historia poniendo la identidad de tu club por delante de la caja."},
+ {id:"novelero",      n:"Culebrón de primera",        d:"Completá 3 historias de equipo (arcos propios de tu club)."}
 ];
 const LOGRO_POR_ID={}; LOGROS.forEach(l=>LOGRO_POR_ID[l.id]=l);
 function normalizarLogros(){ if(E && (!E.logros||typeof E.logros!=="object")) E.logros={}; }
