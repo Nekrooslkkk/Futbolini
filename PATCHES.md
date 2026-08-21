@@ -1174,3 +1174,14 @@ partido; al meter un gol, el tuit dice el nombre del que lo hizo.
 color del fondo. Se ve bien en PC y en celular.
 **1 línea:** el fondo dejó de ser plano: auroras Vista + paneles de vidrio que las dejan brillar a través.
 **Riesgos:** solo `body[data-tema="aero"]`, no toca otros temas. Bajo.
+
+## 7.0-b · Comodidad PC · vistas en 2 columnas (menos scroll)  ✅ (2026-08-21)
+**Archivos:** `css/base.css`
+**Qué:** en pantallas anchas (≥1000px) las vistas que eran una columna larguísima ahora fluyen en
+**2 columnas** aprovechando `#vista[data-sec]` que ya seteaba `render()` — cero cambios de JS. Aplica a
+Institución, Finanzas, Historia, Carrera, Redes, Avisos y Vida (con `break-inside:avoid` para que ningún
+panel se corte). En celu/tablet siguen en una columna. El escritorio ya usaba su propia rejilla.
+**Qué probar:** en PC ancho, entrar a Institución o Finanzas → los paneles se acomodan en dos columnas y
+se scrollea mucho menos. En celular, todo sigue en una sola columna.
+**1 línea:** en PC las vistas largas ahora son de dos columnas: se acabó el scroll eterno.
+**Riesgos:** solo CSS con media query ≥1000px; no toca el layout mobile. Bajo.

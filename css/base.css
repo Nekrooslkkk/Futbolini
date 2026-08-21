@@ -506,3 +506,28 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 .cere-partido{border-left:3px solid rgba(60,140,220,.6)}
 .cere-objetivo{border-left:3px solid rgba(210,140,20,.6)}
 .cere-plata,.cere-racha{border-left:3px solid rgba(200,70,60,.55)}
+
+/* ============================================================
+   7.0 · COMODIDAD PC · vistas de panel-stack en 2 columnas
+   (aprovecha #vista[data-sec] que ya setea render(); menos scroll)
+   ============================================================ */
+@media(min-width:1000px){
+  #vista[data-sec="institucion"],
+  #vista[data-sec="finanzas"],
+  #vista[data-sec="historia"],
+  #vista[data-sec="carrera"],
+  #vista[data-sec="redes"],
+  #vista[data-sec="avisos"],
+  #vista[data-sec="vida"]{
+    column-count:2; column-gap:12px;
+  }
+  #vista[data-sec="institucion"] > .panel,
+  #vista[data-sec="finanzas"] > .panel,
+  #vista[data-sec="historia"] > .panel,
+  #vista[data-sec="carrera"] > .panel,
+  #vista[data-sec="redes"] > .panel,
+  #vista[data-sec="avisos"] > .panel,
+  #vista[data-sec="vida"] > .panel{
+    break-inside:avoid;
+  }
+}
