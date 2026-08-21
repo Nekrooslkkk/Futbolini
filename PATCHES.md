@@ -1185,3 +1185,23 @@ panel se corte). En celu/tablet siguen en una columna. El escritorio ya usaba su
 se scrollea mucho menos. En celular, todo sigue en una sola columna.
 **1 línea:** en PC las vistas largas ahora son de dos columnas: se acabó el scroll eterno.
 **Riesgos:** solo CSS con media query ≥1000px; no toca el layout mobile. Bajo.
+
+## 7.0-c · Storylines: arcos de equipo con alma (atados a la memoria)  ✅ (2026-08-21)
+**Archivos:** `js/data-storylines.js` (NUEVO · data), `js/storylines.js` (NUEVO · motor+UI), `index.html`, `js/motor.js`, `js/ui.js`, `js/css/base.css`
+**Qué:** cada club tiene HISTORIAS propias que siguen el tiempo y se enganchan a la memoria. Sistema
+PARALELO al motor de decisiones (no toca repartirDecisiones ni el token motor).
+- **Arcos escritos a mano** para los grandes: **U de Chile · "El estadio propio"** (3 capítulos: impulsar
+  → financiar → permisos, con final de estadio construido o en humo), **Colo-Colo · "El peso del más
+  grande"** (marca vs pueblo, gira vs clásico, el Cacique y la calle), **UC · "Crecer sin perder la
+  esencia"** (masificar vs cuidar, cantera vs vitrina, el sello cruzado).
+- **Arcos genéricos** que aplican a CUALQUIER club (la sede que se cae, el ídolo que quiere volver al CT).
+- **Era-agnóstico**: la U actual está en el mismo plano que Colo actual (los arcos aplican salvo que marques
+  `era`). Se siembra solo 1 vez por semana, con cooldown tras cerrar uno.
+- Cada elección aplica efectos reales (plata/grupos/reputación) y **queda en la memoria en 2ª persona**
+  ("sacaste adelante el estadio propio de la U"), así te la pueden citar después.
+- Aparece como tarjeta "Historia del club" en el escritorio y se resuelve en un modal de vidrio.
+**Fácil de ampliar (7.00):** agregar un club = una entrada en `ARCOS_EQUIPO[ID]`. El formato está
+documentado arriba del archivo. Probado end-to-end: arco completo U (3 caps → cierra → memoria + cooldown)
+y arco Colo renderizando. Consola limpia.
+**1 línea:** cada club tiene sus propias historias (el estadio de la U, la grandeza de Colo) que siguen el tiempo y quedan en la memoria.
+**Riesgos:** sistema nuevo y aislado; solo agrega `normalizarStorylines` y una tarjeta al escritorio. Bajo.

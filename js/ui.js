@@ -214,6 +214,7 @@ function entrenarSemana(){
 }
 function vistaEscritorio(){
   const v=$("#vista");
+  if(typeof sembrarStoryline==="function") sembrarStoryline();   /* 7.0 · intenta abrir un arco de equipo (1 vez por semana) */
   const rej=el("div","rejilla dos");
   const izq=el("div"), der=el("div");
 
@@ -253,6 +254,9 @@ function vistaEscritorio(){
     p.cuerpo.appendChild(b);
   }
   izq.appendChild(p);
+
+  /* 7.0 · historia del club (arco de equipo) si hay un capítulo abierto */
+  if(typeof panelStoryline==="function"){ const ps=panelStoryline(); if(ps) izq.appendChild(ps); }
 
   /* 5.0 · objetivos de temporada — lo que se espera de vos
      6.29 · pestañas por sección (menos scroll) + tarjetas compactas movibles */

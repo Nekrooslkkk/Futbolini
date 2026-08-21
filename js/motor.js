@@ -211,6 +211,7 @@ function normalizarEstado(){
   /* 6.21 · mesa de la barra */
   if(typeof normalizarBarra==="function") normalizarBarra();
   if(typeof normalizarLogros==="function") normalizarLogros();
+  if(typeof normalizarStorylines==="function") normalizarStorylines();
   /* 6.24 · estado del jugador: minutos, estado y pie (pie determinístico por nombre) */
   (E.plantel||[]).forEach(j=>{
     if(j.minutosTemporada===undefined) j.minutosTemporada=0;

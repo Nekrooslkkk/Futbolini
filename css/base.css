@@ -531,3 +531,7 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
     break-inside:avoid;
   }
 }
+
+/* 7.0 · storylines (arcos de equipo) */
+.story-card{padding:8px 10px;border-radius:7px;border:1px solid rgba(210,140,20,.4);background:linear-gradient(180deg,rgba(255,220,130,.14),rgba(255,220,130,.04));margin:6px 0}
+.story-cap{font-size:15px;margin-bottom:6px}
