@@ -1014,3 +1014,22 @@ para elegir dónde ponerla (aparece la línea de tiro punteada + la mira), eleg�
 derecha, patear → el arquero se tira y (casi siempre) es gol; el marcador y el relato lo registran.
 **1 línea:** los penales a favor ahora se patean dibujando: apuntás, elegís efecto, y el arquero vuela.
 **Riesgos:** ui-partido.js (nuevo flujo async en mostrarAccion, guardado con return-flag). Medio.
+
+## 6.28 · Más elecciones en el partido: TRIVIA de pizarra + DOPAR (turbio)  ✅ (2026-08-21)
+**Archivos:** `js/partido.js`, `js/ui-partido.js`, `js/logros.js`, `js/css/base.css`
+**Qué:** dos tipos nuevos de decisión mientras dirigís, para que no sea siempre la misma charla:
+- **Trivia de pizarra (🧮):** cada tanto (no en la previa) cae una pregunta REAL de fútbol (cuántos
+  jugadores, minutos por tiempo, cuántos puntos da ganar, de qué continente es la Libertadores, etc.) o
+  una cuenta simple de matemática (12+7, 11×9…). Si acertás, el equipo se suelta (empuje/ataque) y hasta
+  puede caer un gol inmediato (~28%); si errás, se ponen nerviosos. Absurdo a propósito, como pidió el jefe.
+- **Dopar (💉):** en momentos críticos (min ≥ 62, partido parejo, con caja) aparece una 4ª opción para
+  repartir un «preparado especial». Cuesta carísimo (≥ $60 o 18% de tu caja) y agranda al equipo por lo
+  que queda. PERO al terminar el partido se juega el riesgo: 35% escándalo de dopaje (multa, prensa e
+  hinchada por el piso, credibilidad destruida, queda en el prontuario, +logro «El químico»), 20% un
+  titular se descompensa y se lesiona, 45% zafás… por ahora. Se confirma en un modal aparte.
+Se agregó el logro **«El químico»** (dopar y que te estalle encima) → 13 logros.
+**Qué probar:** dirigir; en un momento debería salir una trivia con 3 respuestas; en un partido parejo
+pasado el minuto 62 con plata, la charla ofrece la opción de dopar (pide confirmación por lo caro/turbio).
+**1 línea:** ahora en el partido te toman prueba de pizarra… o podés jugar sucio y dopar, con todo el riesgo.
+**Riesgos:** partido.js (momentoActual ahora puede devolver trivia/doping; consecuencias en terminarPartido),
+ui-partido.js (mostrarMomento ramifica por tipo). Medio.

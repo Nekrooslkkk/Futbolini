@@ -495,23 +495,53 @@ function modalCambio(){
     pintar();
   },{cerrarFuera:false});
 }
+function avanzarMomento(P){
+  P.momentoIdx++;
+  if(P.apoyo){ P.apoyo.momentos=(P.apoyo.momentos||0)+1; P.apoyo.criterio=clamp(P.apoyo.criterio+6,0,99); }
+  correrEnVivo();
+}
 function mostrarMomento(){
   const P=P_ACTUAL;
   const m=momentoActual(P);
-  const p=panel(m.t,"🧠","alerta");
+  const esTrivia=m.tipo==="trivia";
+  const p=panel(m.t,esTrivia?"🧮":"🧠","alerta");
   p.cuerpo.appendChild(el("p",null,m.d));
+  if(esTrivia) p.cuerpo.appendChild(el("p",null,"<b>"+m.q+"</b>"));
   const ops=el("div","ops ops-part"); MOMENTO_OPS=[];
   m.op.forEach((o,i)=>{
-    const b=el("button","op");
-    b.innerHTML='<div class="t"><span class="tecla">'+(i+1)+'</span> '+o.t+'</div>';
-    b.onclick=()=>{ MOMENTO_OPS=[]; aplicarMomento(P,o.ef); P.momentoIdx++;
-      if(P.apoyo){ P.apoyo.momentos=(P.apoyo.momentos||0)+1; P.apoyo.criterio=clamp(P.apoyo.criterio+6,0,99); }
-      correrEnVivo(); };
+    const b=el("button","op"+(o.doping?" op-doping":""));
+    b.innerHTML='<div class="t"><span class="tecla">'+(i+1)+'</span> '+o.t+'</div>'+(o.d?'<div class="d">'+o.d+'</div>':"");
+    b.onclick=()=>{
+      MOMENTO_OPS=[];
+      if(esTrivia){
+        if(o.ok){
+          P.empuje+=1.2; P.ataque+=1; P.orden+=0.5;
+          if(Math.random()<0.28 && typeof anotaPropio==="function"){ anotaPropio(P,P.min); aviso("¡Correcto! Y encima cayó el gol 🎯"); }
+          else aviso("¡Correcto! Se soltaron 🎯");
+        } else { P.empuje-=0.8; P.orden-=0.5; aviso("Nada que ver… se pusieron nerviosos 😬"); }
+        avanzarMomento(P); return;
+      }
+      if(o.doping){ confirmarDoping(P,o.costo); return; }   /* async */
+      aplicarMomento(P,o.ef); avanzarMomento(P);
+    };
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);
-  p.cuerpo.appendChild(el("p","mini","Elegí con 1 / 2 / 3 / 4 · flechas y Enter."));
+  p.cuerpo.appendChild(el("p","mini",esTrivia?"Elegí la respuesta con 1 / 2 / 3.":"Elegí con 1 / 2 / 3 / 4 · flechas y Enter."));
   (document.querySelector(".partido-wrap")||$("#vista")).appendChild(p);
+}
+/* confirmación del doping: caro y turbio, se pregunta aparte */
+function confirmarDoping(P,costo){
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">💉</span><span>¿Repartir el «preparado especial»?</span>'));
+    const c=el("div","cuerpo"); box.appendChild(c);
+    c.appendChild(el("p",null,"Cuesta <b>"+plata(costo)+"</b> y es de lo más turbio que hay. Por lo que queda de partido el equipo se agranda muchísimo… pero si te agarran, es multa, escándalo en la prensa y hasta un jugador que se descompensa. Queda en tu prontuario."));
+    const ir=el("button","btn-aqua ancho verde","Sí, que jueguen «recargados»");
+    ir.onclick=()=>{ cerrarModal(); if(typeof doparEquipo==="function") doparEquipo(P,costo); aviso("El equipo salió otra vez, recargado… 💉"); avanzarMomento(P); };
+    const no=el("button","btn-aqua ancho gris","No, así no"); no.style.marginTop="6px";
+    no.onclick=()=>{ cerrarModal(); mostrarMomento(); };   /* vuelve a la charla, no gastó el momento */
+    c.appendChild(ir); c.appendChild(no);
+  },{cerrarFuera:false});
 }
 /* jugada de peligro que el DT resuelve en el acto */
 function candidatosPenal(P){

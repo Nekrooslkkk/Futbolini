@@ -16,7 +16,8 @@ const LOGROS=[
  {id:"influencer",    n:"El DT que rompió PLOP",     d:"Superá el millón de seguidores en PLOP."},
  {id:"reconquista",   n:"El que sabe, sabe",         d:"Reconquistá a 3 jugadores descontentos con plata."},
  {id:"goleada_clasico",n:"Baile en el patio grande", d:"Ganale un clásico por 4 goles o más de diferencia."},
- {id:"caja_sana",     n:"Manos limpias",             d:"Terminá una temporada con la caja en azul y sin desfalco."}
+ {id:"caja_sana",     n:"Manos limpias",             d:"Terminá una temporada con la caja en azul y sin desfalco."},
+ {id:"quimico",       n:"El químico",                 d:"Recurrí a un «preparado especial»… y que te estalle el escándalo encima. No estás orgulloso."}
 ];
 const LOGRO_POR_ID={}; LOGROS.forEach(l=>LOGRO_POR_ID[l.id]=l);
 function normalizarLogros(){ if(E && (!E.logros||typeof E.logros!=="object")) E.logros={}; }

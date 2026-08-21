@@ -464,3 +464,6 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 .penal-mini .penal-ef{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:8px 0 2px}
 .penal-svg{border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 #pen-arq{transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+
+/* 6.28 · doping (opción turbia en el partido) */
+.op-doping{border-color:rgba(200,60,60,.5);background:linear-gradient(180deg,rgba(230,80,70,.12),rgba(230,80,70,.04))}

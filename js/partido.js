@@ -576,15 +576,67 @@ const TACTICAS_EMPATE=[
  {t:"Dejarlo como está",ef:{}},
  {t:"Una consigna corta y seguir",ef:{orden:1,ataque:0.5}}
 ];
+/* 6.28 · trivia de pizarra: preguntas REALES de fútbol y de matemática simple.
+   Si respondés bien, el equipo se agranda (más chance) y hasta puede caer un gol;
+   si errás, se ponen nerviosos. Es absurdo y a propósito. */
+const TRIVIA_FUTBOL=[
+ {q:"Rápido, ¿cuántos jugadores tiene un equipo en la cancha?",op:["10","11","12"],sol:1},
+ {q:"¿Cuántos minutos dura cada tiempo reglamentario?",op:["40","45","50"],sol:1},
+ {q:"Hoy en el fútbol, ganar un partido, ¿cuántos puntos da?",op:["2","3","4"],sol:1},
+ {q:"¿Con cuántas tarjetas amarillas te expulsan?",op:["Dos","Tres","Cuatro"],sol:0},
+ {q:"La Copa Libertadores, ¿de qué continente es?",op:["Europa","Sudamérica","Asia"],sol:1},
+ {q:"¿Cuántos jueces de línea hay habitualmente por partido?",op:["Uno","Dos","Cuatro"],sol:1},
+ {q:"Un hat-trick, ¿cuántos goles son?",op:["Dos","Tres","Cinco"],sol:1},
+ {q:"¿Desde qué distancia se patea un penal, aprox.?",op:["9 metros","11 metros","16 metros"],sol:1},
+ {q:"¿De qué color es la tarjeta de expulsión?",op:["Amarilla","Roja","Azul"],sol:1},
+ {q:"¿Cuántos cambios suele permitir hoy el reglamento?",op:["Tres","Cinco","Siete"],sol:1}
+];
+function triviaMate(){
+  const a=ri(3,12), b=ri(2,9), op=elige(["+","−","×"]);
+  const r=op==="+"?a+b:(op==="−"?a-b:a*b);
+  const set=new Set([r]); while(set.size<3){ set.add(r+ri(-4,4)); }
+  const ops=[...set].sort(()=>Math.random()-0.5);
+  return {q:"Concentración: ¿cuánto es "+a+" "+op+" "+b+"?",op:ops.map(String),sol:ops.indexOf(r)};
+}
+function momentoTrivia(P){
+  const usarMate=Math.random()<0.5;
+  const base=usarMate?triviaMate():elige(TRIVIA_FUTBOL);
+  return {tipo:"trivia", t:"Test rápido de pizarra 🧮",
+    d:"Minuto "+P.min+". Les tirás una pregunta para sacarlos del nervio. Si aciertan, se sueltan; si no, se traban.",
+    q:base.q, sol:base.sol,
+    op:base.op.map((t,i)=>({t:t, ok:i===base.sol}))};
+}
+/* ¿hay un momento crítico donde tiene sentido ofrecer el 'preparado especial'? */
+function momentoCritico(P){
+  const [yo,otro]=miMarcador(P);
+  return P.min>=62 && Math.abs(yo-otro)<=1 && !P.doping;
+}
+function opcionDoping(P){
+  const costo=Math.max(60, Math.round((E.plata||0)*0.18));
+  return {t:"💉 Repartir un «preparado especial»", doping:true, costo:costo,
+    d:"Muy caro ("+plata(costo)+") y muy turbio: los agranda un montón por lo que queda, pero si estalla, estalla feo."};
+}
 function momentoActual(P){
   const [yo,otro]=miMarcador(P);
   const dif=yo-otro;
+  /* de vez en cuando, en vez de la charla, cae una trivia (nunca en la previa) */
+  if(P.min>=5 && !P._triviaReciente && Math.random()<0.28){ P._triviaReciente=true; return momentoTrivia(P); }
+  P._triviaReciente=false;
   let t,d,pool;
   if(P.min<5){ t="Antes de salir a la cancha"; d="Última charla en el camarín. El plan está armado, falta el mensaje."; pool=TACTICAS_INICIO; }
   else if(dif<0){ t="Vas abajo en el marcador"; d="Minuto "+P.min+". El partido se está yendo y en la tribuna ya hay murmullo."; pool=TACTICAS_ABAJO; }
   else if(dif>0){ t="Vas arriba"; d="Minuto "+P.min+". Hay ventaja, pero el rival empujó los últimos minutos."; pool=TACTICAS_ARRIBA; }
   else { t="Está empatado"; d="Minuto "+P.min+". El partido está para cualquiera."; pool=TACTICAS_EMPATE; }
-  return {t:t, d:d, op:mezcla(pool).slice(0,4)};
+  const op=mezcla(pool).slice(0,4);
+  if(momentoCritico(P) && (E.plata||0)>=60){ op[3]=opcionDoping(P); }   /* 4ª opción: dopar en momento clave */
+  return {t:t, d:d, op:op};
+}
+/* aplica el doping: efecto fuerte por lo que queda, cobra caro, siembra el riesgo */
+function doparEquipo(P,costo){
+  aplicarEfectos({plata:-costo});
+  P.doping=true; P.ataque+=5; P.orden+=2; P.empuje+=1.6; P.desgaste=Math.max(0,(P.desgaste||0)-3);
+  linea(P,P.min,"Algo cambió: el equipo salió recargado, con los ojos como platos. Corren como si recién empezara.","gol");
+  if(typeof recordar==="function") recordar("doping","recurriste a un «preparado especial» para ganar un partido",{peso:"alto",tono:"malo"});
 }
 function aplicarMomento(P,ef){
   if(!ef) return;
@@ -672,6 +724,29 @@ function terminarPartido(P){
   if(typeof recordar==="function"){
     if(yo-otro>=3) recordar("goleada","goleaste "+yo+"-"+otro+" a "+part.rivalNombre,{peso:"medio",tono:"bueno"});
     else if(otro-yo>=3) recordar("paliza","te golearon "+otro+"-"+yo+" de visita ante "+part.rivalNombre,{peso:"medio",tono:"malo"});
+  }
+  /* 6.28 · consecuencias del doping: puede estallar el escándalo o caerse un titular */
+  if(P.doping){
+    const r=Math.random();
+    if(r<0.35){
+      aplicarGrupos({prensa:-18,hinchada:-10,anfp:-16,comunidad:-8,directorio:-10});
+      aplicarRep({credibilidad:-16,publica:-10});
+      const multa=80; aplicarEfectos({plata:-multa,prestigio:-6});
+      if(E.flags) E.flags.dopingEscandalos=(E.flags.dopingEscandalos||0)+1;
+      notificar({t:"ESCÁNDOLO DE DOPAJE",tipo:"malo",
+        d:"Un control dio positivo. Estalla el escándalo: multa de "+plata(multa)+", cae tu credibilidad y la prensa te destroza. Esto queda en tu prontuario."});
+      if(typeof recordar==="function") recordar("doping","te estalló un caso de dopaje encima",{peso:"alto",tono:"malo"});
+      if(typeof desbloquear==="function") desbloquear("quimico");
+    } else if(r<0.55){
+      const victima=elige(P.once.filter(j=>j.pos!=="ARQ"))||P.once[0];
+      if(victima){ victima.lesion=Math.max(victima.lesion||0,3); victima.estado="lesion";
+        notificar({t:"Se descompensó "+victima.n,tipo:"malo",
+          d:"Después del partido, "+victima.n+" terminó descompensado y con una lesión. El «preparado» pasó la cuenta: afuera unas fechas."}); }
+    } else {
+      notificar({t:"Zafaste… esta vez",tipo:"neutro",bandeja:false,
+        d:"Nadie controló nada. El «preparado especial» hizo su trabajo y nadie se enteró. Pero la próxima puede no salir tan barata."});
+    }
+    P.doping=false;
   }
   /* loop de aprendizaje: avisar si el resultado te acerca o aleja de tu meta deportiva */
   if(typeof avisoObjetivoPartido==="function") avisoObjetivoPartido(posAntes,posDespues);
