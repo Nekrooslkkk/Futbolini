@@ -1158,3 +1158,19 @@ priorizadas según cómo esté tu club.
 partido; al meter un gol, el tuit dice el nombre del que lo hizo.
 **1 línea:** FutbolGram ahora tuitea sobre el momento (va ganando y sufriendo, partido aburrido) y nombra al goleador.
 **Riesgos:** redes.js (tickerAmbiente nuevo), ui-partido.js (llamada en el loop). Bajo.
+
+# ===== OVERHAUL 7.0 (gran actualización de interfaz/diseño) =====
+
+## 7.0-a · Fondo Frutiger Aero con AURORAS + paneles de vidrio  ✅ (2026-08-21)
+**Archivos:** `index.html` (capa .aurora), `css/aero.css`
+**Qué:** primer golpe del overhaul visual, arrancando por lo que marcó el jefe (el fondo plano).
+- **Fondo con auroras estilo Windows Vista**: nueva capa `.aurora` con cintas de luz sedosas
+  (conic-gradients girando lento, blur medio, blend soft-light) sobre un cielo celeste→verde más rico.
+  Se mueven en loop lento; respetan `prefers-reduced-motion`. Las burbujas glossy quedaron.
+- **Paneles de vidrio (glass)**: los paneles ahora son translúcidos (opacidad ~.6 + `backdrop-filter:
+  blur(16px) saturate`) para que la aurora del fondo asome a través de ellos — el look Aero de verdad.
+  Se les agregó un reflejo de vidrio en la mitad superior (`::after`). Texto sigue legible.
+**Qué probar:** entrar al juego con tema Aero → fondo con auroras que ondulan y paneles que dejan ver el
+color del fondo. Se ve bien en PC y en celular.
+**1 línea:** el fondo dejó de ser plano: auroras Vista + paneles de vidrio que las dejan brillar a través.
+**Riesgos:** solo `body[data-tema="aero"]`, no toca otros temas. Bajo.
