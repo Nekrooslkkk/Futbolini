@@ -845,3 +845,16 @@ Táctica (formaciones, mentalidad, roles, designados, alineación manual, pizarr
 (el mundo recuerda y cita tu historia), objetivos, PLOP vivo con bots, finanzas + bolsa, vida con changas,
 planteles reales de 18 clubes, arranque, conferencia viva, caras largas, y pulido de interfaz. Los pendientes
 del plan original quedaron cerrados. Lo que sigue es contenido (Grok) y lo que salga de jugarlo.
+
+## 6.16 · Interfaz PC + móvil: adiós scroll eterno · PLOP con scroll propio  ✅ (2026-08-19)
+**Archivos:** `js/ui.js` (render data-sec, bots), `js/ui-partido.js` (data-sec partido), `css/base.css`
+- **PC sin scroll eterno**: las vistas de lista (finanzas, institución, mercado, vida, redes, historia, carrera,
+  ajustes, avisos, calendario) fluyen en **2 columnas** a ≥1000px y **3** a ≥1560px (masonry con multicolumn,
+  panels intactos con break-inside:avoid). Escritorio (rejilla propia), plantel (tabla) y partido quedan excluidos.
+  Se hace con `#vista[data-sec]` seteado en render.
+- **PLOP con scroll propio**: el feed (`#plopFeed`) ahora scrollea DENTRO de su panel (max-height ~60vh) en vez
+  de crecer toda la página. Los bots insertan arriba **sin moverle la vista al que está leyendo** (guarda la
+  posición de scroll, como Twitter real). Indicador **"● EN VIVO"** pulsante. Cap de 60 posts.
+- Móvil intacto (una columna, la multicolumna es solo ≥1000px); todo responsive.
+- Verificado: navegador — 2 columnas a 1360px en finanzas/redes, plantel/escritorio en 1, feed con overflow
+  interno (max-height 458px) y EN VIVO, partido no columnizado, consola limpia + screenshot del layout 2-col.

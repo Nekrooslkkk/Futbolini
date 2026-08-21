@@ -19,7 +19,7 @@ function partidoTeclas(e){
 document.addEventListener("keydown",partidoTeclas);
 
 function pantallaPrevia(part){
-  const v=$("#vista"); v.innerHTML="";
+  const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
   const cab=panel(part.tipo==="copa"?("Copa Libertadores · "+part.ronda):("Campeonato Nacional · fecha "+part.fecha),
     part.tipo==="copa"?"🏆":"⚽", part.tipo==="copa"?"agua":"");
   cab.cuerpo.appendChild(el("h2","tit",(part.local?E.clubNombre+" vs "+part.rivalNombre:part.rivalNombre+" vs "+E.clubNombre)));
@@ -342,7 +342,7 @@ function arrancarPartido(part,modo){
 }
 function pintarPartido(){
   const P=P_ACTUAL; if(!P) return;
-  const v=$("#vista"); v.innerHTML="";
+  const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
   const [yo,otro]=miMarcador(P);
   const p=panel(P.part.tipo==="copa"?("Copa Libertadores · "+P.part.ronda):("Fecha "+P.part.fecha),"🎙️",P.part.tipo==="copa"?"agua":"");
   const marc=el("div","marcador");

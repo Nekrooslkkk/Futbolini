@@ -50,12 +50,13 @@ function pintarMenu(){
 function render(){
   if(typeof detenerPlopBots==="function") detenerPlopBots();
   pintarBarra(); pintarMenu();
-  const v=$("#vista"); v.innerHTML="";
+  const v=$("#vista"); v.innerHTML=""; v.dataset.sec="full";
   $("#btnAvanzar").classList.toggle("oculto",!E);
   if(!E){ pantallaInicio(); return; }
   if(E.carrera.fin){ v.appendChild(pantallaFinCarrera()); return; }
   if(E.dinastia&&E.dinastia.sucesionPendiente){ v.appendChild(pantallaSucesion()); return; }
   if(E.carrera.enParo){ v.appendChild(pantallaSinClub()); return; }
+  v.dataset.sec=SEC;   /* para el layout multi-columna en PC (evita scroll eterno) */
   ({escritorio:vistaEscritorio,institucion:vistaInstitucion,finanzas:vistaFinanzas,plantel:vistaPlantel,
     mercado:vistaMercado,redes:vistaRedes,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,
     vida:vistaVida,avisos:vistaAvisos,ajustes:vistaAjustes}[SEC]||vistaEscritorio)();
@@ -1093,8 +1094,11 @@ function arrancarPlopBots(){
     const feedBox=$("#plopFeed");
     if(feedBox&&item){
       const node=renderPostEl(item); node.classList.add("plop-nuevo");
+      const arriba=feedBox.scrollTop<30;            /* si está mirando lo último, se lo mostramos */
+      const h0=feedBox.scrollHeight, s0=feedBox.scrollTop;
       feedBox.insertBefore(node, feedBox.firstChild);
-      while(feedBox.children.length>40) feedBox.removeChild(feedBox.lastChild);
+      while(feedBox.children.length>60) feedBox.removeChild(feedBox.lastChild);
+      if(!arriba) feedBox.scrollTop=s0+(feedBox.scrollHeight-h0);  /* no le movemos la vista al que lee */
     }
   }, 5000);
 }
@@ -1288,9 +1292,12 @@ function vistaRedes(){
     return tx.indexOf("@"+yo.replace(/\s/g,""))>=0 || tx.indexOf("@dt")>=0 || t.tipo==="prensa";
   });
   const pt=panel(REDES_TAB==="menciones"?"Menciones y prensa":"Inicio","🐦");
+  if(REDES_TAB==="inicio"){
+    pt.cuerpo.appendChild(el("div","","<span class='envivo'>EN VIVO</span> <span class='mini'>· la gente postea en tiempo real. Scrolleá el feed acá abajo.</span>"));
+  }
   const feedBox=el("div"); feedBox.id="plopFeed";
-  if(!feed.length) pt.cuerpo.appendChild(el("p","mini","El feed está quieto. Jugá un partido o publicá algo."));
-  feed.slice(0,28).forEach(t=>feedBox.appendChild(renderPostEl(t)));
+  if(!feed.length) feedBox.appendChild(el("p","mini","El feed está quieto. Jugá un partido o publicá algo."));
+  feed.slice(0,40).forEach(t=>feedBox.appendChild(renderPostEl(t)));
   pt.cuerpo.appendChild(feedBox);
   v.appendChild(pt);
   if(REDES_TAB==="inicio" && typeof arrancarPlopBots==="function") arrancarPlopBots();
