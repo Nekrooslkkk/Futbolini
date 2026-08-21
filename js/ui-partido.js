@@ -571,6 +571,7 @@ function pasoEnVivo(){
   const ev=tickPartido(P);
   if(typeof actualizarApoyo==="function") actualizarApoyo(P);
   if(typeof tickerPost==="function") tickerPost(P,ev);
+  if(typeof tickerAmbiente==="function" && (!ev||ev.tipo==="nada") && Math.random()<0.14) tickerAmbiente(P);   /* 6.36 · tuits del momento */
   if(ev.tipo==="penalRival"){ resolverEventoAuto(P,ev); pintarPartido(); return; }
   if(ev.tipo==="penal"||ev.tipo==="lesion"||ev.tipo==="tiroLibre"){
     const autoP=!E.config||E.config.autoPausa!==false;

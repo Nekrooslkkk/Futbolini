@@ -445,12 +445,16 @@ function tickerPost(P, ev){
   const rival=(P.part&&P.part.rivalNombre)||"el rival";
   let autor=elige(HANDLES_HINCHA), texto=null, tono="neutro";
   switch(ev.tipo){
-    case "gol":
+    case "gol":{
       autor=elige(HANDLES_HINCHA); tono="bueno";
-      texto=elige(["¡GOOOOL NUESTRO! "+m+"' 🔥🔥","¡LA METIÓ! "+m+"', vamos carajo 💪","Golazo. Se grita con todo, "+m+"' ⚽","¡ARRIBA! "+m+"' pura garra ❤️"]); break;
-    case "golRival":
+      const gd=(P.golesDetalle||[]).filter(g=>g.propio); const aut=gd.length?gd[gd.length-1].quien:null;
+      const [y1,o1]=(typeof miMarcador==="function")?miMarcador(P):[0,0];
+      texto=aut?elige(["¡GOOOL de "+aut+"! "+m+"' 🔥🔥","¡LA METIÓ "+aut+"! "+m+"', vamos carajo 💪","Golazo de "+aut+", "+m+"' ⚽ ("+y1+"-"+o1+")","¡ARRIBA! "+aut+" la clavó, "+m+"' ❤️"])
+        :elige(["¡GOOOOL NUESTRO! "+m+"' 🔥🔥","¡LA METIÓ! "+m+"', vamos carajo 💪","Golazo. Se grita con todo, "+m+"' ⚽"]); break; }
+    case "golRival":{
       autor=elige(HANDLES_HINCHA); tono="malo";
-      texto=elige(["Nos hicieron gol... "+m+"' 😩","Uh no, gol del rival. A despertar, "+m+"'.","Otra vez mal parados atrás, "+m+"' 😡","Gol de "+rival+". Duele, "+m+"'."]); break;
+      const gd=(P.golesDetalle||[]).filter(g=>!g.propio); const aut=gd.length?gd[gd.length-1].quien:null;
+      texto=elige(["Nos hicieron gol"+(aut?" ("+aut+")":"")+"... "+m+"' 😩","Uh no, gol de "+rival+". A despertar, "+m+"'.","Otra vez mal parados atrás, "+m+"' 😡","Gol de "+rival+". Duele, "+m+"'."]); break; }
     case "penal":
       autor=elige(HANDLES_PRENSA); tono="bueno";
       texto="🚨 ¡PENAL para "+club+" en el "+m+"'! El VAR lo mira con lupa…"; break;
@@ -475,6 +479,25 @@ function tickerPost(P, ev){
   }
   if(!texto) return;
   P.ticker.unshift({m:m, autor:autor, texto:texto, tono:tono});
+  if(P.ticker.length>18) P.ticker.length=18;
+}
+/* 6.36 · tuits que reaccionan al MOMENTO (marcador, tensión, tiempo), no a la jugada.
+   Se llaman de a ratos desde el loop: hacen sentir FutbolGram vivo. */
+function tickerAmbiente(P){
+  if(!P||!P.ticker) return;
+  const [yo,otro]=(typeof miMarcador==="function")?miMarcador(P):[P.gl,P.gv];
+  const dif=yo-otro, m=P.min||0, rival=(P.part&&P.part.rivalNombre)||"el rival";
+  let ops=[];
+  if(m>=80){
+    if(dif>0) ops=["Aguantá esto corazón mío, "+m+"' 😰","QUE SE TERMINE YA, "+m+"' 🙏","Ganando y sufriendo como siempre 😅 "+m+"'","No mires el reloj, no mires el reloj… "+m+"'"];
+    else if(dif<0) ops=["Se nos va el partido, "+m+"' 😔","Última bala, todos arriba "+m+"'","No puede ser, reaccionen "+m+"' 😡","Regalamos otra vez, "+m+"'…"];
+    else ops=["Un gol lo cambia todo, "+m+"' 👀","Empate y a no volverse loco, "+m+"'","Cualquiera lo gana, "+m+"' 🫣"];
+  } else if(m>=25 && m<=65){
+    if(dif===0) ops=["Partido trabado, cero que ver "+m+"' 😴","Alguien que invente algo, "+m+"'","Se juega todo en el medio, "+m+"'","Falta un enganche que la piense, "+m+"'"];
+    else if(dif>0) ops=["Vamos ganando pero hay que cerrarlo, "+m+"'","Dominamos, falta la sentencia "+m+"'","Cuando queremos, jugamos lindo 😍 "+m+"'"];
+    else ops=["Nos pasan por arriba, "+m+"' 😤","El técnico tiene que mover algo YA, "+m+"'","Contra "+rival+" siempre lo mismo, "+m+"'"];
+  } else return;
+  P.ticker.unshift({m:m, autor:elige(HANDLES_HINCHA), texto:elige(ops), tono:dif>0?"bueno":(dif<0?"malo":"neutro")});
   if(P.ticker.length>18) P.ticker.length=18;
 }
 

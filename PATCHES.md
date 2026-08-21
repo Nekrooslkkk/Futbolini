@@ -1144,3 +1144,17 @@ categorizadas con acento de color. (El viejo `consejoLocal()` sigue para el role
 priorizadas según cómo esté tu club.
 **1 línea:** el cerebro local ya no es una línea suelta: es un analista que te prioriza la semana, 100% offline.
 **Riesgos:** ia.js (nuevo cerebroLocal), ui.js (panel). Bajo.
+
+## 6.36 · FutbolGram en vivo más realista (reacciona al momento, no al relato)  ✅ (2026-08-21)
+**Archivos:** `js/redes.js` (tickerPost + tickerAmbiente), `js/ui-partido.js`
+**Qué:** el feed en vivo del partido se siente más real:
+- Los tuits de gol ahora **nombran al goleador real** ("¡GOOOL de Fulano!", con el marcador), igual los
+  goles en contra citan al autor del rival.
+- Se agregaron **tuits de ambiente** que reaccionan al MOMENTO (marcador, tensión, minuto), no a la jugada:
+  "Ganando y sufriendo como siempre 85'", "Partido trabado, cero que ver 50' 😴", "El técnico tiene que
+  mover algo YA", "Se nos va el partido 😔". Leen el marcador con `miMarcador` (respeta local/visita) y
+  aparecen de a ratos (~14% de los ticks tranquilos) para que FutbolGram esté vivo entre jugada y jugada.
+**Qué probar:** dirigir/seguir un partido en vivo → entre eventos aparecen tuits que comentan cómo va el
+partido; al meter un gol, el tuit dice el nombre del que lo hizo.
+**1 línea:** FutbolGram ahora tuitea sobre el momento (va ganando y sufriendo, partido aburrido) y nombra al goleador.
+**Riesgos:** redes.js (tickerAmbiente nuevo), ui-partido.js (llamada en el loop). Bajo.
