@@ -353,7 +353,7 @@ function procesarEncadenadas(){
       if(d.grupos) aplicarGrupos(d.grupos);
       if(d.rep) aplicarRep(d.rep);
       aplicarBanderas(d);
-      const extra=d.accion?ejecutarAccion(d.accion):"";
+      const extra=d.accion?ejecutarAccion(d.accion,d):"";
       const item=notificar({t:d.t,d:resolverTokens(d.d||"",E),extra:extra,tipo:d.tipo||"neutro"});
       disparadas.push(item);
     }
@@ -464,7 +464,7 @@ function resolverDecision(dec,idx){
   aplicarBanderas(op); aplicarBanderas(res);
   agendarEncadena(op.encadena); agendarEncadena(res.encadena);
   const accion=res.accion||op.accion;
-  let extra=accion?ejecutarAccion(accion):"";
+  let extra=accion?ejecutarAccion(accion,dec):"";
 
   if(dec.op.some(o=>o.hist)){
     if(op.hist) E.coincidencias.push({anio:E.anio,t:dec.t});
@@ -477,9 +477,22 @@ function resolverDecision(dec,idx){
   return {tier:tier,txt:res.txt,extra:extra,hist:!!op.hist};
 }
 /* ---------------- acciones especiales ---------------- */
-function ejecutarAccion(a){
+/* 6.17 · ata el nombre del jugador a la carta para que la consecuencia toque a ESE jugador */
+function atarFicha(dec,j){ if(dec&&j) dec.ficha={n:j.n}; return dec; }
+function ejecutarAccion(a,dec){
   const [nombre,arg]=a.split(":");
   switch(nombre){
+    case "venderFicha":{  /* vende al jugador que NOMBRA la carta (ficha snapshoteada), no al más caro */
+      const nom=(dec&&dec.ficha&&dec.ficha.n)||arg;
+      const j=(E.plantel||[]).find(x=>x.n===nom&&!x.vendido);
+      if(!j) return "";
+      return venderJugador(j);
+    }
+    case "venderNombre":{  /* nombre baked en la acción (venderNombre:Iván Román) */
+      const j=(E.plantel||[]).find(x=>x.n===arg&&!x.vendido);
+      if(!j) return "";
+      return venderJugador(j);
+    }
     case "lesionAlAzar":{
       const sanos=E.plantel.filter(j=>!j.lesion&&!j.vendido);
       if(!sanos.length) return "";
@@ -574,13 +587,24 @@ function reconquistarJugador(j){
   if(typeof recordar==="function") recordar("camarin","le pusiste un plus para reconquistar a "+j.n,{quien:j.n,peso:"bajo",tono:"bueno"});
   return {ok:true,costo:costo};
 }
-function venderJugador(j){
-  const monto=Math.round(j.valor*rnd(.75,1.2));
-  j.vendido=true; E.plata+=monto;
+function venderJugador(j,monto){
+  monto=monto||Math.round(j.valor*rnd(.75,1.2));
+  j.vendido=true; j.estado="vendido";
+  E.plata+=monto;
   E.ind.plantel=clamp(E.ind.plantel-Math.round(j.nivel/14),0,100);
+  E.mercadoLog=E.mercadoLog||{}; E.mercadoLog.vendidos=E.mercadoLog.vendidos||[];
+  E.mercadoLog.vendidos.push({n:j.n,monto:monto,anio:E.anio});
+  const simbolo=j.rasgos&&(j.rasgos.indexOf("ídolo")>=0||j.rasgos.indexOf("de la casa")>=0);
+  if(simbolo){
+    aplicarGrupos({hinchada:-12});
+    if(typeof postProc==="function"&&typeof HANDLES_HINCHA!=="undefined")
+      postProc(elige(HANDLES_HINCHA),"hincha","Venden a "+j.n+", un símbolo del club. A la gente esto no le entra.","malo");
+  }
   if(typeof recordar==="function") recordar("venta","vendiste a "+j.n+" por "+plata(monto),
-    {quien:j.n,peso:(j.nivel>=80||(j.rasgos&&j.rasgos.indexOf("ídolo")>=0))?"alto":"medio",tono:"riesgo"});
-  return "Se vende a "+j.n+" por "+plata(monto)+".";
+    {quien:j.n,peso:(simbolo||j.nivel>=80)?"alto":"medio",tono:"riesgo"});
+  if(typeof notificar==="function") notificar({t:"Se fue "+j.n,tipo:"malo",bandeja:true,
+    d:"Se vendió a "+j.n+" ("+j.pos+") por "+plata(monto)+". "+(simbolo?"Un símbolo del club: la hinchada lo va a sentir.":"El plantel pierde una pieza.")});
+  return "Se fue "+j.n+" por "+plata(monto)+".";
 }
 /* ---------------- economía ---------------- */
 function planillaAnual(){ return E.plantel.filter(j=>!j.vendido&&!j.cedido).reduce((s,j)=>s+j.sueldo,0); }
@@ -752,7 +776,7 @@ function tirarEvento(){
   if(ev.ef) aplicarEfectos(ev.ef);
   if(ev.grupos) aplicarGrupos(ev.grupos);
   if(ev.rep) aplicarRep(ev.rep);
-  let extra=ev.accion?ejecutarAccion(ev.accion):"";
+  let extra=ev.accion?ejecutarAccion(ev.accion,ev):"";
   const txt=resolverTokens(ev.d,E).replace("{JUGADOR}",(elige(E.plantel.filter(j=>!j.vendido))||{n:"un jugador"}).n);
   const item=notificar({t:ev.t,d:txt,extra:extra,tipo:ev.tipo});
   return {tipo:"aviso",item:item};

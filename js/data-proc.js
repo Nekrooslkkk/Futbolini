@@ -252,11 +252,34 @@ const DEC_PROC=[
        mal:{txt:"El jugador quería irse y quedó dolido.",ef:{moral:-3}}}
      ]};
  }},
+ /* 6.17 · OFERTA FORMAL CON NOMBRE: vende EXACTAMENTE al jugador que nombra la carta (ficha) */
+ {buzon:"refuerzos",peso:"medio",gen:function(){
+   const j=jugAzar(x=>x.nivel>=66); if(!j) return null;
+   const club=otroClub();
+   const simbolo=j.rasgos&&(j.rasgos.indexOf("ídolo")>=0||j.rasgos.indexOf("de la casa")>=0);
+   return {t:"Oferta formal por "+j.n, ficha:{n:j.n},
+     d:club+" pone una oferta formal sobre la mesa por "+j.n+" ("+j.pos+", nivel "+j.nivel+", valor estimado "+plata(j.valor)+"). La plata ordena el año, pero perdés a un jugador"+(simbolo?" que la gente quiere":"")+".",
+     posturas:{directorio:22,hinchada:simbolo?-25:-8,camarin:-8},
+     op:[
+      {t:"Aceptar y vender a "+j.n,dif:28,grupos:{directorio:15,hinchada:-10},
+       bien:{txt:"Entró la plata y el club la aprovecha.",accion:"venderFicha"},
+       mitad:{txt:"Se vendió, aunque el reemplazo todavía no aparece.",ef:{plantel:-2},accion:"venderFicha"},
+       mal:{txt:"Se vendió en mal momento y el equipo lo siente.",ef:{plantel:-3,moral:-4},accion:"venderFicha"}},
+      {t:"Pedir más plata",dif:46,grupos:{directorio:8},
+       bien:{txt:"Mejoraron la oferta y cerraste una gran venta.",ef:{plata:120},accion:"venderFicha"},
+       mitad:{txt:"Regatearon y quedó en nada. "+j.n+" se queda.",ef:{}},
+       mal:{txt:"Se ofendieron y retiraron la oferta.",ef:{}}},
+      {t:"Rechazar, "+j.n+" no se vende",dif:34,req:{plata:60},ef:{plata:-60},grupos:{hinchada:15,camarin:10},rep:{dureza:4},
+       bien:{txt:j.n+" se queda y el mensaje caló hondo.",ef:{moral:5}},
+       mitad:{txt:"Se queda, con la cabeza en otro lado.",ef:{moral:-2}},
+       mal:{txt:j.n+" quería irse y quedó dolido.",ef:{moral:-4}}}
+     ]};
+ }},
  /* sondeo de un grande por tu joya */
  {buzon:"refuerzos",peso:"medio",gen:function(){
    const j=jugAzar(x=>x.edad<=22&&(x.proy>=x.nivel+4)); if(!j) return null;
    const club=otroClub();
-   return {t:club+" sondea a la joya "+j.n,
+   return {t:club+" sondea a la joya "+j.n, ficha:{n:j.n},
      d:club+" mandó a preguntar por "+j.n+" ("+j.edad+" años, proyección "+j.proy+"). Todavía no hay oferta formal, pero el entorno del pibe ya se ilusiona.",
      posturas:{hinchada:8,directorio:-6,prensa:8},
      op:[
@@ -265,7 +288,7 @@ const DEC_PROC=[
        mitad:{txt:"Firmó, pero el ruido sigue.",ef:{}},
        mal:{txt:"Se sintió una mercancía y bajó el rendimiento.",ef:{moral:-4}}},
       {t:"Dejar correr, si llega la oferta se ve",dif:26,grupos:{directorio:6},
-       bien:{txt:"Llegó una oferta grande y la caja lo agradeció.",ef:{plata:200}},
+       bien:{txt:"Llegó una oferta grande por "+j.n+" y la aceptaste: entra la plata.",accion:"venderFicha"},
        mitad:{txt:"Quedó en sondeo, nada concreto.",ef:{}},
        mal:{txt:"El pibe se distrajo pensando en irse.",ef:{plantel:-2,moral:-3}}}
      ]};

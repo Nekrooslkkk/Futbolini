@@ -858,3 +858,14 @@ del plan original quedaron cerrados. Lo que sigue es contenido (Grok) y lo que s
 - Móvil intacto (una columna, la multicolumna es solo ≥1000px); todo responsive.
 - Verificado: navegador — 2 columnas a 1360px en finanzas/redes, plantel/escritorio en 1, feed con overflow
   interno (max-height 458px) y EN VIVO, partido no columnizado, consola limpia + screenshot del layout 2-col.
+
+## 6.17 · FIX venta con nombre (continuidad) — prioridad 0  ✅ (2026-08-19)
+**Archivos:** `js/motor.js` (venderJugador, ejecutarAccion+dec, atarFicha), `js/data-proc.js` (Oferta formal con ficha)
+**Funciones:** `atarFicha(dec,j)`, acciones `venderFicha`/`venderNombre`, `venderJugador(j,monto)` enriquecido,
+`ejecutarAccion(a,dec)` (dec pasado desde resolverDecision y tirarEvento).
+**Qué probar:** CC 2026 → "Oferta formal por X" → vender → X sale del plantel, plata sube, `mercadoLog.vendidos`
+lo lista, onceIdeal lo excluye, y un tuit lo nombra a ÉL (no al más caro). venderTitular genérico sigue igual.
+**1 línea:** si la carta nombra a un jugador, la venta toca a ESE jugador (ficha snapshoteada), no al más caro.
+**Riesgos:** módulos tocados motor.js (venderJugador ahora notifica a bandeja + golpea hinchada si es ídolo/de
+la casa; 3 call sites de ejecutarAccion reciben dec) y data-proc.js (2 cartas usan venderFicha). No se tocó
+repartirDecisiones/resolverTokens/idsHechosPrevios. venderTitular queda solo para cartas sin nombre.
