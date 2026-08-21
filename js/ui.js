@@ -197,8 +197,8 @@ function elegirEpoca(id){
 /* ---------------- escritorio ---------------- */
 /* 6.6 · entrenamiento de la semana: mejora la forma del plantel con riesgo bajo de lesión */
 function entrenarSemana(){
-  if(E.flags["entreno_"+E.idx]){ aviso("Ya entrenaron fuerte esta semana"); return; }
-  E.flags["entreno_"+E.idx]=true;
+  if(E.flags["entreno_"+E.anio+"_"+E.idx]){ aviso("Ya entrenaron fuerte esta semana"); return; }
+  E.flags["entreno_"+E.anio+"_"+E.idx]=true;
   const sanos=E.plantel.filter(j=>!j.vendido&&!j.cedido&&!(j.lesion>0));
   sanos.forEach(j=>{ j.forma=clamp(j.forma+ri(2,6),30,99); });
   aplicarEfectos({moral:2});
@@ -242,7 +242,7 @@ function vistaEscritorio(){
     b.onclick=()=>{ if(bloqueoDecisiones()) return; pantallaPrevia(part); };
     p.cuerpo.appendChild(b);
     /* entrenamiento de la semana: mejora la forma, con riesgo bajo de lesión */
-    const yaEntreno=E.flags["entreno_"+E.idx];
+    const yaEntreno=E.flags["entreno_"+E.anio+"_"+E.idx];
     const bent=el("button","btn-aqua ancho"+(yaEntreno?" gris":""),yaEntreno?"🏃 Ya entrenaron fuerte esta semana":"🏃 Entrenar fuerte · mejora la forma (riesgo bajo de lesión)");
     bent.disabled=yaEntreno; bent.style.marginTop="6px"; bent.onclick=entrenarSemana;
     p.cuerpo.appendChild(bent);
@@ -1028,6 +1028,19 @@ function vistaCarrera(){
   });
   if(E.rep.publica<25) p.cuerpo.appendChild(el("div","resul mal","Tu imagen pública está en el suelo. Si sigue cayendo, ningún club del fútbol chileno te va a querer contratar."));
   v.appendChild(p);
+  /* 6.25 · Logros */
+  if(typeof LOGROS!=="undefined"){
+    const conseg=LOGROS.filter(l=>tieneLogro(l.id)).length;
+    const pl=panel("Logros","🏆","agua");
+    pl.cuerpo.appendChild(el("p","mini","<b>"+conseg+" / "+LOGROS.length+"</b> desbloqueados. Bizarros, pero reales."));
+    LOGROS.forEach(l=>{
+      const on=tieneLogro(l.id);
+      const d=el("div","logro"+(on?" on":""));
+      d.innerHTML="<span class='logro-ic'>"+(on?"🏆":"🔒")+"</span><div><b>"+l.n+"</b><div class='mini'>"+(on?l.d:"???  —  "+l.d)+"</div></div>";
+      pl.cuerpo.appendChild(d);
+    });
+    v.appendChild(pl);
+  }
 
   const pm=panel("Mandato","📌");
   const ex=expectativa();

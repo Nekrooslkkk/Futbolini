@@ -351,14 +351,14 @@ function vistaVida(){
     {id:"publicidad",t:"Publicidad de una marca",d:"Prestás tu cara. Cuanto más conocido, más pagan.",pago:[12,28],req:55}
   ];
   CHANGAS.forEach(ch=>{
-    const hecha=E.flags["changa_"+ch.id]===E.idx;
+    const hecha=E.flags["changa_"+ch.id]===(E.anio+"-"+E.idx);   /* 6.25 · fix: keyear por año+idx (antes colisionaba en el 2do año) */
     const faltaFama=(E.rep.publica||50)<ch.req;
     const d=el("div","resul mitad");
     d.innerHTML="<b>"+ch.t+"</b><br><span class='mini'>"+ch.d+(ch.req?" · pide "+ch.req+" de imagen pública":"")+"</span>";
     const b=el("button","btn-aqua chico"+(hecha||faltaFama?" gris":" verde"), hecha?"Ya lo hiciste esta semana":(faltaFama?"Te falta figura":"Aceptar")); b.style.marginTop="5px";
     b.disabled=hecha||faltaFama;
     b.onclick=()=>{
-      const pago=ri(ch.pago[0],ch.pago[1]); E.personal.bolsillo+=pago; E.flags["changa_"+ch.id]=E.idx;
+      const pago=ri(ch.pago[0],ch.pago[1]); E.personal.bolsillo+=pago; E.flags["changa_"+ch.id]=(E.anio+"-"+E.idx);
       if(ch.id==="clinica") aplicarGrupos({comunidad:3});
       if(ch.id==="tv"||ch.id==="publicidad") aplicarRep({publica:2});
       if(typeof recordar==="function"&&pago>=15) recordar("changa","te hiciste unos pesos: "+ch.t.toLowerCase(),{peso:"bajo"});

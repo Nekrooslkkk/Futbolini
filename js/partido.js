@@ -244,6 +244,7 @@ function penalEnPartido(P,aFavor,motivo,patElegido){
     if(cobrarPenal(pat,arq)){
       pat.goles++; P.goleadores.push(pat.n); regGol(P,min,pat.n,true,"penal"); if(P.part.local)P.gl++; else P.gv++;
       linea(P,min,"¡Gol de penal de "+pat.n+"! "+marcadorTxt(P),"gol");
+      if(pat.pos==="ARQ" && typeof desbloquear==="function") desbloquear("arquero_penal");   /* 6.25 · logro */
     } else { linea(P,min,"¡Atajadón! "+(arq?arq.n:"el arquero")+" le contiene el penal a "+pat.n+".","grave"); P.empuje-=0.4; }
   } else {
     const pat=elige(P.rivalPlantel.filter(x=>x.pos!=="ARQ"))||P.rivalPlantel[0], arq=arqueroDe(P.once);
@@ -295,6 +296,7 @@ function anotaRival(P,min){
   if(P.part.local) P.gv++; else P.gl++;
   regGol(P,min,j.n,false,"jugada",null);
   linea(P,min,"Gol de "+P.part.rivalNombre+": "+j.n+". "+marcadorTxt(P),"gol");
+  const m=miMarcador(P); if(m[1]-m[0]>=2) P.abajo2=true;   /* 6.25 · para el logro de remontada */
 }
 function marcadorTxt(P){
   const yo=P.part.local?P.gl:P.gv, otro=P.part.local?P.gv:P.gl;
@@ -398,7 +400,7 @@ function tickPartido(P){
     const caliente=j.rasgos&&j.rasgos.indexOf("cabeza caliente")>=0;
     P.amar=P.amar||{}; P.amar[j.n]=(P.amar[j.n]||0)+1; j.tarjetas++; P.tarjetas.push(j.n);
     if(caliente && P.amar[j.n]>=2 && Math.random()<0.25){
-      P.once=P.once.filter(x=>x!==j); j.estado="banca"; P.empuje-=1; P.orden-=3;
+      P.once=P.once.filter(x=>x!==j); j.estado="banca"; P.empuje-=1; P.orden-=3; P.tuvoRoja=true;   /* 6.25 · logro roja+gana */
       linea(P,min,"¡ROJA para "+j.n+"! Segunda amarilla: se le calentó la cabeza y deja a los suyos con diez.","grave");
       return {tipo:"roja",min:min};
     }
@@ -641,6 +643,16 @@ function terminarPartido(P){
   const posDespues=(part.tipo==="liga")?posicionEnTabla():null;
   if(typeof redesReaccion==="function") redesReaccion("partido",{yo:yo,otro:otro,rival:part.rivalNombre});
   if(typeof golpeBolsa==="function") golpeBolsa(yo>otro?1:(yo<otro?-1:0));
+  /* 6.25 · logros de partido */
+  if(typeof desbloquear==="function"){
+    if(yo>otro && P.abajo2) desbloquear("remontada");
+    if(yo>otro && P.tuvoRoja) desbloquear("roja_gana");
+    if(yo>otro && esClasico(part)){
+      const casa=P.once.filter(j=>j.rasgos&&j.rasgos.indexOf("de la casa")>=0).length;
+      if(casa>=3) desbloquear("clasico_casa");
+      if(yo-otro>=4) desbloquear("goleada_clasico");
+    }
+  }
   if(typeof esClasico==="function" && esClasico(part)){
     if(yo>otro){
       const primera=!E.flags.clasicoGanado; E.flags.clasicoGanado=true;

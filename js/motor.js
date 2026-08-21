@@ -210,6 +210,7 @@ function normalizarEstado(){
   if(typeof normalizarMemoria==="function") normalizarMemoria();
   /* 6.21 · mesa de la barra */
   if(typeof normalizarBarra==="function") normalizarBarra();
+  if(typeof normalizarLogros==="function") normalizarLogros();
   /* 6.24 · estado del jugador: minutos, estado y pie (pie determinístico por nombre) */
   (E.plantel||[]).forEach(j=>{
     if(j.minutosTemporada===undefined) j.minutosTemporada=0;
@@ -605,6 +606,8 @@ function reconquistarJugador(j){
   j.moral=clamp((j.moral||70)+ri(22,32),0,100);
   aplicarGrupos({camarin:4});
   if(typeof recordar==="function") recordar("camarin","le pusiste un plus para reconquistar a "+j.n,{quien:j.n,peso:"bajo",tono:"bueno"});
+  E.flags.reconquistas=(E.flags.reconquistas||0)+1;
+  if(E.flags.reconquistas>=3 && typeof desbloquear==="function") desbloquear("reconquista");
   return {ok:true,costo:costo};
 }
 function venderJugador(j,monto){
@@ -813,6 +816,10 @@ function finDeTemporada(){
   const pos=posicionEnTabla();
   const campeon=pos===1;
   if(typeof dividendoBolsa==="function") dividendoBolsa(pos);
+  if(typeof desbloquear==="function"){
+    if(campeon && E.ind.prestigio<55) desbloquear("campeon_chico");
+    if(E.plata>0 && (E.flags.desfalco||0)<=0) desbloquear("caja_sana");
+  }
   /* premios */
   let premio=[0,420,260,180,120][Math.min(4,pos)]||70;
   aplicarEfectos({plata:premio});
@@ -894,7 +901,10 @@ function nuevoAnio(){
     d:"Nuevo año, nuevo campeonato. El plantel se renovó, los objetivos se reajustan y la caja arranca de cero en lo semanal.",bandeja:false});
   /* banderas que solo valen dentro de una temporada */
   E.flags.rachaLiquida=false;
-  Object.keys(E.flags).forEach(k=>{ if(k.indexOf("medianoche_")===0||k.indexOf("conf_")===0) delete E.flags[k]; });
+  /* 6.25 · limpiar TODOS los flags por-semana/idx (evita bugs de botones "ya usado" al reiniciar idx en el nuevo año) */
+  ["medianoche_","conf_","entreno_","changa_","pasillo_","prometido_","tinderMentira","puertaBarra","feeTesoreroUlt"].forEach(pref=>{
+    Object.keys(E.flags).forEach(k=>{ if(k.indexOf(pref)===0) delete E.flags[k]; });
+  });
   E.calendario=construirCalendario(E.club,E.anio,E.anio===1992);
   reiniciarTabla();
   repartirDecisiones();

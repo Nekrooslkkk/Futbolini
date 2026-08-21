@@ -368,7 +368,8 @@ function pintarPartido(){
     ctrl.appendChild(bfin);
     /* 6.18 · cambios con nombre */
     const bcam=el("button","btn-aqua chico","🔄 Cambio ("+(P.cambios||0)+"/"+(P.cambiosMax||3)+")"); bcam.style.marginLeft="4px";
-    bcam.disabled=(P.cambios||0)>=(P.cambiosMax||3);
+    /* 6.25 · fix: no permitir cambio mientras hay una elección táctica pendiente (borraba las opciones) */
+    bcam.disabled=(P.cambios||0)>=(P.cambiosMax||3) || (MOMENTO_OPS&&MOMENTO_OPS.length>0);
     bcam.onclick=modalCambio;
     ctrl.appendChild(bcam);
     p.cuerpo.appendChild(ctrl);
@@ -530,7 +531,7 @@ function centroTiroLibre(P){
   }
   linea(P,P.min,"Centro al área"+(ejecuta?" de "+ejecuta.n:"")+", sube "+(aereo?aereo.n:"la defensa")+" a cabecear…");
   const prob=clamp(0.14+((aereo&&aereo.rasgos&&aereo.rasgos.includes("juego aéreo"))?0.10:0),0.06,0.28);
-  if(Math.random()<prob){ if(aereo){aereo.goles++;P.goleadores.push(aereo.n);regGol(P,P.min,aereo.n,true,"cabeza");} if(P.part.local)P.gl++;else P.gv++;
+  if(Math.random()<prob){ if(aereo){aereo.goles++;P.goleadores.push(aereo.n);regGol(P,P.min,aereo.n,true,"cabeza"); if(aereo.pos==="DEF"&&typeof desbloquear==="function") desbloquear("gol_defensa");} if(P.part.local)P.gl++;else P.gv++;
     linea(P,P.min,"¡Gol de cabeza"+(aereo?" de "+aereo.n:"")+"! "+marcadorTxt(P),"gol"); }
   else linea(P,P.min,"Despeja la defensa rival de cabeza.");
 }

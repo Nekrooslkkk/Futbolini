@@ -960,3 +960,23 @@ sale suma 60', el que entra 30', el titular 90'.
 **Riesgos:** partido.js (minEntrada por partido), motor.js (init en normalizarEstado + reset anual). Bajo.
 
 ## SPEC INGENIERO: Sections 1-8 hechas + 8 eventos locales. Section 9 (eventos con semilla) satisfecha en varios.
+
+## 6.25 · Bugs de 2do año + Cambio + reflejo + SECCIÓN LOGROS  ✅ (2026-08-21)
+**Archivos:** `js/logros.js` (NUEVO), `js/motor.js`, `js/partido.js`, `js/ui-partido.js`, `js/barra.js`,
+`js/redes.js`, `js/ui.js`, `js/reputacion.js`, `css/base.css`, `css/aero.css`, `index.html`
+**Bugs cerrados:**
+- Botón "ya entrenaron fuerte" se quedaba apretado y todo se bugeaba en el 2º año: los flags se
+  llavean por `E.idx`, que vuelve a 0 en `nuevoAnio` y colisiona con el año anterior. Fix raíz: entreno
+  y changa ahora se llavean por `anio_idx`, y `nuevoAnio` limpia todos los prefijos de flags semanales.
+- Al apretar "Cambio" durante un partido dirigido desaparecían las elecciones tácticas: el botón de
+  cambio ahora queda deshabilitado mientras haya un momento (MOMENTO_OPS) pendiente.
+**Reflejo blanco:** bajé los alfas de `.destello` (.75→.38, .55→.28) + opacity .7 en aero.css.
+**Logros (nueva sección):** 12 logros bizarros-pero-reales. Ej: "Bomba de hidrógeno vs bomba de hidrógeno"
+(patear y meter un penal con tu arquero), "El pueblo unido" (clásico ganado con 3+ de la casa), "Nunca
+bajar los brazos" (remontada de 2), "El defensor que soñó con ser 9" (gol de cabeza de un DEF), "Con uno
+menos y con el alma" (ganar con expulsado), "Palabra de dirigente" (3 pactos con la barra), etc. Se
+desbloquean con hooks en el motor real (no cosméticos) y viven en `E.logros`. Panel dorado en Carrera.
+**Qué probar:** desbloquear un logro (ej. penal con arquero) tiñe la tarjeta de dorado en Carrera; avanzar
+un año y volver a entrenar sin que el botón quede trabado; el cambio no borra las elecciones tácticas.
+**1 línea:** cerré los bugs del 2º año y del cambio, bajé el reflejo, y nació la sección de Logros.
+**Riesgos:** motor.js (limpieza de flags en nuevoAnio + normalizarLogros en normalizarEstado). Medio-bajo.

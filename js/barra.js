@@ -49,6 +49,7 @@ function pactar(o){
   if(typeof recordar==="function") recordar("barra","le diste tu palabra a la barra: "+o.resumen,{peso:"medio"});
   if(typeof postProc==="function"&&typeof handleHinchaDeClub==="function")
     postProc(handleHinchaDeClub(),"hincha","La mesa con la dirigencia cerró: "+o.resumen+". Ahora que se cumpla. 🚩","neutro");
+  if(barraContenta() && typeof desbloquear==="function") desbloquear("pacto_cumplido");
   if(barraContenta() && typeof notificar==="function")
     notificar({t:"La barra está de tu lado",tipo:"bueno",bandeja:false,
       d:"Tres pactos en pie. En el próximo clásico de local vas a tener una caldera a favor (aunque el riesgo de incidentes también sube)."});
@@ -71,6 +72,7 @@ function romperPacto(motivo,quien){
   if(typeof postProc==="function"&&typeof handleHinchaDeClub==="function")
     postProc(handleHinchaDeClub(),"hincha","La mesa era clara y la rompieron igual. A esta dirigencia no se le olvida más. 🚩🔥","malo");
   if(typeof recordar==="function") recordar("barra","le rompiste un pacto a la barra ("+p.resumen+")",{peso:"alto",tono:"malo"});
+  if(typeof desbloquear==="function") desbloquear("traidor");
   guardar();
   return true;
 }

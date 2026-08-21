@@ -93,6 +93,7 @@ function sembrarRedes(){
 }
 function moverSeguidores(n){
   E.seguidores=Math.max(0,Math.round((E.seguidores||0)+n));
+  if(E.seguidores>=1000000 && typeof desbloquear==="function") desbloquear("influencer");
 }
 /* 6.3 · tu usuario de PLOP (elegís cómo firmás; ya no "el cuerpo técnico") */
 function handleDT(){
