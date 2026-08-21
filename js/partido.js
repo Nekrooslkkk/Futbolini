@@ -215,6 +215,8 @@ function iniciarPartido(part,modo){
   };
   P.once.forEach(j=>{ j.estado="once"; });
   P.quimica=qui; P.empuje+=qui.bono; P.orden+=qui.bono*0.5;   /* 6.30 · química al ruedo */
+  /* 6.33 · el clima de prensa (lo que dejaste en la conferencia) empuja o pesa */
+  if(E.grupos && E.grupos.prensa){ P.empuje+=clamp(E.grupos.prensa.aprob/90,-0.7,0.7); }
   if(P.clasico){ P.empuje+=1.4; P.desgaste+=1.2; P.rival+=1.5;
     const casa=P.once.filter(j=>j.rasgos&&j.rasgos.indexOf("de la casa")>=0).length;   /* 6.20 · los de la casa se agrandan en el clásico */
     if(casa) P.empuje+=Math.min(4,casa*2);

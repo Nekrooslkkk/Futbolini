@@ -1097,3 +1097,18 @@ queda congelado para siempre.
 Al pasar de año, el aviso «Cómo maduraron los jóvenes» lo explica.
 **1 línea:** los pibes ahora crecen o se estancan según cuánto y cómo jugaron: la decisión sigue el tiempo.
 **Riesgos:** motor.js (curva de desarrollo en el cierre de temporada). Bajo.
+
+## 6.33 · Conferencia más larga + el clima de prensa influye en el partido  ✅ (2026-08-21)
+**Archivos:** `js/ui-partido.js`, `js/partido.js`
+**Qué:** la conferencia previa ahora es **más larga y variada**, como pediste:
+- Son **2 preguntas** seguidas, cada una con **un periodista distinto** (del pool real ampliado:
+  Guarello, Danilo Díaz, De Tezanos, Caamaño, Solabarrieta, Yáñez, Palma…).
+- **No se repiten** las preguntas de la vez anterior (E.flags.confVistas, ventana de 10). Se sumaron
+  preguntas "evergreen" (físico, el rival, mensaje a la gente) para que siempre haya de dónde elegir.
+- Arriba de la conferencia hay una **barra de clima de prensa para ese partido**, y ese clima **influye de
+  verdad en la cancha**: la aprobación de la prensa suma o resta empuje al salir a jugar (probado: ~1.4 de
+  diferencia de empuje entre prensa a favor y en contra). Calentar de más te la puede jugar en contra.
+**Qué probar:** dar la conferencia → 2 preguntas, 2 periodistas distintos, barra de clima; con la prensa
+a favor el equipo sale más suelto que con la prensa picada.
+**1 línea:** la conferencia dura más, no repite y con periodistas reales; y el clima de prensa mueve la aguja del partido.
+**Riesgos:** ui-partido.js (modalConferencia secuencial), partido.js (nudge de prensa en empuje). Bajo.

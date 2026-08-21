@@ -403,35 +403,73 @@ function preguntasConferencia(part){
      {t:"Asumir la responsabilidad de frente",k:"mea"},{t:"Pedir que se banque el proyecto",k:"confianza"},{t:"Palo a la dirigencia por los refuerzos",k:"palo"}]});
   if(ganoUlt&&sinGanar===0) L.push({q:"Vienen encendidos tras ganarle a "+ult.rivalNombre+". ¿Hasta dónde sueñan?",ops:[
      {t:"Pies en la tierra, paso a paso",k:"calma"},{t:"Ilusionar a la gente",k:"confianza"},{t:"«El que quiera soñar, que sueñe»",k:"palo"}]});
+  /* evergreen: siempre disponibles, para que la conferencia sea más larga y variada */
+  L.push({q:"¿Cómo llega el equipo físicamente para este partido?",ops:[
+     {t:"Bien, trabajamos fuerte la semana",k:"calma"},{t:"Enteros y con confianza",k:"confianza"},{t:"Mejor que el rival, seguro",k:"palo"}]});
+  L.push({q:"¿Le preocupa algo puntual de "+part.rivalNombre+"?",ops:[
+     {t:"Respeto total, hay que estar finos",k:"calma"},{t:"Nos preocupamos de lo nuestro",k:"confianza"},{t:"Que se preocupen ellos de nosotros",k:"palo"}]});
+  L.push({q:"Un mensaje para la gente que va a ir a la cancha.",ops:[
+     {t:"Que nos banque, lo vamos a dejar todo",k:"confianza"},{t:"Humildad y a alentar los 90",k:"calma"},{t:"Que vayan a ver una goleada",k:"palo"}]});
   L.push({q:"Previa ante "+part.rivalNombre+". ¿Con qué se queda de cara al partido?",ops:[
      {t:"Bajar el perfil y pedir humildad",k:"calma"},{t:"Salir con confianza total",k:"confianza"},{t:"Un palo al rival y a los árbitros",k:"palo"}]});
   return L;
 }
+/* elige N preguntas distintas, priorizando las contextuales y sin repetir las de la última vez */
+function elegirPreguntasConf(L,n){
+  if(!E.flags.confVistas) E.flags.confVistas=[];
+  const vistas=E.flags.confVistas;
+  const contextuales=L.slice(0,-1), generica=L[L.length-1];
+  let pool=contextuales.filter(q=>vistas.indexOf(q.q)<0);
+  if(pool.length<n) pool=pool.concat(contextuales.filter(q=>pool.indexOf(q)<0));
+  pool=mezcla(pool.slice());
+  const elegidas=pool.slice(0,n);
+  if(elegidas.length<n) elegidas.push(generica);   /* completa con la genérica */
+  elegidas.forEach(q=>{ vistas.push(q.q); }); if(vistas.length>10) vistas.splice(0,vistas.length-10);
+  return elegidas;
+}
 function modalConferencia(part){
   const L=preguntasConferencia(part);
-  const q=(L.length>1)?elige(L.slice(0,-1)):L[0];   /* preferí la pregunta contextual */
-  const per=elige(PERIODISTAS);
+  const preguntas=elegirPreguntasConf(L,2);          /* 6.33 · conferencia más larga: 2 preguntas */
+  const peris=mezcla(PERIODISTAS.slice()).slice(0,preguntas.length);   /* distintos periodistas */
+  let idx=0; const dichos=[];
   modal(box=>{
-    box.appendChild(el("div","cab",'<span class="ic">🎤</span><span>Conferencia de prensa</span>'));
-    const c=el("div","cuerpo"); box.appendChild(c);
-    c.appendChild(el("div","resul mitad","<b>"+per.n+"</b> <span class='mini'>· "+per.m+"</span><br>"+q.q));
-    const ops=el("div","ops");
-    q.ops.forEach(o=>{
-      const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
-      b.onclick=()=>{
-        const a=CONF_ARQ[o.k]||CONF_ARQ.calma;
-        if(a.grupos) aplicarGrupos(a.grupos); if(a.rep) aplicarRep(a.rep); if(a.ef) aplicarEfectos(a.ef);
-        E.flags["conf_"+E.idx]=true;
-        if(typeof postProc==="function") postProc("@"+per.m.replace(/\s/g,""),"prensa","«"+o.t+"», dijo el DT en conferencia ante "+part.rivalNombre+".","neutro");
-        notificar({t:"Conferencia con "+per.n,tipo:"neutro",d:"«"+o.t+"». "+a.txt,bandeja:false});
-        guardar(); cerrarModal(); pantallaPrevia(part); aviso("Declaraciones dadas");
-      };
-      ops.appendChild(b);
-    });
-    c.appendChild(ops);
-    const x=el("button","btn-aqua ancho gris","No hablar con la prensa"); x.style.marginTop="6px";
-    x.onclick=()=>{ aplicarGrupos({prensa:-4}); E.flags["conf_"+E.idx]=true; guardar(); cerrarModal(); pantallaPrevia(part); aviso("Te fuiste sin hablar"); };
-    c.appendChild(x);
+    const pintar=()=>{
+      box.innerHTML="";
+      box.appendChild(el("div","cab",'<span class="ic">🎤</span><span>Conferencia de prensa · '+(idx+1)+" de "+preguntas.length+'</span>'));
+      const c=el("div","cuerpo"); box.appendChild(c);
+      const cl=(typeof climaPrensa==="function")?climaPrensa():{pct:50,etq:"neutral",col:"#e6c34a"};
+      const bar=el("div","mini"); bar.style.margin="0 0 6px";
+      bar.innerHTML="Clima de prensa para este partido: <b>"+cl.etq+"</b> <span class='mini'>(influye en cómo salís a la cancha)</span>"+
+        "<div class='barrita' style='margin-top:3px'><i style='width:"+cl.pct+"%;--c:"+cl.col+"'></i></div>";
+      c.appendChild(bar);
+      const per=peris[idx]||elige(PERIODISTAS), q=preguntas[idx];
+      c.appendChild(el("div","resul mitad","<b>"+per.n+"</b> <span class='mini'>· "+per.m+"</span><br>"+q.q));
+      const ops=el("div","ops");
+      q.ops.forEach(o=>{
+        const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
+        b.onclick=()=>{
+          const a=CONF_ARQ[o.k]||CONF_ARQ.calma;
+          if(a.grupos) aplicarGrupos(a.grupos); if(a.rep) aplicarRep(a.rep); if(a.ef) aplicarEfectos(a.ef);
+          if(typeof postProc==="function") postProc("@"+per.m.replace(/\s/g,""),"prensa","«"+o.t+"», dijo el DT en conferencia ante "+part.rivalNombre+".","neutro");
+          dichos.push(o.t);
+          idx++;
+          if(idx<preguntas.length){ pintar(); }
+          else {
+            E.flags["conf_"+E.idx]=true;
+            notificar({t:"Conferencia de prensa dada",tipo:"neutro",bandeja:false,
+              d:"Respondiste "+preguntas.length+" preguntas: «"+dichos.join("» · «")+"». El clima de prensa quedó "+
+                ((typeof climaPrensa==="function"?climaPrensa().etq:"movido"))+" para el partido."});
+            guardar(); cerrarModal(); pantallaPrevia(part); aviso("Conferencia terminada");
+          }
+        };
+        ops.appendChild(b);
+      });
+      c.appendChild(ops);
+      const x=el("button","btn-aqua ancho gris",idx===0?"No hablar con la prensa":"Cortar acá la conferencia"); x.style.marginTop="6px";
+      x.onclick=()=>{ if(idx===0) aplicarGrupos({prensa:-4}); E.flags["conf_"+E.idx]=true; guardar(); cerrarModal(); pantallaPrevia(part); aviso(idx===0?"Te fuiste sin hablar":"Cortaste la conferencia"); };
+      c.appendChild(x);
+    };
+    pintar();
   });
 }
 function arrancarPartido(part,modo){
