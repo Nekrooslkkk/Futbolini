@@ -79,6 +79,58 @@ function consejoLocal(){
   if(!bits.length) bits.push("No hay fuego. Podés mover un estatuto o mirar el mercado.");
   return bits.join(" ");
 }
+/* ============================================================
+   6.35 · CEREBRO LOCAL (la idea que dejó Grok, ahora desarrollada)
+   Sin internet, sin créditos: lee el estado real del club y arma
+   un análisis PRIORIZADO con lo que importa esta semana. Devuelve
+   insights categorizados; el escritorio los pinta lindos.
+   ============================================================ */
+function cerebroLocal(){
+  if(!E) return [];
+  const ins=[];
+  const part=typeof proximoPartido==="function"?proximoPartido():null;
+  /* 1 · lectura del próximo partido (lo más importante) */
+  if(part && typeof fuerzaEquipo==="function" && typeof onceIdeal==="function"){
+    const fz=fuerzaEquipo(onceIdeal()).base, dif=fz-part.fuerzaRival;
+    let lec,tip;
+    if(dif>6){ lec="Sos favorito ante "+part.rivalNombre+"."; tip="Presioná arriba y buscá el arco temprano; no lo dejes crecer."; }
+    else if(dif<-6){ lec=part.rivalNombre+" llega más fuerte."; tip="Ordenate atrás, aguantá y salí de contra con los rápidos."; }
+    else { lec="Está parejo con "+part.rivalNombre+"."; tip="Lo define un detalle: pelota parada y no regalar el mediocampo."; }
+    ins.push({cat:"partido",ic:"⚽",prio:9,t:lec,d:tip});
+  }
+  /* 2 · química del equipo */
+  if(typeof quimicaEquipo==="function" && typeof onceIdeal==="function"){
+    const q=quimicaEquipo(onceIdeal());
+    if(q.prom<50) ins.push({cat:"tactica",ic:"🔗",prio:7,t:"Química floja ("+q.prom+"/100)",d:"Hay jugadores que no congenian. Acomodá la pizarra para juntar a los que se llevan bien."});
+    else if(q.prom>=70) ins.push({cat:"tactica",ic:"🔗",prio:3,t:"El grupo está enchufado ("+q.prom+"/100)",d:"Buena química: es momento de sostener el equipo y no tocar mucho."});
+  }
+  /* 3 · objetivos en riesgo */
+  if(Array.isArray(E.objetivos) && typeof progresoObjetivo==="function"){
+    const enRiesgo=E.objetivos.map(o=>({o:o,pr:progresoObjetivo(o)})).filter(x=>x.pr.estado==="riesgo");
+    if(enRiesgo.length) ins.push({cat:"objetivo",ic:"🎯",prio:8,t:"Meta en riesgo: "+enRiesgo[0].o.t,
+      d:enRiesgo[0].pr.txt+". "+(enRiesgo.length>1?"(y "+(enRiesgo.length-1)+" más). ":"")+"El directorio evalúa esto al cierre."});
+  }
+  /* 4 · plata y deuda */
+  if((E.plata||0)<80) ins.push({cat:"plata",ic:"💰",prio:6,t:"Caja flaca ("+plata(E.plata||0)+")",d:"No firmés renovaciones caras esta semana; primero equilibrá el flujo."});
+  if((E.deuda||0)>(E.plata||0)*3) ins.push({cat:"plata",ic:"💰",prio:6,t:"La deuda te come",d:"Un préstamo más y el directorio se pone nervioso. Pensá en vender un prescindible."});
+  /* 5 · camarín y hinchada */
+  if(E.ind&&E.ind.moral<45) ins.push({cat:"camarin",ic:"👥",prio:5,t:"Camarín cortado (moral "+Math.round(E.ind.moral)+")",d:"Una charla o un once que no sea de castigo. Ganar cura casi todo."});
+  if(E.ind&&E.ind.hinchada<40) ins.push({cat:"hinchada",ic:"🚩",prio:5,t:"La hinchada se está yendo",d:"Un resultado, un precio de entrada más bajo o un gesto con la barra."});
+  /* 6 · piernas cansadas */
+  if(typeof onceIdeal==="function"){
+    const cans=onceIdeal().filter(j=>(j.cansancio||0)>=18);
+    if(cans.length>=2) ins.push({cat:"fisico",ic:"🏃",prio:4,t:cans.length+" titulares con las piernas pesadas",d:"Pensá en rotar o entrenar suave; forzar es pedir una lesión."});
+  }
+  /* 7 · racha */
+  const sinGanar=(E.temporada&&E.temporada.sinGanar)||0;
+  if(sinGanar>=3) ins.push({cat:"racha",ic:"📉",prio:6,t:sinGanar+" fechas sin ganar",d:"Hay que cortar la mala. Un plan simple y sólido antes que inventar."});
+  /* 8 · mercado */
+  if((E.plata||0)>250 && E.temporada && E.temporada.pj>=3){
+    ins.push({cat:"mercado",ic:"🛒",prio:2,t:"Hay caja para moverse",d:"El mercado está abierto: un refuerzo puntual puede cambiarte la temporada."});
+  }
+  ins.sort((a,b)=>b.prio-a.prio);
+  return ins.slice(0,5);
+}
 function pensarOffline(tarea,ctx){
   ctx=ctx||{};
   if(tarea==="tinder"){

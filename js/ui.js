@@ -296,9 +296,20 @@ function vistaEscritorio(){
     izq.appendChild(po);
   }
 
-  const cer=panel("Cerebro local","🧠");
-  cer.cuerpo.appendChild(el("p","mini","Sin internet. Sin créditos. Lee caja, moral, tabla y el próximo rival."));
-  cer.cuerpo.appendChild(el("p",null,typeof consejoLocal==="function"?consejoLocal():"…"));
+  const cer=panel("Cerebro local","🧠","agua");
+  cer.cuerpo.appendChild(el("p","mini","Sin internet ni créditos: leo el estado real del club y te priorizo lo que importa esta semana."));
+  const insights=(typeof cerebroLocal==="function")?cerebroLocal():[];
+  if(insights.length){
+    const cl=el("div","cerebro");
+    insights.forEach(i=>{
+      const d=el("div","cere-row cere-"+i.cat);
+      d.innerHTML="<span class='cere-ic'>"+i.ic+"</span><div><b>"+i.t+"</b><div class='mini'>"+i.d+"</div></div>";
+      cl.appendChild(d);
+    });
+    cer.cuerpo.appendChild(cl);
+  } else {
+    cer.cuerpo.appendChild(el("p",null,typeof consejoLocal==="function"?consejoLocal():"Todo tranquilo. Podés mover un estatuto o mirar el mercado."));
+  }
   izq.appendChild(cer);
 
   /* decisiones */

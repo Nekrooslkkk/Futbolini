@@ -497,3 +497,12 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 /* 6.34 · titulares de la liga */
 .titular{padding:6px 9px;border-radius:6px;margin:5px 0;border-left:3px solid rgba(90,140,200,.5);background:rgba(90,140,200,.07)}
 .titular b{font-size:12.5px}
+
+/* 6.35 · cerebro local */
+.cerebro{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.cere-row{display:flex;align-items:flex-start;gap:9px;padding:7px 9px;border-radius:6px;border:1px solid var(--linea);background:rgba(255,255,255,.04)}
+.cere-ic{font-size:16px;flex:0 0 auto;line-height:1.35}
+.cere-row b{font-size:12.5px}
+.cere-partido{border-left:3px solid rgba(60,140,220,.6)}
+.cere-objetivo{border-left:3px solid rgba(210,140,20,.6)}
+.cere-plata,.cere-racha{border-left:3px solid rgba(200,70,60,.55)}

@@ -1127,3 +1127,20 @@ a favor el equipo sale más suelto que con la prensa picada.
 resultados de la fecha y el próximo rival.
 **1 línea:** la semana ahora trae titulares de la liga de verdad, no solo tus propios avisos.
 **Riesgos:** redes.js (nuevo generador), ui.js (render extra). Bajo.
+
+## 6.35 · Cerebro local desarrollado (análisis priorizado del club)  ✅ (2026-08-21)
+**Archivos:** `js/ia.js` (cerebroLocal), `js/ui.js`, `js/css/base.css`
+**Qué:** la idea que dejó Grok hace rato —una "IA" local sin internet ni créditos— ahora está desarrollada.
+`cerebroLocal()` lee el estado real y arma un **análisis priorizado** con lo que importa esta semana:
+- **Lectura del próximo partido**: favorito/parejo/en desventaja + un consejo táctico concreto (presionar,
+  ordenarse y salir de contra, cuidar la pelota parada).
+- **Química** del equipo (floja → acomodá la pizarra; enchufada → no toques).
+- **Objetivos en riesgo** (te nombra el que peligra y por qué).
+- **Caja/deuda**, **camarín/moral**, **hinchada**, **piernas cansadas**, **racha sin ganar**, y **mercado**
+  cuando hay caja para moverse.
+Devuelve los 5 insights más importantes, ordenados por prioridad, y el escritorio los pinta como tarjetas
+categorizadas con acento de color. (El viejo `consejoLocal()` sigue para el roleo offline.)
+**Qué probar:** en el escritorio, el panel «Cerebro local» muestra la lectura del rival y las alertas
+priorizadas según cómo esté tu club.
+**1 línea:** el cerebro local ya no es una línea suelta: es un analista que te prioriza la semana, 100% offline.
+**Riesgos:** ia.js (nuevo cerebroLocal), ui.js (panel). Bajo.
