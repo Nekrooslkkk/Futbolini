@@ -1230,3 +1230,14 @@ de los equipos en claro, y un puntito rojo que late en el reloj como señal de "
 **Qué probar:** entrar a un partido → el marcador se ve como una pantalla de estadio con dígitos que brillan.
 **1 línea:** el marcador ahora parece la pantalla gigante del estadio, con dígitos que brillan y señal de en vivo.
 **Riesgos:** solo CSS del `.marcador`/`.reloj`. Bajo.
+
+## 7.0-f · La saga del club en Historia (payoff de las storylines)  ✅ (2026-08-21)
+**Archivos:** `js/storylines.js` (panelSagaClub), `js/ui.js` (vistaHistoria), `js/css/base.css`
+**Qué:** las decisiones de los arcos de equipo ahora tienen payoff visible: en la vista **Historia**
+aparece "La saga de <tu club>" — una línea de tiempo con el capítulo abierto (si hay) y todo lo que fuiste
+decidiendo en los arcos, en 2ª persona y con el año ("Le pusiste el pecho al viejo sueño del estadio de la
+U", "Bancaste el estadio con aporte de los socios"). Se arma desde la memoria (tipo storyline), así que es
+fiel a lo que hiciste.
+**Qué probar:** resolver capítulos de la historia del club y entrar a Historia → aparece la saga con tus decisiones.
+**1 línea:** la vista Historia ahora muestra la saga de tu club: los arcos que resolviste y qué elegiste.
+**Riesgos:** solo lectura de la memoria + un panel nuevo. Bajo.

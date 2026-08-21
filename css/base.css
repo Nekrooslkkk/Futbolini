@@ -560,3 +560,8 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 @media (prefers-reduced-motion:reduce){
   #vista > .panel,#vista .rejilla > div > .panel,.modal,.aviso{animation:none}
 }
+
+/* 7.0 · saga del club (timeline de storylines) */
+.saga-linea{font-size:12.5px;line-height:1.5;padding:4px 0 4px 2px;border-bottom:1px dashed var(--linea)}
+.saga-linea:last-child{border-bottom:none}
+.saga-punto{color:#d2a020;margin-right:5px}

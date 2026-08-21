@@ -88,6 +88,25 @@ function modalStoryline(){
     c.appendChild(x);
   });
 }
+/* panel de "saga del club": lo que fuiste decidiendo en los arcos (payoff) */
+function panelSagaClub(){
+  if(typeof panel!=="function") return null;
+  const mems=((E&&E.memoria)||[]).filter(m=>m.tipo==="storyline" && m.txt.indexOf("se abrió")<0);
+  const ctx=capituloActivo();
+  if(!mems.length && !ctx) return null;
+  const p=panel("La saga de "+E.clubNombre,"📖","alerta");
+  p.cuerpo.appendChild(el("p","mini","Los capítulos propios de tu club y lo que decidiste en cada uno. Esto queda en la historia."));
+  if(ctx){
+    const d=el("div","story-card");
+    d.innerHTML="⏳ <b>Abierto:</b> "+ctx.arco.t+" · <span class='mini'>"+ctx.cap.t+"</span>";
+    p.cuerpo.appendChild(d);
+  }
+  mems.slice().reverse().forEach(m=>{
+    const q=(m.anio!==E.anio)?(m.anio+" · "):"";
+    p.cuerpo.appendChild(el("div","saga-linea","<span class='saga-punto'>◆</span> "+q+m.txt.charAt(0).toUpperCase()+m.txt.slice(1)+"."));
+  });
+  return p;
+}
 /* tarjeta para el escritorio (la pinta ui.js si hay capítulo abierto) */
 function panelStoryline(){
   const ctx=capituloActivo(); if(!ctx) return null;

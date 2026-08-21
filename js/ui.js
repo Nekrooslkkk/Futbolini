@@ -1037,6 +1037,9 @@ function vistaHistoria(){
   E.divergencias.slice(-8).reverse().forEach(d=>pd.cuerpo.appendChild(fila(d.anio+" · "+d.t,d.elegido)));
   v.appendChild(pd);
 
+  /* 7.0 · saga del club: los arcos de equipo que resolviste */
+  if(typeof panelSagaClub==="function"){ const ps=panelSagaClub(); if(ps) v.appendChild(ps); }
+
   /* historial de temporadas jugadas (tablas guardadas) */
   const ph=panel("Temporadas jugadas","🗄️","agua");
   if(!E.historialAnual||!E.historialAnual.length) ph.cuerpo.appendChild(el("p","mini","Todavía no cerraste ninguna temporada. Cuando termine un año, su tabla final queda guardada acá."));
