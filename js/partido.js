@@ -565,6 +565,7 @@ function terminarPartido(P){
   const [yo,otro]=miMarcador(P);
   const posAntes=(part.tipo==="liga")?posicionEnTabla():null;
   part.jugado=true; part.gf=yo; part.gc=otro;
+  part.goleadores=(P.goleadores||[]).slice();   /* 6.19 · para que los tuits citen al goleador real */
   P.once.forEach(j=>{
     j.partidos++;
     j.forma=clamp(j.forma+(yo>otro?4:(yo<otro?-4:0))+ri(-3,3),30,99);

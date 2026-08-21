@@ -139,12 +139,68 @@ function tweetDesdeMemoria(){
   }
   return postProc(elige(HANDLES_PRENSA),"prensa","Se sigue comentando que "+frase+".","neutro");
 }
+/* 6.19 · handle de hincha que depende del club */
+function handleHinchaDeClub(){
+  const m={CC:"@colocolino_dsiempre",UCH:"@chuncho_del_nacional",UC:"@cruzado_de_ley",
+    COQ:"@pirata_coquimbo",EVE:"@ruletero_vina",PAL:"@arabe_tricolor",AUD:"@tano_dela_florida",
+    HUA:"@acerero_talcahuano",OHI:"@celeste_rancagua",NUB:"@rojo_de_chillan",COB:"@minero_cobresal",
+    CAL:"@cementero_calera",LSE:"@granate_serena",DCO:"@leon_del_collao",UDC:"@campanil_udec",LIM:"@tomatero_limache"};
+  return (E&&m[E.club])||"@hincha_de_ley";
+}
+/* 6.19 · SOLO hechos que existen AHORA en el save (no un banco 2010) */
+function actualidadRedes(){
+  const a={ club:(E&&E.clubNombre)||"el club", anio:E&&E.anio, modo:E&&E.modo };
+  const prox=(typeof proximoPartido==="function")?proximoPartido():null;
+  if(prox){ a.rival=prox.rivalNombre; a.sede=prox.sede; a.local=prox.local; }
+  const ult=(E&&E.idx>0)?E.calendario[E.idx-1]:null;
+  if(ult&&ult.jugado){ a.ultRival=ult.rivalNombre; a.ultGF=ult.gf; a.ultGC=ult.gc; a.ultLocal=ult.local;
+    if(ult.goleadores&&ult.goleadores.length) a.goleador=elige(ult.goleadores); }
+  const vent=((E&&E.memoria)||[]).filter(m=>m.tipo==="venta"&&m.anio===E.anio&&(E.idx-(m.idx||0))<=2).pop();
+  if(vent&&vent.quien) a.vendido=vent.quien;
+  const les=((E&&E.plantel)||[]).filter(j=>!j.vendido&&j.lesion>0);
+  if(les.length){ const l=elige(les); a.lesionado=l.n; a.lesionadoPos=l.pos; }
+  if(E&&E.temporada&&E.temporada.pj>0&&typeof posicionEnTabla==="function"){ a.pos=posicionEnTabla(); a.pts=E.temporada.pts; a.fecha=E.temporada.pj; }
+  return a;
+}
+/* 6.19 · genera un tuit a partir de un hecho real; el fresco (venta/resultado/lesión) manda */
+function tuitDesdeActualidad(){
+  const a=actualidadRedes(), c=[];
+  if(a.ultGF!=null){
+    const m=a.ultGF+"-"+a.ultGC, viz=a.ultLocal?" en casa":" de visita";
+    if(a.ultGF>a.ultGC) c.push({f:1,tono:"bueno",tipo:"hincha",x:elige([
+      m+" a "+a.ultRival+viz+". Así da gusto 💪",
+      "Ganamos "+m+" a "+a.ultRival+". "+(a.goleador?"Grande "+a.goleador+" 🔥":"A seguir.")])});
+    else if(a.ultGF===a.ultGC) c.push({f:1,tono:"malo",tipo:"hincha",x:"Otro "+m+" con "+a.ultRival+". Nos falta gol, siempre lo mismo."});
+    else c.push({f:1,tono:"malo",tipo:"hincha",x:elige([
+      m+" con "+a.ultRival+(a.ultLocal?" y de local":", de visita")+". Así no se juega.",
+      "Perder "+m+" con "+a.ultRival+"... esto ya cansa 😤"])});
+  }
+  if(a.vendido) c.push({f:1,tono:"malo",tipo:"hincha",x:elige([
+    "Se va "+a.vendido+". Plata lista, el equipo más pobre. Gracias "+a.club+".",
+    a.vendido+" afuera. ¿Con quién jugamos ahora? 🤦"])});
+  if(a.lesionado) c.push({f:1,tono:"neutro",tipo:"hincha",x:a.lesionado+" no llega. ¿Y ahora quién juega de "+(a.lesionadoPos||"eso")+"?"});
+  if(a.rival) c.push({f:0,tono:"neutro",tipo:"prensa",x:elige([
+    "El finde es "+a.rival+" en "+a.sede+". "+(a.goleador?"Si no aparece "+a.goleador+", esto es otro 0-0.":"Partido bravo."),
+    a.club+" va con "+a.rival+" en "+a.sede+". A ver con qué cara se planta."])});
+  if(a.pts!=null) c.push({f:0,tono:"malo",tipo:"hincha",x:"Fecha "+a.fecha+", "+a.pts+" pts, "+ordinal(a.pos)+". Esto ya no es proyecto."});
+  if(!c.length) return null;
+  const frescos=c.filter(x=>x.f), pool=(frescos.length&&Math.random()<0.75)?frescos:c;
+  const pick=elige(pool);
+  const handle=pick.tipo==="prensa"?elige(HANDLES_PRENSA):(Math.random()<0.5?handleHinchaDeClub():elige(HANDLES_HINCHA));
+  /* anti-repetición: no repetir el texto del último post */
+  if(E&&E.timeline&&E.timeline[0]&&E.timeline[0].texto===pick.x) return null;
+  return postProc(handle, pick.tipo, pick.x, pick.tono);
+}
 /* un post de "bot" para que el feed se mueva solo, como Twitter */
 function botPost(){
   const part=typeof proximoPartido==="function"?proximoPartido():null;
   const riv=part?part.rivalNombre:"el próximo rival";
-  /* ~30%: que la gente comente algo que VOS hiciste (si hay memoria) */
-  if(Math.random()<0.3){ const m=tweetDesdeMemoria(); if(m) return m; }
+  /* 6.19 · el hecho FRESCO del save manda (venta, resultado, lesión, previa, tabla) */
+  const fresco=(typeof tuitDesdeActualidad==="function")?tuitDesdeActualidad():null;
+  if(fresco) return fresco;
+  /* memoria al 40% cuando no hay hecho fresco */
+  if(Math.random()<0.4){ const m=tweetDesdeMemoria(); if(m) return m; }
+  /* relleno estático (máx ~20%): solo si no hubo fresco ni memoria */
   const dados=[
     ()=>postProc(elige(HANDLES_HINCHA),"hincha",elige(TWEETS_HINCHA).x,"bueno"),
     ()=>postProc(elige(HANDLES_PRENSA),"prensa",elige([

@@ -879,3 +879,14 @@ por el relato (sale de P.once).
 **1 línea:** cambios manuales con nombre en el partido (sale X, entra Y), con tope por era.
 **Riesgos:** módulos partido.js/ui-partido.js. j.estado nuevo (once/banca), no rompe onceIdeal (filtra vendido/
 lesión). El modal pausa el reloj y lo reanuda al cerrar.
+
+## 6.19 · Tweets nacidos del estado actual (Section 3)  ✅ (2026-08-19)
+**Archivos:** `js/redes.js` (actualidadRedes, tuitDesdeActualidad, handleHinchaDeClub, botPost), `js/partido.js` (part.goleadores)
+**Funciones:** `actualidadRedes()` (lee SOLO hechos que existen: club/año/rival/sede/local, último resultado y
+goleador, vendido reciente, lesionado, posición+pts), `tuitDesdeActualidad()` (el hecho fresco manda; venta/
+resultado/lesión priorizados sobre previa/tabla; anti-repetición), `handleHinchaDeClub()`.
+**Qué probar:** vendé a X → un tuit lo nombra ("X afuera, ¿con quién jugamos?"); ganá de visita 2-1 → tuit con
+marcador y rival reales ("2-1 a Audax de visita"); previa cita rival+sede reales. Nada de "arriba el equipo".
+**1 línea:** el feed de PLOP nace de E de ESTA semana (resultado/venta/lesión/previa/tabla), no de un banco 2010.
+**Riesgos:** redes.js (botPost prioriza el fresco; TWEETS_HINCHA queda como relleno <20%; memoria 40%),
+partido.js (guarda goleadores en la fecha). No repite el texto del último post.
