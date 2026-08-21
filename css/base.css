@@ -129,10 +129,20 @@ tr.yo td{font-weight:800;background:var(--resalte)}
 .resul.bien{border-color:#2f9c46} .resul.mitad{border-color:#d79a1a} .resul.mal{border-color:#c93a2c}
 
 /* ---------- partido ---------- */
-.marcador{display:flex;align-items:center;justify-content:center;gap:14px;padding:14px 10px}
-.marcador .eq{flex:1;text-align:center;font-family:var(--f-titulo);font-weight:700;font-size:14px}
-.marcador .go{font-family:var(--f-dato);font-size:38px;font-weight:800;line-height:1;letter-spacing:-2px}
-.reloj{font-family:var(--f-dato);font-size:12px;text-align:center;opacity:.8}
+/* 7.0 · marcador tipo pantalla de estadio (scoreboard) */
+.marcador{display:flex;align-items:center;justify-content:center;gap:14px;padding:16px 14px;border-radius:11px;
+  background:linear-gradient(180deg,#0e2f40,#05121b);
+  border:1px solid rgba(0,0,0,.55);
+  box-shadow:inset 0 2px 12px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.06),0 3px 10px rgba(0,0,0,.28)}
+.marcador .eq{flex:1;text-align:center;font-family:var(--f-titulo);font-weight:700;font-size:14.5px;
+  color:#d7e7f4;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.marcador .go{font-family:var(--f-dato);font-size:40px;font-weight:800;line-height:1;letter-spacing:-1px;
+  color:#ffd24a;text-shadow:0 0 14px rgba(255,200,70,.55),0 2px 2px rgba(0,0,0,.8);
+  padding:0 4px;white-space:nowrap}
+.reloj{font-family:var(--f-dato);font-size:12px;text-align:center;opacity:.85;margin-top:2px}
+.reloj::before{content:"● ";color:#e0563f;animation:latido 1.6s ease-in-out infinite}
+@keyframes latido{0%,100%{opacity:1}50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.reloj::before{animation:none}}
 .relato{max-height:300px;overflow-y:auto;padding-right:4px}
 .rel{display:flex;gap:9px;padding:6px 0;font-size:12.5px;border-bottom:1px dashed var(--linea);line-height:1.45}
 .rel .m{font-family:var(--f-dato);font-size:11px;opacity:.7;min-width:34px}

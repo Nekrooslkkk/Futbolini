@@ -1220,3 +1220,13 @@ y arco Colo renderizando. Consola limpia.
 paneles entran con una animación suave.
 **1 línea:** Palestino y Limache ya tienen su propia historia, y todo entra con micro-animaciones con onda de época.
 **Riesgos:** data + CSS de animación. Bajo.
+
+## 7.0-e · Marcador tipo pantalla de estadio (scoreboard)  ✅ (2026-08-21)
+**Archivos:** `js/css/base.css`
+**Qué:** el marcador del partido (lo más importante de la pantalla más usada) pasó de texto plano a un
+**scoreboard de estadio**: panel de vidrio oscuro con los goles en dígitos ámbar que brillan (glow), nombres
+de los equipos en claro, y un puntito rojo que late en el reloj como señal de "en vivo". Respeta
+`prefers-reduced-motion`.
+**Qué probar:** entrar a un partido → el marcador se ve como una pantalla de estadio con dígitos que brillan.
+**1 línea:** el marcador ahora parece la pantalla gigante del estadio, con dígitos que brillan y señal de en vivo.
+**Riesgos:** solo CSS del `.marcador`/`.reloj`. Bajo.
