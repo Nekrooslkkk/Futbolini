@@ -165,11 +165,27 @@ function iniciarPartido(part,modo){
     precClima:cl.precision||1, arb:arb,
     lineas:[], goleadores:[], tarjetas:[], lesionados:[], ticker:[], terminado:false,
     momentos:momentosPartido(part), momentoIdx:0, fase:"equilibrio",
-    clasico:esClasico(part), var:((E&&E.anio)||0)>=2016
+    clasico:esClasico(part), var:((E&&E.anio)||0)>=2016,
+    cambios:0, cambiosMax:((E&&E.anio)||2026)>=2010?3:2   /* 6.18 · tope de cambios por era */
   };
+  P.once.forEach(j=>{ j.estado="once"; });
   if(P.clasico){ P.empuje+=1.4; P.desgaste+=1.2; P.rival+=1.5; }
   if(part.tipo==="copa"){ P.empuje+=0.8; P.desgaste+=0.6; }
   return P;
+}
+/* 6.18 · banca disponible (los que no están en el once, sanos) */
+function bancaPartido(P){ return E.plantel.filter(j=>!j.vendido&&!j.cedido&&!(j.lesion>0)&&P.once.indexOf(j)<0); }
+/* 6.18 · cambio manual con nombre: sale X, entra Y. El relato deja de citar a X (sale del once) */
+function hacerCambio(P,sale,entra){
+  if(!sale||!entra) return false;
+  if((P.cambios||0)>=(P.cambiosMax||3)) return false;
+  if(P.once.indexOf(sale)<0 || P.once.indexOf(entra)>=0) return false;
+  P.once=P.once.map(x=>x===sale?entra:x);
+  entra.estado="once"; sale.estado="banca";
+  entra.cansancio=Math.max(0,(entra.cansancio||0)-3);
+  P.cambios=(P.cambios||0)+1;
+  linea(P,P.min,entra.n+" entra por "+sale.n+".","cambio");
+  return true;
 }
 function recambioPorLesion(P,sale){
   const banca=E.plantel.filter(j=>!j.vendido&&!j.cedido&&!(j.lesion>0)&&P.once.indexOf(j)<0);

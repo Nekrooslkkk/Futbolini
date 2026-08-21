@@ -869,3 +869,13 @@ lo lista, onceIdeal lo excluye, y un tuit lo nombra a ÉL (no al más caro). ven
 **Riesgos:** módulos tocados motor.js (venderJugador ahora notifica a bandeja + golpea hinchada si es ídolo/de
 la casa; 3 call sites de ejecutarAccion reciben dec) y data-proc.js (2 cartas usan venderFicha). No se tocó
 repartirDecisiones/resolverTokens/idsHechosPrevios. venderTitular queda solo para cartas sin nombre.
+
+## 6.18 · Banca + cambios con nombre (Section 2)  ✅ (2026-08-19)
+**Archivos:** `js/partido.js` (bancaPartido, hacerCambio, cambiosMax, estado), `js/ui-partido.js` (modalCambio + botón)
+**Funciones:** `hacerCambio(P,sale,entra)`, `bancaPartido(P)`, `modalCambio()`; P.cambios/cambiosMax; j.estado.
+**Qué probar:** en el partido, botón "🔄 Cambio (n/max)" → elegís quién sale y quién entra → relato "{Y} entra
+por {X}"; tope 3 (2026) / 2 (1991); el 4º (o 3º en 1991) queda bloqueado. El que sale deja de ser citado
+por el relato (sale de P.once).
+**1 línea:** cambios manuales con nombre en el partido (sale X, entra Y), con tope por era.
+**Riesgos:** módulos partido.js/ui-partido.js. j.estado nuevo (once/banca), no rompe onceIdeal (filtra vendido/
+lesión). El modal pausa el reloj y lo reanuda al cerrar.

@@ -366,6 +366,11 @@ function pintarPartido(){
     const bfin=el("button","btn-aqua chico verde","⏩ Al resultado"); bfin.style.marginLeft="4px";
     bfin.onclick=()=>{ clearInterval(TIMER); MOMENTO_OPS=[]; correrHasta(P,90); pintarPartido(); cerrarPartido(); };
     ctrl.appendChild(bfin);
+    /* 6.18 · cambios con nombre */
+    const bcam=el("button","btn-aqua chico","🔄 Cambio ("+(P.cambios||0)+"/"+(P.cambiosMax||3)+")"); bcam.style.marginLeft="4px";
+    bcam.disabled=(P.cambios||0)>=(P.cambiosMax||3);
+    bcam.onclick=modalCambio;
+    ctrl.appendChild(bcam);
     p.cuerpo.appendChild(ctrl);
     if(P.modo==="dirigir"){
       if(!E.config) E.config={autoPausa:true};
@@ -442,6 +447,48 @@ function reanudarPronto(){
   }, 650);
 }
 /* momento táctico (charla/cambio de plan) */
+/* 6.18 · cambio manual con nombre durante el partido */
+function modalCambio(){
+  const P=P_ACTUAL; if(!P) return;
+  if((P.cambios||0)>=(P.cambiosMax||3)){ aviso("Ya usaste todos los cambios"); return; }
+  const wasPaused=PAUSADO; PAUSADO=true; clearInterval(TIMER);
+  const banca=(typeof bancaPartido==="function")?bancaPartido(P):E.plantel.filter(j=>!j.vendido&&!j.cedido&&!(j.lesion>0)&&P.once.indexOf(j)<0);
+  let sale=null;
+  const reanudar=()=>{ cerrarModal(); PAUSADO=wasPaused; pintarPartido(); if(!PAUSADO&&!MOMENTO_OPS.length) correrEnVivo(); };
+  modal(box=>{
+    const pintar=()=>{
+      box.innerHTML="";
+      box.appendChild(el("div","cab",'<span class="ic">🔄</span><span>Cambio '+((P.cambios||0)+1)+' / '+(P.cambiosMax||3)+'</span>'));
+      const c=el("div","cuerpo"); box.appendChild(c);
+      c.appendChild(el("p","mini","Elegí quién SALE y quién ENTRA. Al minuto "+P.min+"."));
+      c.appendChild(el("h3","sub","Sale de la cancha"));
+      const g1=el("div","align-grid");
+      P.once.forEach(j=>{
+        const b=el("button","align-jug"+(sale===j?" on":""));
+        b.innerHTML="<b>"+(sale===j?"✓ ":"")+j.n+"</b><span class='mini'>"+j.pos+" · cansancio "+Math.round(j.cansancio||0)+"</span>";
+        b.onclick=()=>{ sale=(sale===j?null:j); pintar(); };
+        g1.appendChild(b);
+      });
+      c.appendChild(g1);
+      if(sale){
+        c.appendChild(el("h3","sub","Entra por "+sale.n));
+        if(!banca.length){ c.appendChild(el("p","mini","No quedan suplentes disponibles.")); }
+        const g2=el("div","align-grid");
+        banca.slice().sort((a,b)=>((b.pos===sale.pos)-(a.pos===sale.pos))||(b.nivel-a.nivel)).forEach(j=>{
+          const b=el("button","align-jug");
+          b.innerHTML="<b>"+j.n+"</b><span class='mini'>"+j.pos+" · niv "+j.nivel+" · forma "+Math.round(j.forma)+"</span>";
+          b.onclick=()=>{ if(hacerCambio(P,sale,j)){ reanudar(); aviso(j.n+" entra por "+sale.n); } };
+          g2.appendChild(b);
+        });
+        c.appendChild(g2);
+      }
+      const x=el("button","btn-aqua ancho gris","Cerrar sin cambiar"); x.style.marginTop="6px";
+      x.onclick=reanudar;
+      c.appendChild(x);
+    };
+    pintar();
+  },{cerrarFuera:false});
+}
 function mostrarMomento(){
   const P=P_ACTUAL;
   const m=momentoActual(P);
