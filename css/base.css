@@ -535,3 +535,18 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 /* 7.0 · storylines (arcos de equipo) */
 .story-card{padding:8px 10px;border-radius:7px;border:1px solid rgba(210,140,20,.4);background:linear-gradient(180deg,rgba(255,220,130,.14),rgba(255,220,130,.04));margin:6px 0}
 .story-cap{font-size:15px;margin-bottom:6px}
+
+/* ============================================================
+   7.0 · micro-animaciones (sutiles, con onda Aero/Flash de época)
+   ============================================================ */
+@keyframes panelEntra{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes modalPop{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+@keyframes avisoPop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+#vista > .panel,#vista .rejilla > div > .panel{animation:panelEntra .32s cubic-bezier(.2,.8,.2,1) both}
+.modal{animation:modalPop .24s cubic-bezier(.2,.9,.25,1) both}
+.aviso{animation:avisoPop .25s ease both}
+.btn-aqua,.op,.mi,.ficha{transition:filter .12s,transform .1s,box-shadow .15s}
+.op:hover:not(:disabled){transform:translateX(3px) scale(1.006)}
+@media (prefers-reduced-motion:reduce){
+  #vista > .panel,#vista .rejilla > div > .panel,.modal,.aviso{animation:none}
+}

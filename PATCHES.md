@@ -1205,3 +1205,18 @@ documentado arriba del archivo. Probado end-to-end: arco completo U (3 caps → 
 y arco Colo renderizando. Consola limpia.
 **1 línea:** cada club tiene sus propias historias (el estadio de la U, la grandeza de Colo) que siguen el tiempo y quedan en la memoria.
 **Riesgos:** sistema nuevo y aislado; solo agrega `normalizarStorylines` y una tarjeta al escritorio. Bajo.
+
+## 7.0-d · Arcos de Palestino y Limache + micro-animaciones  ✅ (2026-08-21)
+**Archivos:** `js/data-storylines.js`, `js/css/base.css`
+**Qué:**
+- **Palestino · "Más que un club: una comunidad"** — su identidad como casa de una colectividad
+  (comunidad vs inversión, la camiseta que emociona, chico de plata pero grande de alma). Escrito con
+  respeto y sin meterse en la política; foco en el vínculo con la comunidad.
+- **Deportes Limache · "El pueblo chico en primera"** — la épica del chico en la elite (competir sin
+  complejos, te quieren robar la joya, el mensaje final al pueblo). Ya todos los clubes jugables tienen arco.
+- **Micro-animaciones sutiles**: los paneles entran con un fade+slide, los modales hacen un pop suave, los
+  avisos aparecen desde arriba, y las opciones tienen hover más vivo. Respeta `prefers-reduced-motion`.
+**Qué probar:** jugar como Palestino o Limache → aparece su historia propia; al navegar entre vistas los
+paneles entran con una animación suave.
+**1 línea:** Palestino y Limache ya tienen su propia historia, y todo entra con micro-animaciones con onda de época.
+**Riesgos:** data + CSS de animación. Bajo.
