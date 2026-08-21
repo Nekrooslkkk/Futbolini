@@ -70,6 +70,47 @@ Para mezclar con los reales sin quedarnos cortos. Nombres y apodos creíbles del
 
 Formato: un array de strings.
 
+### E) STORYLINES / arcos de equipo (lo más importante para la 7.00)
+Cada club merece SU historia propia: un conflicto identitario real de ese club, contado en 2-3 capítulos
+donde el DT decide y las decisiones dejan huella. Ya existen los de U (estadio propio), Colo (el peso del
+más grande), UC (esencia cruzada), Palestino (comunidad) y Limache (pueblo chico en primera). Faltan los
+demás clubes chilenos. Para cada club dame **un arco** con la identidad REAL de ese club (su historia, su
+gente, su ciudad, su drama típico) — con respeto, sin meterte en política ni inventar declaraciones reales.
+
+Formato EXACTO (así se pega directo en `js/data-storylines.js` → `ARCOS_EQUIPO`):
+```js
+CLUBID: [{
+  id:"clubid_tema", t:"Título corto", desc:"Enganche de una línea.",
+  // era: "actual" | "historico" | omitir (aplica siempre)
+  capitulos:[
+    {id:"c1", t:"Título del capítulo", ctx:"Situación en 2-3 frases, con color chileno.",
+     ops:[
+       {t:"Opción A", d:"Consecuencia en una línea.", grupos:{hinchada:12,directorio:-6}, mem:"lo que hiciste, en 2ª persona", va:"c2"},
+       {t:"Opción B", d:"...", ef:{plata:80}, grupos:{sponsors:10,comunidad:-8}, mem:"...", va:"c2"}
+     ]},
+    {id:"c2", t:"...", ctx:"...", ops:[
+       {t:"Cierre bueno", d:"...", ef:{prestigio:8}, grupos:{comunidad:12,hinchada:10}, mem:"...", cierra:true},
+       {t:"Cierre frío", d:"...", grupos:{directorio:8,hinchada:-10}, mem:"...", cierra:true}
+     ]}
+  ]
+}],
+```
+Reglas de los efectos: `ef` acepta `plata,moral,prestigio,capital`; `grupos` acepta
+`directorio,socios,hinchada,camarin,tecnico,prensa,anfp,sponsors,comunidad` (valores ~ -18..+18);
+`rep` acepta `publica,credibilidad,dureza`. `mem` SIEMPRE en 2ª persona ("bancaste…", "vendiste…").
+`va` apunta al id del siguiente capítulo; `cierra:true` termina el arco. Ids de club: usá los del juego
+(CC, UCH, UC, PAL, LIM, y los que tengan los planteles 2026). 2-3 capítulos, 2-3 opciones cada uno.
+
+### F) Logros bizarros pero reales (para la sección Logros)
+Ideas de logros graciosos pero de verdad alcanzables jugando (como "Bomba de hidrógeno vs bomba de
+hidrógeno" = meter un penal con el arquero). Cada uno con un nombre con gracia y una condición clara.
+
+Formato:
+```js
+{ id:"slug", n:"Nombre con gracia", d:"Cómo se consigue, en una línea." },
+```
+Dame ~10, con condiciones que se puedan detectar en el juego (goles, tarjetas, rachas, mercado, barra…).
+
 ---
 
 ## Cómo devolver
@@ -80,7 +121,9 @@ Formato: un array de strings.
 ---
 
 ## Dónde lo pega el desarrollador (referencia interna, no para Grok)
-- Tuits (A) → `js/redes.js` (pools de `actualidadRedes` / `tuitDesdeActualidad`).
+- Tuits (A) → `js/redes.js` (pools de `tickerPost` / `tickerAmbiente` / `actualidadRedes`).
 - Preguntas de prensa (B) → `js/ui-partido.js` (`preguntasConferencia`, `preguntasPostPartido`).
 - Trivia (C) → `js/partido.js` (`TRIVIA_FUTBOL`).
 - Nombres (D) → `js/data-plantel.js` / pool de periodistas en `js/ui-partido.js` (`PERIODISTAS`).
+- Storylines (E) → `js/data-storylines.js` (`ARCOS_EQUIPO`). El formato está documentado arriba del archivo.
+- Logros (F) → `js/logros.js` (`LOGROS`), y hay que engancharles el hook que los desbloquea.
