@@ -484,3 +484,12 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 
 /* 6.28 · doping (opción turbia en el partido) */
 .op-doping{border-color:rgba(200,60,60,.5);background:linear-gradient(180deg,rgba(230,80,70,.12),rgba(230,80,70,.04))}
+
+/* 6.31 · checklist previa */
+.checklist{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.chk{display:flex;align-items:flex-start;gap:9px;padding:7px 9px;border-radius:6px;border:1px solid var(--linea);background:rgba(0,0,0,.02)}
+.chk.warn{border-color:rgba(210,120,20,.45);background:linear-gradient(180deg,rgba(240,180,40,.14),rgba(240,180,40,.04))}
+.chk.ok{border-color:rgba(60,180,90,.35)}
+.chk-ic{font-size:15px;flex:0 0 auto;line-height:1.4}
+.chk b{font-size:12.5px}
+@media(min-width:620px){.checklist{display:grid;grid-template-columns:1fr 1fr}}

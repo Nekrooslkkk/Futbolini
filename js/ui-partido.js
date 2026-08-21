@@ -18,6 +18,42 @@ function partidoTeclas(e){
 }
 document.addEventListener("keydown",partidoTeclas);
 
+/* 6.31 · qué conviene tener listo antes de jugar (reconoce el estado real) */
+function checklistPrevia(part,once){
+  const items=[];
+  const clasico=(typeof esClasico==="function")&&esClasico(part);
+  if(clasico) items.push({warn:false,ok:true,t:"Hoy es CLÁSICO ante "+part.rivalNombre,d:"Vale doble para la gente. Es tu objetivo institucional del año."});
+  /* decisiones urgentes sin resolver */
+  const urgentes=(E.decPend||[]).filter(x=>x.peso==="alto").length;
+  if(urgentes) items.push({warn:true,t:urgentes+" decisión"+(urgentes>1?"es":"")+" urgente"+(urgentes>1?"s":"")+" sin resolver",
+    d:"El buzón tiene temas que hay que cerrar antes del partido.",accion:()=>irA("escritorio")});
+  /* conferencia de prensa */
+  const confHecha=E.flags["conf_"+E.idx];
+  items.push({ok:!!confHecha,warn:false,t:confHecha?"Conferencia de prensa dada":"Conferencia de prensa pendiente",
+    d:confHecha?"Ya hablaste con la prensa.":"Hablar suma o resta clima de prensa. Está abajo, en «Antes de salir»."});
+  /* alineación / química */
+  const manualOn=E.tactica.xiManual&&E.tactica.xiManual.length;
+  items.push({ok:!!manualOn,warn:false,t:manualOn?"Alineación armada a mano":"Alineación automática",
+    d:manualOn?"Elegiste vos el once.":"El juego pone el mejor once disponible. Podés cambiarlo abajo."});
+  if(typeof quimicaEquipo==="function"){
+    const qui=quimicaEquipo(once);
+    if(qui.prom<50) items.push({warn:true,t:"Química baja ("+qui.prom+"/100)",
+      d:"Hay jugadores que no congenian. Acomodá la pizarra para juntar a los que se llevan bien.",accion:()=>modalPizarra(part)});
+    else items.push({ok:true,warn:false,t:"Química del equipo OK ("+qui.prom+"/100)",d:"El grupo se lleva bien sobre la cancha."});
+  }
+  /* piernas cansadas en el XI */
+  const cansados=once.filter(j=>(j.cansancio||0)>=18);
+  if(cansados.length>=2) items.push({warn:true,t:cansados.length+" titulares con las piernas pesadas",
+    d:"Cansancio alto: "+cansados.slice(0,3).map(j=>j.n).join(", ")+(cansados.length>3?"…":"")+". Pensá en rotar o entrenar suave.",accion:()=>modalAlineacion(part)});
+  /* lesionados que se pierden el partido */
+  const les=E.plantel.filter(j=>j.lesion>0&&!j.vendido);
+  if(les.length) items.push({warn:false,t:les.length+" jugador"+(les.length>1?"es":"")+" lesionado"+(les.length>1?"s":""),
+    d:"No disponibles: "+les.slice(0,4).map(j=>j.n).join(", ")+(les.length>4?"…":"")+"."});
+  /* barra caliente */
+  if(part.local && E.barra && E.barra.roto) items.push({warn:true,t:"La barra está caliente con vos",
+    d:"Rompiste un pacto: esperá silbidos de local y algún lío en la puerta."});
+  return items;
+}
 function pantallaPrevia(part){
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
   const cab=panel(part.tipo==="copa"?("Copa Libertadores · "+part.ronda):("Campeonato Nacional · fecha "+part.fecha),
@@ -26,6 +62,22 @@ function pantallaPrevia(part){
   cab.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" en "+part.sede+" · "+fechaTxt(part.f)+" de "+E.anio+
     (part.apodo?" · "+part.apodo:"")));
   v.appendChild(cab);
+
+  /* 6.31 · checklist: qué conviene resolver ANTES de salir a jugar */
+  const onceCk=onceIdeal();
+  const items=checklistPrevia(part,onceCk);
+  const hayPend=items.some(i=>i.warn);
+  const pc=panel("Antes de salir a la cancha","✅",hayPend?"alerta":"agua");
+  pc.cuerpo.appendChild(el("p","mini",hayPend?"Hay cosas que conviene resolver antes de jugar. No es obligación, pero te puede costar el partido.":"Todo en orden para salir a jugar. Igual revisá los últimos detalles."));
+  const ul=el("div","checklist");
+  items.forEach(i=>{
+    const row=el("div","chk"+(i.warn?" warn":(i.ok?" ok":"")));
+    row.innerHTML="<span class='chk-ic'>"+(i.warn?"⚠️":(i.ok?"✅":"•"))+"</span><div><b>"+i.t+"</b>"+(i.d?"<div class='mini'>"+i.d+"</div>":"")+"</div>";
+    if(i.accion){ row.style.cursor="pointer"; row.onclick=i.accion; }
+    ul.appendChild(row);
+  });
+  pc.cuerpo.appendChild(ul);
+  v.appendChild(pc);
 
   const rej=el("div","rejilla dos");
   /* --- plan --- */

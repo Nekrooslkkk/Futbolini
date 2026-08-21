@@ -1066,3 +1066,16 @@ aplican desde una temporada nueva; las partidas ya empezadas mantienen sus 3 met
 al lado de otro con el que congenia sube el promedio; el bono se siente en el partido.
 **1 línea:** la pizarra ahora muestra quién se lleva bien con quién, y juntarlos te da nivel de verdad.
 **Riesgos:** partido.js (química en iniciarPartido → empuje/orden), ui-partido.js (overlay SVG de lazos). Bajo.
+
+## 6.31 · Checklist «Antes de salir a la cancha» (reconoce qué falta)  ✅ (2026-08-21)
+**Archivos:** `js/ui-partido.js`, `js/css/base.css`
+**Qué:** al entrar a la previa de un partido, arriba de todo aparece un panel que reconoce el estado real
+y te dice qué conviene resolver antes de jugar: si hoy es clásico, decisiones urgentes sin cerrar (te
+lleva al escritorio al tocar), conferencia de prensa dada o pendiente, alineación manual o automática,
+química del equipo (si es baja te ofrece abrir la pizarra), titulares con las piernas pesadas (te lleva a
+alinear), lesionados que se pierden el partido, y barra caliente si rompiste un pacto. Los ítems con ⚠
+son accionables (un toque te lleva a resolverlos).
+**Qué probar:** ir a un partido → panel «Antes de salir a la cancha» con la lista; con una decisión
+urgente pendiente aparece en ⚠ y al tocarla vas al escritorio.
+**1 línea:** antes de jugar, el juego te muestra qué te falta por hacer, y te lleva a hacerlo.
+**Riesgos:** ui-partido.js (checklistPrevia + panel al tope de pantallaPrevia). Bajo.
