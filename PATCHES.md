@@ -1253,3 +1253,12 @@ Se disparan con un campo `logro` en la opción de cierre del arco + un contador 
 **Qué probar:** construir el estadio de la U → salta «El que construyó la casa»; completar 3 arcos → «Culebrón de primera».
 **1 línea:** resolver las historias de tu club ahora también te da logros.
 **Riesgos:** data + un hook en resolverStoryline. Bajo.
+
+## 7.0-h · Pulido de chrome: chips de la barra como vidrio Vista  ✅ (2026-08-21)
+**Archivos:** `css/aero.css`
+**Qué:** los chips de datos de la barra superior (club, fecha, caja, deuda, capital) —que están en TODA
+pantalla— pasaron a verse como pastillas de vidrio Vista: gradiente translúcido, borde claro, brillo
+interior y sombra suave; los de alerta tiñen en rojo. El glifo de la marca tiene un aro de luz.
+**Qué probar:** en cualquier vista, la barra de arriba se ve más pulida y con más profundidad.
+**1 línea:** la barra superior ahora tiene chips de vidrio con onda Vista, en toda pantalla.
+**Riesgos:** solo CSS del tema Aero. Bajo.
