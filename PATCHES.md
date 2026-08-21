@@ -1079,3 +1079,21 @@ son accionables (un toque te lleva a resolverlos).
 urgente pendiente aparece en ⚠ y al tocarla vas al escritorio.
 **1 línea:** antes de jugar, el juego te muestra qué te falta por hacer, y te lleva a hacerlo.
 **Riesgos:** ui-partido.js (checklistPrevia + panel al tope de pantallaPrevia). Bajo.
+
+## 6.32 · El desarrollo sigue el tiempo: los jóvenes maduran según lo que hiciste  ✅ (2026-08-21)
+**Archivos:** `js/motor.js` (nuevoAnio · envejecer)
+**Qué:** arregla lo que marcaste: "las decisiones no siguen el tiempo". Antes, al cambiar de año, los
+jóvenes subían nivel con un random plano, ignorando lo que pasó. Ahora el desarrollo está **atado a lo
+que hiciste con cada jugador**:
+- Un ≤23 que **jugó mucho (≥1200 min) y bien** (forma alta) crece fuerte hacia su proyección.
+- Uno que **jugó algo** crece poco; uno al que **casi no diste minutos** (banca, lesiones) se **estanca o
+  retrocede**; si además **le fue mal** (forma baja), crece todavía menos.
+- Los ≤28 se mantienen si juegan y bajan si no; los ≥30 caen, y **más** si no sumaron minutos.
+- El crecimiento no se dispara sobre el techo (proyección) del jugador.
+Al cerrar el año, un aviso te cuenta quién dio el salto y quién retrocedió, **explicando por qué** (minutos,
+rendimiento). Así, pedir un canterano y no hacerlo jugar (o que le vaya mal) tiene consecuencia real y no
+queda congelado para siempre.
+**Qué probar:** meté un juvenil al once toda la temporada → sube; dejalo en la banca → se estanca o baja.
+Al pasar de año, el aviso «Cómo maduraron los jóvenes» lo explica.
+**1 línea:** los pibes ahora crecen o se estancan según cuánto y cómo jugaron: la decisión sigue el tiempo.
+**Riesgos:** motor.js (curva de desarrollo en el cierre de temporada). Bajo.

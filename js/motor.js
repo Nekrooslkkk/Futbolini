@@ -850,14 +850,45 @@ function posicionEnTabla(){
 function nuevoAnio(){
   E.anio++;
   limpiarMods();
-  /* envejecer plantel y aplicar salidas */
+  /* envejecer plantel y aplicar salidas
+     6.32 · el desarrollo SIGUE LO QUE HICISTE: un joven que jugó mucho y bien crece
+     hacia su proyección; uno al que no le diste minutos (banca, lesiones, mal rendimiento)
+     se estanca o baja. Nada queda congelado: la decisión de hacerlo jugar tiene consecuencia. */
   E.plantel=E.plantel.filter(j=>!j.vendido&&!j.ventaFin);
+  const evol=[];
   E.plantel.forEach(j=>{
     j.edad++;
-    if(j.edad<=25) j.nivel=clamp(j.nivel+ri(0,4),20,97);
-    else if(j.edad>=30) j.nivel=clamp(j.nivel-ri(1,4),20,97);
+    const min=j.minutosTemporada||0, formaFin=j.forma||60, proy=j.proy||j.nivel;
+    const margen=proy-j.nivel;                    /* cuánto le queda por crecer */
+    const jugoMucho=min>=1200, jugoAlgo=min>=400;  /* ~13+ / ~4+ partidos completos */
+    let delta=0;
+    if(j.edad<=23){
+      if(jugoMucho) delta=ri(2,5)+(formaFin>=72?2:0)+(margen>4?1:0);
+      else if(jugoAlgo) delta=ri(0,3);
+      else delta=ri(-3,1);                         /* casi no jugó → se estanca o retrocede */
+      if(formaFin<55) delta-=2;                    /* le fue mal → crece mucho menos */
+      delta=Math.min(delta,Math.max(0,margen)+2);  /* no se dispara sobre su techo */
+    } else if(j.edad<=28){
+      delta=jugoMucho?ri(-1,2):ri(-3,0);
+    } else if(j.edad>=30){
+      delta=-ri(1,4)-(jugoMucho?0:1);              /* veterano que no sumó minutos, cae más */
+    } else {
+      delta=jugoMucho?ri(-1,1):ri(-2,0);
+    }
+    const antes=j.nivel;
+    j.nivel=clamp(j.nivel+delta,20,97);
+    if(j.edad<=24 && Math.abs(j.nivel-antes)>=3) evol.push({n:j.n,d:j.nivel-antes,niv:j.nivel,min:min});
     j.goles=0;j.partidos=0;j.tarjetas=0;j.lesion=0;j.forma=68;j.minutosTemporada=0;
   });
+  /* contale al jugador que el desarrollo tuvo que ver con lo que hizo */
+  const sube=evol.filter(x=>x.d>0).sort((a,b)=>b.d-a.d)[0];
+  const baja=evol.filter(x=>x.d<0).sort((a,b)=>a.d-b.d)[0];
+  if(sube||baja){
+    let d="";
+    if(sube) d+="📈 "+sube.n+" dio el salto (+"+sube.d+" → "+sube.niv+"): los minutos que le diste rindieron. ";
+    if(baja) d+="📉 "+baja.n+" retrocedió ("+baja.d+" → "+baja.niv+"): "+(baja.min<400?"casi no jugó y se estancó.":"le costó el año.");
+    notificar({t:"Cómo maduraron los jóvenes",tipo:"neutro",bandeja:false,d:d.trim()});
+  }
   /* vuelven los cedidos, mejorados por el rodaje */
   const vueltos=[];
   E.plantel.forEach(j=>{
