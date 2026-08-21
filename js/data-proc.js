@@ -252,6 +252,125 @@ const DEC_PROC=[
        mal:{txt:"El jugador quería irse y quedó dolido.",ef:{moral:-3}}}
      ]};
  }},
+ /* 6.22 · EVENTOS LOCALES con sabor chileno (token/lugar + 1 mundo + 1 semilla) */
+ {buzon:"institucional",peso:"medio",gen:function(){
+   return {t:"Consejo de Presidentes en Quilín",
+     d:"La ANFP cita a todos los clubes a votar el formato del próximo torneo y el reparto de la TV. Cada voto se cobra o se agradece después.",
+     posturas:{directorio:10,prensa:6},
+     op:[
+      {t:"Votar con los grandes",dif:30,grupos:{directorio:10},
+       bien:{txt:"Quedaste bien con los que mandan. El año que viene te devuelven la mano.",flags:{votoConsejo:"grandes"},mods:[{id:"favor_tv",n:"Favor de TV",anios:1,ef:{sponsor:0.05}}]},
+       mitad:{txt:"Voto útil, sin réditos claros.",flags:{votoConsejo:"grandes"}},
+       mal:{txt:"Los regionales te marcaron la cancha.",grupos:{comunidad:-6},flags:{votoConsejo:"grandes"}}},
+      {t:"Votar con los regionales",dif:34,grupos:{comunidad:12,directorio:-6},
+       bien:{txt:"Ganaste aliados en provincias. Solidaridad que vuelve.",flags:{votoConsejo:"regionales"}},
+       mitad:{txt:"Voto testimonial.",flags:{votoConsejo:"regionales"}},
+       mal:{txt:"Los grandes tomaron nota de tu rebeldía.",grupos:{anfp:-8},flags:{votoConsejo:"regionales"}}},
+      {t:"Abstenerte y no comprometerte",dif:24,rep:{credibilidad:-2},
+       bien:{txt:"No te mojaste: nadie te debe, nadie te reclama.",flags:{votoConsejo:"neutro"}},
+       mitad:{txt:"Quedaste como tibio.",flags:{votoConsejo:"neutro"}},
+       mal:{txt:"Los dos bandos te miran con desconfianza.",grupos:{directorio:-4},flags:{votoConsejo:"neutro"}}}
+     ]};
+ }},
+ {buzon:"camarin",peso:"medio",gen:function(){
+   const j=jugAzar(x=>x.nivel>=76); if(!j) return null;
+   return {t:"La Roja convoca a "+j.n, ficha:{n:j.n},
+     d:"Fecha FIFA: la selección llama a "+j.n+". Es un orgullo, pero vuelve cansado (y con riesgo de lesión) justo antes de una fecha clave.",
+     posturas:{hinchada:12,prensa:8,tecnico:-10},
+     op:[
+      {t:"Cederlo, es un honor",dif:26,grupos:{hinchada:10,prensa:6},
+       bien:{txt:j.n+" volvió entero y enchufado. Todo bien.",ef:{moral:2}},
+       mitad:{txt:"Volvió con la forma justa, hay que dosificarlo.",accion:"cansarFicha"},
+       mal:{txt:j.n+" volvió tocado de la gira. Mala suerte.",accion:"lesionFicha"}},
+      {t:"Pedir que no lo lleven (excusa médica)",dif:48,grupos:{prensa:-10,anfp:-8},rep:{credibilidad:-4},
+       bien:{txt:"Zafó de la gira y lo tenés fresco. La prensa refunfuña.",ef:{}},
+       mitad:{txt:"Se filtró la maniobra y quedaste expuesto.",grupos:{prensa:-8}},
+       mal:{txt:"La ANFP te sancionó por no liberar al jugador.",ef:{riesgo:6},grupos:{anfp:-12}}}
+     ]};
+ }},
+ {buzon:"finanzas",peso:"bajo",gen:function(){
+   return {t:"El CDF quiere el clásico a las 21:30",
+     d:"La señal pide mover el partido grande al horario central del domingo. Deja plata extra de TV, pero jugar de noche y con la previa larga desgasta más al plantel.",
+     posturas:{sponsors:12,camarin:-8},
+     op:[
+      {t:"Aceptar el horario y cobrar",dif:22,ef:{plata:100},grupos:{sponsors:10,camarin:-6},
+       bien:{txt:"Entró la plata de TV.",mods:[{id:"trasnoche",n:"Partido nocturno pesado",anios:1,ef:{}}]},
+       mitad:{txt:"Cobrás, pero el plantel llega justo.",ef:{}},
+       mal:{txt:"El equipo acusó el trasnoche y el desgaste.",ef:{moral:-3}}},
+      {t:"Exigir horario de tarde",dif:40,grupos:{sponsors:-10},
+       bien:{txt:"Respetan al hincha y al futbolista. Buena imagen.",grupos:{hinchada:6}},
+       mitad:{txt:"Negociación tensa, quedó a medias.",ef:{}},
+       mal:{txt:"La señal se enojó y te bajó exposición.",ef:{plata:-40}}}
+     ]};
+ }},
+ {buzon:"institucional",peso:"bajo",gen:function(){
+   return {t:"El municipio pide el estadio para un concierto",
+     d:"El alcalde quiere el recinto el sábado previo a tu partido de local. Deja arriendo, pero la cancha queda marcada para el domingo.",
+     posturas:{directorio:10,tecnico:-12},
+     op:[
+      {t:"Alquilar, la plata sirve",dif:20,ef:{plata:70},grupos:{directorio:8,tecnico:-8},
+       bien:{txt:"Entró plata de arriendo.",mods:[{id:"cancha_marcada",n:"Cancha en mal estado",anios:1,ef:{local:-4}}]},
+       mitad:{txt:"La cancha quedó pesada, se jugó como se pudo.",ef:{}},
+       mal:{txt:"Un pozo en el área casi te cuesta un gol. Papelón.",grupos:{tecnico:-6}}},
+      {t:"Cuidar la cancha y decir que no",dif:32,grupos:{tecnico:10,comunidad:-6},
+       bien:{txt:"El campo impecable, el técnico feliz.",ef:{}},
+       mitad:{txt:"El alcalde lo tomó a mal.",grupos:{comunidad:-4}},
+       mal:{txt:"Te ganaste un enemigo político.",grupos:{comunidad:-10}}}
+     ]};
+ }},
+ {buzon:"hinchada",peso:"medio",gen:function(){
+   return {t:"Lienzo contra el directorio en el entrenamiento",
+     d:"Aparecieron con un trapo contra la dirigencia en pleno entrenamiento a puertas abiertas. Los jugadores miraron de reojo. Hay que decidir cómo se maneja.",
+     posturas:{directorio:-10,prensa:12},
+     op:[
+      {t:"Bajarlo con seguridad",dif:30,grupos:{directorio:8,hinchada:-8},rep:{dureza:4},
+       bien:{txt:"Se descolgó sin incidentes.",ef:{}},
+       mitad:{txt:"Volaron insultos, pero se bajó.",ef:{}},
+       mal:{txt:"Forcejeo, foto fea y más bronca.",grupos:{hinchada:-8}}},
+      {t:"Dejarlo, es su libertad",dif:26,grupos:{directorio:-8,hinchada:6},
+       bien:{txt:"La barra valoró que no reprimiste.",ef:{}},
+       mitad:{txt:"El directorio se sintió desprotegido.",grupos:{directorio:-6}},
+       mal:{txt:"Se llenó de lienzos y fue un circo.",grupos:{directorio:-10,prensa:-6}}},
+      {t:"Encaminar el reclamo a la mesa de la barra",dif:34,
+       bien:{txt:"Le diste un canal al reclamo. Ganaste tiempo.",ef:{}},
+       mitad:{txt:"Aceptaron hablar, sin garantías.",ef:{}},
+       mal:{txt:"Sintieron que los usás y se cerraron.",grupos:{hinchada:-6}}}
+     ]};
+ }},
+ {buzon:"finanzas",peso:"bajo",gen:function(){
+   return {t:"Llega el impuesto de la SAD",
+     d:"La sociedad anónima debe pagar un tributo que aprieta la caja. Podés pagar, hacer lobby para diferirlo, o revisar el estatuto para blindarte a futuro.",
+     posturas:{directorio:10,socios:-8},
+     op:[
+      {t:"Pagar y no dar que hablar",dif:20,req:{plata:90},ef:{plata:-90},grupos:{directorio:6},
+       bien:{txt:"Cuentas al día, cero ruido.",ef:{}},
+       mitad:{txt:"Pagaste, la caja quedó justa.",ef:{}},
+       mal:{txt:"El pago te dejó corto para el mercado.",ef:{}}},
+      {t:"Lobby para diferirlo",dif:44,grupos:{anfp:6},rep:{credibilidad:-2},
+       bien:{txt:"Conseguiste plazo. Aire para la caja.",ef:{deuda:60}},
+       mitad:{txt:"Diferido a medias, con intereses.",ef:{deuda:120}},
+       mal:{txt:"El lobby se filtró y quedó feo.",grupos:{prensa:-8}}}
+     ]};
+ }},
+ {buzon:"gris",peso:"medio",gen:function(){
+   return {t:"Un dirigente filtró el camarín a la prensa",
+     d:"Salió en la radio información interna que solo manejaba la mesa chica. Hay un topo en el directorio. Cómo lo manejes marca el clima de todo el año.",
+     posturas:{directorio:-10,prensa:8,camarin:-12},
+     op:[
+      {t:"Echarlo y limpiar la interna",dif:44,req:{capital:8},ef:{capital:-8},grupos:{camarin:12,directorio:-10},rep:{dureza:6},
+       bien:{txt:"Cortaste la filtración de raíz. El camarín lo agradeció.",ef:{moral:5}},
+       mitad:{txt:"Se fue, pero dejó ruido político.",ef:{}},
+       mal:{txt:"Armó quilombo y dividió al directorio.",grupos:{directorio:-12}}},
+      {t:"Usarlo a tu favor (contrafiltrar)",dif:40,grupos:{prensa:6},rep:{dureza:4,credibilidad:-4},ef:{riesgo:8},
+       bien:{txt:"Le diste vuelta la información y quedaste un paso adelante.",ef:{}},
+       mitad:{txt:"Jugada arriesgada, resultado dudoso.",ef:{}},
+       mal:{txt:"Se te volvió en contra y quedaste como intrigante.",grupos:{prensa:-8}}},
+      {t:"Desmentir todo públicamente",dif:28,grupos:{prensa:-4},
+       bien:{txt:"Bajaste el tema con un desmentido firme.",ef:{}},
+       mitad:{txt:"Nadie te creyó del todo.",ef:{}},
+       mal:{txt:"A la semana salió la prueba y quedaste expuesto.",rep:{credibilidad:-6}}}
+     ]};
+ }},
  /* 6.21 · EVENTO DE PUERTA: germina cuando le rompés un pacto a la barra */
  {buzon:"gris",peso:"medio",gen:function(){
    if(E.flags.puertaBarra==null || (E.idx-E.flags.puertaBarra)>4) return null;

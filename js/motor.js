@@ -495,6 +495,18 @@ function ejecutarAccion(a,dec){
       if(!j) return "";
       return venderJugador(j);
     }
+    case "lesionFicha":{  /* lesiona al jugador que nombra la carta (ficha) */
+      const nom=dec&&dec.ficha&&dec.ficha.n;
+      const j=(E.plantel||[]).find(x=>x.n===nom&&!x.vendido);
+      if(!j) return ""; j.lesion=ri(2,4);
+      return j.n+" volvió tocado y queda unas semanas afuera.";
+    }
+    case "cansarFicha":{  /* el jugador de la ficha vuelve con la forma baja */
+      const nom=dec&&dec.ficha&&dec.ficha.n;
+      const j=(E.plantel||[]).find(x=>x.n===nom&&!x.vendido);
+      if(!j) return ""; j.forma=clamp((j.forma||70)-12,20,99);
+      return j.n+" volvió cansado de la gira, con la forma justa.";
+    }
     case "lesionAlAzar":{
       const sanos=E.plantel.filter(j=>!j.lesion&&!j.vendido);
       if(!sanos.length) return "";

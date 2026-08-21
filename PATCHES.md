@@ -921,3 +921,16 @@ leen E.barra; DEC_PROC nuevo consume flag puertaBarra (fix: ==null porque idx 0 
 ## ORDEN DE ATAQUE (spec ingeniero): 1-6 COMPLETO
 1 venta con nombre · 2 banca+cambios con nombre · 3 tweets del estado · 4 rasgos con hook · 5 mesa de la barra ·
 6 plantel U 2011. Pendientes del spec detallado: 8 eventos locales, Tinder cada 2-3 fechas, minutosTemporada/dorsal.
+
+## 6.22 · 8 eventos locales con sabor chileno (Section 4 del spec)  ✅ (2026-08-19)
+**Archivos:** `js/data-proc.js` (7 eventos), `js/motor.js` (acciones lesionFicha/cansarFicha)
+**Eventos:** Consejo de Presidentes en Quilín (votar con grandes/regionales/abstenerse → flag votoConsejo +
+mod favor_tv) · La Roja convoca a {jugador} (ceder con riesgo de lesión/cansancio del MISMO jugador via ficha,
+o retener con costo de prensa/ANFP) · CDF quiere el clásico 21:30 (plata TV vs desgaste) · el municipio pide
+el estadio para un concierto (arriendo vs cancha marcada) · lienzo contra el directorio (bajarlo/dejarlo/mesa
+de barra) · impuesto de la SAD (pagar/lobby con deuda) · dirigente filtra el camarín (echarlo/contrafiltrar/
+desmentir). El 8º ("puerta 8") ya existía como consecuencia de romper un pacto de barra (6.21).
+**Cada uno:** 1 texto con lugar/token real + 1 cambio de mundo + 1 semilla (flag o mod).
+**Qué probar:** aparecen en el escritorio y renderizan como decisión (modal); las 3 opciones resuelven sin
+romper; "La Roja" con ceder-mal lesiona al jugador nombrado (lesionFicha). Verificado: 11 variantes, 0 errores.
+**Riesgos:** data-proc.js (7 gen nuevos), motor.js (2 acciones que leen dec.ficha). No dupliqué nada.
