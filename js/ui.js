@@ -835,6 +835,15 @@ function fichaJugador(j){
     c.appendChild(fila("Valor estimado",plata(j.valor)));
     c.appendChild(fila("Contrato","hasta "+j.contrato.hasta));
     if(j.rasgos.length) c.appendChild(el("p","mini","Rasgos: "+j.rasgos.join(", ")));
+    /* 6.20 · qué hacen los rasgos con hook */
+    const RASGOS_HOOK={
+      "de la casa":"🏠 Símbolo del club: venderlo golpea a la hinchada; en el clásico se agranda.",
+      "cabeza caliente":"🔥 Juega al límite: más riesgo de tarjeta pasado el minuto 60 y de una segunda amarilla.",
+      "frio de definicion":"❄️ Falla mano a mano pero es letal desde el punto de penal.",
+      "llegador":"🎯 Volante que pisa el área: llega al gol y reparte más asistencias."
+    };
+    const hooks=(j.rasgos||[]).filter(r=>RASGOS_HOOK[r]);
+    if(hooks.length){ const box=el("div"); hooks.forEach(r=>box.appendChild(el("div","mini",RASGOS_HOOK[r]))); c.appendChild(box); }
     if(j.lesion>0) c.appendChild(el("p","mini","Lesionado: fuera unas "+j.lesion+" semanas."));
     if(j.cedido){ c.appendChild(el("div","resul mitad","🔄 Cedido a "+j.cedido.club+" hasta "+j.cedido.hasta+". Vuelve mejorado.")); }
     if(!j.cedido){

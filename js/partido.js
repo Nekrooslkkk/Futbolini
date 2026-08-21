@@ -169,7 +169,10 @@ function iniciarPartido(part,modo){
     cambios:0, cambiosMax:((E&&E.anio)||2026)>=2010?3:2   /* 6.18 · tope de cambios por era */
   };
   P.once.forEach(j=>{ j.estado="once"; });
-  if(P.clasico){ P.empuje+=1.4; P.desgaste+=1.2; P.rival+=1.5; }
+  if(P.clasico){ P.empuje+=1.4; P.desgaste+=1.2; P.rival+=1.5;
+    const casa=P.once.filter(j=>j.rasgos&&j.rasgos.indexOf("de la casa")>=0).length;   /* 6.20 · los de la casa se agrandan en el clásico */
+    if(casa) P.empuje+=Math.min(4,casa*2);
+  }
   if(part.tipo==="copa"){ P.empuje+=0.8; P.desgaste+=0.6; }
   return P;
 }
@@ -222,9 +225,10 @@ function pateadorDe(once){
 /* ~78% base, corregido por nivel del pateador vs temple (nivel) del arquero */
 function cobrarPenal(pateador,arquero){
   let p=0.78;
-  if(pateador) p+=((pateador.nivel||70)-70)*0.006+((pateador.rasgos&&pateador.rasgos.includes("penales"))?0.06:0);
+  if(pateador) p+=((pateador.nivel||70)-70)*0.006+((pateador.rasgos&&pateador.rasgos.includes("penales"))?0.06:0)
+    +((pateador.rasgos&&pateador.rasgos.indexOf("frio de definicion")>=0)?0.15:0);   /* 6.20 · frío en jugada, letal de penal */
   if(arquero)  p-=((arquero.nivel||70)-70)*0.005;
-  return Math.random()<clamp(p,0.55,0.92);
+  return Math.random()<clamp(p,0.55,0.94);
 }
 function penalEnPartido(P,aFavor,motivo,patElegido){
   const min=P.min;
@@ -268,12 +272,14 @@ function momentosPartido(part){
 function linea(P,min,txt,clase){ P.lineas.push({m:min,t:txt,c:clase||""}); }
 /* registra un gol con minuto y autor, para la caja de resumen (efemérides) */
 function regGol(P,min,quien,propio,tipo,asist){ P.golesDetalle=P.golesDetalle||[]; P.golesDetalle.push({min:min,quien:quien,propio:!!propio,tipo:tipo||"jugada",asist:asist||null}); }
+function tieneRasgo(j,r){ return j&&j.rasgos&&j.rasgos.indexOf(r)>=0; }
 function anotaPropio(P,min){
   const cand=P.once.filter(j=>j.pos==="DEL").concat(P.once.filter(j=>j.pos==="VOL"));
-  const j=eligePeso(cand,x=>(x.pos==="DEL"?3:1)*(x.nivel/50))||elige(P.once);
-  /* asistencia en ~60% de los goles de jugada */
+  /* 6.20 · rasgos: "llegador" (VOL que pisa el área) suma peso · "frio de definicion" (DEL) convierte menos */
+  const j=eligePeso(cand,x=>(x.pos==="DEL"?3:1)*(x.nivel/50)*(tieneRasgo(x,"llegador")?1.8:1)*(tieneRasgo(x,"frio de definicion")?0.75:1))||elige(P.once);
+  /* asistencia en ~60% de los goles de jugada; "llegador" asiste más */
   let asist=null;
-  if(Math.random()<0.6){ const otros=P.once.filter(x=>x!==j&&x.pos!=="ARQ"); const a=eligePeso(otros,x=>(x.pos==="VOL"?2:1))||elige(otros); asist=a?a.n:null; }
+  if(Math.random()<0.6){ const otros=P.once.filter(x=>x!==j&&x.pos!=="ARQ"); const a=eligePeso(otros,x=>(x.pos==="VOL"?2:1)*(tieneRasgo(x,"llegador")?1.7:1))||elige(otros); asist=a?a.n:null; }
   j.goles++; P.goleadores.push(j.n); regGol(P,min,j.n,true,"jugada",asist);
   if(P.part.local) P.gl++; else P.gv++;
   linea(P,min,"¡Gol de "+j.n+"!"+(asist?" (asistencia de "+asist+")":"")+" "+marcadorTxt(P),"gol");
@@ -372,11 +378,22 @@ function tickPartido(P){
   /* polémica en el tramo caliente */
   const pPol=(P.clasico||P.var)?0.018:0.012;
   if(min>60&&Math.random()<pPol){ polemicaArbitral(P); return {tipo:"polemica",min:min}; }
-  /* tarjeta */
-  if(Math.random()<0.03){ const j=elige(P.once); j.tarjetas++; P.tarjetas.push(j.n);
-    linea(P,min,min>75
-      ?("Amarilla para "+j.n+". En este tramo duele más.")
-      :("Amarilla para "+j.n+"."),min>70?"grave":"");
+  /* tarjeta · 6.20 · "cabeza caliente": post-60' arriesga más (mitad si viene ganando); 2ª amarilla = roja */
+  if(Math.random()<0.03){
+    const ganando=(P.part.local?P.gl>P.gv:P.gv>P.gl);
+    const calientes=P.once.filter(x=>x.rasgos&&x.rasgos.indexOf("cabeza caliente")>=0);
+    let j;
+    if(min>60 && calientes.length && Math.random()<(ganando?0.06:0.12)+0.4) j=elige(calientes);
+    else j=elige(P.once);
+    const caliente=j.rasgos&&j.rasgos.indexOf("cabeza caliente")>=0;
+    P.amar=P.amar||{}; P.amar[j.n]=(P.amar[j.n]||0)+1; j.tarjetas++; P.tarjetas.push(j.n);
+    if(caliente && P.amar[j.n]>=2 && Math.random()<0.25){
+      P.once=P.once.filter(x=>x!==j); j.estado="banca"; P.empuje-=1; P.orden-=3;
+      linea(P,min,"¡ROJA para "+j.n+"! Segunda amarilla: se le calentó la cabeza y deja a los suyos con diez.","grave");
+      return {tipo:"roja",min:min};
+    }
+    linea(P,min,min>75?("Amarilla para "+j.n+". En este tramo duele más.")
+      :("Amarilla para "+j.n+(caliente?", que juega siempre al límite.":".")),min>70?"grave":"");
     return {tipo:"tarjeta",min:min}; }
   /* chance perdida — con contexto de marcador y minuto */
   if(Math.random()<0.14){

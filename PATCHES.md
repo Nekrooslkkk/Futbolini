@@ -890,3 +890,17 @@ marcador y rival reales ("2-1 a Audax de visita"); previa cita rival+sede reales
 **1 línea:** el feed de PLOP nace de E de ESTA semana (resultado/venta/lesión/previa/tabla), no de un banco 2010.
 **Riesgos:** redes.js (botPost prioriza el fresco; TWEETS_HINCHA queda como relleno <20%; memoria 40%),
 partido.js (guarda goleadores en la fecha). No repite el texto del último post.
+
+## 6.20 · 4 rasgos con hook + plantel U 2011 (Sections 4 y 6)  ✅ (2026-08-19)
+**Archivos:** `js/partido.js` (hooks), `js/ui.js` (fichaJugador), `js/data-grok.js` (U 2011)
+**Rasgos (cada uno con hook real):**
+- **de la casa**: venderlo golpea hinchada -12 + post hostil (venderJugador); en el clásico los de la casa dan empuje.
+- **cabeza caliente**: post-60' más chance de amarilla (mitad si viene ganando); 2ª amarilla = ROJA (queda con 10).
+- **frio de definicion**: DEL convierte menos en jugada (peso -25%) pero +15% de penal (letal desde el punto).
+- **llegador**: VOL con más peso a marcar y asistir.
+Se muestran en `fichaJugador` (qué hace cada uno).
+**Plantel histórico:** `PLANTELES_REALES.UCH[2011]` — U. de Chile 2011 (Sampaoli, campeón Sudamericana), 18
+nombres reales (Herrera, Rojas, Marcelo Díaz, Aránguiz, Mena, Vargas, Canales, Henríquez…), stats estimadas.
+**Qué probar:** ficha de un jugador con rasgo muestra el hook; frío convierte más penales (377 vs 322 en 400);
+clásico con "de la casa" en el once sube el empuje; U 2011 carga con 18 jugadores.
+**Riesgos:** partido.js (tieneRasgo helper, tarjeta con roja saca del once, P.amar per-match). data-grok mutación.

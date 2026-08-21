@@ -465,8 +465,31 @@ const LIGA_LIM_2026=[
 ];
 
 /* ---------------- enchufar a los mapas del juego (mutación) ---------------- */
+/* ---------------- plantel histórico: U. de Chile 2011 (Sampaoli · campeón Copa Sudamericana) ---------------- */
+/* Nombres reales documentados; stats estimadas ("aproximado"). */
+const PLANTEL_UCH_2011=[
+ ["Johnny Herrera","ARQ",30,84,84,120,220,["ídolo","seguro bajo los tres palos","penales"]],
+ ["Paulo Garcés","ARQ",25,72,76,50,90,["recambio"]],
+ ["Matías Rodríguez","DEF",25,80,82,110,320,["extranjero","lateral ofensivo"]],
+ ["Osvaldo González","DEF",25,79,82,100,300,["juego aéreo"]],
+ ["José Rojas","DEF",26,80,81,110,300,["capitán","de la casa","juego aéreo"]],
+ ["Marcos González","DEF",30,77,77,90,180,["experiencia"]],
+ ["Eugenio Mena","DEF",23,80,86,90,420,["lateral ofensivo","proyección europea"]],
+ ["Albert Acevedo","DEF",27,72,73,60,110,["extranjero"]],
+ ["Marcelo Díaz","VOL",24,82,86,110,480,["de la casa","creación","tiro libre","llegador"]],
+ ["Charles Aránguiz","VOL",22,83,90,110,620,["proyección europea","box-to-box","llegador"]],
+ ["Guillermo Marín","VOL",25,75,77,80,150,["orden"]],
+ ["Felipe Seymour","VOL",24,73,76,70,130,["contención"]],
+ ["Gustavo Lorenzetti","VOL",26,80,81,110,300,["extranjero","desequilibrio"]],
+ ["Eduardo Vargas","DEL",21,84,92,120,900,["joven","goleador","proyección europea","frio de definicion"]],
+ ["Gustavo Canales","DEL",29,79,79,100,220,["extranjero","goleador","juego aéreo"]],
+ ["Ángelo Henríquez","DEL",17,74,88,50,420,["joven","de la casa","proyección europea"]],
+ ["Junior Fernandes","DEL",23,76,80,80,220,["velocidad"]],
+ ["Sebastián Ubilla","DEL",25,74,76,70,150,["velocidad"]]
+];
 (function(){
   if(typeof PLANTELES_REALES==="object"){
+    if(PLANTELES_REALES.UCH) PLANTELES_REALES.UCH[2011]=PLANTEL_UCH_2011; else PLANTELES_REALES.UCH={2011:PLANTEL_UCH_2011};
     PLANTELES_REALES.EVE={2026:PLANTEL_EVE_2026};
     PLANTELES_REALES.COQ={2026:PLANTEL_COQ_2026, 1991:PLANTEL_COQ_1991};
     PLANTELES_REALES.AUD={2026:PLANTEL_AUD_2026};
