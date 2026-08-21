@@ -1262,3 +1262,18 @@ interior y sombra suave; los de alerta tiñen en rojo. El glifo de la marca tien
 **Qué probar:** en cualquier vista, la barra de arriba se ve más pulida y con más profundidad.
 **1 línea:** la barra superior ahora tiene chips de vidrio con onda Vista, en toda pantalla.
 **Riesgos:** solo CSS del tema Aero. Bajo.
+
+## 7.0-j · Vida: excesos absurdos que escalan con el club  ✅ (2026-08-21)
+**Archivos:** `js/reputacion.js`, `js/css/base.css`
+**Qué:** los lujos de la Vida del DT pasaron de 5 a **15, escalonados por el prestigio del club** (`req`):
+- Siempre: reloj, camioneta, parcela, auto deportivo, depto en Vitacura.
+- Club mediano (≥55): palco VIP vitalicio, yate en Algarrobo, sommelier de planta.
+- Club grande (≥70): helicóptero para ir a los partidos, colección de autos clásicos, chef privado.
+- Club enorme (≥85): isla privada, un **tigre de mascota** (como cierto dueño de club), estatua tuya
+  afuera del estadio, y el delirio total: **cohete privado para la pretemporada** (≥92).
+Los bloqueados se ven con 🔒 y el prestigio que te falta. Cada uno da estatus (y a veces riesgo). Cuanto
+más grande hacés el club, más ridículo el exceso que te podés dar.
+**Qué probar:** en Vida → Lujos, con un club chico casi todo está bloqueado; al subir prestigio se
+habilitan los delirios.
+**1 línea:** los lujos del DT ahora escalan con el club: de un reloj a un cohete de pretemporada.
+**Riesgos:** reputacion.js (LUJOS + gate en comprarLujo). Bajo.

@@ -210,14 +210,31 @@ function romperPareja(){
 /* ============================================================
    Lujos: propiedades y autos (mueven el bolsillo, dan estatus)
    ============================================================ */
+/* Lujos que ESCALAN con el tamaño del club: mientras más prestigio, más
+   excesos absurdos se te habilitan. req = prestigio mínimo para poder comprarlo. */
 const LUJOS=[
- {t:"Departamento en Vitacura",tipo:"prop",costo:60,ef:{prestigio:2},d:"Piso alto, vista a la cordillera. Estatus puro."},
+ /* --- accesibles siempre --- */
+ {t:"Reloj de colección",tipo:"prop",costo:25,ef:{prestigio:1},d:"Un detalle que grita plata sin decir una palabra."},
+ {t:"Camioneta 4x4",tipo:"auto",costo:35,ef:{prestigio:1},d:"Discreta, cómoda, sin escándalo."},
  {t:"Parcela de agrado en el sur",tipo:"prop",costo:45,ef:{moral:3},d:"Para desconectarse del ruido dirigencial."},
  {t:"Auto deportivo",tipo:"auto",costo:50,ef:{prestigio:2,riesgo:4},d:"Ruge en la salida del estadio. La prensa lo va a fotografiar."},
- {t:"Camioneta 4x4",tipo:"auto",costo:35,ef:{prestigio:1},d:"Discreta, cómoda, sin escándalo."},
- {t:"Reloj de colección",tipo:"prop",costo:25,ef:{prestigio:1},d:"Un detalle que grita plata sin decir una palabra."}
+ {t:"Departamento en Vitacura",tipo:"prop",costo:60,ef:{prestigio:2},d:"Piso alto, vista a la cordillera. Estatus puro."},
+ /* --- club mediano (prestigio ≥ 55): ya sos alguien --- */
+ {t:"Palco VIP vitalicio",tipo:"prop",costo:80,req:55,ef:{prestigio:3},d:"Ves los partidos con champaña mientras la platea putea. Pura vida."},
+ {t:"Yate en Algarrobo",tipo:"prop",costo:110,req:55,ef:{prestigio:3,riesgo:5},d:"Fotos en la revista del domingo garantizadas. La hinchada murmura."},
+ {t:"Cava con sommelier de planta",tipo:"prop",costo:70,req:55,ef:{moral:4},d:"Un tipo cuyo único trabajo es decidir qué tomás. Absurdo y delicioso."},
+ /* --- club grande (prestigio ≥ 70): el exceso ya es un deporte --- */
+ {t:"Helicóptero para ir a los partidos",tipo:"auto",costo:220,req:70,ef:{prestigio:5,riesgo:8},d:"Llegás por el aire mientras el plantel viene en bus. Nada sutil."},
+ {t:"Colección de autos clásicos",tipo:"auto",costo:180,req:70,ef:{prestigio:4},d:"Un galpón lleno de fierros que nunca vas a manejar. Perfecto."},
+ {t:"Chef privado y nutricionista de lujo",tipo:"prop",costo:120,req:70,ef:{moral:5,prestigio:2},d:"Comés mejor que tus delanteros. Y se nota."},
+ /* --- club enorme (prestigio ≥ 85): territorio de magnate delirante --- */
+ {t:"Isla privada en el Pacífico",tipo:"prop",costo:400,req:85,ef:{prestigio:8,riesgo:6},d:"Tu propio pedazo de mundo. Ya no sos DT, sos un villano de James Bond."},
+ {t:"Un tigre de mascota",tipo:"prop",costo:150,req:85,ef:{prestigio:4,riesgo:14},d:"Como cierto dueño de club. La comunidad y la SAG NO están felices."},
+ {t:"Estatua tuya afuera del estadio",tipo:"prop",costo:300,req:85,ef:{prestigio:10,riesgo:10},d:"Te mandaste a hacer un monumento a vos mismo, en vida. La modestia murió."},
+ {t:"Cohete privado para la pretemporada",tipo:"auto",costo:600,req:92,ef:{prestigio:14,riesgo:12},d:"Gira de pretemporada… en órbita. El delirio total. La ANFP no sabe ni qué decir."}
 ];
 function comprarLujo(l){
+  if(l.req && (E.ind.prestigio||0)<l.req){ if(typeof aviso==="function") aviso("Todavía no tenés el nivel de club para eso (prestigio "+l.req+")"); return; }
   if(E.personal.bolsillo<l.costo){ if(typeof aviso==="function") aviso("No te alcanza el bolsillo ("+plata(l.costo)+")"); return; }
   E.personal.bolsillo-=l.costo;
   if(l.ef) aplicarEfectos(l.ef);
@@ -429,13 +446,16 @@ function vistaVida(){
   }
   v.appendChild(pt);
 
-  /* --- Lujos --- */
+  /* --- Lujos (escalan con el tamaño del club) --- */
   const pl=panel("Lujos y patrimonio","💎");
-  pl.cuerpo.appendChild(el("p","mini","Gastá tu plata personal en estatus. Bolsillo: <b>"+plata(E.personal.bolsillo)+"</b>."));
+  pl.cuerpo.appendChild(el("p","mini","Gastá tu plata personal en estatus. Mientras más grande el club, más delirante lo que se te habilita. Bolsillo: <b>"+plata(E.personal.bolsillo)+"</b> · prestigio del club: <b>"+Math.round(E.ind.prestigio)+"</b>."));
   LUJOS.forEach(l=>{
-    const b=el("button","op");
-    b.innerHTML='<div class="t">'+l.t+' <span class="mini">· '+plata(l.costo)+'</span></div><div class="d">'+l.d+'</div>';
-    b.onclick=()=>comprarLujo(l);
+    const bloqueado=l.req && (E.ind.prestigio||0)<l.req;
+    const b=el("button","op"+(bloqueado?" op-bloqueado":""));
+    b.innerHTML='<div class="t">'+(bloqueado?"🔒 ":"")+l.t+' <span class="mini">· '+plata(l.costo)+'</span></div>'+
+      '<div class="d">'+(bloqueado?"Necesitás un club con prestigio ≥ "+l.req+" para darte este gusto.":l.d)+'</div>';
+    b.disabled=bloqueado;
+    if(!bloqueado) b.onclick=()=>comprarLujo(l);
     pl.cuerpo.appendChild(b);
   });
   const tengo=(E.personal.propiedades.length+E.personal.autos.length);

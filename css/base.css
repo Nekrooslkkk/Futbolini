@@ -565,3 +565,7 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 .saga-linea{font-size:12.5px;line-height:1.5;padding:4px 0 4px 2px;border-bottom:1px dashed var(--linea)}
 .saga-linea:last-child{border-bottom:none}
 .saga-punto{color:#d2a020;margin-right:5px}
+
+/* 7.0 · lujos bloqueados por prestigio */
+.op-bloqueado{opacity:.55;filter:grayscale(.4)}
+.op-bloqueado .t{color:var(--tinta-suave)}
