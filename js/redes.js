@@ -160,6 +160,8 @@ function actualidadRedes(){
   const les=((E&&E.plantel)||[]).filter(j=>!j.vendido&&j.lesion>0);
   if(les.length){ const l=elige(les); a.lesionado=l.n; a.lesionadoPos=l.pos; }
   if(E&&E.temporada&&E.temporada.pj>0&&typeof posicionEnTabla==="function"){ a.pos=posicionEnTabla(); a.pts=E.temporada.pts; a.fecha=E.temporada.pj; }
+  if(E&&E.barra){ if(E.barra.roto) a.pactoRoto=true;
+    else { const vig=(E.barra.pactos||[]).filter(p=>!p.roto); if(vig.length&&(E.idx-(vig[vig.length-1].idx||0))<=3) a.pacto=vig[vig.length-1].resumen; } }
   return a;
 }
 /* 6.19 · genera un tuit a partir de un hecho real; el fresco (venta/resultado/lesión) manda */
@@ -183,6 +185,8 @@ function tuitDesdeActualidad(){
     "El finde es "+a.rival+" en "+a.sede+". "+(a.goleador?"Si no aparece "+a.goleador+", esto es otro 0-0.":"Partido bravo."),
     a.club+" va con "+a.rival+" en "+a.sede+". A ver con qué cara se planta."])});
   if(a.pts!=null) c.push({f:0,tono:"malo",tipo:"hincha",x:"Fecha "+a.fecha+", "+a.pts+" pts, "+ordinal(a.pos)+". Esto ya no es proyecto."});
+  if(a.pactoRoto) c.push({f:1,tono:"malo",tipo:"hincha",x:"La mesa era clara y la rompieron. Con la barra no se juega. 🚩"});
+  else if(a.pacto) c.push({f:1,tono:"neutro",tipo:"hincha",x:"La barra acordó "+a.pacto+". Ahora que la dirigencia cumpla."});
   if(!c.length) return null;
   const frescos=c.filter(x=>x.f), pool=(frescos.length&&Math.random()<0.75)?frescos:c;
   const pick=elige(pool);

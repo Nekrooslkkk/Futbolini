@@ -252,6 +252,28 @@ const DEC_PROC=[
        mal:{txt:"El jugador quería irse y quedó dolido.",ef:{moral:-3}}}
      ]};
  }},
+ /* 6.21 · EVENTO DE PUERTA: germina cuando le rompés un pacto a la barra */
+ {buzon:"gris",peso:"medio",gen:function(){
+   if(E.flags.puertaBarra==null || (E.idx-E.flags.puertaBarra)>4) return null;
+   delete E.flags.puertaBarra;   /* se consume la semilla */
+   return {t:"Tensión en la puerta 8",
+     d:"Después del pacto roto, la barra apareció caldeada en la puerta del estadio. Piden reunión de urgencia; seguridad quiere desalojar. Vos tenés la última palabra.",
+     posturas:{hinchada:-20,anfp:-10,prensa:10},
+     op:[
+      {t:"Bajar a hablar y recomponer",dif:40,req:{capital:6},ef:{capital:-6},grupos:{hinchada:12},
+       bien:{txt:"Diste la cara, la escuchaste y bajaste la tensión. Con eso el lienzo se descolgó.",ef:{},flags:{barraCalmada:true}},
+       mitad:{txt:"Se calmó a medias, pero la desconfianza quedó.",ef:{moral:-2}},
+       mal:{txt:"No te creyeron y quedaste más expuesto.",ef:{moral:-4},grupos:{hinchada:-6}}},
+      {t:"Mano dura y seguridad reforzada",dif:34,grupos:{hinchada:-14,anfp:8,prensa:-6},rep:{dureza:8},ef:{riesgo:-6},
+       bien:{txt:"Se despejó la puerta sin incidentes graves. Frío, pero funcionó.",ef:{}},
+       mitad:{txt:"Hubo empujones y una foto fea en los medios.",ef:{riesgo:4}},
+       mal:{txt:"Terminó en incidentes, sumario y multa.",ef:{riesgo:12,plata:-80},grupos:{anfp:-12,prensa:-12}}},
+      {t:"Desentenderte y que lo maneje el club",dif:26,grupos:{hinchada:-8,directorio:-6},
+       bien:{txt:"Pasó sin mayor ruido, de pura suerte.",ef:{}},
+       mitad:{txt:"Quedó la sensación de que mirás para el costado.",ef:{moral:-3}},
+       mal:{txt:"La cosa escaló y la culpa recayó en tu ausencia.",ef:{riesgo:8,moral:-5},grupos:{hinchada:-10,prensa:-8}}}
+     ]};
+ }},
  /* 6.17 · OFERTA FORMAL CON NOMBRE: vende EXACTAMENTE al jugador que nombra la carta (ficha) */
  {buzon:"refuerzos",peso:"medio",gen:function(){
    const j=jugAzar(x=>x.nivel>=66); if(!j) return null;

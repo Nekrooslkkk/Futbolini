@@ -463,6 +463,8 @@ function vistaInstitucion(){
   });
   v.appendChild(pe);
 
+  /* 6.21 · mesa de la barra (interlocutor con memoria) */
+  if(typeof panelMesaBarra==="function"){ const pmb=panelMesaBarra(); if(pmb) v.appendChild(pmb); }
   /* interacción directa con los actores del club (Bloque 4) */
   if(typeof INTERACCIONES!=="undefined"){
     const pi=panel("Interacción directa","🤝");
@@ -487,6 +489,43 @@ function vistaInstitucion(){
     });
     v.appendChild(pi);
   }
+}
+/* 6.21 · Mesa de la barra: interlocutor con memoria (pactos que se cobran) */
+function abrirMesaBarra(){
+  if(typeof normalizarBarra==="function") normalizarBarra();
+  modal(box=>{
+    box.classList.remove("panel");
+    const p=panel("Mesa con la barra","🚩","alerta"); p.classList.add("dec");
+    p.cuerpo.appendChild(el("h2","tit","Los referentes de la barra piden reunión"));
+    p.cuerpo.appendChild(el("p","ctx","La mesa no es un trámite: lo que acordás queda, y si lo rompés te lo cobran. Pactos en pie: "+pactosVigentes()+"/3"+(barraContenta()?" — la barra está de tu lado.":".")));
+    const vig=E.barra.pactos.filter(x=>!x.roto);
+    if(vig.length){ p.cuerpo.appendChild(el("h3","sub","Pactos en pie")); vig.forEach(x=>p.cuerpo.appendChild(el("div","mini","🤝 "+x.resumen))); }
+    if(E.barra.lienzos.length) p.cuerpo.appendChild(el("div","resul mal","🚩 Lienzo en contra: "+E.barra.lienzos[E.barra.lienzos.length-1].t));
+    const ops=el("div","ops");
+    pactosBarra().forEach(o=>{
+      const yaTiene=E.barra.pactos.some(x=>!x.roto && x.tipo===o.tipo && (!o.quien||x.quien===o.quien));
+      const b=el("button","op"); b.disabled=yaTiene||(o.costo&&E.plata<o.costo);
+      b.innerHTML='<div class="t">'+o.t+(yaTiene?" · <span class='mini'>ya pactado</span>":(o.costo?" · <b>"+plata(o.costo)+"</b>":""))+'</div><div class="d">'+o.d+'</div>';
+      b.onclick=()=>{ if(pactar(o)){ cerrarModal(); render(); aviso("Pacto cerrado con la barra"); } };
+      ops.appendChild(b);
+    });
+    p.cuerpo.appendChild(ops);
+    const x=el("button","btn-aqua ancho gris","Cerrar la reunión"); x.style.marginTop="6px"; x.onclick=cerrarModal;
+    p.cuerpo.appendChild(x);
+    box.appendChild(p);
+  });
+}
+function panelMesaBarra(){
+  if(typeof pactosVigentes!=="function"||!E.barra) return null;
+  const pb=panel("Mesa con la barra","🚩",E.barra.roto?"grave":"agua");
+  pb.cuerpo.appendChild(el("p","mini","La barra tiene memoria. <b>"+pactosVigentes()+"/3</b> pactos en pie."+
+    (barraContenta()?" Están de tu lado: caldera en el clásico de local.":"")+
+    (E.barra.roto?" ⚠ Hay un pacto roto: te silban y bajan al equipo.":"")));
+  const puede=(typeof puedeMesaBarra==="function")&&puedeMesaBarra();
+  const b=el("button","btn-aqua ancho"+(puede?" verde":" gris"),puede?"🚩 Reunirte con la mesa":"🚩 La mesa espera unas fechas más");
+  b.disabled=!puede; b.onclick=abrirMesaBarra;
+  pb.cuerpo.appendChild(b);
+  return pb;
 }
 /* 6.2 · resultado visible de mover los pasillos (que se note que pasó algo) */
 function modalResultadoInteraccion(gr,op,r){

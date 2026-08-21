@@ -904,3 +904,20 @@ nombres reales (Herrera, Rojas, Marcelo Díaz, Aránguiz, Mena, Vargas, Canales,
 **Qué probar:** ficha de un jugador con rasgo muestra el hook; frío convierte más penales (377 vs 322 en 400);
 clásico con "de la casa" en el once sube el empuje; U 2011 carga con 18 jugadores.
 **Riesgos:** partido.js (tieneRasgo helper, tarjeta con roja saca del once, P.amar per-match). data-grok mutación.
+
+## 6.21 · Mesa de la barra (Section 5) — interlocutor con memoria  ✅ (2026-08-19)
+**Archivos:** `js/barra.js` (nuevo), `js/ui.js` (abrirMesaBarra/panelMesaBarra), `js/motor.js` (init + hook venta),
+`js/partido.js` (empuje/silbidos), `js/redes.js` (tweet del pacto), `js/data-proc.js` (evento de puerta), `index.html`
+**Funciones:** `E.barra={humor,lienzos,pactos,ultimoIdx,roto}`; `pactar(o)`, `romperPacto(motivo,quien)`,
+`pactosVigentes()`, `barraContenta()`, `abrirMesaBarra()`, `panelMesaBarra()`.
+**Qué probar:** en Institución → "Mesa con la barra" → acordá 3 pactos (aliento / entradas+viaje / no vender al
+de la casa) → barra contenta = empuje +2 en clásico de local (y riesgo +4). Vendé al de la casa que juraste no
+vender → pacto roto: lienzo, humor -28, silbidos al 15', tweet "la mesa era clara y la rompieron", y a las pocas
+fechas germina el evento "Tensión en la puerta 8".
+**1 línea:** la barra es un interlocutor con memoria: pactás, cumplís o pagás (lienzo + silbidos + puerta).
+**Riesgos:** módulo nuevo barra.js; venderJugador llama romperPacto si es de la casa; iniciarPartido y tickPartido
+leen E.barra; DEC_PROC nuevo consume flag puertaBarra (fix: ==null porque idx 0 es falsy). No dupliqué nada.
+
+## ORDEN DE ATAQUE (spec ingeniero): 1-6 COMPLETO
+1 venta con nombre · 2 banca+cambios con nombre · 3 tweets del estado · 4 rasgos con hook · 5 mesa de la barra ·
+6 plantel U 2011. Pendientes del spec detallado: 8 eventos locales, Tinder cada 2-3 fechas, minutosTemporada/dorsal.

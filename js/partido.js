@@ -172,7 +172,11 @@ function iniciarPartido(part,modo){
   if(P.clasico){ P.empuje+=1.4; P.desgaste+=1.2; P.rival+=1.5;
     const casa=P.once.filter(j=>j.rasgos&&j.rasgos.indexOf("de la casa")>=0).length;   /* 6.20 · los de la casa se agrandan en el clásico */
     if(casa) P.empuje+=Math.min(4,casa*2);
+    /* 6.21 · barra contenta (3 pactos) = caldera de local, pero más riesgo de incidente */
+    if(part.local && typeof barraContenta==="function" && barraContenta()){ P.empuje+=2; aplicarEfectos({riesgo:4}); }
   }
+  /* 6.21 · pacto roto: la barra silba y el equipo lo siente los primeros minutos */
+  if(part.local && E.barra && E.barra.roto){ P.empuje-=1.5; P.barraSilba=true; }
   if(part.tipo==="copa"){ P.empuje+=0.8; P.desgaste+=0.6; }
   return P;
 }
@@ -345,6 +349,10 @@ function tickPartido(P){
   P.cansancio+=P.desgaste*0.011*paso;
   (P.once||[]).forEach(j=>{ j.cansancio=clamp((j.cansancio||0)+P.desgaste*0.009*paso,0,30); });
   const min=P.min;
+  /* 6.21 · silbidos de la barra por un pacto roto */
+  if(P.barraSilba && min>=15 && !P.silbidoDicho){ P.silbidoDicho=true;
+    linea(P,min,"Silbidos desde la tribuna: la barra no le perdona el pacto roto a la dirigencia.","grave");
+    return {tipo:"nada",min:min}; }
   const pl=peligro(P);
   if(P.precClima&&P.precClima!==1){ pl.yo*=P.precClima; pl.el*=P.precClima; }
   actualizarFase(P);

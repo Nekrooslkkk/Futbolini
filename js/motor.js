@@ -208,6 +208,8 @@ function normalizarEstado(){
   }
   /* 6.0 · motor de memoria */
   if(typeof normalizarMemoria==="function") normalizarMemoria();
+  /* 6.21 · mesa de la barra */
+  if(typeof normalizarBarra==="function") normalizarBarra();
   /* 6.3 · PLOP: usuario, verificados y likes */
   if(!E.plopVerif) E.plopVerif={};
   if(!Array.isArray(E.plopLikes)) E.plopLikes=[];
@@ -599,6 +601,8 @@ function venderJugador(j,monto){
     aplicarGrupos({hinchada:-12});
     if(typeof postProc==="function"&&typeof HANDLES_HINCHA!=="undefined")
       postProc(elige(HANDLES_HINCHA),"hincha","Venden a "+j.n+", un símbolo del club. A la gente esto no le entra.","malo");
+    /* 6.21 · si le habías jurado a la barra que no lo vendías, rompés el pacto */
+    if(typeof romperPacto==="function") romperPacto("Vendiste a "+j.n+", que habías jurado no tocar.",j.n);
   }
   if(typeof recordar==="function") recordar("venta","vendiste a "+j.n+" por "+plata(monto),
     {quien:j.n,peso:(simbolo||j.nivel>=80)?"alto":"medio",tono:"riesgo"});
