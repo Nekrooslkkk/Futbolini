@@ -1112,3 +1112,18 @@ Al pasar de año, el aviso «Cómo maduraron los jóvenes» lo explica.
 a favor el equipo sale más suelto que con la prensa picada.
 **1 línea:** la conferencia dura más, no repite y con periodistas reales; y el clima de prensa mueve la aguja del partido.
 **Riesgos:** ui-partido.js (modalConferencia secuencial), partido.js (nudge de prensa en empuje). Bajo.
+
+## 6.34 · "Lo que pasó esta semana" con titulares de la liga relevantes  ✅ (2026-08-21)
+**Archivos:** `js/redes.js` (titularesSemana + noticiaPosible), `js/ui.js`, `js/css/base.css`
+**Qué:** el panel "Lo que pasó esta semana" ya no queda vacío ni se limita a tus avisos: debajo suma
+**Titulares de la liga** atados al estado real:
+- Quién manda la tabla (puntero + tu posición).
+- La goleada de la fecha (del resto de partidos simulados).
+- Tu racha sin ganar, si la hay ("la prensa cuenta los partidos que te quedan").
+- El próximo rival (local/visita, sede).
+- Una noticia posible del ambiente (árbitro designado, rumor de mercado, clima, cambio de horario, otro
+  técnico en la cuerda floja), estable dentro de la semana (indexada por E.idx/anio, no cambia en cada render).
+**Qué probar:** en el escritorio, "Lo que pasó esta semana" muestra "Titulares de la liga" con el puntero,
+resultados de la fecha y el próximo rival.
+**1 línea:** la semana ahora trae titulares de la liga de verdad, no solo tus propios avisos.
+**Riesgos:** redes.js (nuevo generador), ui.js (render extra). Bajo.

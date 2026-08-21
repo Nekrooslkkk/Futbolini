@@ -319,12 +319,24 @@ function vistaEscritorio(){
 
   /* bandeja de novedades */
   const pb=panel("Lo que pasó esta semana","📰");
-  if(!E.bandeja.length) pb.cuerpo.appendChild(el("p","mini","Sin novedades."));
+  if(!E.bandeja.length) pb.cuerpo.appendChild(el("p","mini","Sin novedades de tu club esta semana. Igual, el fútbol no para:"));
   E.bandeja.slice(0,7).forEach(it=>{
     const d=el("div","resul "+(it.tipo==="malo"?"mal":(it.tipo==="bueno"?"bien":"mitad")));
     d.innerHTML="<b>"+it.t+"</b><br>"+it.d+(it.extra?"<br><span class='mini'>"+it.extra+"</span>":"");
     pb.cuerpo.appendChild(d);
   });
+  /* 6.34 · titulares de la liga: noticias relevantes atadas al estado real */
+  if(typeof titularesSemana==="function"){
+    const tits=titularesSemana();
+    if(tits.length){
+      pb.cuerpo.appendChild(el("h3","sub","Titulares de la liga"));
+      tits.forEach(n=>{
+        const d=el("div","titular");
+        d.innerHTML="<b>"+n.t+"</b><div class='mini'>"+n.d+"</div>";
+        pb.cuerpo.appendChild(d);
+      });
+    }
+  }
   izq.appendChild(pb);
 
   /* estado */

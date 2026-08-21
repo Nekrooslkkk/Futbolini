@@ -493,3 +493,7 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 .chk-ic{font-size:15px;flex:0 0 auto;line-height:1.4}
 .chk b{font-size:12.5px}
 @media(min-width:620px){.checklist{display:grid;grid-template-columns:1fr 1fr}}
+
+/* 6.34 · titulares de la liga */
+.titular{padding:6px 9px;border-radius:6px;margin:5px 0;border-left:3px solid rgba(90,140,200,.5);background:rgba(90,140,200,.07)}
+.titular b{font-size:12.5px}

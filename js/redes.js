@@ -477,3 +477,43 @@ function tickerPost(P, ev){
   P.ticker.unshift({m:m, autor:autor, texto:texto, tono:tono});
   if(P.ticker.length>18) P.ticker.length=18;
 }
+
+/* ============================================================
+   6.34 · Titulares de la liga para "Lo que pasó esta semana".
+   Noticias RELEVANTES atadas al estado real: puntero de la tabla,
+   goleada de la fecha, tu racha, el próximo rival, más una noticia
+   posible del ambiente (estable dentro de la semana, por E.idx).
+   ============================================================ */
+function noticiaPosible(){
+  const prox=(E.calendario&&E.calendario[E.idx])||null;
+  const riv=prox?prox.rivalNombre:"el rival de turno";
+  const pool=[
+    {t:"🎙️ La previa ya calienta",d:"En los programas deportivos no hablan de otra cosa que del partido con "+riv+"."},
+    {t:"🧑‍⚖️ Designaron al árbitro",d:"La ANFP nombró la terna para la fecha. En los foros ya desconfían, como siempre."},
+    {t:"💸 Rumores de mercado",d:"Suena que un club grande anda mirando jugadores de media tabla. Nada firmado, puro humo por ahora."},
+    {t:"🌧️ Parte meteorológico",d:"Anuncian tiempo variable para el fin de semana. Las canchas del sur, complicadas."},
+    {t:"📺 Cambian el horario",d:"La TV movió el horario de varios partidos para acomodar la transmisión. Los hinchas, reclamando."},
+    {t:"🏥 Parte médico en la liga",d:"Varios equipos llegan con bajas por lesión a esta fecha. El calendario apretado pasa la cuenta."},
+    {t:"🔥 Otro técnico en la cuerda floja",d:"En otro club la hinchada pide la cabeza del DT tras un mal arranque. El fútbol no perdona."}
+  ];
+  return pool[(E.idx+E.anio)%pool.length];
+}
+function titularesSemana(){
+  const out=[];
+  if(E.tabla && typeof posicionEnTabla==="function" && E.temporada && E.temporada.pj>0){
+    const arr=Object.keys(E.tabla).map(id=>({id:id,pts:E.tabla[id].pts||0})).sort((a,b)=>b.pts-a.pts);
+    const lider=arr[0]&&(typeof CLUB_POR_ID!=="undefined")?CLUB_POR_ID[arr[0].id]:null;
+    if(arr[0]) out.push({t:"📊 "+(lider?(lider.n||lider.c):"El puntero")+" manda la tabla",
+      d:"Arriba con "+arr[0].pts+" puntos. Vos vas "+ordinal(posicionEnTabla())+"."});
+  }
+  if(E.ultimaFecha && E.ultimaFecha.length){
+    const g=E.ultimaFecha.slice().sort((a,b)=>Math.abs(b.ga-b.gb)-Math.abs(a.ga-a.gb))[0];
+    if(g && Math.abs(g.ga-g.gb)>=3) out.push({t:"🥅 Goleada de la fecha",d:g.a+" "+g.ga+"-"+g.gb+" "+g.b+". Papelón para uno, fiesta para el otro."});
+  }
+  const sinGanar=(E.temporada&&E.temporada.sinGanar)||0;
+  if(sinGanar>=3) out.push({t:"📉 Te miran de reojo",d:"Son "+sinGanar+" fechas sin ganar. La prensa ya cuenta los partidos que te quedan."});
+  const prox=E.calendario&&E.calendario[E.idx];
+  if(prox) out.push({t:"🗓️ Se viene "+prox.rivalNombre,d:(prox.local?"De local":"De visita")+" en "+prox.sede+". A preparar la semana."});
+  out.push(noticiaPosible());
+  return out;
+}
