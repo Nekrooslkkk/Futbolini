@@ -37,6 +37,11 @@ function generarObjetivos(){
   else objs.push({id:"dep",cat:"deportivo",tipo:"pos",meta:14,
     t:"Mantener la categoría", detalle:"No caer a los puestos de descenso.",
     porque:"Sin Primera no hay proyecto. Sobrevivir ya es ganar."});
+  /* 1b · deportivo · victorias (siempre) — identidad ganadora, atada a E.temporada.pg */
+  const metaVic = p>=75?16 : p>=60?13 : p>=45?11 : 9;
+  objs.push({id:"vic",cat:"deportivo",tipo:"victorias",meta:metaVic,
+    t:"Sumar "+metaVic+" triunfos", detalle:"Ganar al menos "+metaVic+" partidos de liga en el año.",
+    porque:"Los puntos se hacen ganando. Un equipo que gana seguido no discute al técnico."});
   /* 2 · económico — según cómo esté la caja */
   if(E.deuda>800){
     const meta=Math.max(200,Math.round(E.deuda*0.75));
@@ -48,16 +53,19 @@ function generarObjetivos(){
       t:"Cerrar el año en azul", detalle:"Terminar la temporada sin números rojos.",
       porque:"Un club sano no vive de prestado. La caja es tu libertad."});
   }
-  /* 3 · institucional / contextual */
-  const grande=["CC","UCH","UC"].indexOf(E.club)>=0;
+  /* 2b · económico · sponsors (siempre) — mantener contento al que paga la cuenta */
+  objs.push({id:"spo",cat:"economico",tipo:"grupo",grupo:"sponsors",meta:40,
+    t:"Tener a los sponsors de tu lado", detalle:"Mantener la aprobación de los sponsors sobre 40.",
+    porque:"Los sponsors bancan sueldos y refuerzos. Si se enojan, se cierra la billetera."});
+  /* 3 · institucional · clásico (SIEMPRE, y con uno alcanza) */
+  objs.push({id:"clasico",cat:"institucional",tipo:"clasico",meta:1,
+    t:"Ganar un clásico", detalle:"Ganar al menos un clásico en el año. Con uno basta.",
+    porque:"Un clásico ganado tapa muchas fechas grises. Es la meta que la gente nunca perdona fallar."});
+  /* 3b · institucional · contextual (hinchada o directorio) */
   if(E.ind.hinchada<55){
     objs.push({id:"inst",cat:"institucional",tipo:"hinchada",meta:60, base:E.ind.hinchada,
       t:"Reconquistar a la gente", detalle:"Levantar el ánimo de la hinchada por encima de 60.",
       porque:"Sin hinchada no hay taquilla ni respaldo cuando venga la mala."});
-  } else if(grande){
-    objs.push({id:"inst",cat:"institucional",tipo:"clasico",meta:1,
-      t:"Ganar un clásico", detalle:"Ganar al menos un clásico en el año.",
-      porque:"Un clásico ganado tapa muchas fechas grises."});
   } else {
     objs.push({id:"inst",cat:"institucional",tipo:"directorio",meta:0,
       t:"Mantener el respaldo del directorio", detalle:"No perder al directorio (aprobación sobre cero).",
@@ -95,6 +103,20 @@ function progresoObjetivo(o){
     pct=cumplido?100:20;
     txt=cumplido?"Clásico ganado ✓":"Todavía sin ganar el clásico";
     estado=cumplido?"cumplido":"encamino";
+  } else if(o.tipo==="victorias"){
+    const pg=(E.temporada&&E.temporada.pg)||0;
+    const totalLiga=(E.calendario||[]).filter(x=>x.tipo==="liga").length||30;
+    const restan=Math.max(0,totalLiga-((E.temporada&&E.temporada.pj)||0));
+    cumplido=pg>=o.meta;
+    pct=Math.round(clamp(pg/o.meta*100,0,100));
+    txt="Ganados "+pg+" · meta "+o.meta;
+    estado=cumplido?"cumplido":((pg+restan>=o.meta)?"encamino":"riesgo");
+  } else if(o.tipo==="grupo"){
+    const g=E.grupos&&E.grupos[o.grupo], v=g?g.aprob:0;
+    cumplido=v>=o.meta;
+    pct=Math.round(clamp((v+100)/2,0,100));
+    txt=(GRUPO_POR_ID&&GRUPO_POR_ID[o.grupo]?GRUPO_POR_ID[o.grupo].n:o.grupo)+" "+signo(Math.round(v))+" · meta "+o.meta;
+    estado=cumplido?"cumplido":(v>=o.meta-18?"encamino":"riesgo");
   } else if(o.tipo==="directorio"){
     const d=E.grupos.directorio.aprob;
     cumplido=d>=o.meta;

@@ -254,25 +254,45 @@ function vistaEscritorio(){
   }
   izq.appendChild(p);
 
-  /* 5.0 · objetivos de temporada — lo que se espera de vos */
+  /* 5.0 · objetivos de temporada — lo que se espera de vos
+     6.29 · pestañas por sección (menos scroll) + tarjetas compactas movibles */
   if(Array.isArray(E.objetivos)&&E.objetivos.length&&typeof progresoObjetivo==="function"){
     const cumplidasN=E.objetivos.filter(o=>progresoObjetivo(o).cumplido).length;
     const po=panel("Lo que se espera de vos","📋",E.objetivos.some(o=>progresoObjetivo(o).estado==="riesgo")?"alerta":"agua");
-    po.cuerpo.appendChild(el("p","mini","Las metas que te puso la dirigencia para "+E.anio+". Se evalúan al cierre de la temporada. Vas <b>"+cumplidasN+" de "+E.objetivos.length+"</b> en curso."));
+    po.cuerpo.appendChild(el("p","mini","Metas de la dirigencia para "+E.anio+", atadas a cómo va el club. Se evalúan al cierre. Vas <b>"+cumplidasN+" de "+E.objetivos.length+"</b> en curso."));
     const CAT={deportivo:{ic:"⚽",n:"Deportivo",c:"#2f7dd0"},economico:{ic:"💰",n:"Económico",c:"#3aa049"},institucional:{ic:"🏛️",n:"Institucional",c:"#9a6fe0"}};
     const EST={cumplido:{n:"Cumplido",c:"#2fa84f"},encamino:{n:"En camino",c:"#d68a1f"},riesgo:{n:"En riesgo",c:"#c0392b"}};
-    E.objetivos.forEach(o=>{
-      const pr=progresoObjetivo(o), cat=CAT[o.cat]||CAT.deportivo, est=EST[pr.estado]||EST.encamino;
-      const box=el("div","obj");
-      box.innerHTML=
-        "<div class='obj-top'><span class='obj-cat' style='background:"+cat.c+"'>"+cat.ic+" "+cat.n+"</span>"+
-        "<span class='obj-est' style='color:"+est.c+"'>"+(pr.cumplido?"✓ ":"")+est.n+"</span></div>"+
-        "<div class='obj-t'>"+o.t+"</div>"+
-        barrita(pr.pct,est.c)+
-        "<div class='obj-dato'>"+pr.txt+"</div>"+
-        "<div class='obj-porque'>💡 "+o.porque+"</div>";
-      po.cuerpo.appendChild(box);
+    const tabs=el("div","obj-tabs");
+    const cont=el("div","obj-grid grid-comodo");
+    if(!E.uiObjTab) E.uiObjTab="todo";
+    const secciones=[["todo","Todo","📋"]].concat(
+      ["deportivo","economico","institucional"].filter(c=>E.objetivos.some(o=>o.cat===c))
+        .map(c=>[c,CAT[c].n,CAT[c].ic]));
+    function pintarObjs(){
+      cont.innerHTML="";
+      E.objetivos.filter(o=>E.uiObjTab==="todo"||o.cat===E.uiObjTab).forEach(o=>{
+        const pr=progresoObjetivo(o), cat=CAT[o.cat]||CAT.deportivo, est=EST[pr.estado]||EST.encamino;
+        const box=el("div","obj obj-mini");
+        box.innerHTML=
+          "<div class='obj-top'><span class='obj-cat' style='background:"+cat.c+"'>"+cat.ic+" "+cat.n+"</span>"+
+          "<span class='obj-est' style='color:"+est.c+"'>"+(pr.cumplido?"✓ ":"")+est.n+"</span></div>"+
+          "<div class='obj-t'>"+o.t+"</div>"+
+          barrita(pr.pct,est.c)+
+          "<div class='obj-dato'>"+pr.txt+"</div>"+
+          "<div class='obj-porque oculto'>💡 "+o.porque+"</div>";
+        box.style.cursor="pointer"; box.title="Tocá para ver por qué importa";
+        box.onclick=()=>{ const pq=box.querySelector(".obj-porque"); if(pq) pq.classList.toggle("oculto"); };
+        cont.appendChild(box);
+      });
+    }
+    secciones.forEach(([id,nom,ic])=>{
+      const t=el("button","obj-tab"+(E.uiObjTab===id?" on":""),ic+" "+nom);
+      t.onclick=()=>{ E.uiObjTab=id; [...tabs.children].forEach(x=>x.classList.remove("on")); t.classList.add("on"); pintarObjs(); guardar(); };
+      tabs.appendChild(t);
     });
+    po.cuerpo.appendChild(tabs);
+    po.cuerpo.appendChild(cont);
+    pintarObjs();
     izq.appendChild(po);
   }
 

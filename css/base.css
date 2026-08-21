@@ -267,6 +267,15 @@ table.flujo td.n,table.flujo th.n{text-align:right;font-family:var(--f-dato,mono
 .obj .barrita{margin:0 0 5px}
 .obj-dato{font-family:var(--f-dato,monospace);font-size:12px;font-weight:700;opacity:.85}
 .obj-porque{font-size:11.5px;opacity:.72;margin-top:5px;line-height:1.4}
+/* 6.29 · pestañas de objetivos + tarjetas compactas (menos scroll) */
+.obj-tabs{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 4px}
+.obj-tab{font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer;
+  border:1px solid var(--linea);background:rgba(0,0,0,.03);white-space:nowrap}
+.obj-tab.on{background:linear-gradient(180deg,rgba(90,160,240,.28),rgba(90,160,240,.12));border-color:rgba(60,120,200,.45)}
+.obj-grid.grid-comodo{display:grid;gap:8px}
+@media(min-width:620px){.obj-grid.grid-comodo{grid-template-columns:1fr 1fr}}
+.obj-mini{margin:0;padding:9px 10px}
+.obj-mini .obj-t{font-size:13.5px;margin:1px 0 5px}
 
 /* 6.0 · partido: el panel de decisión va AL LADO del partido (no agranda la página) */
 .partido-wrap{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}

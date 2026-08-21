@@ -1033,3 +1033,20 @@ pasado el minuto 62 con plata, la charla ofrece la opción de dopar (pide confir
 **1 línea:** ahora en el partido te toman prueba de pizarra… o podés jugar sucio y dopar, con todo el riesgo.
 **Riesgos:** partido.js (momentoActual ahora puede devolver trivia/doping; consecuencias en terminarPartido),
 ui-partido.js (mostrarMomento ramifica por tipo). Medio.
+
+## 6.29 · Objetivos: más metas, por sección, en pestañas (menos scroll)  ✅ (2026-08-21)
+**Archivos:** `js/carrera.js`, `js/ui.js`, `css/base.css`
+**Qué:** "Lo que se espera de vos" pasó de 3 a 6 metas, 2 por sección, todas atadas al estado real:
+- **Deportivo:** posición en la tabla (ya estaba) + **sumar N triunfos** (nuevo, según tamaño del club,
+  atado a E.temporada.pg; entra en riesgo solo cuando ya es imposible por fechas).
+- **Económico:** caja/deuda (ya estaba) + **tener a los sponsors sobre 40** (nuevo, atado a E.grupos.sponsors).
+- **Institucional:** **ganar un clásico AHORA ES SIEMPRE** (antes solo para los grandes) y con uno basta,
+  como pediste; + reconquistar a la hinchada o mantener al directorio, según el contexto.
+- UI: **pestañas por sección** (Todo · Deportivo · Económico · Institucional) → ves una sección a la vez,
+  no scroleás una página entera. Tarjetas **compactas** (2 columnas en pantalla ancha) con el "por qué
+  importa" oculto que se despliega al tocar. La pestaña elegida se recuerda (E.uiObjTab).
+**Qué probar:** en escritorio, el panel de objetivos muestra pestañas; tocar "Institucional" deja solo el
+clásico y la meta de hinchada/directorio; tocar una tarjeta despliega el "💡 por qué". (Metas nuevas
+aplican desde una temporada nueva; las partidas ya empezadas mantienen sus 3 metas hasta el próximo año.)
+**1 línea:** más objetivos, ordenados por sección y en pestañas para no scrolear, y el clásico ya es meta fija.
+**Riesgos:** carrera.js (nuevos tipos victorias/grupo en progresoObjetivo), ui.js (panel con tabs). Bajo.
