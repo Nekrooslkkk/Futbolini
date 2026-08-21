@@ -266,10 +266,15 @@ function modalPizarra(part){
    credibilidad y moral, con contexto de favorito/underdog. Una por partido. */
 /* 6.9 · conferencia de prensa VIVA: periodista con nombre + pregunta reactiva
    a lo que pasó (derrota, racha, promesa de la memoria, clásico, objetivo). */
+/* mezcla de prensa deportiva chilena real (figuras públicas del rubro, que solo
+   PREGUNTAN — el que declara es tu DT) con algunos nombres de relleno del juego. */
 const PERIODISTAS=[
+ {n:"Juan Cristóbal Guarello",m:"Radio ADN"},{n:"Danilo Díaz",m:"Radio Cooperativa"},
+ {n:"Manuel de Tezanos",m:"Radio Agricultura"},{n:"Cristián Caamaño",m:"Redgol"},
+ {n:"Rodrigo Herrera",m:"Chilevisión Deportes"},{n:"Fernando Solabarrieta",m:"TNT Sports"},
+ {n:"Patricio Yáñez",m:"La Magia Azul"},{n:"Claudio Palma",m:"cabina de relato"},
  {n:"Tironi",m:"Deporte Total"},{n:"la Kari Fuentes",m:"Radio Gol"},
- {n:"el Chico Sotomayor",m:"El Balonazo"},{n:"Marcela Ríos",m:"Crónica FC"},
- {n:"el Colo Pérez",m:"Golpe de Arco"},{n:"don Aníbal",m:"La Tercera del Deporte"}
+ {n:"el Chico Sotomayor",m:"El Balonazo"},{n:"Marcela Ríos",m:"Crónica FC"}
 ];
 const CONF_ARQ={
  calma:{grupos:{prensa:6,camarin:4},rep:{credibilidad:4},ef:{moral:3},txt:"Bajaste el perfil. La prensa y el camarín lo valoran."},
@@ -635,7 +640,7 @@ function cerrarPartido(){
   }
 
   /* rueda de prensa: manual (mini-decisión) o automática (ayudante) */
-  seccionPrensa(p,res);
+  seccionPrensa(p,res,P);
 
   const b=el("button","btn-aqua ancho verde","Cerrar y seguir la semana");
   b.onclick=()=>{
@@ -650,25 +655,100 @@ function cerrarPartido(){
   $("#vista").appendChild(p);
   window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
 }
-/* ---------- rueda de prensa post-partido ---------- */
-function opcionesPrensa(res){
-  if(res.yo>res.otro) return [
-   {t:"Elogiar al plantel y bajar el perfil",ef:{},grupos:{camarin:6,prensa:5},rep:{publica:3},d:"Mensaje sobrio: el camarín lo agradece y la prensa te trata bien."},
-   {t:"Agrandarse y prometer más",ef:{hinchada:4},grupos:{hinchada:6,prensa:-4},rep:{credibilidad:-3},d:"La hinchada se prende, pero pusiste la vara alta y la prensa toma nota."},
-   {t:"Mandarle un recado al rival",ef:{},grupos:{hinchada:5,anfp:-6,prensa:-3},rep:{dureza:4},d:"Calentaste la previa del próximo; algunos lo aplauden, otros no."}
-  ];
-  if(res.yo<res.otro) return [
-   {t:"Poner la cara y bancar al grupo",ef:{moral:4},grupos:{camarin:8,prensa:3},rep:{publica:2},d:"Diste la cara: el vestuario lo valora."},
-   {t:"Autocrítica pública",ef:{moral:-2},grupos:{prensa:6},rep:{credibilidad:6},d:"Sinceridad que suma credibilidad, aunque duela hacia adentro."},
-   {t:"Apuntar al árbitro",ef:{hinchada:4},grupos:{hinchada:6,anfp:-8,prensa:-6},rep:{dureza:5,publica:-3},d:"La hinchada compra el complot; la ANFP y la prensa, no."}
-  ];
-  return [
-   {t:"Rescatar lo bueno",ef:{moral:2},grupos:{prensa:3},d:"Un empate se puede vender bien si sabés hablar."},
-   {t:"Mostrar bronca por los puntos perdidos",ef:{},grupos:{camarin:-3,prensa:4},rep:{dureza:3},d:"Marcaste exigencia; el camarín siente la presión."}
-  ];
+/* ---------- rueda de prensa post-partido (6.26 · viva, reactiva, con memoria) ----------
+   Ya no son 3 preguntas fijas: un periodista con nombre pregunta según lo que pasó EN
+   la cancha (goleada, remontada, roja, figura, clásico) y también según lo que hiciste
+   antes (promesas, ventas, pactos con la barra). No se repite la misma pregunta seguido. */
+const POST_ARQ={
+ elogio:  {grupos:{camarin:6,prensa:5},rep:{publica:3},txt:"Repartiste el crédito al plantel. El camarín y la prensa te lo devuelven."},
+ humilde: {grupos:{prensa:6,camarin:3},rep:{credibilidad:4},txt:"Bajaste el perfil. Sumaste crédito y el grupo lo agradeció."},
+ agrandado:{grupos:{hinchada:7,prensa:-4},rep:{credibilidad:-3},ef:{hinchada:3},txt:"Te agrandaste. La hinchada se prende, pero pusiste la vara altísima."},
+ palo:    {grupos:{hinchada:6,anfp:-6,prensa:-4},rep:{dureza:5},txt:"Tiraste un palo. Unos lo festejan, la ANFP y la prensa toman nota."},
+ mea:     {grupos:{prensa:6,camarin:-1},rep:{credibilidad:6},ef:{moral:-1},txt:"Autocrítica pública: duele, pero suma credibilidad."},
+ bancar:  {grupos:{camarin:8,prensa:3},rep:{publica:2},ef:{moral:4},txt:"Pusiste la cara por el grupo. El vestuario lo valora."},
+ arbitro: {grupos:{hinchada:6,anfp:-8,prensa:-6},rep:{dureza:5,publica:-3},ef:{hinchada:4},txt:"Apuntaste al árbitro. La hinchada compra el complot; la ANFP y la prensa, no."},
+ respaldo:{grupos:{camarin:7},rep:{publica:2},ef:{moral:2},txt:"Lo bancaste en público. Adentro se nota."},
+ foco:    {grupos:{camarin:4,prensa:3},txt:"Pusiste el foco en lo que viene. Mensaje sobrio, cero polémica."}
+};
+/* cuenta cuántas veces aparece cada goleador → figura del partido */
+function figuraPartido(P){
+  const c={}; (P.goleadores||[]).forEach(n=>{ c[n]=(c[n]||0)+1; });
+  let mejor=null,max=0; for(const n in c){ if(c[n]>max){ max=c[n]; mejor=n; } }
+  return mejor?{n:mejor,goles:max}:null;
 }
-function seccionPrensa(p,res){
-  p.cuerpo.appendChild(el("h3","sub","Rueda de prensa"));
+function preguntasPostPartido(res,P){
+  const part=P.part, yo=res.yo, otro=res.otro, dif=Math.abs(yo-otro);
+  const gano=yo>otro, perdio=yo<otro, riv=part.rivalNombre;
+  const fig=figuraPartido(P);
+  const clasico=(typeof esClasico==="function")&&esClasico(part);
+  const sinGanar=(E.temporada&&E.temporada.sinGanar)||0;
+  const lesion=(res.lesionados&&res.lesionados[0])||null;
+  const prom=(typeof promesaPendiente==="function")?promesaPendiente():null;
+  const mem=(typeof citarMemoria==="function")?citarMemoria(m=>((E.idx||0)-(m.idx||0))>=2 && m.tipo!=="partido"):null;
+  const L=[];
+  /* --- memoria: lo que hiciste ANTES vuelve --- */
+  if(prom) L.push({id:"prom",prio:9,q:"Se sigue hablando de que le prometió un arreglo a "+prom.quien+". ¿Sigue en pie después de hoy?",ops:[
+     {t:"Le doy mi palabra de nuevo, en público",k:"respaldo"},{t:"«De los temas internos no hablo»",k:"foco"},{t:"Son rumores, nada firmado",k:"palo"}]});
+  if(mem) L.push({id:"mem_"+mem.id,prio:7,q:"Todavía se comenta que "+mem.txt+" ("+(typeof cuandoMemoria==="function"?cuandoMemoria(mem):"hace un tiempo")+"). ¿Le pesó hoy?",ops:[
+     {t:"Doy la cara, fue mi decisión",k:"bancar"},{t:"Me hago cargo si me equivoqué",k:"mea"},{t:"Eso ya es pasado, hablemos del partido",k:"foco"}]});
+  /* --- lo que pasó EN la cancha --- */
+  if(gano&&fig&&fig.goles>=3) L.push({id:"hat",prio:8,q:"«"+fig.n+"» se llevó la pelota con "+fig.goles+" goles. ¿Nace una figura o fue la tarde?",ops:[
+     {t:"Mérito de él y del grupo entero",k:"elogio"},{t:"Ganó el equipo, no un nombre",k:"humilde"},{t:"Es de otra categoría, se los avisé",k:"agrandado"}]});
+  else if(gano&&fig&&fig.goles===2) L.push({id:"doblete",prio:6,q:fig.n+" hizo un doblete. ¿Qué le está pidiendo a él este año?",ops:[
+     {t:"Que siga humilde, va bien",k:"elogio"},{t:"Es un jugador más del plantel",k:"humilde"},{t:"Que sueñe en grande, da para eso",k:"agrandado"}]});
+  if(gano&&P.abajo2) L.push({id:"remont",prio:8,q:"Iban abajo por dos y lo dieron vuelta. ¿De dónde salió esa reacción?",ops:[
+     {t:"Del carácter de este grupo",k:"bancar"},{t:"Del trabajo de la semana",k:"humilde"},{t:"Del que nunca dudó acá: yo",k:"palo"}]});
+  if(gano&&P.tuvoRoja) L.push({id:"roja",prio:7,q:"Ganaron con uno menos. ¿Qué les dijo cuando quedaron en desventaja numérica?",ops:[
+     {t:"Que se dejaran el alma, y lo hicieron",k:"bancar"},{t:"Nada especial, ellos lo resolvieron",k:"humilde"},{t:"Que el que se cansa, sale",k:"palo"}]});
+  if(clasico&&gano) L.push({id:"clas_g",prio:8,q:"Le ganaron el clásico a "+riv+". ¿A quién le dedica esta?",ops:[
+     {t:"A la gente, con respeto al rival",k:"humilde"},{t:"A los que dudaban de nosotros",k:"agrandado"},{t:"Al rival, que hable un poco menos",k:"palo"}]});
+  if(clasico&&perdio) L.push({id:"clas_p",prio:8,q:"Perdieron el clásico y la gente quedó caliente. ¿Qué mensaje deja?",ops:[
+     {t:"Pongo la cara yo, el equipo no se toca",k:"bancar"},{t:"Me hago cargo, fallamos en todo",k:"mea"},{t:"El árbitro también jugó, y no para nosotros",k:"arbitro"}]});
+  if(gano&&dif>=3&&!clasico) L.push({id:"goleada",prio:6,q:"Golearon "+yo+"-"+otro+". ¿Se permite disfrutar o ya piensa en lo que viene?",ops:[
+     {t:"Disfrutar poco, esto sigue",k:"humilde"},{t:"Todo el mérito es del plantel",k:"elogio"},{t:"Cuando estamos finos, somos así",k:"agrandado"}]});
+  if(perdio&&(otro-yo)>=3) L.push({id:"paliza",prio:8,q:"Fue una goleada en contra. ¿Le pasa por la cabeza dar un paso al costado?",ops:[
+     {t:"Doy la cara, este equipo es mío",k:"bancar"},{t:"El único responsable soy yo",k:"mea"},{t:"Acá el que trabaja no se baja",k:"palo"}]});
+  if(lesion) L.push({id:"lesion",prio:7,q:"Se lesionó "+lesion+". ¿Cómo queda el plantel de acá en más?",ops:[
+     {t:"Lo vamos a esperar, es importante",k:"respaldo"},{t:"Hay plantel para reemplazarlo",k:"foco"},{t:"Ojalá no sea grave, pero hay que seguir",k:"mea"}]});
+  if((perdio||yo===otro)&&sinGanar>=3) L.push({id:"racha",prio:7,q:"Son "+sinGanar+" fechas sin ganar. ¿Siente que su puesto está en discusión?",ops:[
+     {t:"Pongo el pecho, me hago cargo",k:"bancar"},{t:"Pido tiempo y respaldo",k:"mea"},{t:"Acá el que labura soy yo",k:"palo"}]});
+  /* --- genéricas por resultado (fallback) --- */
+  if(gano) L.push({id:"gen_g",prio:2,q:"Tres puntos ante "+riv+". ¿Con qué se queda de esta tarde?",ops:[
+     {t:"Con la humildad para seguir",k:"humilde"},{t:"Con el laburo del plantel",k:"elogio"},{t:"Con un palo para los que dudaban",k:"palo"}]});
+  else if(perdio) L.push({id:"gen_p",prio:2,q:"Cayeron con "+riv+". ¿Qué explicación le encuentra?",ops:[
+     {t:"Pongo la cara, es responsabilidad mía",k:"bancar"},{t:"Autocrítica: jugamos mal",k:"mea"},{t:"El arbitraje no ayudó",k:"arbitro"}]});
+  else L.push({id:"gen_e",prio:2,q:"Repartieron puntos con "+riv+". ¿Punto ganado o dos perdidos?",ops:[
+     {t:"Se rescata, seguimos de pie",k:"foco"},{t:"Dos perdidos, exijo más",k:"mea"},{t:"Nos robaron dos, hay que decirlo",k:"palo"}]});
+  return L;
+}
+/* elige la pregunta de mayor prioridad que no se haya visto hace poco */
+function elegirPreguntaPrensa(L){
+  if(!E.flags.prensaVistas) E.flags.prensaVistas=[];
+  const vistas=E.flags.prensaVistas;
+  let cand=L.filter(x=>vistas.indexOf(x.id)<0);
+  if(!cand.length) cand=L;                       /* si ya vio todas, se libera */
+  const maxp=Math.max.apply(null,cand.map(x=>x.prio));
+  const top=cand.filter(x=>x.prio===maxp);
+  const q=elige(top);
+  vistas.push(q.id); if(vistas.length>8) vistas.splice(0,vistas.length-8);
+  return q;
+}
+function climaPrensa(){
+  const v=(E.grupos&&E.grupos.prensa)?E.grupos.prensa.aprob:0;
+  const pct=Math.round((v+100)/2);
+  const etq=v>=45?"a favor":(v>=15?"tibia":(v>=-15?"neutral":(v>=-45?"picada":"en tu contra")));
+  const col=v>=15?"#5ec94f":(v>=-15?"#e6c34a":"#e07a4a");
+  return {pct:pct,etq:etq,col:col};
+}
+function seccionPrensa(p,res,P){
+  P=P||P_ACTUAL;
+  p.cuerpo.appendChild(el("h3","sub","Sala de prensa"));
+  /* barra de clima de prensa del momento */
+  const cl=climaPrensa();
+  const bar=el("div","mini"); bar.style.margin="2px 0 6px";
+  bar.innerHTML="Clima de prensa: <b>"+cl.etq+"</b>"+
+    "<div class='barrita' style='margin-top:3px'><i style='width:"+cl.pct+"%;--c:"+cl.col+"'></i></div>";
+  p.cuerpo.appendChild(bar);
   const tog=el("div","mini");
   tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (vos hablás)")+"</b>";
   p.cuerpo.appendChild(tog);
@@ -686,19 +766,25 @@ function seccionPrensa(p,res){
       notificar({t:"El ayudante habló con la prensa",tipo:"neutro",d:"Se ocupó de la rueda de prensa sin sobresaltos. Declaraciones tibias, cero polémica.",bandeja:false});
       guardar(); hecho=true;
       zonaPrensa.appendChild(el("div","resul mitad","El ayudante se encargó: sin polémica."));
-    } else {
-      const ops=el("div","ops");
-      opcionesPrensa(res).forEach(o=>{
-        const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
-        b.onclick=()=>{
-          if(o.ef) aplicarEfectos(o.ef); if(o.grupos) aplicarGrupos(o.grupos); if(o.rep) aplicarRep(o.rep);
-          notificar({t:"Declaraciones a la prensa",tipo:"neutro",d:o.d,bandeja:false});
-          guardar(); hecho=true; zonaPrensa.innerHTML=""; zonaPrensa.appendChild(el("div","resul bien",o.d));
-        };
-        ops.appendChild(b);
-      });
-      zonaPrensa.appendChild(ops);
+      return;
     }
+    const per=elige(PERIODISTAS);
+    const q=elegirPreguntaPrensa(preguntasPostPartido(res,P));
+    zonaPrensa.appendChild(el("div","resul mitad","<b>"+per.n+"</b> <span class='mini'>· "+per.m+"</span><br>"+q.q));
+    const ops=el("div","ops");
+    q.ops.forEach(o=>{
+      const a=POST_ARQ[o.k]||POST_ARQ.foco;
+      const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
+      b.onclick=()=>{
+        if(a.ef) aplicarEfectos(a.ef); if(a.grupos) aplicarGrupos(a.grupos); if(a.rep) aplicarRep(a.rep);
+        if(typeof postProc==="function") postProc("@"+per.m.replace(/\s/g,""),"prensa","«"+o.t+"», respondió el DT ante "+q.q.slice(0,40).replace(/«|»/g,"")+"…","neutro");
+        notificar({t:"Declaraciones a "+per.n,tipo:"neutro",d:"«"+o.t+"». "+a.txt,bandeja:false});
+        if(typeof recordar==="function"&&o.k==="palo") recordar("prensa","calentaste la sala de prensa después de "+(res.yo>res.otro?"ganarle":"jugar contra")+" a "+P.part.rivalNombre,{peso:"bajo"});
+        guardar(); hecho=true; zonaPrensa.innerHTML=""; zonaPrensa.appendChild(el("div","resul bien","«"+o.t+"» — "+a.txt));
+      };
+      ops.appendChild(b);
+    });
+    zonaPrensa.appendChild(ops);
   }
   pintarZonaPrensa();
 }

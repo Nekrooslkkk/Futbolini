@@ -980,3 +980,20 @@ desbloquean con hooks en el motor real (no cosméticos) y viven en `E.logros`. P
 un año y volver a entrenar sin que el botón quede trabado; el cambio no borra las elecciones tácticas.
 **1 línea:** cerré los bugs del 2º año y del cambio, bajé el reflejo, y nació la sección de Logros.
 **Riesgos:** motor.js (limpieza de flags en nuevoAnio + normalizarLogros en normalizarEstado). Medio-bajo.
+
+## 6.26 · Sala de prensa post-partido VIVA (reactiva + memoria + gente real)  ✅ (2026-08-21)
+**Archivos:** `js/ui-partido.js`
+**Qué:** la rueda de prensa dejó de ser 3 preguntas fijas. Ahora un periodista con nombre (mezcla de
+prensa deportiva chilena real —Guarello, Danilo Díaz, De Tezanos, Caamaño, Solabarrieta, Yáñez, Palma…—
+que SOLO pregunta; el que declara es tu DT) hace una pregunta reactiva a:
+- lo que pasó en la cancha: figura/hat-trick, doblete, remontada (abajo x2), ganar con expulsado,
+  clásico ganado/perdido, goleada a favor/en contra, lesión de un titular, racha sin ganar;
+- lo que hiciste ANTES (MEMORIA DEL JUEGO): una promesa a un jugador, una venta polémica, etc. — el juego
+  te lo cita con "hace X fechas".
+Cada pregunta ofrece 2-3 respuestas con arquetipo (elogio/humilde/agrandado/palo/mea/bancar/árbitro/
+respaldo/foco → POST_ARQ). No se repite la misma pregunta seguido (E.flags.prensaVistas, ventana de 8).
+Se agregó una **barra de clima de prensa** del momento (según E.grupos.prensa) arriba de la sala.
+**Qué probar:** ganar goleando con una figura → el periodista pregunta por la figura; perder un clásico →
+pregunta distinta y con opción de apuntar al árbitro; tener una promesa vieja → la prensa te la recuerda.
+**1 línea:** la prensa ahora pregunta por lo que pasó y por lo que hiciste, con nombres reales y sin repetir.
+**Riesgos:** ui-partido.js (reescritura de seccionPrensa + nuevo motor preguntasPostPartido). Medio-bajo.
