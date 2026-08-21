@@ -1277,3 +1277,14 @@ más grande hacés el club, más ridículo el exceso que te podés dar.
 habilitan los delirios.
 **1 línea:** los lujos del DT ahora escalan con el club: de un reloj a un cohete de pretemporada.
 **Riesgos:** reputacion.js (LUJOS + gate en comprarLujo). Bajo.
+
+## 7.0-k · Repeticiones: abrir un partido jugado y ver los goleadores  ✅ (2026-08-21)
+**Archivos:** `js/ui.js`, `js/css/base.css`
+**Qué:** en el Calendario, cada partido ya jugado ahora es **clickeable** ("▶ ver repetición") y abre un
+modal con el marcador (scoreboard de estadio), los datos del partido, y **los goleadores de tu equipo
+agrupados con cantidad** (ej. "Barticciotto · 2 goles"). Si el partido tiene referencia histórica, muestra
+"En la historia real: ese partido terminó X" para que veas cuánto te separaste de lo que pasó de verdad.
+Cierra un pendiente viejo de la cola (goleadores en el calendario / "las repeticiones").
+**Qué probar:** jugar unos partidos, ir a Calendario, tocar un partido jugado → sale la repetición con goleadores.
+**1 línea:** en el calendario ahora podés abrir cualquier partido jugado y ver quién hizo los goles.
+**Riesgos:** ui.js (modalRepeticion + filas clickeables). Bajo.

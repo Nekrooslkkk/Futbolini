@@ -569,3 +569,7 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 /* 7.0 · lujos bloqueados por prestigio */
 .op-bloqueado{opacity:.55;filter:grayscale(.4)}
 .op-bloqueado .t{color:var(--tinta-suave)}
+
+/* 7.0 · filas clickeables (repetición) */
+.fila-click{transition:background .12s}
+.fila-click:hover{background:rgba(120,180,240,.12);border-radius:4px}

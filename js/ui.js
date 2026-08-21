@@ -959,18 +959,48 @@ function fichaJugador(j){
   });
 }
 /* ---------------- calendario ---------------- */
+/* 7.0 · "repetición": abrir un partido jugado y ver los goleadores */
+function modalRepeticion(c){
+  modal(box=>{
+    const gano=c.gf>c.gc, emp=c.gf===c.gc;
+    box.appendChild(el("div","cab",'<span class="ic">🎞️</span><span>Repetición · '+(c.tipo==="copa"?"Copa · "+c.ronda:"Fecha "+(c.fecha||"—"))+'</span>'));
+    const cc=el("div","cuerpo"); box.appendChild(cc);
+    const marc=el("div","marcador");
+    marc.innerHTML='<div class="eq">'+(c.local?E.clubNombre:c.rivalNombre)+'</div>'+
+      '<div class="go">'+(c.local?c.gf+" - "+c.gc:c.gc+" - "+c.gf)+'</div>'+
+      '<div class="eq">'+(c.local?c.rivalNombre:E.clubNombre)+'</div>';
+    cc.appendChild(marc);
+    cc.appendChild(el("p","mini",(c.local?"De local":"De visita")+" en "+(c.sede||"—")+" · "+fechaTxt(c.f)+" · "+
+      (gano?"Victoria":(emp?"Empate":"Derrota"))+"."));
+    /* goleadores propios, agrupados por nombre con cantidad */
+    const gs=c.goleadores||[];
+    if(gs.length){
+      const cuenta={}; gs.forEach(n=>{ cuenta[n]=(cuenta[n]||0)+1; });
+      cc.appendChild(el("h3","sub","⚽ Goles de "+E.clubNombre));
+      Object.keys(cuenta).forEach(n=>{
+        cc.appendChild(el("div","fila","<span>"+n+"</span><b>"+(cuenta[n]>1?cuenta[n]+" goles":"1 gol")+"</b>"));
+      });
+    } else {
+      cc.appendChild(el("p","mini",c.gf>0?"No quedó registro de los goleadores de este partido.":"Tu equipo no marcó en este partido."));
+    }
+    if(c.real) cc.appendChild(el("div","resul mitad","<b>En la historia real:</b> ese partido terminó "+c.real+"."));
+    const b=el("button","btn-aqua ancho gris","Cerrar"); b.onclick=cerrarModal; cc.appendChild(b);
+  });
+}
 function vistaCalendario(){
   const v=$("#vista");
   const p=panel("Calendario "+E.anio,"📅");
   E.calendario.forEach((c,i)=>{
-    const d=el("div","fila");
+    const d=el("div","fila"+(c.jugado?" fila-click":""));
     const marc=c.jugado?(c.gf+"-"+c.gc):"—";
     const est=c.jugado?(c.gf>c.gc?"ok":(c.gf<c.gc?"mal":"neu")):"neu";
     d.innerHTML='<span>'+(i===E.idx?"▶ ":"")+(c.tipo==="copa"?"🏆 ":"")+
       (c.local?"vs ":"a ")+c.rivalNombre+' <span class="mini">'+fechaTxt(c.f)+
       (c.tipo==="copa"?" · "+c.ronda:"")+(c.fecha?" · F"+c.fecha:"")+
+      (c.jugado&&c.goleadores&&c.goleadores.length?" · ▶ ver repetición":"")+
       (!c.jugado&&c.real&&E.config&&E.config.spoiler?" · hist. "+c.real:"")+'</span></span>'+
       '<b class="etq '+est+'">'+marc+'</b>';
+    if(c.jugado){ d.style.cursor="pointer"; d.onclick=()=>modalRepeticion(c); }
     p.cuerpo.appendChild(d);
   });
   v.appendChild(p);
