@@ -236,12 +236,17 @@ function cobrarPenal(pateador,arquero){
   if(arquero)  p-=((arquero.nivel||70)-70)*0.005;
   return Math.random()<clamp(p,0.55,0.94);
 }
-function penalEnPartido(P,aFavor,motivo,patElegido){
+/* forzado: si viene definido, salta el RNG (lo decide el minijuego).
+   true = gol · false = atajado · "afuera" = tiro desviado */
+function penalEnPartido(P,aFavor,motivo,patElegido,forzado){
   const min=P.min;
   if(aFavor){
     const pat=patElegido||pateadorDe(P.once), arq=arqueroDe(P.rivalPlantel);
     linea(P,min,(motivo||"Penal para "+E.clubNombre+".")+" Toma la pelota "+pat.n+"…");
-    if(cobrarPenal(pat,arq)){
+    const gol=(forzado===undefined)?cobrarPenal(pat,arq):(forzado===true);
+    if(forzado==="afuera"){
+      linea(P,min,"¡"+pat.n+" la manda a las nubes! El penal se fue afuera.","grave"); P.empuje-=0.4;
+    } else if(gol){
       pat.goles++; P.goleadores.push(pat.n); regGol(P,min,pat.n,true,"penal"); if(P.part.local)P.gl++; else P.gv++;
       linea(P,min,"¡Gol de penal de "+pat.n+"! "+marcadorTxt(P),"gol");
       if(pat.pos==="ARQ" && typeof desbloquear==="function") desbloquear("arquero_penal");   /* 6.25 · logro */

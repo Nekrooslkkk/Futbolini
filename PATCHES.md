@@ -997,3 +997,20 @@ Se agregó una **barra de clima de prensa** del momento (según E.grupos.prensa)
 pregunta distinta y con opción de apuntar al árbitro; tener una promesa vieja → la prensa te la recuerda.
 **1 línea:** la prensa ahora pregunta por lo que pasó y por lo que hiciste, con nombres reales y sin repetir.
 **Riesgos:** ui-partido.js (reescritura de seccionPrensa + nuevo motor preguntasPostPartido). Medio-bajo.
+
+## 6.27 · MINIJUEGO DE PENAL (dibujá el tiro, el arquero se tira)  ✅ (2026-08-21)
+**Archivos:** `js/ui-partido.js` (minijuegoPenal + wiring), `js/partido.js` (penalEnPartido acepta forzado), `css/base.css`
+**Qué:** cuando hay penal a favor en un partido DIRIGIDO, después de elegir quién patea se abre un
+minijuego: un arco Frutiger Aero dibujado en SVG (red, arquero, pelota). Tocás/arrastrás dentro del arco
+para elegir dónde ponerla (aparece la línea de tiro punteada + la mira), elegís efecto (🎯 Colocado /
+💥 Potente / 🥄 Picadita) y apretás ¡Patear! El arquero se tira a un lado cuando pateás.
+- Justo por diseño: apuntar a un rincón mete el gol el ~80-86% de las veces AUNQUE el arquero adivine el
+  palo (los rincones son casi imparables). Solo el centro flojo o apuntarle encima al arquero se atajan.
+  La picadita mata al arquero que se tira y muere contra el que se queda. Nivel del pateador y del arquero
+  ajustan un poco. Nunca "te joden" por dibujar bien.
+- Funciona con mouse (PC) y touch (celular) vía pointer events; el resultado (gol/atajado/afuera) se fuerza
+  a penalEnPartido, saltando el RNG. En modo simular/auto sigue el cálculo viejo.
+**Qué probar:** dirigir un partido, penal a favor, elegir pateador → sale el arco; apuntar arriba a la
+derecha, patear → el arquero se tira y (casi siempre) es gol; el marcador y el relato lo registran.
+**1 línea:** los penales a favor ahora se patean dibujando: apuntás, elegís efecto, y el arquero vuela.
+**Riesgos:** ui-partido.js (nuevo flujo async en mostrarAccion, guardado con return-flag). Medio.
