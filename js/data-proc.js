@@ -433,6 +433,67 @@ const DEC_PROC=[
        mitad:{txt:"Quedó en sondeo, nada concreto.",ef:{}},
        mal:{txt:"El pibe se distrajo pensando en irse.",ef:{plantel:-2,moral:-3}}}
      ]};
+ }},
+ /* 7.0 · MÁS VARIEDAD DE MERCADO */
+ /* un representante insiste con su cliente (refuerzo barato pero incierto) */
+ {buzon:"refuerzos",peso:"bajo",gen:function(){
+   const club=otroClub();
+   return {t:"Un representante te ofrece un jugador",
+     d:"Un representante insiste: tiene un jugador libre que viene de "+club+", pide poco sueldo pero nadie lo quiere hace rato. Puede ser una ganga o un dolor de cabeza.",
+     posturas:{directorio:4,camarin:-4,tecnico:6},
+     op:[
+      {t:"Ficharlo, total sale barato",dif:34,req:{plata:35},ef:{plata:-35,plantel:2},grupos:{tecnico:6},
+       bien:{txt:"Sorpresa: rinde y suma al plantel por dos pesos.",ef:{moral:3}},
+       mitad:{txt:"Cumple, sin más. Al menos no molesta.",ef:{}},
+       mal:{txt:"Un fiasco: cobra y no juega. El vestuario refunfuña.",ef:{plantel:-1,moral:-3},grupos:{camarin:-4}}},
+      {t:"Pedir que lo prueben primero",dif:26,grupos:{tecnico:4},
+       bien:{txt:"Lo probaron, no daba, y te ahorraste el papelón.",ef:{}},
+       mitad:{txt:"Se fue a otro club. Ni fu ni fa.",ef:{}}},
+      {t:"Ni loco, ese carga fama de conflictivo",dif:20,grupos:{camarin:5},rep:{dureza:2},
+       bien:{txt:"Buen filtro: al mes estalló en otro club.",ef:{}},
+       mitad:{txt:"Quedaste como cerrado, pero tranquilo.",ef:{}}}
+     ]};
+ }},
+ /* trueque: un club propone cambiar tu jugador por uno suyo */
+ {buzon:"refuerzos",peso:"medio",gen:function(){
+   const j=jugAzar(x=>x.nivel>=62&&x.nivel<=80); if(!j) return null;
+   const club=otroClub();
+   return {t:"Trueque: "+club+" propone un cambio", ficha:{n:j.n},
+     d:club+" quiere a "+j.n+" ("+j.pos+", nivel "+j.nivel+") y te ofrece un jugador suyo a cambio, sin plata de por medio. Un cambio de figuritas, con el riesgo de siempre: nunca sabés bien qué te llevás.",
+     posturas:{directorio:6,camarin:-6,hinchada:-6},
+     op:[
+      {t:"Aceptar el trueque",dif:34,grupos:{directorio:6},
+       bien:{txt:"El que llegó rindió mejor que "+j.n+". Golazo de gestión.",ef:{plantel:2,moral:2},accion:"venderFicha"},
+       mitad:{txt:"Cambio parejo: ni ganás ni perdés.",ef:{},accion:"venderFicha"},
+       mal:{txt:"Te pasaron gato por liebre: el que vino no rinde.",ef:{plantel:-3,moral:-3},accion:"venderFicha"}},
+      {t:"Pedir que sumen plata al cambio",dif:48,grupos:{directorio:8},
+       bien:{txt:"Aceptaron poner plata encima. Cerraste redondo.",ef:{plata:70},accion:"venderFicha"},
+       mitad:{txt:"No hubo acuerdo. "+j.n+" se queda.",ef:{}},
+       mal:{txt:"Se ofendieron y cortaron la conversación.",ef:{}}},
+      {t:"No cambio a "+j.n,dif:24,grupos:{camarin:6,hinchada:5},
+       bien:{txt:"Te quedaste con lo tuyo y el grupo lo valoró.",ef:{moral:2}},
+       mitad:{txt:"Rechazaste, sin drama.",ef:{}}}
+     ]};
+ }},
+ /* rumor de un fichaje estrella que ilusiona a la hinchada */
+ {buzon:"refuerzos",peso:"bajo",gen:function(){
+   const club=otroClub();
+   return {t:"Rumor: viene un refuerzo de renombre",
+     d:"La prensa dice que estás por traer a un jugador de renombre de "+club+". La hinchada ya se ilusiona y vende entradas por adelantado. Vos sabés que todavía no hay nada firmado.",
+     posturas:{hinchada:12,prensa:8,directorio:-4},
+     op:[
+      {t:"Confirmar el interés y prometer que se cierra",dif:44,grupos:{hinchada:12,prensa:4},rep:{credibilidad:-4},
+       bien:{txt:"Se dio: llegó el refuerzo y sos un genio.",ef:{plata:-90,plantel:3,prestigio:3}},
+       mitad:{txt:"Se cayó a último momento. La gente quedó tibia.",ef:{},grupos:{hinchada:-8}},
+       mal:{txt:"Nunca hubo nada. Quedaste como vendehumo.",grupos:{hinchada:-14,prensa:-8},rep:{credibilidad:-8}}},
+      {t:"Bajar la espuma: «no hay nada firmado»",dif:22,grupos:{prensa:5},rep:{credibilidad:6},
+       bien:{txt:"Prudencia bien vista: nadie te reclamó después.",ef:{}},
+       mitad:{txt:"La hinchada se desinfló un poco, pero te creyeron.",grupos:{hinchada:-4}}},
+      {t:"Usar el rumor para vender entradas y sponsors",dif:40,grupos:{sponsors:10,directorio:8,hinchada:-6},rep:{credibilidad:-6},
+       bien:{txt:"Exprimiste el rumor y entró plata fresca.",ef:{plata:60}},
+       mitad:{txt:"Algo entró, pero la gente olió el humo.",ef:{plata:25},grupos:{hinchada:-6}},
+       mal:{txt:"Se dieron cuenta del verso y cayó la confianza.",grupos:{hinchada:-12},rep:{credibilidad:-6}}}
+     ]};
  }}
 ];
 

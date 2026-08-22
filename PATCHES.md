@@ -1297,3 +1297,15 @@ el juego calcula el año de nacimiento solo (conserva el día/mes). Actualiza al
 **Qué probar:** en Vida → Perfil del DT, tocar − / + cambia la edad sin escribir nada.
 **1 línea:** la edad del DT se elige con un +/− en vez de tipear una fecha; mucho más cómodo, en PC y celu.
 **Riesgos:** reputacion.js (control de edad). Bajo.
+
+## 7.0-m · Más variedad en decisiones de mercado  ✅ (2026-08-21)
+**Archivos:** `js/data-proc.js` (extiende DEC_PROC, no toca el token motor)
+**Qué:** 3 plantillas nuevas de mercado para que el buzón no repita siempre lo mismo (24 plantillas ahora):
+- **Un representante te ofrece un jugador** (libre, barato pero incierto: ganga o dolor de cabeza).
+- **Trueque** (un club propone cambiar tu jugador por uno suyo, sin plata; podés pedir que sumen plata).
+- **Rumor de un refuerzo de renombre** (la hinchada se ilusiona; confirmás y prometés, bajás la espuma, o
+  exprimís el rumor para vender entradas y sponsors, con riesgo de quedar como vendehumo).
+Cada una con 3 opciones y consecuencias reales, usando las acciones ya existentes (venderFicha) y efectos.
+**Qué probar:** avanzar varias semanas → en el buzón aparecen estas situaciones nuevas de mercado.
+**1 línea:** el mercado ahora tiene más situaciones (trueques, representantes, rumores) para no repetirse.
+**Riesgos:** solo agrega plantillas a DEC_PROC. Probado: mini-temporada resolviendo 27 decisiones, 0 errores.
