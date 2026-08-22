@@ -1288,3 +1288,12 @@ Cierra un pendiente viejo de la cola (goleadores en el calendario / "las repetic
 **Qué probar:** jugar unos partidos, ir a Calendario, tocar un partido jugado → sale la repetición con goleadores.
 **1 línea:** en el calendario ahora podés abrir cualquier partido jugado y ver quién hizo los goles.
 **Riesgos:** ui.js (modalRepeticion + filas clickeables). Bajo.
+
+## 7.0-l · Edad del DT más piola (stepper en vez de escribir la fecha)  ✅ (2026-08-21)
+**Archivos:** `js/reputacion.js`, `js/css/base.css`
+**Qué:** el perfil del DT ya no te hace escribir una fecha de nacimiento entera en un input date incómodo.
+Ahora hay un **stepper simple de edad** (− / 40 años / +, rango 22-80): elegís cuántos años tiene tu DT y
+el juego calcula el año de nacimiento solo (conserva el día/mes). Actualiza al toque, sin recargar la vista.
+**Qué probar:** en Vida → Perfil del DT, tocar − / + cambia la edad sin escribir nada.
+**1 línea:** la edad del DT se elige con un +/− en vez de tipear una fecha; mucho más cómodo, en PC y celu.
+**Riesgos:** reputacion.js (control de edad). Bajo.

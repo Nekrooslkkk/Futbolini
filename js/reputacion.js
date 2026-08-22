@@ -313,10 +313,23 @@ function vistaVida(){
   inNombre.onchange=()=>{ const val=inNombre.value.trim()||"DT"; E.perfil.nombre=val; if(E.dinastia.generacion<=1) E.dinastia.raiz=val; guardar(); };
   info.appendChild(el("label","lb","Nombre"+(E.dinastia.generacion>1?" (heredado)":"")));
   info.appendChild(inNombre);
-  const inNac=el("input"); inNac.type="date"; inNac.className="entrada"; inNac.value=(E.perfil.nacimiento||"1988-05-12"); inNac.style.width="100%";
-  inNac.onchange=()=>{ if(inNac.value){ E.perfil.nacimiento=inNac.value; guardar(); render(); } };
-  info.appendChild(el("label","lb","Fecha de nacimiento (edad "+edadDT()+")"));
-  info.appendChild(inNac);
+  /* 7.0 · edad más piola: stepper simple en vez de escribir la fecha entera */
+  info.appendChild(el("label","lb","Edad del DT"));
+  const eRow=el("div","edad-stepper");
+  const bMenos=el("button","btn-aqua chico","−");
+  const eVal=el("b","dato edad-val");
+  const bMas=el("button","btn-aqua chico","+");
+  const setEdad=(e)=>{
+    e=clamp(e,22,80);
+    const mmdd=(String(E.perfil.nacimiento||"").slice(4))||"-06-15";
+    E.perfil.nacimiento=(E.anio-e)+mmdd;
+    eVal.textContent=e+" años"; guardar();
+  };
+  eVal.textContent=edadDT()+" años";
+  bMenos.onclick=()=>setEdad(edadDT()-1);
+  bMas.onclick=()=>setEdad(edadDT()+1);
+  eRow.appendChild(bMenos); eRow.appendChild(eVal); eRow.appendChild(bMas);
+  info.appendChild(eRow);
   info.appendChild(el("label","lb","Género"));
   const fg=el("div","fichas");
   [["M","Hombre"],["F","Mujer"]].forEach(([k,n])=>{

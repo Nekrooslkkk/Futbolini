@@ -573,3 +573,8 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 /* 7.0 · filas clickeables (repetición) */
 .fila-click{transition:background .12s}
 .fila-click:hover{background:rgba(120,180,240,.12);border-radius:4px}
+
+/* 7.0 · stepper de edad del DT */
+.edad-stepper{display:flex;align-items:center;gap:12px}
+.edad-stepper .btn-aqua{min-width:38px;text-align:center;font-size:16px;padding:6px 10px}
+.edad-val{font-size:16px;min-width:78px;text-align:center}
