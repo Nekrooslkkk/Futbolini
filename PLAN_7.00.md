@@ -95,14 +95,39 @@ Barrido final para que la primera impresión sea impecable.
 
 ---
 
-## FASE C · CIERRE Y LANZAMIENTO
+## FASE C · TODOS LOS CLUBES COMPLETOS + ÉPOCAS HISTÓRICAS + CIERRE
 
-- **C1 · Pase de contenido de Grok** (con el `GROK_PROMPT.md`): rellenar pools que queden
-  cortos, arcos que falten, más tuits/trivia. El jefe lo hace por su lado y yo lo integro.
-- **C2 · Publicar en GitHub Pages** (ya está listo el repo) y verificar el link en vivo.
-- **C3 · README/onboarding para multijugador**: 4 pasos simples de cómo retar a un amigo.
-- **C4 · Versión**: subir el número visible a **7.0** en la barra.
-- **C5 · QA final** de todo junto (single + multi) y bitácora en PATCHES.md.
+### C0 · Los 16 clubes, completos y con su época de gloria propia
+Cada club con **jugadores reales, historia real y contenido ad-hoc**. Hoy los 16 tienen
+plantel 2026 real y arco propio. Falta darles a los demás su **época histórica jugable**
+(hoy solo Colo-Colo tiene 1989/1991).
+
+- **Sistema de época histórica POR CLUB** (motor): un mapa `EPOCAS_CLUB` con, por club,
+  los puntos de inicio jugables (año + etiqueta + descripción + plantel + indicadores +
+  caja + fixture/tabla de referencia). El selector de inicio ofrece las épocas de ESE club.
+- **Épocas históricas por club** (contenido, lo genera Grok; algunos planteles ya están):
+  - **Colo-Colo:** 1989 (Reconstrucción) / 1991 (Gloria Libertadores). ✅ ya está.
+  - **U. de Chile:** **2011** — el equipo de Sampaoli, campeón de la Copa Sudamericana
+    invicto. `PLANTEL_UCH_2011` ✅ ya existe → solo falta wire + indicadores/caja/historia.
+  - **U. Católica:** **el tetracampeonato (2019→2022)** — arrancás en 2019 desde que
+    empiezan a ganar. Grok genera los planteles de esa base + la historia.
+  - **Resto de clubes:** su época de gloria o hito real (ej: Coquimbo subcampeón reciente,
+    O'Higgins campeón 2013-14, Huachipato campeón 2012/2023, U. de Concepción de sus mejores
+    años, Everton campeón 2008, etc.). Grok busca y genera plantel + historia por club.
+  - Regla dura: nombres reales OK, stats estimadas, sin frases inventadas atribuidas a
+    personas reales. La historia se apoya en hechos públicos; el resto es ficción del juego.
+- **Prompt de Grok para esto:** ver `GROK_PROMPT_HISTORIA.md` (formato exacto por época).
+- **Integración (motor, como se hizo con los clubes 2026):** merge por Object.assign de los
+  planteles/indicadores/caja/fixtures históricos + el selector por club.
+
+### C1 · Pase de contenido de Grok (con `GROK_PROMPT.md` + `GROK_PROMPT_HISTORIA.md`)
+Rellenar pools cortos, arcos que falten, tuits/trivia, y las épocas históricas (C0).
+El jefe lo hace por su lado y yo lo integro.
+
+### C2 · Publicar en GitHub Pages (repo ya listo) y verificar el link en vivo.
+### C3 · Onboarding de multijugador: 4 pasos simples de cómo retar a un amigo.
+### C4 · Versión: subir el número visible a **7.0** en la barra.
+### C5 · QA final de todo junto (single + multi + históricas) y bitácora en PATCHES.md.
 
 ---
 
