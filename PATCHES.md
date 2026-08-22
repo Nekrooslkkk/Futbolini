@@ -1353,3 +1353,12 @@ U. de Concepción). Ahora son **16 clubes jugables**.
 regionales detectados); las 12 vistas OK; start screen muestra los 16. Consola limpia.
 **1 línea:** los 11 clubes que faltaban ya se pueden dirigir: 16 clubes jugables, cada uno con su arco, plantel y clásico.
 **Riesgos:** motor de selección + merge de datos; aislado en un archivo. Medio-bajo.
+
+## 7.00 · Listo para GitHub Pages  ✅ (2026-08-22)
+**Archivos:** `.nojekyll` (NUEVO)
+**Qué:** dejé el repo listo para publicar en GitHub Pages: verifiqué que TODAS las rutas de assets son
+relativas (css/…, js/…) → funciona servido en `/Futbolini/`; el juego no hace ningún fetch/XHR (100%
+offline). Agregué `.nojekyll` para que Pages sirva todos los archivos tal cual (sin procesamiento Jekyll).
+**Cómo publicar (el usuario, 3 clics):** GitHub → repo Futbolini → Settings → Pages → Source: Deploy from a
+branch → Branch: main / carpeta / (root) → Save. En ~1 min: https://nekrooslkkk.github.io/Futbolini/
+**1 línea:** el juego quedó listo para publicarse en GitHub Pages y compartirse por link, sin login ni servidor.
