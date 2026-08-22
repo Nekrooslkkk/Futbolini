@@ -1437,3 +1437,22 @@ en los dos. Consola limpia.
 final la muestra, el marcador final (3-2) consistente. Consola limpia.
 **1 línea:** los duelos ahora llevan una serie vs tu amigo (con revancha), y la conexión avisa si falla en vez de colgarse.
 **Riesgos:** solo multi.js. Bajo.
+
+## 7.00 · FASE C · Sistema de épocas de gloria + U de Chile 2011  ✅ (2026-08-22)
+**Archivos:** `js/data-clubes2026.js` (EPOCAS_CLUB), `js/motor.js` (override en nuevaPartida), `js/ui.js` (selector)
+**Qué:** el motor para las épocas históricas por club (modo leyendas / what-if), listo para recibir el
+contenido de Grok.
+- `EPOCAS_CLUB[club]` = lista de épocas de gloria. Cada una: {anio, etq, desc, squad, ind, caja, dt}. El
+  plantel se toma de `PLANTELES_REALES[club][anio]`; el override cambia identidad/indicadores/caja/DT.
+  Grok agrega más con `EPOCAS_CLUB_ADD` (merge automático).
+- `nuevaPartida(club, anio, modo, {epoca})`: aplica los overrides de la época (ind/caja/dt) sobre la base.
+  `baseEra(anio)` decide la liga (≥2010 → 2026, si no → 1991).
+- Selector de inicio: sección **"🏆 O revivir una época de gloria"** cuando el club tiene épocas; el botón
+  de empezar pasa a "Revivir <etq>".
+- **Wireada la U de Chile 2011 · La Sudamericana** (el plantel de Sampaoli ya estaba en data-grok.js):
+  sub 84, DT Sampaoli, juega en la liga 2026 como leyendas. Verificado: bootea con Herrera, Marcos
+  González, Aránguiz, Vargas, Canales; mini-temporada 12 partidos, 0 errores.
+**Cómo se amplía (Grok, con GROK_PROMPT_HISTORIA.md):** genera los planteles que falten + un
+`EPOCAS_CLUB_ADD` con las entradas (UC tetra 2019, etc.) y se pegan.
+**1 línea:** ya se puede revivir la U de Sampaoli 2011; el sistema de épocas de gloria está listo para sumar el resto.
+**Riesgos:** motor de selección + override; aislado. Bajo.

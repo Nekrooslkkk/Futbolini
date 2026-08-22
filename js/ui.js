@@ -116,7 +116,7 @@ function pantallaInicio(){
 function elegirEpoca(id){
   /* 7.00 · clubes que solo existen en 2026 (no tienen datos 1991) */
   const solo2026=(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]);
-  let base=solo2026?2026:1991, modo="historico", anioInicio=1991, corte=false;
+  let base=solo2026?2026:1991, modo="historico", anioInicio=1991, corte=false, epocaGloria=null;
   const anioDe=b=>b===2026?2026:anioInicio;
   modal(box=>{
     const pintar=()=>{
@@ -167,6 +167,23 @@ function elegirEpoca(id){
           : "Arrancás en 1991 con la base consagrada, lista para ir por la Copa Libertadores."));
       } else if(base===1991) { anioInicio=1991; }
 
+      /* 7.00 · épocas de gloria del club (modo leyendas) */
+      const glorias=(typeof epocasDe==="function")?epocasDe(id):[];
+      if(glorias.length){
+        c.appendChild(el("h3","sub","🏆 O revivir una época de gloria"));
+        const fg=el("div","fichas");
+        const bNorm=el("button","ficha","Plantel actual");
+        bNorm.setAttribute("aria-pressed",epocaGloria?"false":"true");
+        bNorm.onclick=()=>{ epocaGloria=null; pintar(); }; fg.appendChild(bNorm);
+        glorias.forEach(ep=>{
+          const b=el("button","ficha",ep.etq);
+          b.setAttribute("aria-pressed",(epocaGloria&&epocaGloria.anio===ep.anio)?"true":"false");
+          b.onclick=()=>{ epocaGloria=ep; pintar(); }; fg.appendChild(b);
+        });
+        c.appendChild(fg);
+        if(epocaGloria) c.appendChild(el("div","resul mitad","<b>"+epocaGloria.etq+".</b> "+epocaGloria.desc));
+      }
+
       c.appendChild(el("h3","sub","2 · Elegí modo"));
       const f=el("div","fichas");
       [["historico","Histórico","Los hechos reales pasan igual, salvo que los cambies."],
@@ -198,17 +215,18 @@ function elegirEpoca(id){
         if(corte) c.appendChild(el("p","mini","Se cargan los partidos ya jugados del fixture (con marcador real si está) y una tabla de referencia al 18/08. Seguis desde el próximo. Colo-Colo tiene el fixture completo; los otros clubes usan la misma tabla semilla."));
       }
 
-      const go=el("button","btn-aqua ancho verde",base===2026&&corte?"Seguir desde agosto 2026":("Empezar en "+anioDe(base)));
+      const go=el("button","btn-aqua ancho verde",epocaGloria?("Revivir "+epocaGloria.etq):(base===2026&&corte?"Seguir desde agosto 2026":("Empezar en "+anioDe(base))));
       go.style.marginTop="12px";
       go.onclick=()=>{
         try{
-          const anio=anioDe(base);
-          nuevaPartida(id, anio, modo, base===2026&&corte?{corte:true}:null);
+          const anio=epocaGloria?epocaGloria.anio:anioDe(base);
+          const extra=epocaGloria?{epoca:epocaGloria}:(base===2026&&corte?{corte:true}:null);
+          nuevaPartida(id, anio, modo, extra);
           if(!E || !E.club) throw new Error("nuevaPartida no dejó estado E");
           cerrarModal();
           SEC="escritorio";
           render();
-          aviso("Empieza la temporada "+anio);
+          aviso(epocaGloria?("Revivís: "+epocaGloria.etq):("Empieza la temporada "+anio));
         }catch(err){
           console.error("Error al empezar partida:", err);
           aviso("Error al empezar: "+err.message, 6000);

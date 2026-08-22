@@ -130,6 +130,16 @@ function nuevaPartida(clubId,anio,modo,extra){
     E.grupos[g.id]={poder:poder,aprob:ap};
   });
   E.plantel=armarPlantel(clubId,anio,D.ind[clubId].plantel);
+  /* 7.00 · época histórica de gloria (leyendas): sobrescribe identidad/indicadores/caja */
+  if(extra&&extra.epoca){
+    const ep=extra.epoca;
+    if(ep.ind) E.ind=Object.assign(E.ind,ep.ind);
+    if(ep.caja){ E.plata=ep.caja.plata; E.deuda=ep.caja.deuda; }
+    if(ep.dt) E.dt=ep.dt;
+    if(ep.etq) E.epocaEtq=ep.etq;
+    E.epocaHist=ep.anio;
+    E.seguidores=Math.round((E.ind.hinchada+E.ind.prestigio)*280);
+  }
   E.calendario=construirCalendario(clubId,anio,true);
   E.precios=preciosDefault();
   reiniciarTabla();

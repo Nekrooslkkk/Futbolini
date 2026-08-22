@@ -75,6 +75,24 @@
   });
 })();
 
+/* ============================================================
+   ÉPOCAS DE GLORIA POR CLUB (modo leyendas / what-if)
+   Cada club puede arrancar desde su equipo histórico. El plantel se
+   toma de PLANTELES_REALES[club][anio]; acá van los overrides de
+   identidad/indicadores/caja/DT. `anio>=2010` juega en la liga 2026,
+   `<2010` en la de 1991. Grok agrega más con EPOCAS_CLUB_ADD.
+   ============================================================ */
+const EPOCAS_CLUB={
+  UCH:[{ anio:2011, etq:"2011 · La Sudamericana", squad:"PLANTEL_UCH_2011",
+    desc:"El equipo de Jorge Sampaoli: campeón invicto de la Copa Sudamericana 2011, con presión alta, cantera y una idea clarísima. Una de las mejores versiones de la U.",
+    dt:"Jorge Sampaoli",
+    ind:{plantel:84,moral:74,hinchada:84,socios:62,cantera:66,estadio:42,prestigio:80,riesgo:22},
+    caja:{plata:520,deuda:700} }]
+};
+/* Grok puede sumar épocas con: Object.assign(EPOCAS_CLUB, EPOCAS_CLUB_ADD) */
+if(typeof EPOCAS_CLUB_ADD!=="undefined"){ try{ Object.assign(EPOCAS_CLUB, EPOCAS_CLUB_ADD); }catch(e){} }
+function epocasDe(clubId){ return (EPOCAS_CLUB&&EPOCAS_CLUB[clubId])||[]; }
+
 /* 6 · rivalidades regionales para esClasico (pares, cualquier orden) */
 const RIVALIDADES_2026=[
   ["DCO","UDC"],  /* clásico penquista */
