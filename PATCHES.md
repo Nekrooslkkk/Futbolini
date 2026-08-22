@@ -1362,3 +1362,15 @@ offline). Agregué `.nojekyll` para que Pages sirva todos los archivos tal cual 
 **Cómo publicar (el usuario, 3 clics):** GitHub → repo Futbolini → Settings → Pages → Source: Deploy from a
 branch → Branch: main / carpeta / (root) → Save. En ~1 min: https://nekrooslkkk.github.io/Futbolini/
 **1 línea:** el juego quedó listo para publicarse en GitHub Pages y compartirse por link, sin login ni servidor.
+
+## 7.00 · FASE A · Pulida verificada  ✅ (2026-08-22)
+**Qué:** barrido de calidad previo al multijugador. Resultado: el juego ya estaba muy sólido tras el
+overhaul 7.0, así que la pulida fue sobre todo verificación + un ajuste:
+- Saqué el logro `post_oficial_muerto` (confuso y sin mecánica) y corregí la descripción de `silencio_local`.
+- **Auditoría automática de las 12 vistas** en mobile (375px) y desktop (1280px): 0 overflow horizontal,
+  0 paneles vacíos, 0 errores de render.
+- **QA de temporada completa** con club grande (Coquimbo) y chico (Cobresal): 30 partidos c/u, 0 errores;
+  sus arcos propios siembran y cierran; clásicos regionales se detectan; planteles reales de Grok cargados.
+- Los 16 clubes bootean; la barra usa `infoClub()` era-aware; el selector muestra los 16.
+**1 línea:** pulida = verificado que los 16 clubes y las 12 vistas están redondos en PC y celu, y saqué el logro confuso.
+**Siguiente:** FASE B · multijugador P2P (ver PLAN_7.00.md).
