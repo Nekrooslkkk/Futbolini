@@ -18,7 +18,8 @@ function pintarBarra(){
   const badge=$("#avisoBadge");
   if(!E){ $("#escudo").textContent="⚽"; if(badge) badge.classList.add("oculto"); return; }
   if(badge){ const n=notifsNoLeidas(); badge.textContent=n>9?"9+":String(n); badge.classList.toggle("oculto",!n); }
-  $("#escudo").textContent=CLUB_INFO[E.club].esc;
+  const ic=(typeof infoClub==="function"&&infoClub(E.club))||(CLUB_INFO&&CLUB_INFO[E.club])||{esc:"⚽"};
+  $("#escudo").textContent=(ic&&ic.esc)||"⚽";
   const part=proximoPartido();
   const datos=[
    ["Club",E.clubNombre],
@@ -76,6 +77,7 @@ function pantallaInicio(){
   v.appendChild(p);
 
   const paso1=panel("1 · Elegí club","⚪");
+  /* clubes de las dos épocas: los 5 clásicos (1991+2026) y los nuevos (solo 2026) */
   const g=el("div","iconos");
   Object.keys(CLUB_INFO).forEach(id=>{
     const c=CLUB_INFO[id];
@@ -84,11 +86,27 @@ function pantallaInicio(){
     g.appendChild(b);
   });
   paso1.cuerpo.appendChild(g);
-  paso1.cuerpo.appendChild(el("p","mini","Después elegís época: 1991 (calendario real completo, Campeonato de 16 equipos y el camino verdadero de la Copa Libertadores de Colo-Colo) o 2026 (Primera División actual, con planteles aproximados y 3 puntos por victoria)."));
+  if(typeof CLUB_INFO_2026!=="undefined"){
+    const soloNuevos=Object.keys(CLUB_INFO_2026).filter(id=>!CLUB_INFO[id]);
+    if(soloNuevos.length){
+      paso1.cuerpo.appendChild(el("h3","sub","… o un club de la Primera 2026"));
+      const g2=el("div","iconos");
+      soloNuevos.forEach(id=>{
+        const c=CLUB_INFO_2026[id];
+        const b=el("button","icono",'<span class="g">'+c.esc+'</span><span class="n">'+c.n+'</span>');
+        b.onclick=()=>elegirEpoca(id);
+        g2.appendChild(b);
+      });
+      paso1.cuerpo.appendChild(g2);
+    }
+  }
+  paso1.cuerpo.appendChild(el("p","mini","Los 5 primeros se pueden jugar en 1991 (calendario real, Copa Libertadores de Colo-Colo) o en 2026. Los de abajo son de la Primera División 2026 (planteles aproximados, 3 puntos por victoria)."));
   v.appendChild(paso1);
 }
 function elegirEpoca(id){
-  let base=1991, modo="historico", anioInicio=1991, corte=false;
+  /* 7.00 · clubes que solo existen en 2026 (no tienen datos 1991) */
+  const solo2026=(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]);
+  let base=solo2026?2026:1991, modo="historico", anioInicio=1991, corte=false;
   const anioDe=b=>b===2026?2026:anioInicio;
   modal(box=>{
     const pintar=()=>{
@@ -113,13 +131,15 @@ function elegirEpoca(id){
 
       c.appendChild(el("h3","sub","1 · Elegí época"));
       const fe=el("div","fichas");
-      [[1991,"1991 · Fase A"],[2026,"2026 · actual"]].forEach(([b,n])=>{
+      const epocas=solo2026?[[2026,"2026 · actual"]]:[[1991,"1991 · Fase A"],[2026,"2026 · actual"]];
+      epocas.forEach(([b,n])=>{
         const btn=el("button","ficha",n);
         btn.setAttribute("aria-pressed",base===b?"true":"false");
         btn.onclick=()=>{ base=b; pintar(); };
         fe.appendChild(btn);
       });
       c.appendChild(fe);
+      if(solo2026) c.appendChild(el("p","mini","Este club juega en la Primera División 2026."));
       c.appendChild(el("p","mini",(ERA[base]&&ERA[base].desc)||""));
       c.appendChild(el("p",null,info.desc||""));
 

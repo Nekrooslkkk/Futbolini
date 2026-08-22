@@ -113,7 +113,11 @@ function onceIdeal(){
 }
 function esClasico(part){
   const grandes=["CC","UCH","UC"];
-  return grandes.indexOf(E.club)>=0 && grandes.indexOf(part&&part.rivalId)>=0;
+  const riv=part&&part.rivalId;
+  if(grandes.indexOf(E.club)>=0 && grandes.indexOf(riv)>=0) return true;
+  /* 7.00 · rivalidades regionales de los clubes nuevos */
+  if(typeof esRivalidadRegional==="function" && esRivalidadRegional(E.club,riv)) return true;
+  return false;
 }
 function fuerzaEquipo(once){
   if(!once.length) return 40;

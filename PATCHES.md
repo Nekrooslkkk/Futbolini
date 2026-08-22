@@ -1334,3 +1334,22 @@ Arcos nuevos: EVE COQ AUD HUA OHI NUB COB CAL LSE DCO UDC (no pisa CC/UCH/UC/PAL
 **Probado:** temporada completa + año 2 + 12 vistas, 0 errores; tres_del_9 y micro_cantando desbloquean OK;
 expulsion y penal_errado mapean bien.
 **1 línea:** integré la voz de Grok y cablé lo que le faltaba: tuits de roja/penal errado y 8 de 9 logros nuevos.
+
+## 7.00 · ¡16 clubes manejables! Integración de la data de Grok  ✅ (2026-08-22)
+**Archivos:** `js/data-clubes2026.js` (NUEVO · merge), `index.html`, `js/partido.js` (esClasico), `js/ui.js` (inicio + barra)
+**Qué:** integré la data que mandó Grok para hacer DIRIGIBLES los 11 clubes que faltaban de Primera 2026
+(Everton, Coquimbo, Audax, Huachipato, O'Higgins, Ñublense, Cobresal, La Calera, La Serena, D. Concepción,
+U. de Concepción). Ahora son **16 clubes jugables**.
+- `data-clubes2026.js` mergea por MUTACIÓN (Object.assign, sin redeclarar const): CLUB_INFO_2026 (identidad),
+  IND_BASE_2026 (indicadores), CAJA_BASE_2026 (caja), ESTATUTO_INICIAL (identidad institucional) y
+  PODER_CLUB (poder de grupos). Los planteles ya estaban en `data-grok.js`.
+- **Selector de inicio**: sección nueva "… o un club de la Primera 2026" con los 11. Los clubes que solo
+  existen en 2026 fuerzan la época 2026 (no muestran el botón 1991).
+- **esClasico** ahora reconoce **rivalidades regionales** (RIVALIDADES_2026): clásico penquista (DCO↔UDC),
+  del norte chico (COQ↔LSE), del Biobío (HUA↔DCO, HUA↔UDC), de colonias (AUD↔PAL), del Aconcagua (CAL↔LIM).
+- Fix: `pintarBarra` leía el escudo de CLUB_INFO (1991); ahora usa `infoClub()` (era-aware) → no crashea con
+  los clubes 2026.
+**Probado:** los 16 clubes bootean; temporada completa como Huachipato (30 partidos, 0 errores, 2 clásicos
+regionales detectados); las 12 vistas OK; start screen muestra los 16. Consola limpia.
+**1 línea:** los 11 clubes que faltaban ya se pueden dirigir: 16 clubes jugables, cada uno con su arco, plantel y clásico.
+**Riesgos:** motor de selección + merge de datos; aislado en un archivo. Medio-bajo.
