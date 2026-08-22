@@ -102,6 +102,16 @@ function pantallaInicio(){
   }
   paso1.cuerpo.appendChild(el("p","mini","Los 5 primeros se pueden jugar en 1991 (calendario real, Copa Libertadores de Colo-Colo) o en 2026. Los de abajo son de la Primera División 2026 (planteles aproximados, 3 puntos por victoria)."));
   v.appendChild(paso1);
+
+  /* 7.00 · duelo P2P contra un amigo */
+  if(typeof modalDuelo==="function"){
+    const pm=panel("… o jugá contra un amigo","🎮","agua");
+    pm.cuerpo.appendChild(el("p","mini","Un duelo dirigido, en vivo, sin cuentas ni servidor: se conectan con un código y cada uno maneja su club."));
+    const bm=el("button","btn-aqua ancho verde","🎮 Duelo con un amigo");
+    bm.onclick=()=>modalDuelo();
+    pm.cuerpo.appendChild(bm);
+    v.appendChild(pm);
+  }
 }
 function elegirEpoca(id){
   /* 7.00 · clubes que solo existen en 2026 (no tienen datos 1991) */

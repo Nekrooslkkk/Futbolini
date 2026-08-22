@@ -1374,3 +1374,20 @@ overhaul 7.0, así que la pulida fue sobre todo verificación + un ajuste:
 - Los 16 clubes bootean; la barra usa `infoClub()` era-aware; el selector muestra los 16.
 **1 línea:** pulida = verificado que los 16 clubes y las 12 vistas están redondos en PC y celu, y saqué el logro confuso.
 **Siguiente:** FASE B · multijugador P2P (ver PLAN_7.00.md).
+
+## 7.00 · FASE B1 · Conexión P2P (multijugador, primer ladrillo)  ✅ (2026-08-22)
+**Archivos:** `js/multi.js` (NUEVO), `index.html`, `js/ui.js` (botón en el inicio)
+**Qué:** primer incremento del multijugador. Duelo contra un amigo **sin servidor ni cuentas**: WebRTC
+DataChannel con señalización MANUAL (copia-pega de código), STUN público solo para descubrir la IP.
+- `js/multi.js`: motor `MP` + `mpCrearSala()` (anfitrión → código de invitación), `mpUnirse(cod)`
+  (visitante → código de respuesta), `mpConfirmarSala(resp)` (anfitrión confirma). Espera a juntar los
+  candidatos ICE antes de dar el código (sin trickle), los codifica en base64. Handshake de nombres al
+  abrir el canal. `mpEnviar/onMensaje` para B2/B3.
+- UI `modalDuelo()`: pantalla "Duelo con un amigo" (crear sala / unirse), copiar código con un toque,
+  y estado "¡Conectados!". Botón de entrada en la pantalla de inicio.
+**Probado (2 pestañas):** anfitrión crea oferta → visitante genera respuesta → anfitrión confirma →
+`conectado=true`, `dc=open`, `iceState=connected` en ambos, nombres intercambiados, y un mensaje de prueba
+viajó del host al guest exacto. STUN resolvió la IP pública OK. Consola limpia.
+**1 línea:** dos navegadores ya se conectan directo (P2P) con un código, sin servidor — la base del duelo.
+**Siguiente:** B2 · lobby (cada uno elige su club y se sincroniza).
+**Riesgos:** WebRTC nuevo; aislado en multi.js, no toca el single-player. Medio.
