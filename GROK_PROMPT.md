@@ -8,10 +8,12 @@ Grok **no corre dentro del juego**, solo genera texto que después copiamos a lo
 
 ## Contexto que Grok debe leer primero
 
-Futbolini es un simulador satírico de conducción de clubes chilenos (estética Frutiger Aero /
-Windows Vista). Manejás una *institución*, no solo un equipo: barra, prensa, directorio,
-sponsors, hinchada, plata. El tono es **chileno/neutro, seco, gracioso y humano**, tipo crónica
-de barrio. NO es solemne ni corporativo.
+Futbolini es un simulador de conducción de clubes chilenos (estética Frutiger Aero /
+Windows Vista). Es **realista** en los datos, planteles e historias (gente real, títulos,
+campañas), pero con harto **humor y sátira chilena**: tiene de todo, gestión seria, drama de
+camarín, prensa, barra, sponsors, plata… y también la joda. Manejás una *institución*, no solo
+un equipo. El tono es **chileno/neutro, seco, gracioso y humano**, tipo crónica de barrio.
+NO es solemne ni corporativo.
 
 ### Reglas DURAS (no romper nunca)
 1. **Español chileno/neutro, SIN lenguaje inclusivo** (nada de "-e": es "todos", "jugadores", "la gente").

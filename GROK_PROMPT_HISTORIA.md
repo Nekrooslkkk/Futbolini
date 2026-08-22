@@ -1,6 +1,8 @@
 # Prompt para Grok — Épocas históricas de cada club (Futbolini 7.00)
 
-Futbolini es un simulador satírico de clubes chilenos (100% offline, JS vanilla). Ya
+Futbolini es un simulador de conducción de clubes chilenos: REALISTA en los datos, planteles
+e historias (títulos, campañas, gente real), pero con harto humor y sátira chilena. Tiene de
+todo: gestión seria, drama, prensa, barra y también la joda. 100% offline, JS vanilla. Ya
 generaste los planteles 2026 y la "voz". Ahora queremos que **cada club tenga su época de
 gloria jugable** (como Colo-Colo tiene 1989/1991), para arrancar la carrera desde ahí.
 
