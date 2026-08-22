@@ -1456,3 +1456,18 @@ contenido de Grok.
 `EPOCAS_CLUB_ADD` con las entradas (UC tetra 2019, etc.) y se pegan.
 **1 línea:** ya se puede revivir la U de Sampaoli 2011; el sistema de épocas de gloria está listo para sumar el resto.
 **Riesgos:** motor de selección + override; aislado. Bajo.
+
+## 7.00 · Épocas de gloria de los 12 clubes (contenido de Grok integrado)  ✅ (2026-08-22)
+**Archivos:** `js/data-historia.js` (NUEVO), `index.html`
+**Qué:** Grok generó los planteles históricos reales + `EPOCAS_CLUB_ADD` de los 12 clubes que faltaban.
+Integrado en `data-historia.js` (planteles + registro en PLANTELES_REALES[club][anio] + EPOCAS_CLUB_ADD que
+se mergea solo en data-clubes2026.js). Ahora **13 clubes tienen época de gloria jugable**:
+- UC 2019 (bicampeón, Quinteros), O'Higgins 2013 (1ª estrella, Berizzo/Calandria), Huachipato 2012
+  (Clausura), Cobresal 2015 (milagro), U. de Concepción 2018 (subcampeón), La Calera 2018 (Brian
+  Fernández), Ñublense 2022 (subcampeón + Libertadores), Coquimbo 2025 (1er título), Everton 2012,
+  Audax 2018, La Serena 2019, D. Concepción 2010 — + la U 2011 y Colo 1989/1991 que ya estaban.
+- Todos con plantel REAL de la época, DT real, indicadores/caja acordes. Juegan en la liga actual (leyendas).
+**Probado:** los 12 bootean sin fallar; temporada completa como UC 2019 (30 partidos, 0 errores); los
+selectores muestran las épocas; consola limpia. Los planteles cargan a sus figuras reales (Dituro,
+Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
+**1 línea:** los 16 clubes ahora tienen su época de gloria jugable con plantel real — la 7.00 quedó completa de contenido.
