@@ -12,6 +12,8 @@ const MP = {
   yo:null, rival:null,           /* nombres de DT */
   miClub:null, rivalClub:null,   /* B2 · elección de club */
   miListo:false, rivalListo:false,
+  serie:{g:0,e:0,p:0},           /* B4 · serie de duelos en esta conexión */
+  duel:null, watchdog:null,      /* B5 · timeout de conexión */
   onMensaje:null,                /* callback para B2/B3 */
   ICE:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}]
 };
@@ -23,11 +25,27 @@ function mpClubes(){
 function mpNombreClub(id){ const c=mpClubes().find(function(x){return x.id===id;}); return c?c.n:(id||"—"); }
 function mpSoportado(){ return typeof RTCPeerConnection!=="undefined"; }
 function mpReset(){
+  if(MP.watchdog){ clearTimeout(MP.watchdog); MP.watchdog=null; }
   try{ if(MP.dc) MP.dc.close(); }catch(e){}
   try{ if(MP.pc) MP.pc.close(); }catch(e){}
   MP.pc=null; MP.dc=null; MP.rol=null; MP.conectado=false; MP.rival=null;
   MP.miClub=null; MP.rivalClub=null; MP.miListo=false; MP.rivalListo=false;
+  MP.serie={g:0,e:0,p:0}; MP.duel=null;
 }
+/* B4 · registra el resultado del duelo en la serie de la conexión + un log persistente */
+function duelRegistrarSerie(){
+  const d=MP.duel; if(!d || d.registrado) return; d.registrado=true;
+  const mc=duelMarcador();
+  if(mc[0]>mc[1]) MP.serie.g++; else if(mc[0]===mc[1]) MP.serie.e++; else MP.serie.p++;
+  try{
+    const key="futbolini_duelos";
+    const log=JSON.parse(localStorage.getItem(key)||"[]");
+    log.push({rival:MP.rival||"amigo", yoClub:MP.miClub, rivalClub:MP.rivalClub, yo:mc[0], rival2:mc[1]});
+    if(log.length>50) log.splice(0,log.length-50);
+    localStorage.setItem(key, JSON.stringify(log));
+  }catch(e){}
+}
+function serieTxt(){ const s=MP.serie; return s.g+" ganados · "+s.e+" empates · "+s.p+" perdidos"; }
 /* espera a que junte los candidatos ICE (así el código lleva todo, sin trickle) */
 function mpEsperarICE(pc){
   return new Promise(function(res){
@@ -46,6 +64,7 @@ function mpDecodificar(codigo){
 function mpEngancharCanal(dc){
   MP.dc=dc;
   dc.onopen=function(){ MP.conectado=true;
+    if(MP.watchdog){ clearTimeout(MP.watchdog); MP.watchdog=null; }
     mpEnviar({tipo:"hola", nombre:MP.yo||"DT"});   /* handshake */
     if(typeof mpAlConectar==="function") mpAlConectar();
   };
@@ -75,6 +94,9 @@ async function mpCrearSala(){
 async function mpConfirmarSala(codigoRespuesta){
   const ans=mpDecodificar(codigoRespuesta);
   await MP.pc.setRemoteDescription(ans);
+  /* watchdog: si en 20s no conectó, avisar (suele ser red muy cerrada) */
+  if(MP.watchdog) clearTimeout(MP.watchdog);
+  MP.watchdog=setTimeout(function(){ if(!MP.conectado && typeof mpAlFallo==="function") mpAlFallo(); }, 20000);
   return true;
 }
 /* ---- VISITANTE: se une con el código y devuelve el código de respuesta ---- */
@@ -240,6 +262,10 @@ function modalDuelo(){
         marc.innerHTML='<div class="eq">'+mpNombreClub(MP.miClub)+'</div><div class="go">'+mc[0]+" - "+mc[1]+'</div><div class="eq">'+mpNombreClub(MP.rivalClub)+'</div>';
         c.appendChild(marc);
         c.appendChild(el("p","mini",gane?"Le ganaste a "+(MP.rival||"tu amigo")+". Que se aguante.":(emp?"Iguales. Va a haber que desempatar en la revancha.":"Esta vez fue de "+(MP.rival||"tu amigo")+". Revancha ya.")));
+        /* B4 · serie de la conexión */
+        if((MP.serie.g+MP.serie.e+MP.serie.p)>1){
+          c.appendChild(el("div","resul mitad","📊 <b>Serie vs "+(MP.rival||"tu amigo")+":</b> "+serieTxt()));
+        }
         if(MP.rol==="host"){
           const br=el("button","btn-aqua ancho verde","🔁 Revancha");
           br.onclick=function(){ MP.miListo=false; MP.rivalListo=false; MP.miClub=null; MP.rivalClub=null; MP.duel=null; mpEnviar({tipo:"revancha"}); pintar("lobby",{}); };
@@ -258,6 +284,7 @@ function modalDuelo(){
     /* cuando el canal abre, saltamos al LOBBY */
     mpAlConectar=function(){ if(MP.conectado) pintar("lobby",{}); };
     mpAlCaer=function(){ pintar("error",{msg:"Se cortó la conexión con tu amigo."}); };
+    mpAlFallo=function(){ pintar("error",{msg:"No se pudo conectar. Suele pasar en redes muy cerradas (algún wifi corporativo o de datos móviles). Probá de nuevo, o que el otro cree la sala."}); };
     /* la UI del duelo se repinta desde acá */
     duelRepintar=function(){ if(MP.duel){ if(MP.duel.fase==="fin") pintar("fin",{}); else pintar("duelo",{}); } };
     /* mensajes (lobby B2 + duelo B3) */
@@ -275,7 +302,7 @@ function modalDuelo(){
       /* --- duelo (guest recibe del host) --- */
       else if(m.tipo==="duelo_ronda"){ if(MP.duel){ MP.duel.n=m.n; MP.duel.total=m.total; MP.duel.fase="eligiendo"; MP.duel.ultimo=null; duelRepintar(); } }
       else if(m.tipo==="duelo_res"){ if(MP.duel){ MP.duel.gHost=m.gHost; MP.duel.gGuest=m.gGuest; MP.duel.ultimo=m; MP.duel.fase="resultado"; duelRepintar(); } }
-      else if(m.tipo==="duelo_fin"){ if(MP.duel){ MP.duel.gHost=m.gHost; MP.duel.gGuest=m.gGuest; MP.duel.fase="fin"; duelRepintar(); } }
+      else if(m.tipo==="duelo_fin"){ if(MP.duel){ MP.duel.gHost=m.gHost; MP.duel.gGuest=m.gGuest; MP.duel.fase="fin"; duelRegistrarSerie(); duelRepintar(); } }
       else if(m.tipo==="revancha"){ MP.miListo=false; MP.rivalListo=false; MP.miClub=null; MP.rivalClub=null; MP.duel=null; pintar("lobby",{}); }
     };
     /* si ambos están listos, el ANFITRIÓN arranca el duelo */
@@ -345,6 +372,7 @@ function duelResolver(){
 }
 function duelFin(){
   const d=MP.duel; d.fase="fin";
+  duelRegistrarSerie();
   mpEnviar({tipo:"duelo_fin", gHost:d.gHost, gGuest:d.gGuest});
   if(typeof duelRepintar==="function") duelRepintar();
 }
@@ -363,7 +391,7 @@ function duelMarcador(){
 }
 
 /* callbacks que la UI redefine */
-var mpAlConectar=null, mpAlCaer=null, mpQuizasArrancar=null;
+var mpAlConectar=null, mpAlCaer=null, mpQuizasArrancar=null, mpAlFallo=null;
 function mpCopiar(txt){
   try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt); return; } }catch(e){}
   try{ const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }catch(e){}

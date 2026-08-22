@@ -1422,3 +1422,18 @@ en los dos. Consola limpia.
 **1 línea:** ¡ya se puede jugar un duelo contra un amigo! 9 rondas donde los dos deciden, con la fuerza real de cada club.
 **Siguiente:** B4/B5 (historial de duelos, copiar código con QR) — opcionales; o Fase C.
 **Riesgos:** netcode nuevo; aislado en multi.js. Medio.
+
+## 7.00 · FASE B4/B5 · Serie de duelos + robustez  ✅ (2026-08-22)
+**Archivos:** `js/multi.js`
+**Qué:** pulido del multijugador.
+- **B4 · Serie de duelos**: cada duelo cuenta para una serie de la conexión (ganados/empates/perdidos),
+  que se muestra en la pantalla final ("📊 Serie vs [amigo]: 2 ganados · 0 empates · 0 perdidos"). La
+  revancha mantiene la serie; da ganas de seguir jugando. Además un log persistente en localStorage
+  (`futbolini_duelos`).
+- **B5 · Robustez**: watchdog de conexión (si en 20s no conecta tras confirmar, avisa con un mensaje claro
+  —suele ser una red muy cerrada— en vez de colgarse); mensaje amable si se cae la conexión; el watchdog
+  se limpia al conectar o al resetear.
+**Probado (2 pestañas, 2 duelos + revancha):** la serie contó bien (host 2-0-0, guest 0-0-2), la pantalla
+final la muestra, el marcador final (3-2) consistente. Consola limpia.
+**1 línea:** los duelos ahora llevan una serie vs tu amigo (con revancha), y la conexión avisa si falla en vez de colgarse.
+**Riesgos:** solo multi.js. Bajo.
