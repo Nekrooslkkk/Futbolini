@@ -294,11 +294,13 @@ function penalEnPartido(P,aFavor,motivo,patElegido,forzado){
     const gol=(forzado===undefined)?cobrarPenal(pat,arq):(forzado===true);
     if(forzado==="afuera"){
       linea(P,min,"¡"+pat.n+" la manda a las nubes! El penal se fue afuera.","grave"); P.empuje-=0.4;
+      P.penalErrado=true; vozPenalErrado(P,min);   /* 7.00 · tuit de voz + flag para logro */
     } else if(gol){
       pat.goles++; P.goleadores.push(pat.n); regGol(P,min,pat.n,true,"penal"); if(P.part.local)P.gl++; else P.gv++;
       linea(P,min,"¡Gol de penal de "+pat.n+"! "+marcadorTxt(P),"gol");
       if(pat.pos==="ARQ" && typeof desbloquear==="function") desbloquear("arquero_penal");   /* 6.25 · logro */
-    } else { linea(P,min,"¡Atajadón! "+(arq?arq.n:"el arquero")+" le contiene el penal a "+pat.n+".","grave"); P.empuje-=0.4; }
+    } else { linea(P,min,"¡Atajadón! "+(arq?arq.n:"el arquero")+" le contiene el penal a "+pat.n+".","grave"); P.empuje-=0.4;
+      P.penalErrado=true; vozPenalErrado(P,min); }
   } else {
     const pat=elige(P.rivalPlantel.filter(x=>x.pos!=="ARQ"))||P.rivalPlantel[0], arq=arqueroDe(P.once);
     linea(P,min,(motivo||"Penal para "+P.part.rivalNombre+".")+" Va a patear "+pat.n+"…");
@@ -307,6 +309,11 @@ function penalEnPartido(P,aFavor,motivo,patElegido,forzado){
       linea(P,min,"Gol de penal de "+P.part.rivalNombre+": "+pat.n+". "+marcadorTxt(P),"gol");
     } else { linea(P,min,"¡"+(arq?arq.n:"el arquero")+" le ataja el penal! El estadio explota.","gol"); P.empuje+=0.5; }
   }
+}
+/* 7.00 · emite un tuit de "penal errado" al ticker si la voz (data-voz.js) está cargada */
+function vozPenalErrado(P,min){
+  if(typeof tuitDeCtx!=="function"||typeof empujarTicker!=="function") return;
+  const t=tuitDeCtx("penal_errado"); if(t) empujarTicker(P,t.quien,t.txt,"malo",min);
 }
 /* polémica en minutos calientes: penal dudoso o gol anulado, con sesgo según
    el modificador de arbitraje (pactos oscuros inclinan la balanza a tu favor). */
@@ -756,6 +763,24 @@ function terminarPartido(P){
       const casa=P.once.filter(j=>j.rasgos&&j.rasgos.indexOf("de la casa")>=0).length;
       if(casa>=3) desbloquear("clasico_casa");
       if(yo-otro>=4) desbloquear("goleada_clasico");
+    }
+    /* 7.00 · hooks de los logros que dejó Grok (LOGROS_VOZ) */
+    if(typeof LOGRO_POR_ID!=="undefined"){
+      const clasico=esClasico(part);
+      /* hat-trick de un mismo delantero propio */
+      const cnt={}; (P.goleadores||[]).forEach(n=>{ cnt[n]=(cnt[n]||0)+1; });
+      const hatTrick=Object.keys(cnt).some(n=>cnt[n]>=3);
+      /* minuto del último gol propio (para el agónico de visita) */
+      const golesProp=(P.golesDetalle||[]).filter(g=>g.propio);
+      const ultMin=golesProp.length?Math.max.apply(null,golesProp.map(g=>g.min||0)):0;
+      if(LOGRO_POR_ID.no_se_jode && clasico && yo>otro) desbloquear("no_se_jode");
+      if(LOGRO_POR_ID.tres_del_9 && hatTrick) desbloquear("tres_del_9");
+      if(LOGRO_POR_ID.diez_visita && !part.local && P.tuvoRoja && yo>=otro) desbloquear("diez_visita");
+      if(LOGRO_POR_ID.micro_cantando && !part.local && yo>otro && ultMin>=80) desbloquear("micro_cantando");
+      if(LOGRO_POR_ID.luna_penal && P.penalErrado && yo>=otro) desbloquear("luna_penal");
+      if(LOGRO_POR_ID.el_1_es_el_dt && !part.local && yo===0 && otro===0) desbloquear("el_1_es_el_dt");
+      if(LOGRO_POR_ID.silencio_local && part.local && yo<otro && yo===0) desbloquear("silencio_local");
+      if(LOGRO_POR_ID.pueblo_lleno && part.local && yo>otro && ["LIM","CAL","COB","NUB"].indexOf(E.club)>=0) desbloquear("pueblo_lleno");
     }
   }
   if(typeof esClasico==="function" && esClasico(part)){

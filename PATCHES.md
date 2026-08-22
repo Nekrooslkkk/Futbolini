@@ -1309,3 +1309,28 @@ Cada una con 3 opciones y consecuencias reales, usando las acciones ya existente
 **Qué probar:** avanzar varias semanas → en el buzón aparecen estas situaciones nuevas de mercado.
 **1 línea:** el mercado ahora tiene más situaciones (trueques, representantes, rumores) para no repetirse.
 **Riesgos:** solo agrega plantillas a DEC_PROC. Probado: mini-temporada resolviendo 27 decisiones, 0 errores.
+## 7.00 · Voz PLOP / FutbolGram (Grok)
+Archivos: js/data-voz.js (NUEVO), index.html (una linea al final).
+Pools: TUITS_MOMENTO, PREGUNTAS_VOZ, TRIVIA_VOZ, ARCOS_NUEVOS, LOGROS_VOZ.
+tickerPost / tickerAmbiente / preguntasConferencia se envuelven al cargar (flag _voz).
+No toca tokens ni repartirDecisiones.
+Arcos nuevos: EVE COQ AUD HUA OHI NUB COB CAL LSE DCO UDC (no pisa CC/UCH/UC/PAL/LIM).
+
+
+## 7.00-fix · Cableado de la voz de Grok (data-voz.js integrado)  ✅ (2026-08-21)
+**Archivos:** `index.html` (carga data-voz.js último), `js/data-voz.js` (fix ctxDeEvento), `js/partido.js` (hooks)
+**Qué:** integré el `data-voz.js` que mandó Grok y cablé lo que le faltaba (era motor, no contenido):
+- **Tuits de expulsión:** `ctxDeEvento` buscaba la roja en `tipo:"tarjeta"` con un flag inexistente; en el
+  juego la roja es su propio evento `tipo:"roja"`. Corregido → ahora salen.
+- **Tuits de penal errado:** el resultado del penal no viene en el evento; ahora `penalEnPartido` marca
+  `P.penalErrado` y emite el tuit `penal_errado` cuando se falla un penal a favor (`vozPenalErrado`).
+- **9 logros de Grok (LOGROS_VOZ)** se agregaban al panel pero sin hook. Cableé 8 en `terminarPartido`:
+  no_se_jode (clásico ganado), tres_del_9 (hat-trick), diez_visita (sumar de visita con roja), micro_cantando
+  (ganar de visita con gol 80+), luna_penal (errar penal y no perder), el_1_es_el_dt (0-0 de visita),
+  silencio_local (perder de local sin marcar), pueblo_lleno (ganar de local con club chico).
+  Queda 1 sin hook: **post_oficial_muerto** (depende de un mecanismo de "post de aura" que no existe).
+- Los 11 arcos nuevos (EVE/COQ/AUD/HUA/OHI/NUB/COB/CAL/LSE/DCO/UDC) usan IDs que coinciden con LIGA_2026:
+  quedan latentes hasta que esos clubes sean manejables (7.00).
+**Probado:** temporada completa + año 2 + 12 vistas, 0 errores; tres_del_9 y micro_cantando desbloquean OK;
+expulsion y penal_errado mapean bien.
+**1 línea:** integré la voz de Grok y cablé lo que le faltaba: tuits de roja/penal errado y 8 de 9 logros nuevos.
