@@ -160,8 +160,7 @@ const TRIVIA_VOZ=[
 
 /* ---------- F) logros extra ---------- */
 const LOGROS_VOZ=[
-  {id:"post_oficial_muerto",n:"Envejeció como leche",d:"Ganá un partido la misma semana en que el club subió un post de aura y el feed lo destrozó."},
-  {id:"silencio_local",n:"Se fue la luz",d:"Perdé de local y que el ticker no tenga un solo tuit bueno en el segundo tiempo."},
+  {id:"silencio_local",n:"Se fue la luz",d:"Perdé de local sin marcar un gol."},
   {id:"diez_visita",n:"Con uno menos, de visita",d:"Sumá de visita después de una roja propia."},
   {id:"no_se_jode",n:"Con este club no se jode",d:"Ganá un clásico."},
   {id:"micro_cantando",n:"El chofer me miró raro",d:"Ganá de visita en el último minuto (80+)."},
