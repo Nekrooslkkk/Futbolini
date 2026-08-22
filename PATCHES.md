@@ -1404,3 +1404,21 @@ viajó del host al guest exacto. STUN resolvió la IP pública OK. Consola limpi
 host da listo → ambos listos → arrancar sincronizado. Lobby renderiza los 16 clubes + tarjeta VS. Consola limpia.
 **1 línea:** el lobby del duelo ya sincroniza club y "listo" de los dos por el canal P2P; falta el partido (B3).
 **Siguiente:** B3 · el partido dirigido entre los dos (aparecen los 2 y deciden).
+
+## 7.00 · FASE B3 · El duelo dirigido (¡multijugador jugable!)  ✅ (2026-08-22)
+**Archivos:** `js/multi.js`
+**Qué:** el corazón del multijugador. Un duelo head-to-head por rondas entre los dos clubes, con el
+anfitrión autoritativo (sin desyncs de RNG), robusto ante lag porque sincroniza por turnos.
+- **9 rondas** (jugadas clave). En cada una, LOS DOS eligen su postura (🗡️ atacar / ⚖️ equilibrado /
+  🛡️ meterse atrás). El host calcula con la **fuerza real de cada club** (IND_BASE_2026) + la postura de
+  cada uno + azar si cae gol, actualiza el marcador y lo transmite. Los dos ven el mismo scoreboard.
+- Protocolo: `duelo_ronda` (host→guest), `duelo_pick` (guest→host), `duelo_res` (host→guest), `duelo_fin`.
+  El host resuelve cuando tiene los dos picks; auto-avanza a la ronda siguiente.
+- Pantallas: marcador tipo estadio, elegir postura, "esperando al rival", resultado de la ronda
+  ("¡GOL TUYO!" / "Te marcaron"), y final (ganaste/empate/perdiste) con botón **Revancha**.
+**Probado (2 pestañas, duelo completo automático):** Colo-Colo (fza 80) vs Huachipato (62), 9 rondas,
+picks y resultados sincronizados, terminó **1-1** consistente en ambos lados, pantalla final "🤝 Empate"
+en los dos. Consola limpia.
+**1 línea:** ¡ya se puede jugar un duelo contra un amigo! 9 rondas donde los dos deciden, con la fuerza real de cada club.
+**Siguiente:** B4/B5 (historial de duelos, copiar código con QR) — opcionales; o Fase C.
+**Riesgos:** netcode nuevo; aislado en multi.js. Medio.

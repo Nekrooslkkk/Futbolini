@@ -195,12 +195,60 @@ function modalDuelo(){
         const x=el("button","btn-aqua ancho gris","Salir del duelo"); x.style.marginTop="6px";
         x.onclick=function(){ mpReset(); cerrarModal(); }; c.appendChild(x);
       }
-      /* ---------- duelo arrancando (transición a B3) ---------- */
-      else if(pantalla==="arrancando"){
-        c.appendChild(el("div","resul bien","⚽ <b>¡Arranca el duelo!</b> "+mpNombreClub(MP.miClub)+" vs "+mpNombreClub(MP.rivalClub)));
-        c.appendChild(el("p","mini","(B3 · el partido dirigido entre los dos — en construcción. La conexión y el lobby ya funcionan.)"));
+      /* ---------- EL DUELO (B3) ---------- */
+      else if(pantalla==="duelo"){
+        const d=MP.duel||{n:0,total:DUELO_RONDAS,fase:"espera"};
+        const mc=duelMarcador();
+        /* marcador tipo scoreboard */
+        const marc=el("div","marcador");
+        marc.innerHTML='<div class="eq">'+mpNombreClub(MP.miClub)+'</div><div class="go">'+mc[0]+" - "+mc[1]+'</div><div class="eq">'+mpNombreClub(MP.rivalClub)+'</div>';
+        c.appendChild(marc);
+        const minuto=Math.min(90,Math.round((d.n/d.total)*90));
+        c.appendChild(el("div","reloj","Jugada "+d.n+" de "+d.total+" · min "+minuto));
+        /* resultado de la ronda anterior */
+        if(d.fase==="resultado" && d.ultimo){
+          const yoGol = MP.rol==="host"?d.ultimo.golH:d.ultimo.golG;
+          const rivGol= MP.rol==="host"?d.ultimo.golG:d.ultimo.golH;
+          let txt = yoGol&&rivGol?"⚽ ¡Los dos marcaron! Ida y vuelta puro.":
+                    yoGol?"⚽ ¡GOL TUYO! La metiste.":
+                    rivGol?"😱 Te marcaron. A recuperarse.":"🧱 Ronda trabada, no se rompió el cero de la jugada.";
+          c.appendChild(el("div","resul "+(yoGol&&!rivGol?"bien":(rivGol&&!yoGol?"mal":"mitad")),txt));
+          c.appendChild(el("p","mini","Preparando la próxima jugada…"));
+        }
+        /* elegir postura */
+        else if(d.fase==="eligiendo"){
+          c.appendChild(el("h3","sub","¿Cómo la jugás?"));
+          const ops=el("div","ops");
+          DUELO_OPS.forEach(function(o,i){
+            const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div><div class="d">'+o.d+'</div>';
+            b.onclick=function(){ duelMiPick(i); };
+            ops.appendChild(b);
+          });
+          c.appendChild(ops);
+        }
+        else if(d.fase==="esperando"){
+          c.appendChild(el("div","resul mitad","⏳ Elegiste. Esperando la decisión de tu rival…"));
+        }
+        else { c.appendChild(el("p","mini","Preparando el duelo…")); }
+      }
+      /* ---------- final del duelo (B4 preview) ---------- */
+      else if(pantalla==="fin"){
+        const d=MP.duel, mc=duelMarcador();
+        const gane=mc[0]>mc[1], emp=mc[0]===mc[1];
+        c.appendChild(el("h2","tit",(gane?"🏆 ¡Ganaste el duelo!":(emp?"🤝 Empate":"😔 Perdiste el duelo"))));
+        const marc=el("div","marcador"); marc.style.margin="8px 0";
+        marc.innerHTML='<div class="eq">'+mpNombreClub(MP.miClub)+'</div><div class="go">'+mc[0]+" - "+mc[1]+'</div><div class="eq">'+mpNombreClub(MP.rivalClub)+'</div>';
+        c.appendChild(marc);
+        c.appendChild(el("p","mini",gane?"Le ganaste a "+(MP.rival||"tu amigo")+". Que se aguante.":(emp?"Iguales. Va a haber que desempatar en la revancha.":"Esta vez fue de "+(MP.rival||"tu amigo")+". Revancha ya.")));
+        if(MP.rol==="host"){
+          const br=el("button","btn-aqua ancho verde","🔁 Revancha");
+          br.onclick=function(){ MP.miListo=false; MP.rivalListo=false; MP.miClub=null; MP.rivalClub=null; MP.duel=null; mpEnviar({tipo:"revancha"}); pintar("lobby",{}); };
+          c.appendChild(br);
+        } else {
+          c.appendChild(el("p","mini","Esperá a que el anfitrión proponga la revancha, o cerrá."));
+        }
         const x=el("button","btn-aqua ancho gris","Cerrar"); x.style.marginTop="6px";
-        x.onclick=cerrarModal; c.appendChild(x);
+        x.onclick=function(){ mpReset(); cerrarModal(); }; c.appendChild(x);
       }
       else if(pantalla==="error"){
         c.appendChild(el("div","resul mal","⚠ "+(datos.msg||"Algo salió mal con la conexión.")));
@@ -210,23 +258,31 @@ function modalDuelo(){
     /* cuando el canal abre, saltamos al LOBBY */
     mpAlConectar=function(){ if(MP.conectado) pintar("lobby",{}); };
     mpAlCaer=function(){ pintar("error",{msg:"Se cortó la conexión con tu amigo."}); };
-    /* mensajes del lobby (B2) */
+    /* la UI del duelo se repinta desde acá */
+    duelRepintar=function(){ if(MP.duel){ if(MP.duel.fase==="fin") pintar("fin",{}); else pintar("duelo",{}); } };
+    /* mensajes (lobby B2 + duelo B3) */
     MP.onMensaje=function(m){
       if(!m) return;
+      /* --- lobby --- */
       if(m.tipo==="club"){ MP.rivalClub=m.club; pintar("lobby",{}); }
       else if(m.tipo==="listo"){ MP.rivalListo=!!m.listo;
         if(MP.miListo && MP.rivalListo){ mpQuizasArrancar(); }
         pintar("lobby",{}); }
-      else if(m.tipo==="arrancar"){ MP.rivalClub=m.rivalClub||MP.rivalClub; pintar("arrancando",{}); }
+      else if(m.tipo==="arrancar"){ MP.rivalClub=m.rivalClub||MP.rivalClub;
+        MP.duel={n:0,total:DUELO_RONDAS,gHost:0,gGuest:0,fase:"espera",ultimo:null}; pintar("duelo",{}); }
+      /* --- duelo (host recibe picks del guest) --- */
+      else if(m.tipo==="duelo_pick"){ if(MP.duel){ MP.duel.pickGuest=m.idx; duelChequearResolver(); } }
+      /* --- duelo (guest recibe del host) --- */
+      else if(m.tipo==="duelo_ronda"){ if(MP.duel){ MP.duel.n=m.n; MP.duel.total=m.total; MP.duel.fase="eligiendo"; MP.duel.ultimo=null; duelRepintar(); } }
+      else if(m.tipo==="duelo_res"){ if(MP.duel){ MP.duel.gHost=m.gHost; MP.duel.gGuest=m.gGuest; MP.duel.ultimo=m; MP.duel.fase="resultado"; duelRepintar(); } }
+      else if(m.tipo==="duelo_fin"){ if(MP.duel){ MP.duel.gHost=m.gHost; MP.duel.gGuest=m.gGuest; MP.duel.fase="fin"; duelRepintar(); } }
+      else if(m.tipo==="revancha"){ MP.miListo=false; MP.rivalListo=false; MP.miClub=null; MP.rivalClub=null; MP.duel=null; pintar("lobby",{}); }
     };
-    /* si ambos están listos, el ANFITRIÓN da la orden de arrancar */
+    /* si ambos están listos, el ANFITRIÓN arranca el duelo */
     mpQuizasArrancar=function(){
       if(MP.miListo && MP.rivalListo && MP.rol==="host"){
         mpEnviar({tipo:"arrancar", rivalClub:MP.miClub});   /* al guest, "rivalClub" = el club del host */
-        pintar("arrancando",{});
-      } else if(MP.miListo && MP.rivalListo){
-        /* el guest espera la orden del host, pero mostramos que ya está */
-        pintar("lobby",{});
+        duelIniciar(); pintar("duelo",{});
       }
     };
     function botonVolver(pintar){ const b=el("button","btn-aqua ancho gris","← Volver"); b.style.marginTop="8px";
@@ -234,6 +290,78 @@ function modalDuelo(){
     pintar(MP.conectado?"lobby":"inicio",{});   /* si ya estás conectado, directo al lobby */
   },{cerrarFuera:false});
 }
+/* ============================================================
+   B3 · EL DUELO (por rondas head-to-head, anfitrión autoritativo)
+   Cada ronda los dos eligen postura; el host calcula con la fuerza
+   real de cada club + azar y actualiza el marcador. Sincroniza por
+   turnos (robusto ante lag). El host manda las rondas y los resultados.
+   ============================================================ */
+const DUELO_OPS=[
+  {t:"🗡️ Salir al ataque", d:"Más peligro arriba, pero quedás abierto.", aggr:1},
+  {t:"⚖️ Jugar equilibrado", d:"Ni muy arriba ni muy atrás.", aggr:0},
+  {t:"🛡️ Meterse atrás", d:"Defendés bien, pero te cuesta llegar.", aggr:-1}
+];
+const DUELO_RONDAS=9;   /* ~9 jugadas clave = un partido comprimido */
+function fuerzaClub(id){
+  if(typeof IND_BASE_2026!=="undefined" && IND_BASE_2026[id]) return IND_BASE_2026[id].plantel||60;
+  return 60;
+}
+function duelChance(fX,fY,aX,aY){
+  let p=0.20 + (fX-fY)*0.007 + aX*0.06;
+  if(aY<0) p-=0.10; else if(aY>0) p+=0.03;   /* rival atrás baja tu chance; rival abierto la sube */
+  return clamp(p,0.05,0.55);
+}
+var duelRepintar=null;   /* la UI la define */
+/* ---- HOST ---- */
+function duelIniciar(){
+  MP.duel={ n:0, total:DUELO_RONDAS, gHost:0, gGuest:0,
+    fHost:fuerzaClub(MP.miClub), fGuest:fuerzaClub(MP.rivalClub),
+    pickHost:null, pickGuest:null, fase:"eligiendo", ultimo:null };
+  duelRondaNueva();
+}
+function duelRondaNueva(){
+  const d=MP.duel; d.n++; d.pickHost=null; d.pickGuest=null; d.fase="eligiendo"; d.ultimo=null;
+  mpEnviar({tipo:"duelo_ronda", n:d.n, total:d.total});
+  if(typeof duelRepintar==="function") duelRepintar();
+}
+function duelChequearResolver(){
+  const d=MP.duel;
+  if(d && d.pickHost!=null && d.pickGuest!=null) duelResolver();
+}
+function duelResolver(){
+  const d=MP.duel;
+  const aH=DUELO_OPS[d.pickHost].aggr, aG=DUELO_OPS[d.pickGuest].aggr;
+  const golH=Math.random()<duelChance(d.fHost,d.fGuest,aH,aG);
+  const golG=Math.random()<duelChance(d.fGuest,d.fHost,aG,aH);
+  if(golH) d.gHost++; if(golG) d.gGuest++;
+  const res={n:d.n, gHost:d.gHost, gGuest:d.gGuest, golH:golH, golG:golG};
+  d.ultimo=res; d.fase="resultado";
+  mpEnviar(Object.assign({tipo:"duelo_res"}, res));
+  if(typeof duelRepintar==="function") duelRepintar();
+  setTimeout(function(){
+    if(!MP.duel) return;
+    if(MP.duel.n>=MP.duel.total) duelFin(); else duelRondaNueva();
+  }, 2100);
+}
+function duelFin(){
+  const d=MP.duel; d.fase="fin";
+  mpEnviar({tipo:"duelo_fin", gHost:d.gHost, gGuest:d.gGuest});
+  if(typeof duelRepintar==="function") duelRepintar();
+}
+/* ---- común: registrar mi pick ---- */
+function duelMiPick(idx){
+  const d=MP.duel; if(!d || d.fase!=="eligiendo") return;
+  if(MP.rol==="host"){ d.pickHost=idx; } else { d.pickGuest=idx; mpEnviar({tipo:"duelo_pick", n:d.n, idx:idx}); }
+  d.fase="esperando";
+  if(typeof duelRepintar==="function") duelRepintar();
+  if(MP.rol==="host") duelChequearResolver();
+}
+/* marcador desde MI perspectiva (yo vs rival) */
+function duelMarcador(){
+  const d=MP.duel; if(!d) return [0,0];
+  return MP.rol==="host" ? [d.gHost,d.gGuest] : [d.gGuest,d.gHost];
+}
+
 /* callbacks que la UI redefine */
 var mpAlConectar=null, mpAlCaer=null, mpQuizasArrancar=null;
 function mpCopiar(txt){
