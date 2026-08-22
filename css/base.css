@@ -578,3 +578,15 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 .edad-stepper{display:flex;align-items:center;gap:12px}
 .edad-stepper .btn-aqua{min-width:38px;text-align:center;font-size:16px;padding:6px 10px}
 .edad-val{font-size:16px;min-width:78px;text-align:center}
+
+/* 7.00 · lobby del duelo multijugador */
+.duelo-vs{display:flex;align-items:center;justify-content:space-around;gap:8px;margin:8px 0;text-align:center}
+.duelo-lado{flex:1;padding:8px;border-radius:8px;border:1px solid var(--linea);background:rgba(0,0,0,.03)}
+.duelo-lado.listo{border-color:rgba(60,180,90,.55);background:linear-gradient(180deg,rgba(90,200,110,.16),rgba(90,200,110,.05))}
+.duelo-lado b{font-size:13px}
+.duelo-x{font-family:var(--f-titulo);font-weight:800;font-size:16px;opacity:.7}
+.duelo-clubes{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:5px;margin:6px 0}
+.duelo-club{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;border-radius:7px;
+  border:1px solid var(--linea);background:rgba(255,255,255,.04);cursor:pointer;font-size:10.5px;text-align:center}
+.duelo-club .g{font-size:16px}
+.duelo-club.sel{border-color:rgba(60,120,200,.6);background:linear-gradient(180deg,rgba(90,160,240,.24),rgba(90,160,240,.08))}

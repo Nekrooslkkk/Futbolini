@@ -10,14 +10,23 @@
 const MP = {
   pc:null, dc:null, rol:null, conectado:false,
   yo:null, rival:null,           /* nombres de DT */
+  miClub:null, rivalClub:null,   /* B2 · elección de club */
+  miListo:false, rivalListo:false,
   onMensaje:null,                /* callback para B2/B3 */
   ICE:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}]
 };
+/* los 16 clubes elegibles para el duelo (era 2026) */
+function mpClubes(){
+  const src=(typeof CLUB_INFO_2026!=="undefined")?CLUB_INFO_2026:(typeof CLUB_INFO!=="undefined"?CLUB_INFO:{});
+  return Object.keys(src).map(function(id){ return {id:id, n:src[id].n, esc:src[id].esc}; });
+}
+function mpNombreClub(id){ const c=mpClubes().find(function(x){return x.id===id;}); return c?c.n:(id||"—"); }
 function mpSoportado(){ return typeof RTCPeerConnection!=="undefined"; }
 function mpReset(){
   try{ if(MP.dc) MP.dc.close(); }catch(e){}
   try{ if(MP.pc) MP.pc.close(); }catch(e){}
   MP.pc=null; MP.dc=null; MP.rol=null; MP.conectado=false; MP.rival=null;
+  MP.miClub=null; MP.rivalClub=null; MP.miListo=false; MP.rivalListo=false;
 }
 /* espera a que junte los candidatos ICE (así el código lleva todo, sin trickle) */
 function mpEsperarICE(pc){
@@ -151,10 +160,46 @@ function modalDuelo(){
       else if(pantalla==="esperando"){
         c.appendChild(el("p",null,"⏳ Estableciendo la conexión… (si tu amigo ya pegó su respuesta, debería conectar en segundos)"));
       }
-      else if(pantalla==="conectado"){
-        c.appendChild(el("div","resul bien","✅ <b>¡Conectados!</b> Estás en duelo con <b>"+(MP.rival||"tu amigo")+"</b>."));
-        c.appendChild(el("p","mini","(Próximo paso — B2: elegir club cada uno y armar el duelo.)"));
-        const x=el("button","btn-aqua ancho gris","Cerrar por ahora"); x.style.marginTop="6px";
+      /* ---------- LOBBY (B2): elegir club y ponerse listos ---------- */
+      else if(pantalla==="lobby"){
+        c.appendChild(el("div","resul bien","🔗 Conectado con <b>"+(MP.rival||"tu amigo")+"</b>. Elijan su club y aprieten «Listo»."));
+        /* estado de ambos */
+        const est=el("div","duelo-vs");
+        est.innerHTML="<div class='duelo-lado"+(MP.miListo?" listo":"")+"'><div class='mini'>VOS</div><b>"+(MP.miClub?mpNombreClub(MP.miClub):"— elegí —")+"</b>"+(MP.miListo?" ✅":"")+"</div>"+
+          "<div class='duelo-x'>VS</div>"+
+          "<div class='duelo-lado"+(MP.rivalListo?" listo":"")+"'><div class='mini'>"+(MP.rival||"RIVAL")+"</div><b>"+(MP.rivalClub?mpNombreClub(MP.rivalClub):"eligiendo…")+"</b>"+(MP.rivalListo?" ✅":"")+"</div>";
+        c.appendChild(est);
+        /* grilla de clubes */
+        c.appendChild(el("h3","sub","Elegí tu club"));
+        const grid=el("div","duelo-clubes");
+        mpClubes().forEach(function(cl){
+          const b=el("button","duelo-club"+(MP.miClub===cl.id?" sel":""));
+          b.innerHTML="<span class='g'>"+cl.esc+"</span><span class='n'>"+cl.n+"</span>";
+          b.onclick=function(){
+            if(MP.miListo) return;   /* no cambiar si ya diste listo */
+            MP.miClub=cl.id; mpEnviar({tipo:"club", club:cl.id});
+            pintar("lobby",{});
+          };
+          grid.appendChild(b);
+        });
+        c.appendChild(grid);
+        /* botón listo */
+        const bl=el("button","btn-aqua ancho verde",MP.miListo?"⏳ Esperando al rival…":"✅ Listo");
+        bl.disabled=!MP.miClub;
+        bl.onclick=function(){
+          MP.miListo=!MP.miListo; mpEnviar({tipo:"listo", listo:MP.miListo});
+          if(MP.miListo && MP.rivalListo){ mpQuizasArrancar(); }
+          pintar("lobby",{});
+        };
+        c.appendChild(bl);
+        const x=el("button","btn-aqua ancho gris","Salir del duelo"); x.style.marginTop="6px";
+        x.onclick=function(){ mpReset(); cerrarModal(); }; c.appendChild(x);
+      }
+      /* ---------- duelo arrancando (transición a B3) ---------- */
+      else if(pantalla==="arrancando"){
+        c.appendChild(el("div","resul bien","⚽ <b>¡Arranca el duelo!</b> "+mpNombreClub(MP.miClub)+" vs "+mpNombreClub(MP.rivalClub)));
+        c.appendChild(el("p","mini","(B3 · el partido dirigido entre los dos — en construcción. La conexión y el lobby ya funcionan.)"));
+        const x=el("button","btn-aqua ancho gris","Cerrar"); x.style.marginTop="6px";
         x.onclick=cerrarModal; c.appendChild(x);
       }
       else if(pantalla==="error"){
@@ -162,16 +207,35 @@ function modalDuelo(){
         c.appendChild(botonVolver(pintar));
       }
     };
-    /* cuando el canal abre, saltamos a la pantalla de conectado */
-    mpAlConectar=function(){ if(MP.conectado) pintar("conectado",{}); };
-    mpAlCaer=function(){ /* B5: reconexión */ };
+    /* cuando el canal abre, saltamos al LOBBY */
+    mpAlConectar=function(){ if(MP.conectado) pintar("lobby",{}); };
+    mpAlCaer=function(){ pintar("error",{msg:"Se cortó la conexión con tu amigo."}); };
+    /* mensajes del lobby (B2) */
+    MP.onMensaje=function(m){
+      if(!m) return;
+      if(m.tipo==="club"){ MP.rivalClub=m.club; pintar("lobby",{}); }
+      else if(m.tipo==="listo"){ MP.rivalListo=!!m.listo;
+        if(MP.miListo && MP.rivalListo){ mpQuizasArrancar(); }
+        pintar("lobby",{}); }
+      else if(m.tipo==="arrancar"){ MP.rivalClub=m.rivalClub||MP.rivalClub; pintar("arrancando",{}); }
+    };
+    /* si ambos están listos, el ANFITRIÓN da la orden de arrancar */
+    mpQuizasArrancar=function(){
+      if(MP.miListo && MP.rivalListo && MP.rol==="host"){
+        mpEnviar({tipo:"arrancar", rivalClub:MP.miClub});   /* al guest, "rivalClub" = el club del host */
+        pintar("arrancando",{});
+      } else if(MP.miListo && MP.rivalListo){
+        /* el guest espera la orden del host, pero mostramos que ya está */
+        pintar("lobby",{});
+      }
+    };
     function botonVolver(pintar){ const b=el("button","btn-aqua ancho gris","← Volver"); b.style.marginTop="8px";
       b.onclick=function(){ mpReset(); pintar("inicio",{}); }; return b; }
-    pintar("inicio",{});
+    pintar(MP.conectado?"lobby":"inicio",{});   /* si ya estás conectado, directo al lobby */
   },{cerrarFuera:false});
 }
 /* callbacks que la UI redefine */
-var mpAlConectar=null, mpAlCaer=null;
+var mpAlConectar=null, mpAlCaer=null, mpQuizasArrancar=null;
 function mpCopiar(txt){
   try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt); return; } }catch(e){}
   try{ const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }catch(e){}

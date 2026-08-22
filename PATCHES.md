@@ -1391,3 +1391,16 @@ viajó del host al guest exacto. STUN resolvió la IP pública OK. Consola limpi
 **1 línea:** dos navegadores ya se conectan directo (P2P) con un código, sin servidor — la base del duelo.
 **Siguiente:** B2 · lobby (cada uno elige su club y se sincroniza).
 **Riesgos:** WebRTC nuevo; aislado en multi.js, no toca el single-player. Medio.
+
+## 7.00 · FASE B2 · Lobby del duelo  ✅ (2026-08-22)
+**Archivos:** `js/multi.js`, `js/css/base.css`
+**Qué:** el lobby del duelo P2P. Al conectar, ambos caen en la pantalla de lobby:
+- Cada uno **elige su club** de los 16 (grilla con escudos). La elección se sincroniza por el canal
+  (`{tipo:"club"}`) → los dos ven "Vos: X vs Rival: Y" en una tarjeta VS.
+- Botón **Listo** (`{tipo:"listo"}`); cuando ambos están listos, el **anfitrión** (autoritativo) manda
+  `{tipo:"arrancar"}` y los dos pasan a la pantalla de arranque del duelo (B3, en construcción).
+- Reabrir el modal estando conectado va directo al lobby.
+**Probado (2 pestañas):** host elige CC → guest lo recibe; guest elige UCH + listo → host lo recibe;
+host da listo → ambos listos → arrancar sincronizado. Lobby renderiza los 16 clubes + tarjeta VS. Consola limpia.
+**1 línea:** el lobby del duelo ya sincroniza club y "listo" de los dos por el canal P2P; falta el partido (B3).
+**Siguiente:** B3 · el partido dirigido entre los dos (aparecen los 2 y deciden).
