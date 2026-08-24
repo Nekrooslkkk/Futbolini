@@ -2,33 +2,13 @@
 /* ============================================================
    FUTBOLINI 3.0 · ia.js
    Redes del club y roleo con el plantel.
-   ── FUNCIONA OFFLINE por defecto ──
-   Análisis heurístico de texto + frases predefinidas con efecto real.
-   NO necesita conexión ni gasta nada.
-
-   ── HOOK DE API (APAGADO) ──
-   Para enchufar una IA de verdad más adelante, poné:
-     IA_CONFIG.activa   = true
-     IA_CONFIG.endpoint = "https://tu-backend/evaluar"
-   Tu backend recibe {tarea, club, texto, contexto} y debe devolver JSON:
-     { sentimiento: -100..100, promesa: {hay, texto, tipo, castigo} | null,
-       consecuencia: "texto corto" }
-   Mientras IA_CONFIG.activa sea false, jamás se llama a la red.
-   (Ver PATCHES.md → "Encender la IA".)
+   ── 100% OFFLINE, GRATIS Y SIN SERVIDOR ──
+   Cerebro local por heurística: analiza el texto y el estado real (E) y
+   devuelve sentimiento, promesa y consecuencia. Nunca toca la red, nunca
+   gasta un peso, nunca depende de una IA de pago. Ese es el trato del juego:
+   que lo pueda jugar todo el mundo sin costo.
+   Para darle más vida, se SUMAN palabras y reglas a las tablas de abajo.
    ============================================================ */
-
-const IA_CONFIG = { activa:false, endpoint:null, modelo:"claude-sonnet-5" };
-function iaDisponible(){ return !!(IA_CONFIG.activa && IA_CONFIG.endpoint); }
-
-/* Contrato de la API. No se ejecuta salvo que actives IA_CONFIG. */
-async function evaluarPostAPI(texto){
-  const ctx={ moral:E.ind.moral, hinchada:E.ind.hinchada, prestigio:E.ind.prestigio,
-    proximo:(proximoPartido()||{}).rivalNombre, ronda:(proximoPartido()||{}).ronda };
-  const r=await fetch(IA_CONFIG.endpoint,{ method:"POST", headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ tarea:"post_red_club", club:E.clubNombre, texto:texto, contexto:ctx })});
-  if(!r.ok) throw new Error("IA HTTP "+r.status);
-  return await r.json();
-}
 
 /* ---------- análisis OFFLINE (heurístico) ---------- */
 const IA_POS=["vamos","orgullo","campe","ganar","ganamos","fuerza","arriba","confío","confio","gloria",
@@ -142,9 +122,9 @@ function pensarOffline(tarea,ctx){
   return consejoLocal();
 }
 
-/* devuelve siempre una promesa que resuelve a {sentimiento, promesa, consecuencia} */
+/* devuelve siempre una promesa que resuelve a {sentimiento, promesa, consecuencia}.
+   Cerebro local: sin red, sin costo. Se mantiene async por compatibilidad con quien lo llama. */
 async function evaluarPost(texto){
-  if(iaDisponible()){ try{ return await evaluarPostAPI(texto); }catch(e){ /* si falla, cae a offline */ } }
   return analizarOffline(texto);
 }
 
@@ -162,7 +142,7 @@ function aplicarPost(texto, ev){
   const part=proximoPartido();
   E.redes=E.redes||[];
   E.redes.unshift({texto:texto, s:s, cons:ev.consecuencia||"", promesa:ev.promesa&&ev.promesa.hay?ev.promesa.texto:null,
-    anio:E.anio, fecha:(part&&part.f?fechaTxt(part.f):"cierre"), ia:iaDisponible()});
+    anio:E.anio, fecha:(part&&part.f?fechaTxt(part.f):"cierre"), ia:false});
   if(E.redes.length>30) E.redes.length=30;
   if(typeof postProc==="function") postProc((typeof handleClub==="function"?handleClub():"@club"),"dt",texto,s>15?"bueno":(s<-15?"malo":"neutro"));
   notificar({t:"Publicaste en la red del club", tipo:s>15?"bueno":(s<-15?"malo":"neutro"),

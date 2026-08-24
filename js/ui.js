@@ -1581,12 +1581,38 @@ function tarjetaAviso(n,conAcciones){
   }
   return d;
 }
+/* ---------------- respaldo de partida (archivo) ---------------- */
+function descargarPartida(){
+  if(!E||!E.club){ aviso("No hay partida para descargar"); return; }
+  const paquete={ app:"futbolini", saveVer:1, guardado:Date.now(), E:E };
+  const txt=JSON.stringify(paquete);
+  const blob=new Blob([txt],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const nombre="futbolini-"+((E.clubNombre||E.club||"club").toLowerCase().replace(/[^a-z0-9]+/g,"-"))+"-"+(E.anio||"")+".fut";
+  const a=el("a"); a.href=url; a.download=nombre; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); },200);
+  aviso("Partida descargada");
+}
+function cargarPartidaArchivo(f){
+  const lector=new FileReader();
+  lector.onload=async()=>{
+    let dato=null;
+    try{ dato=JSON.parse(lector.result); }catch(e){ aviso("El archivo no es una partida válida"); return; }
+    const nuevo=(dato&&dato.E&&dato.E.club)?dato.E:((dato&&dato.club)?dato:null);
+    if(!nuevo){ aviso("El archivo no es una partida de Futbolini"); return; }
+    if(E&&E.club && !confirm("Esto reemplaza tu partida actual por la del archivo. ¿Seguir?")) return;
+    E=nuevo; normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod();
+    await guardar(); aviso("Partida cargada"); SEC="escritorio"; render();
+  };
+  lector.onerror=()=>aviso("No se pudo leer el archivo");
+  lector.readAsText(f);
+}
 /* ---------------- ajustes ---------------- */
 function vistaAjustes(){
   const v=$("#vista");
   const don=panel("El proyecto","💚");
-  don.cuerpo.appendChild(el("p",null,"Futbolini es gratis. Se sostiene con tiempo y, si alguien quiere, con donaciones para pagar IA y seguir construyendo."));
-  don.cuerpo.appendChild(el("p","mini","Todavía no hay pasarela. Cuando esté, va a vivir en esta misma pantalla. Si querés ayudar ahora: compartí el juego o escribile al autor."));
+  don.cuerpo.appendChild(el("p",null,"Futbolini es gratis y siempre lo va a ser. Corre 100% en tu navegador, sin servidor obligatorio y sin IA de pago: el cerebro del juego es local, así que no cuesta un peso mantenerlo."));
+  don.cuerpo.appendChild(el("p","mini","Si querés ayudar: compartí el juego o escribile al autor. La mejor forma de sostenerlo es que lo juegue más gente."));
   v.appendChild(don);
   const p=panel("Ajustes","⚙️");
   p.cuerpo.appendChild(el("label","lb","Tema visual"));
@@ -1616,6 +1642,18 @@ function vistaAjustes(){
   b2.onclick=async()=>{ if(confirm("¿Borrar la partida guardada?")){ await Store.del(LLAVE); E=null; render(); } };
   p.cuerpo.appendChild(b1); p.cuerpo.appendChild(b2);
   v.appendChild(p);
+
+  /* ---- Respaldo de partida (archivo, 100% offline) ---- */
+  const pr=panel("Respaldo de partida","💾");
+  pr.cuerpo.appendChild(el("p","mini","Descargá tu partida como archivo y guardala donde quieras (Drive, mail, WhatsApp a vos mismo). En otro equipo la cargás y seguís donde ibas. No necesita internet ni cuenta."));
+  const bDesc=el("button","btn-aqua chico","Descargar partida");
+  bDesc.onclick=()=>descargarPartida();
+  const bCarg=el("button","btn-aqua chico"); bCarg.textContent="Cargar partida"; bCarg.style.marginLeft="6px";
+  const inp=el("input"); inp.type="file"; inp.accept="application/json,.json,.fut"; inp.style.display="none";
+  inp.onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(f) cargarPartidaArchivo(f); inp.value=""; };
+  bCarg.onclick=()=>inp.click();
+  pr.cuerpo.appendChild(bDesc); pr.cuerpo.appendChild(bCarg); pr.cuerpo.appendChild(inp);
+  v.appendChild(pr);
 
   /* ---- Modo Dios (panel de cheats) ---- */
   const pg=panel("Modo Dios","😇","alerta");
