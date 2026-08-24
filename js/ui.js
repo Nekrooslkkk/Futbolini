@@ -1655,6 +1655,49 @@ function vistaAjustes(){
   pr.cuerpo.appendChild(bDesc); pr.cuerpo.appendChild(bCarg); pr.cuerpo.appendChild(inp);
   v.appendChild(pr);
 
+  /* ---- Cuenta en la nube (opcional) ---- */
+  if(typeof nubeActiva==="function" && nubeActiva()){
+    const pn=panel("Cuenta en la nube","☁️");
+    if(nubeLogueado()){
+      pn.cuerpo.appendChild(el("p",null,"Sesión iniciada como <b>"+(nubeEmail()||"tu cuenta")+"</b>. Tu partida te sigue a cualquier equipo."));
+      const bSub=el("button","btn-aqua chico","Subir partida");
+      bSub.onclick=async()=>{ bSub.disabled=true; const r=await nubeSubir(E); bSub.disabled=false; aviso(r.ok?"Partida subida a la nube":("No se pudo subir: "+r.msg)); };
+      const bBaj=el("button","btn-aqua chico"); bBaj.textContent="Bajar partida"; bBaj.style.marginLeft="6px";
+      bBaj.onclick=async()=>{
+        bBaj.disabled=true; const r=await nubeBajar(); bBaj.disabled=false;
+        if(!r.ok){ aviso(r.msg); return; }
+        if(E&&E.club && !confirm("Esto reemplaza tu partida actual por la de la nube. ¿Seguir?")) return;
+        E=r.estado; normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod();
+        await guardar(); aviso("Partida bajada de la nube"); SEC="escritorio"; render();
+      };
+      const bOut=el("button","btn-aqua chico gris"); bOut.textContent="Cerrar sesión"; bOut.style.marginLeft="6px";
+      bOut.onclick=()=>{ nubeSalir(); aviso("Sesión cerrada"); render(); };
+      pn.cuerpo.appendChild(bSub); pn.cuerpo.appendChild(bBaj); pn.cuerpo.appendChild(bOut);
+      pn.cuerpo.appendChild(el("p","mini","Subí después de jugar; bajá al empezar en otro equipo. Es manual a propósito, para que nunca pierdas una partida sin querer."));
+    }else{
+      pn.cuerpo.appendChild(el("p","mini","Entrá con tu correo para guardar la partida en la nube y seguir en cualquier dispositivo. Es opcional: sin cuenta, el juego anda igual offline."));
+      const estiloInp="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid rgba(0,0,0,.15)";
+      const iMail=el("input"); iMail.type="email"; iMail.placeholder="correo"; iMail.autocomplete="email"; iMail.style.cssText=estiloInp;
+      const iPass=el("input"); iPass.type="password"; iPass.placeholder="clave"; iPass.autocomplete="current-password"; iPass.style.cssText=estiloInp;
+      pn.cuerpo.appendChild(iMail); pn.cuerpo.appendChild(iPass);
+      const bIn=el("button","btn-aqua chico verde","Entrar"); bIn.style.marginTop="6px";
+      bIn.onclick=async()=>{
+        if(!iMail.value||!iPass.value){ aviso("Completá correo y clave"); return; }
+        bIn.disabled=true; const r=await nubeEntrar(iMail.value.trim(),iPass.value); bIn.disabled=false;
+        if(r.ok){ aviso("Hola de nuevo, "+r.email); render(); } else aviso(r.msg);
+      };
+      const bReg=el("button","btn-aqua chico"); bReg.textContent="Crear cuenta"; bReg.style.marginLeft="6px";
+      bReg.onclick=async()=>{
+        if(!iMail.value||!iPass.value){ aviso("Completá correo y clave"); return; }
+        if(iPass.value.length<6){ aviso("La clave necesita al menos 6 caracteres"); return; }
+        bReg.disabled=true; const r=await nubeRegistrar(iMail.value.trim(),iPass.value); bReg.disabled=false;
+        if(r.ok){ aviso(r.confirmar?r.msg:"Cuenta creada"); render(); } else aviso(r.msg);
+      };
+      pn.cuerpo.appendChild(bIn); pn.cuerpo.appendChild(bReg);
+    }
+    v.appendChild(pn);
+  }
+
   /* ---- Modo Dios (panel de cheats) ---- */
   const pg=panel("Modo Dios","😇","alerta");
   pg.cuerpo.appendChild(el("p","mini","Panel de trucos para jugar como quieras. Cambiá todo a mano; no hay reglas acá."));
