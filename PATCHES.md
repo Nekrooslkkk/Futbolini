@@ -1471,3 +1471,17 @@ se mergea solo en data-clubes2026.js). Ahora **13 clubes tienen época de gloria
 selectores muestran las épocas; consola limpia. Los planteles cargan a sus figuras reales (Dituro,
 Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
 **1 línea:** los 16 clubes ahora tienen su época de gloria jugable con plantel real — la 7.00 quedó completa de contenido.
+
+## Mejora 7.10 · IA gratis blindada + respaldo/nube (login opcional)
+**Archivos:** `js/ia.js`, `js/ui.js`, `js/nube.js` (nuevo), `index.html`, `SETUP_NUBE.md` (nuevo), `PLAN_7.10.md` (nuevo)
+- **IA 100% offline:** saqué el hook de pago (`IA_CONFIG`, `evaluarPostAPI`, `iaDisponible`).
+  `evaluarPost()` ahora usa solo `analizarOffline()`. Cero red, cero costo, sin tentación de prenderlo.
+  Texto de donación en Ajustes actualizado (ya no habla de "pagar IA").
+- **Respaldo por archivo** (Ajustes → "Respaldo de partida"): `descargarPartida()` baja `E` como `.fut`
+  (JSON envuelto `{app,saveVer,guardado,E}`); `cargarPartidaArchivo(f)` lo restaura (acepta envuelto o `E` crudo).
+- **Login/sync en la nube (opcional):** `nube.js` habla por `fetch` puro a Supabase (free tier), sin SDK/CDN/build.
+  `nubeRegistrar/nubeEntrar/nubeSalir/nubeSubir/nubeBajar`, token en localStorage, refresh en 401.
+  Config en `NUBE_CONFIG` (vacío por defecto → el panel no aparece y el juego anda 100% offline).
+  Panel "Cuenta en la nube" en Ajustes (entrar/crear cuenta/subir/bajar). Pasos de setup en `SETUP_NUBE.md`.
+**Probado:** `node --check` OK en ia/ui/nube. Falta QA de navegador (descargar/cargar archivo) y wirear claves Supabase reales para el sync.
+**1 línea:** la IA quedó gratis para siempre y ahora podés respaldar tu partida por archivo o (opcional) por login en la nube.
