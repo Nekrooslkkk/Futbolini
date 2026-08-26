@@ -7,7 +7,7 @@ let SEC="escritorio";
 let REDES_PEST="club";
 const SECCIONES=[
  ["escritorio","🗂️","Escritorio"],["institucion","🏛️","Institución"],["finanzas","💰","Finanzas"],
- ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["redes","📱","Redes"],["calendario","📅","Calendario"],["historia","📚","Historia"],
+ ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["estadio","🏟️","Estadio"],["redes","📱","Redes"],["calendario","📅","Calendario"],["historia","📚","Historia"],
  ["carrera","🎖️","Carrera"],["vida","🪪","Vida"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
 ];
 function irA(s){ SEC=s; render(); const v=$("#vista"); if(v){ v.classList.remove("fx-in"); void v.offsetWidth; v.classList.add("fx-in"); } window.scrollTo({top:0}); }
@@ -63,7 +63,7 @@ function render(){
   if(SEC==="redes" && !redesDisponibles()) SEC="escritorio";   /* no caer en Chirp en épocas sin redes */
   v.dataset.sec=SEC;   /* para el layout multi-columna en PC (evita scroll eterno) */
   ({escritorio:vistaEscritorio,institucion:vistaInstitucion,finanzas:vistaFinanzas,plantel:vistaPlantel,
-    mercado:vistaMercado,redes:vistaRedes,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,
+    mercado:vistaMercado,estadio:vistaEstadio,redes:vistaRedes,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,
     vida:vistaVida,avisos:vistaAvisos,ajustes:vistaAjustes}[SEC]||vistaEscritorio)();
 }
 /* ---------------- inicio ---------------- */
@@ -766,52 +766,18 @@ function vistaFinanzas(){
     v.appendChild(pb);
   }
 
-  /* --- precios por sector con sliders y proyección en vivo --- */
-  const pe=panel("Precios de entradas","🎫","agua");
-  pe.cuerpo.appendChild(el("p","mini","Fijá el precio de cada sector. Subir el precio deja más por entrada pero espanta público (la galería es la más sensible). La proyección se actualiza al instante."));
-  const proy=el("div","resul mitad"); proy.id="proyTaq";
-  const doc=el("div"); doc.id="docButacas";
-  const setFill=(r,s)=>{ const pct=Math.round((r.value-s.min)/Math.max(1,(s.max-s.min))*100); r.style.setProperty("--fill",pct+"%"); };
-  const refrescarProy=()=>{
-    const r=proyeccionTaquilla(E.precios);
-    const club=CLUB_POR_ID[E.club]||{aforo:30000};
-    const ocupPct=Math.round(100*r.gente/Math.max(1,club.aforo*clausuraFactor()));
-    proy.innerHTML="Partido de local tipo → <b>"+r.gente.toLocaleString("es-CL")+"</b> personas ("+ocupPct+"% del aforo) · ingreso <b>"+plata(r.ingreso)+"</b>"+
-      (precioPromedioRatio()>1.3?"<br><span class='mini'>Precios altos: la hinchada se va a ir enojando.</span>":
-       (precioPromedioRatio()<0.85?"<br><span class='mini'>Precios populares: la gente lo valora.</span>":""));
-    /* tabla documentada de butacas: aforo, precio y ganancia estimada por sector */
-    if(typeof taquillaPorSector==="function"){
-      const sec=taquillaPorSector(proximoPartido());
-      let html="<h3 class='sub'>Butacas del estadio · ganancia estimada por partido</h3>"+
-        "<table class='butacas'><thead><tr><th>Sector</th><th class='n'>Butacas</th><th class='n'>Precio</th><th class='n'>Ocup.</th><th class='n'>Gana ~</th></tr></thead><tbody>";
-      let tot=0;
-      sec.forEach(x=>{ tot+=x.ingreso;
-        html+="<tr><td>"+x.ic+" "+x.n+"</td><td class='n'>"+x.cap.toLocaleString("es-CL")+"</td><td class='n'>$"+x.precio.toLocaleString("es-CL")+"</td><td class='n'>"+x.ocup+"%</td><td class='n'>"+plata(x.ingreso)+"</td></tr>"; });
-      html+="</tbody><tfoot><tr><td>Total taquilla</td><td class='n'></td><td class='n'></td><td class='n'></td><td class='n'>"+plata(tot)+"</td></tr></tfoot></table>"+
-        "<p class='mini'>La galería es la más barata y la que más entra (55% del aforo); la marquesina es cara y chica (12%). Subir precios sube la ganancia por entrada pero baja la ocupación — y enoja a la hinchada.</p>";
-      doc.innerHTML=html;
-    }
-  };
-  SECTORES.forEach(s=>{
-    pe.cuerpo.appendChild(el("label","lb",s.ic+" "+s.n+" — <b id='pr_"+s.id+"'>$"+(E.precios[s.id]||0).toLocaleString("es-CL")+"</b>"));
-    const r=el("input"); r.type="range"; r.min=s.min; r.max=s.max; r.step=Math.max(50,Math.round(s.ref*0.05)); r.value=E.precios[s.id]||s.ref; r.className="rango";
-    setFill(r,s);
-    r.oninput=()=>{ E.precios[s.id]=parseInt(r.value,10); const lab=document.getElementById("pr_"+s.id); if(lab) lab.textContent="$"+E.precios[s.id].toLocaleString("es-CL"); setFill(r,s); refrescarProy(); };
-    r.onchange=()=>{ if(typeof redesReaccion==="function") redesReaccion("precio",{ratio:precioPromedioRatio()}); guardar(); };
-    pe.cuerpo.appendChild(r);
-  });
-  pe.cuerpo.appendChild(proy); pe.cuerpo.appendChild(doc); refrescarProy();
-  v.appendChild(pe);
+  /* --- precios de entradas: ahora viven en la sección Estadio 🏟️ --- */
+  const pev=panel("Entradas y estadio","🎫","agua");
+  pev.cuerpo.appendChild(el("p","mini","Los precios por sector y las obras del estadio se manejan en su propia sección."));
+  const beg=el("button","btn-aqua chico verde","Ir al Estadio"); beg.onclick=()=>irA("estadio");
+  pev.cuerpo.appendChild(beg);
+  v.appendChild(pev);
 
   /* --- inversiones de club --- */
   const pin=panel("Inversiones","🏗️");
   pin.cuerpo.appendChild(el("p","mini","Plata que sale hoy para tener un club más grande mañana. No hay atajos infinitos: cada mejora tiene un techo realista y se pone más cara a medida que subís."));
-  const estTope=E.ind.estadio>=92, hinTope=E.ind.hinchada>=88;
-  const costoEst=Math.round(420+E.ind.estadio*6), ganEst=Math.max(4,Math.round(14-E.ind.estadio/12));
+  const hinTope=E.ind.hinchada>=88;
   const inv=[
-   {n:"Ampliar el estadio",costo:costoEst,disp:!estTope,
-    desc:estTope?"El estadio ya es de primer nivel: no hay obra chica que lo mejore.":"+"+ganEst+" estado del estadio (más aforo, menos sanciones). Cada ampliación cuesta más y rinde menos.",
-    fn:()=>aplicarEfectos({plata:-costoEst,estadio:ganEst})},
    {n:"Campaña de marketing",costo:250,disp:!hinTope,
     desc:hinTope?"La hinchada ya está a full: gastar en publicidad ahora es tirar la plata.":"+ hinchada, socios y algo de prestigio. Pierde efecto cuando la gente ya está prendida.",
     fn:()=>aplicarEfectos({plata:-250,hinchada:Math.max(2,Math.round((88-E.ind.hinchada)/6)),socios:4,prestigio:2})},
@@ -1584,6 +1550,80 @@ function tarjetaAviso(n,conAcciones){
     d.appendChild(cont);
   }
   return d;
+}
+/* ---------------- estadio ---------------- */
+function vistaEstadio(){
+  const v=$("#vista");
+  const nom=(typeof estadioNombre==="function"&&estadioNombre(E.club))||((CLUB_POR_ID[E.club]||{}).est)||"Estadio";
+  const aforo=(typeof aforoActual==="function")?aforoActual():((CLUB_POR_ID[E.club]||{aforo:0}).aforo);
+  /* --- cabecera: recinto y estado --- */
+  const ph=panel(nom,"🏟️");
+  ph.cuerpo.appendChild(fila("Aforo",aforo.toLocaleString("es-CL")+" personas"));
+  ph.cuerpo.appendChild(el("label","lb","Estado del recinto"));
+  ph.cuerpo.appendChild(el("div",null,barrita(E.ind.estadio,"#a5854a")));
+  ph.cuerpo.appendChild(el("p","mini","Mejor estado = más aforo utilizable, menos sanciones y más gente en la cancha."));
+  if(E.flags&&E.flags.clausura) ph.cuerpo.appendChild(el("div","resul mal","⚠ Hay sectores clausurados por la deuda: perdés aforo y taquilla hasta ordenar la caja."));
+  v.appendChild(ph);
+
+  /* --- obras: arreglar / mejorar y verlo avanzar --- */
+  const po=panel("Obras","🚧");
+  if(E.obras){
+    const plan=(typeof OBRAS_PLAN!=="undefined"&&OBRAS_PLAN[E.obras.tipo])||{n:"Obra",ic:"🔧"};
+    const hechas=E.obras.semanas-E.obras.resta, pct=Math.round(100*hechas/Math.max(1,E.obras.semanas));
+    po.cuerpo.appendChild(el("div","resul mitad","<b>"+plan.ic+" "+plan.n+"</b> · en marcha"));
+    po.cuerpo.appendChild(el("div",null,barrita(pct,"#5ec94f")));
+    po.cuerpo.appendChild(el("p","mini","Avanza cada semana. Faltan <b>"+E.obras.resta+"</b> semana(s) para terminar. No podés empezar otra obra hasta que esta cierre."));
+  }else{
+    po.cuerpo.appendChild(el("p","mini","Invertí en el estadio y velo mejorar semana a semana. La obra descuenta la caja ahora y el efecto llega cuando termina."));
+    ["mantencion","remodelacion","ampliacion"].forEach(tipo=>{
+      const plan=OBRAS_PLAN[tipo]; if(!plan) return;
+      const costo=(typeof costoObra==="function")?costoObra(tipo):0;
+      const d=el("div","resul mitad");
+      d.innerHTML="<b>"+plan.ic+" "+plan.n+"</b> · "+plata(costo)+" · "+plan.semanas+" semanas<br><span class='mini'>"+plan.desc+" (+"+plan.gEstadio+" estado"+(plan.gAforo?", +"+plan.gAforo+" aforo":"")+")</span>";
+      const sinCaja=E.plata<costo, tope=E.ind.estadio>=98;
+      const b=el("button","btn-aqua chico"+((sinCaja||tope)?" gris":" verde"),tope?"Estadio impecable":"Empezar obra");
+      b.style.marginTop="5px"; b.disabled=sinCaja||tope;
+      b.onclick=()=>{ const r=iniciarObra(tipo); if(r.ok){ aviso("Obra iniciada · "+plata(r.costo)); render(); } else aviso(r.msg); };
+      d.appendChild(b); po.cuerpo.appendChild(d);
+    });
+  }
+  v.appendChild(po);
+
+  /* --- precios de entradas por sector real, con proyección en vivo --- */
+  const sects=(typeof sectoresActuales==="function")?sectoresActuales():[];
+  const pe=panel("Precios de entradas","🎫","agua");
+  pe.cuerpo.appendChild(el("p","mini","Fijá el precio de cada sector. Subir el precio deja más por entrada pero espanta público (la galería es la más sensible). La proyección se actualiza al instante."));
+  const proy=el("div","resul mitad"); proy.id="proyTaq";
+  const doc=el("div"); doc.id="docButacas";
+  const setFill=(r,s)=>{ const pct=Math.round((r.value-s.min)/Math.max(1,(s.max-s.min))*100); r.style.setProperty("--fill",pct+"%"); };
+  const refrescarProy=()=>{
+    const r=proyeccionTaquilla(E.precios);
+    const ocupPct=Math.round(100*r.gente/Math.max(1,aforo*clausuraFactor()));
+    proy.innerHTML="Partido de local tipo → <b>"+r.gente.toLocaleString("es-CL")+"</b> personas ("+ocupPct+"% del aforo) · ingreso <b>"+plata(r.ingreso)+"</b>"+
+      (precioPromedioRatio()>1.3?"<br><span class='mini'>Precios altos: la hinchada se va a ir enojando.</span>":
+       (precioPromedioRatio()<0.85?"<br><span class='mini'>Precios populares: la gente lo valora.</span>":""));
+    if(typeof taquillaPorSector==="function"){
+      const sec=taquillaPorSector(proximoPartido());
+      let html="<h3 class='sub'>Butacas del estadio · ganancia estimada por partido</h3>"+
+        "<table class='butacas'><thead><tr><th>Sector</th><th class='n'>Butacas</th><th class='n'>Precio</th><th class='n'>Ocup.</th><th class='n'>Gana ~</th></tr></thead><tbody>";
+      let tot=0;
+      sec.forEach(x=>{ tot+=x.ingreso;
+        html+="<tr><td>"+x.ic+" "+x.n+"</td><td class='n'>"+x.cap.toLocaleString("es-CL")+"</td><td class='n'>$"+x.precio.toLocaleString("es-CL")+"</td><td class='n'>"+x.ocup+"%</td><td class='n'>"+plata(x.ingreso)+"</td></tr>"; });
+      html+="</tbody><tfoot><tr><td>Total taquilla</td><td class='n'></td><td class='n'></td><td class='n'></td><td class='n'>"+plata(tot)+"</td></tr></tfoot></table>"+
+        "<p class='mini'>Los sectores populares son los más baratos y los que más llenan; los premium rinden más por entrada pero son chicos. Subir precios sube la ganancia por cabeza pero baja la ocupación — y enoja a la hinchada.</p>";
+      doc.innerHTML=html;
+    }
+  };
+  sects.forEach(s=>{
+    pe.cuerpo.appendChild(el("label","lb",s.ic+" "+s.n+" — <b id='pr_"+s.id+"'>$"+(E.precios[s.id]||s.ref).toLocaleString("es-CL")+"</b>"));
+    const r=el("input"); r.type="range"; r.min=s.min; r.max=s.max; r.step=Math.max(50,Math.round(s.ref*0.05)); r.value=E.precios[s.id]||s.ref; r.className="rango";
+    setFill(r,s);
+    r.oninput=()=>{ E.precios[s.id]=parseInt(r.value,10); const lab=document.getElementById("pr_"+s.id); if(lab) lab.textContent="$"+E.precios[s.id].toLocaleString("es-CL"); setFill(r,s); refrescarProy(); };
+    r.onchange=()=>{ if(typeof redesReaccion==="function") redesReaccion("precio",{ratio:precioPromedioRatio()}); guardar(); };
+    pe.cuerpo.appendChild(r);
+  });
+  pe.cuerpo.appendChild(proy); pe.cuerpo.appendChild(doc); refrescarProy();
+  v.appendChild(pe);
 }
 /* ---------------- respaldo de partida (archivo) ---------------- */
 function descargarPartida(){

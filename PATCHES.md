@@ -1485,3 +1485,19 @@ Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
   Panel "Cuenta en la nube" en Ajustes (entrar/crear cuenta/subir/bajar). Pasos de setup en `SETUP_NUBE.md`.
 **Probado:** `node --check` OK en ia/ui/nube. Falta QA de navegador (descargar/cargar archivo) y wirear claves Supabase reales para el sync.
 **1 línea:** la IA quedó gratis para siempre y ahora podés respaldar tu partida por archivo o (opcional) por login en la nube.
+
+## Mejora 7.10 · Sección Estadio (sectores reales + obras) + época sin redes
+**Archivos:** `js/data-estadios.js` (nuevo), `js/motor.js`, `js/ui.js`, `js/ui-partido.js`, `js/data-voz.js`, `index.html`
+- **Estadios reales (Grok):** `ESTADIOS_DATA` con los 16 clubes: estadio, aforo y SECTORES reales
+  (Colo-Colo: Rapa Nui/Cordillera/Océano/Magallanes; U: Andes/Pacífico; etc.). `sectoresDe(clubId)`
+  los devuelve en el shape del motor; `aforoDe`/`estadioNombre`. Fallback al genérico si no hay ficha.
+- **Motor de taquilla por club:** `sectoresActuales()` y `aforoActual()` reemplazan a `SECTORES`/`club.aforo`
+  en `taquilla`, `taquillaPorSector`, `preciosDefault`, `precioPromedioRatio`. Normalizador rellena
+  `E.precios` para ids de sector nuevos (saves viejos no rompen). `E.aforoExtra`.
+- **Sección Estadio nueva** (menú 🏟️): cabecera (recinto + estado), **Obras** (mantención/remodelación/
+  ampliación: pagás ahora, avanza cada semana con barra de progreso, el efecto llega al terminar — `OBRAS_PLAN`,
+  `iniciarObra`, `avanzarObras` en tickSemana), y los precios por sector con proyección en vivo (movidos de Finanzas).
+- **Época sin redes:** antes de 2008 se oculta la pestaña Redes/Chirp y no hay tuits en el ticker del partido;
+  conferencia/prensa usan `PERIODISTAS_CLASICOS` (seed real, pendiente ampliar con Grok).
+**Probado:** `node --check` OK; test lógico de `sectoresDe` (16 clubes, ids únicos, cuotas ~1). Falta QA navegador.
+**1 línea:** cada club juega en su estadio real con sus tribunas de verdad, que ahora podés arreglar y ver mejorar; y en 1991 ya no hay Twitter.

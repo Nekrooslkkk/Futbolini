@@ -172,6 +172,9 @@ function normalizarEstado(){
   if(!Array.isArray(E.redes)) E.redes=[];
   if(!Array.isArray(E.promesas)) E.promesas=[];
   if(!E.precios) E.precios=preciosDefault();
+  else { const inf=(typeof inflacionEra==="function")?inflacionEra():1; sectoresActuales().forEach(s=>{ if(E.precios[s.id]==null) E.precios[s.id]=Math.round(s.ref*inf); }); }
+  if(E.aforoExtra===undefined) E.aforoExtra=0;
+  if(E.obras===undefined) E.obras=null;
   if(!E.staff) E.staff={deportivo:62,tesorero:60,prensa:58,cm:false};
   if(E.staff.cm===undefined) E.staff.cm=false;
   if(!Array.isArray(E.historialAnual)) E.historialAnual=[];
@@ -653,9 +656,20 @@ const SECTORES=[
  {id:"tribuna",   n:"Tribuna",         ic:"🪑", cuota:0.33, ref:2500, elast:1.0, min:800,  max:9000},
  {id:"marquesina",n:"Marquesina",      ic:"🥂", cuota:0.12, ref:6000, elast:0.6, min:2000, max:22000}
 ];
+/* sectores y aforo REALES del club (si tiene ficha en data-estadios), con fallback genérico */
+function sectoresActuales(){
+  if(typeof sectoresDe==="function" && E && E.club){ const s=sectoresDe(E.club); if(s&&s.length) return s; }
+  return SECTORES;
+}
+function aforoActual(){
+  let base=null;
+  if(typeof aforoDe==="function" && E && E.club) base=aforoDe(E.club);
+  if(!base) base=((typeof CLUB_POR_ID!=="undefined"&&E&&CLUB_POR_ID[E.club])||{aforo:30000}).aforo;
+  return base+((E&&E.aforoExtra)||0);
+}
 function preciosDefault(){
   const f=(typeof inflacionEra==="function"&&E)?inflacionEra():1;
-  const o={}; SECTORES.forEach(s=>o[s.id]=Math.round(s.ref*f)); return o;
+  const o={}; sectoresActuales().forEach(s=>o[s.id]=Math.round(s.ref*f)); return o;
 }
 function ocupBase(part){
   let o=0.30+E.ind.hinchada/220+E.ind.estadio/500;
@@ -668,14 +682,14 @@ function ocupBase(part){
 /* deuda alta → se clausuran sectores del estadio y cae el aforo disponible */
 function clausuraFactor(){ return E.deuda>4000?0.75:(E.deuda>3000?0.90:1); }
 function taquilla(part){
-  const club=CLUB_POR_ID[E.club]||{aforo:30000};
+  const aforo=aforoActual();
   const base=ocupBase(part);
   const infl=(typeof inflacionEra==="function")?inflacionEra():1;
   const precios=E.precios||preciosDefault();
   const clau=clausuraFactor();
   let gente=0, ingreso=0;
-  SECTORES.forEach(s=>{
-    const cap=Math.round(club.aforo*s.cuota*clau*(E.ind.estadio/100*0.4+0.6));
+  sectoresActuales().forEach(s=>{
+    const cap=Math.round(aforo*s.cuota*clau*(E.ind.estadio/100*0.4+0.6));
     const precio=precios[s.id]||Math.round(s.ref*infl);
     const factorPrecio=Math.pow((s.ref*infl)/Math.max(1,precio), s.elast);
     const ocup=clamp(base*factorPrecio, 0.04, 0.99);
@@ -686,13 +700,13 @@ function taquilla(part){
 }
 /* 6.3 · desglose por butaca (para documentar aforo, precio y ganancia estimada de cada sector) */
 function taquillaPorSector(part){
-  const club=CLUB_POR_ID[E.club]||{aforo:30000};
+  const aforo=aforoActual();
   const base=ocupBase(part);
   const infl=(typeof inflacionEra==="function")?inflacionEra():1;
   const precios=E.precios||preciosDefault();
   const clau=clausuraFactor();
-  return SECTORES.map(s=>{
-    const cap=Math.round(club.aforo*s.cuota*clau*(E.ind.estadio/100*0.4+0.6));
+  return sectoresActuales().map(s=>{
+    const cap=Math.round(aforo*s.cuota*clau*(E.ind.estadio/100*0.4+0.6));
     const precio=precios[s.id]||Math.round(s.ref*infl);
     const factorPrecio=Math.pow((s.ref*infl)/Math.max(1,precio), s.elast);
     const ocup=clamp(base*factorPrecio, 0.04, 0.99);
@@ -711,7 +725,7 @@ function proyeccionTaquilla(precios){
 function precioPromedioRatio(){
   const infl=(typeof inflacionEra==="function")?inflacionEra():1;
   const precios=E.precios||preciosDefault();
-  let num=0,den=0; SECTORES.forEach(s=>{ num+=(precios[s.id]/(s.ref*infl))*s.cuota; den+=s.cuota; });
+  let num=0,den=0; sectoresActuales().forEach(s=>{ const p=precios[s.id]||s.ref*infl; num+=(p/(s.ref*infl))*s.cuota; den+=s.cuota; });
   return den?num/den:1;
 }
 function ingresosAnuales(){
@@ -747,6 +761,42 @@ function aplicarEstatutosMod(){
     }
   });
 }
+/* ---------------- obras del estadio (arreglar/mejorar por etapas) ---------------- */
+const OBRAS_PLAN={
+  mantencion:  { n:"Mantención general", ic:"🧹", semanas:2, gEstadio:3,  gAforo:0,    desc:"Pintura, baños, césped. Sube un poco el estado y no molesta a nadie." },
+  remodelacion:{ n:"Remodelar un sector", ic:"🔧", semanas:4, gEstadio:7,  gAforo:0,    desc:"Butacas nuevas y accesos. Mejora el estado y la imagen del recinto." },
+  ampliacion:  { n:"Ampliar el aforo",    ic:"🏗️", semanas:8, gEstadio:10, gAforo:2500, desc:"Obra grande: más capacidad y menos sanciones. Cara y lenta, pero cambia el club." }
+};
+function costoObra(tipo){
+  const base={mantencion:120, remodelacion:360, ampliacion:820}[tipo]||200;
+  return Math.round(base*(1+E.ind.estadio/140));   /* más caro cuanto mejor ya está */
+}
+function iniciarObra(tipo){
+  if(E.obras) return {ok:false,msg:"Ya hay una obra en marcha."};
+  const plan=OBRAS_PLAN[tipo]; if(!plan) return {ok:false,msg:"Obra desconocida."};
+  if(E.ind.estadio>=98) return {ok:false,msg:"El estadio ya está impecable."};
+  const costo=costoObra(tipo);
+  if(E.plata<costo) return {ok:false,msg:"No te alcanza la caja para esta obra."};
+  aplicarEfectos({plata:-costo});
+  E.obras={tipo:tipo, semanas:plan.semanas, resta:plan.semanas, costo:costo};
+  guardar();
+  return {ok:true, costo:costo};
+}
+function avanzarObras(){
+  if(!E.obras) return;
+  E.obras.resta--;
+  if(E.obras.resta<=0){
+    const plan=OBRAS_PLAN[E.obras.tipo];
+    if(plan){
+      aplicarEfectos({estadio:plan.gEstadio});
+      if(plan.gAforo) E.aforoExtra=(E.aforoExtra||0)+plan.gAforo;
+      notificar({t:"Obra terminada",tipo:"bueno",bandeja:true,
+        d:"Se terminó la obra: "+plan.n+". El estadio quedó mejor"+(plan.gAforo?(" y suma ~"+plan.gAforo+" de aforo"):"")+"."});
+      if(typeof recordar==="function") recordar("estadio","terminaste una obra en el estadio ("+plan.n+")",{peso:"medio",tono:"bueno"});
+    }
+    E.obras=null;
+  }
+}
 /* ---------------- paso del tiempo ---------------- */
 function decisionesBloqueantes(){
   return E.decPend.filter(x=>x.peso==="alto");
@@ -756,6 +806,7 @@ function tickSemana(){
   /* plata que entra y sale entre partido y partido */
   const neto=ingresoSemanal()-costoSemanal();
   aplicarEfectos({plata:neto});
+  avanzarObras();
   if(typeof actualizarBolsa==="function") actualizarBolsa();
   if(typeof gestionTesorero==="function") gestionTesorero();
   /* plata personal del DT: entra su sueldo del cargo (menos si renunció por redención) */
