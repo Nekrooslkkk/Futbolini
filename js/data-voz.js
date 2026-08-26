@@ -391,6 +391,8 @@ function empujarTicker(P, autor, texto, tono, m){
   if(typeof tickerPost==="function" && !tickerPost._voz){
     const orig=tickerPost;
     tickerPost=function(P, ev){
+      /* antes de Twitter (2008) no hay tuits en el partido: solo relato clásico */
+      if(typeof E!=="undefined" && E && (E.anio||2026)<2008) return orig(P, ev);
       try{
         if(P && ev && ev.tipo==="gol"){
           const [yo,ot]=(typeof miMarcador==="function")?miMarcador(P):[P.gl||0,P.gv||0];
@@ -410,6 +412,7 @@ function empujarTicker(P, autor, texto, tono, m){
   if(typeof tickerAmbiente==="function" && !tickerAmbiente._voz){
     const origA=tickerAmbiente;
     tickerAmbiente=function(P){
+      if(typeof E!=="undefined" && E && (E.anio||2026)<2008) return origA(P);
       try{
         if(P && Math.random()<0.28){
           const t=tuitDeCtx("analogia_dunk");

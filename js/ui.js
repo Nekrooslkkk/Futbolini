@@ -11,6 +11,8 @@ const SECCIONES=[
  ["carrera","🎖️","Carrera"],["vida","🪪","Vida"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
 ];
 function irA(s){ SEC=s; render(); const v=$("#vista"); if(v){ v.classList.remove("fx-in"); void v.offsetWidth; v.classList.add("fx-in"); } window.scrollTo({top:0}); }
+/* Chirp/redes recién existe con Twitter: antes de 2008 el fútbol vivía en radio y diarios. */
+function redesDisponibles(){ return !!(E && (E.anio||2026)>=2008); }
 
 /* ---------------- barra y menú ---------------- */
 function pintarBarra(){
@@ -38,6 +40,7 @@ function pintarMenu(){
   if(!E){ m.classList.add("oculto"); return; }
   m.classList.remove("oculto");
   SECCIONES.forEach(([id,ic,n])=>{
+    if(id==="redes" && !redesDisponibles()) return;   /* sin redes sociales en épocas pre-Twitter */
     const b=el("button","mi",'<span>'+ic+'</span><span>'+n+'</span>');
     b.setAttribute("role","tab");
     b.setAttribute("aria-selected",SEC===id?"true":"false");
@@ -57,6 +60,7 @@ function render(){
   if(E.carrera.fin){ v.appendChild(pantallaFinCarrera()); return; }
   if(E.dinastia&&E.dinastia.sucesionPendiente){ v.appendChild(pantallaSucesion()); return; }
   if(E.carrera.enParo){ v.appendChild(pantallaSinClub()); return; }
+  if(SEC==="redes" && !redesDisponibles()) SEC="escritorio";   /* no caer en Chirp en épocas sin redes */
   v.dataset.sec=SEC;   /* para el layout multi-columna en PC (evita scroll eterno) */
   ({escritorio:vistaEscritorio,institucion:vistaInstitucion,finanzas:vistaFinanzas,plantel:vistaPlantel,
     mercado:vistaMercado,redes:vistaRedes,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,

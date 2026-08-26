@@ -371,6 +371,17 @@ const PERIODISTAS=[
  {n:"Tironi",m:"Deporte Total"},{n:"la Kari Fuentes",m:"Radio Gol"},
  {n:"el Chico Sotomayor",m:"El Balonazo"},{n:"Marcela Ríos",m:"Crónica FC"}
 ];
+/* Periodistas de la época clásica (fútbol chileno ~1985-1995). Nombres reales, medios reales;
+   lo que dicen en el juego es ficción. Grok amplía esta lista con más relatores/comentaristas de la era. */
+const PERIODISTAS_CLASICOS=[
+ {n:"Julio Martínez",m:"prensa deportiva"},{n:"Sergio Livingstone",m:"comentarios, Canal 13"},
+ {n:"Vladimiro Mimica",m:"relato radial"},{n:"Pedro Carcuro",m:"TVN"},
+ {n:"Alberto Fouillioux",m:"comentarista"}
+];
+/* elige el pool de prensa según el año jugado: antes de 2008 no había CM ni redes, mandaba la radio */
+function periodistasEra(){
+  return (typeof E!=="undefined"&&E&&E.anio<2008&&PERIODISTAS_CLASICOS.length)?PERIODISTAS_CLASICOS:PERIODISTAS;
+}
 const CONF_ARQ={
  calma:{grupos:{prensa:6,camarin:4},rep:{credibilidad:4},ef:{moral:3},txt:"Bajaste el perfil. La prensa y el camarín lo valoran."},
  mea :{grupos:{prensa:8,camarin:-2},rep:{credibilidad:6},ef:{moral:1},txt:"La autocrítica te subió crédito, aunque el grupo quedó algo tocado."},
@@ -430,7 +441,7 @@ function elegirPreguntasConf(L,n){
 function modalConferencia(part){
   const L=preguntasConferencia(part);
   const preguntas=elegirPreguntasConf(L,2);          /* 6.33 · conferencia más larga: 2 preguntas */
-  const peris=mezcla(PERIODISTAS.slice()).slice(0,preguntas.length);   /* distintos periodistas */
+  const peris=mezcla(periodistasEra().slice()).slice(0,preguntas.length);   /* distintos periodistas */
   let idx=0; const dichos=[];
   modal(box=>{
     const pintar=()=>{
@@ -442,7 +453,7 @@ function modalConferencia(part){
       bar.innerHTML="Clima de prensa para este partido: <b>"+cl.etq+"</b> <span class='mini'>(influye en cómo salís a la cancha)</span>"+
         "<div class='barrita' style='margin-top:3px'><i style='width:"+cl.pct+"%;--c:"+cl.col+"'></i></div>";
       c.appendChild(bar);
-      const per=peris[idx]||elige(PERIODISTAS), q=preguntas[idx];
+      const per=peris[idx]||elige(periodistasEra()), q=preguntas[idx];
       c.appendChild(el("div","resul mitad","<b>"+per.n+"</b> <span class='mini'>· "+per.m+"</span><br>"+q.q));
       const ops=el("div","ops");
       q.ops.forEach(o=>{
@@ -1072,7 +1083,7 @@ function seccionPrensa(p,res,P){
       zonaPrensa.appendChild(el("div","resul mitad","El ayudante se encargó: sin polémica."));
       return;
     }
-    const per=elige(PERIODISTAS);
+    const per=elige(periodistasEra());
     const q=elegirPreguntaPrensa(preguntasPostPartido(res,P));
     zonaPrensa.appendChild(el("div","resul mitad","<b>"+per.n+"</b> <span class='mini'>· "+per.m+"</span><br>"+q.q));
     const ops=el("div","ops");
