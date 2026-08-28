@@ -49,6 +49,17 @@ button{background:none;border:none}
 .bd .v{font-family:var(--f-dato);font-size:13px;font-weight:700;color:#fff;line-height:1.25;white-space:nowrap}
 .bd.alerta .v{color:#ffcfc6}
 .barra-acc{display:flex;gap:6px;flex:0 0 auto;position:relative}
+/* En el celular la barra queda apretada: dejamos el escudo y los 3 datos vitales (Fecha, Caja, Deuda),
+   sin scroll horizontal. Capital e Imagen viven en sus propias vistas. */
+@media(max-width:640px){
+  #barra{gap:7px}
+  .marca .nombre,.marca .ver{display:none}
+  .barra-datos{gap:5px;overflow-x:visible}
+  .bd{min-width:0;flex:1 1 auto;padding:3px 6px;text-align:center}
+  .bd .k{font-size:8px;letter-spacing:.3px}
+  .bd .v{font-size:12px}
+  .bd-sec,.bd-club{display:none}
+}
 
 /* ---------- menú ---------- */
 #menu{position:sticky;top:52px;z-index:45;display:flex;gap:5px;padding:6px 10px;

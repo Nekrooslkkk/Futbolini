@@ -24,15 +24,15 @@ function pintarBarra(){
   $("#escudo").textContent=(ic&&ic.esc)||"⚽";
   const part=proximoPartido();
   const datos=[
-   ["Club",E.clubNombre],
-   ["Fecha",(part?fechaTxt(part.f):"cierre")+" · "+E.anio],
+   ["Club",E.clubNombre,false,"bd-club"],
+   ["Fecha",(part?fechaTxt(part.f):"cierre")+" · "+E.anio,false,"bd-fecha"],
    ["Caja",plata(E.plata),E.plata<100],
    ["Deuda",plata(E.deuda),E.deuda>3000],
-   ["Capital inst.",E.capital+"/100",E.capital<15],
-   ["Imagen",Math.round(E.rep.publica)+"/100",E.rep.publica<25]
+   ["Capital",E.capital+"/100",E.capital<15,"bd-sec"],
+   ["Imagen",Math.round(E.rep.publica)+"/100",E.rep.publica<25,"bd-sec"]
   ];
-  datos.forEach(([k,v,al])=>{
-    bd.appendChild(el("div","bd"+(al?" alerta":""),'<div class="k">'+k+'</div><div class="v">'+v+'</div>'));
+  datos.forEach(([k,v,al,cls])=>{
+    bd.appendChild(el("div","bd"+(al?" alerta":"")+(cls?" "+cls:""),'<div class="k">'+k+'</div><div class="v">'+v+'</div>'));
   });
 }
 function pintarMenu(){
