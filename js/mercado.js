@@ -234,7 +234,8 @@ function jugadorAcepta(j,oferta){ return interesJugador(j,oferta)>=0; }
 function clubAcepta(j,oferta){ return oferta.precio>=Math.round(j.precio*0.9); }
 
 function cerrarFichaje(j,oferta){
-  E.plata-=oferta.precio;
+  const comision=oferta.comision||0;
+  E.plata-=(oferta.precio+comision);
   const nuevo=Object.assign({}, j, {
     sueldo:oferta.sueldo, rol:oferta.rol, real:false, forma:66, moral:70,
     contrato:{hasta:E.anio+2+(oferta.rol==="promesa"?2:0)}, lesion:0, goles:0, partidos:0, tarjetas:0
@@ -245,11 +246,39 @@ function cerrarFichaje(j,oferta){
   const m=mercadoSemana(); m.objetivos=m.objetivos.filter(x=>x!==j);
   notificar({t:"Fichaste a "+nuevo.n,tipo:"bueno",
     d:"Se incorpora "+nuevo.n+" ("+nuevo.pos+", nivel "+nuevo.nivel+") como "+oferta.rol+". Costó "+plata(oferta.precio)+
+      (comision?" + "+plata(comision)+" de comisión al representante":"")+
       " y gana "+plata(oferta.sueldo)+" al año. El nivel del plantel se recalcula."});
   if(typeof redesReaccion==="function") redesReaccion("ficha",{n:nuevo.n});
   guardar();
   return nuevo;
 }
+
+/* ---------- ojeo / informe de scout (revela lo que no dicen los números) ---------- */
+function costoOjeo(j){ return Math.max(8, Math.round((j.valor||100)*0.04)); }
+function informeOjeo(j){
+  if(!E.ojeados) E.ojeados={};
+  if(E.ojeados[j.n]) return E.ojeados[j.n];
+  const rr=azarFijo(semilla("ojeo"+j.n+(E.club||"")));
+  const pick=a=>a[Math.floor(rr()*a.length)];
+  const caracter=pick(["líder de camarín","profesional callado","temperamental, cuesta manejarlo",
+    "inseguro bajo presión","algo mercenario","corazón, deja todo en la cancha","frío pero cumplidor"]);
+  const fisico=(rr()<0.22)?"frágil: se lesiona seguido":(rr()<0.55?"físico normal":"de fierro, casi no para");
+  const techo=(j.proy>=j.nivel+8)?"techo alto: puede pegar el salto":((j.proy>j.nivel+3)?"tiene margen para crecer":"ya es lo que va a ser");
+  const humor=pick(["motivado, quiere el desafío","cómodo donde está, hay que convencerlo","con un pie afuera de su club","dolido con su hinchada actual"]);
+  const info={caracter:caracter, fisico:fisico, techo:techo, humor:humor};
+  E.ojeados[j.n]=info; return info;
+}
+function ojear(j){
+  if(E.ojeados&&E.ojeados[j.n]) return;
+  const costo=costoOjeo(j);
+  if(E.plata<costo){ if(typeof aviso==="function") aviso("No te alcanza para el informe ("+plata(costo)+")"); return; }
+  aplicarEfectos({plata:-costo});
+  informeOjeo(j);
+  guardar(); render();
+  if(typeof aviso==="function") aviso("Informe de ojeador listo: "+j.n);
+}
+/* comisión del representante (fija por jugador, 5-13% del precio) */
+function comisionRep(precio,j){ const pct=5+(semilla((j&&j.n)||"rep")%9); return Math.round((precio||0)*pct/100); }
 
 /* ============================================================
    UI del mercado
@@ -352,9 +381,16 @@ function vistaMercado(){
     d.innerHTML="<b>"+j.n+" <span class='mini'>("+j.club+")</span></b><br>"+
       j.pos+" · "+j.edad+" años · nivel "+j.nivel+(j.proy>j.nivel+4?" · proy "+j.proy:"")+
       " · piden <b>"+plata(j.precio)+"</b> + sueldo "+plata(j.pidesueldo);
-    const b=el("button","btn-aqua chico verde","Negociar / Comprar"); b.style.marginTop="6px";
+    const oj=E.ojeados&&E.ojeados[j.n];
+    if(oj) d.appendChild(el("div","mini","🔍 <b>Informe:</b> "+oj.caracter+" · "+oj.fisico+" · "+oj.techo+" · "+oj.humor));
+    const cont=el("div"); cont.style.marginTop="6px";
+    if(!oj){
+      const bo=el("button","btn-aqua chico","Ojear ("+plata(costoOjeo(j))+")");
+      bo.onclick=()=>ojear(j); cont.appendChild(bo);
+    }
+    const b=el("button","btn-aqua chico verde","Negociar / Comprar"); if(!oj) b.style.marginLeft="6px";
     b.onclick=()=>modalComprar(j,abierto);
-    d.appendChild(b);
+    cont.appendChild(b); d.appendChild(cont);
     po.cuerpo.appendChild(d);
   });
   v.appendChild(po);
@@ -364,19 +400,28 @@ var MERC_FILTRO={pos:"",joven:false,barato:false};
 /* Negociación de compra en 2-3 pasos: tu oferta → contraoferta → cierre.
    Insistir cuesta (suben lo que piden); a las 3 rondas se levantan de la mesa. */
 function modalComprar(j,abierto){
-  const oferta={ precio:j.precio, sueldo:j.pidesueldo, rol:"titular" };
+  const oferta={ precio:j.precio, sueldo:j.pidesueldo, rol:"titular", comisionRebaja:false, comisionIntento:false };
   const minP=Math.max(1,Math.round(j.precio*0.5)), maxP=Math.round(j.precio*1.7);
   const minS=Math.max(1,Math.round(j.pidesueldo*0.7)), maxS=Math.round(j.pidesueldo*2);
   let paso=1, contra=null, ronda=0, exigePrecio=Math.round(j.precio*0.9);
+  const comAct=()=>Math.round(comisionRep(oferta.precio,j)*(oferta.comisionRebaja?0.5:1));
+  const costoTotal=()=>oferta.precio+comAct();
   modal(box=>{
-    const cerrar=()=>{ const nuevo=cerrarFichaje(j,oferta); cerrarModal(); render(); aviso("Fichaste a "+nuevo.n+" ("+oferta.rol+")"); };
+    const cerrar=()=>{ oferta.comision=comAct(); const nuevo=cerrarFichaje(j,oferta); cerrarModal(); render(); aviso("Fichaste a "+nuevo.n+" ("+oferta.rol+")"); };
+    const regatearComision=()=>{
+      if(oferta.comisionIntento){ if(typeof aviso==="function") aviso("Ya le apretaste la mano al representante."); return; }
+      oferta.comisionIntento=true;
+      if(Math.random()<0.5){ oferta.comisionRebaja=true; if(typeof aviso==="function") aviso("El representante aflojó: comisión a la mitad."); }
+      else { if(typeof aviso==="function") aviso("El representante no baja un peso. Es lo que es."); }
+      pintar();
+    };
     /* evalúa la oferta actual: aceptan, o arman contraoferta */
     const evaluar=()=>{
       ronda++;
       const cok=oferta.precio>=exigePrecio, jok=jugadorAcepta(j,oferta);
       if(cok&&jok){
         if(!abierto){ contra={cerrado:false,msg:"El acuerdo está, pero la ventana está cerrada: no se puede firmar hasta "+proximaVentana()+"."}; paso=2; pintar(); return; }
-        if(E.plata<oferta.precio){ contra={cerrado:false,msg:"Se pusieron de acuerdo, pero no te alcanza la caja ("+plata(oferta.precio)+")."}; paso=2; pintar(); return; }
+        if(E.plata<costoTotal()){ contra={cerrado:false,msg:"Se pusieron de acuerdo, pero no te alcanza la caja: precio "+plata(oferta.precio)+" + comisión "+plata(comAct())+"."}; paso=2; pintar(); return; }
         cerrar(); return;
       }
       contra={cerrado:false};
@@ -389,7 +434,7 @@ function modalComprar(j,abierto){
     const insistir=()=>{
       /* pequeña chance de que cedan; si no, suben la vara y vuelven a contraofertar */
       if(Math.random()<Math.max(0.05,0.28-ronda*0.08)){ // ceden a tu oferta actual
-        if(!abierto||E.plata<oferta.precio){ evaluar(); return; }
+        if(!abierto||E.plata<costoTotal()){ evaluar(); return; }
         cerrar(); return;
       }
       exigePrecio=Math.round(exigePrecio*1.06);
@@ -401,7 +446,7 @@ function modalComprar(j,abierto){
       if(contra.sueldo) oferta.sueldo=contra.sueldo;
       if(contra.rol) oferta.rol=contra.rol;
       if(!abierto){ contra.msg="Trato cerrado en la palabra, pero la ventana está cerrada: firmás en "+proximaVentana()+"."; pintar(); return; }
-      if(E.plata<oferta.precio){ contra.msg="Aceptaste, pero no te alcanza la caja para "+plata(oferta.precio)+"."; pintar(); return; }
+      if(E.plata<costoTotal()){ contra.msg="Aceptaste, pero no te alcanza la caja: precio "+plata(oferta.precio)+" + comisión "+plata(comAct())+"."; pintar(); return; }
       cerrar();
     };
     const pintar=()=>{
@@ -427,7 +472,15 @@ function modalComprar(j,abierto){
           b.onclick=()=>{ oferta.rol=k; pintar(); }; fr.appendChild(b);
         });
         c.appendChild(fr);
-        const b=el("button","btn-aqua ancho verde","Enviar oferta"); b.style.marginTop="8px";
+        const cj=el("div","resul mitad"); cj.style.marginTop="8px";
+        cj.innerHTML="🤝 <b>Representante:</b> comisión "+plata(comAct())+(oferta.comisionRebaja?" <span class='mini'>(rebajada)</span>":"")+
+          "<br><span class='mini'>Se paga aparte del precio. Total a desembolsar: <b>"+plata(costoTotal())+"</b>.</span>";
+        c.appendChild(cj);
+        if(!oferta.comisionIntento){
+          const brc=el("button","btn-aqua chico amarillo","Regatear comisión"); brc.style.marginBottom="6px";
+          brc.onclick=regatearComision; c.appendChild(brc);
+        }
+        const b=el("button","btn-aqua ancho verde","Enviar oferta"); b.style.marginTop="4px";
         b.onclick=evaluar; c.appendChild(b);
       } else if(paso===2){
         c.appendChild(el("div","resul mitad","<b>Respuesta (ronda "+ronda+"):</b><br>"+contra.msg));
