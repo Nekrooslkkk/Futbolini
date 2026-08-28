@@ -502,6 +502,21 @@ function arrancarPartido(part,modo){
   if(modo==="simular"){ correrHasta(P_ACTUAL,90); pintarPartido(); cerrarPartido(); return; }
   pintarPartido(); correrEnVivo();
 }
+/* 7.10 · panel de estadísticas de transmisión (posesión, remates, al arco, córners) */
+function bloqueStats(P){
+  const s=P.stats||{pos:0.5,remMio:0,remRiv:0,arcMio:0,arcRiv:0,corMio:0,corRiv:0};
+  const posYo=Math.round(clamp(s.pos,0,1)*100), posRiv=100-posYo;
+  const cont=el("div","stat-part");
+  cont.innerHTML=
+    "<div class='stat-pos'><b>"+posYo+"%</b><div class='pos-bar'><i style='width:"+posYo+"%'></i></div><b>"+posRiv+"%</b></div>"+
+    "<div class='stat-pos-lb'><span>"+apodoJug(E.clubNombre)+"</span><span class='mini'>posesión</span><span>"+apodoJug(P.part.rivalNombre)+"</span></div>"+
+    "<div class='stat-grid'>"+
+      "<div class='stn'>"+s.remMio+"</div><div class='stk'>Remates</div><div class='stn'>"+s.remRiv+"</div>"+
+      "<div class='stn'>"+s.arcMio+"</div><div class='stk'>Al arco</div><div class='stn'>"+s.arcRiv+"</div>"+
+      "<div class='stn'>"+s.corMio+"</div><div class='stk'>Córners</div><div class='stn'>"+s.corRiv+"</div>"+
+    "</div>";
+  return cont;
+}
 function pintarPartido(){
   const P=P_ACTUAL; if(!P) return;
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
@@ -516,6 +531,7 @@ function pintarPartido(){
   if(P.modo!=="simular"){
     canchaCv=el("canvas","cancha2d"); canchaCv.setAttribute("aria-hidden","true");
     p.cuerpo.appendChild(canchaCv);
+    p.cuerpo.appendChild(bloqueStats(P));
   }
   const tramo=P.min<=45?"1T":(P.min<90?"2T":"FT");
   p.cuerpo.appendChild(el("div","reloj",P.terminado?"Final del partido":((PAUSADO?"⏸ ":"")+"Minuto "+P.min+" · "+tramo)));
@@ -599,6 +615,7 @@ function pasoEnVivo(){
     clearInterval(TIMER); pintarPartido(); mostrarMomento(); return;
   }
   const ev=tickPartido(P);
+  if(typeof actualizarStats==="function") actualizarStats(P,ev);
   if(typeof actualizarApoyo==="function") actualizarApoyo(P);
   if(typeof tickerPost==="function") tickerPost(P,ev);
   if(typeof tickerAmbiente==="function" && (!ev||ev.tipo==="nada") && Math.random()<0.14) tickerAmbiente(P);   /* 6.36 · tuits del momento */

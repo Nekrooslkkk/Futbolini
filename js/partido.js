@@ -218,6 +218,7 @@ function iniciarPartido(part,modo){
     cambios:0, cambiosMax:((E&&E.anio)||2026)>=2010?3:2   /* 6.18 · tope de cambios por era */
   };
   P.once.forEach(j=>{ j.estado="once"; });
+  P.stats={pos:0.5, remMio:0, remRiv:0, arcMio:0, arcRiv:0, corMio:0, corRiv:0};   /* 7.10 · stats de transmisión */
   P.quimica=qui; P.empuje+=qui.bono; P.orden+=qui.bono*0.5;   /* 6.30 · química al ruedo */
   /* 6.33 · el clima de prensa (lo que dejaste en la conferencia) empuja o pesa */
   if(E.grupos && E.grupos.prensa){ P.empuje+=clamp(E.grupos.prensa.aprob/90,-0.7,0.7); }
@@ -482,6 +483,24 @@ function tickPartido(P){
     return {tipo:"relato",min:min};
   }
   return {tipo:"nada",min:min};
+}
+/* 7.10 · estadísticas en vivo (posesión, remates, al arco, córners).
+   Se llama después de cada tick con el evento devuelto. */
+function actualizarStats(P,ev){
+  if(!P.stats) P.stats={pos:0.5,remMio:0,remRiv:0,arcMio:0,arcRiv:0,corMio:0,corRiv:0};
+  const s=P.stats;
+  const posT=clamp(0.5+((P.ataque||0)-(P.rival||0))*0.006+(P.fase==="dominio"?0.12:(P.fase==="ahogo"?-0.12:0))+(P.empuje||0)*0.008,0.22,0.78);
+  s.pos+=(posT-s.pos)*0.08;
+  if(ev) switch(ev.tipo){
+    case "gol": s.remMio++; s.arcMio++; break;
+    case "golRival": s.remRiv++; s.arcRiv++; break;
+    case "penal": case "tiroLibre": s.remMio++; s.arcMio++; break;
+    case "penalRival": s.remRiv++; s.arcRiv++; break;
+    case "chance": s.remMio++; if(Math.random()<0.5) s.arcMio++; if(Math.random()<0.35) s.corMio++; break;
+    case "polemica": if(Math.random()<0.5) s.remMio++; break;
+  }
+  if(Math.random()<0.014) s.corRiv++;
+  if(Math.random()<0.010) s.remRiv++;
 }
 /* frases de chance según marcador y tramo */
 function fraseChance(P,min){
