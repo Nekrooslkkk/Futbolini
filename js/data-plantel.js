@@ -225,11 +225,14 @@ function generarJugador(rr,nivelBase,pos,edad){
   const edd=edad||18+Math.floor(rr()*16);
   const proy=clamp(nivel+(edd<23?Math.round(rr()*12):0),28,95);
   const infl=(typeof inflacionEra==="function" && typeof E!=="undefined" && E)?inflacionEra():1;
-  const nro=1+Math.floor(rr()*80);
-  return {n:"Canterano "+pos+" "+nro,
+  const pila=NOMBRES_PILA[Math.floor(rr()*NOMBRES_PILA.length)];
+  const ape=APELLIDOS[Math.floor(rr()*APELLIDOS.length)];
+  const ape2=APELLIDOS[Math.floor(rr()*APELLIDOS.length)];
+  const nombre=pila+" "+ape+((rr()<0.25&&ape2!==ape)?(" "+ape2):"");
+  return {n:nombre,
     pos:pos,edad:edd,nivel:nivel,proy:proy,
     sueldo:Math.round(nivel*nivel/110*infl),valor:Math.round((nivel*nivel/16+(proy-nivel)*10)*infl),
-    rasgos:["cantera"],forma:65+Math.round(rr()*15),moral:65+Math.round(rr()*15),real:false,
+    rasgos:(edd<=21?["cantera"]:[]),forma:65+Math.round(rr()*15),moral:65+Math.round(rr()*15),real:false,
     contrato:{hasta:0},lesion:0,goles:0,partidos:0,tarjetas:0};
 }
 /* Arma un plantel: nombres reales si hay. No rellena con gente inventada si ya hay 16+. */
