@@ -195,6 +195,23 @@ function quimicaEquipo(once){
   const bono=clamp((prom-55)/7,-3,5);
   return {prom:prom,bono:bono,lazos:lazos};
 }
+/* 7.10 · árbitro con nombre (ficticio) y sesgo visible. Determinista por fixture
+   para que la previa y el partido muestren el mismo. NUNCA usa nombres de árbitros reales. */
+const ARB_ESTILOS=[
+  {k:"parejo",      d:"la lleva pareja, cobra lo justo",   cartas:1.0,  casero:0},
+  {k:"casero",      d:"fama de cobrar para el local",       cartas:1.0,  casero:1},
+  {k:"tarjetero",   d:"saca tarjeta por cualquier cosa",    cartas:1.5,  casero:0},
+  {k:"estricto",    d:"riguroso, no deja pasar una",        cartas:1.25, casero:0},
+  {k:"deja jugar",  d:"guarda las tarjetas, deja jugar",    cartas:0.7,  casero:0}
+];
+function arbitroDe(part){
+  const key="arb"+((part&&part.fecha)||"x")+((part&&(part.rivalId||part.rivalNombre))||"")+((typeof E!=="undefined"&&E&&E.anio)||"");
+  const rr=azarFijo(semilla(key));
+  const pila=NOMBRES_PILA[Math.floor(rr()*NOMBRES_PILA.length)];
+  const ape=APELLIDOS[Math.floor(rr()*APELLIDOS.length)];
+  const est=ARB_ESTILOS[Math.floor(rr()*ARB_ESTILOS.length)];
+  return {n:pila+" "+ape, estilo:est.k, desc:est.d, cartas:est.cartas, casero:est.casero};
+}
 function iniciarPartido(part,modo){
   const once=onceIdeal();
   const fz=fuerzaEquipo(once);
@@ -219,6 +236,8 @@ function iniciarPartido(part,modo){
   };
   P.once.forEach(j=>{ j.estado="once"; });
   P.stats={pos:0.5, remMio:0, remRiv:0, arcMio:0, arcRiv:0, corMio:0, corRiv:0};   /* 7.10 · stats de transmisión */
+  P.arbitro=arbitroDe(part);   /* 7.10 · árbitro con sesgo visible */
+  if(P.arbitro.casero){ if(part.local){ P.ataque+=2.5; P.orden+=1.5; } else { P.rival+=2.5; } }
   P.quimica=qui; P.empuje+=qui.bono; P.orden+=qui.bono*0.5;   /* 6.30 · química al ruedo */
   /* 6.33 · el clima de prensa (lo que dejaste en la conferencia) empuja o pesa */
   if(E.grupos && E.grupos.prensa){ P.empuje+=clamp(E.grupos.prensa.aprob/90,-0.7,0.7); }
@@ -456,7 +475,7 @@ function tickPartido(P){
   const pPol=(P.clasico||P.var)?0.018:0.012;
   if(min>60&&Math.random()<pPol){ polemicaArbitral(P); return {tipo:"polemica",min:min}; }
   /* tarjeta · 6.20 · "cabeza caliente": post-60' arriesga más (mitad si viene ganando); 2ª amarilla = roja */
-  if(Math.random()<0.03){
+  if(Math.random()<0.03*((P.arbitro&&P.arbitro.cartas)||1)){
     const ganando=(P.part.local?P.gl>P.gv:P.gv>P.gl);
     const calientes=P.once.filter(x=>x.rasgos&&x.rasgos.indexOf("cabeza caliente")>=0);
     let j;

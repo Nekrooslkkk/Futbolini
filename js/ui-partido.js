@@ -23,6 +23,12 @@ function checklistPrevia(part,once){
   const items=[];
   const clasico=(typeof esClasico==="function")&&esClasico(part);
   if(clasico) items.push({warn:false,ok:true,t:"Hoy es CLÁSICO ante "+part.rivalNombre,d:"Vale doble para la gente. Es tu objetivo institucional del año."});
+  if(typeof arbitroDe==="function"){
+    const arb=arbitroDe(part);
+    const caseroContra=arb.casero&&!part.local;
+    items.push({warn:!!caseroContra, ok:!caseroContra, t:"Dirige "+arb.n,
+      d:"Tiene "+arb.desc+"."+(arb.casero?(part.local?" De local, eso te conviene.":" Jugás de visita: ojo, la puede cargar para ellos."):"")});
+  }
   /* decisiones urgentes sin resolver */
   const urgentes=(E.decPend||[]).filter(x=>x.peso==="alto").length;
   if(urgentes) items.push({warn:true,t:urgentes+" decisión"+(urgentes>1?"es":"")+" urgente"+(urgentes>1?"s":"")+" sin resolver",
@@ -535,6 +541,7 @@ function pintarPartido(){
   }
   const tramo=P.min<=45?"1T":(P.min<90?"2T":"FT");
   p.cuerpo.appendChild(el("div","reloj",P.terminado?"Final del partido":((PAUSADO?"⏸ ":"")+"Minuto "+P.min+" · "+tramo)));
+  if(P.arbitro) p.cuerpo.appendChild(el("div","mini centro","🧑‍⚖️ Árbitro: <b>"+P.arbitro.n+"</b> · "+P.arbitro.desc));
   if(!P.terminado&&P.modo!=="simular"){
     const ctrl=el("div","ctrlPartido");
     const bp=el("button","btn-aqua chico",PAUSADO?"▶ Seguir":"⏸ Pausa");
