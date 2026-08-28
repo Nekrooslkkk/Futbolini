@@ -378,9 +378,22 @@ const PERIODISTAS_CLASICOS=[
  {n:"Vladimiro Mimica",m:"relato radial"},{n:"Pedro Carcuro",m:"TVN"},
  {n:"Alberto Fouillioux",m:"comentarista"}
 ];
-/* elige el pool de prensa según el año jugado: antes de 2008 no había CM ni redes, mandaba la radio */
+/* pool de prensa según el año jugado: usa los periodistas REALES de la época (data-periodistas.js);
+   si no está cargado, cae al seed clásico (pre-2008) o al pool moderno. */
 function periodistasEra(){
+  if(typeof bucketPeriodistas==="function" && typeof E!=="undefined" && E && E.anio){
+    const b=bucketPeriodistas(E.anio); if(b&&b.length) return b;
+  }
   return (typeof E!=="undefined"&&E&&E.anio<2008&&PERIODISTAS_CLASICOS.length)?PERIODISTAS_CLASICOS:PERIODISTAS;
+}
+/* elige un periodista evitando los últimos usados (que no salga siempre el mismo) */
+let _ultPeris=[];
+function eligePeri(){
+  const pool=periodistasEra();
+  const libres=pool.filter(p=>_ultPeris.indexOf(p.n)<0);
+  const p=elige(libres.length?libres:pool);
+  _ultPeris.push(p.n); if(_ultPeris.length>Math.min(4,pool.length-1)) _ultPeris.shift();
+  return p;
 }
 const CONF_ARQ={
  calma:{grupos:{prensa:6,camarin:4},rep:{credibilidad:4},ef:{moral:3},txt:"Bajaste el perfil. La prensa y el camarín lo valoran."},
@@ -453,7 +466,7 @@ function modalConferencia(part){
       bar.innerHTML="Clima de prensa para este partido: <b>"+cl.etq+"</b> <span class='mini'>(influye en cómo salís a la cancha)</span>"+
         "<div class='barrita' style='margin-top:3px'><i style='width:"+cl.pct+"%;--c:"+cl.col+"'></i></div>";
       c.appendChild(bar);
-      const per=peris[idx]||elige(periodistasEra()), q=preguntas[idx];
+      const per=peris[idx]||eligePeri(), q=preguntas[idx];
       c.appendChild(el("div","resul mitad","<b>"+per.n+"</b> <span class='mini'>· "+per.m+"</span><br>"+q.q));
       const ops=el("div","ops");
       q.ops.forEach(o=>{
@@ -1083,7 +1096,7 @@ function seccionPrensa(p,res,P){
       zonaPrensa.appendChild(el("div","resul mitad","El ayudante se encargó: sin polémica."));
       return;
     }
-    const per=elige(periodistasEra());
+    const per=eligePeri();
     const q=elegirPreguntaPrensa(preguntasPostPartido(res,P));
     zonaPrensa.appendChild(el("div","resul mitad","<b>"+per.n+"</b> <span class='mini'>· "+per.m+"</span><br>"+q.q));
     const ops=el("div","ops");
