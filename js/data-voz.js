@@ -318,8 +318,8 @@ function tuitDeCtx(ctx){
   return t;
 }
 function tonoDeCtx(ctx){
-  if(/gana|hat_trick|remontada|goleada|clasico_gana|arquero/.test(ctx)) return "bueno";
-  if(/pierde|expulsion|penal_errado/.test(ctx)) return "malo";
+  if(/gana|hat_trick|remontada|goleada|clasico_gana|arquero|invicto/.test(ctx)) return "bueno";
+  if(/pierde|expulsion|penal_errado|anulado_var|autogol/.test(ctx)) return "malo";
   return "neutro";
 }
 function ctxDeEvento(P, ev){
@@ -330,6 +330,15 @@ function ctxDeEvento(P, ev){
   const local=!(!P.part||P.part.local===false);
   const clas=(typeof esClasico==="function")&&P.part?esClasico(P.part):false;
   const tipo=ev.tipo;
+  /* 7.10 · autogol: el último gol quedó marcado como tal en el detalle */
+  if(tipo==="gol"||tipo==="golRival"){
+    const gd=(P.golesDetalle||[]); const ult=gd[gd.length-1];
+    if(ult && ult.tipo==="autogol") return "autogol";
+  }
+  /* 7.10 · gol anulado / polémica: solo en era de VAR (2016+) */
+  if(tipo==="polemica"){ return (P.var||((typeof E!=="undefined"&&E&&E.anio)||0)>=2016)?"gol_anulado_var":null; }
+  /* 7.10 · empate pobre: 0-0 entrado el partido, en jugada muerta */
+  if((tipo==="chance"||tipo==="relato"||tipo==="nada") && m>=72 && yo===0 && ot===0 && Math.random()<0.30) return "empate_pobre";
   if(tipo==="gol"){
     const gd=(P.golesDetalle||[]).filter(g=>g.propio);
     const last=gd.length?gd[gd.length-1].quien:null;

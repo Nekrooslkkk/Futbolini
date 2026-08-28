@@ -1501,3 +1501,16 @@ Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
   conferencia/prensa usan `PERIODISTAS_CLASICOS` (seed real, pendiente ampliar con Grok).
 **Probado:** `node --check` OK; test lógico de `sectoresDe` (16 clubes, ids únicos, cuotas ~1). Falta QA navegador.
 **1 línea:** cada club juega en su estadio real con sus tribunas de verdad, que ahora podés arreglar y ver mejorar; y en 1991 ya no hay Twitter.
+
+## Mejora 7.10 · Motor de partido con vida: cancha animada + stats + quiz + tuits
+**Archivos:** `js/cancha.js` (nuevo), `js/partido.js`, `js/ui-partido.js`, `js/data-voz.js`, `js/data-tuits.js` (nuevo), `js/data-periodistas.js` (nuevo), `js/mercado.js`, `css/base.css`, `css/aero.css`, `index.html`
+- **Cancha animada** (`cancha.js`): canvas 2D puro, dos equipos como puntos que se mueven según empuje/marcador + pelota. requestAnimationFrame propio, posiciones en módulo (sobreviven re-render), se auto-detiene. Respeta prefers-reduced-motion.
+- **Stats de transmisión**: `actualizarStats(P,ev)` (posesión viva + remates/al arco/córners); `bloqueStats(P)` bajo la cancha.
+- **Quiz más grande**: +18 preguntas de fútbol + `triviaProc(P)` (preguntas inventadas sobre tu club con respuesta real: goles, puntos, rival, estadio, edad/nivel); efecto escalado por nivel del plantel (`m.factor`).
+- **Voz 2026**: +181 tuits chilenos (`data-tuits.js`) con memes/jerga; token `{FIGURA}`; resolución de tokens en el ticker; anti-repetición. Contextos autogol / gol_anulado_var / empate_pobre enganchados en `ctxDeEvento` (invicto queda idle).
+- **Periodistas reales por época** (`data-periodistas.js`: 1991/2003/2015/2025) con selección por año y anti-repetición.
+- **Fichajes**: ojeo/informe de scout (`E.ojeados`) + comisión de representante regateable.
+- **Época sin redes** (<2008): sin pestaña Redes ni tuits en el ticker; periodistas clásicos.
+- **Estadio**: sección propia con sectores reales por club (`data-estadios.js`) + obras que avanzan.
+**Probado:** node --check en todos; QA en navegador headless (cancha, stats, mercado) con capturas; tests de lógica (sectores, periodistas, trivia, contextos).
+**1 línea:** el partido dejó de ser un timer — ahora se ve jugar, con stats, quiz procedural y las redes hablando en chileno.
