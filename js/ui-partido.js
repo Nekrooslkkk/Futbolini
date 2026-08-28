@@ -672,9 +672,10 @@ function mostrarMomento(){
     b.onclick=()=>{
       MOMENTO_OPS=[];
       if(esTrivia){
+        const fac=m.factor||1;
         if(o.ok){
-          P.empuje+=1.2; P.ataque+=1; P.orden+=0.5;
-          if(Math.random()<0.28 && typeof anotaPropio==="function"){ anotaPropio(P,P.min); aviso("¡Correcto! Y encima cayó el gol 🎯"); }
+          P.empuje+=1.2*fac; P.ataque+=1*fac; P.orden+=0.5;
+          if(Math.random()<clamp(0.20+fac*0.08,0.2,0.42) && typeof anotaPropio==="function"){ anotaPropio(P,P.min); aviso("¡Correcto! Y encima cayó el gol 🎯"); }
           else aviso("¡Correcto! Se soltaron 🎯");
         } else { P.empuje-=0.8; P.orden-=0.5; aviso("Nada que ver… se pusieron nerviosos 😬"); }
         avanzarMomento(P); return;

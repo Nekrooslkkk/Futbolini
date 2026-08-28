@@ -648,7 +648,24 @@ const TRIVIA_FUTBOL=[
  {q:"Un hat-trick, ¿cuántos goles son?",op:["Dos","Tres","Cinco"],sol:1},
  {q:"¿Desde qué distancia se patea un penal, aprox.?",op:["9 metros","11 metros","16 metros"],sol:1},
  {q:"¿De qué color es la tarjeta de expulsión?",op:["Amarilla","Roja","Azul"],sol:1},
- {q:"¿Cuántos cambios suele permitir hoy el reglamento?",op:["Tres","Cinco","Siete"],sol:1}
+ {q:"¿Cuántos cambios suele permitir hoy el reglamento?",op:["Tres","Cinco","Siete"],sol:1},
+ {q:"¿Cómo se reanuda el juego si la pelota sale por la línea lateral?",op:["Córner","Saque de banda","Tiro libre"],sol:1},
+ {q:"El único título de Copa Libertadores del fútbol chileno, ¿de qué club es?",op:["U. de Chile","Colo-Colo","U. Católica"],sol:1},
+ {q:"¿De qué ciudad es Cobreloa?",op:["Antofagasta","Calama","Iquique"],sol:1},
+ {q:"¿Cuántos puntos suma un empate?",op:["Cero","Uno","Dos"],sol:1},
+ {q:"Si el defensa manda la pelota afuera por su línea de fondo, ¿qué se cobra?",op:["Saque de meta","Córner","Penal"],sol:1},
+ {q:"¿Cuántos tiempos tiene un partido reglamentario (sin alargue)?",op:["Uno","Dos","Tres"],sol:1},
+ {q:"La posición adelantada se llama…",op:["Offside","Handball","Falta"],sol:0},
+ {q:"¿Con qué parte del cuerpo NO puede tocar la pelota el arquero fuera del área?",op:["El pie","La cabeza","La mano"],sol:2},
+ {q:"El clásico universitario chileno lo juegan la U y…",op:["Colo-Colo","U. Católica","Everton"],sol:1},
+ {q:"¿Cada cuántos años se juega el Mundial de fútbol?",op:["Dos","Cuatro","Seis"],sol:1},
+ {q:"El campeonato de Primera en Chile, ¿en qué división es?",op:["Segunda","Primera","Tercera"],sol:1},
+ {q:"¿Cuántos jugadores como mínimo debe tener un equipo para seguir jugando?",op:["Seis","Siete","Ocho"],sol:1},
+ {q:"El palo horizontal del arco se llama…",op:["Travesaño","Poste","Red"],sol:0},
+ {q:"¿Qué gana el equipo que mete más goles?",op:["El partido","Un córner","Una amarilla"],sol:0},
+ {q:"El árbitro que corre por la banda con la bandera es el…",op:["Juez de línea","Cuarto árbitro","VAR"],sol:0},
+ {q:"¿De qué región es el clásico penquista (Concepción)?",op:["Biobío","Valparaíso","Coquimbo"],sol:0},
+ {q:"Un tiro desde la esquina se llama…",op:["Penal","Córner","Saque de meta"],sol:1}
 ];
 function triviaMate(){
   const a=ri(3,12), b=ri(2,9), op=elige(["+","−","×"]);
@@ -657,10 +674,54 @@ function triviaMate(){
   const ops=[...set].sort(()=>Math.random()-0.5);
   return {q:"Concentración: ¿cuánto es "+a+" "+op+" "+b+"?",op:ops.map(String),sol:ops.indexOf(r)};
 }
+/* opciones numéricas alrededor del valor correcto (distintas, sin negativos) */
+function _opsNum(correcto, spread){
+  const set=new Set([correcto]); let g=0;
+  while(set.size<3 && g++<40){ const d=correcto+ri(-spread,spread); if(d>=0) set.add(d); }
+  let k=1; while(set.size<3){ set.add(correcto+k); k++; }
+  const arr=[...set].sort(()=>Math.random()-0.5);
+  return {op:arr.map(String), sol:arr.indexOf(correcto)};
+}
+/* opciones de texto: la correcta + 2 distractores */
+function _opsTxt(correcto, pool){
+  const otros=(pool||[]).filter(x=>x&&x!==correcto);
+  const arr=[correcto].concat(mezcla(otros).slice(0,2));
+  while(arr.length<3) arr.push("—");
+  const mez=arr.sort(()=>Math.random()-0.5);
+  return {op:mez, sol:mez.indexOf(correcto)};
+}
+/* trivia PROCEDURAL: preguntas inventadas sobre TU club con respuesta real */
+function triviaProc(P){
+  const cand=[];
+  const p=(E.plantel||[]).filter(j=>!j.vendido&&!j.cedido);
+  const gol=p.filter(j=>j.pos==="DEL").sort((a,b)=>b.goles-a.goles)[0];
+  if(gol){ const o=_opsNum(gol.goles||0,3); cand.push({q:"¿Cuántos goles lleva "+gol.n+" esta temporada?",op:o.op,sol:o.sol}); }
+  const fig=p.slice().sort((a,b)=>b.nivel-a.nivel)[0];
+  if(fig){ const o=_opsNum(fig.edad,3); cand.push({q:"Concentración: ¿qué edad tiene "+fig.n+"?",op:o.op,sol:o.sol}); }
+  if(E.temporada&&E.temporada.pts!=null){ const o=_opsNum(E.temporada.pts,4); cand.push({q:"¿Cuántos puntos llevás en el torneo?",op:o.op,sol:o.sol}); }
+  if(P.part&&P.part.rivalNombre){
+    const rivales=(typeof LIGA_ACT!=="undefined"?LIGA_ACT.map(c=>c.n):[]).filter(n=>n!==E.clubNombre);
+    const o=_opsTxt(P.part.rivalNombre, rivales.length?rivales:["el rival de turno","un equipo grande","un chico"]);
+    cand.push({q:"Rápido: ¿contra quién juegan hoy?",op:o.op,sol:o.sol});
+  }
+  const est=(typeof estadioNombre==="function")&&estadioNombre(E.club);
+  if(est&&typeof ESTADIOS_DATA!=="undefined"){
+    const otros=Object.keys(ESTADIOS_DATA).map(k=>ESTADIOS_DATA[k].nombre).filter(n=>n!==est);
+    const o=_opsTxt(est, otros);
+    cand.push({q:"¿Cómo se llama tu estadio de local?",op:o.op,sol:o.sol});
+  }
+  const cap=p.filter(j=>j.rasgos&&j.rasgos.indexOf("capitán")>=0)[0]||fig;
+  if(cap){ const o=_opsNum(Math.round(cap.nivel/10)*10,10); cand.push({q:"Al ojo: ¿de cuánto es el nivel de "+cap.n+"?",op:o.op,sol:o.sol}); }
+  return cand.length?elige(cand):null;
+}
 function momentoTrivia(P){
-  const usarMate=Math.random()<0.5;
-  const base=usarMate?triviaMate():elige(TRIVIA_FUTBOL);
-  return {tipo:"trivia", t:"Test rápido de pizarra 🧮",
+  const r=Math.random();
+  let base=null;
+  if(r<0.40) base=triviaProc(P);      /* inventada sobre tu club, con respuesta real */
+  if(!base) base=(r<0.70)?triviaMate():elige(TRIVIA_FUTBOL);
+  /* el efecto se mide contra el nivel de tu club: un plantel armado se suelta más */
+  const factor=clamp(0.7+((E.ind&&E.ind.plantel)||60)/100,0.7,1.7);
+  return {tipo:"trivia", t:"Test rápido de pizarra 🧮", factor:factor,
     d:"Minuto "+P.min+". Les tirás una pregunta para sacarlos del nervio. Si aciertan, se sueltan; si no, se traban.",
     q:base.q, sol:base.sol,
     op:base.op.map((t,i)=>({t:t, ok:i===base.sol}))};
