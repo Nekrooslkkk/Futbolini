@@ -307,10 +307,15 @@ const ARCOS_NUEVOS={
 };
 
 /* ---------- helpers ---------- */
+let _ultTuits=[];
 function tuitDeCtx(ctx){
   const pool=TUITS_MOMENTO.filter(x=>x.ctx===ctx);
   if(!pool.length) return null;
-  return (typeof elige==="function")?elige(pool):pool[Math.floor(Math.random()*pool.length)];
+  const libres=pool.filter(x=>_ultTuits.indexOf(x.txt)<0);
+  const usar=libres.length?libres:pool;
+  const t=(typeof elige==="function")?elige(usar):usar[Math.floor(Math.random()*usar.length)];
+  if(t){ _ultTuits.push(t.txt); if(_ultTuits.length>14) _ultTuits.shift(); }
+  return t;
 }
 function tonoDeCtx(ctx){
   if(/gana|hat_trick|remontada|goleada|clasico_gana|arquero/.test(ctx)) return "bueno";
@@ -401,7 +406,7 @@ function empujarTicker(P, autor, texto, tono, m){
         const ctx=ctxDeEvento(P, ev);
         if(ctx && Math.random()<0.72){
           const t=tuitDeCtx(ctx);
-          if(t){ empujarTicker(P, t.quien, t.txt, tonoDeCtx(ctx), ev.min||P.min||0); return; }
+          if(t){ empujarTicker(P, t.quien, (typeof resolverTokens==="function"&&typeof E!=="undefined"&&E?resolverTokens(t.txt,E):t.txt), tonoDeCtx(ctx), ev.min||P.min||0); return; }
         }
       }catch(e){}
       return orig(P, ev);
@@ -416,7 +421,7 @@ function empujarTicker(P, autor, texto, tono, m){
       try{
         if(P && Math.random()<0.28){
           const t=tuitDeCtx("analogia_dunk");
-          if(t){ empujarTicker(P, t.quien, t.txt, "neutro", P.min||0); return; }
+          if(t){ empujarTicker(P, t.quien, (typeof resolverTokens==="function"&&typeof E!=="undefined"&&E?resolverTokens(t.txt,E):t.txt), "neutro", P.min||0); return; }
         }
       }catch(e){}
       return origA(P);

@@ -295,6 +295,7 @@ function resolverTokens(txt,E){
     VETERANO:(mejor(j=>j.edad,j=>j.edad>=28)||{}).n,
     DEFENSA_JOVEN:(mejor(j=>j.proy-j.edad,j=>j.pos==="DEF"&&j.edad<=24)||{}).n,
     CRACK:(mejor(j=>j.valor)||{}).n,
+    FIGURA:(mejor(j=>j.nivel+j.forma/10)||{}).n,
     DT:(E.dt||"el cuerpo técnico"),
     CLUB:(E.clubNombre||"el club"),
     RIVAL:((typeof proximoPartido==="function"&&proximoPartido()&&proximoPartido().rivalNombre)||"el rival"),
