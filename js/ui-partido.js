@@ -512,6 +512,11 @@ function pintarPartido(){
     '<div class="go">'+P.gl+" - "+P.gv+'</div>'+
     '<div class="eq">'+(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>';
   p.cuerpo.appendChild(marc);
+  let canchaCv=null;
+  if(P.modo!=="simular"){
+    canchaCv=el("canvas","cancha2d"); canchaCv.setAttribute("aria-hidden","true");
+    p.cuerpo.appendChild(canchaCv);
+  }
   const tramo=P.min<=45?"1T":(P.min<90?"2T":"FT");
   p.cuerpo.appendChild(el("div","reloj",P.terminado?"Final del partido":((PAUSADO?"⏸ ":"")+"Minuto "+P.min+" · "+tramo)));
   if(!P.terminado&&P.modo!=="simular"){
@@ -577,6 +582,7 @@ function pintarPartido(){
     p.cuerpo.appendChild(tk);
   }
   const wrap=el("div","partido-wrap"); wrap.appendChild(p); v.appendChild(wrap);
+  if(canchaCv && typeof montarCancha==="function"){ requestAnimationFrame(()=>montarCancha(canchaCv)); }
 }
 /* Loop fluido: el reloj corre y se auto-pausa SOLO cuando hay una jugada de
    peligro que decidir (penal, tiro libre, lesión) o un momento táctico. */
@@ -917,6 +923,7 @@ function hitosPartido(res){
 function cerrarPartido(){
   const P=P_ACTUAL; if(!P||P.cerrado) return;
   P.cerrado=true; clearInterval(TIMER); MOMENTO_OPS=[];
+  if(typeof detenerCancha==="function") detenerCancha();
   const res=terminarPartido(P);
   const gano=res.yo>res.otro;
   const p=panel("Final del partido","📄",gano?"":"alerta");
