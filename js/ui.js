@@ -1946,7 +1946,7 @@ function pantallaArranque(haySave){
   const inner=el("div","arr-inner");
   inner.innerHTML=
     '<div class="arr-logo"><span class="arr-glifo">⚽</span><span class="arr-word">FUTBOLINI</span></div>'+
-    '<div class="arr-sub">No manejás un equipo. Manejás una institución.</div>'+
+    '<div class="arr-sub">No manejas un equipo. Manejas una institución.</div>'+
     '<div class="arr-bar"><i></i></div>'+
     '<div class="arr-cargando">Preparando la cancha…</div>';
   const btns=el("div","arr-btns");
@@ -1970,8 +1970,17 @@ function pantallaArranque(haySave){
   document.body.appendChild(ov);
   const revelar=()=>{ if(ov.dataset.listo) return; ov.dataset.listo="1";
     ov.classList.add("listo"); const first=btns.querySelector(".arranque-btn"); if(first) first.focus(); };
+  /* frases de carga con onda (rotan mientras aparece el botón; se auto-detiene al revelar) */
+  const cargas=["Inflando la pelota…","Regando la cancha…","Pintando las rayas…","Ordenando el camarín…",
+    "Contando la caja…","Colgando los lienzos…","Avisándole a la barra…","Afinando la pizarra…"];
+  const elCarga=inner.querySelector(".arr-cargando");
+  let _ci=0, _cargaTimer=null;
   const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
-  setTimeout(revelar, reduce?60:1250);
+  if(elCarga && !reduce){ _cargaTimer=setInterval(()=>{
+    if(ov.dataset.listo){ clearInterval(_cargaTimer); return; }
+    elCarga.textContent=cargas[_ci++ % cargas.length];
+  }, 320); }
+  setTimeout(revelar, reduce?60:1300);
   ov.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!ov.dataset.listo){ e.preventDefault(); revelar(); } });
 }
 
