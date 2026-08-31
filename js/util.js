@@ -1,9 +1,11 @@
 "use strict";
 /* ============================================================
-   FUTBOLINI 3.0 · util.js
+   FUTBOLINI · util.js
    Helpers, guardado y azar. No sabe nada del juego.
    ============================================================ */
 
+/* 7.10 · versión única del juego (una sola fuente de verdad) */
+const VERSION="7.1";
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
 function el(tag,cls,html){const n=document.createElement(tag);if(cls)n.className=cls;if(html!=null)n.innerHTML=html;return n;}

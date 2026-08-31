@@ -16,11 +16,17 @@ const HANDLES_PRENSA=[
   "@CronicaFC","@GolpeDeArco","@LaRojaDeportes","@FutbolChileHoy"
 ];
 
+/* 7.10 · handle FIJO por jugador: el mismo jugador siempre tuitea con el mismo @
+   (antes tiraba _of/_oficial al azar en cada llamada → el @ cambiaba solo). */
+function handleDeJugador(j){
+  if(!j||!j.n) return "@jugador_oficial";
+  const ap=j.n.split(" ").pop().toLowerCase().replace(/[^a-zñ]/g,"");
+  const suf=(typeof semilla==="function"?(semilla(j.n)%2):0)?"_of":"_oficial";
+  return "@"+ap+suf;
+}
 function handleJugador(){
   const j=elige((E.plantel||[]).filter(x=>!x.vendido&&!x.cedido));
-  if(!j) return "@jugador_oficial";
-  const ap=j.n.split(" ").pop().toLowerCase().replace(/[^a-zñ]/g,"");
-  return "@"+ap+(ri(0,1)?"_of":"_oficial");
+  return handleDeJugador(j);
 }
 function handleClub(){
   const n=(E.clubNombre||"club").replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ]/g,"");

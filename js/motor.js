@@ -157,8 +157,20 @@ function reiniciarTabla(){
 function puntosVictoria(){ return (E&&eraDe(E.eraBase)?eraDe(E.eraBase).puntosVictoria:2); }
 /* Rellena campos nuevos en partidas guardadas de antes del roadmap 3.0.
    No sube la versión: solo agrega lo que falte sin tocar lo existente. */
+/* 7.10 · versión del formato de save. Subir SOLO cuando cambie la estructura de E;
+   migrarSave() debe traer los saves viejos al día antes de que el juego los use. */
+const SAVE_VER=1;
+function migrarSave(s){
+  if(!s || typeof s!=="object") return s;
+  let v=s.saveVer||0;
+  /* futuras migraciones van acá, por versión:
+     if(v<2){ ... transformar ...; v=2; } */
+  s.saveVer=SAVE_VER;
+  return s;
+}
 function normalizarEstado(){
   if(!E) return;
+  migrarSave(E);
   if(!E.eraBase) E.eraBase=baseEra(E.anio);
   if(typeof activarLiga==="function") activarLiga(E.eraBase);
   if(!E.flags) E.flags={};

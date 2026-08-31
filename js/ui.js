@@ -69,7 +69,7 @@ function render(){
 /* ---------------- inicio ---------------- */
 function pantallaInicio(){
   const v=$("#vista");
-  const p=panel("Futbolini 3.0","🏟️");
+  const p=panel("Futbolini "+(typeof VERSION!=="undefined"?VERSION:""),"🏟️");
   p.cuerpo.appendChild(el("h2","tit","No manejas un equipo. Manejas una institución."));
   p.cuerpo.appendChild(el("p",null,"Gente con intereses distintos empujando para lados distintos, plata que se acaba, "+
    "reglas internas que podés cambiar si tenés el poder para hacerlo, y una historia real que podés seguir o romper."));
@@ -2013,11 +2013,19 @@ document.addEventListener("keydown",function(e){
 
 (async function init(){
   burbujas();
+  /* versión única en badge y footer */
+  if(typeof VERSION!=="undefined"){
+    const vb=$("#verBadge"); if(vb) vb.textContent=VERSION;
+    const pt=$("#pieTxt"); if(pt) pt.textContent="Futbolini "+VERSION+" · dramatización · Frutiger Aero";
+  }
   const t=await Store.get("futbolini3_tema");
   document.body.dataset.tema=t||"aero";
-  const g=await cargar();
-  const haySave=!!(g&&g.club);
-  if(haySave){ E=g; normalizarEstado(); aplicarEstatutosMod(); }
+  let g=null; try{ g=await cargar(); }catch(e){ console.error("No se pudo leer el save:",e); }
+  let haySave=!!(g&&g.club);
+  if(haySave){
+    try{ E=g; normalizarEstado(); aplicarEstatutosMod(); }
+    catch(e){ console.error("Save dañado, empiezo limpio:",e); E=null; haySave=false; aviso("La partida guardada estaba dañada. Se empieza de nuevo.",5000); }
+  }
   pantallaArranque(haySave);
 })();
 window.addEventListener("resize",()=>{ clearTimeout(window._rb); window._rb=setTimeout(burbujas,400); });
