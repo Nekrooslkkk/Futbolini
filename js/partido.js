@@ -736,7 +736,7 @@ function triviaProc(P){
   if(gol){ const o=_opsNum(gol.goles||0,3); cand.push({q:"¿Cuántos goles lleva "+gol.n+" esta temporada?",op:o.op,sol:o.sol}); }
   const fig=p.slice().sort((a,b)=>b.nivel-a.nivel)[0];
   if(fig){ const o=_opsNum(fig.edad,3); cand.push({q:"Concentración: ¿qué edad tiene "+fig.n+"?",op:o.op,sol:o.sol}); }
-  if(E.temporada&&E.temporada.pts!=null){ const o=_opsNum(E.temporada.pts,4); cand.push({q:"¿Cuántos puntos llevás en el torneo?",op:o.op,sol:o.sol}); }
+  if(E.temporada&&E.temporada.pts!=null){ const o=_opsNum(E.temporada.pts,4); cand.push({q:"¿Cuántos puntos llevas en el torneo?",op:o.op,sol:o.sol}); }
   if(P.part&&P.part.rivalNombre){
     const rivales=(typeof LIGA_ACT!=="undefined"?LIGA_ACT.map(c=>c.n):[]).filter(n=>n!==E.clubNombre);
     const o=_opsTxt(P.part.rivalNombre, rivales.length?rivales:["el rival de turno","un equipo grande","un chico"]);
@@ -750,14 +750,31 @@ function triviaProc(P){
   }
   const cap=p.filter(j=>j.rasgos&&j.rasgos.indexOf("capitán")>=0)[0]||fig;
   if(cap){ const o=_opsNum(Math.round(cap.nivel/10)*10,10); cand.push({q:"Al ojo: ¿de cuánto es el nivel de "+cap.n+"?",op:o.op,sol:o.sol}); }
+  /* más variedad: estado de la temporada (respuesta calculada) */
+  if(typeof posicionEnTabla==="function"){ try{ const pos=posicionEnTabla(); if(pos>=1){ const o=_opsNum(pos,3); cand.push({q:"¿En qué puesto va "+(E.clubNombre||"tu club")+" en la tabla?",op:o.op,sol:o.sol}); } }catch(e){} }
+  if(E.temporada){
+    const o1=_opsNum(E.temporada.pg||0,3); cand.push({q:"¿Cuántos partidos ganaste este año?",op:o1.op,sol:o1.sol});
+    const o2=_opsNum(E.temporada.gf||0,4); cand.push({q:"¿Cuántos goles hizo tu equipo este año?",op:o2.op,sol:o2.sol});
+    const o3=_opsNum(E.temporada.pj||0,3); cand.push({q:"¿Cuántas fechas van jugadas del torneo?",op:o3.op,sol:o3.sol});
+  }
+  const veterano=p.slice().sort((a,b)=>b.edad-a.edad)[0];
+  if(veterano){ const o=_opsNum(veterano.edad,3); cand.push({q:"El más veterano del plantel, "+veterano.n+", ¿qué edad tiene?",op:o.op,sol:o.sol}); }
   return cand.length?elige(cand):null;
 }
+/* elige una trivia evitando las ya vistas en la carrera (no se repite semana a semana ni entre temporadas) */
 function momentoTrivia(P){
-  const r=Math.random();
+  if(!Array.isArray(E.triviaVistas)) E.triviaVistas=[];
   let base=null;
-  if(r<0.40) base=triviaProc(P);      /* inventada sobre tu club, con respuesta real */
-  if(!base) base=(r<0.70)?triviaMate():elige(TRIVIA_FUTBOL);
-  /* el efecto se mide contra el nivel de tu club: un plantel armado se suelta más */
+  for(let intento=0;intento<7 && !base;intento++){
+    const r=Math.random();
+    const b=(r<0.42)?triviaProc(P):(r<0.72?triviaMate():elige(TRIVIA_FUTBOL));
+    if(!b) continue;
+    if(intento<6 && E.triviaVistas.indexOf(b.q)>=0) continue;   /* ya la vio → probar otra */
+    base=b;
+  }
+  if(!base) base=triviaMate();
+  E.triviaVistas.push(base.q);
+  if(E.triviaVistas.length>26) E.triviaVistas.shift();   /* cubre más de una temporada de trivias */
   const factor=clamp(0.7+((E.ind&&E.ind.plantel)||60)/100,0.7,1.7);
   return {tipo:"trivia", t:"Test rápido de pizarra 🧮", factor:factor,
     d:"Minuto "+P.min+". Les tirás una pregunta para sacarlos del nervio. Si aciertan, se sueltan; si no, se traban.",
