@@ -813,6 +813,36 @@ function doparEquipo(P,costo){
   linea(P,P.min,"Algo cambió: el equipo salió recargado, con los ojos como platos. Corren como si recién empezara.","gol");
   if(typeof recordar==="function") recordar("doping","recurriste a un «preparado especial» para ganar un partido",{peso:"alto",tono:"malo"});
 }
+/* 7.10 · FutbolGram como PISTA en las decisiones tácticas:
+   clasifica cada opción por su intención y la gente opina apuntando a una dirección. */
+function direccionOpcion(ef){
+  if(!ef) return "equilibrio";
+  if((ef.riesgoPlan||0)>=3.5) return "riesgo";
+  if((ef.ataque||0)>=4) return "ataque";
+  if((ef.orden||0)>0 && (ef.ataque||0)<=1.5) return "aguantar";
+  return "equilibrio";
+}
+function direccionRecomendada(P){
+  const [yo,ot]=miMarcador(P); const dif=yo-ot;
+  if(dif<0) return "ataque";
+  if(dif>0) return P.min>=70?"aguantar":"equilibrio";
+  return "equilibrio";
+}
+const OPINIONES_TACTICA={
+  ataque:["echen toda la carne al asador","métanle otro delantero, hay que ir a buscarlo","no se puede especular perdiendo, ¡arriba!","que se vengan encima, no hay nada que cuidar","paren de tocar al costado y vayan al arco"],
+  aguantar:["ordenados atrás y a cuidar esto","no regalen nada, aguanten la ventaja","a meterlo en el bolsillo y defender","paren la pelota, tranquilos, sin volverse locos","cierren el partido, no lo abran"],
+  equilibrio:["con paciencia, sin desesperarse","jueguen como saben, sin locuras","pie firme, que el gol llega solo","ni tan tan ni muy muy, tranquilos"],
+  riesgo:["a todo o nada, ¡qué más da!","tírense con todo aunque quedemos expuestos","es esto o nada, jueguensela"]
+};
+/* devuelve 3 opiniones: mayoría del consenso + 1 disidente (el jugador lee la general) */
+function opinionesTactica(dir){
+  const base=OPINIONES_TACTICA[dir]||OPINIONES_TACTICA.equilibrio;
+  const otras=Object.keys(OPINIONES_TACTICA).filter(k=>k!==dir);
+  const disPool=OPINIONES_TACTICA[elige(otras)]||[];
+  const consenso=mezcla(base.slice()).slice(0,2).map(t=>({t:t,consenso:true}));
+  const dis={t:elige(disPool),consenso:false};
+  return mezcla(consenso.concat(dis));
+}
 function aplicarMomento(P,ef){
   if(!ef) return;
   P.ataque+=ef.ataque||0; P.orden+=ef.orden||0;

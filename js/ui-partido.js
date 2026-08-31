@@ -743,6 +743,19 @@ function mostrarMomento(){
   const p=panel(m.t,esTrivia?"🧮":"🧠","alerta");
   p.cuerpo.appendChild(el("p",null,m.d));
   if(esTrivia) p.cuerpo.appendChild(el("p",null,"<b>"+m.q+"</b>"));
+  /* 7.10 · en decisiones tácticas, FutbolGram opina como PISTA (leé el consenso) */
+  let rec=null;
+  if(!esTrivia && typeof direccionRecomendada==="function"){
+    rec=direccionRecomendada(P);
+    const opin=(typeof opinionesTactica==="function")?opinionesTactica(rec):[];
+    if(opin.length){
+      const fg=el("div","fg-opina");
+      fg.appendChild(el("div","fg-cab","📱 FutbolGram opina · leé a la gente"));
+      const handles=(typeof HANDLES_HINCHA!=="undefined"&&HANDLES_HINCHA.length)?HANDLES_HINCHA:["@hincha_de_ley","@barra_del_fondo","@pibe_popular23"];
+      opin.forEach(op=>{ fg.appendChild(el("div","fg-op","<b>"+elige(handles)+"</b> "+op.t)); });
+      p.cuerpo.appendChild(fg);
+    }
+  }
   const ops=el("div","ops ops-part"); MOMENTO_OPS=[];
   m.op.forEach((o,i)=>{
     const b=el("button","op"+(o.doping?" op-doping":""));
@@ -759,6 +772,11 @@ function mostrarMomento(){
         avanzarMomento(P); return;
       }
       if(o.doping){ confirmarDoping(P,o.costo); return; }   /* async */
+      /* leíste el consenso de la gente → el equipo se siente respaldado */
+      if(rec && typeof direccionOpcion==="function" && direccionOpcion(o.ef)===rec){
+        P.empuje+=0.9; if(typeof aplicarEfectos==="function") aplicarEfectos({moral:2});
+        aviso("Leíste a la gente: el equipo siente el respaldo 📣");
+      }
       aplicarMomento(P,o.ef); avanzarMomento(P);
     };
     ops.appendChild(b); MOMENTO_OPS.push(b);
