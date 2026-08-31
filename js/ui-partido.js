@@ -948,6 +948,64 @@ function minijuegoPenal(P,pateador){
   },{cerrarFuera:false});
   return true;   /* async: el caller NO debe seguir el partido todavía */
 }
+/* 7.10 · tiro libre JUGABLE: apuntá por encima/al costado de la barrera al rincón */
+function minijuegoTiroLibre(P){
+  const j=((typeof pateadorDe==="function")?pateadorDe(P.once):(P.once&&P.once[0]))||{n:"el tirador",nivel:70,rasgos:[]};
+  const kp=Math.random()<0.5?0:1;
+  const arqX=kp?205:115;
+  let aim=null, tirado=false;
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">🎯</span><span>Tiro libre · dibujá tu remate</span>'));
+    const c=el("div","cuerpo penal-mini"); box.appendChild(c);
+    c.appendChild(el("p","mini","Patea <b>"+j.n+"</b>. Pasá la barrera por arriba o por el costado y buscá el rincón lejos del arquero. Al medio o bajo te la tapan."));
+    const NS="http://www.w3.org/2000/svg";
+    const svg=document.createElementNS(NS,"svg");
+    svg.setAttribute("viewBox","0 0 320 210"); svg.style.cssText="width:100%;max-width:420px;display:block;margin:6px auto;touch-action:none;cursor:crosshair";
+    svg.innerHTML=
+      '<rect x="0" y="0" width="320" height="150" fill="#bfe6ff"/><rect x="0" y="150" width="320" height="60" fill="#5faf46"/>'+
+      '<rect x="44" y="34" width="232" height="116" fill="rgba(255,255,255,.15)" stroke="#f4f8ff" stroke-width="5"/>'+
+      '<g fill="#2b3550"><rect x="126" y="104" width="12" height="46" rx="4"/><rect x="142" y="104" width="12" height="46" rx="4"/><rect x="158" y="104" width="12" height="46" rx="4"/><rect x="174" y="104" width="12" height="46" rx="4"/></g>'+
+      '<g id="tl-arq"><rect x="'+(arqX-13)+'" y="96" width="26" height="52" rx="8" fill="#ffcf3f" stroke="#c98a1a" stroke-width="1.5"/><circle cx="'+arqX+'" cy="90" r="9" fill="#f2c9a0" stroke="#b98a63" stroke-width="1"/></g>'+
+      '<circle id="tl-mira" cx="160" cy="80" r="8" fill="none" stroke="#e8453a" stroke-width="2.5" opacity="0"/>'+
+      '<circle id="tl-bola" cx="160" cy="196" r="7" fill="#fff" stroke="#333" stroke-width="1"/>';
+    c.appendChild(svg);
+    const bola=svg.querySelector("#tl-bola"), mira=svg.querySelector("#tl-mira"), arqEl=svg.querySelector("#tl-arq");
+    function aSVG(ev){ const r=svg.getBoundingClientRect(); const px=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left; const py=(ev.touches?ev.touches[0].clientY:ev.clientY)-r.top; return {x:px*320/r.width,y:py*210/r.height}; }
+    function marcar(pt){ if(tirado) return; const x=clamp(pt.x,48,272), y=clamp(pt.y,38,148); aim={x:x,y:y}; mira.setAttribute("cx",x); mira.setAttribute("cy",y); mira.setAttribute("opacity","1"); bpat.disabled=false; etiq.textContent="Apuntás ahí. Dale a ¡Patear!"; }
+    svg.addEventListener("pointerdown",e=>{ e.preventDefault(); marcar(aSVG(e)); });
+    svg.addEventListener("pointermove",e=>{ if(e.buttons||e.pressure){ e.preventDefault(); marcar(aSVG(e)); } });
+    const etiq=el("p","mini","Tocá el arco para elegir dónde ponerla."); c.appendChild(etiq);
+    const bpat=el("button","btn-aqua ancho verde","¡Patear!"); bpat.disabled=true;
+    bpat.onclick=()=>{
+      if(!aim||tirado) return; tirado=true; bpat.disabled=true;
+      const gx=clamp((aim.x-44)/232,0,1), gy=clamp((aim.y-34)/116,0,1);
+      const base=clamp(0.14+(((j.nivel||70)-70)*0.005)+((j.rasgos&&j.rasgos.includes("tiro libre"))?0.12:0),0.05,0.4);
+      let q=1, afuera=false, motivo="";
+      if(gy<0.06){ afuera=true; motivo="Se fue por arriba del travesaño."; }
+      else if(gy<0.42) q*=1.5; else if(gy<0.6) q*=1.0; else { q*=0.3; motivo="La barrera la tapó."; }
+      const dxK=Math.abs(gx-(kp?0.7:0.3)); q*=clamp(0.4+dxK*1.7,0.4,1.9);
+      if(gx>0.4&&gx<0.6){ q*=0.7; if(!motivo) motivo="El arquero llegó al centro."; }
+      const prob=clamp(base*q,0.03,0.9);
+      const gol=!afuera && Math.random()<prob;
+      const dir=gx<0.45?"izq":(gx>0.55?"der":"centro"), ddx=dir==="izq"?-46:(dir==="der"?46:0);
+      arqEl.style.transition="transform .4s cubic-bezier(.2,.8,.2,1)"; arqEl.style.transform="translate("+ddx+"px,"+(gy<0.4?-8:8)+"px)";
+      const mover=cb=>{ if(typeof penTween==="function") penTween(bola,{cx:aim.x,cy:afuera?20:aim.y},460,cb); else { bola.setAttribute("cx",aim.x); bola.setAttribute("cy",afuera?20:aim.y); setTimeout(cb,320); } };
+      mover(()=>{
+        etiq.innerHTML="<b>"+(gol?"⚽ ¡GOLAZO!":(afuera?"😵 Afuera…":"🧤 "+(motivo||"¡Atajada!")))+"</b>";
+        bola.setAttribute("fill",gol?"#5ec94f":"#fff");
+        setTimeout(()=>{
+          cerrarModal();
+          if(gol){ j.goles++; P.goleadores.push(j.n); if(typeof regGol==="function") regGol(P,P.min,j.n,true,"tiro libre"); if(P.part.local)P.gl++; else P.gv++;
+            if(typeof linea==="function") linea(P,P.min,"¡GOLAZO de tiro libre de "+j.n+"! "+((typeof marcadorTxt==="function")?marcadorTxt(P):""),"gol"); }
+          else if(typeof linea==="function") linea(P,P.min, afuera?("Tiro libre de "+j.n+" por arriba del arco."):(motivo||"El arquero saca el tiro libre."));
+          pintarPartido(); reanudarPronto();
+        },740);
+      });
+    };
+    c.appendChild(bpat);
+  },{cerrarFuera:false});
+  return true;
+}
 function centroTiroLibre(P){
   /* 6.7 · el ejecutante de tiro libre designado tira si está en cancha */
   const desTL=E.tactica&&E.tactica.tiroLibre&&P.once.find(j=>j.n===E.tactica.tiroLibre);
@@ -975,7 +1033,8 @@ function mostrarAccion(ev){
   } else if(ev.tipo==="tiroLibre"){
     titulo="Tiro libre peligroso";
     opciones=[
-      {t:"Al arco, buscar el golazo",run:()=>tiroLibreAuto(P)},
+      {t:"⚽ Pegarle yo (dibujar el remate)",run:()=> P.modo==="dirigir" ? minijuegoTiroLibre(P) : tiroLibreAuto(P)},
+      {t:"Al arco, que salga solo",run:()=>tiroLibreAuto(P)},
       {t:"Centro al área",run:()=>centroTiroLibre(P)},
       {t:"Jugarla en corto, sin riesgo",run:()=>linea(P,P.min,"La juegan en corto y rearman con paciencia.")}
     ];
