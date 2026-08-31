@@ -11,6 +11,9 @@ const SECCIONES=[
  ["carrera","🎖️","Carrera"],["vida","🪪","Vida"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
 ];
 function irA(s){ SEC=s; render(); const v=$("#vista"); if(v){ v.classList.remove("fx-in"); void v.offsetWidth; v.classList.add("fx-in"); } window.scrollTo({top:0}); }
+/* 7.10 · modo desarrollador (clave: peomojon). Solo para probar cada cosa. */
+let DEV_ON=false;
+function devOn(){ return DEV_ON || !!(typeof E!=="undefined"&&E&&E.flags&&E.flags.dev); }
 /* Chirp/redes recién existe con Twitter: antes de 2008 el fútbol vivía en radio y diarios. */
 function redesDisponibles(){ return !!(E && (E.anio||2026)>=2008); }
 
@@ -1766,6 +1769,37 @@ function vistaAjustes(){
     cheat("Sumar un título",()=>{ E.titulos.push("Título (Modo Dios) "+E.anio); });
   }
   v.appendChild(pg);
+
+  /* ---- Modo desarrollador (clave) : para probar CADA cosa ---- */
+  const pdev=panel("Modo desarrollador","🧪","alerta");
+  if(!devOn()){
+    pdev.cuerpo.appendChild(el("p","mini","Panel oculto para probar cada mecánica del juego (penales, tiros libres, eventos…). Pedí la clave."));
+    const bu=el("button","btn-aqua chico","🔒 Desbloquear");
+    bu.onclick=()=>{
+      const cl=prompt("Clave de desarrollador:");
+      if(cl==="peomojon"){ DEV_ON=true; if(!E.flags)E.flags={}; E.flags.dev=true; guardar(); render(); aviso("Modo desarrollador ON 🧪"); }
+      else if(cl!=null) aviso("Clave incorrecta");
+    };
+    pdev.cuerpo.appendChild(bu);
+  }else{
+    pdev.cuerpo.appendChild(el("p","mini","Activo. En un partido en curso aparece el botón <b>🧪 Probar</b> para forzar penal, tiro libre, roja, gol, autogol, VAR, etc."));
+    const bp=el("button","btn-aqua chico verde","▶ Partido de prueba ya");
+    bp.onclick=()=>{
+      const part=(typeof proximoPartido==="function")?proximoPartido():null;
+      if(!part){ aviso("No hay partido próximo en el calendario"); return; }
+      if(typeof arrancarPartido==="function"){ arrancarPartido(part,"dirigir"); }
+    };
+    pdev.cuerpo.appendChild(bp);
+    const cheatd=(label,fn)=>{ const b=el("button","btn-aqua chico"); b.textContent=label; b.style.margin="4px 4px 0 0"; b.onclick=()=>{ fn(); guardar(); render(); }; pdev.cuerpo.appendChild(b); };
+    cheatd("Avanzar semana",()=>{ if(typeof avanzar==="function") avanzar(); });
+    cheatd("Forzar decisión",()=>{ if(typeof generarDecisionProc==="function"){ const d=generarDecisionProc(); if(d) E.decPend.push({id:d.id,clave:d.id+"_"+E.anio,peso:d.peso}); } });
+    cheatd("+1000 caja",()=>{ if(typeof aplicarEfectos==="function") aplicarEfectos({plata:1000}); });
+    cheatd("Ver estado (consola)",()=>{ try{ console.log("E=",E); aviso("Volcado E en la consola (F12)"); }catch(e){} });
+    const bo=el("button","btn-aqua chico rojo","Apagar modo dev"); bo.style.margin="4px 4px 0 0";
+    bo.onclick=()=>{ DEV_ON=false; if(E.flags) E.flags.dev=false; guardar(); render(); aviso("Modo dev OFF"); };
+    pdev.cuerpo.appendChild(bo);
+  }
+  v.appendChild(pdev);
 }
 /* ---------------- avanzar ---------------- */
 function procesarSemanaPostPartido(){

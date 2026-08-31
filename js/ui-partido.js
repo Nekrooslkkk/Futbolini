@@ -508,6 +508,45 @@ function arrancarPartido(part,modo){
   if(modo==="simular"){ correrHasta(P_ACTUAL,90); pintarPartido(); cerrarPartido(); return; }
   pintarPartido(); correrEnVivo();
 }
+/* 7.10 · MODO DEV: forzar un evento puntual en el partido en curso, para probarlo */
+function devForzarEvento(tipo){
+  const P=P_ACTUAL;
+  if(!P || P.terminado){ if(typeof aviso==="function") aviso("Entrá a un partido en curso para probar esto"); return; }
+  clearInterval(TIMER); MOMENTO_OPS=[];
+  const min=P.min;
+  if(tipo==="penal"||tipo==="tiroLibre"||tipo==="lesion"){ if(typeof mostrarAccion==="function") mostrarAccion({tipo:tipo,min:min,aFavor:true}); return; }
+  if(tipo==="penalRival"){ if(typeof resolverEventoAuto==="function") resolverEventoAuto(P,{tipo:"penalRival",min:min}); pintarPartido(); return; }
+  if(tipo==="gol"){ if(typeof anotaPropio==="function") anotaPropio(P,min); pintarPartido(); return; }
+  if(tipo==="golRival"){ if(typeof anotaRival==="function") anotaRival(P,min); pintarPartido(); return; }
+  if(tipo==="roja"){
+    const j=(P.once&&P.once.length)?elige(P.once):null;
+    if(j){ P.once=P.once.filter(x=>x!==j); j.estado="banca"; P.empuje-=1; P.orden-=3; P.tuvoRoja=true;
+      if(typeof linea==="function") linea(P,min,"¡ROJA para "+j.n+"! (forzada · dev)","grave"); }
+    pintarPartido(); return;
+  }
+  if(tipo==="autogol"){
+    if(P.part.local) P.gv++; else P.gl++;
+    const d=(P.once&&P.once.filter(x=>x.pos==="DEF")[0])||null;
+    if(typeof regGol==="function") regGol(P,min,(d&&d.n)||"un defensor",false,"autogol",null);
+    if(typeof linea==="function") linea(P,min,"Autogol (forzado · dev). "+((typeof marcadorTxt==="function")?marcadorTxt(P):""),"grave");
+    pintarPartido(); return;
+  }
+  if(tipo==="var"){ if(typeof polemicaArbitral==="function") polemicaArbitral(P); pintarPartido(); return; }
+}
+function modalDevPartido(){
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">🧪</span><span>Probar evento (modo dev)</span>'));
+    const c=el("div","cuerpo"); box.appendChild(c);
+    c.appendChild(el("p","mini","Fuerza el evento AHORA en el partido en curso, para verlo funcionar."));
+    const g=el("div","fichas");
+    [["penal","Penal a favor"],["penalRival","Penal en contra"],["tiroLibre","Tiro libre"],["gol","Gol propio"],
+     ["golRival","Gol rival"],["roja","Roja propia"],["autogol","Autogol"],["var","Polémica / VAR"],["lesion","Lesión"]].forEach(([k,n])=>{
+      const b=el("button","ficha",n); b.onclick=()=>{ cerrarModal(); devForzarEvento(k); }; g.appendChild(b);
+    });
+    c.appendChild(g);
+    const x=el("button","btn-aqua ancho gris","Cerrar"); x.style.marginTop="8px"; x.onclick=cerrarModal; c.appendChild(x);
+  });
+}
 /* 7.10 · panel de estadísticas de transmisión (posesión, remates, al arco, córners) */
 function bloqueStats(P){
   const s=P.stats||{pos:0.5,remMio:0,remRiv:0,arcMio:0,arcRiv:0,corMio:0,corRiv:0};
@@ -566,6 +605,11 @@ function pintarPartido(){
     const bcv=el("button","btn-aqua chico"+(verCancha?"":" gris"),verCancha?"🎥 Cancha ON":"🎥 Cancha OFF"); bcv.style.marginLeft="4px";
     bcv.onclick=()=>{ if(!E.config)E.config={}; E.config.verCancha=!verCancha; guardar(); pintarPartido(); };
     ctrl.appendChild(bcv);
+    if(typeof devOn==="function" && devOn()){
+      const bdv=el("button","btn-aqua chico morado","🧪 Probar"); bdv.style.marginLeft="4px";
+      bdv.onclick=()=>{ if(typeof modalDevPartido==="function") modalDevPartido(); };
+      ctrl.appendChild(bdv);
+    }
     p.cuerpo.appendChild(ctrl);
     if(P.modo==="dirigir"){
       if(!E.config) E.config={autoPausa:true};
