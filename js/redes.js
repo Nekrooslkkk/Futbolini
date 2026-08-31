@@ -89,7 +89,7 @@ function sembrarRedes(){
   postProc(elige(HANDLES_PRENSA),"prensa",
     "Arranca la semana en "+(E.clubNombre||"el club")+". El entorno mira el plantel y la tabla.","neutro");
   const h1=elige(TWEETS_HINCHA);
-  postProc(elige(HANDLES_HINCHA),"hincha", part?(h1.x):"Otro ciclo. A bancar, como siempre.", h1.t);
+  postProc(elige(HANDLES_HINCHA),"hincha", part?(h1.x):"Otro ciclo. A apoyar, como siempre.", h1.t);
   postProc(handleJugador(),"jugador","Enfocados. El grupo está trabajando.","neutro");
   postProc("@hincha_rival","rival","Cuando vengan acá se van a enterar. No son el equipo de la tele.", "malo");
   /* un hostil interno para que el jugador aprenda a NO repostearlo */
@@ -101,7 +101,7 @@ function moverSeguidores(n){
   E.seguidores=Math.max(0,Math.round((E.seguidores||0)+n));
   if(E.seguidores>=1000000 && typeof desbloquear==="function") desbloquear("influencer");
 }
-/* 6.3 · tu usuario de PLOP (elegís cómo firmás; ya no "el cuerpo técnico") */
+/* 6.3 · tu usuario de PLOP (eliges cómo firmas; ya no "el cuerpo técnico") */
 function handleDT(){
   if(E&&E.perfil&&E.perfil.plopUser) return E.perfil.plopUser;
   const base=String((E&&E.dt)||"DT").toLowerCase().replace(/[^a-z0-9ñ]/g,"").slice(0,15);
@@ -265,7 +265,7 @@ function redesReaccion(tipo,data){
       const frasesM=[
         "Otra vez lo mismo... 😡 La gente se cansa.",
         "Así no, muchachos. Faltó actitud contra "+rival+".",
-        "Un papelón. ¿Hasta cuándo vamos a bancar esto?",
+        "Un papelón. ¿Hasta cuándo vamos a apoyar esto?",
         "Perdimos bien feo. El vestuario tiene que mirarse a la cara.",
         "La hinchada bancó y el equipo no respondió. Duele."
       ];
@@ -291,7 +291,7 @@ function redesReaccion(tipo,data){
   if(tipo==="ficha"){
     postProc(elige(HANDLES_HINCHA),"hincha",elige([
       "¡Bienvenido "+data.n+"! Ojalá rompa todo 🙌",
-      data.n+" llega con ganas. A bancarlo desde el primer día.",
+      data.n+" llega con ganas. A apoyarlo desde el primer día.",
       "Nuevo refuerzo: "+data.n+". Que se ponga la camiseta de verdad."
     ]),"bueno");
     postProc(handleJugador(),"jugador",elige([
@@ -495,7 +495,7 @@ function tickerAmbiente(P){
   const dif=yo-otro, m=P.min||0, rival=(P.part&&P.part.rivalNombre)||"el rival";
   let ops=[];
   if(m>=80){
-    if(dif>0) ops=["Aguantá esto corazón mío, "+m+"' 😰","QUE SE TERMINE YA, "+m+"' 🙏","Ganando y sufriendo como siempre 😅 "+m+"'","No mires el reloj, no mires el reloj… "+m+"'"];
+    if(dif>0) ops=["Aguanta esto corazón mío, "+m+"' 😰","QUE SE TERMINE YA, "+m+"' 🙏","Ganando y sufriendo como siempre 😅 "+m+"'","No mires el reloj, no mires el reloj… "+m+"'"];
     else if(dif<0) ops=["Se nos va el partido, "+m+"' 😔","Última bala, todos arriba "+m+"'","No puede ser, reaccionen "+m+"' 😡","Regalamos otra vez, "+m+"'…"];
     else ops=["Un gol lo cambia todo, "+m+"' 👀","Empate y a no volverse loco, "+m+"'","Cualquiera lo gana, "+m+"' 🫣"];
   } else if(m>=25 && m<=65){

@@ -133,10 +133,10 @@ function avisoObjetivoPartido(posAntes,posDespues){
   const antesOk=posAntes<=dep.meta, ahoraOk=posDespues<=dep.meta;
   if(!antesOk&&ahoraOk)
     notificar({t:"Zona de objetivo",tipo:"bueno",bandeja:false,
-      d:"Trepás al "+ordinal(posDespues)+" y entrás en zona de tu meta: «"+dep.t+"». Si lo sostenés, la temporada va bien encaminada."});
+      d:"Trepás al "+ordinal(posDespues)+" y entras en zona de tu meta: «"+dep.t+"». Si lo sostienes, la temporada va bien encaminada."});
   else if(antesOk&&!ahoraOk)
-    notificar({t:"Te salís de la zona",tipo:"malo",bandeja:false,
-      d:"Caés al "+ordinal(posDespues)+" y te quedás afuera de «"+dep.t+"». Ojo, porque esto es lo que te va a evaluar el directorio."});
+    notificar({t:"Te sales de la zona",tipo:"malo",bandeja:false,
+      d:"Caés al "+ordinal(posDespues)+" y te quedas afuera de «"+dep.t+"». Ojo, porque esto es lo que te va a evaluar el directorio."});
 }
 function evaluarMandato(pos,campeon,copa){
   const objs=(E.objetivos&&E.objetivos.length)?E.objetivos:generarObjetivos();

@@ -59,7 +59,7 @@ const PLANTEL_COQ_2026=[
  ["Martín Mundaca","DEL",23,63,76,20,70,["joven"]]
 ];
 const PLANTEL_AUD_2026=[
- ["Tomás Ahumada","ARQ",25,75,82,65,180,["seguro bajo los tres palos","proyección"]],
+ ["Tomas Ahumada","ARQ",25,75,82,65,180,["seguro bajo los tres palos","proyección"]],
  ["Pedro Garrido","ARQ",22,60,74,15,35,["joven"]],
  ["Daniel Piña","DEF",24,70,76,40,95,["juego aéreo"]],
  ["Enzo Ferrario","DEF",26,71,74,45,110,["extranjero"]],
@@ -109,7 +109,7 @@ const PLANTEL_OHI_2026=[
  ["Omar Carabalí","ARQ",29,74,76,60,150,["seguro bajo los tres palos"]],
  ["Jorge Peña","ARQ",26,66,72,28,60,[]],
  ["Diego Carreño","ARQ",24,60,72,15,35,[]],
- ["Tomás Avilés","DEF",22,76,85,80,320,["extranjero","joven","proyección europea"]],
+ ["Tomas Avilés","DEF",22,76,85,80,320,["extranjero","joven","proyección europea"]],
  ["Alan Robledo","DEF",28,72,73,50,115,["extranjero"]],
  ["Miguel Brizuela","DEF",29,71,72,48,105,["extranjero"]],
  ["Luis Pavez","DEF",30,70,70,42,80,["lateral ofensivo"]],

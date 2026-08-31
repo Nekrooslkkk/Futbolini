@@ -69,7 +69,7 @@ const PLANTEL_CC_2026=[
  ["Leandro Hernández","DEL",21,74,84,80,420,["joven","proyección"]],
  ["Francisco Marchant","DEL",20,70,80,50,220,["canterano"]],
  ["Lautaro Pastrán","DEL",24,73,78,90,280,["extranjero"]],
- ["Tomás Alarcón","VOL",27,73,74,90,200,["contención"]],
+ ["Tomas Alarcón","VOL",27,73,74,90,200,["contención"]],
  ["Iván Román","DEF",20,72,84,70,400,["proyección"]],
  ["Diego Ulloa","DEF",23,70,76,60,160,["lateral"]]
 ];
@@ -98,7 +98,7 @@ const PLANTEL_UC_2026=[
  ["Daniel González","DEF",24,78,82,140,420,["salida limpia"]],
  ["Eugenio Mena","DEF",38,72,72,80,50,["veterano","lateral"]],
  ["Branco Ampuero","DEF",32,73,73,90,140,["marca"]],
- ["Tomás Asta-Buruaga","DEF",29,72,72,80,140,["recambio"]],
+ ["Tomas Asta-Buruaga","DEF",29,72,72,80,140,["recambio"]],
  ["Gary Medel","VOL",39,75,75,180,80,["ídolo","carácter"]],
  ["Alfred Canales","VOL",26,74,80,90,320,["contención"]],
  ["Cristián Cuevas","VOL",31,72,72,100,160,["lateral"]],

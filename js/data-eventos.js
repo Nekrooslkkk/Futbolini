@@ -172,7 +172,7 @@ const EVENTOS=[
  ef:{moral:6,plantel:2},accion:"limpiaBandera:dtFirme"},
 /* --- hito histórico: camada Borghi (Colo-Colo ~2006-2007) --- */
 {id:"ev_camada",tipo:"bueno",peso:E=>(E.club==="CC"&&E.anio>=2006&&E.anio<=2008&&!E.flags.camadaBorghi)?6:0,
- t:"Estalla una camada histórica",d:"Las inferiores largaron una generación que no se ve todos los días. El mundo va a hablar de estos pibes, y las ofertas de Europa no van a tardar.",
+ t:"Estalla una camada histórica",d:"Las inferiores largaron una generación que no se ve todos los días. El mundo va a hablar de estos cabros, y las ofertas de Europa no van a tardar.",
  accion:"camadaBorghi"}
 ];
 
@@ -266,7 +266,7 @@ const CRISIS=[
    mitad:{txt:"Convenio caro y con garantías pesadas.",ef:{deuda:-200,plata:-150}},
    mal:{txt:"Rechazado: la administración judicial toma el control total.",ef:{riesgo:16,plata:-300},grupos:{directorio:-15}}},
   {t:"Resistir y apostar a la gente",dif:64,grupos:{hinchada:15,comunidad:15,socios:10},rep:{publica:8},
-   bien:{txt:"La hinchada salió a bancar con colectas y socios nuevos. Épica pura: el club se sostiene desde abajo.",ef:{socios:12,plata:300}},
+   bien:{txt:"La hinchada salió a apoyar con colectas y socios nuevos. Épica pura: el club se sostiene desde abajo.",ef:{socios:12,plata:300}},
    mitad:{txt:"El aguante ayudó, pero no alcanza para tapar el agujero.",ef:{socios:6,riesgo:8}},
    mal:{txt:"La resistencia romántica chocó con la realidad de los números.",ef:{riesgo:18,deuda:200}}}
  ]}
@@ -294,9 +294,9 @@ const ENCADENADAS=[
  posturas:{prensa:-20,directorio:-25,hinchada:-15},
  consejo:{deportivo:"Necesito respaldo público o el camarín va a jugar cagado de miedo.",
    tesorero:"Un cambio de técnico ahora nos cuesta plata que no tenemos.",
-   prensa:"Si salís a pelearte con todos, mañana sos el enemigo. Si no decís nada, sos el que no da la cara."},
+   prensa:"Si sales a pelearte con todos, mañana sos el enemigo. Si no dices nada, sos el que no da la cara."},
  op:[
-  {t:"Dar la cara y bancar al plantel en público",dif:40,
+  {t:"Dar la cara y apoyar al plantel en público",dif:40,
    grupos:{camarin:12,prensa:5,directorio:-4},rep:{credibilidad:6},
    bien:{txt:"El mensaje ordenó el camarín: salieron a jugarse el puesto por vos.",ef:{moral:10}},
    mitad:{txt:"Calmó las aguas un par de días, nada más.",ef:{moral:3}},
@@ -362,10 +362,10 @@ const ENCADENADAS=[
 
 {id:"enc_investigacion_dirigencial",buzon:"gris",peso:"alto",tipo:"malo",
  t:"Investigación por los fondos del club",
- d:"La auditoría detectó plata que salió de la tesorería y no aparece en ningún lado. Hay periodistas en la puerta y un fiscal haciendo preguntas. Vos sabés perfectamente dónde está esa plata.",
+ d:"La auditoría detectó plata que salió de la tesorería y no aparece en ningún lado. Hay periodistas en la puerta y un fiscal haciendo preguntas. Vos sabes perfectamente dónde está esa plata.",
  posturas:{prensa:-25,directorio:-30,anfp:-15},
  consejo:{deportivo:"Yo de plata no sé nada, arreglate vos.",
-   tesorero:"Los números no cuadran, y lo sabés mejor que yo.",
+   tesorero:"Los números no cuadran, y lo sabes mejor que yo.",
    prensa:"Esto puede ser el fin o un papelón manejable. Depende 100% de cómo lo cuentes."},
  op:[
   {t:"Colaborar y dar la cara",dif:38,grupos:{prensa:12,socios:8,directorio:-10},rep:{credibilidad:10,publica:4},

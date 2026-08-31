@@ -2,12 +2,12 @@
 /* ============================================================
    FUTBOLINI · data-storylines.js
    ARCOS DE EQUIPO (storylines con alma, propios de cada club).
-   Se enganchan al motor de memoria: lo que elegís queda y te lo
+   Se enganchan al motor de memoria: lo que eliges queda y te lo
    cobran después. Es un sistema PARALELO al motor de decisiones
    (no toca repartirDecisiones ni el token motor).
 
    ── CÓMO AGREGAR UN CLUB (para la 7.00) ──
-   Meté una entrada en ARCOS_EQUIPO con la id del club (CC, UCH,
+   Mete una entrada en ARCOS_EQUIPO con la id del club (CC, UCH,
    UC, PAL, LIM, o las nuevas). Cada arco:
      {id, t, desc, era?, cond?, capitulos:[cap]}
        era: "actual" | "historico" | (omitir = aplica siempre;
@@ -33,7 +33,7 @@ const ARCOS_EQUIPO = {
     capitulos:[
       {id:"uch_1", t:"Casa propia", ctx:"La U arrastra décadas sin estadio propio: el Nacional es prestado y cada partido de local es negociar con otro. La dirigencia pone sobre la mesa impulsar un proyecto de estadio. La hinchada sueña; el directorio hace números y transpira.",
        ops:[
-        {t:"Impulsar el proyecto con todo", d:"Es la bandera histórica del hincha. Cuesta capital político, pero te ganás a la gente.", ef:{capital:-8}, grupos:{hinchada:14,socios:8,directorio:-6}, mem:"le pusiste el pecho al viejo sueño del estadio propio de la U", va:"uch_2"},
+        {t:"Impulsar el proyecto con todo", d:"Es la bandera histórica del hincha. Cuesta capital político, pero te ganas a la gente.", ef:{capital:-8}, grupos:{hinchada:14,socios:8,directorio:-6}, mem:"le pusiste el pecho al viejo sueño del estadio propio de la U", va:"uch_2"},
         {t:"Primero lo deportivo, el estadio después", d:"Prudente pero frío: la gente lo va a leer como otra promesa pateada.", grupos:{camarin:5,hinchada:-8}, rep:{credibilidad:3}, mem:"pateaste otra vez el tema del estadio de la U", cierra:true}
        ]},
       {id:"uch_2", t:"¿Con qué plata?", ctx:"El proyecto camina, ahora falta la parte fea: financiarlo. Nadie regala un estadio.",
@@ -62,12 +62,12 @@ const ARCOS_EQUIPO = {
        ]},
       {id:"cc_2", t:"Gira o clásico", ctx:"Cae una oferta millonaria por una gira de exhibición en Asia, justo la semana de un partido bravo. Plata segura contra descanso y foco.",
        ops:[
-        {t:"Ir a la gira, la caja manda", d:"Entra plata, pero llegás fundido al torneo.", ef:{plata:70,moral:-4}, grupos:{sponsors:10,camarin:-6,hinchada:-4}, mem:"metiste a Colo en una gira comercial en plena pelea", va:"cc_3"},
+        {t:"Ir a la gira, la caja manda", d:"Entra plata, pero llegas fundido al torneo.", ef:{plata:70,moral:-4}, grupos:{sponsors:10,camarin:-6,hinchada:-4}, mem:"metiste a Colo en una gira comercial en plena pelea", va:"cc_3"},
         {t:"Rechazar, foco en el campeonato", d:"El plantel y el hincha lo agradecen; el directorio putea por la plata.", grupos:{camarin:8,hinchada:8,directorio:-8,sponsors:-6}, mem:"rechazaste la gira para cuidar el torneo", va:"cc_3"}
        ]},
-      {id:"cc_3", t:"El Cacique y la calle", ctx:"La hinchada más grande del país te pide un gesto: entradas populares, o bancar un reclamo social del barrio. La concesionaria dice que no es asunto del club.",
+      {id:"cc_3", t:"El Cacique y la calle", ctx:"La hinchada más grande del país te pide un gesto: entradas populares, o apoyar un reclamo social del barrio. La concesionaria dice que no es asunto del club.",
        ops:[
-        {t:"Hacer el gesto con la gente", d:"Te ganás la calle para siempre; algunos socios se incomodan.", ef:{prestigio:8,capital:-4}, grupos:{hinchada:18,comunidad:14,directorio:-6}, mem:"pusiste a Colo del lado de su gente", logro:"de_la_comunidad", cierra:true},
+        {t:"Hacer el gesto con la gente", d:"Te ganas la calle para siempre; algunos socios se incomodan.", ef:{prestigio:8,capital:-4}, grupos:{hinchada:18,comunidad:14,directorio:-6}, mem:"pusiste a Colo del lado de su gente", logro:"de_la_comunidad", cierra:true},
         {t:"Mantener al club al margen", d:"Ordenado y frío. El pueblo toma nota.", grupos:{directorio:8,sponsors:6,hinchada:-12,comunidad:-8}, rep:{credibilidad:-3}, mem:"mantuviste a Colo lejos de su hinchada por conveniencia", cierra:true}
        ]}
     ]
@@ -90,7 +90,7 @@ const ARCOS_EQUIPO = {
       {id:"uc_3", t:"El sello cruzado", ctx:"Fin de ciclo del arco: la prensa pregunta qué es hoy la Católica. Tu respuesta define la marca del club por años.",
        ops:[
         {t:"Un club serio que forma y compite", d:"Mensaje maduro. Suma respeto transversal.", ef:{prestigio:10}, grupos:{prensa:8,socios:10,directorio:8}, rep:{credibilidad:8}, mem:"consolidaste a la UC como club modelo y serio", cierra:true},
-        {t:"Vamos a pelearle a los grandes de igual a igual", d:"Ambicioso. Si no lo respaldás con títulos, te lo cobran.", ef:{prestigio:6}, grupos:{hinchada:12,directorio:-4,prensa:4}, mem:"prometiste que la UC iba a pelearle a los grandes", cierra:true}
+        {t:"Vamos a pelearle a los grandes de igual a igual", d:"Ambicioso. Si no lo respaldas con títulos, te lo cobran.", ef:{prestigio:6}, grupos:{hinchada:12,directorio:-4,prensa:4}, mem:"prometiste que la UC iba a pelearle a los grandes", cierra:true}
        ]}
     ]
   }],
@@ -106,12 +106,12 @@ const ARCOS_EQUIPO = {
        ]},
       {id:"pal_2", t:"La camiseta que emociona", ctx:"La camiseta de Palestino es símbolo para mucha gente dentro y fuera de la cancha. Aparece la chance de una edición especial que homenajea las raíces de la colectividad; también atrae ruido y opiniones de todos lados.",
        ops:[
-        {t:"Sacar la edición con orgullo", d:"La comunidad se emociona; te ganás un cariño enorme.", ef:{prestigio:6}, grupos:{comunidad:14,hinchada:10,socios:6}, mem:"sacaste una camiseta que emocionó a la comunidad de Palestino", va:"pal_3"},
+        {t:"Sacar la edición con orgullo", d:"La comunidad se emociona; te ganas un cariño enorme.", ef:{prestigio:6}, grupos:{comunidad:14,hinchada:10,socios:6}, mem:"sacaste una camiseta que emocionó a la comunidad de Palestino", va:"pal_3"},
         {t:"Mantener bajo perfil, foco en el fútbol", d:"Prudente. Evitás ruido, pero la gente esperaba el gesto.", grupos:{prensa:4,comunidad:-6}, mem:"bajaste el perfil identitario de Palestino por prudencia", va:"pal_3"}
        ]},
       {id:"pal_3", t:"Chico de plata, grande de alma", ctx:"Palestino compite con clubes de más recursos. La comunidad banca, pero la caja obliga a vender. La pregunta de siempre: ¿hasta dónde se puede soñar sin traicionar la identidad?",
        ops:[
-        {t:"Formar, competir y bancar la identidad", d:"El camino difícil pero fiel. La gente te sigue a todos lados.", ef:{prestigio:8}, grupos:{comunidad:12,camarin:8,socios:8}, rep:{credibilidad:6}, mem:"hiciste de Palestino un chico de plata pero grande de alma", logro:"de_la_comunidad", cierra:true},
+        {t:"Formar, competir y apoyar la identidad", d:"El camino difícil pero fiel. La gente te sigue a todos lados.", ef:{prestigio:8}, grupos:{comunidad:12,camarin:8,socios:8}, rep:{credibilidad:6}, mem:"hiciste de Palestino un chico de plata pero grande de alma", logro:"de_la_comunidad", cierra:true},
         {t:"Priorizar la caja sobre todo", d:"Sano en los números, frío para la gente.", ef:{plata:80}, grupos:{directorio:10,sponsors:8,comunidad:-12,hinchada:-8}, mem:"pusiste la caja de Palestino por encima de su identidad", cierra:true}
        ]}
     ]
@@ -134,7 +134,7 @@ const ARCOS_EQUIPO = {
       {id:"lim_3", t:"Pase lo que pase", ctx:"Fin de temporada, se juega la permanencia o el batacazo. El pueblo llenó la cancha modesta. Sea cual sea el resultado, hay que dejarle un mensaje a la gente que creyó.",
        ops:[
         {t:"Gracias, pase lo que pase esto es histórico", d:"Humildad y cariño. El pueblo te adopta para siempre.", ef:{prestigio:8}, grupos:{comunidad:16,hinchada:12,socios:6}, mem:"le dejaste a Limache un recuerdo histórico, pasara lo que pasara", logro:"de_la_comunidad", cierra:true},
-        {t:"Prometer que esto recién empieza", d:"Ambición pura. Si no cumplís, duele el doble.", ef:{prestigio:5}, grupos:{hinchada:12,directorio:-4}, mem:"le prometiste a Limache que el sueño recién empezaba", cierra:true}
+        {t:"Prometer que esto recién empieza", d:"Ambición pura. Si no cumples, duele el doble.", ef:{prestigio:5}, grupos:{hinchada:12,directorio:-4}, mem:"le prometiste a Limache que el sueño recién empezaba", cierra:true}
        ]}
     ]
   }]
@@ -159,16 +159,16 @@ const ARCOS_GENERICOS = [
     desc:"Un histórico del club, recién retirado, golpea la puerta para sumarse.",
     cond:E=>((E.ind&&E.ind.prestigio)||50)>=40,
     capitulos:[
-      {id:"gi_1", t:"El ídolo en la puerta", ctx:"Un ídolo del club, recién colgados los botines, quiere sumarse al proyecto: cuerpo técnico, inferiores, lo que sea. La gente lo ama. Vos sabés que el ídolo con cargo es un arma de doble filo.",
+      {id:"gi_1", t:"El ídolo en la puerta", ctx:"Un ídolo del club, recién colgados los botines, quiere sumarse al proyecto: cuerpo técnico, inferiores, lo que sea. La gente lo ama. Vos sabes que el ídolo con cargo es un arma de doble filo.",
        ops:[
         {t:"Sumarlo al cuerpo técnico", d:"La hinchada estalla de alegría. Ojo si después hay que echarlo.", grupos:{hinchada:14,camarin:6,tecnico:-4}, mem:"sumaste a un ídolo del club al cuerpo técnico", va:"gi_2"},
-        {t:"Darle las inferiores", d:"Lo cuidás lejos del primer equipo. Sabio.", grupos:{hinchada:8,comunidad:8,tecnico:4}, mem:"le diste las inferiores a un ídolo del club", cierra:true},
+        {t:"Darle las inferiores", d:"Lo cuidas lejos del primer equipo. Sabio.", grupos:{hinchada:8,comunidad:8,tecnico:4}, mem:"le diste las inferiores a un ídolo del club", cierra:true},
         {t:"Agradecer y decir que no", d:"Frío pero profesional. La gente no lo entiende.", grupos:{hinchada:-10,prensa:-4}, rep:{dureza:4}, mem:"le cerraste la puerta a un ídolo del club", cierra:true}
        ]},
-      {id:"gi_2", t:"Ídolo con cargo", ctx:"El ídolo ya está adentro y opina de todo. La prensa lo cita, la hinchada lo respalda por encima tuyo. El vestuario mira cómo reaccionás.",
+      {id:"gi_2", t:"Ídolo con cargo", ctx:"El ídolo ya está adentro y opina de todo. La prensa lo cita, la hinchada lo respalda por encima tuyo. El vestuario mira cómo reaccionas.",
        ops:[
-        {t:"Marcarle la cancha con respeto", d:"Ordenás sin romper. Si te banca, quedás grande.", ef:{capital:-4}, grupos:{camarin:8,tecnico:8}, rep:{dureza:4,credibilidad:4}, mem:"le marcaste la cancha al ídolo con cargo, sin romper", cierra:true},
-        {t:"Dejarlo hacer para no pelear", d:"Evitás el conflicto, pero perdés autoridad.", grupos:{hinchada:6,camarin:-8,tecnico:-6}, rep:{credibilidad:-4}, mem:"dejaste que el ídolo con cargo te pasara por encima", cierra:true}
+        {t:"Marcarle la cancha con respeto", d:"Ordenás sin romper. Si te banca, quedas grande.", ef:{capital:-4}, grupos:{camarin:8,tecnico:8}, rep:{dureza:4,credibilidad:4}, mem:"le marcaste la cancha al ídolo con cargo, sin romper", cierra:true},
+        {t:"Dejarlo hacer para no pelear", d:"Evitás el conflicto, pero pierdes autoridad.", grupos:{hinchada:6,camarin:-8,tecnico:-6}, rep:{credibilidad:-4}, mem:"dejaste que el ídolo con cargo te pasara por encima", cierra:true}
        ]}
     ]
   }

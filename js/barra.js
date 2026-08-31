@@ -2,7 +2,7 @@
 /* ============================================================
    FUTBOLINI · barra.js   (Section 5 · Mesa de la barra)
    La barra NO es un slider de hinchada: es un interlocutor con
-   memoria. Acordás pactos, quedan guardados, y si los rompés te
+   memoria. Acuerdas pactos, quedan guardados, y si los rompes te
    lo cobran (lienzo + silbidos + evento de puerta).
    E.barra = {humor, lienzos:[], pactos:[], ultimoIdx, roto}
    ============================================================ */
@@ -25,15 +25,15 @@ function pactosBarra(){
      d:"La barra copa la tribuna con todo. Aliento asegurado, pero atás al club a un grupo que no rinde cuentas.",
      costo:0, ef:{riesgo:6}, grupos:{hinchada:8,prensa:-4}, resumen:"aliento a cambio de vista gorda"},
     {tipo:"logistica", t:"Entradas y un viaje al norte",
-     d:"Bancás pasajes y entradas para el próximo viaje largo. Cuesta plata, pero la mesa lo valora.",
+     d:"Apoyas pasajes y entradas para el próximo viaje largo. Cuesta plata, pero la mesa lo valora.",
      costo:40, ef:{}, grupos:{hinchada:7}, resumen:"entradas y viaje pagados"}
   ];
   if(idolo) L.push({tipo:"no_vender", quien:idolo.n,
      t:"Comprometerte a no vender a "+idolo.n,
-     d:idolo.n+" es de los suyos. Si les das la palabra de que no se vende y después lo vendés, se te dan vuelta.",
+     d:idolo.n+" es de los suyos. Si les das la palabra de que no se vende y después lo vendes, se te dan vuelta.",
      costo:0, ef:{}, grupos:{hinchada:10,directorio:-6}, resumen:"no vender a "+idolo.n});
   else L.push({tipo:"no_bajar", t:"Prometer que no se remata el plantel",
-     d:"Les asegurás que no vas a malvender para tapar agujeros. Palabra de dirigencia.",
+     d:"Les aseguras que no vas a malvender para tapar agujeros. Palabra de dirigencia.",
      costo:0, ef:{}, grupos:{hinchada:8,directorio:-4}, resumen:"no rematar el plantel"});
   return L;
 }
@@ -56,7 +56,7 @@ function pactar(o){
   guardar();
   return true;
 }
-/* rompés un pacto (ej: vender al de la casa que juraste no vender) */
+/* rompes un pacto (ej: vender al de la casa que juraste no vender) */
 function romperPacto(motivo,quien){
   normalizarBarra();
   let p=E.barra.pactos.find(x=>!x.roto && quien && x.tipo==="no_vender" && x.quien===quien);

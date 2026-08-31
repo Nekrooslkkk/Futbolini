@@ -3,7 +3,7 @@
    FUTBOLINI · data-voz.js  (7.00 · voz PLOP / FutbolGram)
    Pools de texto + hooks blandos. NO toca tokens ni repartirDecisiones.
    Cargar ÚLTIMO en index.html (después de ui.js).
-   Edición: sumá líneas a los arrays. No hace falta tocar el motor.
+   Edición: suma líneas a los arrays. No hace falta tocar el motor.
    ============================================================ */
 
 /* ---------- handles de barrio (se mezclan con HANDLES_HINCHA) ---------- */
@@ -15,7 +15,7 @@ const HANDLES_BARRIO=[
 const NOMBRES_CANTERA=[
   "Benjamín Sepúlveda","Joaquín Núñez","Matías Alarcón","Cristóbal Henríquez","Ignacio Tapia",
   "Felipe Godoy","Lucas Saavedra","Diego Venegas","Nicolás Parra","Vicente Rojas",
-  "Martín Cáceres","Tomás Lagos","Gabriel Muñoz","Simón Contreras","Agustín Riquelme",
+  "Martín Cáceres","Tomas Lagos","Gabriel Muñoz","Simón Contreras","Agustín Riquelme",
   "Maximiliano Soto","Elías Poblete","Renato Vergara","Pablo Carmona","Javier Toledo"
 ];
 const APODOS_CANTERA=["el Pitu","el Flaco","el Chino","el Coto","el Mago","el Nene","el Indio","el Cote","el Nano","el Loco"];
@@ -58,7 +58,7 @@ const TUITS_MOMENTO=[
 
   /* hat_trick */
   {ctx:"hat_trick",quien:"@barra_del_fondo",txt:"EL 9 ESTÁ ROTO. TRES. TRES GOLAZos. DEJEN DE HABLAR."},
-  {ctx:"hat_trick",quien:"@doña_clarita",txt:"ese pibe no puede irse en diciembre. si se va me cambio de país"},
+  {ctx:"hat_trick",quien:"@doña_clarita",txt:"ese cabro no puede irse en diciembre. si se va me cambio de país"},
   {ctx:"hat_trick",quien:"@pibe_de_la_popular",txt:"hattrick y el dt lo iba a sacar al 60 jajajajsj"},
   {ctx:"hat_trick",quien:"@DeporteTotal",txt:"Tres goles del 9. La noche es de él y el estadio lo está nombrando."},
   {ctx:"hat_trick",quien:"@cuenta_troll",txt:"el 9 se comió el partido y los otros 10 fueron extra en la foto"},
@@ -139,7 +139,7 @@ const PREGUNTAS_VOZ=[
   {sit:"clasico_previa",q:"La ciudad se parte. ¿Usted desconecta al plantel de eso o lo usa?"},
   {sit:"post_goleada",q:"Goleada. ¿Es el techo o es el piso de lo que quiere ver?"},
   {sit:"post_goleada",q:"¿Qué detalle no le gustó, aunque el marcador sea ancho?"},
-  {sit:"figura_juvenil",q:"El pibe se comió el partido. ¿Ya es titular o se dosifica?"},
+  {sit:"figura_juvenil",q:"El cabro se comió el partido. ¿Ya es titular o se dosifica?"},
   {sit:"rumor_venta",q:"Se habla de una oferta por un titular. ¿El club la escuchó o es ruido?"}
 ];
 
@@ -161,13 +161,13 @@ const TRIVIA_VOZ=[
 /* ---------- F) logros extra ---------- */
 const LOGROS_VOZ=[
   {id:"silencio_local",n:"Se fue la luz",d:"Perdé de local sin marcar un gol."},
-  {id:"diez_visita",n:"Con uno menos, de visita",d:"Sumá de visita después de una roja propia."},
-  {id:"no_se_jode",n:"Con este club no se jode",d:"Ganá un clásico."},
-  {id:"micro_cantando",n:"El chofer me miró raro",d:"Ganá de visita en el último minuto (80+)."},
+  {id:"diez_visita",n:"Con uno menos, de visita",d:"Suma de visita después de una roja propia."},
+  {id:"no_se_jode",n:"Con este club no se jode",d:"Gana un clásico."},
+  {id:"micro_cantando",n:"El chofer me miró raro",d:"Gana de visita en el último minuto (80+)."},
   {id:"luna_penal",n:"La mandó a la luna",d:"Errá un penal y aun así no pierdas el partido."},
-  {id:"el_1_es_el_dt",n:"El 1 se comió el partido",d:"Terminá 0-0 de visita."},
+  {id:"el_1_es_el_dt",n:"El 1 se comió el partido",d:"Termina 0-0 de visita."},
   {id:"tres_del_9",n:"Dejen de hablar",d:"Un mismo delantero hace 3 goles en un partido."},
-  {id:"pueblo_lleno",n:"Que quepa el pueblo",d:"Ganá de local con un club chico (LIM, CAL, COB, NUB)."}
+  {id:"pueblo_lleno",n:"Que quepa el pueblo",d:"Gana de local con un club chico (LIM, CAL, COB, NUB)."}
 ];
 
 /* ---------- E) arcos que faltaban (2026) ---------- */
@@ -261,7 +261,7 @@ const ARCOS_NUEVOS={
       {id:"cal_1",t:"El Nicolás Chahuán cabe o no cabe",ctx:"Cuando llega un grande, el pueblo se desarma. El directorio quiere agrandar.",
        ops:[{t:"Quedarse pueblo y llenarlo",d:"Menos plata, más casa.",grupos:{comunidad:14,hinchada:10,sponsors:-6},mem:"dejaste a La Calera siendo pueblo",va:"cal_2"},
             {t:"Empujar un estadio más grande",d:"Sueño caro.",ef:{capital:-6},grupos:{directorio:8,hinchada:6,comunidad:-4},mem:"empujaste un estadio más grande en La Calera",va:"cal_2"}]},
-      {id:"cal_2",t:"El 0-0 que da puntos",ctx:"La Calera históricamente saca puntos feos. ¿La abrazás o la tirás?",
+      {id:"cal_2",t:"El 0-0 que da puntos",ctx:"La Calera históricamente saca puntos feos. ¿La abrazas o la tiras?",
        ops:[{t:"Abrazar el fútbol feo que suma",d:"La gente de afuera putea; los puntos llegan.",grupos:{camarin:8,prensa:-6,hinchada:6},mem:"abrazaste el fútbol feo de La Calera",va:"cal_3"},
             {t:"Jugar más abierto, atraer gente nueva",d:"Bonito y frágil.",grupos:{prensa:6,hinchada:4,camarin:-4},mem:"le pediste a La Calera que juegue más abierto",va:"cal_3"}]},
       {id:"cal_3",t:"No ser comparsa de los grandes",ctx:"Cada año un grande quiere usar a La Calera de puente.",

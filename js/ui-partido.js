@@ -27,7 +27,7 @@ function checklistPrevia(part,once){
     const arb=arbitroDe(part);
     const caseroContra=arb.casero&&!part.local;
     items.push({warn:!!caseroContra, ok:!caseroContra, t:"Dirige "+arb.n,
-      d:"Tiene "+arb.desc+"."+(arb.casero?(part.local?" De local, eso te conviene.":" Jugás de visita: ojo, la puede cargar para ellos."):"")});
+      d:"Tiene "+arb.desc+"."+(arb.casero?(part.local?" De local, eso te conviene.":" Juegas de visita: ojo, la puede cargar para ellos."):"")});
   }
   /* decisiones urgentes sin resolver */
   const urgentes=(E.decPend||[]).filter(x=>x.peso==="alto").length;
@@ -40,7 +40,7 @@ function checklistPrevia(part,once){
   /* alineación / química */
   const manualOn=E.tactica.xiManual&&E.tactica.xiManual.length;
   items.push({ok:!!manualOn,warn:false,t:manualOn?"Alineación armada a mano":"Alineación automática",
-    d:manualOn?"Elegiste vos el once.":"El juego pone el mejor once disponible. Podés cambiarlo abajo."});
+    d:manualOn?"Elegiste vos el once.":"El juego pone el mejor once disponible. Puedes cambiarlo abajo."});
   if(typeof quimicaEquipo==="function"){
     const qui=quimicaEquipo(once);
     if(qui.prom<50) items.push({warn:true,t:"Química baja ("+qui.prom+"/100)",
@@ -74,7 +74,7 @@ function pantallaPrevia(part){
   const items=checklistPrevia(part,onceCk);
   const hayPend=items.some(i=>i.warn);
   const pc=panel("Antes de salir a la cancha","✅",hayPend?"alerta":"agua");
-  pc.cuerpo.appendChild(el("p","mini",hayPend?"Hay cosas que conviene resolver antes de jugar. No es obligación, pero te puede costar el partido.":"Todo en orden para salir a jugar. Igual revisá los últimos detalles."));
+  pc.cuerpo.appendChild(el("p","mini",hayPend?"Hay cosas que conviene resolver antes de jugar. No es obligación, pero te puede costar el partido.":"Todo en orden para salir a jugar. Igual revisa los últimos detalles."));
   const ul=el("div","checklist");
   items.forEach(i=>{
     const row=el("div","chk"+(i.warn?" warn":(i.ok?" ok":"")));
@@ -130,7 +130,7 @@ function pantallaPrevia(part){
     const cnt={def:0,eq:0,ofe:0};
     once.filter(j=>j.pos!=="ARQ").forEach(j=>{ cnt[(E.tactica.roles&&E.tactica.roles[j.n])||"eq"]++; });
     balance.innerHTML="<b>Balance:</b> "+cnt.ofe+" ofensivos · "+cnt.eq+" equilibrados · "+cnt.def+" defensivos. "+
-      (cnt.ofe>=6?"Muy volcado al ataque: vas a generar, pero quedás abierto atrás.":
+      (cnt.ofe>=6?"Muy volcado al ataque: vas a generar, pero quedas abierto atrás.":
        cnt.def>=6?"Muy replegado: seguro atrás, pero te va a costar crear.":"Reparto sano.");
   };
   once.filter(j=>j.pos!=="ARQ").forEach(j=>{
@@ -176,9 +176,9 @@ function pantallaPrevia(part){
     p2.cuerpo.appendChild(fila("Taquilla proyectada",tq.gente.toLocaleString("es-CL")+" personas · "+plata(tq.ingreso)));
     p2.cuerpo.appendChild(el("p","mini","Ajustás el precio de cada sector en Finanzas."));
   }
-  p2.cuerpo.appendChild(el("h3","sub","¿Cómo lo vivís?"));
+  p2.cuerpo.appendChild(el("h3","sub","¿Cómo lo vives?"));
   const bs=el("div");
-  [["⚡ Simular","seguir","Lo ves en vivo. Adentro decidís: saltar al resultado al toque o seguirlo minuto a minuto."],
+  [["⚡ Simular","seguir","Lo ves en vivo. Adentro decides: saltar al resultado al toque o seguirlo minuto a minuto."],
    ["🎯 Dirigir","dirigir","Intervenís en los momentos clave, con las barras de apoyo en vivo."]].forEach(([n,m,d])=>{
     const b=el("button","btn-aqua ancho"+(m==="dirigir"?" verde":""),n+" · <span style='font-weight:400;font-size:11.5px'>"+d+"</span>");
     b.style.marginBottom="7px";
@@ -203,7 +203,7 @@ function pantallaPrevia(part){
 /* ---------- pizarra libre (posicionar los 11 en la cancha) ---------- */
 function apodoJug(n){ const p=(n||"").split(" "); return (p[p.length-1]||n).slice(0,9); }
 function mismaGente(piz,once){ if(!piz||piz.length!==once.length) return false; const set=new Set(once.map(j=>j.n)); return piz.every(p=>set.has(p.n)); }
-/* 6.8 · editor de alineación: armá tu XI a mano (meté suplentes, sacá titulares) */
+/* 6.8 · editor de alineación: arma tu XI a mano (mete suplentes, saca titulares) */
 function modalAlineacion(part){
   const disp=E.plantel.filter(j=>!j.vendido&&!j.cedido&&(j.lesion||0)<=0)
     .sort((a,b)=>scoreOnce(b)-scoreOnce(a));
@@ -221,10 +221,10 @@ function modalAlineacion(part){
       const info=el("div","resul "+(ok?"bien":"mitad"));
       info.innerHTML="<b>"+sel.length+" / 11</b> titulares"+
         (arqs<1?" · <b style='color:#c0392b'>falta un arquero</b>":"")+
-        (sel.length>11?" · sacá "+(sel.length-11):"")+
-        (sel.length<11?" · elegí "+(11-sel.length)+" más":"");
+        (sel.length>11?" · saca "+(sel.length-11):"")+
+        (sel.length<11?" · elige "+(11-sel.length)+" más":"");
       c.appendChild(info);
-      c.appendChild(el("p","mini","Tocá un jugador para meterlo o sacarlo del once. Los que no elijas van a la banca. 🩹 = lesionado (no disponible)."));
+      c.appendChild(el("p","mini","Toca un jugador para meterlo o sacarlo del once. Los que no elijas van a la banca. 🩹 = lesionado (no disponible)."));
       POS.forEach(([p,lab])=>{
         const grupo=disp.filter(j=>j.pos===p);
         if(!grupo.length) return;
@@ -235,7 +235,7 @@ function modalAlineacion(part){
           const on=sel.indexOf(j.n)>=0;
           const b=el("button","align-jug"+(on?" on":""));
           b.innerHTML="<b>"+(on?"✓ ":"")+j.n+(j.real?" ●":"")+"</b><span class='mini'>niv "+j.nivel+" · forma "+Math.round(j.forma)+(j.rasgos&&j.rasgos.length?" · "+j.rasgos[0]:"")+"</span>";
-          b.onclick=()=>{ const i=sel.indexOf(j.n); if(i>=0) sel.splice(i,1); else { if(sel.length>=11){ aviso("Ya tenés 11. Sacá a alguien primero."); return; } sel.push(j.n); } pintar(); };
+          b.onclick=()=>{ const i=sel.indexOf(j.n); if(i>=0) sel.splice(i,1); else { if(sel.length>=11){ aviso("Ya tienes 11. Saca a alguien primero."); return; } sel.push(j.n); } pintar(); };
           cont.appendChild(b);
         });
         c.appendChild(cont);
@@ -424,7 +424,7 @@ function preguntasConferencia(part){
   if(sinGanar>=3) L.push({q:"Son "+sinGanar+" fechas sin ganar. ¿Siente que su puesto está en discusión?",ops:[
      {t:"Poner el pecho, me hago cargo",k:"calma"},{t:"Pedir tiempo y respaldo",k:"confianza"},{t:"Calentar: acá el que trabaja soy yo",k:"palo"}]});
   if(prom) L.push({q:"Se comenta que le prometió un arreglo a "+prom.quien+". ¿Verdad o versión?",ops:[
-     {t:"Confirmar y bancar al jugador",k:"confianza"},{t:"«De los temas internos no hablo»",k:"calma"},{t:"Negar todo de plano",k:"palo"}]});
+     {t:"Confirmar y apoyar al jugador",k:"confianza"},{t:"«De los temas internos no hablo»",k:"calma"},{t:"Negar todo de plano",k:"palo"}]});
   if(clasico) L.push({q:"Se viene el clásico ante "+part.rivalNombre+". ¿Qué mensaje le deja a la gente?",ops:[
      {t:"Paños fríos, foco en el fútbol",k:"calma"},{t:"Encender a la hinchada",k:"confianza"},{t:"Tirarle un palo al rival",k:"palo"}]});
   if(favorito) L.push({q:"Son favoritos claros ante "+part.rivalNombre+". ¿No los relaja la vara alta?",ops:[
@@ -469,7 +469,7 @@ function modalConferencia(part){
       const c=el("div","cuerpo"); box.appendChild(c);
       const cl=(typeof climaPrensa==="function")?climaPrensa():{pct:50,etq:"neutral",col:"#e6c34a"};
       const bar=el("div","mini"); bar.style.margin="0 0 6px";
-      bar.innerHTML="Clima de prensa para este partido: <b>"+cl.etq+"</b> <span class='mini'>(influye en cómo salís a la cancha)</span>"+
+      bar.innerHTML="Clima de prensa para este partido: <b>"+cl.etq+"</b> <span class='mini'>(influye en cómo sales a la cancha)</span>"+
         "<div class='barrita' style='margin-top:3px'><i style='width:"+cl.pct+"%;--c:"+cl.col+"'></i></div>";
       c.appendChild(bar);
       const per=peris[idx]||eligePeri(), q=preguntas[idx];
@@ -511,7 +511,7 @@ function arrancarPartido(part,modo){
 /* 7.10 · MODO DEV: forzar un evento puntual en el partido en curso, para probarlo */
 function devForzarEvento(tipo){
   const P=P_ACTUAL;
-  if(!P || P.terminado){ if(typeof aviso==="function") aviso("Entrá a un partido en curso para probar esto"); return; }
+  if(!P || P.terminado){ if(typeof aviso==="function") aviso("Entra a un partido en curso para probar esto"); return; }
   clearInterval(TIMER); MOMENTO_OPS=[];
   const min=P.min;
   if(tipo==="penal"||tipo==="tiroLibre"||tipo==="lesion"){ if(typeof mostrarAccion==="function") mostrarAccion({tipo:tipo,min:min,aFavor:true}); return; }
@@ -702,7 +702,7 @@ function modalCambio(){
       box.innerHTML="";
       box.appendChild(el("div","cab",'<span class="ic">🔄</span><span>Cambio '+((P.cambios||0)+1)+' / '+(P.cambiosMax||3)+'</span>'));
       const c=el("div","cuerpo"); box.appendChild(c);
-      c.appendChild(el("p","mini","Elegí quién SALE y quién ENTRA. Al minuto "+P.min+"."));
+      c.appendChild(el("p","mini","Elige quién SALE y quién ENTRA. Al minuto "+P.min+"."));
       c.appendChild(el("h3","sub","Sale de la cancha"));
       const g1=el("div","align-grid");
       P.once.forEach(j=>{
@@ -782,7 +782,7 @@ function mostrarMomento(){
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);
-  p.cuerpo.appendChild(el("p","mini",esTrivia?"Elegí la respuesta con 1 / 2 / 3.":"Elegí con 1 / 2 / 3 / 4 · flechas y Enter."));
+  p.cuerpo.appendChild(el("p","mini",esTrivia?"Elige la respuesta con 1 / 2 / 3.":"Elige con 1 / 2 / 3 / 4 · flechas y Enter."));
   (document.querySelector(".partido-wrap")||$("#vista")).appendChild(p);
 }
 /* confirmación del doping: caro y turbio, se pregunta aparte */
@@ -810,9 +810,9 @@ function candidatosPenal(P){
 }
 /* ============================================================
    6.27 · MINIJUEGO DE PENAL
-   Dibujás dónde va la pelota (tocás/arrastrás dentro del arco),
-   elegís el efecto, y el arquero se tira cuando pateás. Diseñado
-   para ser JUSTO: si apuntás a un rincón, la metés casi siempre;
+   Dibujás dónde va la pelota (tocas/arrastras dentro del arco),
+   eliges el efecto, y el arquero se tira cuando pateas. Diseñado
+   para ser JUSTO: si apuntas a un rincón, la metes casi siempre;
    solo el centro flojo o apuntarle al arquero se atajan.
    ============================================================ */
 /* geometría del arco (en coords del viewBox 0 0 320 210) */
@@ -863,7 +863,7 @@ function minijuegoPenal(P,pateador){
   modal(box=>{
     box.appendChild(el("div","cab",'<span class="ic">🥅</span><span>Penal · dibujá tu tiro</span>'));
     const c=el("div","cuerpo penal-mini"); box.appendChild(c);
-    c.appendChild(el("p","mini","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Tocá dentro del arco dónde querés ponerla y apretá <b>¡Patear!</b>. Los rincones son casi imparables; al medio flojo te la atajan."));
+    c.appendChild(el("p","mini","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Toca dentro del arco dónde quieres ponerla y aprieta <b>¡Patear!</b>. Los rincones son casi imparables; al medio flojo te la atajan."));
     const NS="http://www.w3.org/2000/svg";
     const svg=document.createElementNS(NS,"svg");
     svg.setAttribute("viewBox","0 0 320 210"); svg.setAttribute("class","penal-svg");
@@ -908,7 +908,7 @@ function minijuegoPenal(P,pateador){
       linea2.setAttribute("x2",aim.cx); linea2.setAttribute("y2",aim.cy); linea2.setAttribute("opacity",".9");
       bpat.disabled=false;
       etiq.textContent=aim.fuera?"⚠ Le estás apuntando demasiado arriba/afuera…":
-        ("Apuntás al "+(aim.alt==="alto"?"palo alto ":"")+(aim.tercio==="centro"?"centro":"rincón "+aim.tercio)+".");
+        ("Apuntas al "+(aim.alt==="alto"?"palo alto ":"")+(aim.tercio==="centro"?"centro":"rincón "+aim.tercio)+".");
     }
     svg.addEventListener("pointerdown",e=>{ e.preventDefault(); marcar(aSVG(e)); });
     svg.addEventListener("pointermove",e=>{ if(e.buttons||e.pressure){ e.preventDefault(); marcar(aSVG(e)); } });
@@ -922,7 +922,7 @@ function minijuegoPenal(P,pateador){
       efRow.appendChild(b);
     });
     c.appendChild(efRow);
-    const etiq=el("p","mini","Tocá el arco para elegir dónde ponerla."); c.appendChild(etiq);
+    const etiq=el("p","mini","Toca el arco para elegir dónde ponerla."); c.appendChild(etiq);
     const bpat=el("button","btn-aqua ancho verde","¡Patear!"); bpat.disabled=true;
     bpat.onclick=()=>{
       if(!aim||tirado) return; tirado=true; bpat.disabled=true;
@@ -957,7 +957,7 @@ function minijuegoTiroLibre(P){
   modal(box=>{
     box.appendChild(el("div","cab",'<span class="ic">🎯</span><span>Tiro libre · dibujá tu remate</span>'));
     const c=el("div","cuerpo penal-mini"); box.appendChild(c);
-    c.appendChild(el("p","mini","Patea <b>"+j.n+"</b>. Pasá la barrera por arriba o por el costado y buscá el rincón lejos del arquero. Al medio o bajo te la tapan."));
+    c.appendChild(el("p","mini","Patea <b>"+j.n+"</b>. Pasá la barrera por arriba o por el costado y busca el rincón lejos del arquero. Al medio o bajo te la tapan."));
     const NS="http://www.w3.org/2000/svg";
     const svg=document.createElementNS(NS,"svg");
     svg.setAttribute("viewBox","0 0 320 210"); svg.style.cssText="width:100%;max-width:420px;display:block;margin:6px auto;touch-action:none;cursor:crosshair";
@@ -971,10 +971,10 @@ function minijuegoTiroLibre(P){
     c.appendChild(svg);
     const bola=svg.querySelector("#tl-bola"), mira=svg.querySelector("#tl-mira"), arqEl=svg.querySelector("#tl-arq");
     function aSVG(ev){ const r=svg.getBoundingClientRect(); const px=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left; const py=(ev.touches?ev.touches[0].clientY:ev.clientY)-r.top; return {x:px*320/r.width,y:py*210/r.height}; }
-    function marcar(pt){ if(tirado) return; const x=clamp(pt.x,48,272), y=clamp(pt.y,38,148); aim={x:x,y:y}; mira.setAttribute("cx",x); mira.setAttribute("cy",y); mira.setAttribute("opacity","1"); bpat.disabled=false; etiq.textContent="Apuntás ahí. Dale a ¡Patear!"; }
+    function marcar(pt){ if(tirado) return; const x=clamp(pt.x,48,272), y=clamp(pt.y,38,148); aim={x:x,y:y}; mira.setAttribute("cx",x); mira.setAttribute("cy",y); mira.setAttribute("opacity","1"); bpat.disabled=false; etiq.textContent="Apuntas ahí. Dale a ¡Patear!"; }
     svg.addEventListener("pointerdown",e=>{ e.preventDefault(); marcar(aSVG(e)); });
     svg.addEventListener("pointermove",e=>{ if(e.buttons||e.pressure){ e.preventDefault(); marcar(aSVG(e)); } });
-    const etiq=el("p","mini","Tocá el arco para elegir dónde ponerla."); c.appendChild(etiq);
+    const etiq=el("p","mini","Toca el arco para elegir dónde ponerla."); c.appendChild(etiq);
     const bpat=el("button","btn-aqua ancho verde","¡Patear!"); bpat.disabled=true;
     bpat.onclick=()=>{
       if(!aim||tirado) return; tirado=true; bpat.disabled=true;
@@ -1055,7 +1055,7 @@ function mostrarAccion(ev){
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);
-  p.cuerpo.appendChild(el("p","mini","Elegí con 1 / 2 / 3 · flechas y Enter."));
+  p.cuerpo.appendChild(el("p","mini","Elige con 1 / 2 / 3 · flechas y Enter."));
   (document.querySelector(".partido-wrap")||$("#vista")).appendChild(p);
 }
 function hitosPartido(res){
@@ -1119,7 +1119,7 @@ function cerrarPartido(){
   if(P.part.real){
     p.cuerpo.appendChild(el("h3","sub","En la línea histórica"));
     p.cuerpo.appendChild(el("p","mini","Ese partido terminó "+P.part.real+"."+
-      (P.part.real===res.yo+"-"+res.otro?" Coincide con lo que acabás de jugar.":" Tu partida ya va por otro lado.")));
+      (P.part.real===res.yo+"-"+res.otro?" Coincide con lo que acabas de jugar.":" Tu partida ya va por otro lado.")));
     const nota=NOTAS_COPA[P.part.notaId];
     if(nota) p.cuerpo.appendChild(el("p","mini",nota));
   }
@@ -1150,7 +1150,7 @@ const POST_ARQ={
  agrandado:{grupos:{hinchada:7,prensa:-4},rep:{credibilidad:-3},ef:{hinchada:3},txt:"Te agrandaste. La hinchada se prende, pero pusiste la vara altísima."},
  palo:    {grupos:{hinchada:6,anfp:-6,prensa:-4},rep:{dureza:5},txt:"Tiraste un palo. Unos lo festejan, la ANFP y la prensa toman nota."},
  mea:     {grupos:{prensa:6,camarin:-1},rep:{credibilidad:6},ef:{moral:-1},txt:"Autocrítica pública: duele, pero suma credibilidad."},
- bancar:  {grupos:{camarin:8,prensa:3},rep:{publica:2},ef:{moral:4},txt:"Pusiste la cara por el grupo. El vestuario lo valora."},
+ apoyar:  {grupos:{camarin:8,prensa:3},rep:{publica:2},ef:{moral:4},txt:"Pusiste la cara por el grupo. El vestuario lo valora."},
  arbitro: {grupos:{hinchada:6,anfp:-8,prensa:-6},rep:{dureza:5,publica:-3},ef:{hinchada:4},txt:"Apuntaste al árbitro. La hinchada compra el complot; la ANFP y la prensa, no."},
  respaldo:{grupos:{camarin:7},rep:{publica:2},ef:{moral:2},txt:"Lo bancaste en público. Adentro se nota."},
  foco:    {grupos:{camarin:4,prensa:3},txt:"Pusiste el foco en lo que viene. Mensaje sobrio, cero polémica."}
@@ -1199,7 +1199,7 @@ function preguntasPostPartido(res,P){
      {t:"Pongo el pecho, me hago cargo",k:"bancar"},{t:"Pido tiempo y respaldo",k:"mea"},{t:"Acá el que labura soy yo",k:"palo"}]});
   /* --- genéricas por resultado (fallback) --- */
   if(gano) L.push({id:"gen_g",prio:2,q:"Tres puntos ante "+riv+". ¿Con qué se queda de esta tarde?",ops:[
-     {t:"Con la humildad para seguir",k:"humilde"},{t:"Con el laburo del plantel",k:"elogio"},{t:"Con un palo para los que dudaban",k:"palo"}]});
+     {t:"Con la humildad para seguir",k:"humilde"},{t:"Con el pega del plantel",k:"elogio"},{t:"Con un palo para los que dudaban",k:"palo"}]});
   else if(perdio) L.push({id:"gen_p",prio:2,q:"Cayeron con "+riv+". ¿Qué explicación le encuentra?",ops:[
      {t:"Pongo la cara, es responsabilidad mía",k:"bancar"},{t:"Autocrítica: jugamos mal",k:"mea"},{t:"El arbitraje no ayudó",k:"arbitro"}]});
   else L.push({id:"gen_e",prio:2,q:"Repartieron puntos con "+riv+". ¿Punto ganado o dos perdidos?",ops:[
@@ -1235,10 +1235,10 @@ function seccionPrensa(p,res,P){
     "<div class='barrita' style='margin-top:3px'><i style='width:"+cl.pct+"%;--c:"+cl.col+"'></i></div>";
   p.cuerpo.appendChild(bar);
   const tog=el("div","mini");
-  tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (vos hablás)")+"</b>";
+  tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (vos hablas)")+"</b>";
   p.cuerpo.appendChild(tog);
   const bt=el("button","btn-aqua chico gris",E.prensaAuto?"Pasar a manual":"Delegar en el ayudante");
-  bt.onclick=()=>{ E.prensaAuto=!E.prensaAuto; guardar(); tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (vos hablás)")+"</b>"; bt.textContent=E.prensaAuto?"Pasar a manual":"Delegar en el ayudante"; zonaPrensa.innerHTML=""; pintarZonaPrensa(); };
+  bt.onclick=()=>{ E.prensaAuto=!E.prensaAuto; guardar(); tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (vos hablas)")+"</b>"; bt.textContent=E.prensaAuto?"Pasar a manual":"Delegar en el ayudante"; zonaPrensa.innerHTML=""; pintarZonaPrensa(); };
   p.cuerpo.appendChild(bt);
   const zonaPrensa=el("div"); p.cuerpo.appendChild(zonaPrensa);
   let hecho=false;

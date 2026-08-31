@@ -648,7 +648,7 @@ function venderJugador(j,monto){
     aplicarGrupos({hinchada:-12});
     if(typeof postProc==="function"&&typeof HANDLES_HINCHA!=="undefined")
       postProc(elige(HANDLES_HINCHA),"hincha","Venden a "+j.n+", un símbolo del club. A la gente esto no le entra.","malo");
-    /* 6.21 · si le habías jurado a la barra que no lo vendías, rompés el pacto */
+    /* 6.21 · si le habías jurado a la barra que no lo vendías, rompes el pacto */
     if(typeof romperPacto==="function") romperPacto("Vendiste a "+j.n+", que habías jurado no tocar.",j.n);
   }
   if(typeof recordar==="function") recordar("venta","vendiste a "+j.n+" por "+plata(monto),
@@ -823,7 +823,7 @@ function tickSemana(){
   if(typeof gestionTesorero==="function") gestionTesorero();
   /* plata personal del DT: entra su sueldo del cargo (menos si renunció por redención) */
   if(E.personal && typeof ingresoPersonalSemanal==="function"){ E.personal.bolsillo=Math.max(0,Math.round(E.personal.bolsillo+ingresoPersonalSemanal())); }
-  /* Vida 3.0: la relación se enfría si no la cuidás; el bienestar deriva y sufre con la mala racha */
+  /* Vida 3.0: la relación se enfría si no la cuidas; el bienestar deriva y sufre con la mala racha */
   if(E.perfil){
     if(E.perfil.pareja) E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel||65)-(E.perfil.pareja.casades?0.4:0.9),0,100);
   if(typeof tickFamilia==="function") tickFamilia();
@@ -852,7 +852,7 @@ function tickSemana(){
     E.flags.semanasCensura=(E.flags.semanasCensura||0)+1;
     if(E.flags.semanasCensura===1){
       notificar({t:"Asamblea extraordinaria",tipo:"malo",
-        d:"Hinchada y socios están juntos en contra. Si no revertís el clima en dos semanas, hay moción de censura.",bandeja:true});
+        d:"Hinchada y socios están juntos en contra. Si no reviertes el clima en dos semanas, hay moción de censura.",bandeja:true});
     } else if(E.flags.semanasCensura>=3 && typeof destituir==="function"){
       destituir("moción de censura de socios e hinchada");
     }

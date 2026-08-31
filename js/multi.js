@@ -126,8 +126,8 @@ function modalDuelo(){
       const c=el("div","cuerpo"); box.appendChild(c);
       /* ---------- elegir rol ---------- */
       if(pantalla==="inicio"){
-        c.appendChild(el("p","mini","Jugá un duelo dirigido contra un amigo, sin cuentas ni servidor: se conectan copiando y pegando un código (por WhatsApp, Discord, lo que sea). La conexión es directa entre ustedes dos."));
-        const bh=el("button","btn-aqua ancho verde","🧑‍✈️ Crear una sala (invitás vos)");
+        c.appendChild(el("p","mini","Juega un duelo dirigido contra un amigo, sin cuentas ni servidor: se conectan copiando y pegando un código (por WhatsApp, Discord, lo que sea). La conexión es directa entre ustedes dos."));
+        const bh=el("button","btn-aqua ancho verde","🧑‍✈️ Crear una sala (invitas vos)");
         bh.onclick=async function(){ bh.disabled=true; bh.textContent="Generando código…";
           try{ const cod=await mpCrearSala(); pintar("host",{cod:cod}); }
           catch(e){ pintar("error",{msg:e.message}); } };
@@ -187,12 +187,12 @@ function modalDuelo(){
         c.appendChild(el("div","resul bien","🔗 Conectado con <b>"+(MP.rival||"tu amigo")+"</b>. Elijan su club y aprieten «Listo»."));
         /* estado de ambos */
         const est=el("div","duelo-vs");
-        est.innerHTML="<div class='duelo-lado"+(MP.miListo?" listo":"")+"'><div class='mini'>VOS</div><b>"+(MP.miClub?mpNombreClub(MP.miClub):"— elegí —")+"</b>"+(MP.miListo?" ✅":"")+"</div>"+
+        est.innerHTML="<div class='duelo-lado"+(MP.miListo?" listo":"")+"'><div class='mini'>VOS</div><b>"+(MP.miClub?mpNombreClub(MP.miClub):"— elige —")+"</b>"+(MP.miListo?" ✅":"")+"</div>"+
           "<div class='duelo-x'>VS</div>"+
           "<div class='duelo-lado"+(MP.rivalListo?" listo":"")+"'><div class='mini'>"+(MP.rival||"RIVAL")+"</div><b>"+(MP.rivalClub?mpNombreClub(MP.rivalClub):"eligiendo…")+"</b>"+(MP.rivalListo?" ✅":"")+"</div>";
         c.appendChild(est);
         /* grilla de clubes */
-        c.appendChild(el("h3","sub","Elegí tu club"));
+        c.appendChild(el("h3","sub","Elige tu club"));
         const grid=el("div","duelo-clubes");
         mpClubes().forEach(function(cl){
           const b=el("button","duelo-club"+(MP.miClub===cl.id?" sel":""));
@@ -239,7 +239,7 @@ function modalDuelo(){
         }
         /* elegir postura */
         else if(d.fase==="eligiendo"){
-          c.appendChild(el("h3","sub","¿Cómo la jugás?"));
+          c.appendChild(el("h3","sub","¿Cómo la juegas?"));
           const ops=el("div","ops");
           DUELO_OPS.forEach(function(o,i){
             const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div><div class="d">'+o.d+'</div>';
@@ -271,7 +271,7 @@ function modalDuelo(){
           br.onclick=function(){ MP.miListo=false; MP.rivalListo=false; MP.miClub=null; MP.rivalClub=null; MP.duel=null; mpEnviar({tipo:"revancha"}); pintar("lobby",{}); };
           c.appendChild(br);
         } else {
-          c.appendChild(el("p","mini","Esperá a que el anfitrión proponga la revancha, o cerrá."));
+          c.appendChild(el("p","mini","Esperá a que el anfitrión proponga la revancha, o cierra."));
         }
         const x=el("button","btn-aqua ancho gris","Cerrar"); x.style.marginTop="6px";
         x.onclick=function(){ mpReset(); cerrarModal(); }; c.appendChild(x);
@@ -284,7 +284,7 @@ function modalDuelo(){
     /* cuando el canal abre, saltamos al LOBBY */
     mpAlConectar=function(){ if(MP.conectado) pintar("lobby",{}); };
     mpAlCaer=function(){ pintar("error",{msg:"Se cortó la conexión con tu amigo."}); };
-    mpAlFallo=function(){ pintar("error",{msg:"No se pudo conectar. Suele pasar en redes muy cerradas (algún wifi corporativo o de datos móviles). Probá de nuevo, o que el otro cree la sala."}); };
+    mpAlFallo=function(){ pintar("error",{msg:"No se pudo conectar. Suele pasar en redes muy cerradas (algún wifi corporativo o de datos móviles). Prueba de nuevo, o que el otro cree la sala."}); };
     /* la UI del duelo se repinta desde acá */
     duelRepintar=function(){ if(MP.duel){ if(MP.duel.fase==="fin") pintar("fin",{}); else pintar("duelo",{}); } };
     /* mensajes (lobby B2 + duelo B3) */
@@ -324,7 +324,7 @@ function modalDuelo(){
    turnos (robusto ante lag). El host manda las rondas y los resultados.
    ============================================================ */
 const DUELO_OPS=[
-  {t:"🗡️ Salir al ataque", d:"Más peligro arriba, pero quedás abierto.", aggr:1},
+  {t:"🗡️ Salir al ataque", d:"Más peligro arriba, pero quedas abierto.", aggr:1},
   {t:"⚖️ Jugar equilibrado", d:"Ni muy arriba ni muy atrás.", aggr:0},
   {t:"🛡️ Meterse atrás", d:"Defendés bien, pero te cuesta llegar.", aggr:-1}
 ];

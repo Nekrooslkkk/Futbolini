@@ -75,7 +75,7 @@ function pantallaInicio(){
   const p=panel("Futbolini "+(typeof VERSION!=="undefined"?VERSION:""),"🏟️");
   p.cuerpo.appendChild(el("h2","tit","No manejas un equipo. Manejas una institución."));
   p.cuerpo.appendChild(el("p",null,"Gente con intereses distintos empujando para lados distintos, plata que se acaba, "+
-   "reglas internas que podés cambiar si tenés el poder para hacerlo, y una historia real que podés seguir o romper."));
+   "reglas internas que puedes cambiar si tienes el poder para hacerlo, y una historia real que puedes seguir o romper."));
   p.cuerpo.appendChild(el("div","resul mitad",
    "<b>Antes de entrar.</b> Este juego usa nombres reales de clubes, jugadores y dirigentes del fútbol chileno. "+
    "Los resultados, títulos y fechas se apoyan en registros públicos, pero <b>todo lo demás es ficción</b>: "+
@@ -83,7 +83,7 @@ function pantallaInicio(){
    "para efectos del juego. Nada de lo que pase acá adentro ocurrió así en la vida real."));
   v.appendChild(p);
 
-  const paso1=panel("1 · Elegí club","⚪");
+  const paso1=panel("1 · Elige club","⚪");
   /* clubes de las dos épocas: los 5 clásicos (1991+2026) y los nuevos (solo 2026) */
   const g=el("div","iconos");
   Object.keys(CLUB_INFO).forEach(id=>{
@@ -112,7 +112,7 @@ function pantallaInicio(){
 
   /* 7.00 · duelo P2P contra un amigo */
   if(typeof modalDuelo==="function"){
-    const pm=panel("… o jugá contra un amigo","🎮","agua");
+    const pm=panel("… o juega contra un amigo","🎮","agua");
     pm.cuerpo.appendChild(el("p","mini","Un duelo dirigido, en vivo, sin cuentas ni servidor: se conectan con un código y cada uno maneja su club."));
     const bm=el("button","btn-aqua ancho verde","🎮 Duelo con un amigo");
     bm.onclick=()=>modalDuelo();
@@ -169,7 +169,7 @@ function elegirEpoca(id){
       box.appendChild(el("div","cab",'<span class="ic">'+info.esc+'</span><span>'+info.n+'</span>'));
       const c=el("div","cuerpo"); box.appendChild(c);
       try{
-      c.appendChild(el("h3","sub","1 · Elegí cuándo empezar"));
+      c.appendChild(el("h3","sub","1 · Elige cuándo empezar"));
       const fe=el("div","fichas");
       puntos.forEach(pt=>{
         const btn=el("button","ficha"+(pt.tipo==="gloria"?" ficha-gloria":""),pt.etq);
@@ -186,7 +186,7 @@ function elegirEpoca(id){
         c.appendChild(el("p",null,info.desc||""));
       }
 
-      c.appendChild(el("h3","sub","2 · Elegí modo"));
+      c.appendChild(el("h3","sub","2 · Elige modo"));
       const f=el("div","fichas");
       [["historico","Histórico","Los hechos reales pasan igual, salvo que los cambies."],
        ["libre","Libre","La historia es solo el punto de partida."],
@@ -216,7 +216,7 @@ function elegirEpoca(id){
           fc.appendChild(b);
         });
         c.appendChild(fc);
-        if(corte) c.appendChild(el("p","mini","Se cargan los partidos ya jugados del fixture (con marcador real si está) y una tabla de referencia al 18/08. Seguís desde el próximo. Colo-Colo tiene el fixture completo; los otros clubes usan la misma tabla semilla."));
+        if(corte) c.appendChild(el("p","mini","Se cargan los partidos ya jugados del fixture (con marcador real si está) y una tabla de referencia al 18/08. Sigues desde el próximo. Colo-Colo tiene el fixture completo; los otros clubes usan la misma tabla semilla."));
       }
 
       const go=el("button","btn-aqua ancho verde",
@@ -334,7 +334,7 @@ function vistaEscritorio(){
           barrita(pr.pct,est.c)+
           "<div class='obj-dato'>"+pr.txt+"</div>"+
           "<div class='obj-porque oculto'>💡 "+o.porque+"</div>";
-        box.style.cursor="pointer"; box.title="Tocá para ver por qué importa";
+        box.style.cursor="pointer"; box.title="Toca para ver por qué importa";
         box.onclick=()=>{ const pq=box.querySelector(".obj-porque"); if(pq) pq.classList.toggle("oculto"); };
         cont.appendChild(box);
       });
@@ -362,7 +362,7 @@ function vistaEscritorio(){
     });
     cer.cuerpo.appendChild(cl);
   } else {
-    cer.cuerpo.appendChild(el("p",null,typeof consejoLocal==="function"?consejoLocal():"Todo tranquilo. Podés mover un estatuto o mirar el mercado."));
+    cer.cuerpo.appendChild(el("p",null,typeof consejoLocal==="function"?consejoLocal():"Todo tranquilo. Puedes mover un estatuto o mirar el mercado."));
   }
   izq.appendChild(cer);
 
@@ -522,8 +522,8 @@ function vistaInstitucion(){
   const p=panel("Capital institucional","⚖️","agua");
   p.cuerpo.appendChild(el("h2","tit",E.capital>100?(E.capital+" 💪"):(E.capital+" / 100")));
   p.cuerpo.appendChild(el("div",null,barrita(E.capital,"#39b7e0")));
-  p.cuerpo.appendChild(el("p","mini","Es lo que podés imponer sin que se te caiga el club encima. Se gasta forzando decisiones y cambiando estatutos."+
-    (E.capital>100?" Pasaste los 100: tenés un poder político enorme para hacer lo que quieras.":"")+
+  p.cuerpo.appendChild(el("p","mini","Es lo que puedes imponer sin que se te caiga el club encima. Se gasta forzando decisiones y cambiando estatutos."+
+    (E.capital>100?" Pasaste los 100: tienes un poder político enorme para hacer lo que quieras.":"")+
     " Este año vas a generar aproximadamente <b>"+signo(capitalAnual())+"</b>."));
   v.appendChild(p);
 
@@ -594,7 +594,7 @@ function abrirMesaBarra(){
     box.classList.remove("panel");
     const p=panel("Mesa con la barra","🚩","alerta"); p.classList.add("dec");
     p.cuerpo.appendChild(el("h2","tit","Los referentes de la barra piden reunión"));
-    p.cuerpo.appendChild(el("p","ctx","La mesa no es un trámite: lo que acordás queda, y si lo rompés te lo cobran. Pactos en pie: "+pactosVigentes()+"/3"+(barraContenta()?" — la barra está de tu lado.":".")));
+    p.cuerpo.appendChild(el("p","ctx","La mesa no es un trámite: lo que acuerdas queda, y si lo rompes te lo cobran. Pactos en pie: "+pactosVigentes()+"/3"+(barraContenta()?" — la barra está de tu lado.":".")));
     const vig=E.barra.pactos.filter(x=>!x.roto);
     if(vig.length){ p.cuerpo.appendChild(el("h3","sub","Pactos en pie")); vig.forEach(x=>p.cuerpo.appendChild(el("div","mini","🤝 "+x.resumen))); }
     if(E.barra.lienzos.length) p.cuerpo.appendChild(el("div","resul mal","🚩 Lienzo en contra: "+E.barra.lienzos[E.barra.lienzos.length-1].t));
@@ -658,8 +658,8 @@ function cambiarEstatuto(cat,op,costo){
       ps.appendChild(el("span","pos "+e2.c,g.ic+" <b>"+g.n+"</b> "+e2.t));
     });
     c.appendChild(ps);
-    c.appendChild(el("p","mini","Cuesta "+costo+" de capital institucional. Tenés "+E.capital+"."));
-    if(cat.pesado) c.appendChild(el("div","resul mal","Tocar la identidad del club es lo más caro que podés hacer. Si la comunidad y los socios se te dan vuelta al mismo tiempo, puede terminar en una ruptura institucional."));
+    c.appendChild(el("p","mini","Cuesta "+costo+" de capital institucional. Tienes "+E.capital+"."));
+    if(cat.pesado) c.appendChild(el("div","resul mal","Tocar la identidad del club es lo más caro que puedes hacer. Si la comunidad y los socios se te dan vuelta al mismo tiempo, puede terminar en una ruptura institucional."));
     const b=el("button","btn-aqua ancho verde","Promulgar");
     b.onclick=()=>{
       E.capital-=costo;
@@ -706,7 +706,7 @@ function vistaFinanzas(){
   if(semanas<8) p.cuerpo.appendChild(el("div","resul mal","Con este ritmo la caja dura ±"+semanas+" semanas. La planilla te come vivo."));
   else if(neto0<0) p.cuerpo.appendChild(el("p","mini","Estás en rojo semanal, pero hay colchón para un rato."));
   if(E.flags&&E.flags.sueldosAtrasados) p.cuerpo.appendChild(el("div","resul mal","⚠ Sueldos atrasados: la moral del plantel cae cada semana hasta que regularices la caja."));
-  if(E.flags&&E.flags.clausura) p.cuerpo.appendChild(el("div","resul mal","⚠ Estadio con sectores clausurados por la deuda: perdés aforo y taquilla."));
+  if(E.flags&&E.flags.clausura) p.cuerpo.appendChild(el("div","resul mal","⚠ Estadio con sectores clausurados por la deuda: pierdes aforo y taquilla."));
   p.cuerpo.appendChild(el("p","mini","Los partidos de local suman taquilla aparte. Todos los montos están en millones de pesos de la época."));
   v.appendChild(p);
 
@@ -737,7 +737,7 @@ function vistaFinanzas(){
     cot.innerHTML="<span class='precio'>"+plata(E.bolsa.precio)+"</span> <span class='var "+(vr>=0?"sube":"baja")+"'>"+(vr>=0?"▲ +":"▼ ")+vr+"%</span>";
     pb.cuerpo.appendChild(cot);
     pb.cuerpo.appendChild(sparkNode(E.bolsa.historia));
-    pb.cuerpo.appendChild(el("p","mini","Vos sabés los resultados antes que el mercado. Ganar hace subir la acción; perder la hunde. Especulás con tu bolsillo personal."));
+    pb.cuerpo.appendChild(el("p","mini","Vos sabes los resultados antes que el mercado. Ganar hace subir la acción; perder la hunde. Especulás con tu bolsillo personal."));
     pb.cuerpo.appendChild(fila("Bolsillo personal",plata(E.personal.bolsillo)));
     if(E.bolsa.acciones>0){
       pb.cuerpo.appendChild(fila("Tu tenencia",plata(valorTenencia())+" ("+(E.bolsa.acciones).toFixed(2)+" acc.)"));
@@ -773,13 +773,13 @@ function vistaFinanzas(){
 
   /* --- inversiones de club --- */
   const pin=panel("Inversiones","🏗️");
-  pin.cuerpo.appendChild(el("p","mini","Plata que sale hoy para tener un club más grande mañana. No hay atajos infinitos: cada mejora tiene un techo realista y se pone más cara a medida que subís."));
+  pin.cuerpo.appendChild(el("p","mini","Plata que sale hoy para tener un club más grande mañana. No hay atajos infinitos: cada mejora tiene un techo realista y se pone más cara a medida que subes."));
   const hinTope=E.ind.hinchada>=88;
   const inv=[
    {n:"Campaña de marketing",costo:250,disp:!hinTope,
     desc:hinTope?"La hinchada ya está a full: gastar en publicidad ahora es tirar la plata.":"+ hinchada, socios y algo de prestigio. Pierde efecto cuando la gente ya está prendida.",
     fn:()=>aplicarEfectos({plata:-250,hinchada:Math.max(2,Math.round((88-E.ind.hinchada)/6)),socios:4,prestigio:2})},
-   E.staff.cm?{n:"Community Manager (contratado)",costo:0,disp:false,desc:"Ya tenés CM. Se maneja desde PLOP.",fn:null}
+   E.staff.cm?{n:"Community Manager (contratado)",costo:0,disp:false,desc:"Ya tienes CM. Se maneja desde PLOP.",fn:null}
              :{n:"Contratar Community Manager",costo:180,disp:true,desc:"Profesionaliza la comunicación: + prestigio y desbloquea campañas en PLOP.",fn:()=>{ aplicarEfectos({plata:-180,prestigio:2}); E.staff.cm=true; }}
   ];
   inv.forEach(o=>{
@@ -799,7 +799,7 @@ function vistaFinanzas(){
   v.appendChild(pin);
 
   const pd=panel("Deuda","🏦",E.deuda>3000?"grave":"");
-  pd.cuerpo.appendChild(el("p","mini","Los intereses se pagan todas las semanas y no perdonan. Podés abonar cuando tengas caja."));
+  pd.cuerpo.appendChild(el("p","mini","Los intereses se pagan todas las semanas y no perdonan. Puedes abonar cuando tengas caja."));
   [200,500,1000].forEach(m=>{
     const b=el("button","btn-aqua chico"+(E.plata<m?" gris":""),"Abonar "+plata(m));
     b.style.marginRight="6px";
@@ -810,7 +810,7 @@ function vistaFinanzas(){
   });
   /* préstamo estructurado: caja ahora a cambio de más deuda */
   if(typeof tomarPrestamo==="function"){
-    pd.cuerpo.appendChild(el("p","mini","¿Necesitás caja ya? Pedí un crédito: entra plata al toque, pero la deuda sube con recargo (8%) y los intereses corren igual."));
+    pd.cuerpo.appendChild(el("p","mini","¿Necesitas caja ya? Pide un crédito: entra plata al toque, pero la deuda sube con recargo (8%) y los intereses corren igual."));
     const pr=el("div");
     [300,600,1000].forEach(m=>{
       const b=el("button","btn-aqua chico amarillo","Pedir "+plata(m)); b.style.marginRight="6px";
@@ -950,7 +950,7 @@ function fichaJugador(j){
     if(j.lesion>0) c.appendChild(el("p","mini","Lesionado: fuera unas "+j.lesion+" semanas."));
     if(j.cedido){ c.appendChild(el("div","resul mitad","🔄 Cedido a "+j.cedido.club+" hasta "+j.cedido.hasta+". Vuelve mejorado.")); }
     if(!j.cedido){
-      const bch=el("button","btn-aqua chico","Hablar y bancar");
+      const bch=el("button","btn-aqua chico","Hablar y apoyar");
       bch.onclick=()=>{ charlaJugador(j,"banco"); cerrarModal(); render(); };
       const bex=el("button","btn-aqua chico","Exigir más"); bex.style.marginLeft="6px";
       bex.onclick=()=>{ charlaJugador(j,"exigir"); cerrarModal(); render(); };
@@ -1200,7 +1200,7 @@ const POSTS_PREDEF=[
  {t:"Prometer pelear el título", texto:"Vamos a pelear este campeonato hasta la última fecha, con todo.",
   ev:{sentimiento:26, consecuencia:"La hinchada se ilusiona con la promesa."}},
  {t:"Pedir calma y paciencia", texto:"Pido calma y paciencia: esto es un proceso y hay que sostenerlo.",
-  ev:{sentimiento:2, grupos:{prensa:6,hinchada:-3}, consecuencia:"Bajás la euforia; la prensa lo valora, la tribuna menos."}},
+  ev:{sentimiento:2, grupos:{prensa:6,hinchada:-3}, consecuencia:"Bajas la euforia; la prensa lo valora, la tribuna menos."}},
  {t:"Salir a criticar el arbitraje", texto:"Nos están perjudicando y lo vamos a decir con nombre y apellido.",
   ev:{sentimiento:8, grupos:{hinchada:8,anfp:-12,prensa:-6}, ef:{riesgo:4}, consecuencia:"La hinchada te aplaude; la ANFP toma nota."}},
  {t:"«Gano el próximo o me voy»", texto:"Les prometo algo: o ganamos el próximo o me voy a mi casa.",
@@ -1289,7 +1289,7 @@ function reaccionarPost(t,tipo){
     } else {
       aplicarGrupos({hinchada:3}); aplicarRep({publica:2}); moverSeguidores&&moverSeguidores(ri(40,260));
       if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"bueno");
-      aviso("🔁 Repost al aire — sumás a los tuyos (+3 hinchada)");
+      aviso("🔁 Repost al aire — sumas a los tuyos (+3 hinchada)");
     }
   } else if(tipo==="report"){
     if(t._report) return aviso("Ya lo reportaste");
@@ -1354,7 +1354,7 @@ function vistaRedes(){
   p.cuerpo.appendChild(ta); p.cuerpo.appendChild(cnt);
   const bp=el("button","btn-aqua ancho verde",REDES_PEST==="club"?"Publicar en la cuenta oficial":"Publicar en tu perfil");
   bp.onclick=()=>{
-    const txt=(ta.value||"").trim().slice(0,140); if(!txt){ aviso("Escribí algo primero"); return; }
+    const txt=(ta.value||"").trim().slice(0,140); if(!txt){ aviso("Escribe algo primero"); return; }
     bp.disabled=true;
     evaluarPost(txt).then(ev=>{
       aplicarPost(txt,ev);
@@ -1399,7 +1399,7 @@ function vistaRedes(){
   const inU=el("input"); inU.type="text"; inU.maxLength=16; inU.className="entrada"; inU.style.width="100%";
   inU.placeholder="Tu usuario (ej: @dtcrack)"; inU.value=(E.perfil&&E.perfil.plopUser)||"";
   const bU=el("button","btn-aqua chico verde","Guardar usuario"); bU.style.marginTop="5px";
-  bU.onclick=()=>{ let u=(inU.value||"").trim().replace(/\s/g,"").replace(/^@*/,"@").slice(0,16); if(u.length<2){ aviso("Poné un usuario válido"); return; } E.perfil=E.perfil||{}; E.perfil.plopUser=u; guardar(); render(); aviso("Ahora firmás como "+u); };
+  bU.onclick=()=>{ let u=(inU.value||"").trim().replace(/\s/g,"").replace(/^@*/,"@").slice(0,16); if(u.length<2){ aviso("Pon un usuario válido"); return; } E.perfil=E.perfil||{}; E.perfil.plopUser=u; guardar(); render(); aviso("Ahora firmas como "+u); };
   pcd.cuerpo.appendChild(inU); pcd.cuerpo.appendChild(bU);
   if(!verifOwn){
     const bV=el("button","btn-aqua chico"+(E.plata<150?" gris":""),"✔ Comprar verificado · "+plata(150)); bV.style.marginLeft="6px"; bV.style.marginTop="5px";
@@ -1422,7 +1422,7 @@ function vistaRedes(){
     const pl=panel("Tus Me gusta","❤");
     const ids=E.plopLikes||[];
     const likeados=(E.timeline||[]).filter(t=>t._like||ids.indexOf(t.id)>=0);
-    if(!likeados.length) pl.cuerpo.appendChild(el("p","mini","Todavía no le diste me gusta a nada. Tus likes acercan (o alejan) a la gente: elegí bien a quién bancás."));
+    if(!likeados.length) pl.cuerpo.appendChild(el("p","mini","Todavía no le diste me gusta a nada. Tus likes acercan (o alejan) a la gente: elige bien a quién apoyas."));
     likeados.forEach(t=>{
       const d=el("div","resul "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"mitad")));
       d.innerHTML="<b>"+t.autor+"</b> <span class='mini'>· "+t.fecha+"</span><br>"+t.texto;
@@ -1454,7 +1454,7 @@ function vistaRedes(){
     pt.cuerpo.appendChild(el("div","","<span class='envivo'>EN VIVO</span> <span class='mini'>· la gente postea en tiempo real. Scrolleá el feed acá abajo.</span>"));
   }
   const feedBox=el("div"); feedBox.id="plopFeed";
-  if(!feed.length) feedBox.appendChild(el("p","mini","El feed está quieto. Jugá un partido o publicá algo."));
+  if(!feed.length) feedBox.appendChild(el("p","mini","El feed está quieto. Juega un partido o publicá algo."));
   feed.slice(0,40).forEach(t=>feedBox.appendChild(renderPostEl(t)));
   pt.cuerpo.appendChild(feedBox);
   v.appendChild(pt);
@@ -1464,7 +1464,7 @@ function vistaRedes(){
   const pc=panel("Charla con el capitán","🧑‍✈️");
   const part=proximoPartido();
   const esFinal=part&&(part.ronda==="FINAL"||part.ronda==="Semifinal");
-  pc.cuerpo.appendChild(el("p","mini",esFinal?"Se viene un partido grande. Una buena charla puede cambiar el ánimo del grupo.":"Podés hablar con el referente del plantel para mover la moral antes del próximo partido."));
+  pc.cuerpo.appendChild(el("p","mini",esFinal?"Se viene un partido grande. Una buena charla puede cambiar el ánimo del grupo.":"Puedes hablar con el referente del plantel para mover la moral antes del próximo partido."));
   const bc=el("button","btn-aqua ancho"+(esFinal?" verde":""),"Hablar con el capitán");
   bc.onclick=modalCharlaCapitan;
   pc.cuerpo.appendChild(bc);
@@ -1473,7 +1473,7 @@ function vistaRedes(){
   /* promesas activas */
   if(E.promesas&&E.promesas.length){
     const pp=panel("Promesas en juego","⏳","alerta");
-    E.promesas.forEach(pr=>pp.cuerpo.appendChild(el("div","resul mitad","<b>"+pr.texto+"</b><br><span class='mini'>Se juega en el próximo partido. Si no la cumplís, "+(pr.castigo==="destitucion"?"te cuesta el cargo.":"golpea tu credibilidad.")+"</span>")));
+    E.promesas.forEach(pr=>pp.cuerpo.appendChild(el("div","resul mitad","<b>"+pr.texto+"</b><br><span class='mini'>Se juega en el próximo partido. Si no la cumples, "+(pr.castigo==="destitucion"?"te cuesta el cargo.":"golpea tu credibilidad.")+"</span>")));
     v.appendChild(pp);
   }
 
@@ -1560,7 +1560,7 @@ function vistaEstadio(){
   ph.cuerpo.appendChild(el("label","lb","Estado del recinto"));
   ph.cuerpo.appendChild(el("div",null,barrita(E.ind.estadio,"#a5854a")));
   ph.cuerpo.appendChild(el("p","mini","Mejor estado = más aforo utilizable, menos sanciones y más gente en la cancha."));
-  if(E.flags&&E.flags.clausura) ph.cuerpo.appendChild(el("div","resul mal","⚠ Hay sectores clausurados por la deuda: perdés aforo y taquilla hasta ordenar la caja."));
+  if(E.flags&&E.flags.clausura) ph.cuerpo.appendChild(el("div","resul mal","⚠ Hay sectores clausurados por la deuda: pierdes aforo y taquilla hasta ordenar la caja."));
   v.appendChild(ph);
 
   /* --- obras: arreglar / mejorar y verlo avanzar --- */
@@ -1570,9 +1570,9 @@ function vistaEstadio(){
     const hechas=E.obras.semanas-E.obras.resta, pct=Math.round(100*hechas/Math.max(1,E.obras.semanas));
     po.cuerpo.appendChild(el("div","resul mitad","<b>"+plan.ic+" "+plan.n+"</b> · en marcha"));
     po.cuerpo.appendChild(el("div",null,barrita(pct,"#5ec94f")));
-    po.cuerpo.appendChild(el("p","mini","Avanza cada semana. Faltan <b>"+E.obras.resta+"</b> semana(s) para terminar. No podés empezar otra obra hasta que esta cierre."));
+    po.cuerpo.appendChild(el("p","mini","Avanza cada semana. Faltan <b>"+E.obras.resta+"</b> semana(s) para terminar. No puedes empezar otra obra hasta que esta cierre."));
   }else{
-    po.cuerpo.appendChild(el("p","mini","Invertí en el estadio y velo mejorar semana a semana. La obra descuenta la caja ahora y el efecto llega cuando termina."));
+    po.cuerpo.appendChild(el("p","mini","Invierte en el estadio y velo mejorar semana a semana. La obra descuenta la caja ahora y el efecto llega cuando termina."));
     ["mantencion","remodelacion","ampliacion"].forEach(tipo=>{
       const plan=OBRAS_PLAN[tipo]; if(!plan) return;
       const costo=(typeof costoObra==="function")?costoObra(tipo):0;
@@ -1654,7 +1654,7 @@ function vistaAjustes(){
   const v=$("#vista");
   const don=panel("El proyecto","💚");
   don.cuerpo.appendChild(el("p",null,"Futbolini es gratis y siempre lo va a ser. Corre 100% en tu navegador, sin servidor obligatorio y sin IA de pago: el cerebro del juego es local, así que no cuesta un peso mantenerlo."));
-  don.cuerpo.appendChild(el("p","mini","Si querés ayudar: compartí el juego o escribile al autor. La mejor forma de sostenerlo es que lo juegue más gente."));
+  don.cuerpo.appendChild(el("p","mini","Si quieres ayudar: comparte el juego o escribile al autor. La mejor forma de sostenerlo es que lo juegue más gente."));
   v.appendChild(don);
   const p=panel("Ajustes","⚙️");
   p.cuerpo.appendChild(el("label","lb","Tema visual"));
@@ -1687,7 +1687,7 @@ function vistaAjustes(){
 
   /* ---- Respaldo de partida (archivo, 100% offline) ---- */
   const pr=panel("Respaldo de partida","💾");
-  pr.cuerpo.appendChild(el("p","mini","Descargá tu partida como archivo y guardala donde quieras (Drive, mail, WhatsApp a vos mismo). En otro equipo la cargás y seguís donde ibas. No necesita internet ni cuenta."));
+  pr.cuerpo.appendChild(el("p","mini","Descarga tu partida como archivo y guardala donde quieras (Drive, mail, WhatsApp a vos mismo). En otro equipo la cargas y sigues donde ibas. No necesita internet ni cuenta."));
   const bDesc=el("button","btn-aqua chico","Descargar partida");
   bDesc.onclick=()=>descargarPartida();
   const bCarg=el("button","btn-aqua chico"); bCarg.textContent="Cargar partida"; bCarg.style.marginLeft="6px";
@@ -1715,22 +1715,22 @@ function vistaAjustes(){
       const bOut=el("button","btn-aqua chico gris"); bOut.textContent="Cerrar sesión"; bOut.style.marginLeft="6px";
       bOut.onclick=()=>{ nubeSalir(); aviso("Sesión cerrada"); render(); };
       pn.cuerpo.appendChild(bSub); pn.cuerpo.appendChild(bBaj); pn.cuerpo.appendChild(bOut);
-      pn.cuerpo.appendChild(el("p","mini","Subí después de jugar; bajá al empezar en otro equipo. Es manual a propósito, para que nunca pierdas una partida sin querer."));
+      pn.cuerpo.appendChild(el("p","mini","Sube después de jugar; baja al empezar en otro equipo. Es manual a propósito, para que nunca pierdas una partida sin querer."));
     }else{
-      pn.cuerpo.appendChild(el("p","mini","Entrá con tu correo para guardar la partida en la nube y seguir en cualquier dispositivo. Es opcional: sin cuenta, el juego anda igual offline."));
+      pn.cuerpo.appendChild(el("p","mini","Entra con tu correo para guardar la partida en la nube y seguir en cualquier dispositivo. Es opcional: sin cuenta, el juego anda igual offline."));
       const estiloInp="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid rgba(0,0,0,.15)";
       const iMail=el("input"); iMail.type="email"; iMail.placeholder="correo"; iMail.autocomplete="email"; iMail.style.cssText=estiloInp;
       const iPass=el("input"); iPass.type="password"; iPass.placeholder="clave"; iPass.autocomplete="current-password"; iPass.style.cssText=estiloInp;
       pn.cuerpo.appendChild(iMail); pn.cuerpo.appendChild(iPass);
       const bIn=el("button","btn-aqua chico verde","Entrar"); bIn.style.marginTop="6px";
       bIn.onclick=async()=>{
-        if(!iMail.value||!iPass.value){ aviso("Completá correo y clave"); return; }
+        if(!iMail.value||!iPass.value){ aviso("Completa correo y clave"); return; }
         bIn.disabled=true; const r=await nubeEntrar(iMail.value.trim(),iPass.value); bIn.disabled=false;
         if(r.ok){ aviso("Hola de nuevo, "+r.email); render(); } else aviso(r.msg);
       };
       const bReg=el("button","btn-aqua chico"); bReg.textContent="Crear cuenta"; bReg.style.marginLeft="6px";
       bReg.onclick=async()=>{
-        if(!iMail.value||!iPass.value){ aviso("Completá correo y clave"); return; }
+        if(!iMail.value||!iPass.value){ aviso("Completa correo y clave"); return; }
         if(iPass.value.length<6){ aviso("La clave necesita al menos 6 caracteres"); return; }
         bReg.disabled=true; const r=await nubeRegistrar(iMail.value.trim(),iPass.value); bReg.disabled=false;
         if(r.ok){ aviso(r.confirmar?r.msg:"Cuenta creada"); render(); } else aviso(r.msg);
@@ -1742,7 +1742,7 @@ function vistaAjustes(){
 
   /* ---- Modo Dios (panel de cheats) ---- */
   const pg=panel("Modo Dios","😇","alerta");
-  pg.cuerpo.appendChild(el("p","mini","Panel de trucos para jugar como quieras. Cambiá todo a mano; no hay reglas acá."));
+  pg.cuerpo.appendChild(el("p","mini","Panel de trucos para jugar como quieras. Cambia todo a mano; no hay reglas acá."));
   const tog=el("button","btn-aqua chico"+(E.flags.modoDios?"":" gris"),E.flags.modoDios?"Modo Dios: ON":"Activar Modo Dios");
   tog.onclick=()=>{ E.flags.modoDios=!E.flags.modoDios; guardar(); render(); };
   pg.cuerpo.appendChild(tog);
@@ -1773,7 +1773,7 @@ function vistaAjustes(){
   /* ---- Modo desarrollador (clave) : para probar CADA cosa ---- */
   const pdev=panel("Modo desarrollador","🧪","alerta");
   if(!devOn()){
-    pdev.cuerpo.appendChild(el("p","mini","Panel oculto para probar cada mecánica del juego (penales, tiros libres, eventos…). Pedí la clave."));
+    pdev.cuerpo.appendChild(el("p","mini","Panel oculto para probar cada mecánica del juego (penales, tiros libres, eventos…). Pide la clave."));
     const bu=el("button","btn-aqua chico","🔒 Desbloquear");
     bu.onclick=()=>{
       const cl=prompt("Clave de desarrollador:");
@@ -1822,7 +1822,7 @@ function modalAvancePartido(part){
     c.appendChild(el("h2","tit",(part.local?"vs ":"visita a ")+part.rivalNombre));
     c.appendChild(el("p","mini",(part.tipo==="copa"?"Copa Libertadores · "+part.ronda:"Campeonato Nacional · fecha "+part.fecha)+
       " · "+fechaTxt(part.f)+" · "+part.sede));
-    c.appendChild(el("p",null,"Avanzar no salta fechas. O lo dirigís, o lo dejás al azar con la táctica que ya armaste."));
+    c.appendChild(el("p",null,"Avanzar no salta fechas. O lo diriges, o lo dejas al azar con la táctica que ya armaste."));
     const b1=el("button","btn-aqua ancho verde","Dirigir el partido");
     b1.onclick=()=>{ cerrarModal(); if(typeof pantallaPrevia==="function") pantallaPrevia(part); };
     const b2=el("button","btn-aqua ancho","Simular (dejar al azar)");
@@ -1882,7 +1882,7 @@ function abrirEventoDecision(ev){
 function modalNegociacion(neg){
   const OPCS=[
     {k:"persuadir",sev:"verde", t:"Persuadir",       d:"Apelás a la razón y al proyecto. Seguro, efecto moderado."},
-    {k:"prometer", sev:"amarillo",t:"Prometer aumento",d:"Le tirás plata futura. Suele funcionar, pero pesa en la planilla."},
+    {k:"prometer", sev:"amarillo",t:"Prometer aumento",d:"Le tiras plata futura. Suele funcionar, pero pesa en la planilla."},
     {k:"forzar",   sev:"rojo",  t:"Forzar permanencia",d:"Sacás la chapa de autoridad. Alto riesgo si sale mal."},
     {k:"convencer",sev:"morado",t:"Convencer",       d:"Charla larga y personal. Impredecible: puede salir redondo o peor."}
   ];
@@ -1891,7 +1891,7 @@ function modalNegociacion(neg){
     const p=panel("Cara a cara","🗣️","alerta"); p.classList.add("dec");
     p.cuerpo.appendChild(el("span","pilar per","PERSONAL"));
     p.cuerpo.appendChild(el("h2","tit",neg.j.n+" quiere hablar"));
-    p.cuerpo.appendChild(el("div","ctx",neg.j.n+" ("+neg.j.pos+", "+neg.j.edad+" años) "+neg.tpl.pedido+". Lo tenés enfrente, hay que responder ahora."));
+    p.cuerpo.appendChild(el("div","ctx",neg.j.n+" ("+neg.j.pos+", "+neg.j.edad+" años) "+neg.tpl.pedido+". Lo tienes enfrente, hay que responder ahora."));
     const ops=el("div","ops");
     OPCS.forEach(o=>{
       const b=el("button","btn-aqua ancho "+o.sev);

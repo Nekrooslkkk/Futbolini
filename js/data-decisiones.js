@@ -316,7 +316,7 @@ const DECISIONES=[
  posturas:{camarin:45,directorio:-25,hinchada:25,tecnico:20},
  consejo:{deportivo:"Los goles no se compran en la esquina. Si se va, no lo reemplazo con nada.",
    tesorero:"Si le subimos a él, en dos semanas están los otros diez golpeando la puerta.",
-   prensa:"La gente está con él. Cualquier pelea pública la ganás perdiendo."},
+   prensa:"La gente está con él. Cualquier pelea pública la ganas perdiendo."},
  op:[
   {t:"Mejorarle el contrato",d:"Reconocer al que mete los goles.",hist:true,dif:24,
    req:{plata:150},ef:{plata:-150},grupos:{camarin:20,hinchada:12,directorio:-12},
@@ -590,7 +590,7 @@ const BOLSA=[
  posturas:{comunidad:20,hinchada:15,directorio:-10,tecnico:10},
  consejo:{deportivo:"Si lo cuidamos y le damos minutos, en dos años vale el triple.",
    tesorero:"Una venta ahora resuelve el año. Un proyecto es una promesa; la plata es plata.",
-   prensa:"Si lo vendés apurado y explota afuera, te lo van a refregar toda la vida."},
+   prensa:"Si lo vendes apurado y explota afuera, te lo van a refregar toda la vida."},
  op:[
   {t:"Blindarlo y subirlo al primer equipo",d:"Contrato largo y minutos de a poco.",dif:34,
    grupos:{comunidad:15,hinchada:10,directorio:-8},
@@ -651,7 +651,7 @@ const BOLSA=[
  op:[
   {t:"Respaldarlo en público y darle poder",d:"Que quede claro quién conduce lo deportivo.",dif:36,
    grupos:{tecnico:25,camarin:10,directorio:-10},
-   bien:{txt:"Se quedó reforzado y el camarín entendió el mensaje: hay un solo mando y lo bancás.",
+   bien:{txt:"Se quedó reforzado y el camarín entendió el mensaje: hay un solo mando y lo apoyas.",
      ef:{moral:10,plantel:2},mods:[{id:"dt_respaldado",n:"Técnico con respaldo",anios:1,ef:{aguante:5}}]},
    mitad:{txt:"Se quedó, pero desconfiado, midiendo cada gesto tuyo.",ef:{moral:4}},
    mal:{txt:"Lo respaldaste tarde y flojo: se quedó por contrato, no por convicción.",ef:{moral:-3},grupos:{tecnico:-8}}},
@@ -702,7 +702,7 @@ const BOLSA=[
  posturas:{camarin:10,hinchada:20,tecnico:-5},
  consejo:{deportivo:"Lo necesito, pero no lo quiero perder dos meses por una fecha.",
    tesorero:"Si se rompe en serio, es sueldo pagado por un jugador en la camilla.",
-   prensa:"Si lo hacés jugar y se lesiona, la culpa va a ser tuya en todas las radios."},
+   prensa:"Si lo haces jugar y se lesiona, la culpa va a ser tuya en todas las radios."},
  op:[
   {t:"Guardarlo aunque se enoje",d:"Cuidar el activo por sobre el partido.",dif:30,
    grupos:{tecnico:5,hinchada:-8},

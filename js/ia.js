@@ -22,7 +22,7 @@ function analizarOffline(texto){
   IA_NEG.forEach(w=>{ if(t.includes(w)) s-=14; });
   if(/árbitro|arbitro|robo|nos robaron/.test(t)) s+=4;
   if(/directorio|blanco|plata|sueldo/.test(t)) s-=6;
-  if(/cantera|pibe|joven/.test(t)) s+=5;
+  if(/cantera|cabro|joven/.test(t)) s+=5;
   if(/[A-ZÁÉÍÓÚÑ]{6,}/.test(texto||"")) s+=(s>=0?6:-6);
   if(E&&E.ind&&E.ind.moral<40 && s>0) s-=8;
   if(E&&E.ind&&E.ind.hinchada>70 && s>0) s+=6;
@@ -43,7 +43,7 @@ function consejoLocal(){
   if(!E) return "Sin partida.";
   const bits=[];
   const part=typeof proximoPartido==="function"?proximoPartido():null;
-  if((E.plata||0)<80) bits.push("La caja está flaca: no firmés renovaciones caras esta semana.");
+  if((E.plata||0)<80) bits.push("La caja está flaca: no firmes renovaciones caras esta semana.");
   if((E.deuda||0)>(E.plata||0)*3) bits.push("La deuda te come. Un préstamo más y el directorio se pone nervioso.");
   if(E.ind&&E.ind.moral<45) bits.push("El camarín está cortado. Una charla o un once que no sea de castigo.");
   if(E.ind&&E.ind.hinchada<40) bits.push("La hinchada se está yendo. Un resultado o un precio de entrada más bajo.");
@@ -55,8 +55,8 @@ function consejoLocal(){
     if(pos) bits.push("Vas "+pos+"° con "+yo.pts+" pts.");
   }
   if(E.perfil&&E.perfil.pareja&&(E.perfil.pareja.nivel||65)<40) bits.push("En casa está cortado. Una cita o se te arma otra crisis.");
-  if(E.perfil&&E.perfil.hijos&&E.perfil.hijos.some(h=>!h.enPlantel&&((E.anio-h.nacido)>=17))) bits.push("Tenés un hijo en edad de firmar en cantera.");
-  if(!bits.length) bits.push("No hay fuego. Podés mover un estatuto o mirar el mercado.");
+  if(E.perfil&&E.perfil.hijos&&E.perfil.hijos.some(h=>!h.enPlantel&&((E.anio-h.nacido)>=17))) bits.push("Tienes un hijo en edad de firmar en cantera.");
+  if(!bits.length) bits.push("No hay fuego. Puedes mover un estatuto o mirar el mercado.");
   return bits.join(" ");
 }
 /* ============================================================
@@ -73,8 +73,8 @@ function cerebroLocal(){
   if(part && typeof fuerzaEquipo==="function" && typeof onceIdeal==="function"){
     const fz=fuerzaEquipo(onceIdeal()).base, dif=fz-part.fuerzaRival;
     let lec,tip;
-    if(dif>6){ lec="Sos favorito ante "+part.rivalNombre+"."; tip="Presioná arriba y buscá el arco temprano; no lo dejes crecer."; }
-    else if(dif<-6){ lec=part.rivalNombre+" llega más fuerte."; tip="Ordenate atrás, aguantá y salí de contra con los rápidos."; }
+    if(dif>6){ lec="Sos favorito ante "+part.rivalNombre+"."; tip="Presiona arriba y busca el arco temprano; no lo dejes crecer."; }
+    else if(dif<-6){ lec=part.rivalNombre+" llega más fuerte."; tip="Ordenate atrás, aguanta y salí de contra con los rápidos."; }
     else { lec="Está parejo con "+part.rivalNombre+"."; tip="Lo define un detalle: pelota parada y no regalar el mediocampo."; }
     ins.push({cat:"partido",ic:"⚽",prio:9,t:lec,d:tip});
   }
@@ -91,7 +91,7 @@ function cerebroLocal(){
       d:enRiesgo[0].pr.txt+". "+(enRiesgo.length>1?"(y "+(enRiesgo.length-1)+" más). ":"")+"El directorio evalúa esto al cierre."});
   }
   /* 4 · plata y deuda */
-  if((E.plata||0)<80) ins.push({cat:"plata",ic:"💰",prio:6,t:"Caja flaca ("+plata(E.plata||0)+")",d:"No firmés renovaciones caras esta semana; primero equilibrá el flujo."});
+  if((E.plata||0)<80) ins.push({cat:"plata",ic:"💰",prio:6,t:"Caja flaca ("+plata(E.plata||0)+")",d:"No firmes renovaciones caras esta semana; primero equilibrá el flujo."});
   if((E.deuda||0)>(E.plata||0)*3) ins.push({cat:"plata",ic:"💰",prio:6,t:"La deuda te come",d:"Un préstamo más y el directorio se pone nervioso. Pensá en vender un prescindible."});
   /* 5 · camarín y hinchada */
   if(E.ind&&E.ind.moral<45) ins.push({cat:"camarin",ic:"👥",prio:5,t:"Camarín cortado (moral "+Math.round(E.ind.moral)+")",d:"Una charla o un once que no sea de castigo. Ganar cura casi todo."});

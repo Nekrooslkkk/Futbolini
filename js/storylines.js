@@ -3,7 +3,7 @@
    FUTBOLINI · storylines.js   (motor de arcos de equipo)
    Sistema PARALELO al motor de decisiones: no toca el token motor.
    Un arco se siembra solo cada tanto, aparece en el escritorio, y
-   lo resolvés capítulo a capítulo. Lo que elegís queda en la memoria.
+   lo resuelves capítulo a capítulo. Lo que eliges queda en la memoria.
    E.storyline = {activo, cap, hechos:{id:{anio}}, cd, lastKey}
    ============================================================ */
 function normalizarStorylines(){
@@ -38,7 +38,7 @@ function sembrarStoryline(){
   const a=arcoElegible(); if(!a){ guardar(); return; }
   S.activo=a.id; S.cap=0;
   if(typeof notificar==="function") notificar({t:"Historia del club: "+a.t,tipo:"neutro",bandeja:true,
-    d:a.desc+" Tenés un capítulo abierto para resolver en el escritorio."});
+    d:a.desc+" Tienes un capítulo abierto para resolver en el escritorio."});
   if(typeof recordar==="function") recordar("storyline","se abrió una historia en el club: "+a.t,{peso:"bajo"});
   guardar();
 }

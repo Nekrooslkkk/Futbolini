@@ -41,7 +41,7 @@ function desviarFondos(monto){
   aplicarRep({credibilidad:-3});
   notificar({t:"Metiste mano a la caja",tipo:"malo",
     d:"Desviaste "+plata(monto)+" de la tesorería del club a tu bolsillo. Total desviado: "+plata(E.flags.desfalco)+
-      ". Sube el riesgo institucional; si te auditan, se pudre. Podés blanquearlo con el Proceso de Redención en Finanzas."});
+      ". Sube el riesgo institucional; si te auditan, se pudre. Puedes blanquearlo con el Proceso de Redención en Finanzas."});
   if(typeof redesReaccion==="function"){}   // silencio en redes (por ahora nadie sabe)
   guardar();
 }
@@ -56,7 +56,7 @@ function chequearDesfalco(){
       E.decPend.push({id:"enc_investigacion_dirigencial",clave:"enc_investigacion_dirigencial_"+E.anio,peso:"alto"});
     }
     notificar({t:"Auditoría en marcha",tipo:"malo",
-      d:"Saltaron irregularidades en la tesorería. Hay una investigación abierta sobre los fondos desviados. Tenés que responder."});
+      d:"Saltaron irregularidades en la tesorería. Hay una investigación abierta sobre los fondos desviados. Tienes que responder."});
   }
 }
 /* ---------- redención ---------- */
@@ -72,7 +72,7 @@ function procesoRedencion(tipo){
     E.ind.riesgo=clamp(E.ind.riesgo-14,0,100);
     aplicarRep({credibilidad:8,publica:3}); aplicarGrupos({directorio:8});
     notificar({t:"Devolviste los fondos",tipo:"bueno",
-      d:"Restituiste "+plata(costo)+" (lo desviado + 20% de recargo administrativo). Se cierra la investigación, baja el riesgo y recuperás algo de credibilidad."});
+      d:"Restituiste "+plata(costo)+" (lo desviado + 20% de recargo administrativo). Se cierra la investigación, baja el riesgo y recuperas algo de credibilidad."});
   } else { /* donaciones comunitarias + bajar el perfil */
     const costo=Math.round(d*0.9);
     E.plata=Math.max(0,E.plata-costo);
@@ -115,7 +115,7 @@ function modalCasino(){
       c.appendChild(rueda);
       pintarHistRuleta(c);
       if(E.personal.bolsillo<=0){
-        c.appendChild(el("div","resul mal","Te quedaste sin plata. Podés salir… o meter mano a la caja del club."));
+        c.appendChild(el("div","resul mal","Te quedaste sin plata. Puedes salir… o meter mano a la caja del club."));
       }
       c.appendChild(el("label","lb","Apuesta"));
       const f=el("div","fichas");
@@ -219,7 +219,7 @@ function panelCasino(){
 function panelDesfalco(){
   if(!E.flags.desfalco || E.flags.desfalco<=0) return null;
   const p=panel("Fondos desviados","🕳️","grave");
-  p.cuerpo.appendChild(el("div","resul mal","Tenés <b>"+plata(E.flags.desfalco)+"</b> desviados de la tesorería."+
+  p.cuerpo.appendChild(el("div","resul mal","Tienes <b>"+plata(E.flags.desfalco)+"</b> desviados de la tesorería."+
     (E.flags.investigacionAbierta?" <b>Hay una investigación abierta.</b>":" Todavía nadie te auditó, pero el riesgo corre.")));
   p.cuerpo.appendChild(el("h3","sub","Proceso de Redención"));
   const b1=el("button","btn-aqua ancho verde","Devolver todo (+20% recargo = "+plata(Math.round(E.flags.desfalco*1.2))+")");

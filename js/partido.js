@@ -31,8 +31,8 @@ const ESTILOS={
  "Control y toque":{ataque:2,orden:2,desgaste:2},
  "Pelotazo":{ataque:2,orden:0,desgaste:3}
 };
-/* recup = cuánto recuperás la pelota arriba (más peligro propio temprano) ·
-   expo  = cuánto exponés la defensa (más peligro rival, peor con el cansancio) */
+/* recup = cuánto recuperas la pelota arriba (más peligro propio temprano) ·
+   expo  = cuánto expones la defensa (más peligro rival, peor con el cansancio) */
 const PRESIONES={
  "Baja": {desgaste:-2,orden:3, ataque:-1,recup:-1,expo:-3},
  "Media":{desgaste:0, orden:0, ataque:0, recup:0, expo:0},
@@ -674,8 +674,8 @@ const TACTICAS_EMPATE=[
  {t:"Una consigna corta y seguir",ef:{orden:1,ataque:0.5}}
 ];
 /* 6.28 · trivia de pizarra: preguntas REALES de fútbol y de matemática simple.
-   Si respondés bien, el equipo se agranda (más chance) y hasta puede caer un gol;
-   si errás, se ponen nerviosos. Es absurdo y a propósito. */
+   Si respondes bien, el equipo se agranda (más chance) y hasta puede caer un gol;
+   si erras, se ponen nerviosos. Es absurdo y a propósito. */
 const TRIVIA_FUTBOL=[
  {q:"Rápido, ¿cuántos jugadores tiene un equipo en la cancha?",op:["10","11","12"],sol:1},
  {q:"¿Cuántos minutos dura cada tiempo reglamentario?",op:["40","45","50"],sol:1},
@@ -777,7 +777,7 @@ function momentoTrivia(P){
   if(E.triviaVistas.length>26) E.triviaVistas.shift();   /* cubre más de una temporada de trivias */
   const factor=clamp(0.7+((E.ind&&E.ind.plantel)||60)/100,0.7,1.7);
   return {tipo:"trivia", t:"Test rápido de pizarra 🧮", factor:factor,
-    d:"Minuto "+P.min+". Les tirás una pregunta para sacarlos del nervio. Si aciertan, se sueltan; si no, se traban.",
+    d:"Minuto "+P.min+". Les tiras una pregunta para sacarlos del nervio. Si aciertan, se sueltan; si no, se traban.",
     q:base.q, sol:base.sol,
     op:base.op.map((t,i)=>({t:t, ok:i===base.sol}))};
 }

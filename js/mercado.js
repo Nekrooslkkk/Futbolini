@@ -3,7 +3,7 @@
    FUTBOLINI 3.0 · mercado.js
    Mercado de fichajes:
    · Ofertas entrantes por tus jugadores → llegan como notificación
-     accionable y NO vuelven si las rechazás.
+     accionable y NO vuelven si las rechazas.
    · Objetivos para comprar con negociación de 4 pilares
      (precio · sueldo · rol · interés) usando barras editables.
    · Ventana de fichajes por mes. Inflación por era enganchada con
@@ -41,7 +41,7 @@ function mercadoSemana(){
 
 /* ---------- ofertas entrantes por TUS jugadores (persistentes) ---------- */
 /* Se generan al avanzar la semana y quedan en E.ofertasPend hasta que
-   respondés o caducan. Si rechazaste, ese jugador queda "enfriado". */
+   respondes o caducan. Si rechazaste, ese jugador queda "enfriado". */
 /* crea UNA oferta entrante por una figura disponible; devuelve true si lo logró */
 function crearOfertaEntrante(rr){
   const cand=E.plantel.filter(j=>!j.vendido && !j.cedido
@@ -61,7 +61,7 @@ function crearOfertaEntrante(rr){
     d:comprador+" pone "+plata(monto)+" sobre la mesa por "+j.n+" ("+j.pos+", nivel "+j.nivel+
       ", valor estimado "+plata(j.valor)+"). "+(sobre>=0?"Pagan por encima del valor: buena venta para la caja.":"Ofrecen por debajo del valor: venderías resignando plata.")+
       (j.rasgos&&(j.rasgos.includes("ídolo")||j.rasgos.includes("capitán"))?" Ojo: es un referente, la hinchada lo va a sentir.":"")+
-      " Respondé desde Avisos o desde la sección Mercado.",
+      " Responde desde Avisos o desde la sección Mercado.",
     acc:{tipo:"ofertaJugador", ofertaId:of.id, resuelta:false}
   });
   return true;
@@ -105,7 +105,7 @@ function cederPrestamo(j){
   j.cedido={desde:E.anio, hasta:E.anio+1, club:club};
   E.ind.plantel=clamp(Math.round(mediaPlantel()),0,100);
   notificar({t:j.n+" se va a préstamo",tipo:"neutro",
-    d:j.n+" ("+j.edad+" años, nivel "+j.nivel+") se va cedido a "+club+" por una temporada para foguearse. No lo tenés disponible este año, pero vuelve mejor y el club que lo recibe le paga el sueldo."});
+    d:j.n+" ("+j.edad+" años, nivel "+j.nivel+") se va cedido a "+club+" por una temporada para foguearse. No lo tienes disponible este año, pero vuelve mejor y el club que lo recibe le paga el sueldo."});
   guardar();
 }
 function caducarOfertas(){
@@ -145,7 +145,7 @@ function responderOferta(notif, modo){
       of.monto+=sube;
       notificar({t:of.comprador+" mejora la oferta",tipo:"mercado",
         d:of.comprador+" aceptó negociar y subió a "+plata(of.monto)+" por "+of.jid+
-          ". La oferta sigue abierta: podés aceptar o rechazar desde Avisos.",
+          ". La oferta sigue abierta: puedes aceptar o rechazar desde Avisos.",
         acc:{tipo:"ofertaJugador", ofertaId:of.id, resuelta:false}});
       /* la notif original queda resuelta; la nueva es la viva */
       if(notif.acc) notif.acc.resuelta=true;
@@ -198,7 +198,7 @@ function responderOferta(notif, modo){
   }
   guardar();
 }
-/* Salir a buscar comprador por un jugador que VOS querés vender. */
+/* Salir a buscar comprador por un jugador que VOS quieres vender. */
 function buscarComprador(j){
   if(!E.ofertasPend) E.ofertasPend=[];
   if(E.ofertasPend.some(o=>o.jid===j.n)){ aviso("Ya hay una oferta abierta por "+j.n); return; }
@@ -215,7 +215,7 @@ function buscarComprador(j){
   const of={id:"of"+(E._ofid=(E._ofid||0)+1), jid:j.n, comprador:comprador, monto:monto, creada:E.idx};
   E.ofertasPend.push(of);
   notificar({t:comprador+" se interesa por "+j.n,tipo:"mercado",
-    d:"Tras ofrecerlo, "+comprador+" responde con "+plata(monto)+" por "+j.n+" (valor "+plata(j.valor)+"). Aceptás o rechazás desde acá.",
+    d:"Tras ofrecerlo, "+comprador+" responde con "+plata(monto)+" por "+j.n+" (valor "+plata(j.valor)+"). Aceptás o rechazas desde acá.",
     acc:{tipo:"ofertaJugador", ofertaId:of.id, resuelta:false}});
   render();
 }
@@ -289,7 +289,7 @@ function vistaMercado(){
   const cab=panel("Mercado de fichajes","🧳","agua");
   cab.cuerpo.appendChild(el("p","mini","Ventana "+(abierto?"<b>abierta</b>":"<b>cerrada</b>")+
     ". Comprás solo en pretemporada (enero-febrero) y a mitad de año (junio-julio)."+
-    (abierto?"":" Próxima apertura: "+proximaVentana()+". Las ofertas por tus jugadores igual las podés responder.")));
+    (abierto?"":" Próxima apertura: "+proximaVentana()+". Las ofertas por tus jugadores igual las puedes responder.")));
   cab.cuerpo.appendChild(fila("Caja disponible",plata(E.plata)));
   if(inflacionEra()!==1) cab.cuerpo.appendChild(fila("Inflación de la era","×"+inflacionEra().toFixed(2)));
   v.appendChild(cab);
@@ -334,7 +334,7 @@ function vistaMercado(){
 
   /* --- cesiones a préstamo --- */
   const pc=panel("Cesiones a préstamo","🔄");
-  pc.cuerpo.appendChild(el("p","mini","Mandá juveniles (≤23) a foguearse una temporada. Vuelven con más nivel; mientras tanto no los tenés y el otro club les paga el sueldo."));
+  pc.cuerpo.appendChild(el("p","mini","Manda juveniles (≤23) a foguearse una temporada. Vuelven con más nivel; mientras tanto no los tienes y el otro club les paga el sueldo."));
   const cedidos=E.plantel.filter(j=>!j.vendido&&j.cedido);
   if(cedidos.length){
     pc.cuerpo.appendChild(el("h3","sub","En préstamo ahora"));
@@ -350,12 +350,12 @@ function vistaMercado(){
       b.onclick=()=>{ cederPrestamo(j); render(); };
       row.appendChild(b); pc.cuerpo.appendChild(row);
     });
-  } else if(!cedidos.length){ pc.cuerpo.appendChild(el("p","mini","No tenés juveniles para ceder ahora mismo.")); }
+  } else if(!cedidos.length){ pc.cuerpo.appendChild(el("p","mini","No tienes juveniles para ceder ahora mismo.")); }
   v.appendChild(pc);
 
   /* --- objetivos para comprar (con filtros) --- */
   const po=panel("Objetivos en el mercado","📤");
-  if(!abierto) po.cuerpo.appendChild(el("div","resul mal","La ventana está cerrada: podés mirar y negociar, pero no cerrar compras hasta "+proximaVentana()+"."));
+  if(!abierto) po.cuerpo.appendChild(el("div","resul mal","La ventana está cerrada: puedes mirar y negociar, pero no cerrar compras hasta "+proximaVentana()+"."));
   /* filtros */
   po.cuerpo.appendChild(el("label","lb","Posición"));
   const fp=el("div","fichas");
@@ -445,7 +445,7 @@ function modalComprar(j,abierto){
       if(contra.precio) oferta.precio=contra.precio;
       if(contra.sueldo) oferta.sueldo=contra.sueldo;
       if(contra.rol) oferta.rol=contra.rol;
-      if(!abierto){ contra.msg="Trato cerrado en la palabra, pero la ventana está cerrada: firmás en "+proximaVentana()+"."; pintar(); return; }
+      if(!abierto){ contra.msg="Trato cerrado en la palabra, pero la ventana está cerrada: firmas en "+proximaVentana()+"."; pintar(); return; }
       if(E.plata<costoTotal()){ contra.msg="Aceptaste, pero no te alcanza la caja: precio "+plata(oferta.precio)+" + comisión "+plata(comAct())+"."; pintar(); return; }
       cerrar();
     };
@@ -491,7 +491,7 @@ function modalComprar(j,abierto){
           const bv=el("button","btn-aqua ancho"); bv.textContent="Volver a la mesa"; bv.onclick=()=>{ paso=1; pintar(); }; c.appendChild(bv);
         }
       } else { /* paso 3: se cayó */
-        c.appendChild(el("div","resul mal","El club se levantó de la mesa: insististe demasiado y se enfriaron. Probá con otro objetivo."));
+        c.appendChild(el("div","resul mal","El club se levantó de la mesa: insististe demasiado y se enfriaron. Prueba con otro objetivo."));
       }
       const x=el("button","btn-aqua ancho gris",paso===3?"Cerrar":"Dejarlo pasar"); x.style.marginTop="6px"; x.onclick=cerrarModal;
       c.appendChild(x);
@@ -500,7 +500,7 @@ function modalComprar(j,abierto){
   });
 }
 
-/* Modal de venta directa (cuando abrís una oferta puntual). */
+/* Modal de venta directa (cuando abres una oferta puntual). */
 function modalVender(of,j,abierto){
   modal(box=>{
     box.appendChild(el("div","cab",'<span class="ic">📥</span><span>Oferta por '+j.n+'</span>'));

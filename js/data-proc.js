@@ -30,7 +30,7 @@ const DEC_PROC=[
        bien:{txt:"Aceptó el desafío y se lo tomó a pecho.",ef:{moral:4,plantel:2}},
        mitad:{txt:"Firmó sin entusiasmo.",ef:{moral:-2}},
        mal:{txt:"Se sintió poco valorado y lo dijo en la radio.",ef:{moral:-8},grupos:{camarin:-12,prensa:-6}}},
-      {t:"Congelar y bancar la pulseada",dif:52,grupos:{directorio:12,camarin:-14},rep:{dureza:6},
+      {t:"Congelar y apoyar la pulseada",dif:52,grupos:{directorio:12,camarin:-14},rep:{dureza:6},
        bien:{txt:"Aguantó y siguió a la orden.",ef:{}},
        mitad:{txt:"Sigue, pero mirando la puerta.",ef:{moral:-5}},
        mal:{txt:"Forzó su salida y se fue caliente.",ef:{plantel:-5,moral:-8},grupos:{camarin:-14}}}
@@ -49,7 +49,7 @@ const DEC_PROC=[
        mitad:{txt:"Se blindó, pero el ruido sigue.",ef:{}},
        mal:{txt:"Se sintió atado y bajó las revoluciones.",ef:{moral:-4}}},
       {t:"Ponerle precio y escuchar ofertas",dif:30,grupos:{directorio:12,hinchada:-10},
-       bien:{txt:"Abrís la puerta a un ingreso grande si llega la oferta.",ef:{},flags:{enVenta:true}},
+       bien:{txt:"Abres la puerta a un ingreso grande si llega la oferta.",ef:{},flags:{enVenta:true}},
        mitad:{txt:"El jugador se distrae pensando en irse.",ef:{plantel:-2}},
        mal:{txt:"Lo desestabilizaste y no llegó ninguna oferta seria.",ef:{moral:-5}}},
       {t:"Desmentir todo con firmeza",dif:24,grupos:{prensa:6},rep:{credibilidad:4},
@@ -109,7 +109,7 @@ const DEC_PROC=[
      op:[
       {t:"Darle rodaje de a poco",dif:30,grupos:{comunidad:10},
        bien:{txt:"Respondió con creces. Nació un jugador.",ef:{cantera:6,plantel:2,moral:3}},
-       mitad:{txt:"Cumplió, con altibajos de pibe.",ef:{cantera:3}},
+       mitad:{txt:"Cumplió, con altibajos de cabro.",ef:{cantera:3}},
        mal:{txt:"Le quedó grande y se frustró.",ef:{moral:-2}}},
       {t:"Mandarlo a préstamo a foguearse",dif:26,
        bien:{txt:"Vuelve el año que viene hecho un jugador.",ef:{cantera:4}},
@@ -177,7 +177,7 @@ const DEC_PROC=[
       {t:"Usarlo con criterio, sin forzar",dif:26,
        bien:{txt:"Dosificado, rindió parejo todo el año.",ef:{plantel:2}},
        mitad:{txt:"Ni fu ni fa.",ef:{}},
-       mal:{txt:"La hinchada leyó que no lo valorás.",ef:{},grupos:{hinchada:-10}}},
+       mal:{txt:"La hinchada leyó que no lo valoras.",ef:{},grupos:{hinchada:-10}}},
       {t:"Bajar la expectativa públicamente",dif:40,grupos:{hinchada:-12,prensa:6},rep:{dureza:4},
        bien:{txt:"Le sacaste presión y lo agradeció.",ef:{moral:3}},
        mitad:{txt:"Mensaje frío, recibido a medias.",ef:{}},
@@ -214,14 +214,14 @@ const DEC_PROC=[
    const j=jugAzar(x=>x.edad<=23&&x.nivel>=64); if(!j) return null;
    const club=otroClub();
    return {t:club+" quiere a "+j.n+" a préstamo",
-     d:club+" ofrece llevarse a "+j.n+" ("+j.edad+" años) cedido por un año, con opción de compra. Se foguea afuera, pero lo perdés esta temporada.",
+     d:club+" ofrece llevarse a "+j.n+" ("+j.edad+" años) cedido por un año, con opción de compra. Se foguea afuera, pero lo pierdes esta temporada.",
      posturas:{directorio:8,comunidad:-6},
      op:[
       {t:"Cederlo con opción",dif:24,grupos:{directorio:8},
        bien:{txt:"Vuelve rodado y revalorizado. Buen negocio.",ef:{cantera:4},flags:{}},
        mitad:{txt:"Sumó minutos, nada del otro mundo.",ef:{}},
        mal:{txt:"Casi no jugó y volvió frío.",ef:{cantera:-2}}},
-      {t:"Cederlo sin opción (te lo asegurás)",dif:30,
+      {t:"Cederlo sin opción (te lo aseguras)",dif:30,
        bien:{txt:"Se fogueó y vuelve tuyo, más caro.",ef:{cantera:5}},
        mitad:{txt:"Rodó a medias, pero es tuyo.",ef:{}},
        mal:{txt:"No jugó y encima se resintió.",ef:{cantera:-2}}},
@@ -283,7 +283,7 @@ const DEC_PROC=[
        mitad:{txt:"Volvió con la forma justa, hay que dosificarlo.",accion:"cansarFicha"},
        mal:{txt:j.n+" volvió tocado de la gira. Mala suerte.",accion:"lesionFicha"}},
       {t:"Pedir que no lo lleven (excusa médica)",dif:48,grupos:{prensa:-10,anfp:-8},rep:{credibilidad:-4},
-       bien:{txt:"Zafó de la gira y lo tenés fresco. La prensa refunfuña.",ef:{}},
+       bien:{txt:"Zafó de la gira y lo tienes fresco. La prensa refunfuña.",ef:{}},
        mitad:{txt:"Se filtró la maniobra y quedaste expuesto.",grupos:{prensa:-8}},
        mal:{txt:"La ANFP te sancionó por no liberar al jugador.",ef:{riesgo:6},grupos:{anfp:-12}}}
      ]};
@@ -339,7 +339,7 @@ const DEC_PROC=[
  }},
  {buzon:"finanzas",peso:"bajo",gen:function(){
    return {t:"Llega el impuesto de la SAD",
-     d:"La sociedad anónima debe pagar un tributo que aprieta la caja. Podés pagar, hacer lobby para diferirlo, o revisar el estatuto para blindarte a futuro.",
+     d:"La sociedad anónima debe pagar un tributo que aprieta la caja. Puedes pagar, hacer lobby para diferirlo, o revisar el estatuto para blindarte a futuro.",
      posturas:{directorio:10,socios:-8},
      op:[
       {t:"Pagar y no dar que hablar",dif:20,req:{plata:90},ef:{plata:-90},grupos:{directorio:6},
@@ -360,7 +360,7 @@ const DEC_PROC=[
       {t:"Echarlo y limpiar la interna",dif:44,req:{capital:8},ef:{capital:-8},grupos:{camarin:12,directorio:-10},rep:{dureza:6},
        bien:{txt:"Cortaste la filtración de raíz. El camarín lo agradeció.",ef:{moral:5}},
        mitad:{txt:"Se fue, pero dejó ruido político.",ef:{}},
-       mal:{txt:"Armó quilombo y dividió al directorio.",grupos:{directorio:-12}}},
+       mal:{txt:"Armó despelote y dividió al directorio.",grupos:{directorio:-12}}},
       {t:"Usarlo a tu favor (contrafiltrar)",dif:40,grupos:{prensa:6},rep:{dureza:4,credibilidad:-4},ef:{riesgo:8},
        bien:{txt:"Le diste vuelta la información y quedaste un paso adelante.",ef:{}},
        mitad:{txt:"Jugada arriesgada, resultado dudoso.",ef:{}},
@@ -371,12 +371,12 @@ const DEC_PROC=[
        mal:{txt:"A la semana salió la prueba y quedaste expuesto.",rep:{credibilidad:-6}}}
      ]};
  }},
- /* 6.21 · EVENTO DE PUERTA: germina cuando le rompés un pacto a la barra */
+ /* 6.21 · EVENTO DE PUERTA: germina cuando le rompes un pacto a la barra */
  {buzon:"gris",peso:"medio",gen:function(){
    if(E.flags.puertaBarra==null || (E.idx-E.flags.puertaBarra)>4) return null;
    delete E.flags.puertaBarra;   /* se consume la semilla */
    return {t:"Tensión en la puerta 8",
-     d:"Después del pacto roto, la barra apareció caldeada en la puerta del estadio. Piden reunión de urgencia; seguridad quiere desalojar. Vos tenés la última palabra.",
+     d:"Después del pacto roto, la barra apareció caldeada en la puerta del estadio. Piden reunión de urgencia; seguridad quiere desalojar. Vos tienes la última palabra.",
      posturas:{hinchada:-20,anfp:-10,prensa:10},
      op:[
       {t:"Bajar a hablar y recomponer",dif:40,req:{capital:6},ef:{capital:-6},grupos:{hinchada:12},
@@ -389,7 +389,7 @@ const DEC_PROC=[
        mal:{txt:"Terminó en incidentes, sumario y multa.",ef:{riesgo:12,plata:-80},grupos:{anfp:-12,prensa:-12}}},
       {t:"Desentenderte y que lo maneje el club",dif:26,grupos:{hinchada:-8,directorio:-6},
        bien:{txt:"Pasó sin mayor ruido, de pura suerte.",ef:{}},
-       mitad:{txt:"Quedó la sensación de que mirás para el costado.",ef:{moral:-3}},
+       mitad:{txt:"Quedó la sensación de que miras para el costado.",ef:{moral:-3}},
        mal:{txt:"La cosa escaló y la culpa recayó en tu ausencia.",ef:{riesgo:8,moral:-5},grupos:{hinchada:-10,prensa:-8}}}
      ]};
  }},
@@ -399,7 +399,7 @@ const DEC_PROC=[
    const club=otroClub();
    const simbolo=j.rasgos&&(j.rasgos.indexOf("ídolo")>=0||j.rasgos.indexOf("de la casa")>=0);
    return {t:"Oferta formal por "+j.n, ficha:{n:j.n},
-     d:club+" pone una oferta formal sobre la mesa por "+j.n+" ("+j.pos+", nivel "+j.nivel+", valor estimado "+plata(j.valor)+"). La plata ordena el año, pero perdés a un jugador"+(simbolo?" que la gente quiere":"")+".",
+     d:club+" pone una oferta formal sobre la mesa por "+j.n+" ("+j.pos+", nivel "+j.nivel+", valor estimado "+plata(j.valor)+"). La plata ordena el año, pero pierdes a un jugador"+(simbolo?" que la gente quiere":"")+".",
      posturas:{directorio:22,hinchada:simbolo?-25:-8,camarin:-8},
      op:[
       {t:"Aceptar y vender a "+j.n,dif:28,grupos:{directorio:15,hinchada:-10},
@@ -421,7 +421,7 @@ const DEC_PROC=[
    const j=jugAzar(x=>x.edad<=22&&(x.proy>=x.nivel+4)); if(!j) return null;
    const club=otroClub();
    return {t:club+" sondea a la joya "+j.n, ficha:{n:j.n},
-     d:club+" mandó a preguntar por "+j.n+" ("+j.edad+" años, proyección "+j.proy+"). Todavía no hay oferta formal, pero el entorno del pibe ya se ilusiona.",
+     d:club+" mandó a preguntar por "+j.n+" ("+j.edad+" años, proyección "+j.proy+"). Todavía no hay oferta formal, pero el entorno del cabro ya se ilusiona.",
      posturas:{hinchada:8,directorio:-6,prensa:8},
      op:[
       {t:"Ponerle una cláusula alta y blindarlo",dif:32,req:{plata:60},ef:{plata:-60},grupos:{hinchada:10},
@@ -431,7 +431,7 @@ const DEC_PROC=[
       {t:"Dejar correr, si llega la oferta se ve",dif:26,grupos:{directorio:6},
        bien:{txt:"Llegó una oferta grande por "+j.n+" y la aceptaste: entra la plata.",accion:"venderFicha"},
        mitad:{txt:"Quedó en sondeo, nada concreto.",ef:{}},
-       mal:{txt:"El pibe se distrajo pensando en irse.",ef:{plantel:-2,moral:-3}}}
+       mal:{txt:"El cabro se distrajo pensando en irse.",ef:{plantel:-2,moral:-3}}}
      ]};
  }},
  /* 7.0 · MÁS VARIEDAD DE MERCADO */
@@ -459,12 +459,12 @@ const DEC_PROC=[
    const j=jugAzar(x=>x.nivel>=62&&x.nivel<=80); if(!j) return null;
    const club=otroClub();
    return {t:"Trueque: "+club+" propone un cambio", ficha:{n:j.n},
-     d:club+" quiere a "+j.n+" ("+j.pos+", nivel "+j.nivel+") y te ofrece un jugador suyo a cambio, sin plata de por medio. Un cambio de figuritas, con el riesgo de siempre: nunca sabés bien qué te llevás.",
+     d:club+" quiere a "+j.n+" ("+j.pos+", nivel "+j.nivel+") y te ofrece un jugador suyo a cambio, sin plata de por medio. Un cambio de figuritas, con el riesgo de siempre: nunca sabes bien qué te llevas.",
      posturas:{directorio:6,camarin:-6,hinchada:-6},
      op:[
       {t:"Aceptar el trueque",dif:34,grupos:{directorio:6},
        bien:{txt:"El que llegó rindió mejor que "+j.n+". Golazo de gestión.",ef:{plantel:2,moral:2},accion:"venderFicha"},
-       mitad:{txt:"Cambio parejo: ni ganás ni perdés.",ef:{},accion:"venderFicha"},
+       mitad:{txt:"Cambio parejo: ni ganas ni pierdes.",ef:{},accion:"venderFicha"},
        mal:{txt:"Te pasaron gato por liebre: el que vino no rinde.",ef:{plantel:-3,moral:-3},accion:"venderFicha"}},
       {t:"Pedir que sumen plata al cambio",dif:48,grupos:{directorio:8},
        bien:{txt:"Aceptaron poner plata encima. Cerraste redondo.",ef:{plata:70},accion:"venderFicha"},
@@ -479,7 +479,7 @@ const DEC_PROC=[
  {buzon:"refuerzos",peso:"bajo",gen:function(){
    const club=otroClub();
    return {t:"Rumor: viene un refuerzo de renombre",
-     d:"La prensa dice que estás por traer a un jugador de renombre de "+club+". La hinchada ya se ilusiona y vende entradas por adelantado. Vos sabés que todavía no hay nada firmado.",
+     d:"La prensa dice que estás por traer a un jugador de renombre de "+club+". La hinchada ya se ilusiona y vende entradas por adelantado. Vos sabes que todavía no hay nada firmado.",
      posturas:{hinchada:12,prensa:8,directorio:-4},
      op:[
       {t:"Confirmar el interés y prometer que se cierra",dif:44,grupos:{hinchada:12,prensa:4},rep:{credibilidad:-4},

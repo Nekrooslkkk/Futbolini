@@ -58,7 +58,7 @@ async function nubeRegistrar(email,pass){
   if(!r.ok) return { ok:false, msg:(j&&(j.msg||j.error_description||j.error))||("Error "+r.status) };
   /* si el proyecto pide confirmar el mail, no viene access_token todavía */
   if(j.access_token){ nubeSetToken(j); return { ok:true, email:nubeEmail() }; }
-  return { ok:true, confirmar:true, msg:"Cuenta creada. Revisá tu correo para confirmarla y después entrá." };
+  return { ok:true, confirmar:true, msg:"Cuenta creada. Revisa tu correo para confirmarla y después entra." };
 }
 async function nubeEntrar(email,pass){
   const r=await nubeFetch("/auth/v1/token?grant_type=password",{ method:"POST", headers:nubeHeaders(false),
@@ -81,7 +81,7 @@ function nubeSalir(){ nubeGuardarSesion(null); }
 
 /* ---------- sync de partida (tabla 'saves', una fila por usuario) ---------- */
 async function nubeSubir(estado){
-  if(!nubeLogueado()) return { ok:false, msg:"Entrá a tu cuenta primero." };
+  if(!nubeLogueado()) return { ok:false, msg:"Entra a tu cuenta primero." };
   const s=nubeSesion();
   const cuerpo=[{ user_id:s.usuario.id, data:estado, updated_at:new Date().toISOString() }];
   const pedir=()=>nubeFetch("/rest/v1/saves",{ method:"POST",
@@ -93,7 +93,7 @@ async function nubeSubir(estado){
   return { ok:true };
 }
 async function nubeBajar(){
-  if(!nubeLogueado()) return { ok:false, msg:"Entrá a tu cuenta primero." };
+  if(!nubeLogueado()) return { ok:false, msg:"Entra a tu cuenta primero." };
   const s=nubeSesion();
   const pedir=()=>nubeFetch("/rest/v1/saves?user_id=eq."+encodeURIComponent(s.usuario.id)+"&select=data,updated_at",
     { method:"GET", headers:nubeHeaders(true) });
