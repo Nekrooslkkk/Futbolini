@@ -29,44 +29,44 @@ function _cvSeed(P){
   CANCHA_FORM.forEach(f=>{ jug.push({x:f.x,y:f.y,tx:f.x,ty:f.y,mob:f.mob,rol:f.rol,mio:true}); });
   CANCHA_FORM.forEach(f=>{ const x=1-f.x; jug.push({x:x,y:1-f.y,tx:x,ty:1-f.y,mob:f.mob*0.85,rol:f.rol,mio:false}); });
   _cvSt={ jug:jug, lop:0.5, surge:0, ball:{x:0.5,y:0.5,tx:0.5,ty:0.5},
-    lastYo:P?_cvMarcador(P).yo:0, lastOtro:P?_cvMarcador(P).otro:0, t:0 };
+    lastYo:P?_cvMarcador(P).yo:0, lastOtro:P?_cvMarcador(P).otro:0, t:0,
+    ballHold:0, ballGoal:0.5 };
 }
 function _cvStep(P,dt){
   const st=_cvSt; if(!st) return;
   st.t+=dt;
-  /* detectar goles para dar un "empujón" visual a la línea de juego */
+  /* goles → la pelota vuela al arco correcto y la línea de juego se empuja */
   if(P){
     const mk=_cvMarcador(P);
-    if(mk.yo>st.lastYo) st.surge=Math.min(1,st.surge+0.9);      /* metí gol → me voy al ataque */
-    if(mk.otro>st.lastOtro) st.surge=Math.max(-1,st.surge-0.9); /* me metieron → me repliego */
+    if(mk.yo>st.lastYo){ st.surge=1; st.ballHold=1.4; st.ballGoal=0.95; }    /* mi gol → arco rival (derecha) */
+    if(mk.otro>st.lastOtro){ st.surge=-1; st.ballHold=1.4; st.ballGoal=0.05; } /* gol rival → mi arco (izquierda) */
     st.lastYo=mk.yo; st.lastOtro=mk.otro;
   }
-  st.surge*=Math.pow(0.4,dt);   /* el empujón decae */
-  /* línea de juego objetivo: sesgo por empuje del equipo + surge + vaivén lento */
+  st.surge*=Math.pow(0.5,dt);
+  if(st.ballHold>0) st.ballHold-=dt;
+  /* línea de juego: sesgo suave por empuje + surge + vaivén LENTO (sin ruido por frame) */
   const empuje=(P&&typeof P.empuje==="number")?P.empuje:0;
-  const bias=Math.max(-0.26,Math.min(0.26, empuje*0.025));
-  const vaiven=Math.sin(st.t*0.55)*0.10 + Math.sin(st.t*0.23+1.3)*0.06;
-  let lopT=0.5+bias+vaiven+st.surge*0.28;
-  lopT=Math.max(0.2,Math.min(0.8,lopT));
-  st.lop += (lopT-st.lop)*Math.min(1,dt*1.8);
-  /* mover cada jugador hacia su ranura relativa a la línea de juego + ruido */
-  const desp=(st.lop-0.5);
+  const bias=Math.max(-0.24,Math.min(0.24, empuje*0.02));
+  const vaiven=Math.sin(st.t*0.4)*0.09;
+  const lopT=Math.max(0.22,Math.min(0.78, 0.5+bias+vaiven+st.surge*0.22));
+  st.lop += (lopT-st.lop)*Math.min(1,dt*1.1);
+  const desp=st.lop-0.5;
   st.jug.forEach((p,i)=>{
     const f=CANCHA_FORM[i%CANCHA_FORM.length];
     const homeX=p.mio?f.x:(1-f.x), homeY=p.mio?f.y:(1-f.y);
-    const dir=p.mio?1:1;   /* ambos se corren hacia donde está la pelota */
-    p.tx=Math.max(0.03,Math.min(0.97, homeX + desp*p.mob*1.5*dir));
-    p.ty=Math.max(0.06,Math.min(0.94, homeY + Math.sin(st.t*1.1+i)*0.02));
-    p.x += (p.tx-p.x)*Math.min(1,dt*2.2) + _cvRnd(-0.0015,0.0015);
-    p.y += (p.ty-p.y)*Math.min(1,dt*2.2) + _cvRnd(-0.0015,0.0015);
+    p.tx=Math.max(0.03,Math.min(0.97, homeX + desp*p.mob*1.4));
+    p.ty=Math.max(0.06,Math.min(0.94, homeY + Math.sin(st.t*0.6+i)*0.015));
+    /* SOLO easing, sin sumar ruido cada frame → deja de tiritar */
+    p.x += (p.tx-p.x)*Math.min(1,dt*1.6);
+    p.y += (p.ty-p.y)*Math.min(1,dt*1.6);
   });
-  /* pelota: sigue la línea de juego, con dardos ocasionales */
+  /* pelota: en un gol vuela al arco y se queda; si no, acompaña la línea de juego suave */
   const b=st.ball;
-  b.tx=st.lop + Math.sin(st.t*1.7)*0.03;
-  b.ty=0.5 + Math.sin(st.t*0.9+2)*0.16;
-  if(Math.random()<dt*1.2){ b.tx=Math.max(0.06,Math.min(0.94,b.tx+_cvRnd(-0.12,0.12))); b.ty=_cvRnd(0.2,0.8); }
-  b.x += (b.tx-b.x)*Math.min(1,dt*4);
-  b.y += (b.ty-b.y)*Math.min(1,dt*4);
+  if(st.ballHold>0){ b.tx=st.ballGoal; b.ty=0.5+Math.sin(st.t*3)*0.03; }
+  else { b.tx=st.lop + Math.sin(st.t*0.8)*0.02; b.ty=0.5 + Math.sin(st.t*0.5+2)*0.12; }
+  const kb=st.ballHold>0?6:2.4;
+  b.x += (b.tx-b.x)*Math.min(1,dt*kb);
+  b.y += (b.ty-b.y)*Math.min(1,dt*kb);
 }
 function _cvColores(){
   let mio="#f4f7ff", riv="#ff5a5a";
@@ -106,7 +106,7 @@ function _cvDraw(ctx,w,h){
 }
 function _cvSize(canvas){
   const cssW=canvas.clientWidth||canvas.parentNode&&canvas.parentNode.clientWidth||320;
-  const cssH=Math.round(cssW*0.60);
+  const cssH=Math.min(200,Math.round(cssW*0.42));
   const dpr=Math.min(2,window.devicePixelRatio||1);
   if(canvas._w!==cssW){ canvas.style.height=cssH+"px"; canvas.width=Math.round(cssW*dpr); canvas.height=Math.round(cssH*dpr); canvas._w=cssW; }
   return {w:canvas.width, h:canvas.height};

@@ -534,9 +534,9 @@ function pintarPartido(){
     '<div class="eq">'+(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>';
   p.cuerpo.appendChild(marc);
   let canchaCv=null;
+  const verCancha=!(E.config&&E.config.verCancha===false);
   if(P.modo!=="simular"){
-    canchaCv=el("canvas","cancha2d"); canchaCv.setAttribute("aria-hidden","true");
-    p.cuerpo.appendChild(canchaCv);
+    if(verCancha){ canchaCv=el("canvas","cancha2d"); canchaCv.setAttribute("aria-hidden","true"); p.cuerpo.appendChild(canchaCv); }
     p.cuerpo.appendChild(bloqueStats(P));
   }
   const tramo=P.min<=45?"1T":(P.min<90?"2T":"FT");
@@ -562,6 +562,10 @@ function pintarPartido(){
     bcam.disabled=(P.cambios||0)>=(P.cambiosMax||3) || (MOMENTO_OPS&&MOMENTO_OPS.length>0);
     bcam.onclick=modalCambio;
     ctrl.appendChild(bcam);
+    /* 7.10 · ver/ocultar la cancha animada (opcional) */
+    const bcv=el("button","btn-aqua chico"+(verCancha?"":" gris"),verCancha?"🎥 Cancha ON":"🎥 Cancha OFF"); bcv.style.marginLeft="4px";
+    bcv.onclick=()=>{ if(!E.config)E.config={}; E.config.verCancha=!verCancha; guardar(); pintarPartido(); };
+    ctrl.appendChild(bcv);
     p.cuerpo.appendChild(ctrl);
     if(P.modo==="dirigir"){
       if(!E.config) E.config={autoPausa:true};
