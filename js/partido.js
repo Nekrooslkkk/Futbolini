@@ -892,6 +892,9 @@ function terminarPartido(P){
   if(E.temporada.sinGanar===undefined) E.temporada.sinGanar=0;
   if(yo>otro){ E.temporada.sinGanar=0; E.flags.rachaLiquida=false; }
   else E.temporada.sinGanar++;
+  /* invicto: se corta al perder, suma al ganar o empatar (para la voz de las redes) */
+  if(E.temporada.sinPerder===undefined) E.temporada.sinPerder=0;
+  if(yo<otro) E.temporada.sinPerder=0; else E.temporada.sinPerder++;
   if(typeof chequearPromesas==="function") chequearPromesas(yo,otro);
   notificar({
     t:(yo>otro?"Victoria ":(yo<otro?"Derrota ":"Empate "))+yo+"-"+otro+" ante "+part.rivalNombre,

@@ -1514,3 +1514,9 @@ Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
 - **Estadio**: sección propia con sectores reales por club (`data-estadios.js`) + obras que avanzan.
 **Probado:** node --check en todos; QA en navegador headless (cancha, stats, mercado) con capturas; tests de lógica (sectores, periodistas, trivia, contextos).
 **1 línea:** el partido dejó de ser un timer — ahora se ve jugar, con stats, quiz procedural y las redes hablando en chileno.
+
+## 7.11 · Tuits aprobados de Grok + apodos meme + contextos nuevos
+- **Pisar los genéricos**: para cada contexto que cubre `TUITS_EXTRA` (data-tuits.js), se sacan los tuits viejos del pool base (`TUITS_MOMENTO` en data-voz.js) y quedan SOLO los 240 aprobados (15 x 16 contextos). Lo no cubierto (analogia_dunk) queda intacto. Ahora se ven tal cual.
+- **APODOS_MEME**: las cuentas troll (@cuenta_troll, @garrafal_cl, etc.) bautizan al jugador cuando ESE está en cancha — si su nombre resuelto aparece en el tuit y su apellido tiene apodo, se reemplaza (Vidal→Rey Arturo, Palacios→Pala…). Enganchado vía wrap de `empujarTicker` (post-resolución de tokens).
+- **Contextos que no son evento de partido** (`descenso_peligro`, `rumor_fichaje`, `invicto`): se disparan desde el ambiente del ticker. descenso_peligro = club en zona de descenso (`posicionEnTabla` >= n-1) con torneo avanzado; invicto = `E.temporada.sinPerder>=5` (contador nuevo en partido.js); rumor_fichaje = chismerío de mercado, baja frecuencia.
+**Probado:** node --check; harness de lógica (merge pisa lo viejo, apodo aplica ~55% solo en handles troll, contextos nuevos en el pool).
