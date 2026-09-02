@@ -107,6 +107,13 @@ function nuevaPartida(clubId,anio,modo,extra){
   activarLiga(base);
   const D=datosEra(base);
   const info=D.info[clubId];
+  /* 7.12 · red de seguridad: ese club no existe en esa época (ej: Coquimbo en 1991).
+     La UI ya lo evita, pero no queremos un crash feo si llega una combinación inválida. */
+  if(!info){
+    if(typeof aviso==="function") aviso((typeof CLUB_INFO!=="undefined"&&CLUB_INFO[clubId]?CLUB_INFO[clubId].n:"Ese club")+" no está disponible en "+anio+".");
+    console.warn("nuevaPartida: no hay datos de "+clubId+" para la época "+base);
+    return false;
+  }
   E={
     v:4, club:clubId, eraBase:base, clubNombre:info.n, dt:info.dt, anio:anio, modo:modo||"historico",
     ind:Object.assign({},D.ind[clubId]),

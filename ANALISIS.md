@@ -1,88 +1,70 @@
-# ANALISIS.md — estado 5.1l (para Claude / Grok)
+# ANALISIS.md — estado real y rumbo (al día · v7.12)
 
-> Último zip **entregado antes de este turno:** `futbolini_5_1k.zip` (18/08 00:55).
-> El modo Build arrancó una auditoría y **no llegó a pegar código ni a un zip nuevo**.
-> Este turno (Grok, 18/08 ~21:11) **sí avanzó**: ver `5.1l` en `PATCHES.md`.
-> Fuente de trabajo: `futbolini_actual/futbolini/`. Expandir. No reconstruir.
+> **LEER PRIMERO.** Este doc reemplaza el diagnóstico viejo de 5.1l (que quedó
+> caduco y confundía). Refleja el estado real del juego hoy y el rumbo acordado
+> con el usuario. Para el detalle de cada parche, ver `PATCHES.md`.
 
-## Qué está hecho de verdad (no creer LISTADO viejo)
+## Dónde estamos (v7.x)
+Base sólida y estable. Corrí ~300 partidos simulados (5 clubes × 2 épocas × 30
+fechas) sin un solo error de motor. Save/load limpio.
 
-| Área | Estado real en 5.1k/l |
+| Área | Estado real |
 |---|---|
-| Fixture 2026 CC / UCH / UC | Oficial, 30 fechas |
-| Corte 18/08 | Sí, opcional al crear 2026 |
-| Resto de la fecha | 5.1k simula y suma a la tabla |
-| Planteles 5 clubes | Nombres públicos, stats aprox. |
-| XI rival | **5.1l**: usa plantel real si existe; si no, “el 9 de Coquimbo” (no inventa) |
-| Calendario PAL/LIM 2026 | **5.1l**: mismas fechas que CC, empareje de jornada |
-| Avanzar | No salta partidos (modal) |
-| Fases de partido | dominio/equilibrio/ahogo |
-| Cerebro local | Heurística, 0 créditos |
-| Chirp | 2 pestañas, hilos, RT, 140 chars (5.1l) |
-| Spoiler | Toggle en Ajustes (5.1l) |
-| Asamblea | Hinchada+socios < -45 → 3 semanas → destitución (5.1l) |
+| Motor de partido | Estable. Fases dominio/equilibrio/ahogo, cansancio por jugador, cambios con nombre (máx 3), árbitro con nombre + sesgo visible, stats de transmisión (posesión/remates/al arco/córners). |
+| Cancha | Canvas 2D con la pelota siguiendo la jugada. **Se ve fome (muy vector/liso). A rehacer en estilo pixel.** |
+| Épocas | 1991, 2026 e histórico CC 1989→2008. Selector de época unificado (arreglado el bug de "U 2011 → plantel actual"). |
+| Planteles | Nombres reales, stats aprox. con aviso. XI rival real si existe. |
+| Redes / voz | Tuits chilenos aprobados (v7.11) + apodos meme de cuentas troll + contextos nuevos (descenso/rumor/invicto). **PERO: pool fijo, solo viven DENTRO del partido, y la marca está partida (Plop!/FutbolGram/Chirp).** |
+| Economía | Flujo semanal, sueldos atrasados, clausura. **La deuda es un globo sin cuotas y NO se explica bien → el usuario quiere que sea siempre resoluble y paso a paso.** |
+| Nube (opcional) | Login + respaldo por `fetch` a Supabase. Apagado (claves vacías). 100% opcional. |
+| Guard nueva partida | v7.12: no crashea con combinaciones inválidas (club inexistente en la época). |
 
-## Qué duele todavía (orden de beta)
+## Rumbo acordado (en construcción · orden de prioridad del usuario)
 
-### A. Datos
-- Tabla semilla 18/08: CC documentado; el resto es referencia, no acta.
-- PAL/LIM no tienen fixture oficial propio (solo fechas de CC + pairing).
-- 1991: solo CC tiene calendario real. UCH/UC 91 se generan.
-- Copa Chile / Libertadores 2026: no.
-- Save: v4 rearma plantel fantasma; no hay migración por temporada.
-- Verificar nombres 2026 contra Transfermarkt otra vez (el mercado se mueve).
+### 1. Redes con "vida" — motor generativo, no pool fijo 🔴 (prioridad)
+El usuario NO quiere 240 tuits fijos: quiere que las cuentas reaccionen al
+contexto real "como si tuvieran vida". Realidad técnica (sin IA de pago):
+- **No** hay "IA viva" gratis y offline. **Sí** hay un salto enorme: pasar del
+  pool fijo a un **motor generativo procedural** = cuentas persistentes con
+  personalidad + estado (humor, bando, obsesiones, memoria), y frases armadas
+  por gramática de fragmentos que se llenan con el estado REAL del partido/club
+  (marcador, minuto, racha, jugador puntual, rivalidad, qué pasó antes).
+  Combinatoria de miles, no 240. Cuentas que se responden en hilos y recuerdan
+  ("te lo dije la fecha pasada").
+- La capa nube opcional podría, a futuro, llamar un LLM para texto vivo de
+  verdad — pero eso es la vía "de pago" que estamos evitando por ahora.
 
-### B. Partido
-- Sigue siendo un timer con peligro. Fases pesan poco.
-- Cansancio por jugador y recambio frío: **arrancados en 5.1l**, falta UI de cambio voluntario.
-- Árbitro: hay `modSuma("arbitraje")` y más polémica en clásico/VAR; no hay nombre ni sesgo visible.
-- Relato ya cita titulares (5.1l); aún no hay mapa de calor / posesión.
+### 1b. Unificar todo bajo **Plop!** y conectar partido ↔ pestaña redes 🔴
+- Hoy conviven Plop! / FutbolGram / Chirp. Debe ser **una sola red: Plop!**
+- Lo que sale en el ticker del partido tiene que **persistir en `E.redes`** y
+  seguir en la pestaña de redes (reacciones post-partido, al otro día).
+- **Las pistas tácticas del partido NO aparecen en el feed** → hay que enchufarlas.
 
-### C. Institución
-- Grupos y estatutos existen; no te llaman.
-- Asamblea de censura: sí (5.1l). Falta que la prensa filtre a -45.
-- Blanco / ANFP / TV no tienen agenda propia.
+### 1.5 Fotos 📷
+El usuario va a mandar imágenes. Regla del repo: todo offline, sin CDN → las
+fotos viven en el repo (`img/`) o embebidas. Falta definir para qué (caras de
+jugadores / escudos / estadios / imágenes de noticias) y optimizarlas livianas.
 
-### D. Economía
-- Flujo semanal existe. La deuda es un globo, no cuotas.
-- Clausura y sueldos atrasados sí. Cláusulas/comisiones no.
+### 2. Economía fácil y explicativa 🟠
+Que la deuda **siempre** se pueda resolver y que el juego lo explique paso a
+paso, en chileno claro, sin "ensalada de botones". Pantalla de estado financiero
+tipo tutorial: qué debes, por qué, y opciones con consecuencias explícitas.
 
-### E. Redes
-- Cuentas no son persistentes (el @ cambia).
-- No hay DMs, follow, viralidad real, hashtag que nazca de un hecho.
+### 3. Partido más potente + cancha pixel 🟠
+Timer más concreto/potente, momentos con más peso, y **cancha en estilo pixel-art**
+(Canvas con `imageSmoothingEnabled=false`, sprites chunky) en vez del look liso
+actual. Todo offline, sin librerías.
 
-### F–G
-- Tinder/dinastía/casino: **congelar**. No cierran la beta.
-- IA de pago: apagada. `/api/pensar` local. No enchufar modelo.
+### 4. Limpieza (v7.12 · hecho / en curso)
+- ✅ Guard de `nuevaPartida` contra combinaciones inválidas.
+- ✅ Este doc actualizado.
+- ⏳ 1991: solo CC tiene fixture real; UCH/UC 91 se generan → se deja para el
+  prompteo de textos de la beta.
 
-### H
-- Modos histórico/libre/caos: umbral de eventos + un poco de relato caos. Poco.
-- Celular: jugable a medias. Partido con pulgar: no.
-- Soundtrack: no.
-
-## Definición de beta cerrada (todavía no)
-
-1. CC / UCH / UC 1991 o 2026 con calendario que no mienta.
-2. Avanzar no salta.
-3. Un año se siente distinto.
-4. La plata te puede echar.
-5. Chirp habla cuando pasa algo.
-6. Guardar y seguir mañana.
-
-5.1l acerca 1, 2, 4 (asamblea) y 5 (140). Falta 3 (años) y tabla del resto como acta.
-
-## 5.1m hecho
-Charla de match, dilemas de cita, hijos a cantera, sucesor hijo/externo, `pensarOffline`.
-IA de pago: apagada.
-
-## Próximo parche sugerido (5.1n) — no lo hagas todo
-
-1. Siembra de tabla 18/08 más fina + resultados reales del resto si se investigan.
-2. Cambio voluntario en dirigir (máx 3, el que entra frío).
-3. Prensa filtra si un grupo < -45.
-4. Fixture 1991 UCH o UC (uno solo, bien hecho).
-5. Cuentas Chirp persistentes (5 handles fijos).
-
-## Archivos tocados en 5.1l
-
-`data-plantel.js` `data-liga.js` `partido.js` `motor.js` `ui.js` `LISTADO.md` `PATCHES.md` `ANALISIS.md`
+## Definición de beta cerrada (checklist vivo)
+1. CC / UCH / UC 1991 o 2026 con calendario que no mienta. — parcial (91 incompleto)
+2. Avanzar no salta partidos. — ✅
+3. Un año se siente distinto. — parcial
+4. La plata te puede echar (y se puede remontar). — en rediseño (track 2)
+5. Las redes hablan cuando pasa algo. — ✅ base; salto generativo en track 1
+6. Guardar y seguir mañana. — ✅
