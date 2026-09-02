@@ -1,0 +1,13 @@
+{
+  "name": "futbolini",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simulador de conduccion de clubes chilenos",
+  "scripts": {
+    "start": "node server/index.js",
+    "local": "node servidor.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
