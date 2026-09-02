@@ -1526,3 +1526,9 @@ Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
 - **persistirTicker (redes.js)**: al cerrar el partido, los tuits de la hinchada del ticker quedan pegados en el feed de Plop! (E.timeline) + una reacción de cierre atada al resultado. La conversa sigue después del pitazo, no se muere. Solo 2008+.
 - **Marca unificada**: lo que quedaba como "FutbolGram" en el partido ahora es "Plop!" (ticker en vivo + opinión-pista táctica).
 **Probado:** node --check; harness (dedupe, orden, reacción por resultado).
+
+## 7.13 · Plop! con vida — motor generativo procedural
+- **plop-motor.js (nuevo)**: en vez de elegir 1 de un pool fijo, ARMA la frase con el estado REAL (marcador, minuto, goleador, figura, arquero, rival, racha, posición en tabla). Cada cuenta tiene PERSONALIDAD (voz: exaltado/tierno/irónico/dato/amargado/rival/serio…) y el conjunto tiene MEMORIA (E.plop.hist) para no repetir.
+- Envuelve `tuitDeCtx`: 55% genera con estado, si no cae al pool aprobado (no reemplaza, mezcla). Cubre 15 contextos.
+- Resultado: "92'+2 y Javier Correa la reventó, NO DA EL CORAZÓN 😭" — tuits que hablan del partido que estás jugando, combinatoria de miles.
+**Probado:** node --check; harness generativo (referencia marcador/goleador/minuto/rival reales, varía por tirada).
