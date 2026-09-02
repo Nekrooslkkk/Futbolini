@@ -69,40 +69,74 @@ function _cvStep(P,dt){
   b.y += (b.ty-b.y)*Math.min(1,dt*kb);
 }
 function _cvColores(){
-  let mio="#f4f7ff", riv="#ff5a5a";
+  let mio="#eef3ff", riv="#e5484d";
   try{ const ic=(typeof infoClub==="function")&&infoClub(E.club); if(ic&&ic.color) mio=ic.color; }catch(e){}
   return {mio:mio, riv:riv};
 }
+/* oscurece un color hex un factor (0..1) para dar sombra pixel */
+function _cvSombra(hex,f){
+  try{
+    let s=String(hex).replace("#","");
+    if(s.length===3) s=s[0]+s[0]+s[1]+s[1]+s[2]+s[2];
+    const r=parseInt(s.slice(0,2),16), g=parseInt(s.slice(2,4),16), b=parseInt(s.slice(4,6),16);
+    const k=x=>Math.max(0,Math.round(x*(1-f)));
+    return "rgb("+k(r)+","+k(g)+","+k(b)+")";
+  }catch(e){ return hex; }
+}
+/* buffer de BAJA resolución: dibujamos acá y después escalamos con nearest-neighbor
+   (imageSmoothingEnabled=false) para que se vea pixel-art de verdad. */
+let _cvBuf=null;
+function _cvBuffer(w,h){
+  const pw=Math.max(96,Math.min(220,Math.round(w/4)));   /* ~4 px reales por pixel del juego */
+  const ph=Math.round(pw*(h/w));
+  if(!_cvBuf || _cvBuf.w!==pw || _cvBuf.h!==ph){
+    const c=document.createElement("canvas"); c.width=pw; c.height=ph;
+    _cvBuf={c:c, ctx:c.getContext("2d"), w:pw, h:ph};
+  }
+  return _cvBuf;
+}
+function _cvSprite(g,px,py,shirt,sombra){
+  /* jugadorcito ~4x5 px: cabeza, camiseta y una fila de sombra */
+  g.fillStyle="#1c1c22"; g.fillRect(px-2,py+3,4,1);            /* sombra al piso */
+  g.fillStyle=sombra;    g.fillRect(px-1,py-1,3,4);            /* contorno/short oscuro */
+  g.fillStyle=shirt;     g.fillRect(px-1,py-1,3,2);            /* camiseta */
+  g.fillStyle="#e6b17e"; g.fillRect(px,  py-3,1,2);            /* cabeza */
+}
 function _cvDraw(ctx,w,h){
   const st=_cvSt; if(!st) return;
-  const X=x=>Math.round(x*w), Y=y=>Math.round(y*h);
-  /* césped con franjas */
-  ctx.fillStyle="#2f9e3a"; ctx.fillRect(0,0,w,h);
-  for(let i=0;i<8;i++){ ctx.fillStyle=i%2?"#33ab3f":"#2c9636"; ctx.fillRect(Math.round(i*w/8),0,Math.ceil(w/8),h); }
-  /* líneas */
-  ctx.strokeStyle="rgba(255,255,255,.85)"; ctx.lineWidth=Math.max(1,w*0.004);
-  const m=w*0.03;
-  ctx.strokeRect(m,m,w-2*m,h-2*m);
-  ctx.beginPath(); ctx.moveTo(w/2,m); ctx.lineTo(w/2,h-m); ctx.stroke();
-  ctx.beginPath(); ctx.arc(w/2,h/2,h*0.13,0,Math.PI*2); ctx.stroke();
+  const buf=_cvBuffer(w,h), g=buf.ctx, bw=buf.w, bh=buf.h;
+  const X=x=>Math.round(x*bw), Y=y=>Math.round(y*bh);
+  /* césped a franjas pixeladas */
+  for(let i=0;i<10;i++){ g.fillStyle=i%2?"#3aa049":"#2f8f3f"; g.fillRect(Math.round(i*bw/10),0,Math.ceil(bw/10)+1,bh); }
+  /* líneas blancas (1 px del buffer = chunky al escalar) */
+  const line="#dff0df"; g.fillStyle=line;
+  const m=Math.round(bw*0.03);
+  const rect=(x,y,ww,hh)=>{ g.fillRect(x,y,ww,1); g.fillRect(x,y+hh-1,ww,1); g.fillRect(x,y,1,hh); g.fillRect(x+ww-1,y,1,hh); };
+  rect(m,m,bw-2*m,bh-2*m);                                    /* borde */
+  g.fillRect(Math.round(bw/2),m,1,bh-2*m);                    /* mitad */
+  /* círculo central pixelado */
+  const cr=Math.round(bh*0.16), cx=Math.round(bw/2), cy=Math.round(bh/2);
+  for(let a=0;a<64;a++){ const an=a/64*Math.PI*2; g.fillRect(cx+Math.round(Math.cos(an)*cr), cy+Math.round(Math.sin(an)*cr),1,1); }
+  g.fillRect(cx,cy,1,1);
   /* áreas */
-  const ah=h*0.44, aw=w*0.13;
-  ctx.strokeRect(m,(h-ah)/2,aw,ah); ctx.strokeRect(w-m-aw,(h-ah)/2,aw,ah);
+  const ah=Math.round(bh*0.46), aw=Math.round(bw*0.12);
+  rect(m,Math.round((bh-ah)/2),aw,ah); rect(bw-m-aw,Math.round((bh-ah)/2),aw,ah);
   /* arcos */
-  ctx.fillStyle="rgba(255,255,255,.9)";
-  ctx.fillRect(m-w*0.012,(h-h*0.16)/2,w*0.012,h*0.16);
-  ctx.fillRect(w-m,(h-h*0.16)/2,w*0.012,h*0.16);
-  /* jugadores */
-  const col=_cvColores(), r=Math.max(3,w*0.011);
-  st.jug.forEach(p=>{
-    ctx.beginPath(); ctx.arc(X(p.x),Y(p.y),r,0,Math.PI*2);
-    ctx.fillStyle=p.mio?col.mio:col.riv; ctx.fill();
-    ctx.lineWidth=1; ctx.strokeStyle="rgba(0,0,0,.55)"; ctx.stroke();
-  });
-  /* pelota */
-  const b=st.ball;
-  ctx.beginPath(); ctx.arc(X(b.x),Y(b.y),Math.max(2.2,r*0.7),0,Math.PI*2);
-  ctx.fillStyle="#fff"; ctx.fill(); ctx.strokeStyle="rgba(0,0,0,.7)"; ctx.lineWidth=1; ctx.stroke();
+  const gh=Math.round(bh*0.16);
+  g.fillStyle="#ffffff";
+  g.fillRect(m-2,Math.round((bh-gh)/2),2,gh); g.fillRect(bw-m,Math.round((bh-gh)/2),2,gh);
+  /* jugadores como sprites */
+  const col=_cvColores();
+  const shMio=_cvSombra(col.mio,0.45), shRiv=_cvSombra(col.riv,0.45);
+  st.jug.forEach(p=>_cvSprite(g, X(p.x), Y(p.y), p.mio?col.mio:col.riv, p.mio?shMio:shRiv));
+  /* pelota: cuadradito blanco con un pixel de sombra */
+  const b=st.ball, bx=X(b.x), by=Y(b.y);
+  g.fillStyle="#12140f"; g.fillRect(bx,by+1,2,1);
+  g.fillStyle="#ffffff"; g.fillRect(bx,by-1,2,2);
+  /* escalar el buffer al canvas real SIN suavizado → pixel-art */
+  ctx.imageSmoothingEnabled=false; ctx.msImageSmoothingEnabled=false;
+  ctx.clearRect(0,0,w,h);
+  ctx.drawImage(buf.c,0,0,bw,bh,0,0,w,h);
 }
 function _cvSize(canvas){
   const cssW=canvas.clientWidth||canvas.parentNode&&canvas.parentNode.clientWidth||320;

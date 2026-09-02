@@ -1543,3 +1543,7 @@ Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
 - **SERVIDOR.md**: guía copy-paste Hetzner CAX11 (~€3,79/mes) + Node + Caddy (https auto vía nip.io, sin dominio) + systemd.
 - **server/Caddyfile, server/datos/datos.json**: plantillas.
 **Probado:** smoke test en vivo (registro→token, subir/bajar, clave mala rechazada, salud). Falta enchufar el login del juego cuando haya IP.
+
+## 7.15 · Cancha pixel-art (chao SVG liso)
+- **cancha.js**: se renderiza a baja resolución (~4 px reales por pixel del juego) y se escala con nearest-neighbor (imageSmoothingEnabled=false) → pixel-art de verdad. Césped a franjas pixeladas, líneas/áreas/círculo central chunky, arcos, y jugadores como spritecitos (cabeza + camiseta + sombra) con color del club. Pelota cuadrada. Toda la lógica de movimiento/gol intacta.
+**Probado:** node --check + captura headless (se ve retro, sprites y líneas pixeladas).
