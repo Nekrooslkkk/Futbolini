@@ -7,10 +7,9 @@
    - Login/registro con contraseña hasheada (scrypt) y token de sesión.
    - Guardar/bajar la partida en la nube (una por usuario).
    - Servir datos vivos para actualizar el juego sin redeploy (/api/datos).
+   - Servir el juego estático (index.html, js/, css/) en la misma URL.
 
    Cómo correr:  PORT=8080 DATA_DIR=./datos ADMIN_KEY=loquesea node index.js
-   HTTPS: NO lo hace este server. Poné Caddy adelante (ver Caddyfile / SERVIDOR.md)
-   para tener https automático — importante porque el login viaja con contraseña.
    ============================================================ */
 
 const http = require("http");
@@ -20,20 +19,28 @@ const path = require("path");
 
 const PORT = parseInt(process.env.PORT || "8080", 10);
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "datos");
-const ADMIN_KEY = process.env.ADMIN_KEY || "";           /* para editar /api/datos */
-const TOKEN_TTL = 1000 * 60 * 60 * 24 * 30;              /* 30 días */
-const MAX_BODY = 5 * 1024 * 1024;                        /* 5 MB por request */
+const ADMIN_KEY = process.env.ADMIN_KEY || "";
+const TOKEN_TTL = 1000 * 60 * 60 * 24 * 30;
+const MAX_BODY = 5 * 1024 * 1024;
+const PUBLIC = path.join(__dirname, "..");
+const MIME = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+  ".gif": "image/gif", ".svg": "image/svg+xml", ".ico": "image/x-icon",
+  ".txt": "text/plain; charset=utf-8", ".md": "text/plain; charset=utf-8"
+};
 
 fs.mkdirSync(path.join(DATA_DIR, "saves"), { recursive: true });
 
-/* ---------- almacén simple en JSON (suficiente para uso personal) ---------- */
 function rutaUsuarios() { return path.join(DATA_DIR, "usuarios.json"); }
 function leerJSON(f, def) { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch (e) { return def; } }
 function escribirJSON(f, obj) { fs.writeFileSync(f, JSON.stringify(obj)); }
 function cargarUsuarios() { return leerJSON(rutaUsuarios(), {}); }
 function guardarUsuarios(u) { escribirJSON(rutaUsuarios(), u); }
 
-/* ---------- passwords + tokens ---------- */
 function hashPass(pass, salt) {
   salt = salt || crypto.randomBytes(16).toString("hex");
   const h = crypto.scryptSync(pass, salt, 64).toString("hex");
@@ -47,10 +54,9 @@ function verificarPass(pass, guardado) {
 }
 function nuevoToken() { return crypto.randomBytes(24).toString("hex"); }
 
-/* ---------- helpers http ---------- */
 function cors(res, origin) {
   res.setHeader("Access-Control-Allow-Origin", origin || "*");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-admin-key");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Vary", "Origin");
 }
@@ -80,7 +86,17 @@ function usuarioDeToken(req) {
 }
 function emailValido(e) { return typeof e === "string" && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e) && e.length <= 120; }
 
-/* ---------- rutas ---------- */
+function servirEstatico(url, res) {
+  let rel = url === "/" ? "/index.html" : url;
+  if (rel.startsWith("/server") || rel.includes("..")) return false;
+  const full = path.normalize(path.join(PUBLIC, rel));
+  if (!full.startsWith(path.normalize(PUBLIC))) return false;
+  if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return false;
+  res.writeHead(200, { "Content-Type": MIME[path.extname(full)] || "application/octet-stream" });
+  res.end(fs.readFileSync(full));
+  return true;
+}
+
 const rutas = {
   "GET /api/salud": async (req, res) => responder(res, 200, { ok: true, servicio: "futbolini", hora: new Date().toISOString() }),
 
@@ -129,14 +145,11 @@ const rutas = {
     responder(res, 200, { ok: true, estado: save.estado, cuando: save.updated });
   },
 
-  /* datos vivos: el juego los baja al abrir; editás este archivo y todos lo
-     tienen al próximo abrir, SIN redeploy de GitHub Pages. */
   "GET /api/datos": async (req, res) => {
     const datos = leerJSON(path.join(DATA_DIR, "datos.json"), { version: 0, nota: "sin datos remotos" });
     responder(res, 200, { ok: true, datos });
   },
 
-  /* actualizar los datos vivos (requiere ADMIN_KEY en el header x-admin-key) */
   "POST /api/datos": async (req, res) => {
     if (!ADMIN_KEY || (req.headers["x-admin-key"] || "") !== ADMIN_KEY) return responder(res, 403, { ok: false, msg: "No autorizado." });
     const b = await leerCuerpo(req);
@@ -147,15 +160,18 @@ const rutas = {
   }
 };
 
-/* ---------- servidor ---------- */
 const server = http.createServer(async (req, res) => {
   cors(res, req.headers.origin);
   if (req.method === "OPTIONS") { res.writeHead(204); return res.end(); }
   const url = (req.url || "/").split("?")[0].replace(/\/+$/, "") || "/";
   const clave = req.method + " " + url;
   const handler = rutas[clave];
-  if (!handler) return responder(res, 404, { ok: false, msg: "Ruta no encontrada: " + clave });
-  try { await handler(req, res); }
-  catch (e) { responder(res, 400, { ok: false, msg: "Error procesando la petición." }); }
+  if (handler) {
+    try { await handler(req, res); }
+    catch (e) { responder(res, 400, { ok: false, msg: "Error procesando la petición." }); }
+    return;
+  }
+  if (req.method === "GET" && servirEstatico(url, res)) return;
+  responder(res, 404, { ok: false, msg: "Ruta no encontrada: " + clave });
 });
 server.listen(PORT, () => console.log("Futbolini server escuchando en :" + PORT + " (datos en " + DATA_DIR + ")"));

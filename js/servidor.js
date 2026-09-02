@@ -1,17 +1,15 @@
 "use strict";
 /* ============================================================
-   FUTBOLINI · servidor.js — cliente del backend propio (Hetzner)
+   FUTBOLINI · servidor.js — cliente del backend propio
    ── OPCIONAL. Si SERVIDOR_CONFIG.base está vacío, no hace nada y el
    juego sigue 100% offline como siempre. ──
 
-   Pegá acá la URL de tu server (con https, vía Caddy) cuando lo tengas:
-     base: "https://TU_IP.nip.io"
-   Endpoints que consume: /api/registro /api/entrar /api/subir /api/bajar /api/datos
+   Endpoints: /api/registro /api/entrar /api/subir /api/bajar /api/datos
    (los sirve server/index.js). Habla por fetch puro, sin dependencias.
    ============================================================ */
 
 const SERVIDOR_CONFIG = {
-  base: ""   /* ej: "https://203-0-113-45.nip.io" — sin barra final */
+  base: "https://web-production-363f4.up.railway.app"
 };
 const SRV_LLAVE = "futbolini_srv_sesion";
 
