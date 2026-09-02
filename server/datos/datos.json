@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "nota": "Datos vivos que el juego baja al abrir. Editá este archivo (o POST /api/datos) para actualizar sin redeploy.",
+  "tuits_extra": [],
+  "planteles": {},
+  "equipos": []
+}

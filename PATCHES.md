@@ -1536,3 +1536,10 @@ Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
 ## 7.13b · Época histórica de Palestino 1978 (real) + fix épocas de clubes solo-2026
 - **Palestino 1978 · "La Estrella Árabe"** (data-historia.js): campeón del Nacional 1978, Elías Figueroa de eje, Óscar Fabbiani goleador (35 goles), 44 fechas invicto, DT Caupolicán Peña. Datos reales; el plantel en juego es el 2026 (identidad histórica encima, avisado). Limache NO recibe época: su identidad real es el recién ascendido, no se inventa gloria.
 - **Fix (ui.js)**: una época cuyo año mapea a una era donde el club no existe (Palestino 1978 → liga 91) ahora se juega en 2026 sin romper. La U 2011 y demás quedan igual.
+
+## 7.14 · Backend propio (opcional) + cliente + guía de deploy
+- **server/index.js**: backend Node PURO (sin dependencias): registro/login con contraseña hasheada (scrypt) + token, guardar/bajar partida en la nube (una por usuario), y /api/datos para actualizar contenido SIN redeploy. CORS listo.
+- **js/servidor.js**: cliente fetch opcional (SERVIDOR_CONFIG.base vacío = no hace nada, sigue offline). Login/subir/bajar/datos.
+- **SERVIDOR.md**: guía copy-paste Hetzner CAX11 (~€3,79/mes) + Node + Caddy (https auto vía nip.io, sin dominio) + systemd.
+- **server/Caddyfile, server/datos/datos.json**: plantillas.
+**Probado:** smoke test en vivo (registro→token, subir/bajar, clave mala rechazada, salud). Falta enchufar el login del juego cuando haya IP.

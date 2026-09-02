@@ -1,0 +1,11 @@
+# Futbolini · Caddyfile — HTTPS automático delante del server Node.
+# Reemplazá TU_IP por la IP del server (ej: 203.0.113.45).
+# nip.io convierte la IP en un dominio (203-0-113-45.nip.io) para que
+# Caddy pueda sacar un certificado Let's Encrypt gratis, aun sin dominio propio.
+#
+# Si más adelante compras un dominio, cambia el bloque por: tudominio.cl { ... }
+
+TU_IP.nip.io {
+    encode gzip
+    reverse_proxy localhost:8080
+}
