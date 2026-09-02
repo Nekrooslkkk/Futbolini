@@ -1532,3 +1532,7 @@ Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
 - Envuelve `tuitDeCtx`: 55% genera con estado, si no cae al pool aprobado (no reemplaza, mezcla). Cubre 15 contextos.
 - Resultado: "92'+2 y Javier Correa la reventó, NO DA EL CORAZÓN 😭" — tuits que hablan del partido que estás jugando, combinatoria de miles.
 **Probado:** node --check; harness generativo (referencia marcador/goleador/minuto/rival reales, varía por tirada).
+
+## 7.13b · Época histórica de Palestino 1978 (real) + fix épocas de clubes solo-2026
+- **Palestino 1978 · "La Estrella Árabe"** (data-historia.js): campeón del Nacional 1978, Elías Figueroa de eje, Óscar Fabbiani goleador (35 goles), 44 fechas invicto, DT Caupolicán Peña. Datos reales; el plantel en juego es el 2026 (identidad histórica encima, avisado). Limache NO recibe época: su identidad real es el recién ascendido, no se inventa gloria.
+- **Fix (ui.js)**: una época cuyo año mapea a una era donde el club no existe (Palestino 1978 → liga 91) ahora se juega en 2026 sin romper. La U 2011 y demás quedan igual.

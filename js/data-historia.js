@@ -369,7 +369,12 @@ DCO:[{anio:2010,etq:"2010 · León en Primera",squad:"PLANTEL_DCO_2010",
 desc:"Una de las últimas temporadas competitivas del León en Primera antes del largo bajón institucional.",
 dt:"el cuerpo técnico",
 ind:{plantel:68,moral:70,hinchada:75,socios:55,cantera:48,estadio:78,prestigio:60,riesgo:34},
-caja:{plata:200,deuda:100}}]
+caja:{plata:200,deuda:100}}],
+PAL:[{anio:1978,etq:"1978 · La Estrella Árabe",
+desc:"Campeón del Campeonato Nacional 1978, el título más recordado del club. Con Elías Figueroa de vuelta en Chile como eje defensivo y Óscar Fabbiani goleador (35 goles), Palestino hilvanó una racha histórica de 44 fechas invicto (1977-78). Dirigía Caupolicán Peña. (Plantel en juego: aproximado, época recreada.)",
+dt:"Caupolicán Peña",
+ind:{plantel:82,moral:85,hinchada:74,socios:52,cantera:56,estadio:52,prestigio:82,riesgo:14},
+caja:{plata:240,deuda:90}}]
 };
 
 /* registrar los planteles históricos en PLANTELES_REALES[club][anio] */

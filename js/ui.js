@@ -138,9 +138,13 @@ function elegirEpoca(id){
     puntos.push({k:"b1991",tipo:"base",base:1991,anio:1991,etq:"1991 · Fase A"});
     puntos.push({k:"b2026",tipo:"base",base:2026,anio:2026,etq:"2026 · Actual"});
   }
-  glorias.forEach((ep,i)=>puntos.push({k:"g"+i,tipo:"gloria",
-    base:(typeof baseEra==="function"?baseEra(ep.anio):(ep.anio>=2010?2026:1991)),
-    anio:ep.anio, etq:"🏆 "+ep.etq, ep:ep}));
+  glorias.forEach((ep,i)=>{
+    let b=(typeof baseEra==="function"?baseEra(ep.anio):(ep.anio>=2010?2026:1991));
+    /* 7.13 · si el club no existe en esa era (ej: Palestino 1978 → liga 91),
+       se juega en 2026 con la identidad histórica encima. No romper. */
+    if(typeof datosEra==="function" && !(datosEra(b).info||{})[id]) b=2026;
+    puntos.push({k:"g"+i,tipo:"gloria",base:b,anio:ep.anio,etq:"🏆 "+ep.etq,ep:ep});
+  });
   let sel=puntos[0];
   function datosPunto(pt){
     const D=datosEra(pt.base);
@@ -224,7 +228,14 @@ function elegirEpoca(id){
       go.style.marginTop="12px";
       go.onclick=()=>{
         try{
-          const anio=sel.anio;
+          /* 7.13 · solo se redirige la era a 2026 si el club NO existe en la era
+             de su año histórico (ej: Palestino 1978 → liga 91). La U 2011 y demás
+             quedan igual. El año-etiqueta histórico viaja aparte en la época. */
+          let anio=sel.anio;
+          if(sel.tipo==="gloria"){
+            const ob=(typeof baseEra==="function")?baseEra(sel.anio):(sel.anio>=2010?2026:1991);
+            if(typeof datosEra==="function" && !(datosEra(ob).info||{})[id]) anio=2026;
+          }
           const extra=sel.tipo==="gloria"?{epoca:sel.ep}:(sel.base===2026&&corte?{corte:true}:null);
           nuevaPartida(id, anio, modo, extra);
           if(!E || !E.club) throw new Error("nuevaPartida no dejó estado E");
