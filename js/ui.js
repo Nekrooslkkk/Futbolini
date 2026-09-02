@@ -721,6 +721,42 @@ function vistaFinanzas(){
   p.cuerpo.appendChild(el("p","mini","Los partidos de local suman taquilla aparte. Todos los montos están en millones de pesos de la época."));
   v.appendChild(p);
 
+  /* --- 7.15 · EXPLICADOR: qué pasa con la plata, por qué, y qué hacer paso a paso --- */
+  (function(){
+    const neto=ingresoSemanal()-costoSemanal();
+    const semanas=neto>=0?99:Math.max(0,Math.floor((E.plata||0)/Math.max(1,-neto)));
+    const atras=!!(E.flags&&E.flags.sueldosAtrasados), claus=!!(E.flags&&E.flags.clausura);
+    const dir=(E.grupos&&E.grupos.directorio&&E.grupos.directorio.aprob)||0;
+    const deuda=E.deuda||0;
+    let nivel, verd;
+    if(atras||claus||semanas<4||(deuda>4500&&dir<-15)){ nivel="rojo"; verd="🔴 Alerta: la plata está apretando."; }
+    else if(neto<0||deuda>1500||semanas<12){ nivel="amarillo"; verd="🟡 Ojo con la caja, pero hay margen."; }
+    else { nivel="verde"; verd="🟢 Finanzas sanas."; }
+    const pe=panel("¿Cómo estamos de plata?","🧭",nivel==="rojo"?"grave":(nivel==="amarillo"?"alerta":"agua"));
+    pe.cuerpo.appendChild(el("div","resul "+(nivel==="verde"?"bien":(nivel==="rojo"?"mal":"mitad")),"<b>"+verd+"</b>"));
+    const por=[];
+    if(neto<0) por.push("Cada semana <b>sale más de lo que entra</b> ("+plata(-neto)+" en rojo). Con este ritmo la caja dura ±"+semanas+" semanas.");
+    else por.push("Cada semana te quedan <b>+"+plata(neto)+"</b>: por flujo, la caja no corre peligro.");
+    let ingBase=0; try{ if(typeof ingresosAnuales==="function"){ const ia=ingresosAnuales(); ingBase=(ia.tv||0)+(ia.sponsors||0)+(ia.socios||0); } }catch(e){}
+    if(ingBase && planillaAnual()>ingBase) por.push("La <b>planilla</b> (sueldos) es lo que más te pesa: sola ya supera lo que entra por TV+sponsors+socios.");
+    if(deuda>3000) por.push("La <b>deuda</b> ("+plata(deuda)+") es alta: los intereses te comen caja cada semana y calientan al directorio.");
+    else if(deuda>0) por.push("Tenés una deuda de "+plata(deuda)+" pagando intereses todas las semanas.");
+    if(atras) por.push("🔴 <b>Sueldos atrasados</b>: la moral del plantel cae cada semana hasta que regularices la caja.");
+    if(claus) por.push("🔴 <b>Sectores clausurados</b> por la deuda: perdés aforo y taquilla en cada partido de local.");
+    const ul=el("div","mini"); ul.style.lineHeight="1.5"; ul.innerHTML=por.map(x=>"• "+x).join("<br>"); pe.cuerpo.appendChild(ul);
+    const pasos=[];
+    if(atras||claus) pasos.push("Conseguí caja YA y bajá la deuda: vendé un jugador en <b>Mercado</b> (la plata más sana), o pedí un <b>crédito</b> acá abajo si es urgente.");
+    if(E.plata>=200 && deuda>0) pasos.push("Tenés "+plata(E.plata)+" disponible: <b>aboná a la deuda</b> (botones abajo) para pagar menos intereses cada semana.");
+    if(E.plata<200 && (neto<0||deuda>0)) pasos.push("Poca caja: lo más sano es <b>vender o no renovar</b> un sueldo alto en <b>Mercado</b>. El <b>crédito</b> te salva hoy pero sube la deuda 8%.");
+    if(neto<0) pasos.push("Para dejar de perder cada semana: bajá <b>planilla</b> (vender/no renovar) o subí ingresos (precio de <b>entradas</b> en Estadio, sponsors, contratar CM).");
+    if(nivel==="verde") pasos.push("Vas bien. Si querés soltar las manos en el mercado, aboná deuda; si sobra, invertí en el club.");
+    if(!pasos.length) pasos.push("No hay nada urgente. Mantené el flujo positivo y aboná deuda cuando sobre.");
+    pe.cuerpo.appendChild(el("h3","sub","Qué hacer, paso a paso"));
+    pasos.forEach((s,i)=>pe.cuerpo.appendChild(el("div","resul mitad","<b>"+(i+1)+".</b> "+s)));
+    pe.cuerpo.appendChild(el("p","mini","Regla de oro: siempre hay salida. Si te quedas sin caja, un crédito te da aire (sube la deuda) y vender un jugador es la forma más sana de ordenar."));
+    v.appendChild(pe);
+  })();
+
   /* --- flujo de caja semanal itemizado --- */
   if(typeof ingresosAnuales==="function" && typeof egresosAnuales==="function"){
     const ia=ingresosAnuales(), ea=egresosAnuales();

@@ -1547,3 +1547,7 @@ Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
 ## 7.15 · Cancha pixel-art (chao SVG liso)
 - **cancha.js**: se renderiza a baja resolución (~4 px reales por pixel del juego) y se escala con nearest-neighbor (imageSmoothingEnabled=false) → pixel-art de verdad. Césped a franjas pixeladas, líneas/áreas/círculo central chunky, arcos, y jugadores como spritecitos (cabeza + camiseta + sombra) con color del club. Pelota cuadrada. Toda la lógica de movimiento/gol intacta.
 **Probado:** node --check + captura headless (se ve retro, sprites y líneas pixeladas).
+
+## 7.16 · Economía explicativa (nunca callejón sin salida)
+- **ui.js / Finanzas**: panel "¿Cómo estamos de plata?" arriba de todo. Semáforo (🟢🟡🔴), explica en chileno claro POR QUÉ estás así (flujo semanal, planilla, deuda, sueldos atrasados, clausura, semanas de caja) y da los pasos a seguir apuntando a los botones que ya existen (abonar, crédito, vender en Mercado). Regla de oro visible: siempre hay salida.
+**Probado:** node --check. Panel de solo-lectura sobre helpers existentes.
