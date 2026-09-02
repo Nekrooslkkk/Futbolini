@@ -1520,3 +1520,9 @@ Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
 - **APODOS_MEME**: las cuentas troll (@cuenta_troll, @garrafal_cl, etc.) bautizan al jugador cuando ESE está en cancha — si su nombre resuelto aparece en el tuit y su apellido tiene apodo, se reemplaza (Vidal→Rey Arturo, Palacios→Pala…). Enganchado vía wrap de `empujarTicker` (post-resolución de tokens).
 - **Contextos que no son evento de partido** (`descenso_peligro`, `rumor_fichaje`, `invicto`): se disparan desde el ambiente del ticker. descenso_peligro = club en zona de descenso (`posicionEnTabla` >= n-1) con torneo avanzado; invicto = `E.temporada.sinPerder>=5` (contador nuevo en partido.js); rumor_fichaje = chismerío de mercado, baja frecuencia.
 **Probado:** node --check; harness de lógica (merge pisa lo viejo, apodo aplica ~55% solo en handles troll, contextos nuevos en el pool).
+
+## 7.12 · Partido conectado con Redes + marca unificada Plop!
+- **Guard nuevaPartida**: no crashea con club inexistente en la época (aviso limpio).
+- **persistirTicker (redes.js)**: al cerrar el partido, los tuits de la hinchada del ticker quedan pegados en el feed de Plop! (E.timeline) + una reacción de cierre atada al resultado. La conversa sigue después del pitazo, no se muere. Solo 2008+.
+- **Marca unificada**: lo que quedaba como "FutbolGram" en el partido ahora es "Plop!" (ticker en vivo + opinión-pista táctica).
+**Probado:** node --check; harness (dedupe, orden, reacción por resultado).

@@ -643,7 +643,7 @@ function pintarPartido(){
   p.cuerpo.appendChild(rel);
   /* ticker de redes en vivo (FutbolGram) */
   if(P.modo!=="simular" && P.ticker && P.ticker.length){
-    p.cuerpo.appendChild(el("h3","sub","📱 FutbolGram · en vivo"));
+    p.cuerpo.appendChild(el("h3","sub","📱 Plop! · en vivo"));
     const tk=el("div","ticker");
     P.ticker.slice(0,10).forEach(t=>{
       const d=el("div","tk "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"")));
@@ -750,7 +750,7 @@ function mostrarMomento(){
     const opin=(typeof opinionesTactica==="function")?opinionesTactica(rec):[];
     if(opin.length){
       const fg=el("div","fg-opina");
-      fg.appendChild(el("div","fg-cab","📱 FutbolGram opina · leé a la gente"));
+      fg.appendChild(el("div","fg-cab","📱 Plop! opina · lee a la gente"));
       const handles=(typeof HANDLES_HINCHA!=="undefined"&&HANDLES_HINCHA.length)?HANDLES_HINCHA:["@hincha_de_ley","@barra_del_fondo","@pibe_popular23"];
       opin.forEach(op=>{ fg.appendChild(el("div","fg-op","<b>"+elige(handles)+"</b> "+op.t)); });
       p.cuerpo.appendChild(fg);
@@ -1074,6 +1074,7 @@ function cerrarPartido(){
   P.cerrado=true; clearInterval(TIMER); MOMENTO_OPS=[];
   if(typeof detenerCancha==="function") detenerCancha();
   const res=terminarPartido(P);
+  if(typeof persistirTicker==="function") persistirTicker(P,res);  /* 7.12 · el partido queda en el feed de Plop! */
   const gano=res.yo>res.otro;
   const p=panel("Final del partido","📄",gano?"":"alerta");
   p.cuerpo.appendChild(el("h2","tit",(gano?"Victoria ":(res.yo<res.otro?"Derrota ":"Empate "))+res.yo+"-"+res.otro+" ante "+P.part.rivalNombre));

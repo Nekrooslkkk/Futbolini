@@ -56,6 +56,39 @@ function postProc(autor,tipo,texto,tono,extra){
   if(E.timeline.length>80) E.timeline.length=80;
   return item;
 }
+/* 7.12 · conectar PARTIDO → REDES: lo que la hinchada tuiteó en el ticker del
+   partido queda pegado en el feed de Plop!, así la conversa sigue después del
+   pitazo final (no se muere al cerrar el partido). Solo con Twitter (2008+). */
+function persistirTicker(P, res){
+  try{
+    if(!P || (E.anio||2026)<2008) return;
+    const fechaLbl="fecha "+((E.temporada&&E.temporada.pj)||"");
+    const vistos={};
+    const elegidos=(P.ticker||[]).filter(function(t){
+      if(!t||!t.texto||vistos[t.texto]) return false; vistos[t.texto]=true; return true;
+    }).slice(0,5);
+    /* de más viejo a más nuevo para que el último quede arriba del feed */
+    elegidos.reverse().forEach(function(t){
+      postProc(t.autor||"@hincha", "hincha", t.texto, t.tono||"neutro", {fecha:fechaLbl, postPartido:true});
+    });
+    /* una reacción de cierre atada al resultado real */
+    if(res){
+      const gano=res.yo>res.otro, empate=res.yo===res.otro, riv=(P.part&&P.part.rivalNombre)||"el rival";
+      const pool=gano?[
+        {a:"@barra_del_sur",x:"3 puntazos ante "+riv+". así se sale a la calle wn 🔥",t:"bueno"},
+        {a:"@datofutbol_cl",x:res.yo+"-"+res.otro+" a "+riv+". la tabla nos empieza a sonreír.",t:"bueno"}
+      ]:empate?[
+        {a:"@garrafal_cl",x:"empate con "+riv+". ni fu ni fa. seguimos remando.",t:"neutro"},
+        {a:"@socio_enojado",x:res.yo+"-"+res.otro+" con "+riv+". un punto que sabe a poco po.",t:"neutro"}
+      ]:[
+        {a:"@el_verdadero_hincha",x:"caímos con "+riv+" "+res.otro+"-"+res.yo+". a levantar la cabeza.",t:"malo"},
+        {a:"@viejo_del_bar",x:"otra vez a sufrir. contra "+riv+" no podíamos regalar así.",t:"malo"}
+      ];
+      const r=pool[Math.floor(Math.random()*pool.length)];
+      postProc(r.a,"hincha",r.x,r.t,{fecha:fechaLbl, postPartido:true});
+    }
+  }catch(e){}
+}
 function tendencias(){
   const t=[];
   const part=typeof proximoPartido==="function"?proximoPartido():null;
