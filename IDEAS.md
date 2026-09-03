@@ -7,7 +7,7 @@
 > necesitan algo tuyo están en "🔒 Bloqueadas".
 
 ## 🚀 Por hacer (autónomas — arrancá por acá)
-- [ ] **Plop! hilos**: que las cuentas se respondan entre ellas (1-2 réplicas por post caliente), usando las personas de `plop-motor.js`.
+- [x] **Plop! hilos**: las cuentas se responden entre ellas — commit pendiente.
 - [ ] **Plop! memoria entre partidos**: que recuerden la racha y el resultado anterior ("la fecha pasada te funaban, ahora…"). Usar `E.plop.hist` + `E.temporada`.
 - [ ] **Momentos del partido más potentes**: subir el peso visual/narrativo del momento clave (gol, penal, roja) — pausa dramática, texto más grande, reacción del banco.
 - [ ] **Cancha pixel v2**: pequeños detalles (arquero que se mueve en el penal, pelota con estela corta, red que vibra en el gol).

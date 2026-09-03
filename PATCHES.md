@@ -1551,3 +1551,7 @@ Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
 ## 7.16 · Economía explicativa (nunca callejón sin salida)
 - **ui.js / Finanzas**: panel "¿Cómo estamos de plata?" arriba de todo. Semáforo (🟢🟡🔴), explica en chileno claro POR QUÉ estás así (flujo semanal, planilla, deuda, sueldos atrasados, clausura, semanas de caja) y da los pasos a seguir apuntando a los botones que ya existen (abonar, crédito, vender en Mercado). Regla de oro visible: siempre hay salida.
 **Probado:** node --check. Panel de solo-lectura sobre helpers existentes.
+
+## 7.17 · Plop! hilos — las cuentas se responden entre ellas
+- **plop-motor.js**: al postear un hincha en el feed, otra cuenta (con voz distinta) le tira 1-2 réplicas cortas según el tono (bueno/malo/neutro). Se cuelga de postProc y usa el campo `hilo` que ya renderiza el feed (↳). El conjunto se siente conversando, no monologando.
+**Probado:** node --check + test de plopReplica (respuestas calzan con el tono y vienen de otra persona).

@@ -227,3 +227,73 @@ function generarPlop(ctx){
   };
   tuitDeCtx._gen=true;
 })();
+
+/* ============================================================
+   HILOS: las cuentas se responden entre ellas. Cuando un hincha postea en el
+   feed, otra cuenta (con voz distinta) le tira 1-2 réplicas cortas según el
+   tono. Se cuelga de postProc (que ya guarda item.hilo, renderizado con ↳).
+   ============================================================ */
+const PLOP_REPLICAS={
+  bueno:{
+    exaltado:["ESO WN 🔥","VAMOS QUE SE PUEDE 🙌","ARRIBA CARAJO","así se habla po"],
+    ironico:["por fin alguien lo dice","no lo hubiera dicho mejor ksks","tomá pa vos"],
+    amargado:["ojalá dure","no me ilusiono igual","a ver cuánto aguanta"],
+    tierno:["ay qué lindo hijito 🥺","así me gusta","el corazón contento"],
+    dato:["+1, los números lo respaldan","tal cual, dato firme"],
+    rival:["disfruten mientras dure 😌","ya nos va a tocar"],
+    cotidiano:["lo grité en la micro jaja","me hiciste el día"],
+    serio:["comparto el análisis.","coincido, fue clave."]
+  },
+  malo:{
+    exaltado:["ME CARGA ESTA WEA 😡","NO PUEDE SER PO","ya fue, ya fue"],
+    ironico:["clásico de la casa","sorpresa cero ksks","lo veía venir"],
+    amargado:["lo dije hace rato","este club me va a matar","siempre lo mismo"],
+    tierno:["ay no hijito 😔","qué pena me da"],
+    dato:["los números venían avisando","-moral, anoten"],
+    rival:["gracias, se agradece 🤣","los amo por esto"],
+    cotidiano:["me arruinaron el día","chao finde"],
+    serio:["hay que corregir esto.","preocupa, sí."]
+  },
+  neutro:{
+    ironico:["ver pa creer","mmm veremos","ni fu ni fa"],
+    amargado:["a mí no me convence","tengo mis dudas"],
+    dato:["dato para la mesa","anotado."],
+    cotidiano:["jaja tal cual","lo mismo pienso"],
+    serio:["punto válido."]
+  }
+};
+function plopReplica(tono, evitar){
+  const banco=PLOP_REPLICAS[tono]||PLOP_REPLICAS.neutro;
+  const voces=Object.keys(banco); if(!voces.length) return null;
+  for(let i=0;i<6;i++){
+    const v=voces[Math.floor(Math.random()*voces.length)];
+    const cuentas=(PLOP_POR_VOZ[v]||[]).filter(function(h){ return h!==evitar; });
+    if(!cuentas.length) continue;
+    const h=cuentas[Math.floor(Math.random()*cuentas.length)];
+    const opts=banco[v]; const txt=opts[Math.floor(Math.random()*opts.length)];
+    return {autor:h, texto:txt};
+  }
+  return null;
+}
+(function(){
+  if(typeof postProc!=="function" || postProc._hilo) return;
+  const base=postProc;
+  postProc=function(autor,tipo,texto,tono,extra){
+    const item=base(autor,tipo,texto,tono,extra);
+    try{
+      if(item && tipo==="hincha" && Math.random()<0.38){
+        item.hilo=item.hilo||[];
+        const r1=plopReplica(item.tono, autor);
+        if(r1){ item.hilo.push({autor:r1.autor, texto:r1.texto, fecha:"ahora"});
+          if(Math.random()<0.35){
+            const r2=plopReplica(item.tono, r1.autor);
+            if(r2 && r2.autor!==r1.autor) item.hilo.push({autor:r2.autor, texto:r2.texto, fecha:"ahora"});
+          }
+          item.replies=(item.replies||0)+item.hilo.length;
+        }
+      }
+    }catch(e){}
+    return item;
+  };
+  postProc._hilo=true;
+})();
