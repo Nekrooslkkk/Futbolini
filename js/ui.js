@@ -1762,7 +1762,23 @@ function vistaAjustes(){
       const bOut=el("button","btn-aqua chico gris"); bOut.textContent="Cerrar sesión"; bOut.style.marginLeft="6px";
       bOut.onclick=()=>{ nubeSalir(); aviso("Sesión cerrada"); render(); };
       pn.cuerpo.appendChild(bSub); pn.cuerpo.appendChild(bBaj); pn.cuerpo.appendChild(bOut);
-      pn.cuerpo.appendChild(el("p","mini","Sube después de jugar; baja al empezar en otro equipo. Es manual a propósito, para que nunca pierdas una partida sin querer."));
+      /* auto-respaldo: solo sube, nunca baja ni pisa tu partida sin permiso */
+      const autoOn=(typeof nubeAutoActivo==="function")?nubeAutoActivo():false;
+      pn.cuerpo.appendChild(el("label","lb","Respaldo automático"));
+      const fa=el("div","fichas");
+      [["si","Automático (recomendado)"],["no","Solo manual"]].forEach(([k,n])=>{
+        const on=k==="si";
+        const b=el("button","ficha",n);
+        b.setAttribute("aria-pressed",autoOn===on?"true":"false");
+        b.onclick=()=>{ if(typeof nubeAutoSet==="function") nubeAutoSet(on); aviso(on?"Auto-respaldo activado":"Auto-respaldo desactivado"); render(); };
+        fa.appendChild(b);
+      });
+      pn.cuerpo.appendChild(fa);
+      const ult=(typeof nubeUltimoRespaldo==="function")?nubeUltimoRespaldo():0;
+      const cuando=ult?("último respaldo: "+new Date(ult).toLocaleString("es-CL",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})):"todavía sin respaldo automático";
+      pn.cuerpo.appendChild(el("p","mini",(autoOn
+        ? "Con auto-respaldo, tu partida se sube sola a la nube cada vez que el juego guarda: aunque limpies el navegador o cambies de equipo, no la perdés. <span id=\"nubeAutoTxt\">"+cuando+"</span>."
+        : "Modo manual: subí después de jugar y bajá al empezar en otro equipo. Bajar SIEMPRE es manual y con confirmación, para que nunca pierdas una partida sin querer.")));
     }else{
       pn.cuerpo.appendChild(el("p","mini","Entra con tu correo para guardar la partida en la nube y seguir en cualquier dispositivo. Es opcional: sin cuenta, el juego anda igual offline."));
       const estiloInp="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid rgba(0,0,0,.15)";

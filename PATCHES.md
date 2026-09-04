@@ -1555,3 +1555,21 @@ Fuenzalida, Calandria, Brian Fernández, Aravena, Johansen…).
 ## 7.17 · Plop! hilos — las cuentas se responden entre ellas
 - **plop-motor.js**: al postear un hincha en el feed, otra cuenta (con voz distinta) le tira 1-2 réplicas cortas según el tono (bueno/malo/neutro). Se cuelga de postProc y usa el campo `hilo` que ya renderiza el feed (↳). El conjunto se siente conversando, no monologando.
 **Probado:** node --check + test de plopReplica (respuestas calzan con el tono y vienen de otra persona).
+
+## 7.18 · Auto-respaldo a la nube (que no se pierda la partida)  ✅ (2026-09-03)
+**Archivos:** `js/nube.js` (motor de auto-respaldo), `js/motor.js` (hook en `guardar()`), `js/ui.js` (toggle en Ajustes)
+**Qué:** el login en la nube ya existía pero el sync era 100% manual (Subir/Bajar). Ahora, con la sesión
+iniciada, cada vez que el juego guarda se **sube sola la partida** a la nube — colchón para que nadie
+pierda su carrera por limpiar el navegador o cambiar de equipo. Pensado para compartir con amigos.
+- `nubeAutoRespaldo(estado)` en `nube.js`: **solo SUBE, nunca baja ni pisa** tu partida (bajar sigue
+  manual y con confirmación). Debounce de ~5s con **coalescing**: una ráfaga de guardados = 1 sola subida
+  del estado más nuevo. Guardas: no hace nada si la nube no está configurada, si no hay sesión, si el
+  auto-respaldo está apagado, o si el estado no tiene club.
+- Hook de una línea en `guardar()` (motor.js), envuelto en try/catch y `typeof`-guard → si `nube.js` no
+  está o falla, `guardar()` anda igual.
+- **Ajustes → Cuenta en la nube**: toggle **Automático (recomendado) / Solo manual** (`nubeAutoActivo`/
+  `nubeAutoSet`, default ON) + muestra "último respaldo: …" (`nubeUltimoRespaldo`).
+**Probado:** node --check (3/3) + test de lógica: ráfaga de 3 guardados → 1 subida del estado más nuevo,
+timestamp guardado, y NO sube con auto OFF / sin login / sin club (0 extra en los 3 casos).
+**1 línea:** con la cuenta iniciada, la partida se respalda sola en la nube tras cada guardado — sin perder nada.
+**Riesgos:** aislado en nube.js + 1 línea guardada en guardar(). Bajo.

@@ -1041,5 +1041,6 @@ async function guardar(){
   await Store.set(LLAVE,E);
   const n=(typeof document!=="undefined")?document.getElementById("guardadoTxt"):null;
   if(n) n.textContent="guardado "+new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
+  if(typeof nubeAutoRespaldo==="function"){ try{ nubeAutoRespaldo(E); }catch(e){} }
 }
 async function cargar(){ return await Store.get(LLAVE); }

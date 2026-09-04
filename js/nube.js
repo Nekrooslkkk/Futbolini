@@ -104,3 +104,44 @@ async function nubeBajar(){
   if(!filas||!filas.length||!filas[0].data) return { ok:false, vacio:true, msg:"No hay ninguna partida guardada en la nube todavía." };
   return { ok:true, estado:filas[0].data, cuando:filas[0].updated_at };
 }
+
+/* ---------- auto-respaldo (solo SUBE, nunca pisa tu partida) ----------
+   Se dispara solo tras cada guardado. Es un colchón para que nadie pierda
+   su partida por limpiar el navegador. Nunca baja ni reemplaza nada solo:
+   bajar sigue siendo manual y con confirmación. */
+const NUBE_AUTO_LLAVE="futbolini_nube_auto";     /* on/off del auto-respaldo */
+const NUBE_ULT_LLAVE ="futbolini_nube_ult";      /* timestamp del último respaldo OK */
+let _nubeAutoTimer=null, _nubeAutoEnCurso=false, _nubeAutoPend=null;
+
+function nubeAutoActivo(){
+  try{ const v=localStorage.getItem(NUBE_AUTO_LLAVE); return v===null?true:v==="1"; }catch(e){ return true; }
+}
+function nubeAutoSet(b){ try{ localStorage.setItem(NUBE_AUTO_LLAVE,b?"1":"0"); }catch(e){} }
+function nubeUltimoRespaldo(){
+  try{ const v=localStorage.getItem(NUBE_ULT_LLAVE); return v?+v:0; }catch(e){ return 0; }
+}
+function _nubeMarcarRespaldo(){ try{ localStorage.setItem(NUBE_ULT_LLAVE,String(Date.now())); }catch(e){} }
+
+/* llamado desde guardar(): agenda una subida con debounce de ~5s y coalescing */
+function nubeAutoRespaldo(estado){
+  if(!nubeActiva()||!nubeLogueado()||!nubeAutoActivo()) return;
+  if(!estado||!estado.club) return;
+  _nubeAutoPend=estado;                                   /* siempre sube el estado más nuevo */
+  if(_nubeAutoTimer||_nubeAutoEnCurso) return;            /* ya hay una subida agendada/corriendo */
+  _nubeAutoTimer=setTimeout(_nubeAutoDisparar,5000);
+}
+async function _nubeAutoDisparar(){
+  _nubeAutoTimer=null;
+  if(_nubeAutoEnCurso||!_nubeAutoPend) return;
+  _nubeAutoEnCurso=true;
+  const est=_nubeAutoPend; _nubeAutoPend=null;
+  try{
+    const r=await nubeSubir(est);
+    if(r&&r.ok){
+      _nubeMarcarRespaldo();
+      if(typeof document!=="undefined"){ const n=document.getElementById("nubeAutoTxt"); if(n) n.textContent="respaldado recién"; }
+    }
+  }catch(e){}
+  _nubeAutoEnCurso=false;
+  if(_nubeAutoPend&&!_nubeAutoTimer) _nubeAutoTimer=setTimeout(_nubeAutoDisparar,5000); /* algo cambió mientras subía */
+}
