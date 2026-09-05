@@ -9,7 +9,7 @@
 ## 🚀 Por hacer (autónomas — arrancá por acá)
 - [x] **Plop! hilos**: las cuentas se responden entre ellas — commit pendiente.
 - [x] **Plop! memoria entre partidos**: callback de racha al cerrar el partido — commit pendiente.
-- [ ] **Momentos del partido más potentes**: subir el peso visual/narrativo del momento clave (gol, penal, roja) — pausa dramática, texto más grande, reacción del banco.
+- [x] **Momentos del partido más potentes**: flash de momentazo (gol/roja/penal) — commit pendiente.
 - [ ] **Cancha pixel v2**: pequeños detalles (arquero que se mueve en el penal, pelota con estela corta, red que vibra en el gol).
 - [ ] **Más contextos generativos**: sumar `tiroLibre`, `atajada_penal`, `debut_juvenil`, `lesion_grave` a `PLOP_GRAM`.
 - [ ] **Economía**: botón "refinanciar" (baja el interés semanal a cambio de estirar el total), explicado paso a paso.

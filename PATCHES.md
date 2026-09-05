@@ -1596,3 +1596,7 @@ llaves es 100% del usuario; el juego solo las lee de su propio navegador.
 ## 7.21 · Plop! memoria entre partidos
 - **plop-motor.js**: al cerrar un partido se registra el resultado en `E.plop.racha`/`ultRes`. Si hay quiebre de racha (venías de N derrotas y ganaste, se cortó una buena, van N al hilo…), una cuenta lo comenta en el feed con el "callback": "después de 3 fechas funándolos, hoy toca callar bocas". Se cuelga de persistirTicker. Solo 2008+.
 **Probado:** node --check + harness (racha de 3 derrotas → callback; victoria posterior → callback de quiebre; racha/ultRes se actualizan).
+
+## 7.22 · Momentazo — flash grande en el gol/roja/penal
+- **ui-partido.js**: banner grande y de color arriba del marcador cuando cae un gol (verde propio / rojo rival) o una jugada grave (roja, penal, gol anulado, autogol). Se detecta comparando el marcador y las líneas graves entre renders; dura ~6 ticks y se va. Sin tocar el motor.
+**Probado:** node --check + captura headless (banner "¡GOOOL de Colo-Colo!" sobre el marcador; cancha pixel visible en el partido).

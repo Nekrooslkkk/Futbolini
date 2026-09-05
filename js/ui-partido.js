@@ -567,6 +567,33 @@ function pintarPartido(){
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
   const [yo,otro]=miMarcador(P);
   const p=panel(P.part.tipo==="copa"?("Copa Libertadores · "+P.part.ronda):("Fecha "+P.part.fecha),"🎙️",P.part.tipo==="copa"?"agua":"");
+  /* 7.22 · momentazo: flash grande cuando cae un gol / roja / penal. Se detecta
+     comparando el marcador (y las líneas graves nuevas) entre renders. */
+  (function(){
+    let txt=null, tono=null;
+    if(P._lastMarc){
+      if(yo>P._lastMarc[0]){ txt="⚽ ¡GOOOL de "+(E.clubNombre||"nosotros")+"!"; tono="bueno"; }
+      else if(otro>P._lastMarc[1]){ txt="Gol de "+P.part.rivalNombre; tono="malo"; }
+    }
+    const nl=P.lineas.length;
+    if(!txt && P._lastN!=null && nl>P._lastN){
+      const nuevas=P.lineas.slice(P._lastN).reverse();
+      const g=nuevas.find(l=>l.c==="grave" && /ROJA|[Pp]enal|anulad|Autogol|nubes/.test(l.t));
+      if(g){ txt=g.t; tono=/ROJA|Autogol|anulad|nubes/.test(g.t)?"malo":"neutro"; }
+    }
+    P._lastMarc=[yo,otro]; P._lastN=nl;
+    if(txt){ P._flash={txt:txt,tono:tono}; P._flashN=6; }
+    if(P._flash && P._flashN>0 && P.modo!=="simular"){
+      const fb=el("div"); fb.textContent=P._flash.txt;
+      const t=P._flash.tono;
+      fb.style.cssText="text-align:center;font-weight:800;font-size:19px;padding:10px 8px;margin:0 0 8px;border-radius:10px;letter-spacing:.4px;line-height:1.2;"+
+        (t==="bueno"?"background:#0f7a33;color:#eafff0;box-shadow:0 0 0 2px #1fae52 inset;":
+         (t==="malo"?"background:#8f1d1d;color:#ffecec;box-shadow:0 0 0 2px #c9392c inset;":
+                     "background:#243044;color:#eef3ff;box-shadow:0 0 0 2px #3a4a63 inset;"));
+      p.cuerpo.appendChild(fb);
+      P._flashN--;
+    }
+  })();
   const marc=el("div","marcador");
   marc.innerHTML='<div class="eq">'+(P.part.local?E.clubNombre:P.part.rivalNombre)+'</div>'+
     '<div class="go">'+P.gl+" - "+P.gv+'</div>'+
