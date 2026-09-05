@@ -17,8 +17,33 @@ const NUBE_CONFIG = {
 };
 
 const NUBE_LLAVE_SESION = "futbolini_nube_sesion";
+const NUBE_CFG_LLAVE    = "futbolini_nube_cfg";   /* config pegada en el juego (URL + anon) */
 
-function nubeActiva(){ return !!(NUBE_CONFIG.url && NUBE_CONFIG.anonKey); }
+/* config efectiva: la baked en NUBE_CONFIG manda; si está vacía, se usa la que el
+   admin pegó en Ajustes (guardada en ESTE navegador, nunca en el repo). */
+function nubeConfig(){
+  if(NUBE_CONFIG.url && NUBE_CONFIG.anonKey) return NUBE_CONFIG;
+  try{ const v=localStorage.getItem(NUBE_CFG_LLAVE); if(v){ const c=JSON.parse(v); if(c&&c.url&&c.anonKey) return c; } }catch(e){}
+  return NUBE_CONFIG;
+}
+function nubeGuardarConfig(url,anonKey){
+  url=(url||"").trim().replace(/\/+$/,""); anonKey=(anonKey||"").trim();
+  try{ if(url&&anonKey) localStorage.setItem(NUBE_CFG_LLAVE,JSON.stringify({url:url,anonKey:anonKey})); else localStorage.removeItem(NUBE_CFG_LLAVE); }catch(e){}
+}
+function nubeConfigManual(){ try{ return !!localStorage.getItem(NUBE_CFG_LLAVE); }catch(e){ return false; } }
+/* prueba la conexión con los valores tipeados (antes de guardarlos) */
+async function nubeProbar(url,anonKey){
+  url=(url||"").trim().replace(/\/+$/,""); anonKey=(anonKey||"").trim();
+  if(!url||!anonKey) return { ok:false, msg:"Falta la URL o la llave." };
+  if(!/^https:\/\/.+\.supabase\.co$/i.test(url)) return { ok:false, msg:"La URL debería verse como https://xxxx.supabase.co" };
+  try{
+    const r=await fetch(url+"/auth/v1/settings",{ headers:{ apikey:anonKey } });
+    if(r.ok) return { ok:true };
+    return { ok:false, msg:"El servidor respondió "+r.status+". Revisá la anon key." };
+  }catch(e){ return { ok:false, msg:"No se pudo conectar. ¿La URL está bien? ¿Hay internet?" }; }
+}
+
+function nubeActiva(){ const c=nubeConfig(); return !!(c.url && c.anonKey); }
 
 /* ---------- sesión local (token guardado en este navegador) ---------- */
 function nubeSesion(){
@@ -32,13 +57,14 @@ function nubeEmail(){ const s=nubeSesion(); return (s&&s.usuario&&s.usuario.emai
 
 /* ---------- helpers de red ---------- */
 function nubeHeaders(conAuth){
-  const h={ "Content-Type":"application/json", "apikey":NUBE_CONFIG.anonKey };
+  const h={ "Content-Type":"application/json", "apikey":nubeConfig().anonKey };
   if(conAuth){ const s=nubeSesion(); if(s&&s.access_token) h["Authorization"]="Bearer "+s.access_token; }
   return h;
 }
 async function nubeFetch(ruta,opts){
-  if(!nubeActiva()) throw new Error("La nube no está configurada.");
-  const r=await fetch(NUBE_CONFIG.url+ruta,opts);
+  const c=nubeConfig();
+  if(!c.url||!c.anonKey) throw new Error("La nube no está configurada.");
+  const r=await fetch(c.url+ruta,opts);
   return r;
 }
 

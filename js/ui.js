@@ -1745,9 +1745,27 @@ function vistaAjustes(){
   v.appendChild(pr);
 
   /* ---- Cuenta en la nube (opcional) ---- */
-  if(typeof nubeActiva==="function" && nubeActiva()){
+  if(typeof nubeActiva==="function"){
     const pn=panel("Cuenta en la nube","☁️");
-    if(nubeLogueado()){
+    if(!nubeActiva()){
+      /* aún sin configurar: formulario para pegar URL + anon key (admin) */
+      pn.cuerpo.appendChild(el("p","mini","Para prender el login (gratis, con Supabase) pegá acá la <b>URL</b> y la <b>llave pública (anon)</b> de tu proyecto. Los pasos para crear el proyecto están en <b>SETUP_NUBE.md</b>. La llave anon es <b>pública a propósito</b>: es seguro dejarla acá. La que NUNCA se pega es la <i>service_role</i>."));
+      const estiloCfg="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid rgba(0,0,0,.15);font-size:13px";
+      const cfg0=(typeof nubeConfig==="function")?nubeConfig():{url:"",anonKey:""};
+      const iUrl=el("input"); iUrl.type="url"; iUrl.placeholder="https://xxxx.supabase.co"; iUrl.value=cfg0.url||""; iUrl.style.cssText=estiloCfg; iUrl.spellcheck=false;
+      const iKey=el("input"); iKey.type="text"; iKey.placeholder="anon key (empieza con eyJ...)"; iKey.value=cfg0.anonKey||""; iKey.style.cssText=estiloCfg; iKey.spellcheck=false;
+      pn.cuerpo.appendChild(iUrl); pn.cuerpo.appendChild(iKey);
+      const bProbar=el("button","btn-aqua chico","Probar conexión"); bProbar.style.marginTop="6px";
+      bProbar.onclick=async()=>{ bProbar.disabled=true; const r=await nubeProbar(iUrl.value,iKey.value); bProbar.disabled=false; aviso(r.ok?"✅ Conexión OK, ya podés guardar":("❌ "+r.msg)); };
+      const bGuardar=el("button","btn-aqua chico verde","Guardar y activar"); bGuardar.style.marginLeft="6px";
+      bGuardar.onclick=async()=>{
+        const r=await nubeProbar(iUrl.value,iKey.value);
+        if(!r.ok){ if(!confirm("La prueba falló ("+r.msg+"). ¿Guardar igual?")) return; }
+        nubeGuardarConfig(iUrl.value,iKey.value); aviso("Nube configurada. Ya podés crear tu cuenta."); render();
+      };
+      pn.cuerpo.appendChild(bProbar); pn.cuerpo.appendChild(bGuardar);
+      pn.cuerpo.appendChild(el("p","mini","Esto queda guardado en <b>este navegador</b> (no en el repo). Para que tus amigos tengan login en la página publicada, la llave anon va en <code>js/nube.js</code> — avisame y lo dejo listo."));
+    }else if(nubeLogueado()){
       pn.cuerpo.appendChild(el("p",null,"Sesión iniciada como <b>"+(nubeEmail()||"tu cuenta")+"</b>. Tu partida te sigue a cualquier equipo."));
       const bSub=el("button","btn-aqua chico","Subir partida");
       bSub.onclick=async()=>{ bSub.disabled=true; const r=await nubeSubir(E); bSub.disabled=false; aviso(r.ok?"Partida subida a la nube":("No se pudo subir: "+r.msg)); };
@@ -1799,6 +1817,12 @@ function vistaAjustes(){
         if(r.ok){ aviso(r.confirmar?r.msg:"Cuenta creada"); render(); } else aviso(r.msg);
       };
       pn.cuerpo.appendChild(bIn); pn.cuerpo.appendChild(bReg);
+    }
+    /* si la config se pegó a mano en el juego, dejar reconfigurar/borrar */
+    if(nubeActiva() && typeof nubeConfigManual==="function" && nubeConfigManual()){
+      const bReconf=el("button","btn-aqua chico gris","Cambiar conexión a la nube"); bReconf.style.marginTop="8px";
+      bReconf.onclick=()=>{ if(confirm("¿Borrar la URL y la llave guardadas en este navegador? (No borra tu cuenta ni tu partida en la nube.)")){ if(typeof nubeSalir==="function") nubeSalir(); nubeGuardarConfig("",""); aviso("Conexión borrada"); render(); } };
+      pn.cuerpo.appendChild(bReconf);
     }
     v.appendChild(pn);
   }

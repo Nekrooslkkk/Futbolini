@@ -1573,3 +1573,22 @@ pierda su carrera por limpiar el navegador o cambiar de equipo. Pensado para com
 timestamp guardado, y NO sube con auto OFF / sin login / sin club (0 extra en los 3 casos).
 **1 línea:** con la cuenta iniciada, la partida se respalda sola en la nube tras cada guardado — sin perder nada.
 **Riesgos:** aislado en nube.js + 1 línea guardada en guardar(). Bajo.
+
+## 7.19 · Configurar la nube DENTRO del juego (sin editar archivos ni exponer llaves)  ✅ (2026-09-04)
+**Archivos:** `js/nube.js` (config efectiva + prueba de conexión), `js/ui.js` (formulario en Ajustes)
+**Qué:** para prender el login ya no hace falta editar `nube.js` a mano. Si `NUBE_CONFIG` está vacío,
+el juego lee la config que el admin **pega en Ajustes → Cuenta en la nube** (URL + anon key), guardada
+en `localStorage` de ESE navegador — nunca en el repo, nunca pasa por el dev.
+- `nubeConfig()`: config efectiva (baked manda; si no, la pegada a mano). `nubeGuardarConfig(url,key)`
+  (normaliza la URL, saca barra final), `nubeConfigManual()`, `nubeProbar(url,key)` (valida formato
+  `https://xxxx.supabase.co` + hace un GET a `/auth/v1/settings` con la anon key → OK / 401 / sin conexión).
+  `nubeActiva`/`nubeHeaders`/`nubeFetch` ahora usan `nubeConfig()`.
+- **Ajustes**: cuando la nube NO está configurada, aparece un formulario (URL + anon key) con "Probar
+  conexión" y "Guardar y activar"; una vez guardada, aparece el login normal + "Cambiar conexión a la nube".
+  Nota clara: la anon key es pública a propósito; la `service_role` NUNCA se pega.
+**Seguridad:** el dev/IA nunca toca las credenciales del usuario. Crear el proyecto Supabase y pegar las
+llaves es 100% del usuario; el juego solo las lee de su propio navegador.
+**Probado:** node --check (3/3) + test de lógica 9/9 (activa/manual/normaliza URL/prueba OK-URLmala-401/borrar)
++ smoke navegador (form con 2 campos y 2 botones renderiza en Ajustes, consola limpia).
+**1 línea:** ahora prendés el login pegando 2 valores dentro del juego — sin tocar código y sin que las llaves salgan de tu navegador.
+**Riesgos:** aislado en nube.js + un panel en Ajustes. Bajo.
