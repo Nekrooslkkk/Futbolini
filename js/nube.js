@@ -12,8 +12,8 @@
    ============================================================ */
 
 const NUBE_CONFIG = {
-  url: "",        /* ej: https://abcdefgh.supabase.co  (sin barra final) */
-  anonKey: ""     /* anon / public key del proyecto */
+  url: "https://jtovotunboairatszhew.supabase.co",        /* proyecto Supabase de Futbolini */
+  anonKey: "sb_publishable_QjD9L7SWCdfgYasuzIqQ2Q_ypj2g2-R"  /* llave PUBLICA (publishable) — segura en el repo; la seguridad la da RLS */
 };
 
 const NUBE_LLAVE_SESION = "futbolini_nube_sesion";
