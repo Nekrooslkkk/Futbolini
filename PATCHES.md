@@ -1592,3 +1592,7 @@ llaves es 100% del usuario; el juego solo las lee de su propio navegador.
 + smoke navegador (form con 2 campos y 2 botones renderiza en Ajustes, consola limpia).
 **1 línea:** ahora prendés el login pegando 2 valores dentro del juego — sin tocar código y sin que las llaves salgan de tu navegador.
 **Riesgos:** aislado en nube.js + un panel en Ajustes. Bajo.
+
+## 7.21 · Plop! memoria entre partidos
+- **plop-motor.js**: al cerrar un partido se registra el resultado en `E.plop.racha`/`ultRes`. Si hay quiebre de racha (venías de N derrotas y ganaste, se cortó una buena, van N al hilo…), una cuenta lo comenta en el feed con el "callback": "después de 3 fechas funándolos, hoy toca callar bocas". Se cuelga de persistirTicker. Solo 2008+.
+**Probado:** node --check + harness (racha de 3 derrotas → callback; victoria posterior → callback de quiebre; racha/ultRes se actualizan).

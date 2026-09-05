@@ -61,8 +61,9 @@ function plopEstado(){
 
 /* ---------- memoria del conjunto ---------- */
 function plopMem(){
-  if(typeof E==="undefined"||!E) return {humor:60,hist:[]};
-  if(!E.plop) E.plop={humor:60, hist:[], obsesion:null};
+  if(typeof E==="undefined"||!E) return {humor:60,hist:[],racha:[],ultRes:null};
+  if(!E.plop) E.plop={humor:60, hist:[], obsesion:null, racha:[], ultRes:null};
+  if(!E.plop.racha) E.plop.racha=[];
   return E.plop;
 }
 function plopRecuerda(txt){ const m=plopMem(); m.hist.unshift(txt); if(m.hist.length>10) m.hist.length=10; }
@@ -296,4 +297,57 @@ function plopReplica(tono, evitar){
     return item;
   };
   postProc._hilo=true;
+})();
+
+/* ============================================================
+   MEMORIA ENTRE PARTIDOS: las cuentas se acuerdan de la racha y del
+   resultado anterior. Al cerrar un partido se registra el resultado y, si hay
+   un quiebre de racha (venías perdiendo y ganaste, se cortó la buena, etc.),
+   una cuenta lo comenta en el feed con el "callback".
+   ============================================================ */
+function plopRachaCola(mem, tipo){
+  let n=0; for(let i=mem.racha.length-1;i>=0;i--){ if(mem.racha[i]===tipo) n++; else break; } return n;
+}
+/* devuelve {autor,texto,tono} de callback usando la racha PREVIA, o null */
+function plopFraseMemoria(mem, outcome, res){
+  try{
+    const rival=(res&&res.rival)||"el rival";
+    const nL=plopRachaCola(mem,"L"), nW=plopRachaCola(mem,"W"), nD=plopRachaCola(mem,"D");
+    let txt=null, tono="neutro", voz="amargado";
+    if(outcome==="W" && nL>=2){ txt=P1(["veníamos de "+nL+" caídas seguidas y hoy ganamos. respira el barrio 😮‍💨","después de "+nL+" fechas funándolos, hoy toca callar bocas. incluida la mía","de "+nL+" derrotas al hilo a esta alegría. el fútbol te devuelve la mano"]); tono="bueno"; voz="viejo_del_bar"; }
+    else if(outcome==="L" && nW>=2){ txt=P1(["se cortó la buena de "+nW+" triunfos. era hora, no nos íbamos a acostumbrar a ser felices","veníamos de "+nW+" al hilo y contra "+rival+" se acabó el sueño. típico","adiós rachita de "+nW+". lindo mientras duró 🫠"]); tono="malo"; voz="socio_enojado"; }
+    else if(outcome==="W" && nW>=2){ txt=P1(["y van "+(nW+1)+" seguidas 🔥 no me hablen que estoy en una nube",""+(nW+1)+" triunfos al hilo. ¿esto es lo que se siente ser grande?","racha de "+(nW+1)+". que no despierte nadie"]); tono="bueno"; voz="albo_insomne"; }
+    else if(outcome==="L" && nL>=2){ txt=P1(["otra más. van "+(nL+1)+" sin ganar y ya no sé si reír o llorar",""+(nL+1)+" derrotas seguidas. esto ya no es mala racha, es estilo de vida","el DT habla de proceso hace "+(nL+1)+" fechas. el proceso es de duelo"]); tono="malo"; voz="viejo_del_bar"; }
+    else if(outcome==="D" && (nL>=2||nD>=2)){ txt=P1(["empatamos. ni ganamos ni perdemos, el limbo eterno de este club","otro empate. coleccionamos puntitos como quien junta monedas de $10"]); tono="neutro"; voz="garrafal_cl"; }
+    if(!txt) return null;
+    const h="@"+voz;
+    return {autor:(PLOP_PERSONAS[h]?h:"@viejo_del_bar"), texto:txt, tono:tono};
+  }catch(e){ return null; }
+}
+function plopRegistrarResultado(res){
+  try{
+    if(!res || (typeof E==="undefined")||!E || (E.anio||2026)<2008) return null;
+    const mem=plopMem();
+    const outcome=res.yo>res.otro?"W":(res.yo<res.otro?"L":"D");
+    const callback=plopFraseMemoria(mem, outcome, res);   /* usa la racha PREVIA */
+    mem.racha.push(outcome); if(mem.racha.length>8) mem.racha.shift();
+    mem.ultRes={o:outcome, marcador:res.yo+"-"+res.otro, rival:res.rival||""};
+    return callback;
+  }catch(e){ return null; }
+}
+/* engancharse al cierre de partido (persistirTicker corre en cerrarPartido) */
+(function(){
+  if(typeof persistirTicker!=="function" || persistirTicker._mem) return;
+  const base=persistirTicker;
+  persistirTicker=function(P, res){
+    base(P, res);
+    try{
+      const r=res?{yo:res.yo, otro:res.otro, rival:(P&&P.part&&P.part.rivalNombre)||"el rival"}:null;
+      const cb=plopRegistrarResultado(r);
+      if(cb && typeof postProc==="function"){
+        postProc(cb.autor, "hincha", cb.texto, cb.tono, {fecha:"fecha "+((E.temporada&&E.temporada.pj)||""), postPartido:true, memoria:true});
+      }
+    }catch(e){}
+  };
+  persistirTicker._mem=true;
 })();
