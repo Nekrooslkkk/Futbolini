@@ -27,11 +27,14 @@
 ---
 
 ## 1 · MENÚ INICIAL Y PARTIDAS
-- [ ] **[MOTOR]** Pantalla de carga más linda, menos monótona (varias frases/animación).
-- [ ] **[MOTOR]** **Menú de pausa** (o dentro de Ajustes) para volver a elegir otro equipo.
-- [ ] **[MOTOR]** **Varias partidas guardadas** (slots) — poder tener varias carreras a la vez.
-- [ ] **[GROK/TUYO]** **Logos de los equipos actuales** (imágenes). Grok las busca; si no, el usuario
-      las sube a `img/`. Las imágenes son un upgrade visual grande.
+- [ ] **[MOTOR]** Pantalla de carga más linda, menos monótona (varias frases/animación). *(hay frases
+      rotativas; falta el salto visual grande)*
+- [x] **[MOTOR]** **Menú de pausa** para volver a elegir otro equipo → Ajustes → "Mis partidas" +
+      "Nueva partida (elegir otro club)". (7.24)
+- [x] **[MOTOR]** **Varias partidas guardadas** (slots) — se puede tener varias carreras; se eligen en
+      el arranque y en Ajustes → Mis partidas. Migra el save viejo sin perder nada. (7.24)
+- [ ] **[GROK/TUYO]** **Logos de los equipos actuales** (imágenes). Grok las busca; el usuario las sube
+      a `img/` (juego offline → archivos locales). Las imágenes son un upgrade visual grande.
 
 ## 2 · MULTIJUGADOR (duelo con un amigo) — rehacer
 - [ ] **[MOTOR]** Sacar el "copiar/escribir código" (es nefasto). Buscar señalización más piola.
@@ -78,8 +81,10 @@
 ## 7 · COMPETICIONES
 - [ ] **[MOTOR+GROK]** **Copa Libertadores** y **Copa Sudamericana**: simulaciones **fieles al formato**
       (si se avanza en años, y cuando los cimientos indiquen, generar escenarios futuristas que cambian).
-- [ ] **[TUYO/GROK]** **Primera B**: equipos + fixture (usuario confirma qué clubes y año).
-- [ ] **[TUYO/GROK]** **Copa Chile**: formato + calendario (da cupo internacional; confirmar año).
+- [ ] **[GROK]** **Primera B**: **DECIDIDO** → temporada **2026** (solo era actual), con **Cobreloa** +
+      otros clubes de Primera B 2026 que elija Claude. Equipos + fixture + planteles reales (Grok).
+- [ ] **[GROK]** **Copa Chile**: **DECIDIDO** → para el **modo actual (2026)**; existió también en 1991,
+      así que si se juega esa época va también. Formato + calendario por año (Grok verifica).
 
 ## 8 · ESCRITORIO / OBJETIVOS / AYUDANTE / NOTIS / AVANZAR
 - [ ] **[MOTOR]** "Lo que se espera de **vos**" → "de **ti**"; gráficos que se entiendan + llevarlo a Historia.

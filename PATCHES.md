@@ -1616,3 +1616,22 @@ title cuando hay sesión. No duplica lógica de auth; el panel de Ajustes sigue 
 correo/clave/crear cuenta, consola limpia).
 **1 línea:** el login ya es un botón 👤 arriba al lado de Avanzar, y quedó capturado TODO el roadmap de la beta.
 **Riesgos:** aislado (barra + modal, reusa nube.js). Bajo.
+
+## 7.24 · Varias partidas (slots) + cambiar de club  ✅ (2026-09-07)
+**Archivos:** `js/motor.js` (sistema de slots + guardar), `js/ui.js` (arranque + panel "Mis partidas")
+**Qué:** ahora se puede tener **varias carreras guardadas** a la vez y cambiar de club sin perder nada.
+- **Slots** (`js/motor.js`): cada partida vive en su clave `futbolini3_partida_<id>`; un índice explícito
+  `futbolini3_slots` la lista (Store abstrae window.storage → no se puede enumerar), y `futbolini3_activo`
+  recuerda la activa. `E._slot` viaja en el save. `guardar()` escribe la activa + actualiza índice +
+  mantiene el save legacy (`LLAVE`) en sync. Helpers: `slotsLista/cargarPartida/borrarPartida/migrarSlots`.
+- **Migración**: la primera vez, el save único viejo se mueve a un slot (0 pérdida).
+- **Arranque** (`pantallaArranque`): lista TODAS las partidas (la activa como "Continuar" + el resto) y
+  "➕ Nueva partida (elegir otro club)".
+- **En juego** (Ajustes → **Mis partidas 🗂️**): lista con Continuar/Borrar por partida, la actual
+  marcada, y "Nueva partida" que guarda la actual y te lleva a elegir club (`cambiarDeClub`). El viejo
+  "Borrar partida" ahora borra la partida actual vía el sistema de slots.
+**Probado:** node --check + navegador: crear CC → cambiar de club → UCH (slot distinto), 2 slots listados,
+cargar CC de vuelta (slot correcto), borrar deja 1; tras recargar el arranque lista las 2 + Nueva; panel
+Mis partidas renderiza con la actual marcada. Consola limpia.
+**1 línea:** varias carreras a la vez: cambiás de club cuando quieras y cada partida se guarda en su ranura.
+**Riesgos:** toca el core de guardado (guardar/boot); migración probada, save legacy en sync. Medio-bajo.

@@ -1697,6 +1697,58 @@ function cargarPartidaArchivo(f){
   lector.onerror=()=>aviso("No se pudo leer el archivo");
   lector.readAsText(f);
 }
+/* ---------------- mis partidas (varios slots) ---------------- */
+async function cambiarDeClub(){
+  if(E&&E.club){ await guardar(); }        /* guarda la actual en su slot antes de salir */
+  E=null; SEC="escritorio"; render();       /* render con E=null → pantallaInicio (elegir club) */
+  aviso("Elegí el club de tu nueva partida");
+}
+async function continuarPartida(id){
+  if(E&&E._slot===id){ aviso("Ya estás en esa partida"); return; }
+  if(E&&E.club){ await guardar(); }
+  const ok=await cargarPartida(id);
+  if(ok){ SEC="escritorio"; render(); aviso("Partida cargada"); } else aviso("No se pudo cargar esa partida");
+}
+async function borrarPartidaUI(id,nombre){
+  if(!confirm("¿Borrar la partida de "+(nombre||"este club")+"? No se puede deshacer.")) return;
+  const eraActual=(E&&E._slot===id);
+  await borrarPartida(id);
+  if(eraActual){ E=null; SEC="escritorio"; }
+  render(); aviso("Partida borrada");
+}
+function panelMisPartidas(v){
+  const pm=panel("Mis partidas","🗂️");
+  pm.cuerpo.appendChild(el("p","mini","Podés tener varias carreras a la vez. Cambiá de club cuando quieras: la partida actual se guarda sola en su propia ranura."));
+  const cont=el("div"); pm.cuerpo.appendChild(cont);
+  cont.appendChild(el("p","mini","Cargando partidas…"));
+  const bNueva=el("button","btn-aqua chico verde","➕ Nueva partida (elegir otro club)"); bNueva.style.marginTop="8px";
+  bNueva.onclick=cambiarDeClub;
+  pm.cuerpo.appendChild(bNueva);
+  v.appendChild(pm);
+  slotsLista().then(lista=>{
+    cont.innerHTML="";
+    if(!lista.length){ cont.appendChild(el("p","mini","Todavía no hay partidas guardadas.")); return; }
+    const ord=lista.slice().sort((a,b)=>(b.guardado||0)-(a.guardado||0));
+    ord.forEach(s=>{
+      const esAct=(E&&E._slot===s.id);
+      const fila=el("div","fila");
+      const etq=(s.epoca||("Año "+s.anio))+(s.gen>1?" · gen "+s.gen:"");
+      const cuando=s.guardado?fechaCorta(s.guardado):"";
+      fila.innerHTML='<span>'+(esAct?"▶ ":"")+"<b>"+(s.clubNombre||s.club)+"</b> <span class='mini'>"+etq+(cuando?" · "+cuando:"")+(esAct?" · actual":"")+"</span></span>";
+      const acc=el("span","");
+      if(!esAct){
+        const bc=el("button","btn-aqua chico","Continuar"); bc.onclick=()=>continuarPartida(s.id); acc.appendChild(bc);
+      }
+      const bd=el("button","btn-aqua chico rojo"); bd.textContent="🗑"; bd.title="Borrar"; bd.style.marginLeft="6px";
+      bd.onclick=()=>borrarPartidaUI(s.id,s.clubNombre||s.club); acc.appendChild(bd);
+      fila.appendChild(acc);
+      cont.appendChild(fila);
+    });
+  }).catch(()=>{ cont.innerHTML=""; cont.appendChild(el("p","mini","No se pudieron leer las partidas.")); });
+}
+function fechaCorta(ts){
+  try{ return new Date(ts).toLocaleDateString("es-CL",{day:"2-digit",month:"2-digit"}); }catch(e){ return ""; }
+}
 /* ---------------- ajustes ---------------- */
 function vistaAjustes(){
   const v=$("#vista");
@@ -1704,6 +1756,7 @@ function vistaAjustes(){
   don.cuerpo.appendChild(el("p",null,"Futbolini es gratis y siempre lo va a ser. Corre 100% en tu navegador, sin servidor obligatorio y sin IA de pago: el cerebro del juego es local, así que no cuesta un peso mantenerlo."));
   don.cuerpo.appendChild(el("p","mini","Si quieres ayudar: comparte el juego o escribile al autor. La mejor forma de sostenerlo es que lo juegue más gente."));
   v.appendChild(don);
+  panelMisPartidas(v);
   const p=panel("Ajustes","⚙️");
   p.cuerpo.appendChild(el("label","lb","Tema visual"));
   const f=el("div","fichas");
@@ -1728,8 +1781,11 @@ function vistaAjustes(){
     "Resultados, títulos y fechas se apoyan en registros públicos. Todo lo demás (conversaciones, negociaciones, conflictos internos, frases) "+
     "es ficción escrita para el juego."));
   const b1=el("button","btn-aqua chico","Guardar ahora"); b1.onclick=async()=>{ await guardar(); aviso("Partida guardada"); };
-  const b2=el("button","btn-aqua chico rojo","Borrar partida"); b2.style.marginLeft="6px";
-  b2.onclick=async()=>{ if(confirm("¿Borrar la partida guardada?")){ await Store.del(LLAVE); E=null; render(); } };
+  const b2=el("button","btn-aqua chico rojo","Borrar esta partida"); b2.style.marginLeft="6px";
+  b2.onclick=async()=>{
+    if(E&&E._slot){ borrarPartidaUI(E._slot,E.clubNombre); }
+    else if(confirm("¿Borrar la partida guardada?")){ await Store.del(LLAVE); E=null; render(); }
+  };
   p.cuerpo.appendChild(b1); p.cuerpo.appendChild(b2);
   v.appendChild(p);
 
@@ -2105,7 +2161,8 @@ $("#btnTemas").onclick=()=>{
   document.body.dataset.tema=orden[i]; Store.set("futbolini3_tema",orden[i]); render();
 };
 /* ---------- pantalla de arranque (que entrar no sea fome) ---------- */
-function pantallaArranque(haySave){
+function pantallaArranque(haySave,slots){
+  slots=slots||[];
   const ov=el("div",""); ov.id="arranque";
   const inner=el("div","arr-inner");
   inner.innerHTML=
@@ -2115,7 +2172,21 @@ function pantallaArranque(haySave){
     '<div class="arr-cargando">Preparando la cancha…</div>';
   const btns=el("div","arr-btns");
   const salir=cb=>{ ov.classList.add("fuera"); setTimeout(()=>{ if(ov.parentNode) ov.remove(); },430); if(cb) cb(); render(); };
-  if(haySave){
+  if(slots.length){
+    const act=(E&&E._slot)||null;
+    const ord=slots.slice().sort((a,b)=>(b.guardado||0)-(a.guardado||0));
+    ord.forEach((s,i)=>{
+      const esAct=s.id===act;
+      const b=el("button","btn-aqua ancho arranque-btn"+((i===0)?" verde":""));
+      const etq=s.epoca||("Año "+s.anio)+(s.gen>1?" · generación "+s.gen:"");
+      b.innerHTML="▶ "+(esAct?"Continuar · ":"")+(s.clubNombre||s.club)+"<span class='arr-mini'>"+etq+"</span>";
+      b.onclick=async()=>{ if(esAct){ salir(); return; } const ok=await cargarPartida(s.id); if(ok) salir(); else aviso("No se pudo cargar esa partida"); };
+      btns.appendChild(b);
+    });
+    const bn=el("button","btn-aqua ancho arranque-btn"); bn.innerHTML="➕ Nueva partida<span class='arr-mini'>elegir otro club</span>";
+    bn.onclick=()=>salir(()=>{ E=null; });
+    btns.appendChild(bn);
+  } else if(haySave){
     const sub=E&&E.clubNombre?(" · "+E.clubNombre+" "+E.anio):"";
     const bc=el("button","btn-aqua ancho verde arranque-btn"); bc.innerHTML="▶ Continuar mi carrera"+(sub?"<span class='arr-mini'>"+sub+"</span>":"");
     bc.onclick=()=>salir();
@@ -2184,12 +2255,19 @@ document.addEventListener("keydown",function(e){
   }
   const t=await Store.get("futbolini3_tema");
   document.body.dataset.tema=t||"aero";
-  let g=null; try{ g=await cargar(); }catch(e){ console.error("No se pudo leer el save:",e); }
+  let lista=[]; try{ lista=await migrarSlots(); }catch(e){ console.error("No se pudo migrar slots:",e); }
+  let g=null;
+  try{
+    let actId=await slotActivoId();
+    if(!actId && lista.length) actId=lista[lista.length-1].id;
+    if(actId) g=await Store.get(slotKey(actId));
+    if(!g||!g.club) g=await cargar();   /* fallback al save legacy */
+  }catch(e){ console.error("No se pudo leer el save:",e); }
   let haySave=!!(g&&g.club);
   if(haySave){
-    try{ E=g; normalizarEstado(); aplicarEstatutosMod(); }
+    try{ E=g; if(!E._slot && lista.length) E._slot=lista[lista.length-1].id; normalizarEstado(); aplicarEstatutosMod(); }
     catch(e){ console.error("Save dañado, empiezo limpio:",e); E=null; haySave=false; aviso("La partida guardada estaba dañada. Se empieza de nuevo.",5000); }
   }
-  pantallaArranque(haySave);
+  pantallaArranque(haySave,lista);
 })();
 window.addEventListener("resize",()=>{ clearTimeout(window._rb); window._rb=setTimeout(burbujas,400); });

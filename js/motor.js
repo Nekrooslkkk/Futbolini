@@ -1038,9 +1038,66 @@ function capitalAnual(){
 /* ---------------- guardado ---------------- */
 async function guardar(){
   if(!E) return;
-  await Store.set(LLAVE,E);
+  if(!E._slot) E._slot=nuevoSlotId();
+  await Store.set(slotKey(E._slot),E);
+  await Store.set(LLAVE,E);                 /* compat: el save legacy = la partida activa */
+  await slotFijarActivo(E._slot);
+  try{ await slotActualizarIndice(E); }catch(e){}
   const n=(typeof document!=="undefined")?document.getElementById("guardadoTxt"):null;
   if(n) n.textContent="guardado "+new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
   if(typeof nubeAutoRespaldo==="function"){ try{ nubeAutoRespaldo(E); }catch(e){} }
 }
 async function cargar(){ return await Store.get(LLAVE); }
+
+/* ---------- partidas múltiples (slots) ----------
+   Cada partida vive bajo su propia clave (slotKey). Un índice explícito
+   (SLOTS_LLAVE) lista las partidas con metadatos, porque Store abstrae
+   window.storage y no se puede enumerar. La partida activa se recuerda en
+   ACTIVO_LLAVE. El save legacy (LLAVE) se mantiene en sync = partida activa. */
+const SLOTS_LLAVE="futbolini3_slots";
+const ACTIVO_LLAVE="futbolini3_activo";
+function slotKey(id){ return "futbolini3_partida_"+id; }
+function nuevoSlotId(){ return "p"+Date.now().toString(36)+Math.floor(Math.random()*1000).toString(36); }
+async function slotsLista(){ const a=await Store.get(SLOTS_LLAVE); return Array.isArray(a)?a:[]; }
+async function slotsGuardarLista(a){ await Store.set(SLOTS_LLAVE,a); }
+function slotMetaDe(est){
+  return { id:est._slot, club:est.club, clubNombre:est.clubNombre||est.club, anio:est.anio,
+           epoca:est.epocaEtq||"", modo:est.modo||"", gen:(est.dinastia&&est.dinastia.generacion)||1, guardado:Date.now() };
+}
+async function slotActivoId(){ return await Store.get(ACTIVO_LLAVE); }
+async function slotFijarActivo(id){ await Store.set(ACTIVO_LLAVE,id); }
+async function slotActualizarIndice(est){
+  const lista=await slotsLista();
+  const meta=slotMetaDe(est);
+  const i=lista.findIndex(s=>s.id===est._slot);
+  if(i>=0) lista[i]=meta; else lista.push(meta);
+  await slotsGuardarLista(lista);
+}
+async function borrarPartida(id){
+  await Store.del(slotKey(id));
+  const lista=(await slotsLista()).filter(s=>s.id!==id);
+  await slotsGuardarLista(lista);
+  if(await slotActivoId()===id) await slotFijarActivo(lista.length?lista[lista.length-1].id:null);
+}
+async function cargarPartida(id){
+  const est=await Store.get(slotKey(id));
+  if(!est||!est.club) return false;
+  E=est; if(!E._slot) E._slot=id;
+  normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod();
+  await slotFijarActivo(id); await Store.set(LLAVE,E);
+  return true;
+}
+/* migra el save único viejo a un slot la primera vez (sin perder nada) */
+async function migrarSlots(){
+  let lista=await slotsLista();
+  if(lista.length) return lista;
+  const legacy=await Store.get(LLAVE);
+  if(legacy&&legacy.club){
+    if(!legacy._slot) legacy._slot=nuevoSlotId();
+    await Store.set(slotKey(legacy._slot),legacy);
+    lista=[slotMetaDe(legacy)];
+    await slotsGuardarLista(lista);
+    await slotFijarActivo(legacy._slot);
+  }
+  return lista;
+}
