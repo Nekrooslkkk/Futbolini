@@ -1792,3 +1792,16 @@ toggle fuera. Consola limpia.
 **UI:** escritorio / modal / notificación usan `etqCompromiso` (el torneo de verdad, no «Libertadores» en Copa Chile).
 **1 línea:** no todos clasifican a la Libertadores 2026; el 2027 se sortea; el ayudante es gratis y local.
 **Riesgos:** wraps de `construirCalendario` / `resolverCopa` / `generarObjetivos` / `finDeTemporada` / `preguntarAyudante`. 1991 CC intacta (`anio < 2026` cae al orig). Bajo-medio.
+
+## 7.34 · Celular cómodo: dock, HUD de partido, rápido  ✅ (2026-09-08)
+**Archivos:** `css/movil.css` (nuevo), `css/base.css`, `js/ui.js`, `js/ui-partido.js`, `js/util.js`, `index.html`.
+**Qué (solo ≤720px; el desktop no cambia):**
+- **Dock Aero** abajo: botón gordo **⚽ Jugar** (si hay partido) o **Avanzar**, más Escritorio / Plantel / Calendario / Mercado / Más. El menú horizontal de 13 pestañas y el Avanzar de la barra se esconden.
+- **Hoja «Más»**: Institución, Finanzas, Estadio, Redes, Historia, Carrera, Vida, Avisos, Ajustes + avance rápido + tema.
+- **Partido con el pulgar**: HUD fijo abajo (Pausa | Resultado + 1x/2x/4x/cambio/cancha). Las jugadas (penal, tiro libre, momento táctico) reemplazan el HUD y se pegan al pulgar. Hints de teclado ocultos.
+- **Barra liviana**: escudo + Fecha/Caja/Deuda + cuenta. Temas y campana viven en Más. Campana flotante fuera.
+- **Rápido**: auroras con blur, destello y burbujas apagados; `backdrop-filter` fuera (mata GPU en celular). Paneles entran sin delay.
+- **Cómodo**: taps ≥44px, inputs 16px (sin zoom iOS), picker 2 columnas, plantel/tabla compactos (el resto está en la ficha), modal tipo hoja inferior con asa, safe-area, 100dvh, `touch-action:manipulation`.
+- **Sin bugs de layout**: `display:contents` en `.ctrl-main/.ctrl-sec` para que el desktop siga igual; dock se apaga en partido; `hay-momento` no deja el HUD tapando las decisiones.
+**1 línea:** en el celular se juega con el pulgar: Jugar abajo, partido con HUD fijo, y la máquina no se ahoga pintando auroras.
+**Riesgos:** CSS acotado a max-width:720px. Desktop 1280 intacto. Bajo.

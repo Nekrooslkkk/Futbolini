@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* 7.10 · versión única del juego (una sola fuente de verdad) */
-const VERSION="7.33";
+const VERSION="7.34";
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
 function el(tag,cls,html){const n=document.createElement(tag);if(cls)n.className=cls;if(html!=null)n.innerHTML=html;return n;}
@@ -65,6 +65,7 @@ function aviso(txt,ms){
 /* ---------- modal ---------- */
 function modal(fn,opts){
   const capa=$("#capa-modal"); capa.innerHTML="";
+  document.body.classList.add("con-modal");
   const fondo=el("div","modal-fondo");
   const caja=el("div","modal panel"+((opts&&opts.clase)?" "+opts.clase:""));
   fondo.appendChild(caja); capa.appendChild(fondo);
@@ -74,7 +75,7 @@ function modal(fn,opts){
   }
   return caja;
 }
-function cerrarModal(){ $("#capa-modal").innerHTML=""; }
+function cerrarModal(){ const c=$("#capa-modal"); if(c) c.innerHTML=""; document.body.classList.remove("con-modal"); }
 function panel(titulo,icono,clase){
   const p=el("section","panel"+(clase?" "+clase:""));
   if(titulo!=null) p.appendChild(el("div","cab",'<span class="ic">'+(icono||"")+'</span><span>'+titulo+'</span>'));
@@ -90,7 +91,8 @@ function barrita(v,color,max){
 function burbujas(){
   const c=$("#burbujas"); if(!c) return;
   c.innerHTML="";
-  const n=window.innerWidth<640?8:15;
+  if(window.matchMedia&&window.matchMedia("(max-width:720px), (prefers-reduced-motion:reduce)").matches) return;
+  const n=15;
   for(let i=0;i<n;i++){
     const b=el("i"), s=rnd(12,72);
     b.style.width=b.style.height=s+"px";

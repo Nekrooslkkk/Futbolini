@@ -217,7 +217,7 @@ function pantallaPrevia(part){
   const bs=el("div");
   [["⚡ Simular","seguir","Lo ves en vivo. Adentro decides: saltar al resultado al toque o seguirlo minuto a minuto."],
    ["🎯 Dirigir","dirigir","Intervenís en los momentos clave, con las barras de apoyo en vivo."]].forEach(([n,m,d])=>{
-    const b=el("button","btn-aqua ancho"+(m==="dirigir"?" verde":""),n+" · <span style='font-weight:400;font-size:11.5px'>"+d+"</span>");
+    const b=el("button","btn-aqua ancho cta-jugar"+(m==="dirigir"?" verde":""),n+" · <span style='font-weight:400;font-size:11.5px'>"+d+"</span>");
     b.style.marginBottom="7px";
     b.onclick=()=>arrancarPartido(part,m);
     bs.appendChild(b);
@@ -232,7 +232,7 @@ function pantallaPrevia(part){
   const bconf=el("button","btn-aqua ancho"+(confHecha?" gris":""),confHecha?"🎤 Ya diste la conferencia":"🎤 Conferencia de prensa");
   bconf.disabled=confHecha; bconf.onclick=()=>modalConferencia(part);
   p2.cuerpo.appendChild(bconf);
-  p2.cuerpo.appendChild(el("p","mini","En el partido: barra espaciadora pausa · «⏩ Al resultado» lo termina al toque · Dirigir usa teclas 1 / 2 / 3."));
+  p2.cuerpo.appendChild(el("p","mini hint-teclado","En el partido: barra espaciadora pausa · «⏩ Al resultado» lo termina al toque · Dirigir usa teclas 1 / 2 / 3."));
   rej.appendChild(p2);
   v.appendChild(rej);
   window.scrollTo({top:0});
@@ -603,6 +603,9 @@ function bloqueStats(P){
 function pintarPartido(){
   const P=P_ACTUAL; if(!P) return;
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
+  document.body.classList.add("en-partido");
+  document.body.classList.remove("con-dock","hay-momento");
+  if(typeof pintarDock==="function") pintarDock();
   const [yo,otro]=miMarcador(P);
   const liveTit=P.part.tipo==="copa"
     ? ((P.part.torneo||"Copa")+" · "+P.part.ronda)
@@ -655,33 +658,38 @@ function pintarPartido(){
   }
   if(!P.terminado&&P.modo!=="simular"){
     const ctrl=el("div","ctrlPartido");
+    const main=el("div","ctrl-main");
     const bp=el("button","btn-aqua chico",PAUSADO?"▶ Seguir":"⏸ Pausa");
     bp.onclick=()=>{ PAUSADO=!PAUSADO; if(!MOMENTO_OPS.length) pintarPartido(); };
-    ctrl.appendChild(bp);
+    main.appendChild(bp);
+    const bfin=el("button","btn-aqua chico verde",'⏩ <span class="ctrl-full">Al </span>resultado');
+    bfin.setAttribute("aria-label","Saltar al resultado");
+    bfin.onclick=()=>{ clearInterval(TIMER); MOMENTO_OPS=[]; correrHasta(P,90); pintarPartido(); cerrarPartido(); };
+    main.appendChild(bfin);
+    ctrl.appendChild(main);
+    const sec=el("div","ctrl-sec");
     [["1x",420],["2x",240],["4x",110]].forEach(([n,vv])=>{
       const b=el("button","btn-aqua chico"+(VEL_PARTIDO===vv?"":" gris"),n);
       b.onclick=()=>{ VEL_PARTIDO=vv; if(!MOMENTO_OPS.length&&!PAUSADO) correrEnVivo(); pintarPartido(); };
-      ctrl.appendChild(b);
+      sec.appendChild(b);
     });
-    /* saltar al resultado: la parte "instantánea" fusionada en el mismo partido */
-    const bfin=el("button","btn-aqua chico verde","⏩ Al resultado"); bfin.style.marginLeft="4px";
-    bfin.onclick=()=>{ clearInterval(TIMER); MOMENTO_OPS=[]; correrHasta(P,90); pintarPartido(); cerrarPartido(); };
-    ctrl.appendChild(bfin);
-    /* 6.18 · cambios con nombre */
-    const bcam=el("button","btn-aqua chico","🔄 Cambio ("+(P.cambios||0)+"/"+(P.cambiosMax||3)+")"); bcam.style.marginLeft="4px";
-    /* 6.25 · fix: no permitir cambio mientras hay una elección táctica pendiente (borraba las opciones) */
+    const bcam=el("button","btn-aqua chico",'🔄 <span class="ctrl-full">Cambio (</span>'+(P.cambios||0)+"/"+(P.cambiosMax||3)+'<span class="ctrl-full">)</span>');
+    bcam.setAttribute("aria-label","Cambio de jugadores");
     bcam.disabled=(P.cambios||0)>=(P.cambiosMax||3) || (MOMENTO_OPS&&MOMENTO_OPS.length>0);
     bcam.onclick=modalCambio;
-    ctrl.appendChild(bcam);
-    /* 7.10 · ver/ocultar la cancha animada (opcional) */
-    const bcv=el("button","btn-aqua chico"+(verCancha?"":" gris"),verCancha?"🎥 Cancha ON":"🎥 Cancha OFF"); bcv.style.marginLeft="4px";
+    sec.appendChild(bcam);
+    const bcv=el("button","btn-aqua chico"+(verCancha?"":" gris"),verCancha?'🎥<span class="ctrl-full"> Cancha ON</span>':'🎥<span class="ctrl-full"> Cancha OFF</span>');
+    bcv.setAttribute("aria-label",verCancha?"Ocultar cancha":"Mostrar cancha");
+    bcv.title=verCancha?"Cancha ON":"Cancha OFF";
     bcv.onclick=()=>{ if(!E.config)E.config={}; E.config.verCancha=!verCancha; guardar(); pintarPartido(); };
-    ctrl.appendChild(bcv);
+    sec.appendChild(bcv);
     if(typeof devOn==="function" && devOn()){
-      const bdv=el("button","btn-aqua chico morado","🧪 Probar"); bdv.style.marginLeft="4px";
+      const bdv=el("button","btn-aqua chico morado",'🧪<span class="ctrl-full"> Probar</span>');
+      bdv.setAttribute("aria-label","Probar eventos");
       bdv.onclick=()=>{ if(typeof modalDevPartido==="function") modalDevPartido(); };
-      ctrl.appendChild(bdv);
+      sec.appendChild(bdv);
     }
+    ctrl.appendChild(sec);
     p.cuerpo.appendChild(ctrl);
     if(P.modo==="dirigir"){
       if(!E.config) E.config={autoPausa:true};
@@ -813,6 +821,8 @@ function mostrarMomento(){
   const m=momentoActual(P);
   const esTrivia=m.tipo==="trivia";
   const p=panel(m.t,esTrivia?"🧮":"🧠","alerta");
+  p.classList.add("momento-vivo");
+  document.body.classList.add("hay-momento");
   p.cuerpo.appendChild(el("p",null,m.d));
   if(esTrivia) p.cuerpo.appendChild(el("p",null,"<b>"+m.q+"</b>"));
   /* 7.10 · en decisiones tácticas, FutbolGram opina como PISTA (leé el consenso) */
@@ -854,8 +864,9 @@ function mostrarMomento(){
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);
-  p.cuerpo.appendChild(el("p","mini",esTrivia?"Elige la respuesta con 1 / 2 / 3.":"Elige con 1 / 2 / 3 / 4 · flechas y Enter."));
+  p.cuerpo.appendChild(el("p","mini hint-teclado",esTrivia?"Elige la respuesta con 1 / 2 / 3.":"Elige con 1 / 2 / 3 / 4 · flechas y Enter."));
   (document.querySelector(".partido-wrap")||$("#vista")).appendChild(p);
+  try{ p.scrollIntoView({block:"end",behavior:"instant"}); }catch(e){ try{ p.scrollIntoView(false); }catch(e2){} }
 }
 /* confirmación del doping: caro y turbio, se pregunta aparte */
 function confirmarDoping(P,costo){
@@ -1119,6 +1130,8 @@ function mostrarAccion(ev){
     ];
   }
   const p=panel(titulo,"⚡","alerta");
+  p.classList.add("momento-vivo");
+  document.body.classList.add("hay-momento");
   const ops=el("div","ops ops-part"); MOMENTO_OPS=[];
   opciones.forEach((o,i)=>{
     const b=el("button","op");
@@ -1127,8 +1140,9 @@ function mostrarAccion(ev){
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);
-  p.cuerpo.appendChild(el("p","mini","Elige con 1 / 2 / 3 · flechas y Enter."));
+  p.cuerpo.appendChild(el("p","mini hint-teclado","Elige con 1 / 2 / 3 · flechas y Enter."));
   (document.querySelector(".partido-wrap")||$("#vista")).appendChild(p);
+  try{ p.scrollIntoView({block:"end",behavior:"instant"}); }catch(e){ try{ p.scrollIntoView(false); }catch(e2){} }
 }
 function hitosPartido(res){
   const h=[], yo=res.yo, otro=res.otro, dif=Math.abs(yo-otro);
@@ -1144,6 +1158,7 @@ function hitosPartido(res){
 function cerrarPartido(){
   const P=P_ACTUAL; if(!P||P.cerrado) return;
   P.cerrado=true; clearInterval(TIMER); MOMENTO_OPS=[];
+  document.body.classList.remove("hay-momento");
   if(typeof detenerCancha==="function") detenerCancha();
   const res=terminarPartido(P);
   if(typeof persistirTicker==="function") persistirTicker(P,res);  /* 7.12 · el partido queda en el feed de Plop! */

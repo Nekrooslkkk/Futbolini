@@ -1,13 +1,12 @@
-# ANALISIS.md — estado real y rumbo (al día · v7.33)
+# ANALISIS.md — estado real y rumbo (al día · v7.34)
 
 > **LEER PRIMERO.** Refleja el estado real del juego hoy. Para el detalle de
-> cada parche, ver `PATCHES.md`. GitHub HEAD de partida: `43fca94` (7.32).
-> Esta copia es **7.33**.
+> cada parche, ver `PATCHES.md`. GitHub HEAD de partida: `cbc7e7e` (7.33).
+> Esta copia es **7.34**.
 
-## Dónde estamos (v7.33)
-7.32 + **copas CONMEBOL 2026 reales** (solo quien clasificó) + objetivos 2027
-+ compositor local que reemplaza la IA de pago. 2026 ya se jugó: grupos y
-fechas documentados. 2027+ el grupo lo sortea el juego, etiquetado como tal.
+## Dónde estamos (v7.34)
+7.33 + **UI de celular de verdad**: dock Aero al pulgar, HUD fijo en el partido,
+sin auroras/blur que frenen el teléfono. Desktop (720px+) no se tocó.
 
 | Área | Estado real |
 |---|---|
@@ -22,6 +21,7 @@ fechas documentados. 2027+ el grupo lo sortea el juego, etiquetado como tal.
 | Ayudante | Compositor local gratis (`informeSemanal` / `preguntarAyudante`). Cero API. |
 | DTs B (sep 2026) | Verificados al 8/09: COP Erwin Durán, PMO Emilio Mancilla, TEM Emiliano Astorga, USF Juan José Luvera, SCR Dalcio Giovagnoli. |
 | Previa | Clima Vista + canal (1991 Canal 13/TVN; 2026 TNT; Lib/Sud ESPN). |
+| Celular | Dock Aero + HUD de partido fijo al pulgar (7.34). Desktop ≥720px intacto. |
 | Imágenes | Lista en `img/LEEME.txt`. El usuario sube. |
 
 ## Lo que quedó honesto-null (no se inventó)
@@ -33,7 +33,7 @@ fechas documentados. 2027+ el grupo lo sortea el juego, etiquetado como tal.
 - Citas atribuidas a personas reales: cero.
 - Fase 7 multi, Tinder/casino: congelados.
 
-## Rumbo que sigue (no 7.33)
+## Rumbo que sigue (no 7.34)
 - Hilos 4–6 de Plop, cláusulas con fecha, partir `ui.js`.
 - Fotos: las manda el usuario a `img/`.
 - `cancha.js` fome (otro chat).

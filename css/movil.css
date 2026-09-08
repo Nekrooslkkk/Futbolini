@@ -1,0 +1,213 @@
+/* ============================================================
+   FUTBOLINI 7.34 · movil.css
+   Celular cómodo: pulgar, 44px, sin scroll horizontal, rápido.
+   Desktop no se toca (todo vive bajo max-width:720px / hover:none).
+   ============================================================ */
+
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-color:rgba(12,51,24,.14)}
+
+@media (hover:none){
+  .op:hover:not(:disabled),.mi:hover,.icono:hover,.btn-aqua:hover{transform:none;filter:none}
+}
+
+@media (max-width:720px){
+  html,body{min-height:100dvh;overscroll-behavior-y:contain}
+  body{padding-bottom:0}
+
+  /* GPU: auroras con blur + mix-blend matan el celular. Queda cielo+pasto. */
+  #fondo .aurora,#fondo .aurora::before,#fondo .aurora::after,
+  #fondo .destello{display:none !important;animation:none !important;filter:none !important}
+  #fondo .burbujas i{display:none}
+  .panel,.modal-fondo,.ctrlPartido{
+    backdrop-filter:none !important;-webkit-backdrop-filter:none !important
+  }
+  body[data-tema="aero"] .panel{
+    background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(232,248,220,.96)) !important
+  }
+
+  /* Barra: escudo + 3 datos + cuenta. El resto vive en el dock / Más. */
+  #barra{min-height:48px;padding:6px 8px;padding-top:max(6px,env(safe-area-inset-top));gap:6px}
+  .marca .glifo{width:28px;height:28px}
+  .marca .nombre,.marca .ver{display:none}
+  .barra-datos{gap:5px;overflow-x:visible}
+  .bd{min-width:0;flex:1 1 auto;padding:3px 6px;text-align:center}
+  .bd .k{font-size:8px;letter-spacing:.3px}
+  .bd .v{font-size:12px}
+  .bd-sec,.bd-club{display:none}
+  .barra-acc{gap:4px}
+  .barra-acc .btn-aqua{min-width:44px;min-height:44px;padding:8px 10px;font-size:16px}
+  body.con-dock #btnAvanzar,
+  body.con-dock #btnRapido,
+  body.con-dock #btnTemas,
+  body.con-dock #btnAvisos,
+  body.con-dock .campana,
+  body.en-partido #btnAvanzar,
+  body.en-partido #btnRapido,
+  body.en-partido #btnTemas,
+  body.en-partido #btnAvisos,
+  body.en-partido .campana,
+  body.en-partido .barra-acc{display:none !important}
+
+  body.con-dock #menu{display:none !important}
+
+  #vista{padding:8px 10px 16px;max-width:none}
+  body.con-dock #vista{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+  body.en-partido #vista{padding-bottom:calc(118px + env(safe-area-inset-bottom,0px))}
+  body.en-partido.hay-momento #vista{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+  #pie,.arr-hint{display:none}
+
+  /* Tap targets */
+  .btn-aqua{min-height:44px;padding:11px 16px;font-size:14px}
+  .btn-aqua.ancho{min-height:48px;padding:14px 16px;font-size:15.5px}
+  .btn-aqua.chico{min-height:44px;min-width:44px;padding:10px 12px}
+  .cta-jugar{min-height:52px !important;font-size:16.5px !important}
+  .op{min-height:48px;padding:13px 12px}
+  .op .t{font-size:14.5px}
+  .ficha{min-height:44px;padding:10px 12px;font-size:13.5px}
+  .chk{min-height:44px;padding:10px 10px}
+  .obj-tab{min-height:40px;padding:8px 12px}
+  .fila{min-height:44px;align-items:center;padding:10px 0}
+  summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+
+  /* Picker de club: 2 columnas, dedo cabe */
+  .iconos{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .icono{min-height:76px;padding:12px 8px}
+  .icono .g{font-size:28px}
+  .icono .n{font-size:12.5px;line-height:1.25}
+  .icono .ciu{font-size:10px}
+
+  /* Tablas: no se salen; columnas de relleno fuera */
+  .panel > .cuerpo{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{font-size:11.5px}
+  th,td{padding:10px 6px}
+  .tabla-plantel,.tabla-liga{width:100%;table-layout:fixed}
+  .tabla-plantel td:first-child,.tabla-liga td:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tabla-plantel th:nth-child(3),.tabla-plantel td:nth-child(3),
+  .tabla-plantel th:nth-child(4),.tabla-plantel td:nth-child(4),
+  .tabla-plantel th:nth-child(7),.tabla-plantel td:nth-child(7),
+  .tabla-plantel th:nth-child(8),.tabla-plantel td:nth-child(8){display:none}
+  .tabla-liga th:nth-child(n+4):nth-child(-n+8),
+  .tabla-liga td:nth-child(n+4):nth-child(-n+8){display:none}
+
+  /* Modal tipo hoja inferior (pulgar) */
+  .modal-fondo{align-items:flex-end;padding:0;padding-bottom:env(safe-area-inset-bottom,0px);backdrop-filter:none}
+  .modal{max-width:none;width:100%;margin:0;border-radius:16px 16px 0 0;max-height:92dvh;overflow:auto;
+    animation:hojaSube .2s ease both}
+  .modal::before{content:"";display:block;width:40px;height:4px;margin:8px auto 0;border-radius:99px;
+    background:rgba(20,80,30,.28)}
+  .modal > .cuerpo{padding-bottom:18px}
+  @keyframes hojaSube{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+
+  /* Avisos encima del dock / HUD */
+  body.con-dock #avisos{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+  body.en-partido #avisos{bottom:calc(118px + env(safe-area-inset-bottom,0px))}
+  body.con-modal:not(.en-partido) #avisos{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+  #avisos{width:min(94vw,440px)}
+  .aviso{font-size:13px;padding:10px 14px}
+
+  /* Partido: marcador compacto + HUD fijo al pulgar */
+  .marcador{gap:8px;padding:12px 8px}
+  .marcador .eq{font-size:11.5px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .marcador .go{font-size:32px}
+  .partido-wrap{flex-direction:column;gap:8px}
+  .partido-wrap>*{flex:1 1 auto;min-width:0}
+  .cancha2d{max-height:120px}
+  .relato{max-height:220px}
+  .op .tecla,.hint-teclado,.ctrl-full{display:none !important}
+  .pizarra .celda{min-height:46px}
+  .pizarra .chip{font-size:11px;padding:6px 3px}
+
+  .ctrlPartido{
+    position:fixed;left:0;right:0;bottom:0;z-index:60;
+    display:grid;grid-template-columns:1fr;gap:6px;
+    margin:0;padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));
+    background:linear-gradient(180deg,#e4f8dc,#c8ecb8);
+    border-top:2px solid #0f5a0c;
+    box-shadow:0 -6px 18px rgba(8,60,20,.28);
+    -webkit-user-select:none;user-select:none
+  }
+  .ctrl-main{display:grid;grid-template-columns:1fr 1.15fr;gap:6px}
+  .ctrl-sec{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+  .ctrlPartido .btn-aqua{margin:0 !important;width:100%;min-height:46px;font-size:13px;padding:8px 4px}
+  .ctrl-sec .btn-aqua{min-height:42px;font-size:12.5px;padding:6px 2px}
+  body.hay-momento .ctrlPartido{display:none !important}
+  .momento-vivo{
+    position:sticky;bottom:0;z-index:55;margin:8px 0 0 !important;
+    box-shadow:0 -10px 28px rgba(8,60,20,.28)
+  }
+  .momento-vivo .op{min-height:52px}
+
+  input[type=text],input[type=number],input[type=email],input[type=password],select,textarea.entrada{
+    font-size:16px !important;min-height:44px;padding:10px 12px
+  }
+  input.rango{height:28px}
+
+  /* Arranque */
+  .arr-btns{width:min(360px,92vw)}
+  .arranque-btn{min-height:52px !important;font-size:1.1rem !important}
+
+  /* Paneles: sin delay de entrada (se siente lento) */
+  #vista > .panel,#vista .rejilla > div > .panel{animation-duration:.14s;animation-delay:0s !important}
+  #vista.fx-in{animation-duration:.1s}
+
+  /* Objetivos y checklist a una columna */
+  .obj-grid.grid-comodo,.checklist,.grid-comodo,.align-grid{grid-template-columns:1fr}
+
+  h2.tit{font-size:17px}
+
+  /* Dock */
+  #dock{
+    display:none;position:fixed;left:0;right:0;bottom:0;z-index:70;
+    flex-direction:column;
+    background:linear-gradient(180deg,#8ade2c 0%,#54b81c 46%,#2f9313 100%);
+    border-top:2px solid #0f5a0c;
+    box-shadow:0 -6px 18px rgba(8,60,20,.32),inset 0 1px 0 rgba(255,255,255,.5);
+    padding:5px 8px 0;padding-bottom:max(5px,env(safe-area-inset-bottom,0px));
+    -webkit-user-select:none;user-select:none
+  }
+  body.con-dock #dock{display:flex}
+  body.en-partido #dock,
+  body.con-modal #dock{display:none !important}
+  .dock-avanza{
+    display:block;width:100%;min-height:44px;margin:0 0 4px;border-radius:8px;
+    font-family:var(--f-titulo);font-weight:800;font-size:16px;letter-spacing:.2px;
+    color:#fff;cursor:pointer;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,#5ad14a,#1e8a22 55%,#146818);
+    border:1px solid rgba(255,255,255,.55);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 2px 6px rgba(0,40,10,.35)
+  }
+  .dock-avanza::after{content:"";position:absolute;top:1px;left:8%;right:8%;height:42%;border-radius:6px;
+    background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,0));pointer-events:none}
+  .dock-avanza:active{transform:translateY(1px);filter:brightness(.96)}
+  .dock-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+  .dock-tab{
+    min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:1px;border-radius:8px;color:#f3fff4;font-size:10px;font-weight:700;letter-spacing:.1px;
+    cursor:pointer;position:relative;padding:3px 2px;border:1px solid transparent
+  }
+  .dock-tab .ic{font-size:17px;line-height:1}
+  .dock-tab.on{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.45);color:#fff;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+  .dock-tab .pip{position:absolute;top:2px;right:18%;min-width:14px;height:14px;font-size:9px}
+
+  /* Hoja «Más» */
+  .modal-mas > .cab{background:linear-gradient(180deg,#8ade2c,#2f9313);color:#fff}
+  .mas-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+  .mas-item{
+    min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:4px;border-radius:10px;border:1px solid var(--linea);background:rgba(255,255,255,.55);
+    font-size:11.5px;font-weight:700;cursor:pointer;padding:8px 4px;position:relative
+  }
+  .mas-item .ic{font-size:22px}
+  .mas-item.on{outline:2px solid #2f9313;background:rgba(140,220,90,.28)}
+}
+
+/* Teléfonos muy angostos */
+@media (max-width:360px){
+  .marca .glifo{width:24px;height:24px}
+  .bd .v{font-size:11px}
+  .dock-tab{font-size:9px}
+  .marcador .go{font-size:28px}
+  .ctrl-sec{grid-template-columns:repeat(5,minmax(0,1fr))}
+}

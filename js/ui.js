@@ -10,7 +10,79 @@ const SECCIONES=[
  ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["estadio","🏟️","Estadio"],["redes","📱","Redes"],["calendario","📅","Calendario"],["historia","📚","Historia"],
  ["carrera","🎖️","Carrera"],["vida","🪪","Vida"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
 ];
-function irA(s){ SEC=s; render(); const v=$("#vista"); if(v){ v.classList.remove("fx-in"); void v.offsetWidth; v.classList.add("fx-in"); } window.scrollTo({top:0}); }
+function irA(s){ SEC=s; render(); const v=$("#vista"); if(v){ v.classList.remove("fx-in"); void v.offsetWidth; v.classList.add("fx-in"); } window.scrollTo(0,0); }
+function esMovil(){ return !!(window.matchMedia&&window.matchMedia("(max-width:720px)").matches); }
+const DOCK_IDS=["escritorio","plantel","calendario","mercado"];
+function pintarDock(){
+  const d=$("#dock"); if(!d) return;
+  const partido=document.body.classList.contains("en-partido");
+  const on=!!(E&&esMovil()&&!partido);
+  document.body.classList.toggle("con-dock", on);
+  if(!on){ d.classList.add("oculto"); d.innerHTML=""; return; }
+  d.classList.remove("oculto");
+  d.innerHTML="";
+  const part=typeof proximoPartido==="function"?proximoPartido():null;
+  const jugar=!!(part&&!part.jugado);
+  const av=el("button","dock-avanza",jugar?"⚽ Jugar":"Avanzar");
+  av.type="button"; av.setAttribute("aria-label",jugar?"Ir al próximo partido":"Avanzar la semana");
+  av.onclick=function(){
+    if(typeof crisisActiva==="function"&&crisisActiva()){ if(typeof avanzar==="function") avanzar(); return; }
+    if(typeof bloqueoDecisiones==="function"&&bloqueoDecisiones()) return;
+    if(jugar&&typeof pantallaPrevia==="function"){ pantallaPrevia(part); return; }
+    if(typeof avanzar==="function") avanzar();
+  };
+  d.appendChild(av);
+  const row=el("div","dock-tabs");
+  const porId={};
+  SECCIONES.forEach(function(s){ porId[s[0]]=s; });
+  DOCK_IDS.forEach(function(id){
+    const s=porId[id]; if(!s) return;
+    if(id==="redes"&&!redesDisponibles()) return;
+    const b=el("button","dock-tab"+(SEC===id?" on":""),'<span class="ic">'+s[1]+'</span><span>'+s[2]+'</span>');
+    b.type="button"; b.setAttribute("aria-current",SEC===id?"page":"false");
+    if(id==="escritorio"&&E.decPend&&E.decPend.length) b.appendChild(el("span","pip",String(E.decPend.length)));
+    b.onclick=function(){ irA(id); };
+    row.appendChild(b);
+  });
+  const masOn=DOCK_IDS.indexOf(SEC)<0;
+  const mas=el("button","dock-tab"+(masOn?" on":""),'<span class="ic">⋯</span><span>Más</span>');
+  mas.type="button"; mas.setAttribute("aria-label","Más secciones");
+  const nAvis=typeof notifsNoLeidas==="function"?notifsNoLeidas():0;
+  if(nAvis) mas.appendChild(el("span","pip",nAvis>9?"9+":String(nAvis)));
+  mas.onclick=abrirMasMovil;
+  row.appendChild(mas);
+  d.appendChild(row);
+}
+function abrirMasMovil(){
+  modal(function(box){
+    box.classList.add("modal-mas");
+    box.appendChild(el("div","cab",'<span class="ic">⋯</span><span>Más del club</span>'));
+    const c=el("div","cuerpo"); box.appendChild(c);
+    c.appendChild(el("p","mini","Institución, plata, redes y el resto. Avanzar y el partido siguen abajo, al alcance del pulgar."));
+    const g=el("div","mas-grid");
+    SECCIONES.forEach(function(s){
+      const id=s[0], ic=s[1], n=s[2];
+      if(DOCK_IDS.indexOf(id)>=0) return;
+      if(id==="redes"&&!redesDisponibles()) return;
+      const b=el("button","mas-item"+(SEC===id?" on":""),'<span class="ic">'+ic+'</span><span>'+n+'</span>');
+      b.type="button";
+      if(id==="avisos"&&typeof notifsNoLeidas==="function"&&notifsNoLeidas()) b.appendChild(el("span","pip",String(notifsNoLeidas())));
+      b.onclick=function(){ cerrarModal(); irA(id); };
+      g.appendChild(b);
+    });
+    c.appendChild(g);
+    const acc=el("div"); acc.style.marginTop="12px";
+    const br=el("button","btn-aqua ancho","⏩ Avance rápido");
+    br.onclick=function(){ cerrarModal(); if(typeof modalAvanceRapido==="function") modalAvanceRapido(); };
+    acc.appendChild(br);
+    const bt=el("button","btn-aqua ancho","◐ Cambiar tema"); bt.style.marginTop="6px";
+    bt.onclick=function(){ cerrarModal(); const b=$("#btnTemas"); if(b) b.click(); };
+    acc.appendChild(bt);
+    const bc=el("button","btn-aqua ancho gris","Cerrar"); bc.style.marginTop="6px"; bc.onclick=cerrarModal;
+    acc.appendChild(bc);
+    c.appendChild(acc);
+  },{clase:"modal-mas"});
+}
 /* 7.10 · modo desarrollador (clave: peomojon). Solo para probar cada cosa. */
 let DEV_ON=false;
 function devOn(){ return DEV_ON || !!(typeof E!=="undefined"&&E&&E.flags&&E.flags.dev); }
@@ -58,19 +130,21 @@ function pintarMenu(){
 /* ---------------- render ---------------- */
 function render(){
   if(typeof detenerPlopBots==="function") detenerPlopBots();
+  document.body.classList.remove("en-partido","hay-momento");
   pintarBarra(); pintarMenu();
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="full";
   $("#btnAvanzar").classList.toggle("oculto",!E);
   { const br=document.getElementById("btnRapido"); if(br) br.classList.toggle("oculto",!E); }
-  if(!E){ pantallaInicio(); return; }
-  if(E.carrera.fin){ v.appendChild(pantallaFinCarrera()); return; }
-  if(E.dinastia&&E.dinastia.sucesionPendiente){ v.appendChild(pantallaSucesion()); return; }
-  if(E.carrera.enParo){ v.appendChild(pantallaSinClub()); return; }
+  if(!E){ pantallaInicio(); if(typeof pintarDock==="function") pintarDock(); return; }
+  if(E.carrera.fin){ v.appendChild(pantallaFinCarrera()); if(typeof pintarDock==="function") pintarDock(); return; }
+  if(E.dinastia&&E.dinastia.sucesionPendiente){ v.appendChild(pantallaSucesion()); if(typeof pintarDock==="function") pintarDock(); return; }
+  if(E.carrera.enParo){ v.appendChild(pantallaSinClub()); if(typeof pintarDock==="function") pintarDock(); return; }
   if(SEC==="redes" && !redesDisponibles()) SEC="escritorio";   /* no caer en Chirp en épocas sin redes */
   v.dataset.sec=SEC;   /* para el layout multi-columna en PC (evita scroll eterno) */
   ({escritorio:vistaEscritorio,institucion:vistaInstitucion,finanzas:vistaFinanzas,plantel:vistaPlantel,
     mercado:vistaMercado,estadio:vistaEstadio,redes:vistaRedes,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,
     vida:vistaVida,avisos:vistaAvisos,ajustes:vistaAjustes}[SEC]||vistaEscritorio)();
+  if(typeof pintarDock==="function") pintarDock();
 }
 /* ---------------- inicio ---------------- */
 function pantallaInicio(){
@@ -346,7 +420,7 @@ function vistaEscritorio(){
       }catch(e){ det.appendChild(el("p","mini","No se pudo leer el rival.")); }
       p.cuerpo.appendChild(det);
     }
-    const b=el("button","btn-aqua ancho verde","Ir al partido");
+    const b=el("button","btn-aqua ancho verde cta-jugar","Ir al partido");
     b.onclick=()=>{ if(bloqueoDecisiones()) return; pantallaPrevia(part); };
     p.cuerpo.appendChild(b);
     /* entrenamiento de la semana: mejora la forma, con riesgo bajo de lesión */
@@ -1015,7 +1089,7 @@ function vistaPlantel(){
     f.appendChild(b);
   });
   p.cuerpo.appendChild(f);
-  const t=el("table");
+  const t=el("table","tabla-plantel");
   t.innerHTML="<thead><tr><th>Jugador</th><th>Pos</th><th>Rol</th><th class='n'>Ed</th><th class='n'>Niv</th><th class='n'>For</th><th class='n'>Gol</th><th class='n'>Sueldo</th></tr></thead>";
   const tb=el("tbody");
   E.plantel.filter(j=>{
@@ -1144,7 +1218,7 @@ function vistaCalendario(){
   const pt=panel("Tabla de posiciones","📊","agua");
   const arr=LIGA_ACT.map(c=>Object.assign({id:c.id,n:c.n},E.tabla[c.id]||{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}));
   arr.sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc));
-  const t=el("table");
+  const t=el("table","tabla-liga");
   t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>G</th><th class='n'>E</th><th class='n'>P</th><th class='n'>GF</th><th class='n'>GC</th><th class='n'>Pts</th></tr></thead>";
   const tb=el("tbody");
   arr.forEach((c,i)=>{
@@ -1221,7 +1295,7 @@ function modalTablaHistorica(h){
   modal(box=>{
     box.appendChild(el("div","cab",'<span class="ic">🗄️</span><span>Tabla final '+h.anio+'</span>'));
     const c=el("div","cuerpo"); box.appendChild(c);
-    const t=el("table");
+    const t=el("table","tabla-liga");
     t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>G</th><th class='n'>E</th><th class='n'>P</th><th class='n'>GF</th><th class='n'>GC</th><th class='n'>Pts</th></tr></thead>";
     const tb=el("tbody");
     (h.tabla||[]).forEach((r,i)=>tb.appendChild(el("tr",r.id===h.club?"yo":"",
@@ -2127,7 +2201,7 @@ function modalAvancePartido(part){
     c.appendChild(el("p","mini",(typeof etqCompromiso==="function"?etqCompromiso(part):(part.tipo==="copa"?(part.torneo||"Copa")+" · "+part.ronda:"fecha "+part.fecha))+
       " · "+fechaTxt(part.f)+" · "+part.sede));
     c.appendChild(el("p",null,"Avanzar no salta fechas. O lo diriges, o lo dejas al azar con la táctica que ya armaste."));
-    const b1=el("button","btn-aqua ancho verde","Dirigir el partido");
+    const b1=el("button","btn-aqua ancho verde cta-jugar","Dirigir el partido");
     b1.onclick=()=>{ cerrarModal(); if(typeof pantallaPrevia==="function") pantallaPrevia(part); };
     const b2=el("button","btn-aqua ancho","Simular (dejar al azar)");
     b2.onclick=()=>{
@@ -2532,4 +2606,10 @@ document.addEventListener("keydown",function(e){
   }
   pantallaArranque(haySave,lista);
 })();
-window.addEventListener("resize",()=>{ clearTimeout(window._rb); window._rb=setTimeout(burbujas,400); });
+window.addEventListener("resize",()=>{ clearTimeout(window._rb); window._rb=setTimeout(function(){ burbujas(); if(typeof pintarDock==="function") pintarDock(); },400); });
+if(window.matchMedia){
+  const mqMov=window.matchMedia("(max-width:720px)");
+  const onMov=function(){ if(typeof pintarDock==="function") pintarDock(); if(typeof burbujas==="function") burbujas(); };
+  if(mqMov.addEventListener) mqMov.addEventListener("change",onMov);
+  else if(mqMov.addListener) mqMov.addListener(onMov);
+}

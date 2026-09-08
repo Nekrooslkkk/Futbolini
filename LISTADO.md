@@ -78,7 +78,7 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 49. 🟨 Frutiger / negro / claro / insano. Pulir Vista/7.
 50. ⬜ Histórico / libre / caos que se sientan distintos en el relato.
 51. ✅ Spoiler / sin spoiler (Ajustes + calendario + decisiones) (5.1l).
-52. ⬜ Celular: un partido jugable con el pulgar.
+52. ✅ Celular: un partido jugable con el pulgar. (7.34)
 53. ⬜ Soundtrack del usuario, sin FIFA.
 
 ## I. Beta cerrada (definición de “se puede jugar”)

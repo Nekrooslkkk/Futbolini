@@ -223,6 +223,7 @@ textarea.entrada:focus{outline:2px solid #39b7e0}
 
 /* Motor de partido 4.0: controles y pizarra */
 .ctrlPartido{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+.ctrl-main,.ctrl-sec{display:contents}
 .pizarra{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:3px;
   background:
     repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 12.5%,rgba(0,0,0,.05) 12.5% 25%),
