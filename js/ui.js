@@ -1286,6 +1286,19 @@ const POSTS_PREDEF=[
   ev:{sentimiento:30, promesa:{hay:true,tipo:"ganarProximoGrande",castigo:"destitucion",texto:"Ganar el próximo partido o dejar el cargo"},
       consecuencia:"Pusiste tu cargo sobre la mesa en público."}}
 ];
+/* 6 · comunicados oficiales EXTENSOS, redactados por el CM (solo con CM contratado) */
+const COMUNICADOS_CM=[
+ {t:"Respaldo institucional al plantel", texto:"COMUNICADO OFICIAL. El club expresa su total respaldo al cuerpo técnico y a cada uno de los jugadores. Entendemos el momento, valoramos el compromiso del plantel y pedimos a nuestra gente acompañar al equipo con la altura que caracteriza a esta institución. Estamos todos en el mismo barco.",
+  ev:{sentimiento:24, grupos:{camarin:8,hinchada:4,prensa:3}, consecuencia:"Un mensaje ordenado y firme: el camarín lo agradece y la prensa lo valora."}},
+ {t:"Llamado a la unidad de la hinchada", texto:"COMUNICADO OFICIAL. En semanas decisivas, el club convoca a su hinchada a ser el jugador número doce. La historia de esta institución se escribió con la gente en las tribunas. Los necesitamos, hoy más que nunca, del primer al último minuto.",
+  ev:{sentimiento:22, grupos:{hinchada:9,socios:4}, consecuencia:"La convocatoria prende a la tribuna: se espera un buen marco."}},
+ {t:"Transparencia en lo económico", texto:"COMUNICADO OFICIAL. Ante versiones que circulan, el club informa que trabaja con responsabilidad y transparencia en el ordenamiento de sus finanzas. Cada decisión apunta a la sustentabilidad del proyecto deportivo. Seguiremos comunicando con seriedad, sin especular.",
+  ev:{sentimiento:8, grupos:{prensa:8,directorio:5,hinchada:-2}, ef:{}, consecuencia:"Bajas el ruido: la prensa y el directorio valoran la seriedad, la tribuna queda tibia."}},
+ {t:"Postura firme ante el arbitraje", texto:"COMUNICADO OFICIAL. El club manifiesta su profunda preocupación por el criterio arbitral de las últimas fechas y solicita a las autoridades del fútbol las garantías que todo competidor merece. Defenderemos a nuestra institución por las vías que correspondan, siempre con respeto.",
+  ev:{sentimiento:12, grupos:{hinchada:10,anfp:-10,prensa:-4}, ef:{riesgo:3}, consecuencia:"La hinchada te aplaude la firmeza; la ANFP toma nota."}},
+ {t:"Compromiso con la cantera", texto:"COMUNICADO OFICIAL. El club reafirma que las divisiones menores son el corazón de su proyecto. Seguiremos apostando por los jóvenes de la casa, dándoles la confianza y los minutos para crecer. Ese es el sello que nos identifica y que no vamos a negociar.",
+  ev:{sentimiento:18, grupos:{hinchada:6,comunidad:8,directorio:-2}, consecuencia:"Un mensaje identitario: la gente y la comunidad lo abrazan."}}
+];
 function pestañasRedes(cont){
   const f=el("div","fichas");
   [["club","Cuenta oficial del club"],["yo","Perfil personal del DT"]].forEach(([k,n])=>{
@@ -1341,8 +1354,12 @@ function arrancarPlopBots(){
 }
 function reaccionarPost(t,tipo){
   t.likes=t.likes||0; t.rts=t.rts||0; t.replies=t.replies||0; t.hilo=t.hilo||[];
-  const amistoso=(t.tipo==="hincha"||t.tipo==="club"||t.tipo==="jugador"||t.tono==="bueno");
-  const hostil=(t.tipo==="rival"||t.tono==="malo");
+  /* 6 · un hincha propio crítico ("colocolino en rojo") NO es un hostil: es de los tuyos.
+     Solo el RIVAL (o cuentas rivales) te puede joder de verdad. */
+  const esRival=(t.tipo==="rival");
+  const esPropioCritico=((t.tipo==="hincha"||t.tipo==="jugador")&&t.tono==="malo");
+  const amistoso=((t.tipo==="hincha"||t.tipo==="jugador")&&t.tono!=="malo")||t.tipo==="club"||t.tono==="bueno";
+  const hostil=esRival;
   if(tipo==="like"){
     if(t._like) return aviso("Ya le diste like");
     t._like=true; t.likes+=ri(4,40);
@@ -1352,19 +1369,27 @@ function reaccionarPost(t,tipo){
       /* la cuenta reacciona al like del DT: te acerca a la gente */
       t.replies++; t.hilo=t.hilo||[]; t.hilo.push({autor:t.autor,texto:elige(["¡Le gustó al mismísimo DT! 🙌","Nos leyó el técnico, grande.","Bancado desde arriba. Vamos."]),fecha:"ahora"});
       aviso("❤ Le llegó tu like — la hinchada lo festeja (+2)");
-    } else if(hostil){
+    } else if(esRival){
       aplicarRep({credibilidad:-2}); aplicarGrupos({hinchada:-2});
-      aviso("😬 Le diste like a un hostil… mal mirado por la gente (−2 hinchada)");
+      aviso("😬 Le diste like a una cuenta rival… mal visto por la gente (−2 hinchada)");
+    } else if(esPropioCritico){
+      /* darle like a un hincha tuyo enojado: escuchar no está mal, no hay castigo */
+      t.replies++; t.hilo.push({autor:t.autor,texto:elige(["Al menos el DT escucha…","Uh, me leyó. A ver si cambia algo.","Ojalá le sirva la crítica."]),fecha:"ahora"});
+      aviso("👂 Le diste like a un hincha picado. Escuchar a los tuyos no te resta.");
     } else aviso("❤ Like");
   } else if(tipo==="rt"){
     if(t._rt) return aviso("Ya lo reposteaste");
     t._rt=true; t.rts=(t.rts||0)+1; t.likes+=ri(10,80);
-    if(hostil){
-      /* te auto-troleaste: amplificaste a un hostil */
+    if(esRival){
+      /* te auto-troleaste: amplificaste a un rival */
       aplicarGrupos({hinchada:-6,prensa:-4}); aplicarRep({credibilidad:-6});
-      if(typeof recordar==="function") recordar("plop","reposteaste a "+t.autor+", un hostil (te auto-troleaste)",{peso:"medio",tono:"malo"});
+      if(typeof recordar==="function") recordar("plop","reposteaste a "+t.autor+", una cuenta rival (te auto-troleaste)",{peso:"medio",tono:"malo"});
       if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"malo");
-      aviso("🤦 Reposteaste a un hostil. Te auto-troleaste: la gente y la prensa te caen encima.");
+      aviso("🤦 Reposteaste a una cuenta rival. Te auto-troleaste: la gente y la prensa te caen encima.");
+    } else if(esPropioCritico){
+      /* repostear a un hincha propio enojado con vos: autocrítica, raro pero no te funa */
+      if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"neutro");
+      aviso("🔁 Reposteaste a un hincha picado con vos. Mostrar autocrítica no está mal, pero no esperes aplausos.");
     } else {
       aplicarGrupos({hinchada:3}); aplicarRep({publica:2}); moverSeguidores&&moverSeguidores(ri(40,260));
       if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"bueno");
@@ -1372,10 +1397,18 @@ function reaccionarPost(t,tipo){
     }
   } else if(tipo==="report"){
     if(t._report) return aviso("Ya lo reportaste");
-    t._report=true; t.reportado=true;
-    if(hostil){ aviso("🚩 Reportado. Le bajaste el alcance a un hostil."); moverSeguidores&&moverSeguidores(ri(5,40)); }
-    else aviso("🚩 Reportado. Igual reportar a cualquiera no queda bien si no molestaba.");
-    E.timeline=(E.timeline||[]).filter(x=>x!==t);
+    /* 6 · reportar es más difícil: mientras tu imagen esté baja, no te dan bola */
+    const pop=(E.rep&&E.rep.publica)||50;
+    if(pop<55){ aviso("🚩 Reportaste… pero con tu poca llegada, la plataforma ni te pesca. Ganate a la gente primero (imagen "+Math.round(pop)+"/100)."); return; }
+    if(esRival){
+      t._report=true; t.reportado=true;
+      aviso("🚩 Reportado. Con tu peso, le bajaste el alcance a una cuenta rival."); moverSeguidores&&moverSeguidores(ri(5,40));
+      E.timeline=(E.timeline||[]).filter(x=>x!==t);
+    } else if(esPropioCritico){
+      aviso("🚩 ¿Reportar a un hincha tuyo por quejarse? La gente lo nota y no le gusta (−2 hinchada)."); aplicarGrupos({hinchada:-2});
+    } else {
+      aviso("🚩 Reportar a alguien que no molestaba te hace quedar mal (−1 credibilidad)."); aplicarRep({credibilidad:-1});
+    }
   } else {
     const r=prompt("Responder a "+t.autor,"");
     if(r===null) return;
@@ -1443,15 +1476,20 @@ function vistaRedes(){
   };
   p.cuerpo.appendChild(bp);
   if(REDES_PEST==="club"){
-    p.cuerpo.appendChild(el("h3","sub","Comunicados rápidos"));
-    const fr=el("div","ops");
-    POSTS_PREDEF.forEach(pp=>{
-      const b=el("button","op");
-      b.innerHTML='<div class="t">'+pp.t+'</div><div class="d">"'+pp.texto+'"</div>';
-      b.onclick=()=>{ aplicarPost(pp.texto, Object.assign({},pp.ev)); irA("redes"); };
-      fr.appendChild(b);
-    });
-    p.cuerpo.appendChild(fr);
+    if(E.staff&&E.staff.cm){
+      /* 6 · comunicados oficiales EXTENSOS, solo con CM contratado */
+      p.cuerpo.appendChild(el("h3","sub","📄 Comunicados oficiales (redacta el CM)"));
+      const fr=el("div","ops");
+      COMUNICADOS_CM.forEach(pp=>{
+        const b=el("button","op");
+        b.innerHTML='<div class="t">'+pp.t+'</div><div class="d">"'+pp.texto+'"</div>';
+        b.onclick=()=>{ aplicarPost(pp.texto, Object.assign({},pp.ev)); if(typeof postProc==="function") postProc(handleClub(),"club",pp.texto,pp.ev&&pp.ev.sentimiento<0?"malo":"bueno"); irA("redes"); };
+        fr.appendChild(b);
+      });
+      p.cuerpo.appendChild(fr);
+    } else {
+      p.cuerpo.appendChild(el("div","resul mitad","📄 Los <b>comunicados oficiales</b> los redacta un <b>Community Manager</b>. Contratá uno en Finanzas y acá te van a aparecer comunicados largos y bien escritos para la cuenta del club."));
+    }
   }
   v.appendChild(p);
 

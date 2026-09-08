@@ -1706,3 +1706,22 @@ o hacer videos). Reusa el motor headless (state-puro): `iniciarPartido(part,"sim
 instante, 30 jugados, 16-2-12 = 50 pts consistente), modal con 2 opciones, botón visible, consola limpia.
 **1 línea:** botón ⏩ que delega y simula al toque una fecha o la temporada entera, sin jugar en vivo.
 **Riesgos:** reusa motor de partido headless (probado state-puro) + loop acotado (tope 400). Bajo-medio.
+
+## 7.29 · Punto 6 del brief: arreglos de Redes/Plop  ✅ (2026-09-08)
+**Archivos:** `js/ui.js` (reaccionarPost, comunicados CM)
+**Qué:**
+- **Colocolino en rojo no te jode**: `reaccionarPost` distinguía mal — un hincha propio crítico (tipo
+  "hincha" tono "malo") contaba como hostil. Ahora `hostil = solo tipo rival`. Al hincha propio picado:
+  likearlo lo escuchás sin costo, repostearlo es autocrítica (neutro), no el −6 de auto-troleo. El RIVAL
+  sigue castigando igual (−6 al RT, −2 al like).
+- **Reportar gateado por popularidad**: con imagen (`E.rep.publica`) < 55, reportar no hace nada ("la
+  plataforma ni te pesca"). Con imagen alta: solo saca del feed a cuentas rivales; reportar a un hincha
+  propio te resta hinchada; reportar a alguien que no molestaba te resta credibilidad.
+- **Comunicados oficiales extensos y solo con CM**: nuevo pool `COMUNICADOS_CM` (5 comunicados largos y
+  bien redactados). La sección "Comunicados oficiales (redacta el CM)" aparece SOLO con CM contratado; sin
+  CM, una nota invita a contratarlo en Finanzas. (Los viejos POSTS_PREDEF cortos ya no salían gratis.)
+**Probado:** navegador: RT a hincha propio crítico mantiene hinchada (50), RT a rival la baja (44),
+reportar con imagen 40 no borra, con imagen 70 saca al rival, comunicados ocultos sin CM / visibles con CM.
+Consola limpia.
+**1 línea:** un hincha propio picado ya no te funa, reportar solo sirve si sos popular, y los comunicados largos son cosa del CM.
+**Riesgos:** reaccionarPost (lógica de like/RT/report) + sección de comunicados. Bajo.

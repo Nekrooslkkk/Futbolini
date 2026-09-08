@@ -110,12 +110,14 @@
 - [ ] **[MOTOR/GROK]** **Modelo 3D** del estadio (o una foto real como mínimo).
 
 ## 11 · REDES (Plop) — que sea una red social de verdad
-- [ ] **[MOTOR]** Un comentario de un colocolino en rojo NO debería poder joderte (es de un colocolino):
-      revisar que hostilidad ≠ hincha propio.
-- [ ] **[MOTOR]** **Reportar**: que sea más difícil y que **no sirva mientras no mejores tu popularidad**.
+- [x] **[MOTOR]** Un hincha propio crítico (colocolino en rojo) ya NO es "hostil": solo el RIVAL te
+      castiga al likear/RT. Al hincha propio picado lo escuchás sin costo. ✅ (7.29)
+- [x] **[MOTOR]** **Reportar** gateado por popularidad: con imagen <55 no sirve de nada; solo saca a
+      cuentas rivales; reportar a los tuyos te resta. ✅ (7.29)
 - [ ] **[MOTOR]** Respuestas: que se generen **más comentarios** de respuesta a ti, que puedas **discutir
       sin fin**.
-- [ ] **[MOTOR]** Comunicados rápidos: más **extensos** y **solo con CM contratado** (si no, no salen).
+- [x] **[MOTOR]** Comunicados **extensos y solo con CM** contratado (`COMUNICADOS_CM`, 5 oficiales largos);
+      sin CM no aparecen, con una nota para contratarlo. ✅ (7.29)
 - [ ] **[MOTOR]** Nombre de usuario integrado a Plop; pantalla de carga con logo; que **todo el menú
       parezca un Twitter** (pero sigue siendo Futbolini).
 
