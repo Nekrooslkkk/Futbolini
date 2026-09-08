@@ -71,7 +71,7 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 45. ✅ Heurística local, cero créditos.
 46. 🟨 `/api/pensar` en localhost. Falta enchufar un .py opcional.
 47. ⬜ Modelo chico local (cuando pese < 300 MB).
-48. ⬜ IA de pago: apagada. Hook listo, no prender.
+48. ✅ IA de pago → compositor local gratis (7.33). Cero API.
 
 ## H. Interfaz y modos
 

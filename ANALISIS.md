@@ -1,38 +1,40 @@
-# ANALISIS.md — estado real y rumbo (al día · v7.32)
+# ANALISIS.md — estado real y rumbo (al día · v7.33)
 
 > **LEER PRIMERO.** Refleja el estado real del juego hoy. Para el detalle de
-> cada parche, ver `PATCHES.md`. GitHub HEAD de partida: `d3e9e1b` (7.31).
-> Esta copia es **7.32**.
+> cada parche, ver `PATCHES.md`. GitHub HEAD de partida: `43fca94` (7.32).
+> Esta copia es **7.33**.
 
-## Dónde estamos (v7.32)
-Motor 7.30 + contenido 7.19 + GROK_PROMPT_BETA (7.31) + **Copa Chile que
-clasifica de verdad**, gadget de clima Vista, canal de TV, prensa atada a
-indicadores, arcos de CBL/IQQ/PMO/MAG/REC.
+## Dónde estamos (v7.33)
+7.32 + **copas CONMEBOL 2026 reales** (solo quien clasificó) + objetivos 2027
++ compositor local que reemplaza la IA de pago. 2026 ya se jugó: grupos y
+fechas documentados. 2027+ el grupo lo sortea el juego, etiquetado como tal.
 
 | Área | Estado real |
 |---|---|
 | Motor de partido | Estable (7.30). Rasgos pesan (7.19). Relato con pool beta (7.31). |
 | Épocas | 1991, 2026, **2026b (Primera B)**, glorias (U 2011, PAL 1978, EVE 2008, etc.). |
 | Planteles B | Los 16 documentados (nombres reales; stats estimadas). Cantera rellena si faltan. |
-| Copa Chile 2026 | Fase de grupos (6 partidos, grupos A–H reales). **Si terminas top 2, entran octavos** (procedural: A↔B, C↔D, E↔F, G↔H; 1° vs 2°). No es el bracket real 2026. |
-| Libertadores 2026 | Formato documentado. **Grupos no inventados.** 1991 CC intacta. |
-| DTs B (sep 2026) | Verificados al 8/09: COP Erwin Durán (Almandoz salió el 7/09), PMO Emilio Mancilla, TEM Emiliano Astorga, USF Juan José Luvera, SCR Dalcio Giovagnoli, RAN Ivo Basay, UES Ronald Fuentes, IQQ Hernán Peña. |
-| Previa | Gadget de clima (desgaste/precisión) + canal de TV (1991 Canal 13/TVN; 2026 TNT Sports según prestigio). |
-| Prensa | Preguntas extra si hay deuda alta, caja justa, moral baja o hinchada tibia/caliente. |
-| Redes / voz | Pools grandes + Plop 7.29/7.30. Tuits `aburrido`/`autogol`/`var`. |
-| Economía | Deuda con cuotas (7.19 sobre 7.30). |
+| Copa Chile 2026 | Grupos A–H reales. Top 2 → octavos: si el club está en el cuadro ANFP 2026, el cruce es el real (CBL–COQ, AUD–CC, etc.). Si no, pareja A↔C / B↔D / E↔G / F↔H. |
+| Libertadores 2026 | **Solo COQ (Grupo B) y UC (Grupo D)** a grupos. HUA Fase 2 vs Carabobo. OHI Fase 2 vs Bahia y Fase 3 vs Tolima. Colo-Colo, la U y el resto **no clasificaron**. |
+| Sudamericana 2026 | Primera fase: UCH–PAL (5 mar) y COB–AUD (3 mar, Calama). Grupos: PAL F, AUD G, OHI C (drop desde Lib). |
+| 2027+ | Si terminas 1–4 o ganas Copa Chile → Libertadores (sorteo del juego). 5–8 → Sudamericana. No se copia un sorteo CONMEBOL que no existe. |
+| Objetivos | La B pelea ascenso. Primera 2026 sin cupo pelea Libertadores **2027**. Nadie de Limache ni Cobreloa «clasifica» a la Lib 2026. |
+| Ayudante | Compositor local gratis (`informeSemanal` / `preguntarAyudante`). Cero API. |
+| DTs B (sep 2026) | Verificados al 8/09: COP Erwin Durán, PMO Emilio Mancilla, TEM Emiliano Astorga, USF Juan José Luvera, SCR Dalcio Giovagnoli. |
+| Previa | Clima Vista + canal (1991 Canal 13/TVN; 2026 TNT; Lib/Sud ESPN). |
 | Imágenes | Lista en `img/LEEME.txt`. El usuario sube. |
 
 ## Lo que quedó honesto-null (no se inventó)
-- Octavos de Copa Chile **no copian el cuadro real 2026** (el jugador puede no clasificar; el rival se estima por fuerza del grupo pareja).
-- Grupos de Libertadores 2026 para una carrera nueva.
+- Otros partidos del grupo CONMEBOL (los que no juega el jugador) se simulan por fuerza; no se copió el fixture ajeno completo.
+- Cuartos en adelante de Copa Chile 2026: procedural (el cuadro real todavía depende de quién gane octavos).
+- Si el jugador da vuelta la historia (pasa una fase que en 2026 perdió), el siguiente grupo es sorteo del juego, no un grupo CONMEBOL falso.
 - Fotos/escudos oficiales.
-- UC 1991 sigue mayormente generado; varios 1991 de B-históricos también.
+- UC 1991 sigue mayormente generado.
 - Citas atribuidas a personas reales: cero.
-- Fase 7 multi, Tinder/casino, IA de pago: congelados.
+- Fase 7 multi, Tinder/casino: congelados.
 
-## Rumbo que sigue (no 7.32)
+## Rumbo que sigue (no 7.33)
 - Hilos 4–6 de Plop, cláusulas con fecha, partir `ui.js`.
 - Fotos: las manda el usuario a `img/`.
 - `cancha.js` fome (otro chat).
-- Libertadores 2026 grupos: cuando existan de verdad, cablearlos; no inventarlos.
+- Sudamericana PAL/AUD: fechas de grupo documentadas; el resto del grupo se simula.

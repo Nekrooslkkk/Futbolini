@@ -1,8 +1,9 @@
 "use strict";
 /* ============================================================
-   FUTBOLINI 7.32 · data-32.js
+   FUTBOLINI 7.33 · data-32.js
    Cargar ÚLTIMO (después de data-grok-beta.js).
-   Copa Chile: octavos si clasificas (procedural, no bracket real).
+   Copa Chile: octavos reales 2026 (A↔C / B↔D / E↔G / F↔H) si el club
+   está en el cuadro ANFP; si no, procedural con esa misma pareja.
    Previa: gadget de clima Vista + canal de TV.
    Prensa atada a deuda/moral/hinchada/caja.
    Arcos B: CBL IQQ PMO MAG REC.
@@ -43,6 +44,7 @@ function canalDelPartido(part){
     return {n:(prest>=55?"TVN":"Canal 13"),d:"Televisión abierta. Lo ve el que tiene antena."};
   }
   if(copa&&/Libertadores/i.test(torneo)) return {n:"ESPN",d:"Señal continental. Se ve en el resto de América."};
+  if(copa&&/Sudamericana/i.test(torneo)) return {n:"ESPN / Disney+",d:"Señal continental. La Sudamericana también se ve."};
   if(copa&&/Chile/i.test(torneo)){
     if(prest>=62||clasico) return {n:"TNT Sports",d:"Señal premium. La Copa Chile también se pelea en la tele."};
     return {n:"TNT Sports 2",d:"Segundo canal. Se ve, pero no es horario estelar."};
@@ -78,7 +80,28 @@ function widgetCanal(part){
 }
 
 /* ---------- Copa Chile: tabla de grupo + llaves procedurales ---------- */
-var COPA_CHILE_PAREJA={A:"B",B:"A",C:"D",D:"C",E:"F",F:"E",G:"H",H:"G"};
+var COPA_CHILE_PAREJA={A:"C",C:"A",B:"D",D:"B",E:"G",G:"E",F:"H",H:"F"};
+/* Cuadro ANFP 2026 (ida 22-24 sep, vuelta 25 sep-7 oct). 2° de grupo
+   abre de local. Si el jugador clasifica con un club que NO está acá,
+   se usa la pareja de grupos (procedural). */
+var COPA_CHILE_OCTAVOS_2026={
+  CBL:{rival:"COQ",idaLocal:true, ida:{m:9,d:22},vue:{m:10,d:7}},
+  COQ:{rival:"CBL",idaLocal:false,ida:{m:9,d:22},vue:{m:10,d:7}},
+  CAL:{rival:"UC", idaLocal:true, ida:{m:9,d:23},vue:{m:9,d:26}},
+  UC: {rival:"CAL",idaLocal:false,ida:{m:9,d:23},vue:{m:9,d:26}},
+  IQQ:{rival:"ANT",idaLocal:true, ida:{m:9,d:23},vue:{m:9,d:27}},
+  ANT:{rival:"IQQ",idaLocal:false,ida:{m:9,d:23},vue:{m:9,d:27}},
+  EVE:{rival:"UCH",idaLocal:true, ida:{m:9,d:24},vue:{m:9,d:27}},
+  UCH:{rival:"EVE",idaLocal:false,ida:{m:9,d:24},vue:{m:9,d:27}},
+  AUD:{rival:"CC", idaLocal:true, ida:{m:9,d:22},vue:{m:9,d:25}},
+  CC: {rival:"AUD",idaLocal:false,ida:{m:9,d:22},vue:{m:9,d:25}},
+  PMO:{rival:"NUB",idaLocal:true, ida:{m:9,d:22},vue:{m:9,d:26}},
+  NUB:{rival:"PMO",idaLocal:false,ida:{m:9,d:22},vue:{m:9,d:26}},
+  OHI:{rival:"SCR",idaLocal:true, ida:{m:9,d:24},vue:{m:9,d:27}},
+  SCR:{rival:"OHI",idaLocal:false,ida:{m:9,d:24},vue:{m:9,d:27}},
+  CUR:{rival:"DCO",idaLocal:true, ida:{m:9,d:23},vue:{m:9,d:27}},
+  DCO:{rival:"CUR",idaLocal:false,ida:{m:9,d:23},vue:{m:9,d:27}}
+};
 var COPA_CHILE_KO_FECHAS={
   Octavos:[{m:9,d:22},{m:10,d:7}],
   Cuartos:[{m:10,d:21},{m:11,d:4}],
@@ -231,15 +254,27 @@ function sembrarLlaveCopaChile(ronda, rivalId, posPropia){
   insertarCopaChileYOrdenar(nuevos);
 }
 function sembrarOctavosCopaChile(letra, pos){
+  if(E.anio===2026 && typeof COPA_CHILE_OCTAVOS_2026==="object" && COPA_CHILE_OCTAVOS_2026[E.club]){
+    var br=COPA_CHILE_OCTAVOS_2026[E.club];
+    E.flags.copaChileRivales=E.flags.copaChileRivales||[];
+    if(E.flags.copaChileRivales.indexOf(br.rival)<0) E.flags.copaChileRivales.push(br.rival);
+    var nuevos=[], p;
+    p=partidoCopaChileKO("Octavos", br.rival, br.ida, br.idaLocal);
+    if(p){ p.nota="Cuadro real de octavos Copa Chile 2026 (ANFP, septiembre 2026). Clasificaste en el juego; el rival es el cruce documentado."; nuevos.push(p); }
+    p=partidoCopaChileKO("Octavos", br.rival, br.vue, !br.idaLocal);
+    if(p) nuevos.push(p);
+    insertarCopaChileYOrdenar(nuevos);
+    return;
+  }
   var riv=rivalOctavosCopaChile(letra, pos);
   if(!riv) return;
   sembrarLlaveCopaChile("Octavos", riv.id, pos);
 }
 function bloquesCuartos(letra){
-  if("AB".indexOf(letra)>=0) return ["C","D"];
-  if("CD".indexOf(letra)>=0) return ["A","B"];
-  if("EF".indexOf(letra)>=0) return ["G","H"];
-  return ["E","F"];
+  if("AC".indexOf(letra)>=0) return ["B","D"];
+  if("BD".indexOf(letra)>=0) return ["A","C"];
+  if("EG".indexOf(letra)>=0) return ["F","H"];
+  return ["E","G"];
 }
 function sembrarSiguienteCopaChile(ronda){
   var g=E.flags.copaChileGrupo||"A";
@@ -276,7 +311,7 @@ function resolverCopaChile32(part, yo, otro){
       aplicarEfectos({moral:-3,prestigio:-1});
     } else {
       notificar({t:"Clasificado a octavos de Copa Chile",tipo:"bueno",
-        d:"Saliste "+pos+"° del grupo "+letra+". "+etq+". El cuadro de octavos lo arma el juego (1° vs 2° del grupo pareja A↔B, C↔D, E↔F, G↔H). No es el bracket real 2026."});
+        d:"Saliste "+pos+"° del grupo "+letra+". "+etq+". "+(E.anio===2026&&COPA_CHILE_OCTAVOS_2026[E.club]?"El cruce de octavos es el real 2026 (ANFP).":"El cuadro de octavos usa la pareja A↔C / B↔D / E↔G / F↔H (formato 2026). Si tu club no estaba en el cuadro real, el rival se estima.")});
       aplicarEfectos({moral:4,prestigio:2,plata:40});
       E.flags.copaChileGrupo=letra;
       E.flags.copaChilePos=pos;

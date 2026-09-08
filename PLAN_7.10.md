@@ -117,7 +117,7 @@ Según tu propia definición de beta cerrada, este es el ítem grande que sigue 
 ## Congelado (no tocar hasta cerrar la beta)
 
 - Tinder / dinastía / casino: están "a medias" y no cierran la beta. Coincide con tu nota vieja.
-- IA de pago: apagada, hook listo, no prender.
+- IA de pago: descongelada como compositor local gratis (7.33). Cero API.
 
 ---
 

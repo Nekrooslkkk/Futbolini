@@ -1775,3 +1775,20 @@ toggle fuera. Consola limpia.
 **1 línea:** si clasificas de grupo, la Copa Chile sigue; la previa tiene clima y tele; la prensa te pregunta por la deuda de verdad.
 **Riesgos:** wrap de `resolverCopa` / `terminarPartido` / `preguntasConferencia`. El rival de octavos es estimado, no el cuadro ANFP 2026. Bajo-medio.
 
+
+## 7.33 · Libertadores 2026 real + objetivos 2027 + IA local gratis  ✅ (2026-09-08)
+**Archivos:** `js/data-copas2026.js` (nuevo), `js/data-32.js`, `js/ui.js`, `js/partido.js`, `js/ia.js`, `js/util.js`, `js/data-b2026.js`, `index.html`.
+**El bug:** `generarObjetivos` le ponía «Clasificar a la Libertadores» a todo club con prestigio ≥ 60 (Everton, Coquimbo, Cobreloa, Wanderers, U. Española). La UI decía «Copa Libertadores» en cualquier copa. En 2026 Chile metió a grupos **solo Coquimbo y Católica**.
+**Copas 2026 (ya se jugaron, no se sortean):**
+- Libertadores grupos: COQ B (Nacional, Universitario, Tolima) y UC D (Boca, Cruzeiro, Barcelona SC), fechas reales abr–may. R16: COQ–Platense, UC–Estudiantes (ago).
+- Fase previa: HUA–Carabobo (17/24 feb); OHI–Bahia (18/25 feb) y OHI–Tolima (5/12 mar).
+- Sudamericana primera fase: UCH 1-2 PAL (5 mar, Nacional); COB 1-1 AUD (3 mar, Calama, Audax 3-2 penales).
+- Grupos Sud: PAL F, AUD G, OHI C (drop desde Lib) + playoff OHI–Boca.
+- Colo-Colo, Limache, Cobreloa y el resto **no** tienen partidos de Libertadores 2026.
+**2027+:** terminar 1–4 o ganar Copa Chile → cupo Lib (grupo sorteado por el juego, etiquetado). 5–8 → Sudamericana. No se copia un sorteo CONMEBOL inexistente.
+**Objetivos:** B → ascenso. Primera 2026 sin cupo → Libertadores **2027**. Quien sí está en Lib 2026 pelea avanzar de grupo + el nacional.
+**Copa Chile octavos:** cuadro ANFP 2026 (CBL–COQ, AUD–CC, EVE–UCH, etc.; pareja A↔C / B↔D / E↔G / F↔H). Si clasificas con un club que no estaba, el rival se estima.
+**IA de pago:** compositor local (`informeSemanal`, `preguntarAyudante` arma 2–4 frases desde E). Cero API, tú chileno.
+**UI:** escritorio / modal / notificación usan `etqCompromiso` (el torneo de verdad, no «Libertadores» en Copa Chile).
+**1 línea:** no todos clasifican a la Libertadores 2026; el 2027 se sortea; el ayudante es gratis y local.
+**Riesgos:** wraps de `construirCalendario` / `resolverCopa` / `generarObjetivos` / `finDeTemporada` / `preguntarAyudante`. 1991 CC intacta (`anio < 2026` cae al orig). Bajo-medio.

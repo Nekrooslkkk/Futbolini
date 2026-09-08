@@ -81,13 +81,13 @@
       frío**. Máx **3 delegaciones por campeonato** (y distinto cada campeonato).
 
 ## 7 · COMPETICIONES
-- [ ] **[MOTOR+GROK]** **Copa Libertadores** y **Copa Sudamericana**: simulaciones **fieles al formato**
-      (si se avanza en años, y cuando los cimientos indiquen, generar escenarios futuristas que cambian).
-- [ ] **[GROK]** **Primera B**: **DECIDIDO** → temporada **2026** (solo era actual), con **Cobreloa** +
+- [x] **[MOTOR+GROK]** **Copa Libertadores** y **Copa Sudamericana** 2026: calendarios reales
+      (solo clubes clasificados). 2027+ sorteo del juego, etiquetado. ✅ (7.33)
+- [x] **[GROK]** **Primera B**: **DECIDIDO** → temporada **2026** (solo era actual), con **Cobreloa** +
       otros clubes de Primera B 2026 que elija Claude. Equipos + fixture + planteles reales (Grok).
 - [x] **[GROK]** **Copa Chile**: **DECIDIDO** → para el **modo actual (2026)**; existió también en 1991,
       así que si se juega esa época va también. Formato + calendario por año (Grok verifica).
-      Grupos A–H reales + octavos procedurales al clasificar (7.31/7.32). Copa Chile 1991 documentada, no simulada.
+      Grupos A–H reales + octavos ANFP 2026 al clasificar (7.33). Copa Chile 1991 documentada, no simulada.
 
 ## 8 · ESCRITORIO / OBJETIVOS / AYUDANTE / NOTIS / AVANZAR
 - [~] **[MOTOR]** "Lo que se espera de vos" → **"de ti"** ✅ (7.25) + barrido de "vos" en la UI seria.

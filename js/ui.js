@@ -330,7 +330,7 @@ function vistaEscritorio(){
   const p=panel("Próximo compromiso","📌",part&&part.tipo==="copa"?"agua":"");
   if(part){
     p.cuerpo.appendChild(el("h2","tit","Próximo partido con "+part.rivalNombre));
-    p.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" · "+(part.tipo==="copa"?"Copa Libertadores · "+part.ronda:"Campeonato Nacional · fecha "+part.fecha)+
+    p.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" · "+(typeof etqCompromiso==="function"?etqCompromiso(part):(part.tipo==="copa"?(part.torneo||"Copa")+" · "+part.ronda:"fecha "+part.fecha))+
       " · "+fechaTxt(part.f)+" · "+part.sede));
     /* ver el once probable del rival antes de entrar */
     if(typeof plantelRival==="function"){
@@ -408,7 +408,10 @@ function vistaEscritorio(){
   }
 
   const cer=panel("Ayudante","🧑‍🏫","agua");
-  cer.cuerpo.appendChild(el("p","mini","Tu mano derecha, sin internet ni créditos: lee el club de verdad y te prioriza la semana. Preguntale lo que quieras."));
+  cer.cuerpo.appendChild(el("p","mini","Tu mano derecha, gratis y sin servidor: lee el club de verdad, arma un informe y te responde en chileno. Pregúntale lo que quieras."));
+  if(typeof informeSemanal==="function"){
+    cer.cuerpo.appendChild(el("p",null,informeSemanal()));
+  }
   const insights=(typeof cerebroLocal==="function")?cerebroLocal():[];
   if(insights.length){
     const cl=el("div","cerebro");
@@ -431,7 +434,7 @@ function vistaEscritorio(){
     inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); responder(); } };
     const bq=el("button","btn-aqua chico","Preguntar"); bq.style.marginTop="6px"; bq.onclick=responder;
     const chips=el("div","fichas"); chips.style.marginTop="6px";
-    ["¿Cómo viene el rival?","¿Cómo está la química?","¿Cómo estamos de plata?","¿Y el camarín?"].forEach(txt=>{
+    ["Informe de la semana","¿Cómo viene el rival?","¿Hay Libertadores?","¿Cómo estamos de plata?","¿Y el camarín?"].forEach(txt=>{
       const c=el("button","ficha",txt); c.onclick=()=>{ inp.value=txt; responder(); }; chips.appendChild(c);
     });
     qbox.appendChild(inp); qbox.appendChild(bq); qbox.appendChild(chips); qbox.appendChild(resp);
@@ -1890,7 +1893,7 @@ function fechaCorta(ts){
 function vistaAjustes(){
   const v=$("#vista");
   const don=panel("El proyecto","💚");
-  don.cuerpo.appendChild(el("p",null,"Futbolini es gratis y siempre lo va a ser. Corre 100% en tu navegador, sin servidor obligatorio y sin IA de pago: el cerebro del juego es local, así que no cuesta un peso mantenerlo."));
+  don.cuerpo.appendChild(el("p",null,"Futbolini es gratis y siempre lo va a ser. Corre 100% en tu navegador, sin servidor obligatorio: el ayudante es un compositor local (lee el club y arma frases), no una IA de pago."));
   don.cuerpo.appendChild(el("p","mini","Si quieres ayudar: comparte el juego o escribile al autor. La mejor forma de sostenerlo es que lo juegue más gente."));
   v.appendChild(don);
   panelMisPartidas(v);
@@ -2121,7 +2124,7 @@ function modalAvancePartido(part){
     box.appendChild(el("div","cab",'<span class="ic">📅</span><span>Hay un partido en el calendario</span>'));
     const c=el("div","cuerpo"); box.appendChild(c);
     c.appendChild(el("h2","tit",(part.local?"vs ":"visita a ")+part.rivalNombre));
-    c.appendChild(el("p","mini",(part.tipo==="copa"?"Copa Libertadores · "+part.ronda:"Campeonato Nacional · fecha "+part.fecha)+
+    c.appendChild(el("p","mini",(typeof etqCompromiso==="function"?etqCompromiso(part):(part.tipo==="copa"?(part.torneo||"Copa")+" · "+part.ronda:"fecha "+part.fecha))+
       " · "+fechaTxt(part.f)+" · "+part.sede));
     c.appendChild(el("p",null,"Avanzar no salta fechas. O lo diriges, o lo dejas al azar con la táctica que ya armaste."));
     const b1=el("button","btn-aqua ancho verde","Dirigir el partido");

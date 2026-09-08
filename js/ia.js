@@ -8,6 +8,8 @@
    gasta un peso, nunca depende de una IA de pago. Ese es el trato del juego:
    que lo pueda jugar todo el mundo sin costo.
    Para darle más vida, se SUMAN palabras y reglas a las tablas de abajo.
+   7.33 · la «IA de pago» es un compositor local (informeSemanal /
+   preguntarAyudante en data-copas2026.js): lee E y arma 2–4 frases.
    ============================================================ */
 
 /* ---------- análisis OFFLINE (heurístico) ---------- */

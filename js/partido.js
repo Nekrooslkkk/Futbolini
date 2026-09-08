@@ -936,7 +936,7 @@ function terminarPartido(P){
   notificar({
     t:(yo>otro?"Victoria ":(yo<otro?"Derrota ":"Empate "))+yo+"-"+otro+" ante "+part.rivalNombre,
     tipo:(yo>otro?"bueno":(yo<otro?"malo":"neutro")),
-    d:(part.tipo==="copa"?"Copa Libertadores · "+part.ronda:"Campeonato Nacional · fecha "+part.fecha)+", "+
+    d:(typeof etqCompromiso==="function"?etqCompromiso(part):(part.tipo==="copa"?(part.torneo||"Copa")+" · "+part.ronda:"fecha "+part.fecha))+", "+
       (part.local?"de local":"de visita")+" en "+part.sede+". "+
       (P.goleadores.length?("Goles: "+P.goleadores.join(", ")+". "):"")+
       (part.local?("Fueron "+(part.publico||0).toLocaleString("es-CL")+" personas; taquilla "+plata(part.caja||0)+". "):"")+

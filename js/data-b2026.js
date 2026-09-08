@@ -1,6 +1,6 @@
 "use strict";
 /* ============================================================
-   FUTBOLINI 7.32 · data-b2026.js
+   FUTBOLINI 7.33 · data-b2026.js
    Primera B / Liga de Ascenso 2026 (16 clubes) + Copa Chile 2026
    (8 grupos reales, Wikipedia / ANFP). Se carga DESPUÉS de
    data-clubes2026.js y ANTES de partido.js.
@@ -530,15 +530,15 @@ const PLANTEL_RAN_2026=[
    32 clubes (16 Primera + 16 B), 8 grupos de 4 (2+2), ida y vuelta.
    Top 2 a octavos (ida/vuelta). Final a partido único.
    Grupos A–H verificados. Octavos NO se pre-siembran al crear
-   la carrera: se arman al clasificar (data-32.js, procedural,
-   pareja A↔B / C↔D / E↔F / G↔H). No es el cuadro real 2026.
+   la carrera: se arman al clasificar (data-32.js). Si el club está
+   en el cuadro ANFP 2026, el cruce es el real (A↔C / B↔D / E↔G / F↔H).
    Copa Chile 1991 existía (Copa Chile 1991 / Digeder); no se simula acá.
    ============================================================ */
 const FORMAT_COPAS={
   copaChile2026:"32 clubes (16 Liga de Primera + 16 Liga de Ascenso). 8 grupos de 4, sembrados por zona (Norte/Sur), 2 de cada división por grupo. Ida y vuelta (6 fechas). Clasifican 1° y 2°. Octavos a semifinales ida/vuelta; final a partido único. El campeón (si está en Primera 2027) juega un repechaje con el 3° de liga por un cupo a Libertadores fase 2; el perdedor va a Sudamericana.",
   copaChile1991:"La Copa Chile 1991 (Digeder) se jugó en el primer semestre, con clubes de Primera y del ascenso en fases regionales y eliminación directa. Formato distinto al actual: no se copia 1:1 al 2026.",
-  libertadores2026:"8 grupos de 4. Ida y vuelta. 1° y 2° a octavos. Octavos a semis ida/vuelta; final única. Chile 2026 entra por la temporada 2025: CH1 Coquimbo (campeón), CH2 Católica, CH3 O'Higgins, CH4 Huachipato (Copa Chile). En una carrera NUEVA 2026 NO se inventan los grupos: el jugador no arranca metido en una llave falsa.",
-  sudamericana2026:"Fase de grupos (primera ronda de playoff + grupos según el año CONMEBOL vigente). Chile mete cupos por liga (puestos que no van a Libertadores) y por el perdedor del repechaje de Copa Chile. Knockout ida/vuelta, final única.",
+  libertadores2026:"8 grupos de 4. Ida y vuelta. 1° y 2° a octavos. Chile 2026 entra por 2025: CH1 Coquimbo, CH2 Católica, CH3 O'Higgins, CH4 Huachipato. A grupos SOLO Coquimbo y Católica (fechas reales en data-copas2026.js). El resto no clasificó. 2027+ el grupo lo sortea el juego.",
+  sudamericana2026:"Primera fase 2026 (partido único): UCH 1-2 PAL (5 mar); COB 1-1 AUD (3 mar, Calama, Audax 3-2 penales). Grupos reales: PAL F, AUD G, OHI C (tras caer en Lib). Knockout ida/vuelta, final única.",
   libertadores1991:"Formato 1991 (el que ganó Colo-Colo): grupos de 4 con ida/vuelta, octavos a final también ida/vuelta (sin final única). El camino real de Colo-Colo ya está en COPA91."
 };
 
