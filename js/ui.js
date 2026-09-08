@@ -281,6 +281,19 @@ function vistaEscritorio(){
   const rej=el("div","rejilla dos");
   const izq=el("div"), der=el("div");
 
+  /* 4.c · lo que conviene atender antes de avanzar (arriba de todo) */
+  const pend=(typeof pendientesAtender==="function")?pendientesAtender():[];
+  if(pend.length){
+    const pa=panel("Atiende antes de avanzar","⚠️","alerta");
+    pa.cuerpo.appendChild(el("p","mini","Hay cosas que conviene resolver antes de apretar Avanzar. Tocá una para ir a resolverla:"));
+    pend.forEach(it=>{
+      const b=el("button","op"); b.innerHTML='<div class="t">'+it.ic+" "+it.t+'</div>'+(it.d?'<div class="req">'+it.d+'</div>':"");
+      b.onclick=()=>irA(it.ir);
+      pa.cuerpo.appendChild(b);
+    });
+    izq.appendChild(pa);
+  }
+
   /* próximo compromiso */
   const part=proximoPartido();
   const p=panel("Próximo compromiso","📌",part&&part.tipo==="copa"?"agua":"");
@@ -363,8 +376,8 @@ function vistaEscritorio(){
     izq.appendChild(po);
   }
 
-  const cer=panel("Cerebro local","🧠","agua");
-  cer.cuerpo.appendChild(el("p","mini","Sin internet ni créditos: leo el estado real del club y te priorizo lo que importa esta semana."));
+  const cer=panel("Ayudante","🧑‍🏫","agua");
+  cer.cuerpo.appendChild(el("p","mini","Tu mano derecha, sin internet ni créditos: lee el club de verdad y te prioriza la semana. Preguntale lo que quieras."));
   const insights=(typeof cerebroLocal==="function")?cerebroLocal():[];
   if(insights.length){
     const cl=el("div","cerebro");
@@ -376,6 +389,22 @@ function vistaEscritorio(){
     cer.cuerpo.appendChild(cl);
   } else {
     cer.cuerpo.appendChild(el("p",null,typeof consejoLocal==="function"?consejoLocal():"Todo tranquilo. Puedes mover un estatuto o mirar el mercado."));
+  }
+  /* 4.b · preguntarle al ayudante en texto libre */
+  if(typeof preguntarAyudante==="function"){
+    const qbox=el("div"); qbox.style.marginTop="8px";
+    const resp=el("div","resul mitad"); resp.hidden=true;
+    const inp=el("input"); inp.type="text"; inp.placeholder="Preguntale al ayudante… (rival, química, plata, camarín, mercado…)";
+    inp.style.cssText="display:block;width:100%;box-sizing:border-box;padding:9px 11px;border-radius:8px;border:1px solid rgba(0,0,0,.15)";
+    const responder=()=>{ const q=inp.value.trim(); if(!q){ inp.focus(); return; } resp.hidden=false; resp.innerHTML="<b>🧑‍🏫 Ayudante:</b> "+preguntarAyudante(q); };
+    inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); responder(); } };
+    const bq=el("button","btn-aqua chico","Preguntar"); bq.style.marginTop="6px"; bq.onclick=responder;
+    const chips=el("div","fichas"); chips.style.marginTop="6px";
+    ["¿Cómo viene el rival?","¿Cómo está la química?","¿Cómo estamos de plata?","¿Y el camarín?"].forEach(txt=>{
+      const c=el("button","ficha",txt); c.onclick=()=>{ inp.value=txt; responder(); }; chips.appendChild(c);
+    });
+    qbox.appendChild(inp); qbox.appendChild(bq); qbox.appendChild(chips); qbox.appendChild(resp);
+    cer.cuerpo.appendChild(qbox);
   }
   izq.appendChild(cer);
 
@@ -2014,11 +2043,40 @@ function modalAvancePartido(part){
     c.appendChild(b1); c.appendChild(b2); c.appendChild(b3);
   },{cerrarFuera:false});
 }
+/* 4.c · cosas que conviene atender antes de avanzar (no bloqueantes).
+   `fuerte:true` = amerita un aviso antes de avanzar; el resto solo se lista. */
+function pendientesAtender(){
+  const p=[]; if(!E) return p;
+  const urg=(E.decPend||[]).filter(x=>x.peso==="alto");
+  if(urg.length) p.push({ic:"📥",fuerte:true,t:urg.length+" decisión"+(urg.length>1?"es":"")+" urgente"+(urg.length>1?"s":"")+" sin resolver",d:"En Decisiones sobre la mesa.",ir:"escritorio"});
+  if(typeof notifsAccionables==="function"){ const a=notifsAccionables(); if(a.length) p.push({ic:"📨",fuerte:true,t:a.length+" aviso"+(a.length>1?"s":"")+" que requiere"+(a.length>1?"n":"")+" tu respuesta",d:"Ofertas o pedidos esperando.",ir:"avisos"}); }
+  if(Array.isArray(E.objetivos) && typeof progresoObjetivo==="function"){ const r=E.objetivos.filter(o=>progresoObjetivo(o).estado==="riesgo"); if(r.length) p.push({ic:"🎯",t:"Meta en riesgo: "+r[0].t,d:"El directorio lo evalúa al cierre.",ir:"escritorio"}); }
+  if(typeof quimicaEquipo==="function" && typeof onceIdeal==="function"){ const q=quimicaEquipo(onceIdeal()); if(q.prom<48) p.push({ic:"🔗",t:"Química floja ("+q.prom+"/100)",d:"Acomodá la pizarra antes del partido.",ir:"escritorio"}); }
+  if(E.ind && E.ind.moral<42) p.push({ic:"👥",t:"Camarín cortado (moral "+Math.round(E.ind.moral)+")",d:"Podés reconquistarlos en Finanzas.",ir:"institucion"});
+  if(E.flags && E.flags.sueldosAtrasados) p.push({ic:"💸",fuerte:true,t:"Sueldos atrasados",d:"El camarín se resiente cada semana.",ir:"finanzas"});
+  return p;
+}
+function modalAtiende(pend){
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">⚠️</span><span>Atiende antes de avanzar</span>'));
+    const cc=el("div","cuerpo"); box.appendChild(cc);
+    cc.appendChild(el("p","mini","Tenés cosas sin resolver. Tocá una para ir a atenderla, o avanzá igual:"));
+    pend.forEach(it=>{ const b=el("button","op"); b.innerHTML='<div class="t">'+it.ic+" "+it.t+'</div>'+(it.d?'<div class="req">'+it.d+'</div>':""); b.onclick=()=>{ cerrarModal(); irA(it.ir); }; cc.appendChild(b); });
+    const bx=el("button","btn-aqua ancho gris","Avanzar igual"); bx.style.marginTop="8px"; bx.onclick=()=>{ cerrarModal(); avanzar(); };
+    cc.appendChild(bx);
+  },{cerrarFuera:false});
+}
 function avanzar(){
   if(!E||E.carrera.fin||E.carrera.enParo) return;
   const cr=crisisActiva();
   if(cr){ abrirCrisis(cr); return; }
   if(bloqueoDecisiones()) return;
+  /* 4.c · nudge suave una vez por semana si hay cosas fuertes sin atender */
+  const kf="pendAviso_"+E.anio+"_"+E.idx;
+  if(E.flags && !E.flags[kf]){
+    const fuertes=pendientesAtender().filter(x=>x.fuerte);
+    if(fuertes.length){ E.flags[kf]=true; modalAtiende(fuertes); return; }
+  }
   const part=proximoPartido();
   if(!part){ cerrarTemporada(); return; }
   if(!part.jugado){ modalAvancePartido(part); return; }

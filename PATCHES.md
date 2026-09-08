@@ -1669,3 +1669,22 @@ estás combinando bien" en formación/mentalidad/estilo/presión.
 congenian", lecturaPlan da coherente/contradictorio/defensivo bien, consola limpia.
 **1 línea:** la química ahora se mueve de verdad (15-97) y se explica, y el plan te dice si estás combinando bien o mezclando cosas que se pelean.
 **Riesgos:** quimicaEquipo (core táctico, mismo shape de retorno + campos nuevos) + UI. Bajo-medio.
+
+## 7.27 · Punto 4 del brief: Ayudante preguntable + "Atiende antes de avanzar"  ✅ (2026-09-08)
+**Archivos:** `js/ia.js` (preguntarAyudante + rename), `js/ui.js` (panel Ayudante con Q&A, pendientesAtender, modalAtiende, nudge en avanzar)
+**Qué:**
+- **Cerebro local → "Ayudante"** (`🧑‍🏫`): renombrado el panel del escritorio y los textos internos.
+- **Preguntarle en texto libre** (`preguntarAyudante(q)` en ia.js): sin internet ni créditos, interpreta la
+  pregunta por temas (rival/próximo partido, química, plata/deuda, camarín/moral, hinchada, objetivo,
+  mercado, físico/lesiones, táctica→lecturaPlan) y responde con el estado real de E; fallback = lo más
+  importante ahora (top de cerebroLocal). Caja de texto + botón "Preguntar" + 4 chips rápidos en el panel.
+- **"⚠️ Atiende antes de avanzar"** (`pendientesAtender()`): junta lo que conviene resolver (decisiones
+  urgentes, avisos accionables, meta en riesgo, química floja, camarín cortado, sueldos atrasados). Se pinta
+  como panel clickeable ARRIBA del escritorio; y `avanzar()` hace un **nudge suave 1×/semana** (flag
+  `pendAviso_anio_idx`) con `modalAtiende()` solo si hay algo `fuerte` (decisión urgente/aviso/sueldos),
+  con botones para ir a resolver o "Avanzar igual". Las decisiones bloqueantes siguen bloqueando como antes.
+**Probado:** node --check + navegador: panel Ayudante renombrado, preguntas de rival/química/plata/táctica
+responden bien, "Atiende antes de avanzar" primero en el escritorio, pendientesAtender detecta meta en riesgo,
+gramática "1 dupla" ok, consola limpia + captura.
+**1 línea:** el cerebro local ahora es el "Ayudante" al que le podés preguntar, y los pendientes salen como "Atiende antes de avanzar".
+**Riesgos:** ia.js (función nueva) + ui.js (panel + hook en avanzar, guardado por flag). Bajo.

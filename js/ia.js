@@ -111,19 +111,90 @@ function cerebroLocal(){
   ins.sort((a,b)=>b.prio-a.prio);
   return ins.slice(0,5);
 }
+/* 4.b · preguntarle al Ayudante en texto libre. Sin internet ni créditos:
+   interpreta la pregunta por temas y responde con el estado real del club. */
+function preguntarAyudante(q){
+  if(!E) return "Todavía no arrancaste una partida.";
+  const baja=(q||"").toLowerCase();
+  const norm=baja.normalize?baja.normalize("NFD").replace(/[̀-ͯ]/g,""):baja;
+  if(!norm.trim()) return "Preguntame lo que quieras: del rival, la química, la plata, el camarín, la hinchada, el objetivo, el mercado o la táctica.";
+  const t=(...ws)=>ws.some(w=>norm.indexOf(w)>=0);
+  const part=(typeof proximoPartido==="function")?proximoPartido():null;
+  if(t("rival","proximo","partido","gano","ganar","ganamos","enfrent","clasico")){
+    if(part && typeof fuerzaEquipo==="function" && typeof onceIdeal==="function"){
+      const dif=fuerzaEquipo(onceIdeal()).base-part.fuerzaRival;
+      if(dif>6) return "Ante "+part.rivalNombre+" salís favorito. Presioná arriba y buscá el arco temprano, no lo dejes crecer.";
+      if(dif<-6) return part.rivalNombre+" llega más fuerte. Ordenate atrás, aguantá y salí de contra con los rápidos.";
+      return "Está parejo con "+part.rivalNombre+". Lo define un detalle: la pelota parada y no regalar el mediocampo.";
+    }
+    return "No tenés un partido a la vista ahora mismo.";
+  }
+  if(t("quimic","congenia","dupla","llevan bien")){
+    if(typeof quimicaEquipo==="function" && typeof onceIdeal==="function"){ const x=quimicaEquipo(onceIdeal());
+      const nb=x.buenos||0, nm=x.malos||0;
+      return "La química está en "+x.prom+"/100 ("+nb+" dupla"+(nb!==1?"s":"")+" que congenia"+(nb!==1?"n":"")+", "+nm+" con roce). Para subirla, en la pizarra juntá a jugadores de edad parecida, con rasgos en común, dos ídolos de la casa, o que ya jugaron juntos."; }
+  }
+  if(t("plata","caja","deuda","dinero","economi","finanz","presupuesto")){
+    const d=(E.deuda||0), c=(E.plata||0);
+    let r="Caja del club: "+plata(c)+" · Deuda: "+plata(d)+". ";
+    if(c<80) r+="La caja está flaca: cuidá los gastos y no firmes renovaciones caras esta semana.";
+    else if(d>c*3) r+="La deuda te supera: pensá en vender un prescindible o abonar antes que pedir más crédito.";
+    else r+="Estás relativamente sano; con cabeza podés moverte en el mercado.";
+    return r+" (Tu plata personal es aparte: "+plata((E.personal&&E.personal.bolsillo)||0)+".)";
+  }
+  if(t("moral","camarin","animo","vestuario","descontent")){
+    const m=Math.round((E.ind&&E.ind.moral)||50);
+    if(m<45) return "El camarín está cortado (moral "+m+"). Una charla con el capitán, un once que no sea de castigo, y ganar cura casi todo. En Finanzas podés gastar para reconquistar a los descontentos.";
+    return "El camarín está bien (moral "+m+"). Sostené el clima: no rompas lo que funciona.";
+  }
+  if(t("hinchada","barra","gente","socios","publico")){
+    const h=Math.round((E.ind&&E.ind.hinchada)||50);
+    if(h<45) return "La hinchada se está enfriando (hinchada "+h+"). Un resultado, un precio de entrada más bajo o un gesto con la barra ayudan.";
+    return "La hinchada te banca (hinchada "+h+"). Aprovechá el envión de local.";
+  }
+  if(t("objetivo","meta","directorio","piden","espera","exig")){
+    if(Array.isArray(E.objetivos) && typeof progresoObjetivo==="function"){
+      const en=E.objetivos.map(o=>({o:o,pr:progresoObjetivo(o)}));
+      const risk=en.filter(x=>x.pr.estado==="riesgo");
+      if(risk.length) return "Cuidado: «"+risk[0].o.t+"» está en riesgo — "+risk[0].pr.txt+". El directorio lo evalúa al cierre.";
+      return "Vas en línea con lo que se espera de ti. Seguí sumando y no te relajes.";
+    }
+  }
+  if(t("fich","compr","refuerzo","mercado","vend","transferi")){
+    const c=(E.plata||0);
+    if(c>250) return "Hay caja para moverse ("+plata(c)+"): un refuerzo puntual en tu posición más floja puede cambiarte la temporada. Mirá Mercado.";
+    return "La caja no da para lujos ("+plata(c)+"). Si querés reforzar, primero vendé un prescindible o buscá un préstamo/representante.";
+  }
+  if(t("cansad","fisic","lesion","piernas","rotar","descans")){
+    if(typeof onceIdeal==="function"){ const cans=onceIdeal().filter(j=>(j.cansancio||0)>=18);
+      const les=(E.plantel||[]).filter(j=>j.lesion>0&&!j.vendido);
+      let r="";
+      if(cans.length>=2) r+=cans.length+" titulares vienen con las piernas pesadas: pensá en rotar o entrenar suave. ";
+      if(les.length) r+=les.length+" lesionado"+(les.length>1?"s":"")+" fuera. ";
+      return r||"El plantel llega entero, sin cansancio preocupante ni lesionados clave.";
+    }
+  }
+  if(t("tactic","formacion","mentalidad","presion","plan","estilo","alinea")){
+    return (typeof lecturaPlan==="function")?("Tu plan actual: "+lecturaPlan()):"Revisá formación, mentalidad, estilo y presión en la previa del partido.";
+  }
+  /* fallback: lo más importante ahora mismo */
+  const ins=(typeof cerebroLocal==="function")?cerebroLocal():[];
+  if(ins.length) return "Lo más importante ahora: "+ins[0].t+" — "+ins[0].d;
+  return "Está todo tranquilo. Podés mover un estatuto, mirar el mercado o dar una charla al plantel.";
+}
 function pensarOffline(tarea,ctx){
   ctx=ctx||{};
   if(tarea==="tinder"){
-    if((ctx.pts||0)>=20) return "Cerebro local: hubo química. No prometas titularidad en la primera cita.";
-    if((ctx.pts||0)>=8) return "Cerebro local: todavía se puede. No hables del directorio.";
-    return "Cerebro local: esa charla no sumó. Mejor otra semana.";
+    if((ctx.pts||0)>=20) return "Ayudante: hubo química. No prometas titularidad en la primera cita.";
+    if((ctx.pts||0)>=8) return "Ayudante: todavía se puede. No hables del directorio.";
+    return "Ayudante: esa charla no sumó. Mejor otra semana.";
   }
-  if(tarea==="sucesor") return "Cerebro local: el hijo llega con capital; el de afuera llega sin el apellido y sin perdón.";
+  if(tarea==="sucesor") return "Ayudante: el hijo llega con capital; el de afuera llega sin el apellido y sin perdón.";
   return consejoLocal();
 }
 
 /* devuelve siempre una promesa que resuelve a {sentimiento, promesa, consecuencia}.
-   Cerebro local: sin red, sin costo. Se mantiene async por compatibilidad con quien lo llama. */
+   Ayudante: sin red, sin costo. Se mantiene async por compatibilidad con quien lo llama. */
 async function evaluarPost(texto){
   return analizarOffline(texto);
 }

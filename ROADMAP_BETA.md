@@ -92,10 +92,12 @@
 - [~] **[MOTOR]** "Lo que se espera de vos" → **"de ti"** ✅ (7.25) + barrido de "vos" en la UI seria.
       PENDIENTE: gráficos que se entiendan + llevarlo a Historia. (Audit voseo completo aparte: hinchas/
       barra quedan en chileno marcado a propósito.)
-- [ ] **[MOTOR]** Cerebro local → renombrar a **"Ayudante"**, lectura más cercana tipo IA, que **puedas
-      preguntarle**.
-- [ ] **[MOTOR]** "Lo que pasó esta semana": lo que valga la pena atender aparece en **notificaciones**.
-- [ ] **[MOTOR]** Problemas del juego que debas atender salgan como **"ATIENDE ANTES DE AVANZAR"**.
+- [x] **[MOTOR]** Cerebro local → **"Ayudante"** (renombrado), con caja de **preguntar en texto libre**
+      (interpreta rival/química/plata/camarín/hinchada/objetivo/mercado/físico/táctica) + chips rápidos. ✅ (7.27)
+- [~] **[MOTOR]** "Lo que pasó esta semana" → lo urgente aparece en el panel "Atiende antes de avanzar"
+      (parcial; falta enganchar más al feed de notis). (7.27)
+- [x] **[MOTOR]** Problemas a atender salen como **"⚠️ Atiende antes de avanzar"**: panel arriba del
+      escritorio (clickeable) + nudge suave 1×/semana al apretar Avanzar si hay algo fuerte sin resolver. ✅ (7.27)
 - [ ] **[MOTOR]** **Botón Avanzar mejorado**: que simule TODO (delegar todo y avanzar rápido, para
       partidas rápidas / hacer videos).
 
