@@ -1688,3 +1688,21 @@ responden bien, "Atiende antes de avanzar" primero en el escritorio, pendientesA
 gramática "1 dupla" ok, consola limpia + captura.
 **1 línea:** el cerebro local ahora es el "Ayudante" al que le podés preguntar, y los pendientes salen como "Atiende antes de avanzar".
 **Riesgos:** ia.js (función nueva) + ui.js (panel + hook en avanzar, guardado por flag). Bajo.
+
+## 7.28 · Punto 5 del brief: Avance rápido (delegar todo y simular)  ✅ (2026-09-08)
+**Archivos:** `index.html` (botón ⏩ #btnRapido), `js/ui.js` (avanzarRapido/delegar/procesarSemanaRapido/modalAvanceRapido + wiring)
+**Qué:** botón **⏩ al lado de Avanzar** que delega todo y simula sin jugar en vivo (para partidas rápidas
+o hacer videos). Reusa el motor headless (state-puro): `iniciarPartido(part,"simular")` →
+`correrHasta(P,90)` → `terminarPartido(P)` (idx++, tabla, plata, notifs; sin tocar el DOM).
+- `delegarDecisionesPendientes()`: resuelve las decisiones sobre la mesa eligiendo la primera opción con
+  requisito cumplido (delega en el ayudante).
+- `procesarSemanaRapido()`: hace la parte determinística de la semana (tickSemana, repartirDecisiones,
+  contexto, ofertas, decisiones proc) SIN disparar eventos/vida/negociación con modal.
+- `avanzarRapido(hastaFin)`: loop de fechas; "Simular la próxima fecha" (1) o "hasta fin de temporada"
+  (todas). Frena solo ante crisis, sucesión, sin-club, fin de carrera o cierre de temporada (avisa que
+  hay que apretar Avanzar para el cierre). `modalAvanceRapido()` con las 2 opciones + Cancelar.
+- Botón oculto sin partida; wired en el arranque.
+**Probado:** node --check + navegador: 1 fecha (idx 0→1, 1 partido), temporada completa (29 partidos al
+instante, 30 jugados, 16-2-12 = 50 pts consistente), modal con 2 opciones, botón visible, consola limpia.
+**1 línea:** botón ⏩ que delega y simula al toque una fecha o la temporada entera, sin jugar en vivo.
+**Riesgos:** reusa motor de partido headless (probado state-puro) + loop acotado (tope 400). Bajo-medio.

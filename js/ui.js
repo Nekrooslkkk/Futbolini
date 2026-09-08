@@ -61,6 +61,7 @@ function render(){
   pintarBarra(); pintarMenu();
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="full";
   $("#btnAvanzar").classList.toggle("oculto",!E);
+  { const br=document.getElementById("btnRapido"); if(br) br.classList.toggle("oculto",!E); }
   if(!E){ pantallaInicio(); return; }
   if(E.carrera.fin){ v.appendChild(pantallaFinCarrera()); return; }
   if(E.dinastia&&E.dinastia.sucesionPendiente){ v.appendChild(pantallaSucesion()); return; }
@@ -2066,6 +2067,74 @@ function modalAtiende(pend){
     cc.appendChild(bx);
   },{cerrarFuera:false});
 }
+/* 5 · AVANCE RÁPIDO: delegar todo y simular sin jugar en vivo (partidas rápidas / videos).
+   Reusa el motor headless (iniciarPartido→correrHasta(90)→terminarPartido, todo state-puro). */
+function delegarDecisionesPendientes(){
+  let n=0;
+  const pend=(E.decPend||[]).slice();   /* snapshot: resolverDecision muta E.decPend */
+  pend.forEach(x=>{
+    try{
+      const d=(typeof decisionPorId==="function")?decisionPorId(x.id):null;
+      if(!d||!d.op||!d.op.length) return;
+      let idx=0;
+      for(let i=0;i<d.op.length;i++){ const ok=(typeof requisitoCumplido==="function")?requisitoCumplido(d.op[i]).ok:true; if(ok){ idx=i; break; } }
+      resolverDecision(d,idx); n++;
+    }catch(e){}
+  });
+  return n;
+}
+function procesarSemanaRapido(){
+  const neto=tickSemana();
+  if(typeof chequearDesfalco==="function") chequearDesfalco();
+  repartirDecisiones();
+  if(typeof eventosDeContexto==="function") eventosDeContexto();
+  if(typeof generarOfertasSemana==="function") generarOfertasSemana();
+  if(typeof sembrarDecisionProc==="function") sembrarDecisionProc();
+  return neto;   /* en rápido NO se disparan eventos/vida/negociación con modal */
+}
+function avanzarRapido(hastaFin){
+  if(!E||E.carrera.fin||E.carrera.enParo) return {fechas:0,partidos:0,ganados:0,freno:"sin partida activa"};
+  let fechas=0,partidos=0,ganados=0,freno=null;
+  const tope=hastaFin?400:1;
+  while(fechas<tope){
+    if(E.carrera.fin){ freno="fin de la carrera"; break; }
+    if(E.carrera.enParo){ freno="quedaste sin club"; break; }
+    if(E.dinastia&&E.dinastia.sucesionPendiente){ freno="hay una sucesión que resolver"; break; }
+    if(typeof crisisActiva==="function" && crisisActiva()){ freno="hay una crisis que atender — resolvela y seguí"; break; }
+    delegarDecisionesPendientes();
+    const part=proximoPartido();
+    if(!part){ freno="fin de la temporada — apretá Avanzar para el cierre"; break; }
+    if(!part.jugado){
+      const antes=(E.temporada&&E.temporada.pg)||0;
+      const P=iniciarPartido(part,"simular");
+      correrHasta(P,90);
+      terminarPartido(P);                 /* state-puro: idx++, tabla, plata, notifs */
+      partidos++;
+      if(((E.temporada&&E.temporada.pg)||0)>antes) ganados++;
+    }
+    procesarSemanaRapido();
+    fechas++;
+    if(!hastaFin) break;
+  }
+  if(typeof render==="function"){ SEC="escritorio"; render(); }
+  if(typeof guardar==="function") guardar();
+  return {fechas:fechas,partidos:partidos,ganados:ganados,freno:freno};
+}
+function modalAvanceRapido(){
+  if(!E||E.carrera.fin||E.carrera.enParo){ aviso("No hay una partida activa"); return; }
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">⏩</span><span>Avance rápido</span>'));
+    const cc=el("div","cuerpo"); box.appendChild(cc);
+    cc.appendChild(el("p","mini","Delego todo por vos: resuelvo las decisiones con criterio, simulo los partidos al toque y avanzo. Ideal para ir rápido o hacer videos. Podés volver a dirigir cuando quieras."));
+    const correr=(hastaFin)=>{ cerrarModal(); const r=avanzarRapido(hastaFin);
+      aviso("⏩ "+r.partidos+" partido"+(r.partidos!==1?"s":"")+" simulado"+(r.partidos!==1?"s":"")+" · "+r.ganados+" ganado"+(r.ganados!==1?"s":"")+(r.freno?" · "+r.freno:""),4500); };
+    const b1=el("button","btn-aqua ancho verde","⏩ Simular la próxima fecha"); b1.onclick=()=>correr(false);
+    const b2=el("button","btn-aqua ancho","⏭️ Simular hasta fin de temporada"); b2.style.marginTop="6px";
+    b2.onclick=()=>{ if(confirm("Voy a simular todos los partidos que quedan de la temporada, delegando las decisiones. ¿Seguir?")) correr(true); };
+    const b3=el("button","btn-aqua ancho gris","Cancelar"); b3.style.marginTop="6px"; b3.onclick=cerrarModal;
+    cc.appendChild(b1); cc.appendChild(b2); cc.appendChild(b3);
+  });
+}
 function avanzar(){
   if(!E||E.carrera.fin||E.carrera.enParo) return;
   const cr=crisisActiva();
@@ -2244,6 +2313,7 @@ function modalCuenta(){
 }
 /* ---------------- arranque ---------------- */
 $("#btnAvanzar").onclick=avanzar;
+$("#btnRapido").onclick=modalAvanceRapido;
 $("#btnCuenta").onclick=modalCuenta;
 $("#btnAvisos").onclick=()=>{ if(E) modalAvisos(); };
 { const _c=document.getElementById("campanaAvisos"); if(_c) _c.onclick=()=>{ if(E) modalAvisos(); }; }

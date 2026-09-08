@@ -98,8 +98,9 @@
       (parcial; falta enganchar más al feed de notis). (7.27)
 - [x] **[MOTOR]** Problemas a atender salen como **"⚠️ Atiende antes de avanzar"**: panel arriba del
       escritorio (clickeable) + nudge suave 1×/semana al apretar Avanzar si hay algo fuerte sin resolver. ✅ (7.27)
-- [ ] **[MOTOR]** **Botón Avanzar mejorado**: que simule TODO (delegar todo y avanzar rápido, para
-      partidas rápidas / hacer videos).
+- [x] **[MOTOR]** **Avance rápido** (botón ⏩ al lado de Avanzar): delega las decisiones y simula los
+      partidos headless. "Simular la próxima fecha" o "hasta fin de temporada" (30 partidos al instante).
+      Frena solo ante crisis/sucesión/cierre. Para partidas rápidas / hacer videos. ✅ (7.28)
 
 ## 9 · INSTITUCIÓN
 - [ ] **[MOTOR]** Opciones realistas; que se entienda lo de **grupos de interés**; poder hacer MÁS cosas.
