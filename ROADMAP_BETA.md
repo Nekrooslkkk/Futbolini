@@ -142,10 +142,12 @@
 ## 15 · UI GLOBAL / AVISOS / DEV / DIOS / LOGIN
 - [x] **[MOTOR]** **Avisos**: **campana grande flotante** abajo a la derecha (con badge); al apretar,
       **ventana encima** con el fondo **blureado**. La campanita de la barra ahora abre el mismo modal. ✅ (7.25)
-- [ ] **[MOTOR]** **Modo Desarrollador**: potenciar para probar miles de cosas y optimizar el juego.
-- [ ] **[MOTOR]** **Modo Dios**: mejorar; si lo activás **te priva de logros**, **avisa antes de cagarla**,
-      y que haya MÁS cosas (lo actual es poco).
-- [ ] **[MOTOR]** Sacar el toggle de **spoilers históricos**.
+- [x] **[MOTOR]** **Modo Desarrollador** potenciado: simular 5 fechas / temporada, saltar de año, forzar
+      negociación/storyline/lesión, desbloquear todos los logros, volcar estado. ✅ (7.30)
+- [x] **[MOTOR]** **Modo Dios**: avisa antes de activarlo, **te priva de logros** para siempre en esa
+      partida (`modoDiosUsado` gatea `desbloquear`), y muchas más opciones (caja/bolsillo max, plantel
+      crack, todo el club 90, imagen, pareja, ganar el próximo GARANTIZADO, storyline…). ✅ (7.30)
+- [x] **[MOTOR]** Sacado el toggle de **spoilers históricos** de Ajustes. ✅ (7.30)
 - [ ] **[MOTOR/GROK]** **Temas** mejorados; subir MUCHO el detalle de la UI (algo casi nuevo, genial).
 
 ---

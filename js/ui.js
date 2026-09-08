@@ -1868,16 +1868,6 @@ function vistaAjustes(){
     f.appendChild(b);
   });
   p.cuerpo.appendChild(f);
-  p.cuerpo.appendChild(el("label","lb","Spoilers históricos"));
-  const fs=el("div","fichas");
-  [["si","Con spoiler (dice qué pasó)"],["no","Sin spoiler"]].forEach(([k,n])=>{
-    const on=k==="si";
-    const b=el("button","ficha",n);
-    b.setAttribute("aria-pressed",!!E.config.spoiler===on?"true":"false");
-    b.onclick=()=>{ E.config.spoiler=on; guardar(); render(); };
-    fs.appendChild(b);
-  });
-  p.cuerpo.appendChild(fs);
   p.cuerpo.appendChild(el("div","resul mitad","<b>Aviso.</b> Clubes, jugadores y dirigentes reales aparecen con su nombre. "+
     "Resultados, títulos y fechas se apoyan en registros públicos. Todo lo demás (conversaciones, negociaciones, conflictos internos, frases) "+
     "es ficción escrita para el juego."));
@@ -1987,31 +1977,51 @@ function vistaAjustes(){
 
   /* ---- Modo Dios (panel de cheats) ---- */
   const pg=panel("Modo Dios","😇","alerta");
-  pg.cuerpo.appendChild(el("p","mini","Panel de trucos para jugar como quieras. Cambia todo a mano; no hay reglas acá."));
+  pg.cuerpo.appendChild(el("p","mini","Panel de trucos: cambiás todo a mano. <b>Ojo:</b> apenas lo activás, esta partida <b>deja de dar logros</b> (no vale hacer trampa). Podés seguir jugando igual."));
+  if(E.flags.modoDiosUsado) pg.cuerpo.appendChild(el("div","resul mitad","🔒 En esta partida los logros están <b>bloqueados</b> porque usaste Modo Dios."));
   const tog=el("button","btn-aqua chico"+(E.flags.modoDios?"":" gris"),E.flags.modoDios?"Modo Dios: ON":"Activar Modo Dios");
-  tog.onclick=()=>{ E.flags.modoDios=!E.flags.modoDios; guardar(); render(); };
+  tog.onclick=()=>{
+    if(!E.flags.modoDios && !E.flags.modoDiosUsado){
+      if(!confirm("Activar Modo Dios va a BLOQUEAR los logros de esta partida para siempre (no se puede deshacer). ¿Seguro?")) return;
+      E.flags.modoDiosUsado=true;
+    }
+    E.flags.modoDios=!E.flags.modoDios; guardar(); render();
+  };
   pg.cuerpo.appendChild(tog);
   if(E.flags.modoDios){
     const cheat=(label,fn)=>{ const b=el("button","btn-aqua chico"); b.textContent=label; b.style.margin="4px 4px 0 0"; b.onclick=()=>{ fn(); guardar(); render(); }; pg.cuerpo.appendChild(b); };
     pg.cuerpo.appendChild(el("h3","sub","Plata y club"));
     cheat("Caja club +1000",()=>aplicarEfectos({plata:1000}));
+    cheat("Caja club MAX",()=>{ E.plata=99999; });
     cheat("Bolsillo +500",()=>{ E.personal.bolsillo+=500; });
+    cheat("Bolsillo +100.000",()=>{ E.personal.bolsillo+=100000; });
     cheat("Capital +50",()=>{ E.capital=Math.min(999,(E.capital||0)+50); });
     cheat("Deuda = 0",()=>{ E.deuda=0; });
     cheat("Riesgo = 0",()=>{ E.ind.riesgo=0; });
     cheat("Desfalco = 0",()=>{ E.flags.desfalco=0; E.flags.investigacionAbierta=false; });
     pg.cuerpo.appendChild(el("h3","sub","Plantel y ánimo"));
     cheat("Plantel +5 nivel",()=>{ E.plantel.forEach(j=>{ if(!j.vendido) j.nivel=clamp(j.nivel+5,0,99); }); E.ind.plantel=clamp(Math.round(mediaPlantel()),0,100); });
+    cheat("Plantel de crack (nivel 90)",()=>{ E.plantel.forEach(j=>{ if(!j.vendido) j.nivel=Math.max(j.nivel,90); }); E.ind.plantel=clamp(Math.round(mediaPlantel()),0,100); });
     cheat("Moral / hinchada 90",()=>{ E.ind.moral=90; E.ind.hinchada=90; });
+    cheat("Todo el club 90",()=>{ Object.keys(E.ind).forEach(k=>{ if(k!=="riesgo") E.ind[k]=Math.max(E.ind[k],90); }); E.ind.riesgo=Math.min(E.ind.riesgo,15); });
     cheat("Curar lesionados",()=>{ E.plantel.forEach(j=>j.lesion=0); });
+    cheat("Quitar cansancio",()=>{ E.plantel.forEach(j=>j.cansancio=0); });
     cheat("Todos los grupos +30",()=>{ GRUPOS.forEach(g=>{ E.grupos[g.id].aprob=clamp(E.grupos[g.id].aprob+30,-100,100); }); });
+    cheat("Todos los grupos contentos",()=>{ GRUPOS.forEach(g=>{ E.grupos[g.id].aprob=Math.max(E.grupos[g.id].aprob,60); }); });
+    pg.cuerpo.appendChild(el("h3","sub","Imagen y vida"));
+    cheat("Imagen pública 90",()=>{ E.rep.publica=90; E.rep.credibilidad=Math.max(E.rep.credibilidad,80); });
     cheat("Bienestar 100",()=>{ if(E.perfil) E.perfil.bienestar=100; });
-    pg.cuerpo.appendChild(el("h3","sub","Inyectar eventos"));
+    cheat("Pareja feliz",()=>{ if(E.perfil&&E.perfil.pareja) E.perfil.pareja.nivel=100; });
+    pg.cuerpo.appendChild(el("h3","sub","Resultados y eventos"));
+    cheat("Ganar el próximo (forzar)",()=>{ E.flags.diosGana=true; aviso("El próximo partido lo tenés ganado."); });
+    cheat("Sumar un título",()=>{ E.titulos.push("Título (Modo Dios) "+E.anio); });
     cheat("Decisión al azar",()=>{ if(typeof generarDecisionProc==="function"){ const d=generarDecisionProc(); if(d) E.decPend.push({id:d.id,clave:d.id+"_"+E.anio,peso:d.peso}); } });
     const bve=el("button","btn-aqua chico"); bve.textContent="Evento de vida"; bve.style.margin="4px 4px 0 0";
     bve.onclick=()=>{ if(typeof modalVidaProc==="function"&&typeof VIDA_PROC!=="undefined") modalVidaProc(elige(VIDA_PROC)); };
     pg.cuerpo.appendChild(bve);
-    cheat("Sumar un título",()=>{ E.titulos.push("Título (Modo Dios) "+E.anio); });
+    const bst=el("button","btn-aqua chico"); bst.textContent="Historia del club"; bst.style.margin="4px 4px 0 0";
+    bst.onclick=()=>{ if(typeof sembrarStoryline==="function"){ E.slCooldown=0; sembrarStoryline(); render(); } };
+    pg.cuerpo.appendChild(bst);
   }
   v.appendChild(pg);
 
@@ -2036,11 +2046,21 @@ function vistaAjustes(){
     };
     pdev.cuerpo.appendChild(bp);
     const cheatd=(label,fn)=>{ const b=el("button","btn-aqua chico"); b.textContent=label; b.style.margin="4px 4px 0 0"; b.onclick=()=>{ fn(); guardar(); render(); }; pdev.cuerpo.appendChild(b); };
+    pdev.cuerpo.appendChild(el("h3","sub","Avanzar / simular"));
     cheatd("Avanzar semana",()=>{ if(typeof avanzar==="function") avanzar(); });
+    cheatd("Simular 5 fechas",()=>{ if(typeof avanzarRapido==="function"){ for(let i=0;i<5;i++) avanzarRapido(false); } });
+    cheatd("Simular temporada",()=>{ if(typeof avanzarRapido==="function") avanzarRapido(true); });
+    cheatd("Saltar de año",()=>{ if(typeof nuevoAnio==="function") nuevoAnio(); });
+    pdev.cuerpo.appendChild(el("h3","sub","Inyectar / probar"));
     cheatd("Forzar decisión",()=>{ if(typeof generarDecisionProc==="function"){ const d=generarDecisionProc(); if(d) E.decPend.push({id:d.id,clave:d.id+"_"+E.anio,peso:d.peso}); } });
-    cheatd("+1000 caja",()=>{ if(typeof aplicarEfectos==="function") aplicarEfectos({plata:1000}); });
+    cheatd("Negociación",()=>{ if(typeof generarNegociacion==="function"&&typeof modalNegociacion==="function"){ const n=generarNegociacion(); if(n) modalNegociacion(n); } });
+    cheatd("Storyline",()=>{ if(typeof sembrarStoryline==="function"){ E.slCooldown=0; sembrarStoryline(); render(); } });
+    cheatd("Lesionar a uno",()=>{ const vivos=E.plantel.filter(j=>!j.vendido&&!(j.lesion>0)); if(vivos.length){ const j=elige(vivos); j.lesion=ri(2,5); aviso(j.n+" lesionado "+j.lesion+" fechas"); } });
+    pdev.cuerpo.appendChild(el("h3","sub","Logros / datos"));
+    cheatd("Desbloquear TODOS los logros",()=>{ if(typeof LOGROS!=="undefined"){ const bloq=E.flags&&E.flags.modoDiosUsado; if(bloq){ aviso("Los logros están bloqueados (usaste Modo Dios)"); return; } E.logros=E.logros||{}; LOGROS.forEach(l=>{ if(!E.logros[l.id]) E.logros[l.id]={anio:E.anio}; }); aviso("Todos los logros marcados (dev)"); } });
     cheatd("Ver estado (consola)",()=>{ try{ console.log("E=",E); aviso("Volcado E en la consola (F12)"); }catch(e){} });
-    const bo=el("button","btn-aqua chico rojo","Apagar modo dev"); bo.style.margin="4px 4px 0 0";
+    cheatd("+1000 caja",()=>{ if(typeof aplicarEfectos==="function") aplicarEfectos({plata:1000}); });
+    const bo=el("button","btn-aqua chico rojo","Apagar modo dev"); bo.style.margin="8px 4px 0 0";
     bo.onclick=()=>{ DEV_ON=false; if(E.flags) E.flags.dev=false; guardar(); render(); aviso("Modo dev OFF"); };
     pdev.cuerpo.appendChild(bo);
   }

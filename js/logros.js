@@ -28,6 +28,8 @@ function tieneLogro(id){ return !!(E&&E.logros&&E.logros[id]); }
 function desbloquear(id){
   if(!E) return false;
   normalizarLogros();
+  /* 7 · usar Modo Dios priva de logros en esta partida (no vale hacer trampa) */
+  if(E.flags && E.flags.modoDiosUsado) return false;
   if(E.logros[id]) return false;
   const l=LOGRO_POR_ID[id]; if(!l) return false;
   E.logros[id]={anio:E.anio};

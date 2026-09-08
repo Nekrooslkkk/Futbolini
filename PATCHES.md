@@ -1725,3 +1725,24 @@ reportar con imagen 40 no borra, con imagen 70 saca al rival, comunicados oculto
 Consola limpia.
 **1 línea:** un hincha propio picado ya no te funa, reportar solo sirve si sos popular, y los comunicados largos son cosa del CM.
 **Riesgos:** reaccionarPost (lógica de like/RT/report) + sección de comunicados. Bajo.
+
+## 7.30 · Punto 7 del brief: Modo Dios (priva logros) + Modo Dev potenciado  ✅ (2026-09-08)
+**Archivos:** `js/logros.js` (gate), `js/ui.js` (Modo Dios + Dev + saca spoilers), `js/partido.js` (forzar ganar)
+**Qué:**
+- **Modo Dios priva de logros**: al activarlo pide confirmación ("bloquea los logros para siempre") y setea
+  `E.flags.modoDiosUsado`; `desbloquear()` corta si ese flag está → no hay trampa que valga. Aviso visible
+  en el panel cuando quedan bloqueados.
+- **Más opciones de Modo Dios**: caja/bolsillo max, plantel crack (nivel 90), todo el club a 90, quitar
+  cansancio, grupos contentos, imagen 90, pareja feliz, **Ganar el próximo (GARANTIZADO)**, sumar título,
+  inyectar decisión/evento de vida/storyline.
+- **"Ganar el próximo"**: `E.flags.diosGana` → `iniciarPartido` mete un boost y marca `P.diosForzar`;
+  `terminarPartido` garantiza el triunfo si quedó parejo/perdiendo (probado 8/8).
+- **Modo Desarrollador potenciado**: simular 5 fechas / temporada (reusa avanzarRapido), saltar de año,
+  forzar negociación/storyline/lesión, desbloquear TODOS los logros (respeta el bloqueo de Dios), volcar E.
+- **Sacado el toggle de spoilers históricos** de Ajustes (quedan off por defecto; las referencias siguen
+  guardadas por si acaso).
+**Probado:** node --check + navegador: desbloquear devuelve false con modoDiosUsado, aviso de bloqueo,
+"ganar el próximo" 8/8 victorias, dev tools presentes (simular temporada / desbloquear logros), spoiler
+toggle fuera. Consola limpia.
+**1 línea:** Modo Dios ahora avisa y te quita los logros al usarlo (con muchas más trampas), el Modo Dev prueba de todo, y saqué los spoilers.
+**Riesgos:** gate en desbloquear + hook en el motor (forzar ganar) + panel Ajustes. Bajo.

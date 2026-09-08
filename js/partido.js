@@ -259,6 +259,8 @@ function iniciarPartido(part,modo){
   /* 6.21 · pacto roto: la barra silba y el equipo lo siente los primeros minutos */
   if(part.local && E.barra && E.barra.roto){ P.empuje-=1.5; P.barraSilba=true; }
   if(part.tipo==="copa"){ P.empuje+=0.8; P.desgaste+=0.6; }
+  /* 7 · Modo Dios: forzar ganar el próximo (se consume; se garantiza en terminarPartido) */
+  if(E.flags && E.flags.diosGana){ P.ataque+=40; P.empuje+=20; P.orden+=20; P.rival=Math.max(0,P.rival-30); P.diosForzar=true; E.flags.diosGana=false; }
   return P;
 }
 /* 6.18 · banca disponible (los que no están en el once, sanos) */
@@ -862,6 +864,8 @@ function aplicarMomento(P,ef){
 function terminarPartido(P){
   P.terminado=true;
   const part=P.part;
+  /* 7 · Modo Dios "ganar el próximo": garantiza el triunfo si quedó parejo/perdiendo */
+  if(P.diosForzar){ if(P.part.local){ if(P.gl<=P.gv) P.gl=P.gv+1; } else { if(P.gv<=P.gl) P.gv=P.gl+1; } }
   const [yo,otro]=miMarcador(P);
   const posAntes=(part.tipo==="liga")?posicionEnTabla():null;
   part.jugado=true; part.gf=yo; part.gc=otro;
