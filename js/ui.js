@@ -19,6 +19,7 @@ function redesDisponibles(){ return !!(E && (E.anio||2026)>=2008); }
 
 /* ---------------- barra y menú ---------------- */
 function pintarBarra(){
+  pintarBtnCuenta();
   const bd=$("#barraDatos"); bd.innerHTML="";
   const badge=$("#avisoBadge");
   if(!E){ $("#escudo").textContent="⚽"; if(badge) badge.classList.add("oculto"); return; }
@@ -2053,8 +2054,50 @@ function cerrarTemporada(){
     box.appendChild(p);
   },{cerrarFuera:false});
 }
+/* ---------------- cuenta en la barra ---------------- */
+function pintarBtnCuenta(){
+  const b=document.getElementById("btnCuenta"); if(!b) return;
+  if(typeof nubeActiva!=="function" || !nubeActiva()){ b.classList.add("oculto"); return; }
+  b.classList.remove("oculto");
+  const dentro=(typeof nubeLogueado==="function" && nubeLogueado());
+  b.textContent="👤";
+  b.classList.toggle("verde",dentro);
+  b.title=dentro?("Tu cuenta · "+((typeof nubeEmail==="function"&&nubeEmail())||"conectada")):"Entrar o crear cuenta";
+}
+function modalCuenta(){
+  if(typeof nubeActiva!=="function" || !nubeActiva()){ aviso("La cuenta en la nube no está configurada"); if(E) irA("ajustes"); return; }
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">☁️</span><span>Tu cuenta en la nube</span>'));
+    const cc=el("div","cuerpo"); box.appendChild(cc);
+    const estInp="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid rgba(0,0,0,.15)";
+    if(nubeLogueado()){
+      cc.appendChild(el("p",null,"Conectado como <b>"+(nubeEmail()||"tu cuenta")+"</b>."));
+      cc.appendChild(el("p","mini","Tu partida se respalda sola en la nube. Entrá con esta cuenta en otro equipo o celular para seguir donde ibas."));
+      const bSub=el("button","btn-aqua chico","☁️ Subir partida ahora");
+      bSub.onclick=async()=>{ if(!E||!E.club){ aviso("No hay partida abierta"); return; } bSub.disabled=true; const r=await nubeSubir(E); bSub.disabled=false; aviso(r.ok?"Partida subida a la nube":("No se pudo subir: "+r.msg)); };
+      const bBaj=el("button","btn-aqua chico"); bBaj.textContent="⬇️ Bajar partida"; bBaj.style.marginLeft="6px";
+      bBaj.onclick=async()=>{ bBaj.disabled=true; const r=await nubeBajar(); bBaj.disabled=false; if(!r.ok){ aviso(r.msg); return; } if(E&&E.club && !confirm("Esto reemplaza tu partida actual por la de la nube. ¿Seguir?")) return; E=r.estado; normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod(); await guardar(); cerrarModal(); aviso("Partida bajada de la nube"); SEC="escritorio"; render(); };
+      cc.appendChild(bSub); cc.appendChild(bBaj);
+      const bOut=el("button","btn-aqua chico gris ancho","Cerrar sesión"); bOut.style.marginTop="8px";
+      bOut.onclick=()=>{ nubeSalir(); cerrarModal(); pintarBtnCuenta(); aviso("Sesión cerrada"); };
+      cc.appendChild(bOut);
+    }else{
+      cc.appendChild(el("p","mini","Entrá con tu correo para que tu partida te siga en cualquier dispositivo. Es opcional: sin cuenta, el juego anda igual."));
+      const iMail=el("input"); iMail.type="email"; iMail.placeholder="correo"; iMail.autocomplete="email"; iMail.style.cssText=estInp;
+      const iPass=el("input"); iPass.type="password"; iPass.placeholder="clave (6+ letras)"; iPass.autocomplete="current-password"; iPass.style.cssText=estInp;
+      cc.appendChild(iMail); cc.appendChild(iPass);
+      const bIn=el("button","btn-aqua chico verde","Entrar"); bIn.style.marginTop="8px";
+      bIn.onclick=async()=>{ if(!iMail.value||!iPass.value){ aviso("Completá correo y clave"); return; } bIn.disabled=true; const r=await nubeEntrar(iMail.value.trim(),iPass.value); bIn.disabled=false; if(r.ok){ cerrarModal(); pintarBtnCuenta(); aviso("Hola de nuevo, "+r.email); } else aviso(r.msg); };
+      const bReg=el("button","btn-aqua chico","Crear cuenta"); bReg.style.marginLeft="6px";
+      bReg.onclick=async()=>{ if(!iMail.value||!iPass.value){ aviso("Completá correo y clave"); return; } if(iPass.value.length<6){ aviso("La clave necesita al menos 6 letras"); return; } bReg.disabled=true; const r=await nubeRegistrar(iMail.value.trim(),iPass.value); bReg.disabled=false; if(!r.ok){ aviso(r.msg); return; } if(r.confirmar){ aviso(r.msg); } else { cerrarModal(); pintarBtnCuenta(); aviso("¡Cuenta creada!"); } };
+      cc.appendChild(bIn); cc.appendChild(bReg);
+    }
+    const bx=el("button","btn-aqua chico gris ancho","Cerrar"); bx.style.marginTop="10px"; bx.onclick=cerrarModal; cc.appendChild(bx);
+  });
+}
 /* ---------------- arranque ---------------- */
 $("#btnAvanzar").onclick=avanzar;
+$("#btnCuenta").onclick=modalCuenta;
 $("#btnAvisos").onclick=()=>{ if(E) irA("avisos"); };
 $("#btnTemas").onclick=()=>{
   const orden=["aero","negro","claro","insano"];

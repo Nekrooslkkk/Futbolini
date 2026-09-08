@@ -1,5 +1,8 @@
 # IDEAS.md — wishlist / backlog de Futbolini
 
+> 📌 Brief maestro de la BETA PRO en **ROADMAP_BETA.md** (por área y carril MOTOR/GROK/TUYO).
+> Esta cola (IDEAS) sigue vigente para tareas chicas autónomas; el roadmap grande vive allá.
+
 > Cola de trabajo. Decime **"seguí con IDEAS"** (o `/loop seguí con IDEAS` para
 > que avance solo, turno tras turno) y voy tachando de arriba hacia abajo,
 > commiteando cada tarea. Yo marco `[x]` lo hecho y anoto el commit.

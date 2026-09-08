@@ -1600,3 +1600,19 @@ llaves es 100% del usuario; el juego solo las lee de su propio navegador.
 ## 7.22 · Momentazo — flash grande en el gol/roja/penal
 - **ui-partido.js**: banner grande y de color arriba del marcador cuando cae un gol (verde propio / rojo rival) o una jugada grave (roja, penal, gol anulado, autogol). Se detecta comparando el marcador y las líneas graves entre renders; dura ~6 ticks y se va. Sin tocar el motor.
 **Probado:** node --check + captura headless (banner "¡GOOOL de Colo-Colo!" sobre el marcador; cancha pixel visible en el partido).
+
+## 7.23 · Login como botón de cuenta en la barra + ROADMAP_BETA  ✅ (2026-09-07)
+**Archivos:** `index.html` (botón `#btnCuenta`), `js/ui.js` (`pintarBtnCuenta`, `modalCuenta`, wiring), `ROADMAP_BETA.md` (NUEVO)
+**Qué:** botón 👤 en la barra superior **al lado de Avanzar** (pedido del usuario). Abre un modal
+`modalCuenta()` con: entrar / crear cuenta (si deslogueado) o correo + subir/bajar partida + cerrar
+sesión (si logueado). Reusa las funciones de `nube.js` (7.18–7.20). `pintarBtnCuenta()` se llama en
+`pintarBarra()`: oculta el botón si la nube no está configurada, y lo pone verde con el correo en el
+title cuando hay sesión. No duplica lógica de auth; el panel de Ajustes sigue existiendo.
+- **ROADMAP_BETA.md**: captura del brief maestro del usuario (07/09) para la beta pro, por área y
+  carril [MOTOR]/[GROK]/[TUYO], con reglas de oro (ser consecuente, historia real por época), meta de
+  lanzamiento (liga completa + súper histórico a 2226) y prioridad sugerida. Es la fuente para próximas
+  tandas. Ver también `IDEAS.md` (cola del otro chat autónomo).
+**Probado:** node --check + smoke navegador (botón visible junto a Avanzar, modal de login abre con
+correo/clave/crear cuenta, consola limpia).
+**1 línea:** el login ya es un botón 👤 arriba al lado de Avanzar, y quedó capturado TODO el roadmap de la beta.
+**Riesgos:** aislado (barra + modal, reusa nube.js). Bajo.
