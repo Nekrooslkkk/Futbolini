@@ -43,11 +43,13 @@
       **avance sincronizado** (que no pase que uno tiene 20 pts y el otro recién jugó 1 partido).
 
 ## 3 · PREPARACIÓN DEL PARTIDO (táctica) — es fome y poco clara
-- [ ] **[MOTOR]** **Química**: se entiende re poco y no sube más allá de ~56 con cualquier cambio →
-      revisar la fórmula/escala y **explicar** qué combina bien.
-- [ ] **[MOTOR]** Formación / mentalidad / estilo / presión: que se entienda si estás combinando bien;
-      **agregar más cosas por cambiar**.
-- [ ] **[MOTOR]** Alineación con **MÁS jugadores** de verdad.
+- [x] **[MOTOR]** **Química**: fórmula arreglada (amplifica el balance bueno/malo de los lazos → rango
+      real 15-97, responde a los cambios, ya no se aplasta en ~56) + explicación (conteo de duplas y qué
+      la sube: edad parecida, rasgos comunes, ídolos de la casa, jugar juntos). ✅ (7.26)
+- [~] **[MOTOR]** Formación / mentalidad / estilo / presión: **"Lectura del plan"** en criollo que dice el
+      efecto neto y si combinás bien o mezclás cosas que se pelean. ✅ (7.26). PENDIENTE: **más cosas por
+      cambiar** (nuevas palancas tácticas).
+- [ ] **[MOTOR]** Alineación con **MÁS jugadores** de verdad (banca más profunda).
 - [ ] **[GROK]** **Canteranos, datos, rasgos** (contenido para que haya más plantel/variedad).
 
 ## 4 · "ANTES DE SALIR" + CLIMA + PRENSA

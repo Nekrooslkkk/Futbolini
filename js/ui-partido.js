@@ -43,9 +43,13 @@ function checklistPrevia(part,once){
     d:manualOn?"Elegiste vos el once.":"El juego pone el mejor once disponible. Puedes cambiarlo abajo."});
   if(typeof quimicaEquipo==="function"){
     const qui=quimicaEquipo(once);
-    if(qui.prom<50) items.push({warn:true,t:"Química baja ("+qui.prom+"/100)",
-      d:"Hay jugadores que no congenian. Acomodá la pizarra para juntar a los que se llevan bien.",accion:()=>modalPizarra(part)});
-    else items.push({ok:true,warn:false,t:"Química del equipo OK ("+qui.prom+"/100)",d:"El grupo se lleva bien sobre la cancha."});
+    const detalle=(qui.buenos||0)+" duplas que congenian · "+(qui.malos||0)+" con roce. Sube juntando en la pizarra a los que se llevan bien (edad parecida, mismos rasgos, ídolos de la casa, o que ya jugaron juntos).";
+    if(qui.prom<50) items.push({warn:true,t:"Química baja ("+qui.prom+"/100) · nivel "+(qui.bono>=0?"+":"")+qui.bono.toFixed(1),
+      d:detalle,accion:()=>modalPizarra(part)});
+    else if(qui.prom>=72) items.push({ok:true,warn:false,t:"Química alta ("+qui.prom+"/100) · nivel +"+qui.bono.toFixed(1),
+      d:"El grupo está enchufado y eso suma al partido. "+detalle,accion:()=>modalPizarra(part)});
+    else items.push({ok:true,warn:false,t:"Química del equipo OK ("+qui.prom+"/100) · nivel "+(qui.bono>=0?"+":"")+qui.bono.toFixed(1),
+      d:detalle,accion:()=>modalPizarra(part)});
   }
   /* piernas cansadas en el XI */
   const cansados=once.filter(j=>(j.cansancio||0)>=18);
@@ -59,6 +63,31 @@ function checklistPrevia(part,once){
   if(part.local && E.barra && E.barra.roto) items.push({warn:true,t:"La barra está caliente con vos",
     d:"Rompiste un pacto: esperá silbidos de local y algún lío en la puerta."});
   return items;
+}
+/* 3.c · lectura en criollo del plan: qué efecto neto tiene y si las piezas
+   (mentalidad + estilo + presión) apuntan al mismo lado o se pelean */
+function lecturaPlan(){
+  const m=(typeof MENTALIDADES!=="undefined"&&MENTALIDADES[E.tactica.mentalidad])||{ataque:0,orden:0,expo:0,desgaste:0};
+  const es=(typeof ESTILOS!=="undefined"&&ESTILOS[E.tactica.estilo])||{ataque:0,orden:0,desgaste:0};
+  const pr=(typeof PRESIONES!=="undefined"&&PRESIONES[E.tactica.presion])||{ataque:0,orden:0,expo:0,desgaste:0};
+  const atk=m.ataque+es.ataque+pr.ataque, ord=m.orden+es.orden+pr.orden;
+  const desg=(m.desgaste||0)+(es.desgaste||0)+(pr.desgaste||0);
+  let cara;
+  if(atk>=8 && ord<=-2) cara="Vas con TODO al ataque pero quedás abierto atrás: generás harto y regalás también.";
+  else if(atk>=6) cara="Plan ofensivo: buscás el arco rival, con algo de riesgo atrás.";
+  else if(ord>=6 && atk<=1) cara="Plan de aguantar y salir de contra: firme atrás, poco arriba.";
+  else if(ord>=4) cara="Plan cauto y ordenado: lo primero es no comerte goles.";
+  else cara="Plan equilibrado: ni muy arriba ni muy atrás.";
+  const s=x=>x>1?1:(x<-1?-1:0);
+  const sig=[s(m.ataque-m.orden),s(es.ataque-es.orden),s(pr.ataque-pr.orden)];
+  const pos=sig.filter(x=>x>0).length, neg=sig.filter(x=>x<0).length;
+  let coh;
+  if(pos>=2&&neg===0) coh="✔ Combinás bien: mentalidad, estilo y presión tiran todos para el ataque.";
+  else if(neg>=2&&pos===0) coh="✔ Combinás bien: todo apunta a defender y salir de contra.";
+  else if(pos&&neg) coh="⚠ Estás mezclando cosas que se pelean (una parte quiere atacar y otra defenderse): el equipo lo siente tibio.";
+  else coh="Plan mesurado, sin extremos.";
+  const fatiga=desg>=8?" 🥵 Ese ritmo cansa harto: cuidá el segundo tiempo.":(desg<=-2?" 🐢 Ritmo tranquilo: llegás entero al final.":"");
+  return cara+" "+coh+fatiga;
 }
 function pantallaPrevia(part){
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
@@ -101,6 +130,7 @@ function pantallaPrevia(part){
     });
     p1.cuerpo.appendChild(f);
   });
+  p1.cuerpo.appendChild(el("div","resul mitad","<b>Lectura del plan:</b> "+lecturaPlan()));
   const once=onceIdeal();
   p1.cuerpo.appendChild(el("h3","sub","Once titular"));
   const t=el("table");
@@ -345,11 +375,12 @@ function modalPizarra(part){
         const buenos=qui.lazos.filter(l=>l.bueno).sort((a,b)=>b.q-a.q).slice(0,2);
         const malos=qui.lazos.filter(l=>l.malo).sort((a,b)=>a.q-b.q).slice(0,1);
         const qbox=el("div","resul mitad");
-        qbox.innerHTML="Química del equipo — <b style='color:"+col+"'>"+qui.prom+"</b>/100 · nivel <b>"+(qui.bono>=0?"+":"")+qui.bono.toFixed(1)+"</b>"+
+        qbox.innerHTML="Química del equipo — <b style='color:"+col+"'>"+qui.prom+"</b>/100 · nivel al partido <b>"+(qui.bono>=0?"+":"")+qui.bono.toFixed(1)+"</b>"+
           barrita(qui.prom,col)+
+          "<div class='mini'>"+(qui.buenos||0)+" duplas conectadas que congenian · "+(qui.malos||0)+" con roce (de "+(qui.total||0)+" lazos)</div>"+
           (buenos.length?"<div class='mini'>💚 Se llevan bien: "+buenos.map(l=>apodoJug(l.a)+" & "+apodoJug(l.b)).join(", ")+"</div>":"")+
           (malos.length?"<div class='mini'>💢 Hay roce: "+malos.map(l=>apodoJug(l.a)+" & "+apodoJug(l.b)).join(", ")+"</div>":"")+
-          "<div class='mini'>Líneas verdes = congenian; rojas punteadas = roce. Juntá a los que se llevan bien para subir el nivel.</div>";
+          "<div class='mini'>Líneas verdes = congenian; rojas punteadas = roce. <b>Sube la química</b> juntando (vecinos en la pizarra) a jugadores de <b>edad parecida</b>, con <b>rasgos en común</b>, dos <b>ídolos de la casa</b>, o que <b>ya jugaron juntos</b>.</div>";
         c.appendChild(qbox);
         dibujarLazos(grid,qui);
       }

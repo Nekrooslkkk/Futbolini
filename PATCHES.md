@@ -1650,3 +1650,22 @@ Mis partidas renderiza con la actual marcada. Consola limpia.
 visible con badge; modal abre con blur(6px); consola limpia + captura (ventana de Avisos sobre fondo blureado + campana).
 **1 línea:** tu plata personal ya está arriba, "de ti" en vez de "de vos", y los avisos son una campana flotante con ventana blureada.
 **Riesgos:** barra + modal + strings; aislado. Bajo.
+
+## 7.26 · Punto 3 del brief: química que se entiende y se mueve + lectura del plan  ✅ (2026-09-08)
+**Archivos:** `js/partido.js` (quimicaEquipo), `js/ui-partido.js` (explicación + lecturaPlan)
+**Qué:** ataca la queja "la química se entiende re poco y no sube más allá de 56", y "que se entienda si
+estás combinando bien" en formación/mentalidad/estilo/presión.
+- **Química arreglada** (`quimicaEquipo`): antes promediaba a secas todos los lazos conectados → con ~20
+  pares el número se aplastaba cerca de 52 sin importar los cambios. Ahora la media se **amplifica con el
+  balance bueno/malo** de los lazos: `prom = media + (buenos−malos)/total*40`, clamp 15-97. Rango real y
+  sensible (probado: equipo compatible 97 / incompatible 40, span de 57 pts; un swap mueve la aguja). Bono
+  al partido ampliado a −4..+6. Devuelve buenos/malos/total para explicar.
+- **Explicación**: la previa y la pizarra muestran cuántas duplas congenian / con roce y **qué sube la
+  química** (edad parecida, rasgos comunes, dos ídolos de la casa, o que ya jugaron juntos).
+- **Lectura del plan** (`lecturaPlan`): línea en criollo bajo los 4 selectores que dice el **efecto neto**
+  (ofensivo/cauto/equilibrado, riesgo atrás) y **si combinás bien** (mentalidad+estilo+presión apuntan al
+  mismo lado) o **mezclás cosas que se pelean** ("el equipo lo siente tibio"), + nota de si el ritmo cansa.
+**Probado:** node --check + navegador: química 40↔97 según compatibilidad, previa muestra "duplas que
+congenian", lecturaPlan da coherente/contradictorio/defensivo bien, consola limpia.
+**1 línea:** la química ahora se mueve de verdad (15-97) y se explica, y el plan te dice si estás combinando bien o mezclando cosas que se pelean.
+**Riesgos:** quimicaEquipo (core táctico, mismo shape de retorno + campos nuevos) + UI. Bajo-medio.

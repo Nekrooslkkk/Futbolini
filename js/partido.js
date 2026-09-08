@@ -191,9 +191,18 @@ function paresConectados(once){
 function quimicaEquipo(once){
   const pares=paresConectados(once);
   const lazos=pares.map(([a,b])=>{ const q=quimicaPar(a,b); return {a:a.n,b:b.n,q:q,bueno:q>=64,malo:q<=42}; });
-  const prom=lazos.length?Math.round(lazos.reduce((s,l)=>s+l.q,0)/lazos.length):55;
-  const bono=clamp((prom-55)/7,-3,5);
-  return {prom:prom,bono:bono,lazos:lazos};
+  if(!lazos.length) return {prom:55,bono:0,lazos:[],buenos:0,malos:0,total:0};
+  const total=lazos.length;
+  const buenos=lazos.filter(l=>l.bueno).length;
+  const malos=lazos.filter(l=>l.malo).length;
+  const media=lazos.reduce((s,l)=>s+l.q,0)/total;
+  /* 3.a · antes se promediaba a secas y se aplastaba cerca de 52 (nunca pasaba de ~56).
+     Ahora la media se AMPLIFICA con el balance bueno/malo de los lazos conectados, así
+     juntar a los que congenian se nota de verdad y se puede llegar alto (o bajo). */
+  let prom=Math.round(media + (buenos-malos)/total*40);
+  prom=clamp(prom,15,97);
+  const bono=clamp((prom-55)/6,-4,6);
+  return {prom:prom,bono:bono,lazos:lazos,buenos:buenos,malos:malos,total:total};
 }
 /* 7.10 · árbitro con nombre (ficticio) y sesgo visible. Determinista por fixture
    para que la previa y el partido muestren el mismo. NUNCA usa nombres de árbitros reales. */
