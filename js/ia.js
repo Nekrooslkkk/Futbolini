@@ -83,7 +83,7 @@ function cerebroLocal(){
   /* 2 · química del equipo */
   if(typeof quimicaEquipo==="function" && typeof onceIdeal==="function"){
     const q=quimicaEquipo(onceIdeal());
-    if(q.prom<50) ins.push({cat:"tactica",ic:"🔗",prio:7,t:"Química floja ("+q.prom+"/100)",d:"Hay jugadores que no congenian. Acomodá la pizarra para juntar a los que se llevan bien."});
+    if(q.prom<50) ins.push({cat:"tactica",ic:"🔗",prio:7,t:"Química floja ("+q.prom+"/100)",d:"Hay jugadores que no congenian. Acomoda la pizarra para juntar a los que se llevan bien."});
     else if(q.prom>=70) ins.push({cat:"tactica",ic:"🔗",prio:3,t:"El grupo está enchufado ("+q.prom+"/100)",d:"Buena química: es momento de sostener el equipo y no tocar mucho."});
   }
   /* 3 · objetivos en riesgo */
@@ -139,7 +139,7 @@ function preguntarAyudante(q){
   if(t("plata","caja","deuda","dinero","economi","finanz","presupuesto")){
     const d=(E.deuda||0), c=(E.plata||0);
     let r="Caja del club: "+plata(c)+" · Deuda: "+plata(d)+". ";
-    if(c<80) r+="La caja está flaca: cuidá los gastos y no firmes renovaciones caras esta semana.";
+    if(c<80) r+="La caja está flaca: cuida los gastos y no firmes renovaciones caras esta semana.";
     else if(d>c*3) r+="La deuda te supera: pensá en vender un prescindible o abonar antes que pedir más crédito.";
     else r+="Estás relativamente sano; con cabeza puedes moverte en el mercado.";
     return r+" (Tu plata personal es aparte: "+plata((E.personal&&E.personal.bolsillo)||0)+".)";
@@ -182,7 +182,7 @@ function preguntarAyudante(q){
   /* fallback: lo más importante ahora mismo */
   const ins=(typeof cerebroLocal==="function")?cerebroLocal():[];
   if(ins.length) return "Lo más importante ahora: "+ins[0].t+" — "+ins[0].d;
-  return "Está todo tranquilo. Podés mover un estatuto, mirar el mercado o dar una charla al plantel.";
+  return "Está todo tranquilo. Puedes mover un estatuto, mirar el mercado o dar una charla al plantel.";
 }
 function pensarOffline(tarea,ctx){
   ctx=ctx||{};

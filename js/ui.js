@@ -386,27 +386,16 @@ function vistaEscritorio(){
   const rej=el("div","rejilla dos");
   const izq=el("div"), der=el("div");
 
-  /* 4.c · lo que conviene atender antes de avanzar (arriba de todo) */
-  const pend=(typeof pendientesAtender==="function")?pendientesAtender():[];
-  if(pend.length){
-    const pa=panel("Atiende antes de avanzar","⚠️","alerta");
-    pa.cuerpo.appendChild(el("p","mini","Hay cosas que conviene resolver antes de apretar Avanzar. Tocá una para ir a resolverla:"));
-    pend.forEach(it=>{
-      const b=el("button","op"); b.innerHTML='<div class="t">'+it.ic+" "+it.t+'</div>'+(it.d?'<div class="req">'+it.d+'</div>':"");
-      b.onclick=()=>irA(it.ir);
-      pa.cuerpo.appendChild(b);
-    });
-    izq.appendChild(pa);
-  }
-
-  /* próximo compromiso */
+  /* 7.36 · el partido es LA cosa: primero el compromiso, después lo que atiende */
   const part=proximoPartido();
   const p=panel("Próximo compromiso","📌",part&&part.tipo==="copa"?"agua":"");
   if(part){
     p.cuerpo.appendChild(el("h2","tit","Próximo partido con "+part.rivalNombre));
     p.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" · "+(typeof etqCompromiso==="function"?etqCompromiso(part):(part.tipo==="copa"?(part.torneo||"Copa")+" · "+part.ronda:"fecha "+part.fecha))+
       " · "+fechaTxt(part.f)+" · "+part.sede));
-    /* ver el once probable del rival antes de entrar */
+    const b=el("button","btn-aqua ancho verde cta-jugar","Ir al partido");
+    b.onclick=()=>{ if(bloqueoDecisiones()) return; pantallaPrevia(part); };
+    p.cuerpo.appendChild(b);
     if(typeof plantelRival==="function"){
       const det=el("details"); det.className="rival-prev";
       det.appendChild(el("summary","","👁️ Ver el once probable de "+part.rivalNombre));
@@ -420,10 +409,6 @@ function vistaEscritorio(){
       }catch(e){ det.appendChild(el("p","mini","No se pudo leer el rival.")); }
       p.cuerpo.appendChild(det);
     }
-    const b=el("button","btn-aqua ancho verde cta-jugar","Ir al partido");
-    b.onclick=()=>{ if(bloqueoDecisiones()) return; pantallaPrevia(part); };
-    p.cuerpo.appendChild(b);
-    /* entrenamiento de la semana: mejora la forma, con riesgo bajo de lesión */
     const yaEntreno=E.flags["entreno_"+E.anio+"_"+E.idx];
     const bent=el("button","btn-aqua ancho"+(yaEntreno?" gris":""),yaEntreno?"🏃 Ya entrenaron fuerte esta semana":"🏃 Entrenar fuerte · mejora la forma (riesgo bajo de lesión)");
     bent.disabled=yaEntreno; bent.style.marginTop="6px"; bent.onclick=entrenarSemana;
@@ -435,6 +420,18 @@ function vistaEscritorio(){
     p.cuerpo.appendChild(b);
   }
   izq.appendChild(p);
+
+  const pend=(typeof pendientesAtender==="function")?pendientesAtender():[];
+  if(pend.length){
+    const pa=panel("Atiende antes de avanzar","⚠️","alerta");
+    pa.cuerpo.appendChild(el("p","mini","Hay cosas que conviene resolver antes de apretar Avanzar. Toca una para ir a resolverla:"));
+    pend.forEach(it=>{
+      const b=el("button","op"); b.innerHTML='<div class="t">'+it.ic+" "+it.t+'</div>'+(it.d?'<div class="req">'+it.d+'</div>':"");
+      b.onclick=()=>irA(it.ir);
+      pa.cuerpo.appendChild(b);
+    });
+    izq.appendChild(pa);
+  }
 
   /* 7.0 · historia del club (arco de equipo) si hay un capítulo abierto */
   if(typeof panelStoryline==="function"){ const ps=panelStoryline(); if(ps) izq.appendChild(ps); }
@@ -857,6 +854,7 @@ function vistaFinanzas(){
   else if(neto0<0) p.cuerpo.appendChild(el("p","mini","Estás en rojo semanal, pero hay colchón para un rato."));
   if(E.flags&&E.flags.sueldosAtrasados) p.cuerpo.appendChild(el("div","resul mal","⚠ Sueldos atrasados: la moral del plantel cae cada semana hasta que regularices la caja."));
   if(E.flags&&E.flags.clausura) p.cuerpo.appendChild(el("div","resul mal","⚠ Estadio con sectores clausurados por la deuda: pierdes aforo y taquilla."));
+  if(E.flags&&E.flags.tribunaCerrada) p.cuerpo.appendChild(el("div","resul mal","⚠ Popular clausurada por el clima de la hinchada: baja el aforo hasta que se calme."));
   p.cuerpo.appendChild(el("p","mini","Los partidos de local suman taquilla aparte. Todos los montos están en millones de pesos de la época."));
   v.appendChild(p);
 
@@ -865,10 +863,11 @@ function vistaFinanzas(){
     const neto=ingresoSemanal()-costoSemanal();
     const semanas=neto>=0?99:Math.max(0,Math.floor((E.plata||0)/Math.max(1,-neto)));
     const atras=!!(E.flags&&E.flags.sueldosAtrasados), claus=!!(E.flags&&E.flags.clausura);
+    const trib=!!(E.flags&&E.flags.tribunaCerrada);
     const dir=(E.grupos&&E.grupos.directorio&&E.grupos.directorio.aprob)||0;
     const deuda=E.deuda||0;
     let nivel, verd;
-    if(atras||claus||semanas<4||(deuda>4500&&dir<-15)){ nivel="rojo"; verd="🔴 Alerta: la plata está apretando."; }
+    if(atras||claus||trib||semanas<4||(deuda>4500&&dir<-15)){ nivel="rojo"; verd="🔴 Alerta: la plata está apretando."; }
     else if(neto<0||deuda>1500||semanas<12){ nivel="amarillo"; verd="🟡 Ojo con la caja, pero hay margen."; }
     else { nivel="verde"; verd="🟢 Finanzas sanas."; }
     const pe=panel("¿Cómo estamos de plata?","🧭",nivel==="rojo"?"grave":(nivel==="amarillo"?"alerta":"agua"));
@@ -879,17 +878,18 @@ function vistaFinanzas(){
     let ingBase=0; try{ if(typeof ingresosAnuales==="function"){ const ia=ingresosAnuales(); ingBase=(ia.tv||0)+(ia.sponsors||0)+(ia.socios||0); } }catch(e){}
     if(ingBase && planillaAnual()>ingBase) por.push("La <b>planilla</b> (sueldos) es lo que más te pesa: sola ya supera lo que entra por TV+sponsors+socios.");
     if(deuda>3000) por.push("La <b>deuda</b> ("+plata(deuda)+") es alta: los intereses te comen caja cada semana y calientan al directorio.");
-    else if(deuda>0) por.push("Tenés una deuda de "+plata(deuda)+" pagando intereses todas las semanas.");
+    else if(deuda>0) por.push("Tienes una deuda de "+plata(deuda)+" pagando intereses todas las semanas.");
     if(atras) por.push("🔴 <b>Sueldos atrasados</b>: la moral del plantel cae cada semana hasta que regularices la caja.");
-    if(claus) por.push("🔴 <b>Sectores clausurados</b> por la deuda: perdés aforo y taquilla en cada partido de local.");
+    if(claus) por.push("🔴 <b>Sectores clausurados</b> por la deuda: pierdes aforo y taquilla en cada partido de local.");
+    if(trib) por.push("🔴 <b>Popular cerrada</b>: la hinchada está caliente y baja el aforo.");
     const ul=el("div","mini"); ul.style.lineHeight="1.5"; ul.innerHTML=por.map(x=>"• "+x).join("<br>"); pe.cuerpo.appendChild(ul);
     const pasos=[];
-    if(atras||claus) pasos.push("Conseguí caja YA y bajá la deuda: vendé un jugador en <b>Mercado</b> (la plata más sana), o pedí un <b>crédito</b> acá abajo si es urgente.");
-    if(E.plata>=200 && deuda>0) pasos.push("Tenés "+plata(E.plata)+" disponible: <b>aboná a la deuda</b> (botones abajo) para pagar menos intereses cada semana.");
+    if(atras||claus||trib) pasos.push("Consigue caja YA y baja la deuda: vende un jugador en <b>Mercado</b> (la plata más sana), o pide un <b>crédito</b> acá abajo si es urgente.");
+    if(E.plata>=200 && deuda>0) pasos.push("Tienes "+plata(E.plata)+" disponible: <b>abona a la deuda</b> (botones abajo) para pagar menos intereses cada semana.");
     if(E.plata<200 && (neto<0||deuda>0)) pasos.push("Poca caja: lo más sano es <b>vender o no renovar</b> un sueldo alto en <b>Mercado</b>. El <b>crédito</b> te salva hoy pero sube la deuda 8%.");
     if(neto<0) pasos.push("Para dejar de perder cada semana: baja <b>planilla</b> (vender/no renovar) o sube ingresos (precio de <b>entradas</b> en Estadio, sponsors, contratar CM).");
     if(nivel==="verde") pasos.push("Vas bien. Si quieres soltar las manos en el mercado, abona deuda; si sobra, invierte en el club.");
-    if(!pasos.length) pasos.push("No hay nada urgente. Mantené el flujo positivo y aboná deuda cuando sobre.");
+    if(!pasos.length) pasos.push("No hay nada urgente. Mantén el flujo positivo y abona deuda cuando sobre.");
     pe.cuerpo.appendChild(el("h3","sub","Qué hacer, paso a paso"));
     pasos.forEach((s,i)=>pe.cuerpo.appendChild(el("div","resul mitad","<b>"+(i+1)+".</b> "+s)));
     pe.cuerpo.appendChild(el("p","mini","Regla de oro: siempre hay salida. Si te quedas sin caja, un crédito te da aire (sube la deuda) y vender un jugador es la forma más sana de ordenar."));
@@ -1093,7 +1093,7 @@ function vistaPlantel(){
   });
   p.cuerpo.appendChild(f);
   const t=el("table","tabla-plantel");
-  t.innerHTML="<thead><tr><th>Jugador</th><th>Pos</th><th>Rol</th><th class='n'>Ed</th><th class='n'>Niv</th><th class='n'>For</th><th class='n'>Gol</th><th class='n'>Sueldo</th></tr></thead>";
+  t.innerHTML="<thead><tr><th>Jugador</th><th>Pos</th><th>Rol</th><th class='n'>Ed</th><th class='n'>Niv</th><th class='n'>For</th><th class='n'>Can</th><th class='n'>Gol</th><th class='n'>Sueldo</th></tr></thead>";
   const tb=el("tbody");
   E.plantel.filter(j=>{
     if(j.vendido) return false;
@@ -1104,9 +1104,13 @@ function vistaPlantel(){
   }).sort((a,b)=>b.nivel-a.nivel).forEach(j=>{
     const tr=el("tr");
     const rol=rolProbable(j);
+    const can=Math.round(j.cansancio||0);
+    if(can>=18) tr.className="cans-alto";
+    else if(can>=10) tr.className="cans-medio";
     tr.innerHTML="<td>"+(j.real?"● ":"")+j.n+(j.lesion>0?" 🩹":"")+(j.cedido?" 🔄":"")+"</td><td>"+j.pos+"</td><td class='mini'>"+rol+"</td><td class='n'>"+j.edad+
-      "</td><td class='n'>"+j.nivel+"</td><td class='n'>"+Math.round(j.forma)+"</td><td class='n'>"+j.goles+
-      "</td><td class='n'>"+plata(j.sueldo)+"</td>";
+      "</td><td class='n'>"+j.nivel+"</td><td class='n'>"+Math.round(j.forma)+"</td>"+
+      (typeof celdaCans==="function"?celdaCans(j):("<td class='n'>"+can+"</td>"))+
+      "<td class='n'>"+j.goles+"</td><td class='n'>"+plata(j.sueldo)+"</td>";
     tr.style.cursor="pointer";
     tr.onclick=()=>fichaJugador(j);
     tb.appendChild(tr);
@@ -1122,6 +1126,7 @@ function fichaJugador(j){
     c.appendChild(fila("Puesto",j.pos+" · "+j.edad+" años · "+rolProbable(j)));
     c.appendChild(fila("Nivel / proyección",j.nivel+" / "+j.proy+(j.real?" · aprox.":"")));
     c.appendChild(fila("Forma / moral",Math.round(j.forma)+" / "+Math.round(j.moral)));
+    c.appendChild(fila("Cansancio",Math.round(j.cansancio||0)+((j.cansancio||0)>=18?" · piernas pesadas":((j.cansancio||0)>=10?" · un poco cargado":" · fresco"))));
     c.appendChild(fila("Sueldo anual",plata(j.sueldo)));
     c.appendChild(fila("Valor estimado",plata(j.valor)));
     c.appendChild(fila("Minutos en la temporada",(j.minutosTemporada||0)+"' en "+(j.partidos||0)+" partidos"+(j.pie?" · pie "+j.pie:"")));
@@ -1826,6 +1831,7 @@ function vistaEstadio(){
   ph.cuerpo.appendChild(el("div",null,barrita(E.ind.estadio,"#a5854a")));
   ph.cuerpo.appendChild(el("p","mini","Mejor estado = más aforo utilizable, menos sanciones y más gente en la cancha."));
   if(E.flags&&E.flags.clausura) ph.cuerpo.appendChild(el("div","resul mal","⚠ Hay sectores clausurados por la deuda: pierdes aforo y taquilla hasta ordenar la caja."));
+  if(E.flags&&E.flags.tribunaCerrada) ph.cuerpo.appendChild(el("div","resul mal","⚠ Popular clausurada por el clima de la hinchada: baja el aforo hasta que se calme."));
   v.appendChild(ph);
 
   /* --- obras: arreglar / mejorar y verlo avanzar --- */
@@ -1935,7 +1941,7 @@ async function borrarPartidaUI(id,nombre){
 }
 function panelMisPartidas(v){
   const pm=panel("Mis partidas","🗂️");
-  pm.cuerpo.appendChild(el("p","mini","Podés tener varias carreras a la vez. Cambiá de club cuando quieras: la partida actual se guarda sola en su propia ranura."));
+  pm.cuerpo.appendChild(el("p","mini","Puedes tener varias carreras a la vez. Cambia de club cuando quieras: la partida actual se guarda sola en su propia ranura."));
   const cont=el("div"); pm.cuerpo.appendChild(cont);
   cont.appendChild(el("p","mini","Cargando partidas…"));
   const bNueva=el("button","btn-aqua chico verde","➕ Nueva partida (elegir otro club)"); bNueva.style.marginTop="8px";
@@ -2059,7 +2065,7 @@ function vistaAjustes(){
       const ult=(typeof nubeUltimoRespaldo==="function")?nubeUltimoRespaldo():0;
       const cuando=ult?("último respaldo: "+new Date(ult).toLocaleString("es-CL",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})):"todavía sin respaldo automático";
       pn.cuerpo.appendChild(el("p","mini",(autoOn
-        ? "Con auto-respaldo, tu partida se sube sola a la nube cada vez que el juego guarda: aunque limpies el navegador o cambies de equipo, no la perdés. <span id=\"nubeAutoTxt\">"+cuando+"</span>."
+        ? "Con auto-respaldo, tu partida se sube sola a la nube cada vez que el juego guarda: aunque limpies el navegador o cambies de equipo, no la pierdes. <span id=\"nubeAutoTxt\">"+cuando+"</span>."
         : "Modo manual: subí después de jugar y bajá al empezar en otro equipo. Bajar SIEMPRE es manual y con confirmación, para que nunca pierdas una partida sin querer.")));
     }else{
       pn.cuerpo.appendChild(el("p","mini","Entra con tu correo para guardar la partida en la nube y seguir en cualquier dispositivo. Es opcional: sin cuenta, el juego anda igual offline."));
@@ -2093,7 +2099,7 @@ function vistaAjustes(){
 
   /* ---- Modo Dios (panel de cheats) ---- */
   const pg=panel("Modo Dios","😇","alerta");
-  pg.cuerpo.appendChild(el("p","mini","Panel de trucos: cambiás todo a mano. <b>Ojo:</b> apenas lo activás, esta partida <b>deja de dar logros</b> (no vale hacer trampa). Podés seguir jugando igual."));
+  pg.cuerpo.appendChild(el("p","mini","Panel de trucos: cambias todo a mano. <b>Ojo:</b> apenas lo activas, esta partida <b>deja de dar logros</b> (no vale hacer trampa). Puedes seguir jugando igual."));
   if(E.flags.modoDiosUsado) pg.cuerpo.appendChild(el("div","resul mitad","🔒 En esta partida los logros están <b>bloqueados</b> porque usaste Modo Dios."));
   const tog=el("button","btn-aqua chico"+(E.flags.modoDios?"":" gris"),E.flags.modoDios?"Modo Dios: ON":"Activar Modo Dios");
   tog.onclick=()=>{
@@ -2226,16 +2232,17 @@ function pendientesAtender(){
   if(urg.length) p.push({ic:"📥",fuerte:true,t:urg.length+" decisión"+(urg.length>1?"es":"")+" urgente"+(urg.length>1?"s":"")+" sin resolver",d:"En Decisiones sobre la mesa.",ir:"escritorio"});
   if(typeof notifsAccionables==="function"){ const a=notifsAccionables(); if(a.length) p.push({ic:"📨",fuerte:true,t:a.length+" aviso"+(a.length>1?"s":"")+" que requiere"+(a.length>1?"n":"")+" tu respuesta",d:"Ofertas o pedidos esperando.",ir:"avisos"}); }
   if(Array.isArray(E.objetivos) && typeof progresoObjetivo==="function"){ const r=E.objetivos.filter(o=>progresoObjetivo(o).estado==="riesgo"); if(r.length) p.push({ic:"🎯",t:"Meta en riesgo: "+r[0].t,d:"El directorio lo evalúa al cierre.",ir:"escritorio"}); }
-  if(typeof quimicaEquipo==="function" && typeof onceIdeal==="function"){ const q=quimicaEquipo(onceIdeal()); if(q.prom<48) p.push({ic:"🔗",t:"Química floja ("+q.prom+"/100)",d:"Acomodá la pizarra antes del partido.",ir:"escritorio"}); }
-  if(E.ind && E.ind.moral<42) p.push({ic:"👥",t:"Camarín cortado (moral "+Math.round(E.ind.moral)+")",d:"Podés reconquistarlos en Finanzas.",ir:"institucion"});
+  if(typeof quimicaEquipo==="function" && typeof onceIdeal==="function"){ const q=quimicaEquipo(onceIdeal()); if(q.prom<48) p.push({ic:"🔗",t:"Química floja ("+q.prom+"/100)",d:"Acomoda la pizarra antes del partido.",ir:"escritorio"}); }
+  if(E.ind && E.ind.moral<42) p.push({ic:"👥",t:"Camarín cortado (moral "+Math.round(E.ind.moral)+")",d:"Puedes reconquistarlos en Finanzas.",ir:"institucion"});
   if(E.flags && E.flags.sueldosAtrasados) p.push({ic:"💸",fuerte:true,t:"Sueldos atrasados",d:"El camarín se resiente cada semana.",ir:"finanzas"});
+  if(E.flags && E.flags.tribunaCerrada) p.push({ic:"🚧",fuerte:true,t:"Popular clausurada",d:"La hinchada está caliente. Baja el aforo hasta que el clima mejore.",ir:"institucion"});
   return p;
 }
 function modalAtiende(pend){
   modal(box=>{
     box.appendChild(el("div","cab",'<span class="ic">⚠️</span><span>Atiende antes de avanzar</span>'));
     const cc=el("div","cuerpo"); box.appendChild(cc);
-    cc.appendChild(el("p","mini","Tenés cosas sin resolver. Tocá una para ir a atenderla, o avanzá igual:"));
+    cc.appendChild(el("p","mini","Tienes cosas sin resolver. Toca una para ir a atenderla, o avanza igual:"));
     pend.forEach(it=>{ const b=el("button","op"); b.innerHTML='<div class="t">'+it.ic+" "+it.t+'</div>'+(it.d?'<div class="req">'+it.d+'</div>':""); b.onclick=()=>{ cerrarModal(); irA(it.ir); }; cc.appendChild(b); });
     const bx=el("button","btn-aqua ancho gris","Avanzar igual"); bx.style.marginTop="8px"; bx.onclick=()=>{ cerrarModal(); avanzar(); };
     cc.appendChild(bx);

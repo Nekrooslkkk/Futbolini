@@ -61,7 +61,7 @@ function checklistPrevia(part,once){
     d:"No disponibles: "+les.slice(0,4).map(j=>j.n).join(", ")+(les.length>4?"…":"")+"."});
   /* barra caliente */
   if(part.local && E.barra && E.barra.roto) items.push({warn:true,t:"La barra está caliente contigo",
-    d:"Rompiste un pacto: esperá silbidos de local y algún lío en la puerta."});
+    d:"Rompiste un pacto: espera silbidos de local y algún lío en la puerta."});
   return items;
 }
 /* 3.c · lectura en criollo del plan: qué efecto neto tiene y si las piezas
@@ -73,8 +73,8 @@ function lecturaPlan(){
   const atk=m.ataque+es.ataque+pr.ataque, ord=m.orden+es.orden+pr.orden;
   const desg=(m.desgaste||0)+(es.desgaste||0)+(pr.desgaste||0);
   let cara;
-  if(atk>=8 && ord<=-2) cara="Vas con TODO al ataque pero quedás abierto atrás: generás harto y regalás también.";
-  else if(atk>=6) cara="Plan ofensivo: buscás el arco rival, con algo de riesgo atrás.";
+  if(atk>=8 && ord<=-2) cara="Vas con TODO al ataque pero quedas abierto atrás: generas harto y regalas también.";
+  else if(atk>=6) cara="Plan ofensivo: buscas el arco rival, con algo de riesgo atrás.";
   else if(ord>=6 && atk<=1) cara="Plan de aguantar y salir de contra: firme atrás, poco arriba.";
   else if(ord>=4) cara="Plan cauto y ordenado: lo primero es no comerte goles.";
   else cara="Plan equilibrado: ni muy arriba ni muy atrás.";
@@ -82,15 +82,30 @@ function lecturaPlan(){
   const sig=[s(m.ataque-m.orden),s(es.ataque-es.orden),s(pr.ataque-pr.orden)];
   const pos=sig.filter(x=>x>0).length, neg=sig.filter(x=>x<0).length;
   let coh;
-  if(pos>=2&&neg===0) coh="✔ Combinás bien: mentalidad, estilo y presión tiran todos para el ataque.";
-  else if(neg>=2&&pos===0) coh="✔ Combinás bien: todo apunta a defender y salir de contra.";
+  if(pos>=2&&neg===0) coh="✔ Combinas bien: mentalidad, estilo y presión tiran todos para el ataque.";
+  else if(neg>=2&&pos===0) coh="✔ Combinas bien: todo apunta a defender y salir de contra.";
   else if(pos&&neg) coh="⚠ Estás mezclando cosas que se pelean (una parte quiere atacar y otra defenderse): el equipo lo siente tibio.";
   else coh="Plan mesurado, sin extremos.";
-  const fatiga=desg>=8?" 🥵 Ese ritmo cansa harto: cuidá el segundo tiempo.":(desg<=-2?" 🐢 Ritmo tranquilo: llegás entero al final.":"");
+  const fatiga=desg>=8?" 🥵 Ese ritmo cansa harto: cuida el segundo tiempo.":(desg<=-2?" 🐢 Ritmo tranquilo: llegas entero al final.":"");
   return cara+" "+coh+fatiga;
+}
+/* 7.36 · árbitro con sesgo visible (nombre ficticio + estilo). Determinista. */
+function chipArbitro(part,arb){
+  const a=arb||((typeof arbitroDe==="function"&&part)?arbitroDe(part):null);
+  if(!a) return null;
+  const d=el("span","chip-arb"+(a.casero?" casero":"")+(a.estilo==="tarjetero"?" tarj":"")+(a.estilo==="deja jugar"?" suave":""));
+  d.innerHTML="🧑‍⚖️ <b>"+a.n+"</b> · "+a.estilo;
+  d.title=a.desc+(a.casero?" · cobra para el local.":".");
+  return d;
+}
+function celdaCans(j){
+  const c=Math.round(j.cansancio||0);
+  const cls=c>=18?"n cans-alto":(c>=10?"n cans-medio":"n");
+  return "<td class='"+cls+"'>"+c+"</td>";
 }
 function pantallaPrevia(part){
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
+  document.body.classList.remove("en-partido","hay-momento");
   const ligaTit=E.eraBase==="2026b"?"Liga de Ascenso · fecha "+part.fecha
     :(E.anio>=2010?"Liga de Primera · fecha "+part.fecha:"Campeonato Nacional · fecha "+part.fecha);
   const copaTit=part.tipo==="copa"?((part.torneo||"Copa")+" · "+part.ronda):ligaTit;
@@ -98,7 +113,24 @@ function pantallaPrevia(part){
   cab.cuerpo.appendChild(el("h2","tit",(part.local?E.clubNombre+" vs "+part.rivalNombre:part.rivalNombre+" vs "+E.clubNombre)));
   cab.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" en "+part.sede+" · "+fechaTxt(part.f)+" de "+E.anio+
     (part.apodo?" · "+part.apodo:"")));
+  const meta=el("div","fila-meta");
+  meta.appendChild(el("span","chip-meta",part.local?"🏠 Local":"✈️ Visita"));
+  const ca=chipArbitro(part); if(ca) meta.appendChild(ca);
+  cab.cuerpo.appendChild(meta);
   v.appendChild(cab);
+
+  /* 7.36 · jugar YA: CTAs arriba, no enterrados bajo el once */
+  const bar=el("div","barra-jugar");
+  bar.setAttribute("role","group");
+  bar.setAttribute("aria-label","Cómo vives el partido");
+  [["📺 Ver en vivo","seguir","Lo ves minuto a minuto. Adentro puedes saltar al resultado."],
+   ["🎯 Dirigir","dirigir","Intervienes en los momentos clave."]].forEach(([n,m,d])=>{
+    const b=el("button","btn-aqua ancho cta-jugar"+(m==="dirigir"?" verde":""),
+      n+" · <span class='cta-d'>"+d+"</span>");
+    b.onclick=()=>arrancarPartido(part,m);
+    bar.appendChild(b);
+  });
+  v.appendChild(bar);
 
   /* 6.31 · checklist: qué conviene resolver ANTES de salir a jugar */
   const onceCk=onceIdeal();
@@ -138,10 +170,15 @@ function pantallaPrevia(part){
   }
   const once=onceIdeal();
   p1.cuerpo.appendChild(el("h3","sub","Once titular"));
-  const t=el("table");
-  t.innerHTML="<thead><tr><th>Jugador</th><th>Pos</th><th class='n'>Nivel</th><th class='n'>Forma</th></tr></thead>";
+  const t=el("table","tabla-xi");
+  t.innerHTML="<thead><tr><th>Jugador</th><th>Pos</th><th class='n'>Niv</th><th class='n'>For</th><th class='n'>Can</th></tr></thead>";
   const tb=el("tbody");
-  once.forEach(j=>tb.appendChild(el("tr",null,"<td>"+j.n+(j.real?" ●":"")+"</td><td>"+j.pos+"</td><td class='n'>"+j.nivel+"</td><td class='n'>"+Math.round(j.forma)+"</td>")));
+  once.forEach(j=>{
+    const can=Math.round(j.cansancio||0);
+    const tr=el("tr",can>=18?"cans-alto":(can>=10?"cans-medio":null),
+      "<td>"+j.n+(j.real?" ●":"")+"</td><td>"+j.pos+"</td><td class='n'>"+j.nivel+"</td><td class='n'>"+Math.round(j.forma)+"</td>"+celdaCans(j));
+    tb.appendChild(tr);
+  });
   t.appendChild(tb); p1.cuerpo.appendChild(t);
   const les=E.plantel.filter(j=>j.lesion>0&&!j.vendido);
   if(les.length) p1.cuerpo.appendChild(el("p","mini","No disponibles: "+les.map(j=>j.n).join(", ")));
@@ -213,16 +250,7 @@ function pantallaPrevia(part){
     p2.cuerpo.appendChild(fila("Taquilla proyectada",tq.gente.toLocaleString("es-CL")+" personas · "+plata(tq.ingreso)));
     p2.cuerpo.appendChild(el("p","mini","Ajustas el precio de cada sector en Finanzas."));
   }
-  p2.cuerpo.appendChild(el("h3","sub","¿Cómo lo vives?"));
-  const bs=el("div");
-  [["⚡ Simular","seguir","Lo ves en vivo. Adentro decides: saltar al resultado al toque o seguirlo minuto a minuto."],
-   ["🎯 Dirigir","dirigir","Intervenís en los momentos clave, con las barras de apoyo en vivo."]].forEach(([n,m,d])=>{
-    const b=el("button","btn-aqua ancho cta-jugar"+(m==="dirigir"?" verde":""),n+" · <span style='font-weight:400;font-size:11.5px'>"+d+"</span>");
-    b.style.marginBottom="7px";
-    b.onclick=()=>arrancarPartido(part,m);
-    bs.appendChild(b);
-  });
-  p2.cuerpo.appendChild(bs);
+  p2.cuerpo.appendChild(el("h3","sub","Antes de salir"));
   if((part.ronda==="FINAL"||part.ronda==="Semifinal")&&typeof modalCharlaCapitan==="function"){
     const bc=el("button","btn-aqua ancho","🧑‍✈️ Charla con el capitán antes de salir");
     bc.onclick=modalCharlaCapitan;
@@ -232,7 +260,7 @@ function pantallaPrevia(part){
   const bconf=el("button","btn-aqua ancho"+(confHecha?" gris":""),confHecha?"🎤 Ya diste la conferencia":"🎤 Conferencia de prensa");
   bconf.disabled=confHecha; bconf.onclick=()=>modalConferencia(part);
   p2.cuerpo.appendChild(bconf);
-  p2.cuerpo.appendChild(el("p","mini hint-teclado","En el partido: barra espaciadora pausa · «⏩ Al resultado» lo termina al toque · Dirigir usa teclas 1 / 2 / 3."));
+  p2.cuerpo.appendChild(el("p","mini hint-teclado","Arriba eliges cómo vivir el partido. Adentro: barra espaciadora pausa · «⏩ Al resultado» lo termina al toque · Dirigir usa teclas 1 / 2 / 3."));
   rej.appendChild(p2);
   v.appendChild(rej);
   window.scrollTo({top:0});
@@ -651,7 +679,11 @@ function pintarPartido(){
   }
   const tramo=P.min<=45?"1T":(P.min<90?"2T":"FT");
   p.cuerpo.appendChild(el("div","reloj",P.terminado?"Final del partido":((PAUSADO?"⏸ ":"")+"Minuto "+P.min+" · "+tramo)));
-  if(P.arbitro) p.cuerpo.appendChild(el("div","mini centro","🧑‍⚖️ Árbitro: <b>"+P.arbitro.n+"</b> · "+P.arbitro.desc));
+  if(P.arbitro){
+    const filaA=el("div","fila-meta centro");
+    const ca=chipArbitro(P.part,P.arbitro); if(ca) filaA.appendChild(ca);
+    p.cuerpo.appendChild(filaA);
+  }
   if(typeof canalDelPartido==="function"){
     const ch=canalDelPartido(P.part);
     p.cuerpo.appendChild(el("div","mini centro canal-live","📺 "+ch.n+" · "+ch.d));
@@ -702,6 +734,10 @@ function pintarPartido(){
     const stam=clamp(100-P.cansancio*6,0,100);
     p.cuerpo.appendChild(el("div","mini","Físico del equipo"));
     p.cuerpo.appendChild(el("div",null,barrita(stam,stam>50?"#4fbf3f":(stam>25?"#e0a92a":"#c9392c"))));
+    const cansados=(P.once||[]).filter(j=>(j.cansancio||0)>=16).sort((a,b)=>(b.cansancio||0)-(a.cansancio||0));
+    if(cansados.length){
+      p.cuerpo.appendChild(el("div","strip-cans","🥵 Piernas pesadas: "+cansados.slice(0,4).map(j=>j.n+" "+Math.round(j.cansancio)).join(" · ")+(cansados.length>4?"…":"")));
+    }
   }
   /* 5.0 · barras de apoyo en vivo */
   if(P.modo!=="simular"){

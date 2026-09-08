@@ -85,8 +85,8 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   .tabla-plantel td:first-child,.tabla-liga td:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .tabla-plantel th:nth-child(3),.tabla-plantel td:nth-child(3),
   .tabla-plantel th:nth-child(4),.tabla-plantel td:nth-child(4),
-  .tabla-plantel th:nth-child(7),.tabla-plantel td:nth-child(7),
-  .tabla-plantel th:nth-child(8),.tabla-plantel td:nth-child(8){display:none}
+  .tabla-plantel th:nth-child(8),.tabla-plantel td:nth-child(8),
+  .tabla-plantel th:nth-child(9),.tabla-plantel td:nth-child(9){display:none}
   .tabla-liga th:nth-child(n+4):nth-child(-n+8),
   .tabla-liga td:nth-child(n+4):nth-child(-n+8){display:none}
 
@@ -155,6 +155,21 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   .obj-grid.grid-comodo,.checklist,.grid-comodo,.align-grid{grid-template-columns:1fr}
 
   h2.tit{font-size:17px}
+
+  /* 7.36 · barra de jugar pegada bajo el header (menú oculto) */
+  .barra-jugar{
+    top:calc(48px + env(safe-area-inset-top,0px));
+    z-index:20;margin:0 -10px 10px;padding:8px 10px 10px;
+    border-radius:0;border-left:0;border-right:0;
+    background:linear-gradient(180deg,rgba(232,248,220,.98),rgba(200,236,184,.96));
+    border-bottom:2px solid #0f5a0c;
+    box-shadow:0 6px 14px rgba(8,60,20,.16);
+  }
+  .barra-jugar .cta-jugar{flex:1 1 140px;min-height:52px !important;font-size:15px !important;text-align:center}
+  .barra-jugar .cta-d{font-size:10.5px}
+  .fila-meta{gap:5px}
+  .chip-meta,.chip-arb{font-size:11px;padding:5px 8px;min-height:28px}
+  .strip-cans{font-size:12.5px}
 
   /* Dock */
   #dock{

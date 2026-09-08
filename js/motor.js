@@ -702,8 +702,16 @@ function ocupBase(part){
   o*=(1+(modSuma("taquilla")||0));
   return o;
 }
-/* deuda alta → se clausuran sectores del estadio y cae el aforo disponible */
-function clausuraFactor(){ return E.deuda>4000?0.75:(E.deuda>3000?0.90:1); }
+/* deuda alta o hinchada en crisis → se clausuran sectores y cae el aforo */
+function clausuraFactor(){
+  let f=1;
+  if(E.deuda>4000) f=Math.min(f,0.75);
+  else if(E.deuda>3000) f=Math.min(f,0.90);
+  if(E.flags&&E.flags.tribunaCerrada) f=Math.min(f,0.72);
+  if(E.deuda>4000 && E.flags&&E.flags.tribunaCerrada) f=Math.min(f,0.60);
+  return f;
+}
+function tribunaCerrada(){ return !!(E&&E.flags&&E.flags.tribunaCerrada); }
 function taquilla(part){
   const aforo=aforoActual();
   const base=ocupBase(part);
@@ -919,6 +927,15 @@ function tickSemana(){
   if(E.deuda>4000 && !E.flags.clausura){ E.flags.clausura=true;
     notificar({t:"Clausura parcial del estadio",tipo:"malo",d:"Con la deuda por las nubes, se clausuraron sectores por garantías impagas: baja el aforo disponible y la taquilla.",bandeja:false}); }
   else if(E.deuda<=3500 && E.flags.clausura){ E.flags.clausura=false; }
+  /* 7.36 · crisis de hinchada cierra la popular, no solo baja un número */
+  const hin=(E.ind&&E.ind.hinchada)||50;
+  if(hin<22 && !E.flags.tribunaCerrada){
+    E.flags.tribunaCerrada=true;
+    notificar({t:"Popular clausurada",tipo:"malo",d:"La hinchada está tan caliente que se cerró la tribuna popular por seguridad. Baja el aforo y la taquilla hasta que el clima se calme.",bandeja:false});
+  } else if(hin>=32 && E.flags.tribunaCerrada){
+    E.flags.tribunaCerrada=false;
+    notificar({t:"Se reabre la popular",tipo:"bueno",d:"El clima se calmó. La tribuna popular vuelve a abrir.",bandeja:false});
+  }
   /* precios: caros molestan a la hinchada, baratos la enamoran (de a poco) */
   const ratio=precioPromedioRatio();
   if(ratio>1.35 && Math.random()<0.5) E.ind.hinchada=clamp(E.ind.hinchada-1,0,100);

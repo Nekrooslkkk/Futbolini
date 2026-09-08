@@ -100,3 +100,20 @@ body[data-tema="insano"] .btn-aqua.gris{background:linear-gradient(180deg,#fff,#
 body[data-tema="insano"] .op{background:rgba(255,255,255,.7);border:2px dashed #ff00aa}
 body[data-tema="insano"] .icono,body[data-tema="insano"] .ficha{background:linear-gradient(180deg,#fff,#ffe6fa)}
 body[data-tema="insano"] .modal{background:rgba(255,255,255,.9);border:3px double #ff00aa}
+
+/* 7.36 · barra de jugar se adapta al tema */
+body[data-tema="negro"] .barra-jugar{
+  background:linear-gradient(180deg,rgba(24,38,54,.96) 40%,rgba(14,24,36,.82));
+  border-color:rgba(120,190,255,.22);
+}
+body[data-tema="negro"] .chip-meta,body[data-tema="negro"] .chip-arb{
+  background:rgba(255,255,255,.08);color:#dbecff;
+}
+body[data-tema="claro"] .barra-jugar{
+  background:linear-gradient(180deg,#ffffff 40%,rgba(242,246,250,.9));
+}
+body[data-tema="insano"] .barra-jugar{
+  background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,230,250,.7));
+  border:2px dashed #ff00aa;
+}
+

@@ -21,9 +21,9 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 
 11. 🟨 Fases dominio / equilibrio / ahogo. Todavía es un timer con goles.
 12. 🟨 Recambio por lesión con costo (5.1l). Falta cambio voluntario.
-13. 🟨 Cansancio por jugador (5.1l). Aún no hay UI por cabeza.
+13. ✅ Cansancio por jugador, visible en XI / plantel / vivo (7.36). Falta cambio voluntario más fino.
 14. 🟨 Once pesa rol, moral y cansancio (5.1l).
-15. ⬜ Árbitro con sesgo visible, no solo un mod escondido.
+15. ✅ Árbitro con sesgo visible en previa y en vivo (7.36).
 16. 🟨 Clásico / copa pesan más; más polémica si hay VAR (5.1l).
 17. 🟨 Relato cita titulares (5.1l).
 
@@ -33,12 +33,12 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 19. 🟨 Asamblea si hinchada+socios < -45; a las 3 semanas destituye (5.1l).
 20. ✅ Prensa que filtra si un grupo está a menos de -45 (prensaFiltra).
 21. ⬜ Blanco / ANFP / TV como actores con agenda.
-22. ⬜ Crisis de hinchada que cierra tribuna, no solo baja un número.
+22. ✅ Crisis de hinchada que cierra la popular (7.36).
 
 ## D. Economía
 
 23. 🟨 Flujo semanal + semanas de caja. Falta que duela más.
-24. ⬜ Deuda con cuotas, no un globo.
+24. ✅ Deuda con cuotas (7.19).
 25. 🟨 Cláusulas de salida con año (7.35). Faltan comisiones y atrasos que exploten.
 26. ⬜ Mercado: ofertas que no sean un solo botón.
 27. ⬜ Precio de entrada que llene o vacíe según ranking y momento.

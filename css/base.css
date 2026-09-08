@@ -528,6 +528,38 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 .chk b{font-size:12.5px}
 @media(min-width:620px){.checklist{display:grid;grid-template-columns:1fr 1fr}}
 
+/* 7.36 · previa: jugar YA, árbitro visible, cansancio */
+.barra-jugar{
+  position:sticky;top:96px;z-index:12;
+  display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;
+  padding:8px 6px 10px;margin:0 0 10px;
+  background:linear-gradient(180deg,rgba(232,248,220,.96) 40%,rgba(232,248,220,.72));
+  border:1px solid var(--linea);border-radius:8px;
+  box-shadow:0 4px 12px rgba(8,60,20,.10);
+}
+.barra-jugar .cta-jugar{flex:1 1 240px;margin:0;min-height:48px;text-align:left}
+.barra-jugar .cta-d{font-weight:400;font-size:11.5px;display:block;opacity:.88;line-height:1.3;margin-top:2px}
+.fila-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px}
+.chip-meta,.chip-arb{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 9px;border-radius:999px;font-size:11.5px;font-weight:650;
+  border:1px solid var(--linea);background:rgba(255,255,255,.45);color:var(--tinta);
+}
+.chip-arb.casero{background:linear-gradient(180deg,rgba(240,180,40,.28),rgba(240,180,40,.10));border-color:rgba(180,120,10,.45)}
+.chip-arb.tarj{background:linear-gradient(180deg,rgba(210,70,50,.22),rgba(210,70,50,.08));border-color:rgba(180,50,40,.4)}
+.chip-arb.suave{background:linear-gradient(180deg,rgba(80,180,120,.22),rgba(80,180,120,.08));border-color:rgba(40,130,80,.35)}
+tr.cans-alto td,td.cans-alto{color:#8a1c14;font-weight:700}
+tr.cans-medio td.cans-medio,td.cans-medio{color:#8a5a10;font-weight:650}
+.strip-cans{
+  margin:6px 0 2px;padding:7px 10px;border-radius:7px;font-size:12px;font-weight:650;
+  border:1px solid rgba(180,90,20,.4);
+  background:linear-gradient(180deg,rgba(240,170,50,.2),rgba(240,170,50,.06));
+}
+.tabla-xi{width:100%}
+@media (prefers-reduced-motion:reduce){
+  .barra-jugar{position:static}
+}
+
 /* 6.34 · titulares de la liga */
 .titular{padding:6px 9px;border-radius:6px;margin:5px 0;border-left:3px solid rgba(90,140,200,.5);background:rgba(90,140,200,.07)}
 .titular b{font-size:12.5px}

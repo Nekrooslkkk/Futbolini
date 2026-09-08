@@ -1815,3 +1815,16 @@ toggle fuera. Consola limpia.
 - **Relato:** histórico pre-2000 huele a radio; libre dice que el guión lo armas tú; caos se desordena. Wrap de `fraseRelato` que conserva `_beta`.
 **1 línea:** en el 91 te presentan gente, los contratos tienen cláusula con fecha, y el relato cambia si juegas histórico, libre o caos.
 **Riesgos:** wrap de `fraseRelato`. Cláusulas se generan al armar plantel / normalizar. Bajo.
+
+## 7.36 · Jugar se siente jugar  ✅ (2026-09-08)
+**Archivos:** `js/data-36.js` (nuevo), `js/ui-partido.js`, `js/ui.js`, `js/motor.js`, `js/ia.js`, `js/data-decisiones-plus.js`, `js/util.js`, `css/base.css`, `css/movil.css`, `css/temas.css`, `index.html`.
+**Qué:**
+- **Previa:** los botones de jugar suben arriba del todo. «⚡ Simular» era ver en vivo: ahora se llama **📺 Ver en vivo**. **🎯 Dirigir** = intervienes (tú, no vos). Skip-to-result sigue siendo «Al resultado» adentro.
+- **Cansancio visible:** columna Can en el XI de la previa y en el plantel; filas teñidas; tira «piernas pesadas» en vivo; ficha del jugador lo dice.
+- **Árbitro con sesgo:** chip con nombre ficticio + estilo (casero / tarjetero / deja jugar) en previa y en vivo. El motor ya pesaba; ahora se ve.
+- **Escritorio:** el próximo partido es lo primero. «Atiende» queda debajo. CTA «Ir al partido» al toque.
+- **Popular clausurada:** si la hinchada cae bajo 22 se cierra la tribuna popular (baja aforo/taquilla). Se reabre al 32. Distinto de la clausura por deuda.
+- **Copy tú:** se fueron perdés/tenés/tocá/intervenís/combinás y el resto de voseo que quedaba en UI seria.
+- **Relato de arranque:** más líneas de los primeros minutos (`data-36.js`, conserva `_beta` y `_35`).
+**1 línea:** para jugar no hay que bajar al fondo del once, ves quién está cansado y quién pita, y una hinchada en crisis te cierra la popular.
+**Riesgos:** CSS sticky de la barra de jugar (desktop top ~96px, celular bajo el header). `clausuraFactor` ahora mira también `flags.tribunaCerrada`. Bajo.

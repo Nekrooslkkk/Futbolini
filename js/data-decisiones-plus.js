@@ -176,7 +176,7 @@
  ]},
 {id:"b_anfp_sancion",tag:"anfp",buzon:"institucional",peso:"alto",cuando:E=>E.ind.riesgo>40,
  t:"La ANFP arma un sumario",
- d:"Incidentes, un audio, una declaración. El sumario está abierto. Podés pelear, negociar o bajar la cabeza. Cada camino tiene factura.",
+ d:"Incidentes, un audio, una declaración. El sumario está abierto. Puedes pelear, negociar o bajar la cabeza. Cada camino tiene factura.",
  posturas:{anfp:20,prensa:10,hinchada:-5},
  op:[
   {t:"Bajar la cabeza y pagar",d:"Multa, punto final.",dif:30,req:{plata:60},grupos:{anfp:8,hinchada:-6},
