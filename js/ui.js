@@ -96,8 +96,9 @@ function pantallaInicio(){
     g.appendChild(b);
   });
   paso1.cuerpo.appendChild(g);
+  const idsB=(typeof idsPrimeraB==="function")?idsPrimeraB():((typeof LIGA_B_2026!=="undefined")?LIGA_B_2026.map(c=>c.id):[]);
   if(typeof CLUB_INFO_2026!=="undefined"){
-    const soloNuevos=Object.keys(CLUB_INFO_2026).filter(id=>!CLUB_INFO[id]);
+    const soloNuevos=Object.keys(CLUB_INFO_2026).filter(id=>!CLUB_INFO[id] && idsB.indexOf(id)<0);
     if(soloNuevos.length){
       paso1.cuerpo.appendChild(el("h3","sub","… o un club de la Primera 2026"));
       const g2=el("div","iconos");
@@ -110,7 +111,18 @@ function pantallaInicio(){
       paso1.cuerpo.appendChild(g2);
     }
   }
-  paso1.cuerpo.appendChild(el("p","mini","Los 5 primeros se pueden jugar en 1991 (calendario real, Copa Libertadores de Colo-Colo) o en 2026. Los de abajo son de la Primera División 2026 (planteles aproximados, 3 puntos por victoria)."));
+  if(typeof LIGA_B_2026!=="undefined" && LIGA_B_2026.length){
+    paso1.cuerpo.appendChild(el("h3","sub","… o un club de la Primera B 2026"));
+    const g3=el("div","iconos");
+    LIGA_B_2026.forEach(c=>{
+      const info=(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c;
+      const b=el("button","icono",'<span class="g">'+(info.esc||"🟠")+'</span><span class="n">'+(info.n||c.n)+'</span>');
+      b.onclick=()=>elegirEpoca(c.id);
+      g3.appendChild(b);
+    });
+    paso1.cuerpo.appendChild(g3);
+  }
+  paso1.cuerpo.appendChild(el("p","mini","Los 5 primeros se pueden jugar en 1991 (calendario real, Copa Libertadores de Colo-Colo) o en 2026. Los de Primera 2026 son de la división de honor. Los de Primera B arrancan en la Liga de Ascenso 2026 (Cobreloa primero; planteles documentados, el resto se rellena con cantera)."));
   v.appendChild(paso1);
 
   /* 7.00 · duelo P2P contra un amigo */
@@ -126,12 +138,15 @@ function pantallaInicio(){
 function elegirEpoca(id){
   /* 7.00 · clubes que solo existen en 2026 (no tienen datos 1991) */
   const solo2026=(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]);
+  const esB=(typeof esClubB==="function")?esClubB(id):false;
   let modo="historico", corte=false;
   const glorias=(typeof epocasDe==="function")?epocasDe(id):[];
   /* 7.10 · UN solo selector de "cuándo empezar": épocas base + glorias unificadas,
      sin dos selectores peleando (arregla el bug de perder continuidad al elegir gloria). */
   const puntos=[];
-  if(solo2026){
+  if(esB){
+    puntos.push({k:"b2026b",tipo:"base",base:"2026b",anio:2026,etq:"2026 · Primera B"});
+  } else if(solo2026){
     puntos.push({k:"b2026",tipo:"base",base:2026,anio:2026,etq:"2026 · Actual"});
   } else if(id==="CC"){
     puntos.push({k:"cc89",tipo:"base",base:1991,anio:1989,etq:"1989 · La Reconstrucción"});
@@ -188,9 +203,17 @@ function elegirEpoca(id){
       if(sel.tipo==="gloria"&&sel.ep){
         c.appendChild(el("div","resul mitad","<b>"+sel.ep.etq+".</b> "+(sel.ep.desc||"")+(sel.ep.dt?" · DT <b>"+sel.ep.dt+"</b>":"")));
       }else{
-        if(solo2026) c.appendChild(el("p","mini","Este club juega en la Primera División 2026."));
-        c.appendChild(el("p","mini",(ERA[sel.base]&&ERA[sel.base].desc)||""));
+        if(esB) c.appendChild(el("p","mini","Este club juega en la Primera B 2026 (Liga de Ascenso). Victoria vale 3 puntos. Copa Chile con grupos reales."));
+        else if(solo2026) c.appendChild(el("p","mini","Este club juega en la Primera División 2026."));
+        const eraObj=(typeof eraDe==="function"?eraDe(sel.base):ERA[sel.base])||ERA[2026];
+        c.appendChild(el("p","mini",(eraObj&&eraObj.desc)||""));
         c.appendChild(el("p",null,info.desc||""));
+        if(typeof HISTORIA_BETA==="object" && HISTORIA_BETA[id]){
+          const hx=HISTORIA_BETA[id];
+          const hk=sel.tipo==="gloria"?String(sel.anio):"actual";
+          const txt=hx[hk]||hx.actual;
+          if(txt) c.appendChild(el("div","resul mitad","<b>Contexto real.</b> "+txt+" <span class='mini'>Hechos públicos; lo que pasa adentro es ficción del juego.</span>"));
+        }
       }
 
       c.appendChild(el("h3","sub","2 · Elige modo"));
@@ -206,13 +229,15 @@ function elegirEpoca(id){
       c.appendChild(f);
 
       c.appendChild(el("h3","sub","3 · Briefing"));
-      const ligaN=sel.base===2026?LIGA_2026.length:LIGA91.length;
-      c.appendChild(fila("Época","Campeonato "+sel.anio+" · "+ligaN+" equipos · victoria vale "+ERA[sel.base].puntosVictoria+" puntos"));
+      const eraObj2=(typeof eraDe==="function"?eraDe(sel.base):ERA[sel.base])||ERA[2026];
+      const ligaN=sel.base==="2026b"?(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026.length:16)
+        :(sel.base===2026?LIGA_2026.length:LIGA91.length);
+      c.appendChild(fila("Época","Campeonato "+sel.anio+" · "+ligaN+" equipos · victoria vale "+eraObj2.puntosVictoria+" puntos"));
       c.appendChild(fila("Deportivo","plantel "+ib.plantel+" · cantera "+ib.cantera));
       c.appendChild(fila("Económico",plata(cb.plata)+" en caja · "+plata(cb.deuda)+" de deuda"));
       c.appendChild(fila("Interno","hinchada "+ib.hinchada+" · socios "+ib.socios+" · riesgo "+ib.riesgo));
       /* corte 18/08 solo en la temporada 2026 actual (no en glorias históricas) */
-      if(sel.base===2026 && sel.tipo!=="gloria"){
+      if((sel.base===2026) && sel.tipo!=="gloria" && !esB){
         c.appendChild(el("div","resul mitad","<b>Aviso.</b> Los planteles 2026 son <b>aproximados</b> y pueden haber cambiado en el mercado. Stats estimadas."));
         c.appendChild(el("h3","sub","Punto de la temporada"));
         const fc=el("div","fichas");
@@ -239,8 +264,10 @@ function elegirEpoca(id){
             const ob=(typeof baseEra==="function")?baseEra(sel.anio):(sel.anio>=2010?2026:1991);
             if(typeof datosEra==="function" && !(datosEra(ob).info||{})[id]) anio=2026;
           }
-          const extra=sel.tipo==="gloria"?{epoca:sel.ep}:(sel.base===2026&&corte?{corte:true}:null);
-          nuevaPartida(id, anio, modo, extra);
+          const extra=sel.tipo==="gloria"?{epoca:sel.ep}
+            :(sel.base===2026&&corte?{corte:true}:null);
+          const extra2=(esB||sel.base==="2026b")?Object.assign(extra||{},{categoria:"B"}):extra;
+          nuevaPartida(id, anio, modo, extra2);
           if(!E || !E.club) throw new Error("nuevaPartida no dejó estado E");
           cerrarModal(); SEC="escritorio"; render();
           aviso(sel.tipo==="gloria"?("Revivís: "+sel.ep.etq):("Empieza la temporada "+anio));
@@ -1121,15 +1148,21 @@ function vistaCalendario(){
     tb.appendChild(tr);
   });
   t.appendChild(tb); pt.cuerpo.appendChild(t);
-  pt.cuerpo.appendChild(el("p","mini","Época "+ERA[E.eraBase].n+": la victoria vale "+ERA[E.eraBase].puntosVictoria+" puntos. Campeonato de "+LIGA_ACT.length+" equipos."));
+  pt.cuerpo.appendChild(el("p","mini","Época "+((typeof eraDe==="function"?eraDe(E.eraBase):ERA[E.eraBase])||ERA[2026]).n+": la victoria vale "+((typeof eraDe==="function"?eraDe(E.eraBase):ERA[E.eraBase])||ERA[2026]).puntosVictoria+" puntos. Campeonato de "+LIGA_ACT.length+" equipos."));
   v.appendChild(pt);
 }
 /* ---------------- historia ---------------- */
 function vistaHistoria(){
   const v=$("#vista");
-  if(E.eraBase===2026){
-    const p2=panel("Época 2026","📚","agua");
-    p2.cuerpo.appendChild(el("p",null,ERA[2026].desc));
+  if(E.eraBase===2026 || E.eraBase==="2026b"){
+    const p2=panel(E.eraBase==="2026b"?"Época 2026 · Primera B":"Época 2026","📚","agua");
+    p2.cuerpo.appendChild(el("p",null,(typeof eraDe==="function"?eraDe(E.eraBase):ERA[2026]).desc));
+    if(typeof HISTORIA_BETA==="object" && HISTORIA_BETA[E.club] && HISTORIA_BETA[E.club].actual){
+      p2.cuerpo.appendChild(el("div","resul mitad","<b>Contexto real.</b> "+HISTORIA_BETA[E.club].actual));
+    }
+    if(E.eraBase==="2026b"){
+      p2.cuerpo.appendChild(el("p","mini","Liga de Ascenso 2026: 16 clubes, 3 puntos por victoria. Copa Chile con los 8 grupos reales (ida y vuelta). No se inventan octavos: hay que clasificar."));
+    }
     p2.cuerpo.appendChild(el("div","resul mitad","<b>Aviso.</b> El plantel y los clubes de 2026 usan nombres reales de referencia, pero los datos son <b>aproximados</b> y pueden haber cambiado. Todo lo dramatizado (conversaciones, conflictos, frases) es ficción del juego."));
     p2.cuerpo.appendChild(el("p","mini","No hay una \"tabla histórica\" fija para 2026: la estás escribiendo tú temporada a temporada."));
     v.appendChild(p2);

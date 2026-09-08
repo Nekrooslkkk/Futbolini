@@ -65,9 +65,9 @@ const CAJA_BASE_2026={CC:{plata:1200,deuda:3000},UCH:{plata:900,deuda:1800},UC:{
  PAL:{plata:520,deuda:480},LIM:{plata:300,deuda:200}};
 /* Devuelve el set de datos de club según la época (1991 o 2026). */
 function datosEra(base){
-  return base===2026
-   ? {info:CLUB_INFO_2026, ind:IND_BASE_2026, caja:CAJA_BASE_2026}
-   : {info:CLUB_INFO, ind:IND_BASE, caja:CAJA_BASE};
+  if(base===2026 || base==="2026b")
+    return {info:CLUB_INFO_2026, ind:IND_BASE_2026, caja:CAJA_BASE_2026};
+  return {info:CLUB_INFO, ind:IND_BASE, caja:CAJA_BASE};
 }
 function infoClub(clubId){ return datosEra(E?E.eraBase:1991).info[clubId] || CLUB_INFO[clubId]; }
 
@@ -103,7 +103,10 @@ function aplicarCorte2026(){
   if(typeof pushNotif==="function") pushNotif("Cortás en agosto","El campeonato ya se jugó hasta el 18/08. Los partidos anteriores están cargados. El próximo es el que sigue.","neutro");
 }
 function nuevaPartida(clubId,anio,modo,extra){
-  const base=baseEra(anio);
+  let base=baseEra(anio);
+  if(extra&&extra.epoca&&extra.epoca.liga) base=extra.epoca.liga;
+  if(extra&&extra.categoria==="B") base="2026b";
+  if(typeof esClubB==="function" && esClubB(clubId) && (anio>=2010 || base===2026 || base==="2026b")) base="2026b";
   activarLiga(base);
   const D=datosEra(base);
   const info=D.info[clubId];
@@ -760,6 +763,69 @@ function egresosAnuales(){
   const inter=Math.round(E.deuda*(0.16+modSuma("interes")));
   return {planilla:planilla,operacion:oper,intereses:inter};
 }
+/* 7.18 · deuda en cuotas (se reinyecta sobre el motor 7.30 de GitHub) */
+function recotarDeuda(){
+  if(!E) return;
+  const d=Math.max(0,Math.round(E.deuda||0));
+  if(d<=0){ E.deudaPlan=null; return; }
+  const prev=E.deudaPlan||{};
+  E.deudaPlan={cuota:Math.max(15,Math.round(d/16)),semanas:16,pagadas:prev.pagadas||0,atrasos:prev.atrasos||0};
+}
+function cuotaDeuda(){
+  if(!E||!(E.deuda>0)) return 0;
+  if(!E.deudaPlan) recotarDeuda();
+  return (E.deudaPlan&&E.deudaPlan.cuota)||0;
+}
+function tickCuotaDeuda(){
+  if(!E) return;
+  if(!(E.deuda>0)){ E.deudaPlan=null; return; }
+  if(!E.deudaPlan) recotarDeuda();
+  const c=Math.min(E.deudaPlan.cuota,E.deuda);
+  if(c<=0){ E.deudaPlan=null; return; }
+  if(E.plata>=c){
+    aplicarEfectos({plata:-c,deuda:-c});
+    if(E.deudaPlan){ E.deudaPlan.pagadas=(E.deudaPlan.pagadas||0)+1; E.deudaPlan.atrasos=0; }
+  } else {
+    E.deudaPlan.atrasos=(E.deudaPlan.atrasos||0)+1;
+    if(E.deudaPlan.atrasos===1){
+      notificar({t:"Cuota de deuda atrasada",tipo:"malo",bandeja:true,
+        d:"Esta semana no alcanzó la caja para la cuota de "+plata(c)+". El banco anota el atraso. Si se acumulan tres, el directorio se calienta."});
+    } else if(E.deudaPlan.atrasos>=3){
+      aplicarGrupos({directorio:-8});
+      notificar({t:"El banco llama al directorio",tipo:"malo",bandeja:true,
+        d:"Tres cuotas atrasadas de "+plata(c)+". El directorio pierde la paciencia (−8). La deuda no espera."});
+      if(E.deudaPlan) E.deudaPlan.atrasos=0;
+    }
+  }
+}
+function prensaFiltra(){
+  if(!E||!E.grupos) return;
+  const malos=[];
+  for(const k in E.grupos){ if(E.grupos[k]&&E.grupos[k].aprob<-45) malos.push(k); }
+  if(!malos.length){ if(E.flags) E.flags.prensaFiltra=null; return; }
+  const key=malos.slice().sort().join(",");
+  if(E.flags&&E.flags.prensaFiltra===key) return;
+  if(!E.flags) E.flags={};
+  E.flags.prensaFiltra=key;
+  const nom=k=>(typeof GRUPO_POR_ID!=="undefined"&&GRUPO_POR_ID[k])?GRUPO_POR_ID[k].n.toLowerCase():k;
+  const lista=malos.map(nom);
+  const quien=lista.length===1?lista[0]:lista.slice(0,-1).join(", ")+" y "+lista[lista.length-1];
+  const d=lista.length===1
+    ?"Se filtra que "+quien+" está en contra. Si no das vuelta el clima, la asamblea se empieza a hablar."
+    :"Se filtra malestar: "+quien+" están en contra. La prensa ya huele sangre.";
+  notificar({t:"La prensa filtra el malestar",tipo:"malo",d:d,bandeja:true});
+  if((E.anio||2026)>=2008 && typeof postProc==="function"){
+    const club=E.clubNombre||"el club";
+    const handles=(typeof HANDLES_PRENSA!=="undefined"&&HANDLES_PRENSA.length)?HANDLES_PRENSA:["@DeporteTotal"];
+    const h=(typeof elige==="function")?elige(handles):handles[0];
+    const frases=[
+      "Fuentes del "+club+" confirman malestar interno. "+quien+" no aguanta más.",
+      "Se filtra: en "+club+" el clima con "+quien+" está por el piso. Asamblea en el aire.",
+      "Columna: el "+club+" no aguanta otro tropiezo. El entorno pide respuestas."
+    ];
+    postProc(h,"prensa",(typeof elige==="function")?elige(frases):frases[0],"malo");
+  }
+}
 function costoSemanal(){
   const e=egresosAnuales();
   return Math.round((e.planilla+e.operacion+e.intereses)/40);
@@ -825,6 +891,8 @@ function tickSemana(){
   /* plata que entra y sale entre partido y partido */
   const neto=ingresoSemanal()-costoSemanal();
   aplicarEfectos({plata:neto});
+  if(typeof tickCuotaDeuda==="function") tickCuotaDeuda();
+  if(typeof prensaFiltra==="function") prensaFiltra();
   avanzarObras();
   if(typeof actualizarBolsa==="function") actualizarBolsa();
   if(typeof gestionTesorero==="function") gestionTesorero();

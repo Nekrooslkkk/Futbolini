@@ -131,16 +131,46 @@ const TUITS_MOMENTO=[
 const PREGUNTAS_VOZ=[
   {sit:"previa_favorito",q:"¿El plantel siente el cartel de favorito o lo van a bajar a tierra en la charla?"},
   {sit:"previa_favorito",q:"Hay gente que ya da por ganado el domingo. ¿Eso ayuda o estorba?"},
+  {sit:"previa_favorito",q:"En el papel son más. ¿Se lo dice al plantel o se lo guarda?"},
+  {sit:"previa_favorito",q:"¿Cambia el once porque el rival es de menos nombre?"},
+  {sit:"previa_favorito",q:"La gente ya pide goleada. ¿Usted también?"},
+  {sit:"previa_favorito",q:"¿Hay riesgo de subestimar a un rival que no tiene nada que perder?"},
   {sit:"post_derrota",q:"¿Dónde se les fue el partido: en el primer gol o en la reacción?"},
   {sit:"post_derrota",q:"La gente silbó. ¿Lo escucha o lo deja pasar?"},
+  {sit:"post_derrota",q:"¿El plan se cumplió y falló la definición, o el plan no estaba?"},
+  {sit:"post_derrota",q:"¿Va a tocar el once o banca el mismo grupo?"},
+  {sit:"post_derrota",q:"Hay caras largas. ¿Se habla adentro o se deja pasar la noche?"},
+  {sit:"post_derrota",q:"¿Qué le responde al socio que pagó la entrada y se fue callado?"},
   {sit:"racha_sin_ganar",q:"Llevan varias sin ganar. ¿En qué minuto se les empieza a notar la cabeza?"},
   {sit:"racha_sin_ganar",q:"¿Sigue confiando en el once o ya es momento de cortar de raíz?"},
+  {sit:"racha_sin_ganar",q:"¿Siente que el equipo está trabado de cabeza más que de fútbol?"},
+  {sit:"racha_sin_ganar",q:"¿Hay nombres intocables en esta racha?"},
+  {sit:"racha_sin_ganar",q:"El directorio lo sigue bancando. ¿Eso alcanza o falta un resultado ya?"},
+  {sit:"racha_sin_ganar",q:"¿Cambia el sistema o cambia las caras?"},
   {sit:"clasico_previa",q:"En un clásico, ¿se gana con la idea o se gana con el carácter?"},
   {sit:"clasico_previa",q:"La ciudad se parte. ¿Usted desconecta al plantel de eso o lo usa?"},
+  {sit:"clasico_previa",q:"¿Se puede dormir alguien de su lado la noche de un clásico?"},
+  {sit:"clasico_previa",q:"Hay historial reciente. ¿Lo usa en la charla o lo esconde?"},
+  {sit:"clasico_previa",q:"¿Prioriza no perderlo o ir a ganarlo?"},
+  {sit:"clasico_previa",q:"La ciudad se parte. ¿El plantel está autorizado a mirar redes?"},
   {sit:"post_goleada",q:"Goleada. ¿Es el techo o es el piso de lo que quiere ver?"},
   {sit:"post_goleada",q:"¿Qué detalle no le gustó, aunque el marcador sea ancho?"},
+  {sit:"post_goleada",q:"¿El rival se quedó corto o ustedes estuvieron un escalón arriba?"},
+  {sit:"post_goleada",q:"¿Repite el once el domingo o rota para no inflarse?"},
+  {sit:"post_goleada",q:"La gente pide que esto sea la norma. ¿Es justo pedirlo?"},
+  {sit:"post_goleada",q:"¿Hay algo que corregir aunque el marcador sea ancho?"},
   {sit:"figura_juvenil",q:"El cabro se comió el partido. ¿Ya es titular o se dosifica?"},
-  {sit:"rumor_venta",q:"Se habla de una oferta por un titular. ¿El club la escuchó o es ruido?"}
+  {sit:"figura_juvenil",q:"¿El cabro pide más minutos o todavía se dosifica?"},
+  {sit:"figura_juvenil",q:"Hay ojeadores en la tribuna. ¿El club lo protege o deja que se vea?"},
+  {sit:"figura_juvenil",q:"¿Ya es de primer equipo o sigue con un pie en juveniles?"},
+  {sit:"figura_juvenil",q:"La gente lo pide de titular. ¿Usted también?"},
+  {sit:"figura_juvenil",q:"¿Le pone techo para que no se agrande, o le suelta la rienda?"},
+  {sit:"rumor_venta",q:"Se habla de una oferta por un titular. ¿El club la escuchó o es ruido?"},
+  {sit:"rumor_venta",q:"Si llega una cifra seria, ¿el club escucha o cierra la puerta?"},
+  {sit:"rumor_venta",q:"El jugador, ¿pidió salir o es ruido de afuera?"},
+  {sit:"rumor_venta",q:"¿Hay una cláusula que deje al club vendido de antemano?"},
+  {sit:"rumor_venta",q:"La hinchada ya eligió: que no se venda. ¿Eso pesa?"},
+  {sit:"rumor_venta",q:"¿Hoy puede decir que se queda hasta diciembre?"}
 ];
 
 /* ---------- C) trivia extra ---------- */
@@ -155,7 +185,25 @@ const TRIVIA_VOZ=[
   {q:"El clásico universitario enfrenta a:",op:["U. de Chile y U. Católica","Colo-Colo y la U","Católica y Palestino"],sol:0},
   {q:"El Superclásico de Santiago enfrenta a:",op:["Católica y Colo-Colo","Colo-Colo y U. de Chile","Audax y Palestino"],sol:1},
   {q:"Si el partido termina 0-0, cada equipo suma:",op:["0 puntos","1 punto","2 puntos"],sol:1},
-  {q:"El arquero puede tomar el balón con la mano:",op:["En toda la cancha","Solo dentro de su área","Solo en córner"],sol:1}
+  {q:"El arquero puede tomar el balón con la mano:",op:["En toda la cancha","Solo dentro de su área","Solo en córner"],sol:1},
+  {q:"¿De qué ciudad es Huachipato?",op:["Talcahuano","Rancagua","La Serena"],sol:0},
+  {q:"El estadio Sausalito es la casa de:",op:["Wanderers","Everton","La Serena"],sol:1},
+  {q:"Cobresal juega como local en:",op:["Calama","Copiapó","El Salvador"],sol:2},
+  {q:"¿Quién ganó la Copa Sudamericana 2011?",op:["Colo-Colo","Universidad de Chile","Universidad Católica"],sol:1},
+  {q:"El apodo más usado de Coquimbo Unido es:",op:["Piratas","Cruzados","Leones"],sol:0},
+  {q:"Santiago Wanderers es de:",op:["Viña del Mar","Valparaíso","Quilpué"],sol:1},
+  {q:"O'Higgins es de:",op:["Talca","Rancagua","Chillán"],sol:1},
+  {q:"Ñublense es de:",op:["Chillán","Temuco","Los Ángeles"],sol:0},
+  {q:"El clásico porteño enfrenta a Everton y:",op:["La Serena","Santiago Wanderers","Audax Italiano"],sol:1},
+  {q:"Fernández Vial es de:",op:["Concepción","Talcahuano","Los Ángeles"],sol:0},
+  {q:"El Estadio Monumental es la casa de:",op:["Universidad de Chile","Colo-Colo","Universidad Católica"],sol:1},
+  {q:"Santa Laura es la casa de:",op:["Unión Española","Palestino","Audax Italiano"],sol:0},
+  {q:"El estadio CAP es de:",op:["Huachipato","Deportes Concepción","Cobreloa"],sol:0},
+  {q:"Palestino nació ligado a la comunidad:",op:["italiana","palestina","española"],sol:1},
+  {q:"Audax Italiano nació de la colonia:",op:["italiana","árabe","croata"],sol:0},
+  {q:"La U ganó esa Sudamericana 2011 de forma:",op:["Invicta","En penales","Con gol de visita"],sol:0},
+  {q:"El tetracampeonato de Católica cubre:",op:["2011-2014","2019-2022","1991-1994"],sol:1},
+  {q:"Everton fue campeón del Apertura el año:",op:["2008","2011","1991"],sol:0}
 ];
 
 /* ---------- F) logros extra ---------- */
@@ -167,7 +215,11 @@ const LOGROS_VOZ=[
   {id:"luna_penal",n:"La mandó a la luna",d:"Errá un penal y aun así no pierdas el partido."},
   {id:"el_1_es_el_dt",n:"El 1 se comió el partido",d:"Termina 0-0 de visita."},
   {id:"tres_del_9",n:"Dejen de hablar",d:"Un mismo delantero hace 3 goles en un partido."},
-  {id:"pueblo_lleno",n:"Que quepa el pueblo",d:"Gana de local con un club chico (LIM, CAL, COB, NUB)."}
+  {id:"pueblo_lleno",n:"Que quepa el pueblo",d:"Gana de local con un club chico (LIM, CAL, COB, NUB)."},
+  {id:"veloz_al_area",n:"Se fue como bala",d:"Gana un partido con 3 o más jugadores de velocidad en el once."},
+  {id:"muro_contencion",n:"No pasa nadie",d:"Deja el arco en cero con 2 o más de contención en el once."},
+  {id:"cabeza_de_area",n:"El área es mía",d:"Marca un gol de cabeza."},
+  {id:"nueve_de_verdad",n:"Olfato de 9",d:"Un delantero con rasgo goleador te hace doblete o más."}
 ];
 
 /* ---------- E) arcos que faltaban (2026) ---------- */
@@ -458,5 +510,35 @@ function empujarTicker(P, autor, texto, tono, m){
       return L;
     };
     preguntasConferencia._voz=true;
+  }
+
+  if(typeof preguntasPostPartido==="function" && !preguntasPostPartido._voz){
+    const origP=preguntasPostPartido;
+    preguntasPostPartido=function(res,P){
+      const L=origP(res,P)||[];
+      try{
+        const yo=res.yo, otro=res.otro, gano=yo>otro, perdio=yo<otro, dif=Math.abs(yo-otro);
+        const fig=(typeof figuraPartido==="function")?figuraPartido(P):null;
+        const plantel=(typeof E!=="undefined"&&E&&E.plantel)||[];
+        const joven=fig && plantel.some(function(j){ return j.n===fig.n && (j.edad||99)<=21; });
+        const jovenCaro=plantel.some(function(j){ return !j.vendido && (j.edad||30)<=23 && (j.valor||0)>=180; });
+        const sits=[];
+        if(perdio) sits.push("post_derrota");
+        if(gano && dif>=3) sits.push("post_goleada");
+        if(joven) sits.push("figura_juvenil");
+        if(jovenCaro && (gano || fig)) sits.push("rumor_venta");
+        sits.forEach(function(sit){
+          PREGUNTAS_VOZ.filter(function(p){ return p.sit===sit; }).slice(0,2).forEach(function(p,i){
+            L.unshift({id:"voz_"+sit+"_"+i, prio:7, q:p.q, ops:[
+              {t:"Bajar el perfil",k:"humilde"},
+              {t:"Bancarlo de frente",k:"bancar"},
+              {t:"Un palo y a la siguiente",k:"palo"}
+            ]});
+          });
+        });
+      }catch(e){}
+      return L;
+    };
+    preguntasPostPartido._voz=true;
   }
 })();

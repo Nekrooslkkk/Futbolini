@@ -91,8 +91,10 @@ function lecturaPlan(){
 }
 function pantallaPrevia(part){
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
-  const cab=panel(part.tipo==="copa"?("Copa Libertadores · "+part.ronda):("Campeonato Nacional · fecha "+part.fecha),
-    part.tipo==="copa"?"🏆":"⚽", part.tipo==="copa"?"agua":"");
+  const ligaTit=E.eraBase==="2026b"?"Liga de Ascenso · fecha "+part.fecha
+    :(E.anio>=2010?"Liga de Primera · fecha "+part.fecha:"Campeonato Nacional · fecha "+part.fecha);
+  const copaTit=part.tipo==="copa"?((part.torneo||"Copa")+" · "+part.ronda):ligaTit;
+  const cab=panel(copaTit, part.tipo==="copa"?"🏆":"⚽", part.tipo==="copa"?"agua":"");
   cab.cuerpo.appendChild(el("h2","tit",(part.local?E.clubNombre+" vs "+part.rivalNombre:part.rivalNombre+" vs "+E.clubNombre)));
   cab.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" en "+part.sede+" · "+fechaTxt(part.f)+" de "+E.anio+
     (part.apodo?" · "+part.apodo:"")));
@@ -131,6 +133,9 @@ function pantallaPrevia(part){
     p1.cuerpo.appendChild(f);
   });
   p1.cuerpo.appendChild(el("div","resul mitad","<b>Lectura del plan:</b> "+lecturaPlan()));
+  if(typeof fraseCuerpoTecnico==="function"){
+    p1.cuerpo.appendChild(el("p","mini","<b>Ayudante:</b> «"+fraseCuerpoTecnico(part)+"»"));
+  }
   const once=onceIdeal();
   p1.cuerpo.appendChild(el("h3","sub","Once titular"));
   const t=el("table");

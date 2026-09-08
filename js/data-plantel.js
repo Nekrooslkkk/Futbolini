@@ -225,14 +225,28 @@ function generarJugador(rr,nivelBase,pos,edad){
   const edd=edad||18+Math.floor(rr()*16);
   const proy=clamp(nivel+(edd<23?Math.round(rr()*12):0),28,95);
   const infl=(typeof inflacionEra==="function" && typeof E!=="undefined" && E)?inflacionEra():1;
-  const pila=NOMBRES_PILA[Math.floor(rr()*NOMBRES_PILA.length)];
-  const ape=APELLIDOS[Math.floor(rr()*APELLIDOS.length)];
-  const ape2=APELLIDOS[Math.floor(rr()*APELLIDOS.length)];
-  const nombre=pila+" "+ape+((rr()<0.25&&ape2!==ape)?(" "+ape2):"");
+  let nombre;
+  const joven=edd<=21;
+  if(joven && typeof NOMBRES_CANTERA!=="undefined" && NOMBRES_CANTERA.length){
+    const usados={};
+    if(typeof E!=="undefined" && E && Array.isArray(E.plantel)) E.plantel.forEach(j=>{ if(j&&j.n) usados[j.n]=1; });
+    const pool=NOMBRES_CANTERA.filter(n=>!usados[n]);
+    const src=pool.length?pool:NOMBRES_CANTERA;
+    nombre=src[Math.floor(rr()*src.length)];
+  } else {
+    const pila=NOMBRES_PILA[Math.floor(rr()*NOMBRES_PILA.length)];
+    const ape=APELLIDOS[Math.floor(rr()*APELLIDOS.length)];
+    const ape2=APELLIDOS[Math.floor(rr()*APELLIDOS.length)];
+    nombre=pila+" "+ape+((rr()<0.25&&ape2!==ape)?(" "+ape2):"");
+  }
+  const rasgos=edd<=21?["cantera"]:[];
+  if(joven && typeof APODOS_CANTERA!=="undefined" && APODOS_CANTERA.length && rr()<0.35){
+    rasgos.push(APODOS_CANTERA[Math.floor(rr()*APODOS_CANTERA.length)]);
+  }
   return {n:nombre,
     pos:pos,edad:edd,nivel:nivel,proy:proy,
     sueldo:Math.round(nivel*nivel/110*infl),valor:Math.round((nivel*nivel/16+(proy-nivel)*10)*infl),
-    rasgos:(edd<=21?["cantera"]:[]),forma:65+Math.round(rr()*15),moral:65+Math.round(rr()*15),real:false,
+    rasgos:rasgos,forma:65+Math.round(rr()*15),moral:65+Math.round(rr()*15),real:false,
     contrato:{hasta:0},lesion:0,goles:0,partidos:0,tarjetas:0};
 }
 /* Arma un plantel: nombres reales si hay. No rellena con gente inventada si ya hay 16+. */
@@ -298,6 +312,7 @@ function resolverTokens(txt,E){
     VETERANO:(mejor(j=>j.edad,j=>j.edad>=28)||{}).n,
     DEFENSA_JOVEN:(mejor(j=>j.proy-j.edad,j=>j.pos==="DEF"&&j.edad<=24)||{}).n,
     CRACK:(mejor(j=>j.valor)||{}).n,
+    JUGADOR:(mejor(j=>j.nivel+j.forma/8)||{}).n,
     FIGURA:(mejor(j=>j.nivel+j.forma/10)||{}).n,
     DT:(E.dt||"el cuerpo técnico"),
     CLUB:(E.clubNombre||"el club"),

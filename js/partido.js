@@ -221,6 +221,20 @@ function arbitroDe(part){
   const est=ARB_ESTILOS[Math.floor(rr()*ARB_ESTILOS.length)];
   return {n:pila+" "+ape, estilo:est.k, desc:est.d, cartas:est.cartas, casero:est.casero};
 }
+function tieneRasgo(j,r){ return !!(j&&j.rasgos&&j.rasgos.indexOf(r)>=0); }
+function contarRasgo(once,r){ return (once||[]).filter(j=>tieneRasgo(j,r)).length; }
+function aplicarBonoRasgos(P){
+  const once=P.once||[];
+  const vel=contarRasgo(once,"velocidad");
+  const aer=contarRasgo(once,"juego aéreo");
+  const gol=contarRasgo(once,"goleador");
+  const con=contarRasgo(once,"contención");
+  if(vel){ P.ataque+=Math.min(3.2,vel*0.9); P.empuje+=Math.min(1.8,vel*0.45); }
+  if(gol){ P.ataque+=Math.min(2.8,gol*1.05); }
+  if(con){ P.orden+=Math.min(3.4,con*1.05); P.rival=Math.max(0,(P.rival||0)-Math.min(1.8,con*0.5)); }
+  if(aer){ P.ataque+=Math.min(1.6,aer*0.4); P.orden+=Math.min(1.4,aer*0.35); }
+  P.rasgoBono={vel:vel,aereo:aer,gol:gol,cont:con};
+}
 function iniciarPartido(part,modo){
   const once=onceIdeal();
   const fz=fuerzaEquipo(once);
@@ -248,6 +262,7 @@ function iniciarPartido(part,modo){
   P.arbitro=arbitroDe(part);   /* 7.10 · árbitro con sesgo visible */
   if(P.arbitro.casero){ if(part.local){ P.ataque+=2.5; P.orden+=1.5; } else { P.rival+=2.5; } }
   P.quimica=qui; P.empuje+=qui.bono; P.orden+=qui.bono*0.5;   /* 6.30 · química al ruedo */
+  if(typeof aplicarBonoRasgos==="function") aplicarBonoRasgos(P);
   /* 6.33 · el clima de prensa (lo que dejaste en la conferencia) empuja o pesa */
   if(E.grupos && E.grupos.prensa){ P.empuje+=clamp(E.grupos.prensa.aprob/90,-0.7,0.7); }
   if(P.clasico){ P.empuje+=1.4; P.desgaste+=1.2; P.rival+=1.5;
@@ -376,15 +391,24 @@ function linea(P,min,txt,clase){ P.lineas.push({m:min,t:txt,c:clase||""}); }
 function regGol(P,min,quien,propio,tipo,asist){ P.golesDetalle=P.golesDetalle||[]; P.golesDetalle.push({min:min,quien:quien,propio:!!propio,tipo:tipo||"jugada",asist:asist||null}); }
 function tieneRasgo(j,r){ return j&&j.rasgos&&j.rasgos.indexOf(r)>=0; }
 function anotaPropio(P,min){
-  const cand=P.once.filter(j=>j.pos==="DEL").concat(P.once.filter(j=>j.pos==="VOL"));
-  /* 6.20 · rasgos: "llegador" (VOL que pisa el área) suma peso · "frio de definicion" (DEL) convierte menos */
-  const j=eligePeso(cand,x=>(x.pos==="DEL"?3:1)*(x.nivel/50)*(tieneRasgo(x,"llegador")?1.8:1)*(tieneRasgo(x,"frio de definicion")?0.75:1))||elige(P.once);
-  /* asistencia en ~60% de los goles de jugada; "llegador" asiste más */
+  const cand=P.once.filter(j=>j.pos==="DEL").concat(P.once.filter(j=>j.pos==="VOL"))
+    .concat(P.once.filter(j=>j.pos==="DEF"&&tieneRasgo(j,"juego aéreo")));
+  const j=eligePeso(cand,x=>(x.pos==="DEL"?3:(x.pos==="DEF"?0.7:1))*(x.nivel/50)
+    *(tieneRasgo(x,"llegador")?1.8:1)
+    *(tieneRasgo(x,"frio de definicion")?0.75:1)
+    *(tieneRasgo(x,"goleador")?1.7:1)
+    *(tieneRasgo(x,"velocidad")?1.25:1)
+    *(tieneRasgo(x,"juego aéreo")?1.35:1)
+  )||elige(P.once);
   let asist=null;
-  if(Math.random()<0.6){ const otros=P.once.filter(x=>x!==j&&x.pos!=="ARQ"); const a=eligePeso(otros,x=>(x.pos==="VOL"?2:1)*(tieneRasgo(x,"llegador")?1.7:1))||elige(otros); asist=a?a.n:null; }
-  j.goles++; P.goleadores.push(j.n); regGol(P,min,j.n,true,"jugada",asist);
+  if(Math.random()<0.6){ const otros=P.once.filter(x=>x!==j&&x.pos!=="ARQ"); const a=eligePeso(otros,x=>(x.pos==="VOL"?2:1)*(tieneRasgo(x,"llegador")?1.7:1)*(tieneRasgo(x,"velocidad")?1.2:1))||elige(otros); asist=a?a.n:null; }
+  const deCabeza=tieneRasgo(j,"juego aéreo")?(Math.random()<0.42):(j.pos==="DEF"?Math.random()<0.55:Math.random()<0.08);
+  const tipo=deCabeza?"cabeza":"jugada";
+  j.goles++; P.goleadores.push(j.n); regGol(P,min,j.n,true,tipo,asist);
+  if(deCabeza && j.pos==="DEF" && typeof desbloquear==="function") desbloquear("gol_defensa");
+  if(deCabeza && typeof desbloquear==="function") desbloquear("cabeza_de_area");
   if(P.part.local) P.gl++; else P.gv++;
-  linea(P,min,"¡Gol de "+j.n+"!"+(asist?" (asistencia de "+asist+")":"")+" "+marcadorTxt(P),"gol");
+  linea(P,min,"¡Gol"+(deCabeza?" de cabeza":"")+" de "+j.n+"!"+(asist?" (asistencia de "+asist+")":"")+" "+marcadorTxt(P),"gol");
 }
 function anotaRival(P,min){
   const j=elige(P.rivalPlantel.filter(x=>x.pos!=="ARQ"));

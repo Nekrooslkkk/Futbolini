@@ -1746,3 +1746,20 @@ Consola limpia.
 toggle fuera. Consola limpia.
 **1 línea:** Modo Dios ahora avisa y te quita los logros al usarlo (con muchas más trampas), el Modo Dev prueba de todo, y saqué los spoilers.
 **Riesgos:** gate en desbloquear + hook en el motor (forzar ganar) + panel Ajustes. Bajo.
+
+## 7.31 · GROK_PROMPT_BETA ejecutado sobre GitHub 7.30  ✅ (2026-09-08)
+**Archivos:** `js/data-b2026.js` (nuevo), `js/data-grok-beta.js` (nuevo), `js/data-liga.js` (eraDe), `js/motor.js` (B + deuda 7.19), `js/partido.js` (rasgos 7.19), `js/ui.js` (picker B), `js/ui-partido.js` (Copa Chile + ayudante), `index.html` (scripts), `img/LEEME.txt`.
+**Base:** GitHub `84177bf` (7.30 MOTOR: slots, ayudante, avance rápido, Plop, Dios/Dev) + contenido local 7.19 (UCH 1991, PAL 1978, EVE 2008, deuda cuotas, rasgos). Badge `7.31`.
+**Tanda 1 · Primera B 2026:** 16 clubes jugables (`LIGA_B_2026`, `eraBase:"2026b"`, 3 pts). IDs que no chocan con Primera (Cobreloa=`CBL`; `COB` sigue siendo Cobresal). Planteles documentados: CBL (Tapia, San Juan, Conelli, Gotti…), SW, UES, IQQ, ANT, COP, PMO, SLQ; el resto se rellena con cantera ficticia. Picker con tercera sección. Copa Chile 6 fechas de grupo se pegan al calendario.
+**Tanda 2 · Copa Chile:** formato real 2026 (32, 8 grupos de 4, ida/vuelta, top 2 a octavos, final única). Grupos A–H verificados (Wikipedia). No se arman octavos con el cuadro real: en una carrera nueva hay que clasificar. Copa Chile 1991 (Digeder) documentada, no simulada.
+**Tanda 3 · Libertadores/Sudamericana:** prosa en `FORMAT_COPAS`. Chile 2026 entra por 2025 (CH1 Coquimbo, CH2 UC, CH3 O'Higgins, CH4 Huachipato). **No se inventan grupos de Libertadores 2026** para una carrera nueva. El camino 1991 de Colo-Colo sigue en `COPA91`.
+**Tandas 4–9:** `HISTORIA_BETA` por club/época (hechos públicos, sin citas inventadas); `RELATO_BETA` (~8/momento) envuelve `fraseRelato`; `FRASES_CUERPO` (~6/ctx) en la previa; `PREGUNTAS_BETA` (~8/sit, incluye `promesa_incumplida` y `arbitro`); tuits Plop con `aburrido`/`autogol`/`var`; +30 canteranos y +40 apodos.
+**Tanda 10:** lista en `img/LEEME.txt`. El usuario sube los archivos. Cero escudos oficiales.
+**Honestidad:** stats estimadas; planteles cortos donde no hay 16 nombres seguros; grupos Copa Chile A–H verificados; Libertadores 2026 grupos = null.
+**1 línea:** la B es jugable (Cobreloa primero), la Copa Chile tiene los 8 grupos reales, y los pools del beta dejan de repetir la misma frase.
+**Riesgos:** `eraBase:"2026b"` (eraDe parcheado: `"2026b">=2010` en JS es false). Wrap de `construirCalendario` y `fraseRelato`. Bajo-medio.
+
+## 7.31b · Planteles B documentados + DTs al día  ✅ (2026-09-08)
+**Archivos:** `js/data-b2026.js`
+**Qué:** completé planteles Wikipedia 2026 de TEM/REC/SMA/MAG/USF/CUR/SCR/RAN (20–22 nombres reales). San Felipe: Cañete y Fernández van de **arquero** (antes mal de defensa). DTs: Puerto Montt Emilio Mancilla, Copiapó Erwin Durán, San Felipe Juan José Luvera. Stats estimadas.
+**1 línea:** los 16 de la B ya arrancan con plantel documentado, no con cantera inventada.
