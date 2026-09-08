@@ -145,6 +145,15 @@ body[data-tema="aero"] .ficha[aria-pressed="true"]{background:linear-gradient(18
 body[data-tema="aero"] .modal{background:linear-gradient(180deg,#fbfff7,#e6f6dc);
   border:1px solid rgba(28,110,44,.4);box-shadow:0 18px 50px rgba(0,40,15,.5)}
 body[data-tema="aero"] .etq{background:rgba(255,255,255,.6)}
+body[data-tema="aero"] .clima-vista{
+  border:1px solid rgba(255,255,255,.55);
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 4px 12px rgba(20,60,40,.14);
+  backdrop-filter:blur(8px);
+}
+body[data-tema="aero"] .canal-tv .ch{
+  background:linear-gradient(180deg,#2a2a3a,#141422);
+  box-shadow:0 1px 0 rgba(255,220,120,.35) inset;
+}
 
 /* --- pulido XP / Luna (bordes duros, profundidad clásica) --- */
 body[data-tema="aero"] .panel{

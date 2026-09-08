@@ -91,7 +91,8 @@ function pantallaInicio(){
   const g=el("div","iconos");
   Object.keys(CLUB_INFO).forEach(id=>{
     const c=CLUB_INFO[id];
-    const b=el("button","icono",'<span class="g">'+c.esc+'</span><span class="n">'+c.n+'</span>');
+    const ciu=(typeof ciudadDeClub==="function")?ciudadDeClub(id):"";
+    const b=el("button","icono",'<span class="g">'+c.esc+'</span><span class="n">'+c.n+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
     b.onclick=()=>elegirEpoca(id);
     g.appendChild(b);
   });
@@ -104,7 +105,8 @@ function pantallaInicio(){
       const g2=el("div","iconos");
       soloNuevos.forEach(id=>{
         const c=CLUB_INFO_2026[id];
-        const b=el("button","icono",'<span class="g">'+c.esc+'</span><span class="n">'+c.n+'</span>');
+        const ciu=(typeof ciudadDeClub==="function")?ciudadDeClub(id):"";
+        const b=el("button","icono",'<span class="g">'+c.esc+'</span><span class="n">'+c.n+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
         b.onclick=()=>elegirEpoca(id);
         g2.appendChild(b);
       });
@@ -116,7 +118,8 @@ function pantallaInicio(){
     const g3=el("div","iconos");
     LIGA_B_2026.forEach(c=>{
       const info=(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c;
-      const b=el("button","icono",'<span class="g">'+(info.esc||"🟠")+'</span><span class="n">'+(info.n||c.n)+'</span>');
+      const ciu=c.ciudad||((typeof ciudadDeClub==="function")?ciudadDeClub(c.id):"");
+      const b=el("button","icono",'<span class="g">'+(info.esc||"🟠")+'</span><span class="n">'+(info.n||c.n)+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
       b.onclick=()=>elegirEpoca(c.id);
       g3.appendChild(b);
     });
@@ -2460,7 +2463,10 @@ function pantallaArranque(haySave,slots){
     ov.classList.add("listo"); const first=btns.querySelector(".arranque-btn"); if(first) first.focus(); };
   /* frases de carga con onda (rotan mientras aparece el botón; se auto-detiene al revelar) */
   const cargas=["Inflando la pelota…","Regando la cancha…","Pintando las rayas…","Ordenando el camarín…",
-    "Contando la caja…","Colgando los lienzos…","Avisándole a la barra…","Afinando la pizarra…"];
+    "Contando la caja…","Colgando los lienzos…","Avisándole a la barra…","Afinando la pizarra…",
+    "Calentando el asado de la previa…","Buscando el micro de la visita…","Sacando el pasto de las tacas…",
+    "Prendiendo la tele del partido…","Mojando la esponja…","Revisando la pizarra del ayudante…",
+    "Contando las lucas de la taquilla…","Avisándole al relator…"];
   const elCarga=inner.querySelector(".arr-cargando");
   let _ci=0, _cargaTimer=null;
   const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;

@@ -1763,3 +1763,15 @@ toggle fuera. Consola limpia.
 **Archivos:** `js/data-b2026.js`
 **Qué:** completé planteles Wikipedia 2026 de TEM/REC/SMA/MAG/USF/CUR/SCR/RAN (20–22 nombres reales). San Felipe: Cañete y Fernández van de **arquero** (antes mal de defensa). DTs: Puerto Montt Emilio Mancilla, Copiapó Erwin Durán, San Felipe Juan José Luvera. Stats estimadas.
 **1 línea:** los 16 de la B ya arrancan con plantel documentado, no con cantera inventada.
+
+## 7.32 · Copa Chile que clasifica + previa Vista + prensa de indicadores  ✅ (2026-09-08)
+**Archivos:** `js/data-32.js` (nuevo, carga último), `js/ui-partido.js`, `js/ui.js`, `js/util.js`, `js/data-b2026.js`, `css/base.css`, `css/aero.css`, `index.html`.
+**Copa Chile:** `resolverCopa` ya no trata "Grupo X" como llave de Libertadores. Al cerrar los 6 partidos del grupo se arma una tabla (tus resultados + el resto simulado por fuerza; **no es la tabla real 2026**). Top 2 → octavos ida/vuelta vs el grupo pareja (A↔B, C↔D, E↔F, G↔H; 1° vs 2°). Cuartos / semis / final (única, sede típica Nacional) se siembran igual, procedural. Si sales 3°/4° se sacan solo los partidos **de Copa Chile** pendientes, no otras copas. Avisos dicen "Copa Chile", no "Campeón de América".
+**Previa:** gadget de clima tipo Vista (desgaste / precisión) + chip del canal (1991 Canal 13/TVN; 2026 TNT Sports 1/2/3 según prestigio; Libertadores 2026 → ESPN). En el partido en vivo el título usa `part.torneo`.
+**Prensa:** preguntas extra si deuda ≥ 180, caja < 80, moral < 42, hinchada < 40 o ≥ 75.
+**Arcos B:** CBL (Calama), IQQ (retorno), PMO (Chinquihue), MAG (historia vs caja), REC (barrio).
+**Picker:** ciudad bajo el nombre. Frases de carga más chilenas.
+**DTs B (re-chequeo 8/09/2026):** Copiapó **Erwin Durán** (Almandoz salió el 7/09; Durán confirmado el mismo día). Puerto Montt Emilio Mancilla (Astorga se fue en junio). Temuco Emiliano Astorga (Sanhueza salió en agosto). San Felipe Juan José Luvera (Landeros salió en mayo). Santa Cruz Dalcio Giovagnoli (Armijo ya no está). Rangers Ivo Basay, U. Española Ronald Fuentes, Iquique Hernán Peña. Stats estimadas. Cero citas inventadas.
+**1 línea:** si clasificas de grupo, la Copa Chile sigue; la previa tiene clima y tele; la prensa te pregunta por la deuda de verdad.
+**Riesgos:** wrap de `resolverCopa` / `terminarPartido` / `preguntasConferencia`. El rival de octavos es estimado, no el cuadro ANFP 2026. Bajo-medio.
+

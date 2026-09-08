@@ -27,8 +27,8 @@
 ---
 
 ## 1 · MENÚ INICIAL Y PARTIDAS
-- [ ] **[MOTOR]** Pantalla de carga más linda, menos monótona (varias frases/animación). *(hay frases
-      rotativas; falta el salto visual grande)*
+- [~] **[MOTOR]** Pantalla de carga más linda, menos monótona (varias frases/animación). *(hay frases
+      rotativas chilenas 7.32; falta el salto visual grande)*
 - [x] **[MOTOR]** **Menú de pausa** para volver a elegir otro equipo → Ajustes → "Mis partidas" +
       "Nueva partida (elegir otro club)". (7.24)
 - [x] **[MOTOR]** **Varias partidas guardadas** (slots) — se puede tener varias carreras; se eligen en
@@ -55,8 +55,8 @@
 ## 4 · "ANTES DE SALIR" + CLIMA + PRENSA
 - [ ] **[GROK]** Frase del cuerpo técnico: más realista, **chilenizada**, una frase, sin pelos en la
       lengua (menos fome).
-- [ ] **[MOTOR]** **Clima**: mini-pestaña con simulación tipo Windows Vista.
-- [ ] **[MOTOR]** Conferencia de prensa **conectada a los indicadores** y que provoque algo real.
+- [x] **[MOTOR]** **Clima**: mini-pestaña con simulación tipo Windows Vista. ✅ (7.32)
+- [~] **[MOTOR]** Conferencia de prensa **conectada a los indicadores** y que provoque algo real. *(deuda/caja/moral/hinchada disparan preguntas 7.32; falta texto libre)*
 - [ ] **[GROK/TUYO]** Imágenes de cada periodista.
 - [ ] **[MOTOR]** Respuesta **de texto libre** del usuario, interpretada localmente (sin gastar plata,
       no por palabra-clave rígida: que ponga cualquier cosa y algo lo interprete → tono).
@@ -66,7 +66,7 @@
 - [ ] **[MOTOR]** ⚠️(otro chat en `cancha.js`) La cancha es DEMASIADO rectangular → que parezca cancha.
 - [ ] **[MOTOR]** Datos (remates, al arco, córners) a **otro lado** de la pantalla.
 - [ ] **[MOTOR]** Mejorar marcador + minutaje.
-- [ ] **[MOTOR]** Mostrar el **canal que transmite** (atado a la concesión de TV que se va mejorando).
+- [x] **[MOTOR]** Mostrar el **canal que transmite** (atado a la concesión de TV que se va mejorando). ✅ (7.32, previa + vivo)
 - [ ] **[MOTOR]** Botones (sobre todo el de **cambio**: se supone que son más) mejor.
 - [ ] **[MOTOR]** Indicadores que se entiendan (qué apretás y qué pasa).
 - [ ] **[GROK]** **Relato**: más variado, que no se repita 2 veces "Primeros toques, todavía sin
@@ -85,8 +85,9 @@
       (si se avanza en años, y cuando los cimientos indiquen, generar escenarios futuristas que cambian).
 - [ ] **[GROK]** **Primera B**: **DECIDIDO** → temporada **2026** (solo era actual), con **Cobreloa** +
       otros clubes de Primera B 2026 que elija Claude. Equipos + fixture + planteles reales (Grok).
-- [ ] **[GROK]** **Copa Chile**: **DECIDIDO** → para el **modo actual (2026)**; existió también en 1991,
+- [x] **[GROK]** **Copa Chile**: **DECIDIDO** → para el **modo actual (2026)**; existió también en 1991,
       así que si se juega esa época va también. Formato + calendario por año (Grok verifica).
+      Grupos A–H reales + octavos procedurales al clasificar (7.31/7.32). Copa Chile 1991 documentada, no simulada.
 
 ## 8 · ESCRITORIO / OBJETIVOS / AYUDANTE / NOTIS / AVANZAR
 - [~] **[MOTOR]** "Lo que se espera de vos" → **"de ti"** ✅ (7.25) + barrido de "vos" en la UI seria.

@@ -40,7 +40,7 @@ function checklistPrevia(part,once){
   /* alineación / química */
   const manualOn=E.tactica.xiManual&&E.tactica.xiManual.length;
   items.push({ok:!!manualOn,warn:false,t:manualOn?"Alineación armada a mano":"Alineación automática",
-    d:manualOn?"Elegiste vos el once.":"El juego pone el mejor once disponible. Puedes cambiarlo abajo."});
+    d:manualOn?"Elegiste tú el once.":"El juego pone el mejor once disponible. Puedes cambiarlo abajo."});
   if(typeof quimicaEquipo==="function"){
     const qui=quimicaEquipo(once);
     const detalle=(qui.buenos||0)+" duplas que congenian · "+(qui.malos||0)+" con roce. Sube juntando en la pizarra a los que se llevan bien (edad parecida, mismos rasgos, ídolos de la casa, o que ya jugaron juntos).";
@@ -54,7 +54,7 @@ function checklistPrevia(part,once){
   /* piernas cansadas en el XI */
   const cansados=once.filter(j=>(j.cansancio||0)>=18);
   if(cansados.length>=2) items.push({warn:true,t:cansados.length+" titulares con las piernas pesadas",
-    d:"Cansancio alto: "+cansados.slice(0,3).map(j=>j.n).join(", ")+(cansados.length>3?"…":"")+". Pensá en rotar o entrenar suave.",accion:()=>modalAlineacion(part)});
+    d:"Cansancio alto: "+cansados.slice(0,3).map(j=>j.n).join(", ")+(cansados.length>3?"…":"")+". Piensa en rotar o entrenar suave.",accion:()=>modalAlineacion(part)});
   /* lesionados que se pierden el partido */
   const les=E.plantel.filter(j=>j.lesion>0&&!j.vendido);
   if(les.length) items.push({warn:false,t:les.length+" jugador"+(les.length>1?"es":"")+" lesionado"+(les.length>1?"s":""),
@@ -204,12 +204,14 @@ function pantallaPrevia(part){
     (fz.base>part.fuerzaRival-4?"Está parejo. Lo va a definir un detalle.":"El rival es superior. Hay que jugar perfecto.");
   p2.cuerpo.appendChild(el("p",null,"<b>"+E.dt+":</b> "+lectura));
   const cl=(typeof CLIMAS!=="undefined"&&CLIMAS[part.clima])||null;
-  if(cl) p2.cuerpo.appendChild(el("p","mini",cl.ic+" Clima: "+cl.n+". "+cl.d));
+  if(typeof widgetClima==="function") p2.cuerpo.appendChild(widgetClima(part));
+  else if(cl) p2.cuerpo.appendChild(el("p","mini",cl.ic+" Clima: "+cl.n+". "+cl.d));
+  if(typeof widgetCanal==="function") p2.cuerpo.appendChild(widgetCanal(part));
   if(part.local) p2.cuerpo.appendChild(el("p","mini","Se espera buena taquilla: la gente está "+(E.ind.hinchada>65?"encendida":"tibia")+"."));
   if(part.local){
     const tq=ingresoPartidoLocal(part);
     p2.cuerpo.appendChild(fila("Taquilla proyectada",tq.gente.toLocaleString("es-CL")+" personas · "+plata(tq.ingreso)));
-    p2.cuerpo.appendChild(el("p","mini","Ajustás el precio de cada sector en Finanzas."));
+    p2.cuerpo.appendChild(el("p","mini","Ajustas el precio de cada sector en Finanzas."));
   }
   p2.cuerpo.appendChild(el("h3","sub","¿Cómo lo vives?"));
   const bs=el("div");
@@ -602,7 +604,10 @@ function pintarPartido(){
   const P=P_ACTUAL; if(!P) return;
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
   const [yo,otro]=miMarcador(P);
-  const p=panel(P.part.tipo==="copa"?("Copa Libertadores · "+P.part.ronda):("Fecha "+P.part.fecha),"🎙️",P.part.tipo==="copa"?"agua":"");
+  const liveTit=P.part.tipo==="copa"
+    ? ((P.part.torneo||"Copa")+" · "+P.part.ronda)
+    : ((typeof nombreTorneo==="function"?nombreTorneo(P.part):"Campeonato")+" · fecha "+P.part.fecha);
+  const p=panel(liveTit,"🎙️",P.part.tipo==="copa"?"agua":"");
   /* 7.22 · momentazo: flash grande cuando cae un gol / roja / penal. Se detecta
      comparando el marcador (y las líneas graves nuevas) entre renders. */
   (function(){
@@ -644,6 +649,10 @@ function pintarPartido(){
   const tramo=P.min<=45?"1T":(P.min<90?"2T":"FT");
   p.cuerpo.appendChild(el("div","reloj",P.terminado?"Final del partido":((PAUSADO?"⏸ ":"")+"Minuto "+P.min+" · "+tramo)));
   if(P.arbitro) p.cuerpo.appendChild(el("div","mini centro","🧑‍⚖️ Árbitro: <b>"+P.arbitro.n+"</b> · "+P.arbitro.desc));
+  if(typeof canalDelPartido==="function"){
+    const ch=canalDelPartido(P.part);
+    p.cuerpo.appendChild(el("div","mini centro canal-live","📺 "+ch.n+" · "+ch.d));
+  }
   if(!P.terminado&&P.modo!=="simular"){
     const ctrl=el("div","ctrlPartido");
     const bp=el("button","btn-aqua chico",PAUSADO?"▶ Seguir":"⏸ Pausa");

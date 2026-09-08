@@ -1,6 +1,6 @@
 "use strict";
 /* ============================================================
-   FUTBOLINI 7.31 · data-b2026.js
+   FUTBOLINI 7.32 · data-b2026.js
    Primera B / Liga de Ascenso 2026 (16 clubes) + Copa Chile 2026
    (8 grupos reales, Wikipedia / ANFP). Se carga DESPUÉS de
    data-clubes2026.js y ANTES de partido.js.
@@ -529,8 +529,9 @@ const PLANTEL_RAN_2026=[
    COPA CHILE 2026 · formato real (Wikipedia / ANFP)
    32 clubes (16 Primera + 16 B), 8 grupos de 4 (2+2), ida y vuelta.
    Top 2 a octavos (ida/vuelta). Final a partido único.
-   Grupos A–H verificados. NO se arman octavos con el cuadro real:
-   en una carrera nueva el jugador puede no clasificar.
+   Grupos A–H verificados. Octavos NO se pre-siembran al crear
+   la carrera: se arman al clasificar (data-32.js, procedural,
+   pareja A↔B / C↔D / E↔F / G↔H). No es el cuadro real 2026.
    Copa Chile 1991 existía (Copa Chile 1991 / Digeder); no se simula acá.
    ============================================================ */
 const FORMAT_COPAS={

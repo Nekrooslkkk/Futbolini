@@ -1,7 +1,8 @@
 "use strict";
 /* ============================================================
    FUTBOLINI 7.31 · data-grok-beta.js
-   Pools de GROK_PROMPT_BETA (tandas 4–10). Cargar ÚLTIMO.
+   Pools de GROK_PROMPT_BETA (tandas 4–10). Cargar casi último
+   (data-32.js va después).
    Nombres reales OK; stats estimadas; NUNCA citas inventadas
    atribuidas a una persona real.
    ============================================================ */
