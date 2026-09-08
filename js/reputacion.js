@@ -131,6 +131,24 @@ function candidatoPasaFiltro(c){
   if(o==="Gay") return cg===g;
   return true;
 }
+function eraMatch(){
+  const a=(typeof E!=="undefined"&&E&&E.anio)||2026;
+  if(a>=2012) return {id:"app",n:"Match",ic:"💘",btn:"💘 Abrir Match",
+    paso:"✕ Paso", like:"❤ Me gusta",
+    mini:"Desliza. Si hay química, lo invitas a salir. Lo que digas en la intimidad también se filtra.",
+    fin:"No hay más perfiles por hoy. Vuelve otra semana.",
+    cab:"Match · buscar pareja"};
+  if(a>=2004) return {id:"msn",n:"Messenger",ic:"💬",btn:"💬 Abrir el Messenger",
+    paso:"✕ Otro nick", like:"❤ Agregar",
+    mini:"MSN, Fotolog, el nick con un corazón. No hay app: hay un chat a las dos de la mañana.",
+    fin:"Se apagaron los nicks. Mañana hay más gente conectada.",
+    cab:"Messenger · quién está conectado"};
+  return {id:"club",n:"Presentaciones",ic:"✉️",btn:"✉️ Ver presentaciones",
+    paso:"✕ Otra ficha", like:"❤ Me interesa",
+    mini:"El directorio, un sponsor, la tía del tesorero. En esta época no hay Tinder: te presentan gente.",
+    fin:"Por esta semana no hay más presentaciones.",
+    cab:"Presentaciones · gente del club"};
+}
 function generarTinder(){
   let pool=CANDIDATOS.filter(candidatoPasaFiltro);
   if(pool.length<3) pool=CANDIDATOS.slice();   /* fallback si el filtro deja pocos */
@@ -138,14 +156,15 @@ function generarTinder(){
 }
 function modalTinder(){
   const cartas=generarTinder(); let i=0;
+  const era=typeof eraMatch==="function"?eraMatch():{ic:"💘",cab:"Match · buscar pareja",paso:"✕ Paso",like:"❤ Me gusta",fin:"No hay más perfiles por hoy."};
   modal(box=>{
     const pintar=()=>{
       box.innerHTML="";
-      box.appendChild(el("div","cab",'<span class="ic">💘</span><span>Match · buscar pareja</span>'));
+      box.appendChild(el("div","cab",'<span class="ic">'+(era.ic||"💘")+'</span><span>'+era.cab+'</span>'));
       const c=el("div","cuerpo"); box.appendChild(c);
       if(E.perfil.pareja) c.appendChild(el("div","resul mitad","Estás en pareja con <b>"+E.perfil.pareja.n+"</b>. Coquetear por acá es jugar con fuego 🔥"));
       if(i>=cartas.length){
-        c.appendChild(el("p","mini","No hay más perfiles por hoy. Volvé otra semana."));
+        c.appendChild(el("p","mini",era.fin));
         const x=el("button","btn-aqua ancho gris","Cerrar"); x.onclick=()=>{ cerrarModal(); render(); }; c.appendChild(x);
         return;
       }
@@ -157,10 +176,10 @@ function modalTinder(){
         '<p style="margin-top:6px">'+cand.bio+'</p>';
       c.appendChild(card);
       const row=el("div","tinder-acc");
-      const bp=el("button","btn-aqua ancho gris","✕ Paso"); bp.onclick=()=>{ i++; pintar(); };
-      const bl=el("button","btn-aqua ancho verde","❤ Me gusta"); bl.onclick=()=>{ likeCandidato(cand); i++; pintar(); };
+      const bp=el("button","btn-aqua ancho gris",era.paso); bp.onclick=()=>{ i++; pintar(); };
+      const bl=el("button","btn-aqua ancho verde",era.like); bl.onclick=()=>{ likeCandidato(cand); i++; pintar(); };
       row.appendChild(bp); row.appendChild(bl); c.appendChild(row);
-      const x=el("button","btn-aqua ancho","Cerrar Tinder"); x.style.marginTop="6px"; x.onclick=()=>{ cerrarModal(); render(); }; c.appendChild(x);
+      const x=el("button","btn-aqua ancho","Cerrar"); x.style.marginTop="6px"; x.onclick=()=>{ cerrarModal(); render(); }; c.appendChild(x);
     };
     pintar();
   });
@@ -171,7 +190,7 @@ function likeCandidato(cand){
     if(!E.perfil.tinder.matches.some(m=>m.n===cand.n))
       E.perfil.tinder.matches.unshift({n:cand.n,id:cand.id,bio:cand.bio,orb:cand.orb,afin:cand.afin||0,anio:E.anio});
     aplicarEfectos({moral:1});
-    notificar({t:"¡Match con "+cand.n+"!",tipo:"bueno",d:"Hubo match. Puedes invitarle a salir desde la sección Vida.",bandeja:false});
+    notificar({t:"¡Match con "+cand.n+"!",tipo:"bueno",d:"Hubo match. Puedes invitarlo a salir desde Vida.",bandeja:false});
     if(typeof postProc==="function" && Math.random()<0.25) postProc(elige(typeof HANDLES_HINCHA!=="undefined"?HANDLES_HINCHA:["@hincha"]),"hincha","dicen que el DT anda en algo con alguien 👀 la novela sigue","neutro");
   } else {
     if(typeof aviso==="function") aviso("Sin match con "+cand.n+"… por ahora");
@@ -226,7 +245,7 @@ const LUJOS=[
  /* --- club grande (prestigio ≥ 70): el exceso ya es un deporte --- */
  {t:"Helicóptero para ir a los partidos",tipo:"auto",costo:220,req:70,ef:{prestigio:5,riesgo:8},d:"Llegas por el aire mientras el plantel viene en bus. Nada sutil."},
  {t:"Colección de autos clásicos",tipo:"auto",costo:180,req:70,ef:{prestigio:4},d:"Un galpón lleno de fierros que nunca vas a manejar. Perfecto."},
- {t:"Chef privado y nutricionista de lujo",tipo:"prop",costo:120,req:70,ef:{moral:5,prestigio:2},d:"Comés mejor que tus delanteros. Y se nota."},
+ {t:"Chef privado y nutricionista de lujo",tipo:"prop",costo:120,req:70,ef:{moral:5,prestigio:2},d:"Comes mejor que tus delanteros. Y se nota."},
  /* --- club enorme (prestigio ≥ 85): territorio de magnate delirante --- */
  {t:"Isla privada en el Pacífico",tipo:"prop",costo:400,req:85,ef:{prestigio:8,riesgo:6},d:"Tu propio pedazo de mundo. Ya no sos DT, sos un villano de James Bond."},
  {t:"Un tigre de mascota",tipo:"prop",costo:150,req:85,ef:{prestigio:4,riesgo:14},d:"Como cierto dueño de club. La comunidad y la SAG NO están felices."},
@@ -371,14 +390,14 @@ function vistaVida(){
   v.appendChild(p);
 
   /* --- Changas honestas: ganar plata sin depender del casino --- */
-  const pin=panel("Changas honestas","💼","agua");
+  const pin=panel("Pegas honestas","💼","agua");
   pin.cuerpo.appendChild(el("p","mini","Plata honesta para tu bolsillo, aparte del sueldo. Cada una se puede hacer una vez por semana; algunas piden que tengas nombre (imagen pública)."));
   const CHANGAS=[
     {id:"columna",t:"Columna en un diario",d:"Escribís de fútbol. Pagan poco, pero es fijo.",pago:[3,8],req:0},
     {id:"clinica",t:"Clínica de fútbol para chicos",d:"Un día enseñando. Suma cariño de la comunidad y algo de plata.",pago:[5,12],req:0},
     {id:"charla",t:"Charla motivacional en una empresa",d:"Liderazgo y trabajo en equipo. Buena plata por un rato.",pago:[10,22],req:35},
     {id:"tv",t:"Comentar un partido en la tele",d:"Panelista por una noche. Necesitas algo de figura.",pago:[7,16],req:40},
-    {id:"publicidad",t:"Publicidad de una marca",d:"Prestás tu cara. Cuanto más conocido, más pagan.",pago:[12,28],req:55}
+    {id:"publicidad",t:"Publicidad de una marca",d:"Prestas tu cara. Cuanto más conocido, más pagan.",pago:[12,28],req:55}
   ];
   CHANGAS.forEach(ch=>{
     const hecha=E.flags["changa_"+ch.id]===(E.anio+"-"+E.idx);   /* 6.25 · fix: keyear por año+idx (antes colisionaba en el 2do año) */
@@ -420,7 +439,7 @@ function vistaVida(){
     const par=E.perfil.pareja; const niv=par.nivel||65;
     const d=el("div","resul "+(niv>=50?"bien":"mal"));
     d.innerHTML='<span class="aero-orb '+(par.orb||"orb-rosa")+' orb-chico"></span> <b>'+par.n+'</b>'+(par.id?" <span class='mini'>("+par.id+")</span>":"")+
-      (par.casades?" 💍":"")+"<br>"+(par.casades?"Casades":"En pareja")+" desde "+par.desde+". "+
+      (par.casades?" 💍":"")+"<br>"+(par.casades?"Casados":"En pareja")+" desde "+par.desde+". "+
       (niv<30?"La relación está en crisis: si no la cuidas, se termina.":niv<55?"La relación necesita atención.":"Relación sólida: menos escándalos, más paz.")+
       '<div style="margin-top:4px"><span class="mini">Relación</span>'+barrita(niv,niv>50?"#e0563f":"#c9392c")+'</div>';
     pt.cuerpo.appendChild(d);
@@ -429,7 +448,7 @@ function vistaVida(){
     if(E.perfil.hijos.length<4){ const bh=el("button","btn-aqua chico"); bh.textContent="👶 Tener un hijo"; bh.style.marginLeft="6px"; bh.onclick=tenerHijo; pt.cuerpo.appendChild(bh); }
     const br=el("button","btn-aqua chico rojo","Terminar"); br.style.marginLeft="6px"; br.onclick=romperPareja; pt.cuerpo.appendChild(br);
   } else {
-    pt.cuerpo.appendChild(el("p","mini","Soltere y a la búsqueda. Deslizá en el Match: si hay química, después le invitas a salir."));
+    pt.cuerpo.appendChild(el("p","mini","Soltero y a la búsqueda. "+(typeof eraMatch==="function"?eraMatch().mini:"Si hay química, lo invitas a salir.")));
   }
   /* hijos (futura dinastía) */
   if(E.perfil.hijos && E.perfil.hijos.length){
@@ -445,8 +464,10 @@ function vistaVida(){
       }
     });
   }
-  const bt=el("button","btn-aqua ancho verde","💘 Abrir Match (Tinder)"); bt.style.marginTop="6px"; bt.onclick=modalTinder;
+  const era=typeof eraMatch==="function"?eraMatch():{btn:"💘 Abrir Match",mini:""};
+  const bt=el("button","btn-aqua ancho verde",era.btn); bt.style.marginTop="6px"; bt.onclick=modalTinder;
   pt.cuerpo.appendChild(bt);
+  if(era.mini) pt.cuerpo.appendChild(el("p","mini",era.mini));
   const ms=E.perfil.tinder.matches||[];
   if(ms.length){
     pt.cuerpo.appendChild(el("h3","sub","Tus matches"));
@@ -565,7 +586,7 @@ const VIDA_PROC=[
    {t:"Ir a recibirlo con orgullo",run:function(){ aplicarRep({publica:8,credibilidad:4}); aplicarEfectos({moral:3}); return "Discurso emotivo y buena imagen. Bien merecido."; }},
    {t:"Mandar a alguien en tu lugar",run:function(){ aplicarRep({publica:2}); return "No fuiste. Gesto humilde… o desinterés, según quién lo cuente."; }}
   ]},
- {t:"Un familiar necesita ayuda",d:"Un familiar la está pasando mal y recurre a vos.",
+ {t:"Un familiar necesita ayuda",d:"Un familiar la está pasando mal y recurre a ti.",
   op:[
    {t:"Estar presente y apoyarlo",run:function(){ const m=ri(15,35); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); aplicarEfectos({moral:4}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+4,0,100); return "La familia primero. Diste una mano ("+plata(m)+")."; }},
    {t:"Estar poco por el trabajo",run:function(){ E.perfil.bienestar=clamp((E.perfil.bienestar||70)-6,0,100); return "El fútbol te comió el tiempo. Te quedó la culpa."; }}
@@ -616,15 +637,27 @@ const CHARLAS_MATCH=[
  {q:"Si pierdes un clásico, ¿apareces a cenar?",
   op:[{t:"Aparezco, aunque esté mudo.","n":14},{t:"Me escondo dos días.","n":0},{t:"Te invito igual y pago yo.","n":10}]},
  {q:"¿Qué haces con un domingo libre?",
-  op:[{t:"Cancha, asado, siesta.","n":6},{t:"Te lo dedico entero.","n":14},{t:"Duermo y no hablo.","n":4}]}
+  op:[{t:"Cancha, asado, siesta.","n":6},{t:"Te lo dedico entero.","n":14},{t:"Duermo y no hablo.","n":4}]},
+ {q:"La prensa te va a fotografiar conmigo. ¿Ok?",
+  op:[{t:"Que fotografíen. No escondo nada.","n":12},{t:"Palco, no platea. Discretos.","n":8},{t:"Mejor ni salgamos juntos.","n":0}]},
+ {q:"Si te echan del club, ¿te quedas en la ciudad?",
+  op:[{t:"Me quedo. Acá está mi vida.","n":10},{t:"Me voy a donde me llamen.","n":4},{t:"Depende de si estás tú.","n":14}]},
+ {q:"¿Cenas a las 10 o a las 12? El fútbol no avisa.",
+  op:[{t:"A las 10, aunque llegue tarde el partido.","n":8},{t:"Cuando termine el partido. Punto.","n":4},{t:"Te aviso y si puedes, esperas.","n":12}]},
+ {q:"¿Vienes a la platea o te escondes en el palco?",
+  op:[{t:"Platea. Si me putean, me putean.","n":11},{t:"Palco, con menos ruido.","n":7},{t:"Mejor no vengas al estadio.","n":1}]}
 ];
 const DILEMAS_CITA=[
  {t:"Llegas tarde de la conferencia",d:"Te espera hace 40 minutos. La cara no es de chiste.",
   op:[{t:"Pedir perdón y apagar el teléfono",ok:12},{t:"Contar el partido en detalle",ok:-6},{t:"Invitar postre y callarte",ok:8}]},
- {t:"Quiere ir al clásico con vos",d:"Platea, cámaras, la hinchada del otro lado.",
+ {t:"Quiere ir al clásico contigo",d:"Platea, cámaras, la hinchada del otro lado.",
   op:[{t:"Llevarle y presentarle",ok:10},{t:"Conseguirle un palco discreto",ok:6},{t:"Decirle que es mala idea",ok:-8}]},
  {t:"Un hincha te pide una foto en la cita",d:"El momento se corta. Tu pareja te mira.",
-  op:[{t:"Una foto y vuelves a la mesa",ok:4},{t:"«Hoy no, estoy ocupado»",ok:10},{t:"Te quedas charlando cinco minutos",ok:-10}]}
+  op:[{t:"Una foto y vuelves a la mesa",ok:4},{t:"«Hoy no, estoy ocupado»",ok:10},{t:"Te quedas charlando cinco minutos",ok:-10}]},
+ {t:"El directorio te llama en plena cena",d:"El celular vibra. Es el presidente. La mesa se queda muda.",
+  op:[{t:"«Ahora no, los llamo mañana»",ok:10},{t:"Sales a atender dos minutos",ok:2},{t:"Pones el altavoz en la mesa",ok:-12}]},
+ {t:"Se filtra una foto de la cita",d:"Al otro día aparece en un portal: los dos en la mesa, riendo.",
+  op:[{t:"No comentas. La foto habla sola.",ok:6},{t:"Pides que la bajen, haces más ruido",ok:-8},{t:"La subes tú: «sí, estábamos ahí»",ok:10}]}
 ];
 function chatMatch(match){
   let i=0, pts=0;
@@ -635,7 +668,7 @@ function chatMatch(match){
     op:[{t:"La verdad: capaz, si llega una oferta grande.",n:6,miente:false},
         {t:"Jamás, es intocable. Palabra.",n:11,miente:true},
         {t:"No hablo de pega ni en la cama.",n:8,miente:false}]});
-  CHARLAS_MATCH.forEach(q=>preguntas.push(q));
+  (typeof mezcla==="function"?mezcla(CHARLAS_MATCH):CHARLAS_MATCH.slice()).slice(0,2).forEach(q=>preguntas.push(q));
   modal(box=>{
     const pintar=()=>{
       box.innerHTML="";
@@ -643,7 +676,7 @@ function chatMatch(match){
       const c=el("div","cuerpo"); box.appendChild(c);
       if(i>=preguntas.length){
         const txt=typeof pensarOffline==="function"?pensarOffline("tinder",{n:match.n,pts:pts}):"";
-        c.appendChild(el("p",null,pts>=20?match.n+" se ríe: «ok, invítame ya».":(pts>=8?match.n+" queda a medias. Todavía se puede.":match.n+" se enfría. «escribime otro día».")));
+        c.appendChild(el("p",null,pts>=20?match.n+" se ríe: «ok, invítame ya».":(pts>=8?match.n+" queda a medias. Todavía se puede.":match.n+" se enfría. «escríbeme otro día».")));
         if(txt) c.appendChild(el("p","mini",txt));
         match.charla=pts;
         if(pts>=8){

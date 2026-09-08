@@ -125,11 +125,11 @@ function preguntarAyudante(q){
   if(t("rival","proximo","partido","gano","ganar","ganamos","enfrent","clasico")){
     if(part && typeof fuerzaEquipo==="function" && typeof onceIdeal==="function"){
       const dif=fuerzaEquipo(onceIdeal()).base-part.fuerzaRival;
-      if(dif>6) return "Ante "+part.rivalNombre+" salís favorito. Presioná arriba y buscá el arco temprano, no lo dejes crecer.";
-      if(dif<-6) return part.rivalNombre+" llega más fuerte. Ordenate atrás, aguantá y salí de contra con los rápidos.";
+      if(dif>6) return "Ante "+part.rivalNombre+" sales favorito. Presiona arriba y busca el arco temprano, no lo dejes crecer.";
+      if(dif<-6) return part.rivalNombre+" llega más fuerte. Ordénalo atrás, aguanta y sal de contra con los rápidos.";
       return "Está parejo con "+part.rivalNombre+". Lo define un detalle: la pelota parada y no regalar el mediocampo.";
     }
-    return "No tenés un partido a la vista ahora mismo.";
+    return "No tienes un partido a la vista ahora mismo.";
   }
   if(t("quimic","congenia","dupla","llevan bien")){
     if(typeof quimicaEquipo==="function" && typeof onceIdeal==="function"){ const x=quimicaEquipo(onceIdeal());
@@ -141,12 +141,12 @@ function preguntarAyudante(q){
     let r="Caja del club: "+plata(c)+" · Deuda: "+plata(d)+". ";
     if(c<80) r+="La caja está flaca: cuidá los gastos y no firmes renovaciones caras esta semana.";
     else if(d>c*3) r+="La deuda te supera: pensá en vender un prescindible o abonar antes que pedir más crédito.";
-    else r+="Estás relativamente sano; con cabeza podés moverte en el mercado.";
+    else r+="Estás relativamente sano; con cabeza puedes moverte en el mercado.";
     return r+" (Tu plata personal es aparte: "+plata((E.personal&&E.personal.bolsillo)||0)+".)";
   }
   if(t("moral","camarin","animo","vestuario","descontent")){
     const m=Math.round((E.ind&&E.ind.moral)||50);
-    if(m<45) return "El camarín está cortado (moral "+m+"). Una charla con el capitán, un once que no sea de castigo, y ganar cura casi todo. En Finanzas podés gastar para reconquistar a los descontentos.";
+    if(m<45) return "El camarín está cortado (moral "+m+"). Una charla con el capitán, un once que no sea de castigo, y ganar cura casi todo. En Finanzas puedes gastar para reconquistar a los descontentos.";
     return "El camarín está bien (moral "+m+"). Sostené el clima: no rompas lo que funciona.";
   }
   if(t("hinchada","barra","gente","socios","publico")){
@@ -165,7 +165,7 @@ function preguntarAyudante(q){
   if(t("fich","compr","refuerzo","mercado","vend","transferi")){
     const c=(E.plata||0);
     if(c>250) return "Hay caja para moverse ("+plata(c)+"): un refuerzo puntual en tu posición más floja puede cambiarte la temporada. Mirá Mercado.";
-    return "La caja no da para lujos ("+plata(c)+"). Si querés reforzar, primero vendé un prescindible o buscá un préstamo/representante.";
+    return "La caja no da para lujos ("+plata(c)+"). Si quieres reforzar, primero vende un prescindible o busca un préstamo/representante.";
   }
   if(t("cansad","fisic","lesion","piernas","rotar","descans")){
     if(typeof onceIdeal==="function"){ const cans=onceIdeal().filter(j=>(j.cansancio||0)>=18);

@@ -887,8 +887,8 @@ function vistaFinanzas(){
     if(atras||claus) pasos.push("Conseguí caja YA y bajá la deuda: vendé un jugador en <b>Mercado</b> (la plata más sana), o pedí un <b>crédito</b> acá abajo si es urgente.");
     if(E.plata>=200 && deuda>0) pasos.push("Tenés "+plata(E.plata)+" disponible: <b>aboná a la deuda</b> (botones abajo) para pagar menos intereses cada semana.");
     if(E.plata<200 && (neto<0||deuda>0)) pasos.push("Poca caja: lo más sano es <b>vender o no renovar</b> un sueldo alto en <b>Mercado</b>. El <b>crédito</b> te salva hoy pero sube la deuda 8%.");
-    if(neto<0) pasos.push("Para dejar de perder cada semana: bajá <b>planilla</b> (vender/no renovar) o subí ingresos (precio de <b>entradas</b> en Estadio, sponsors, contratar CM).");
-    if(nivel==="verde") pasos.push("Vas bien. Si querés soltar las manos en el mercado, aboná deuda; si sobra, invertí en el club.");
+    if(neto<0) pasos.push("Para dejar de perder cada semana: baja <b>planilla</b> (vender/no renovar) o sube ingresos (precio de <b>entradas</b> en Estadio, sponsors, contratar CM).");
+    if(nivel==="verde") pasos.push("Vas bien. Si quieres soltar las manos en el mercado, abona deuda; si sobra, invierte en el club.");
     if(!pasos.length) pasos.push("No hay nada urgente. Mantené el flujo positivo y aboná deuda cuando sobre.");
     pe.cuerpo.appendChild(el("h3","sub","Qué hacer, paso a paso"));
     pasos.forEach((s,i)=>pe.cuerpo.appendChild(el("div","resul mitad","<b>"+(i+1)+".</b> "+s)));
@@ -1068,8 +1068,11 @@ function renovarContrato(j){
   E.fin.caja-=extra;
   j.sueldo+=extra;
   j.contrato.hasta=Math.max(j.contrato.hasta,E.anio)+2;
+  if(typeof clausulaDe==="function"){
+    j.contrato.clausula=Math.round((clausulaDe(j)||j.valor||80)*1.18);
+  }
   j.moral=clamp((j.moral||70)+8,0,100);
-  if(typeof pushNotif==="function") pushNotif("Renové a "+j.n,j.n+" firmó hasta "+j.contrato.hasta+". Costó "+plata(extra)+" de caja.","bueno");
+  if(typeof pushNotif==="function") pushNotif("Renové a "+j.n,j.n+" firmó "+(typeof etqContrato==="function"?etqContrato(j):("hasta "+j.contrato.hasta))+". Costó "+plata(extra)+" de caja.","bueno");
   guardar(); return true;
 }
 function charlaJugador(j,tipo){
@@ -1122,7 +1125,7 @@ function fichaJugador(j){
     c.appendChild(fila("Sueldo anual",plata(j.sueldo)));
     c.appendChild(fila("Valor estimado",plata(j.valor)));
     c.appendChild(fila("Minutos en la temporada",(j.minutosTemporada||0)+"' en "+(j.partidos||0)+" partidos"+(j.pie?" · pie "+j.pie:"")));
-    c.appendChild(fila("Contrato","hasta "+j.contrato.hasta));
+    c.appendChild(fila("Contrato",typeof etqContrato==="function"?etqContrato(j):("hasta "+j.contrato.hasta)));
     if(j.rasgos.length) c.appendChild(el("p","mini","Rasgos: "+j.rasgos.join(", ")));
     /* 6.20 · qué hacen los rasgos con hook */
     const RASGOS_HOOK={
@@ -1502,7 +1505,7 @@ function reaccionarPost(t,tipo){
     } else if(esPropioCritico){
       /* repostear a un hincha propio enojado con vos: autocrítica, raro pero no te funa */
       if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"neutro");
-      aviso("🔁 Reposteaste a un hincha picado con vos. Mostrar autocrítica no está mal, pero no esperes aplausos.");
+      aviso("🔁 Reposteaste a un hincha picado contigo. Mostrar autocrítica no está mal, pero no esperes aplausos.");
     } else {
       aplicarGrupos({hinchada:3}); aplicarRep({publica:2}); moverSeguidores&&moverSeguidores(ri(40,260));
       if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"bueno");
@@ -2017,12 +2020,12 @@ function vistaAjustes(){
       const iKey=el("input"); iKey.type="text"; iKey.placeholder="anon key (empieza con eyJ...)"; iKey.value=cfg0.anonKey||""; iKey.style.cssText=estiloCfg; iKey.spellcheck=false;
       pn.cuerpo.appendChild(iUrl); pn.cuerpo.appendChild(iKey);
       const bProbar=el("button","btn-aqua chico","Probar conexión"); bProbar.style.marginTop="6px";
-      bProbar.onclick=async()=>{ bProbar.disabled=true; const r=await nubeProbar(iUrl.value,iKey.value); bProbar.disabled=false; aviso(r.ok?"✅ Conexión OK, ya podés guardar":("❌ "+r.msg)); };
+      bProbar.onclick=async()=>{ bProbar.disabled=true; const r=await nubeProbar(iUrl.value,iKey.value); bProbar.disabled=false; aviso(r.ok?"✅ Conexión OK, ya puedes guardar":("❌ "+r.msg)); };
       const bGuardar=el("button","btn-aqua chico verde","Guardar y activar"); bGuardar.style.marginLeft="6px";
       bGuardar.onclick=async()=>{
         const r=await nubeProbar(iUrl.value,iKey.value);
         if(!r.ok){ if(!confirm("La prueba falló ("+r.msg+"). ¿Guardar igual?")) return; }
-        nubeGuardarConfig(iUrl.value,iKey.value); aviso("Nube configurada. Ya podés crear tu cuenta."); render();
+        nubeGuardarConfig(iUrl.value,iKey.value); aviso("Nube configurada. Ya puedes crear tu cuenta."); render();
       };
       pn.cuerpo.appendChild(bProbar); pn.cuerpo.appendChild(bGuardar);
       pn.cuerpo.appendChild(el("p","mini","Esto queda guardado en <b>este navegador</b> (no en el repo). Para que tus amigos tengan login en la página publicada, la llave anon va en <code>js/nube.js</code> — avisame y lo dejo listo."));
@@ -2126,7 +2129,7 @@ function vistaAjustes(){
     cheat("Bienestar 100",()=>{ if(E.perfil) E.perfil.bienestar=100; });
     cheat("Pareja feliz",()=>{ if(E.perfil&&E.perfil.pareja) E.perfil.pareja.nivel=100; });
     pg.cuerpo.appendChild(el("h3","sub","Resultados y eventos"));
-    cheat("Ganar el próximo (forzar)",()=>{ E.flags.diosGana=true; aviso("El próximo partido lo tenés ganado."); });
+    cheat("Ganar el próximo (forzar)",()=>{ E.flags.diosGana=true; aviso("El próximo partido lo tienes ganado."); });
     cheat("Sumar un título",()=>{ E.titulos.push("Título (Modo Dios) "+E.anio); });
     cheat("Decisión al azar",()=>{ if(typeof generarDecisionProc==="function"){ const d=generarDecisionProc(); if(d) E.decPend.push({id:d.id,clave:d.id+"_"+E.anio,peso:d.peso}); } });
     const bve=el("button","btn-aqua chico"); bve.textContent="Evento de vida"; bve.style.margin="4px 4px 0 0";
@@ -2296,7 +2299,7 @@ function modalAvanceRapido(){
   modal(box=>{
     box.appendChild(el("div","cab",'<span class="ic">⏩</span><span>Avance rápido</span>'));
     const cc=el("div","cuerpo"); box.appendChild(cc);
-    cc.appendChild(el("p","mini","Delego todo por vos: resuelvo las decisiones con criterio, simulo los partidos al toque y avanzo. Ideal para ir rápido o hacer videos. Podés volver a dirigir cuando quieras."));
+    cc.appendChild(el("p","mini","Delego todo por ti: resuelvo las decisiones con criterio, simulo los partidos al toque y avanzo. Ideal para ir rápido o hacer videos. Puedes volver a dirigir cuando quieras."));
     const correr=(hastaFin)=>{ cerrarModal(); const r=avanzarRapido(hastaFin);
       aviso("⏩ "+r.partidos+" partido"+(r.partidos!==1?"s":"")+" simulado"+(r.partidos!==1?"s":"")+" · "+r.ganados+" ganado"+(r.ganados!==1?"s":"")+(r.freno?" · "+r.freno:""),4500); };
     const b1=el("button","btn-aqua ancho verde","⏩ Simular la próxima fecha"); b1.onclick=()=>correr(false);

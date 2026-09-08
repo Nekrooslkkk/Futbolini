@@ -220,6 +220,25 @@ function jugadorDesde(a){
     sueldo:a[5],valor:a[6],rasgos:a[7]||[],forma:70,moral:70,real:true,
     contrato:{hasta:0},lesion:0,goles:0,partidos:0,tarjetas:0};
 }
+/* Cláusula de salida: vence con el contrato. ídolo/cantera sale más cara. Stats estimadas. */
+function clausulaDe(j){
+  if(!j) return 0;
+  if(!j.contrato) j.contrato={hasta:0};
+  if(!j.contrato.clausula){
+    const ras=j.rasgos||[];
+    const idolo=ras.indexOf("ídolo")>=0||ras.indexOf("de la casa")>=0||ras.indexOf("capitán")>=0;
+    const joven=j.edad<=23 && (j.proy||0)>(j.nivel||0)+4;
+    const mul=idolo?2.2:(joven?2.5:1.55);
+    j.contrato.clausula=Math.max(30, Math.round((j.valor||80)*mul));
+  }
+  return j.contrato.clausula;
+}
+function etqContrato(j){
+  if(!j||!j.contrato) return "sin contrato";
+  const h=j.contrato.hasta||"?";
+  const c=clausulaDe(j);
+  return "hasta "+h+(c?" · cláusula "+plata(c)+" (vence "+h+")":"");
+}
 function generarJugador(rr,nivelBase,pos,edad){
   const nivel=clamp(Math.round(nivelBase+rr()*20-10),28,92);
   const edd=edad||18+Math.floor(rr()*16);
@@ -264,7 +283,10 @@ function armarPlantel(clubId,anio,nivelBase){
       i++;
     }
   }
-  out.forEach(j=>{ if(!j.contrato.hasta) j.contrato.hasta=anio+1+Math.floor(rr()*3); });
+  out.forEach(j=>{
+    if(!j.contrato.hasta) j.contrato.hasta=anio+1+Math.floor(rr()*3);
+    if(typeof clausulaDe==="function") clausulaDe(j);
+  });
   return out;
 }
 function idClubDe(idOrNombre){

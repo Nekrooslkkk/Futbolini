@@ -1,12 +1,13 @@
-# ANALISIS.md — estado real y rumbo (al día · v7.34)
+# ANALISIS.md — estado real y rumbo (al día · v7.35)
 
 > **LEER PRIMERO.** Refleja el estado real del juego hoy. Para el detalle de
-> cada parche, ver `PATCHES.md`. GitHub HEAD de partida: `cbc7e7e` (7.33).
-> Esta copia es **7.34**.
+> cada parche, ver `PATCHES.md`. GitHub HEAD de partida: `c74a0da` (7.34).
+> Esta copia es **7.35**.
 
-## Dónde estamos (v7.34)
-7.33 + **UI de celular de verdad**: dock Aero al pulgar, HUD fijo en el partido,
-sin auroras/blur que frenen el teléfono. Desktop (720px+) no se tocó.
+## Dónde estamos (v7.35)
+7.34 + **el año se siente distinto**: cláusulas de salida con fecha, vida amorosa
+según la época (en 1991 te presentan gente, no hay Tinder), copy en tú chileno
+y un relato que cambia en histórico / libre / caos.
 
 | Área | Estado real |
 |---|---|
@@ -22,6 +23,8 @@ sin auroras/blur que frenen el teléfono. Desktop (720px+) no se tocó.
 | DTs B (sep 2026) | Verificados al 8/09: COP Erwin Durán, PMO Emilio Mancilla, TEM Emiliano Astorga, USF Juan José Luvera, SCR Dalcio Giovagnoli. |
 | Previa | Clima Vista + canal (1991 Canal 13/TVN; 2026 TNT; Lib/Sud ESPN). |
 | Celular | Dock Aero + HUD de partido fijo al pulgar (7.34). Desktop ≥720px intacto. |
+| Vida | 1991 presentaciones · 2004 Messenger · 2012+ Match. Sin -e. (7.35) |
+| Contratos | Cláusula de salida con año. Rechazarla enoja al jugador. (7.35) |
 | Imágenes | Lista en `img/LEEME.txt`. El usuario sube. |
 
 ## Lo que quedó honesto-null (no se inventó)
@@ -31,10 +34,10 @@ sin auroras/blur que frenen el teléfono. Desktop (720px+) no se tocó.
 - Fotos/escudos oficiales.
 - UC 1991 sigue mayormente generado.
 - Citas atribuidas a personas reales: cero.
-- Fase 7 multi, Tinder/casino: congelados.
+- Fase 7 multi, casino a fondo: no son la beta.
 
-## Rumbo que sigue (no 7.34)
-- Hilos 4–6 de Plop, cláusulas con fecha, partir `ui.js`.
+## Rumbo que sigue (no 7.35)
+- Hilos 4–6 de Plop (otro chat en `plop-motor.js`), partir `ui.js`.
 - Fotos: las manda el usuario a `img/`.
 - `cancha.js` fome (otro chat).
-- Sudamericana PAL/AUD: fechas de grupo documentadas; el resto del grupo se simula.
+- UC 1991: plantel documentado; el fixture sigue generado.

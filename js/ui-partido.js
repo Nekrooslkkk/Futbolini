@@ -60,7 +60,7 @@ function checklistPrevia(part,once){
   if(les.length) items.push({warn:false,t:les.length+" jugador"+(les.length>1?"es":"")+" lesionado"+(les.length>1?"s":""),
     d:"No disponibles: "+les.slice(0,4).map(j=>j.n).join(", ")+(les.length>4?"…":"")+"."});
   /* barra caliente */
-  if(part.local && E.barra && E.barra.roto) items.push({warn:true,t:"La barra está caliente con vos",
+  if(part.local && E.barra && E.barra.roto) items.push({warn:true,t:"La barra está caliente contigo",
     d:"Rompiste un pacto: esperá silbidos de local y algún lío en la puerta."});
   return items;
 }
@@ -1323,10 +1323,10 @@ function seccionPrensa(p,res,P){
     "<div class='barrita' style='margin-top:3px'><i style='width:"+cl.pct+"%;--c:"+cl.col+"'></i></div>";
   p.cuerpo.appendChild(bar);
   const tog=el("div","mini");
-  tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (vos hablas)")+"</b>";
+  tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (tú hablas)")+"</b>";
   p.cuerpo.appendChild(tog);
   const bt=el("button","btn-aqua chico gris",E.prensaAuto?"Pasar a manual":"Delegar en el ayudante");
-  bt.onclick=()=>{ E.prensaAuto=!E.prensaAuto; guardar(); tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (vos hablas)")+"</b>"; bt.textContent=E.prensaAuto?"Pasar a manual":"Delegar en el ayudante"; zonaPrensa.innerHTML=""; pintarZonaPrensa(); };
+  bt.onclick=()=>{ E.prensaAuto=!E.prensaAuto; guardar(); tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (tú hablas)")+"</b>"; bt.textContent=E.prensaAuto?"Pasar a manual":"Delegar en el ayudante"; zonaPrensa.innerHTML=""; pintarZonaPrensa(); };
   p.cuerpo.appendChild(bt);
   const zonaPrensa=el("div"); p.cuerpo.appendChild(zonaPrensa);
   let hecho=false;

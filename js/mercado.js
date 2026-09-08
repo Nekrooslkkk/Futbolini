@@ -53,13 +53,17 @@ function crearOfertaEntrante(rr){
   if(!j) return false;
   const comprador=CLUBES_COMPRADORES[Math.floor(rr()*CLUBES_COMPRADORES.length)];
   const monto=Math.round(j.valor*(0.8+rr()*0.8)*inflacionEra());
-  const of={id:"of"+(E._ofid=(E._ofid||0)+1), jid:j.n, comprador:comprador, monto:monto, creada:E.idx};
+  const claus=(typeof clausulaDe==="function")?clausulaDe(j):0;
+  const pagaClau=claus>0 && monto>=claus;
+  const of={id:"of"+(E._ofid=(E._ofid||0)+1), jid:j.n, comprador:comprador, monto:monto, creada:E.idx, pagaClausula:pagaClau};
   E.ofertasPend.push(of);
   const sobre=monto-j.valor;
   notificar({
     t:comprador+" ofrece por "+j.n, tipo:"mercado",
     d:comprador+" pone "+plata(monto)+" sobre la mesa por "+j.n+" ("+j.pos+", nivel "+j.nivel+
-      ", valor estimado "+plata(j.valor)+"). "+(sobre>=0?"Pagan por encima del valor: buena venta para la caja.":"Ofrecen por debajo del valor: venderías resignando plata.")+
+      ", valor estimado "+plata(j.valor)+
+      (claus?", cláusula "+plata(claus)+" hasta "+(j.contrato&&j.contrato.hasta||"—"):"")+"). "+
+      (pagaClau?"Pagan la cláusula: el contrato se cae si aceptas.":(sobre>=0?"Pagan por encima del valor: buena venta para la caja.":"Ofrecen por debajo del valor: venderías resignando plata."))+
       (j.rasgos&&(j.rasgos.includes("ídolo")||j.rasgos.includes("capitán"))?" Ojo: es un referente, la hinchada lo va a sentir.":"")+
       " Responde desde Avisos o desde la sección Mercado.",
     acc:{tipo:"ofertaJugador", ofertaId:of.id, resuelta:false}
@@ -178,8 +182,12 @@ function responderOferta(notif, modo){
     E.ind.plantel=clamp(E.ind.plantel-Math.round(j.nivel/14),0,100);
     aplicarGrupos({hinchada:ref?-12:-2, directorio:8});
     E.mercadoLog.vendidos.push({n:j.n,monto:of.monto,anio:E.anio});
+    const clau=(typeof clausulaDe==="function")?clausulaDe(j):0;
+    const pagoClau=of.pagaClausula||(clau>0&&of.monto>=clau);
     let txt;
-    if(ref){
+    if(pagoClau){
+      txt="Pagan la cláusula de "+j.n+" ("+plata(of.monto)+", contrato hasta "+(j.contrato&&j.contrato.hasta||"—")+"). El vínculo se corta: no hay más negociación.";
+    } else if(ref){
       txt="Se cerró la salida de "+j.n+" a "+of.comprador+" por "+plata(of.monto)+
         ". Entra plata seria, pero vender a un referente siempre deja herida abierta en la hinchada. El directorio, en cambio, celebra el ingreso.";
     } else if(j.edad>=32){
@@ -193,8 +201,16 @@ function responderOferta(notif, modo){
     if(typeof redesReaccion==="function") redesReaccion("venta",{n:j.n,ref:ref,edad:j.edad,nivel:j.nivel});
   } else {
     E.mercadoLog.rechazadas[of.jid]=E.idx;
-    notificar({t:"Rechazaste la oferta por "+of.jid,tipo:"neutro",
-      d:"Le dijiste que no a "+of.comprador+". "+of.jid+" sigue en el plantel. Ese club no va a volver a preguntar por un tiempo."});
+    const clauJ=j&&(typeof clausulaDe==="function")?clausulaDe(j):0;
+    const queriaIr=j && (of.pagaClausula||(clauJ>0&&of.monto>=clauJ));
+    if(queriaIr){
+      j.moral=clamp((j.moral||70)-10,0,100);
+      notificar({t:"Rechazaste la cláusula de "+of.jid,tipo:"malo",
+        d:of.comprador+" ponía la cláusula y dijiste que no. "+of.jid+" se queda, pero el camarín lo siente: quería irse. Moral −10."});
+    } else {
+      notificar({t:"Rechazaste la oferta por "+of.jid,tipo:"neutro",
+        d:"Le dijiste que no a "+of.comprador+". "+of.jid+" sigue en el plantel. Ese club no va a volver a preguntar por un tiempo."});
+    }
   }
   guardar();
 }
@@ -238,7 +254,7 @@ function cerrarFichaje(j,oferta){
   E.plata-=(oferta.precio+comision);
   const nuevo=Object.assign({}, j, {
     sueldo:oferta.sueldo, rol:oferta.rol, real:false, forma:66, moral:70,
-    contrato:{hasta:E.anio+2+(oferta.rol==="promesa"?2:0)}, lesion:0, goles:0, partidos:0, tarjetas:0
+    contrato:{hasta:E.anio+2+(oferta.rol==="promesa"?2:0), clausula:Math.max(30, Math.round((j.valor||80)*1.7))}, lesion:0, goles:0, partidos:0, tarjetas:0
   });
   delete nuevo.precio; delete nuevo.pidesueldo; delete nuevo.club;
   E.plantel.push(nuevo);

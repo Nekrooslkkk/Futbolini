@@ -12,7 +12,7 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 4. 🟨 Tabla viva: el resto suma. No usa acta real de Coquimbo etc.
 5. 🟨 Planteles documentados de los 5 jugables. Faltan minutos, dorsal, contrato real.
 6. 🟨 XI rival: plantel real si existe; si no, apodo del club (5.1l).
-7. ⬜ Copa Chile / Libertadores 2026 si el club está.
+7. ✅ Copa Chile / Libertadores 2026 si el club está (7.33).
 8. ⬜ 1991: fixtures de UCH/UC, no solo CC.
 9. ⬜ Migración de save por temporada (no forzar partida nueva cada parche).
 10. ⬜ Verificar cada nombre contra fuente (Transfermarkt / wiki temporada).
@@ -31,7 +31,7 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 
 18. 🟨 Grupos y estatutos existen. Falta que te llamen.
 19. 🟨 Asamblea si hinchada+socios < -45; a las 3 semanas destituye (5.1l).
-20. ⬜ Prensa que filtra si un grupo está a menos de -45.
+20. ✅ Prensa que filtra si un grupo está a menos de -45 (prensaFiltra).
 21. ⬜ Blanco / ANFP / TV como actores con agenda.
 22. ⬜ Crisis de hinchada que cierra tribuna, no solo baja un número.
 
@@ -39,7 +39,7 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 
 23. 🟨 Flujo semanal + semanas de caja. Falta que duela más.
 24. ⬜ Deuda con cuotas, no un globo.
-25. ⬜ Cláusulas, comisiones, atrasos de sueldo que exploten.
+25. 🟨 Cláusulas de salida con año (7.35). Faltan comisiones y atrasos que exploten.
 26. ⬜ Mercado: ofertas que no sean un solo botón.
 27. ⬜ Precio de entrada que llene o vacíe según ranking y momento.
 
@@ -61,7 +61,7 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 
 ## F. Vida del DT (después de que A–E piquen)
 
-41. 🟨 Tinder con charla + citas con dilema (5.1m).
+41. 🟨 Vida amorosa por época: 1991 presentaciones, 2004 Messenger, 2012+ Match. Charla corta + citas (7.35).
 42. 🟨 Casino: ruleta animada + blackjack. Sigue pudiendo más.
 43. 🟨 Bienestar baja con racha y con no salir. Respiro existe.
 44. 🟨 Dinastía: hijos crecen, cantera a los 17, sucesor hijo/externo (5.1m).
@@ -76,7 +76,7 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 ## H. Interfaz y modos
 
 49. 🟨 Frutiger / negro / claro / insano. Pulir Vista/7.
-50. ⬜ Histórico / libre / caos que se sientan distintos en el relato.
+50. 🟨 Histórico / libre / caos pintan el relato (7.35). Falta que se sientan en más lados.
 51. ✅ Spoiler / sin spoiler (Ajustes + calendario + decisiones) (5.1l).
 52. ✅ Celular: un partido jugable con el pulgar. (7.34)
 53. ⬜ Soundtrack del usuario, sin FIFA.

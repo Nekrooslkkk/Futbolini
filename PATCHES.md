@@ -1805,3 +1805,13 @@ toggle fuera. Consola limpia.
 - **Sin bugs de layout**: `display:contents` en `.ctrl-main/.ctrl-sec` para que el desktop siga igual; dock se apaga en partido; `hay-momento` no deja el HUD tapando las decisiones.
 **1 línea:** en el celular se juega con el pulgar: Jugar abajo, partido con HUD fijo, y la máquina no se ahoga pintando auroras.
 **Riesgos:** CSS acotado a max-width:720px. Desktop 1280 intacto. Bajo.
+
+## 7.35 · El año se siente distinto + cláusulas + vida por época  ✅ (2026-09-08)
+**Archivos:** `js/data-35.js` (nuevo), `js/data-plantel.js`, `js/mercado.js`, `js/motor.js`, `js/ui.js`, `js/reputacion.js`, `js/ia.js`, `js/ui-partido.js`, `js/util.js`, `index.html`.
+**Qué:**
+- **Cláusulas de salida con año:** cada jugador tiene `contrato.clausula` que vence con el contrato. La ficha lo muestra. Si una oferta paga la cláusula y la rechazas, el jugador se enoja (moral −10). Renovar sube la cláusula.
+- **Vida amorosa consecuente:** 1991 = presentaciones del club (no hay Tinder). 2004–2011 = Messenger. 2012+ = Match. Charla de 2 preguntas por visita (no un interrogatorio) + más dilemas de cita. Copy en tú, sin -e (adiós «soltere/casades»).
+- **Pegas** (antes «changas»). Ayudante y UI seria: tienes/puedes/quieres, no tenés/podés.
+- **Relato:** histórico pre-2000 huele a radio; libre dice que el guión lo armas tú; caos se desordena. Wrap de `fraseRelato` que conserva `_beta`.
+**1 línea:** en el 91 te presentan gente, los contratos tienen cláusula con fecha, y el relato cambia si juegas histórico, libre o caos.
+**Riesgos:** wrap de `fraseRelato`. Cláusulas se generan al armar plantel / normalizar. Bajo.

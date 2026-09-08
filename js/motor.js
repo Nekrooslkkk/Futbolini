@@ -227,6 +227,7 @@ function normalizarEstado(){
   if(!Array.isArray(E.perfil.hijos)) E.perfil.hijos=[];
   if(E.perfil.pareja && E.perfil.pareja.nivel===undefined){ E.perfil.pareja.nivel=65; E.perfil.pareja.casades=!!E.perfil.pareja.casades; }
   if(E.perfil.avatar && E.perfil.avatar!=="😎" && String(E.perfil.avatar).indexOf("orb-")!==0) E.perfil.avatar="orb-azul";
+  if(typeof clausulaDe==="function" && Array.isArray(E.plantel)) E.plantel.forEach(function(j){ if(j&&!j.vendido) clausulaDe(j); });
   /* 5.0 · bolsa de valores del club + finanzas avanzadas */
   if(typeof normalizarBolsa==="function") normalizarBolsa();
   /* v4: planteles viejos con nombres inventados tipo "Luis Aránguiz" */
