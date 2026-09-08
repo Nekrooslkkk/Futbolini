@@ -19,7 +19,7 @@ function redesDisponibles(){ return !!(E && (E.anio||2026)>=2008); }
 
 /* ---------------- barra y menú ---------------- */
 function pintarBarra(){
-  pintarBtnCuenta();
+  pintarBtnCuenta(); pintarCampana();
   const bd=$("#barraDatos"); bd.innerHTML="";
   const badge=$("#avisoBadge");
   if(!E){ $("#escudo").textContent="⚽"; if(badge) badge.classList.add("oculto"); return; }
@@ -31,6 +31,7 @@ function pintarBarra(){
    ["Club",E.clubNombre,false,"bd-club"],
    ["Fecha",(part?fechaTxt(part.f):"cierre")+" · "+E.anio,false,"bd-fecha"],
    ["Caja",plata(E.plata),E.plata<100],
+   ["Tu plata",plata((E.personal&&E.personal.bolsillo)||0),(E.personal&&E.personal.bolsillo<0),"bd-sec"],
    ["Deuda",plata(E.deuda),E.deuda>3000],
    ["Capital",E.capital+"/100",E.capital<15,"bd-sec"],
    ["Imagen",Math.round(E.rep.publica)+"/100",E.rep.publica<25,"bd-sec"]
@@ -320,11 +321,11 @@ function vistaEscritorio(){
   /* 7.0 · historia del club (arco de equipo) si hay un capítulo abierto */
   if(typeof panelStoryline==="function"){ const ps=panelStoryline(); if(ps) izq.appendChild(ps); }
 
-  /* 5.0 · objetivos de temporada — lo que se espera de vos
+  /* 5.0 · objetivos de temporada — lo que se espera de ti
      6.29 · pestañas por sección (menos scroll) + tarjetas compactas movibles */
   if(Array.isArray(E.objetivos)&&E.objetivos.length&&typeof progresoObjetivo==="function"){
     const cumplidasN=E.objetivos.filter(o=>progresoObjetivo(o).cumplido).length;
-    const po=panel("Lo que se espera de vos","📋",E.objetivos.some(o=>progresoObjetivo(o).estado==="riesgo")?"alerta":"agua");
+    const po=panel("Lo que se espera de ti","📋",E.objetivos.some(o=>progresoObjetivo(o).estado==="riesgo")?"alerta":"agua");
     po.cuerpo.appendChild(el("p","mini","Metas de la dirigencia para "+E.anio+", atadas a cómo va el club. Se evalúan al cierre. Vas <b>"+cumplidasN+" de "+E.objetivos.length+"</b> en curso."));
     const CAT={deportivo:{ic:"⚽",n:"Deportivo",c:"#2f7dd0"},economico:{ic:"💰",n:"Económico",c:"#3aa049"},institucional:{ic:"🏛️",n:"Institucional",c:"#9a6fe0"}};
     const EST={cumplido:{n:"Cumplido",c:"#2fa84f"},encamino:{n:"En camino",c:"#d68a1f"},riesgo:{n:"En riesgo",c:"#c0392b"}};
@@ -1100,7 +1101,7 @@ function vistaHistoria(){
     const p2=panel("Época 2026","📚","agua");
     p2.cuerpo.appendChild(el("p",null,ERA[2026].desc));
     p2.cuerpo.appendChild(el("div","resul mitad","<b>Aviso.</b> El plantel y los clubes de 2026 usan nombres reales de referencia, pero los datos son <b>aproximados</b> y pueden haber cambiado. Todo lo dramatizado (conversaciones, conflictos, frases) es ficción del juego."));
-    p2.cuerpo.appendChild(el("p","mini","No hay una \"tabla histórica\" fija para 2026: la estás escribiendo vos temporada a temporada."));
+    p2.cuerpo.appendChild(el("p","mini","No hay una \"tabla histórica\" fija para 2026: la estás escribiendo tú temporada a temporada."));
     v.appendChild(p2);
   } else {
     const p=panel("Temporada 1991 · lo que pasó de verdad","📚");
@@ -1557,6 +1558,38 @@ function modalCharlaCapitan(){
 /* ---------------- avisos (centro de notificaciones) ---------------- */
 function claseTipo(t){ return t==="bueno"?"bien":(t==="malo"?"mal":"mitad"); }
 function icoTipo(t){ return t==="bueno"?"✅":(t==="malo"?"⚠️":(t==="mercado"?"🧳":"📌")); }
+/* campana flotante (esquina inferior derecha) + su badge */
+function pintarCampana(){
+  const b=document.getElementById("campanaAvisos"); if(!b) return;
+  if(!E){ b.classList.add("oculto"); return; }
+  b.classList.remove("oculto");
+  const bg=document.getElementById("campanaBadge");
+  if(bg){ const n=notifsNoLeidas(); bg.textContent=n>9?"9+":String(n); bg.classList.toggle("oculto",!n); }
+}
+/* avisos como ventana encima (fondo blureado por .modal-fondo) */
+function modalAvisos(){
+  if(!E) return;
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">🔔</span><span>Avisos</span>'));
+    const cc=el("div","cuerpo"); box.appendChild(cc);
+    const acc=notifsAccionables();
+    if(acc.length){
+      cc.appendChild(el("h3","sub","📨 Requieren tu respuesta"));
+      acc.forEach(n=>cc.appendChild(tarjetaAviso(n,true)));
+    }
+    cc.appendChild(el("h3","sub","Todos los avisos"));
+    const lista=(E.notifs||[]).filter(n=>!(n.acc&&!n.acc.resuelta));
+    if(!lista.length) cc.appendChild(el("p","mini","Todavía no hay avisos. Todo lo importante que pase queda registrado acá."));
+    lista.slice(0,40).forEach(n=>cc.appendChild(tarjetaAviso(n,false)));
+    const bl=el("button","btn-aqua chico gris","Marcar todo leído"); bl.style.marginTop="8px";
+    bl.onclick=()=>{ marcarLeidas(); guardar(); cerrarModal(); render(); };
+    const bx=el("button","btn-aqua chico gris","Cerrar"); bx.style.marginLeft="6px";
+    bx.onclick=cerrarModal;
+    cc.appendChild(bl); cc.appendChild(bx);
+    /* al abrir se dan por leídos (los accionables siguen arriba) */
+    if(notifsNoLeidas()){ marcarLeidas(); pintarBarra(); pintarMenu(); guardar(); }
+  });
+}
 function vistaAvisos(){
   const v=$("#vista");
   const acc=notifsAccionables();
@@ -1791,7 +1824,7 @@ function vistaAjustes(){
 
   /* ---- Respaldo de partida (archivo, 100% offline) ---- */
   const pr=panel("Respaldo de partida","💾");
-  pr.cuerpo.appendChild(el("p","mini","Descarga tu partida como archivo y guardala donde quieras (Drive, mail, WhatsApp a vos mismo). En otro equipo la cargas y sigues donde ibas. No necesita internet ni cuenta."));
+  pr.cuerpo.appendChild(el("p","mini","Descarga tu partida como archivo y guárdala donde quieras (Drive, mail, WhatsApp a ti mismo). En otro equipo la cargas y sigues donde ibas. No necesita internet ni cuenta."));
   const bDesc=el("button","btn-aqua chico","Descargar partida");
   bDesc.onclick=()=>descargarPartida();
   const bCarg=el("button","btn-aqua chico"); bCarg.textContent="Cargar partida"; bCarg.style.marginLeft="6px";
@@ -2154,7 +2187,8 @@ function modalCuenta(){
 /* ---------------- arranque ---------------- */
 $("#btnAvanzar").onclick=avanzar;
 $("#btnCuenta").onclick=modalCuenta;
-$("#btnAvisos").onclick=()=>{ if(E) irA("avisos"); };
+$("#btnAvisos").onclick=()=>{ if(E) modalAvisos(); };
+{ const _c=document.getElementById("campanaAvisos"); if(_c) _c.onclick=()=>{ if(E) modalAvisos(); }; }
 $("#btnTemas").onclick=()=>{
   const orden=["aero","negro","claro","insano"];
   const i=(orden.indexOf(document.body.dataset.tema)+1)%orden.length;

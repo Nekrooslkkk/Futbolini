@@ -1635,3 +1635,18 @@ cargar CC de vuelta (slot correcto), borrar deja 1; tras recargar el arranque li
 Mis partidas renderiza con la actual marcada. Consola limpia.
 **1 línea:** varias carreras a la vez: cambiás de club cuando quieras y cada partida se guarda en su ranura.
 **Riesgos:** toca el core de guardado (guardar/boot); migración probada, save legacy en sync. Medio-bajo.
+
+## 7.25 · Punto 2 del brief: plata personal arriba + vos→ti + campana de avisos  ✅ (2026-09-08)
+**Archivos:** `index.html` (campana), `css/base.css` (.campana), `js/ui.js` (barra/campana/modalAvisos/vos→ti), `js/reputacion.js` (vos→ti)
+**Qué:** tres pedidos del brief maestro (ver ROADMAP_BETA §8/§13/§15):
+- **Tu plata personal en la barra**: chip "Tu plata" (E.personal.bolsillo) junto a Caja, se pone rojo si es negativa.
+- **vos→ti**: título "Lo que se espera de vos" → "de ti", + barrido de "vos" en la UI seria (tabla histórica,
+  respaldo de archivo). Los hinchas/barra quedan en chileno marcado a propósito; el audit voseo total queda aparte.
+- **Avisos como campana flotante**: botón redondo grande 🔔 abajo a la derecha (`#campanaAvisos`, con badge de no
+  leídos vía `pintarCampana`), que abre `modalAvisos()` — ventana encima con el **fondo blureado** (el `.modal-fondo`
+  ya tenía `backdrop-filter:blur(6px)`). La campanita de la barra superior ahora abre el mismo modal. La vista Avisos
+  completa (pestaña) sigue existiendo.
+**Probado:** node --check + navegador: barra muestra "TU PLATA $50 M"; título "Lo que se espera de ti"; campana
+visible con badge; modal abre con blur(6px); consola limpia + captura (ventana de Avisos sobre fondo blureado + campana).
+**1 línea:** tu plata personal ya está arriba, "de ti" en vez de "de vos", y los avisos son una campana flotante con ventana blureada.
+**Riesgos:** barra + modal + strings; aislado. Bajo.

@@ -534,7 +534,7 @@ function tomarRespiro(){
   const costo=ri(15,40);
   if(E.personal.bolsillo<costo){ if(typeof aviso==="function") aviso("No te alcanza para el respiro ("+plata(costo)+")"); return; }
   E.personal.bolsillo-=costo; E.perfil.bienestar=clamp((E.perfil.bienestar||70)+22,0,100); aplicarEfectos({moral:2});
-  notificar({t:"Te tomaste un respiro",tipo:"bueno",d:"Unos días para vos: bajas el estrés y vuelves con la cabeza fresca. Costó "+plata(costo)+".",bandeja:false});
+  notificar({t:"Te tomaste un respiro",tipo:"bueno",d:"Unos días para ti: bajas el estrés y vuelves con la cabeza fresca. Costó "+plata(costo)+".",bandeja:false});
   guardar(); render();
 }
 /* eventos de vida personales (procedurales) */

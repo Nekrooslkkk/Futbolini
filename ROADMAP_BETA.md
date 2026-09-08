@@ -87,7 +87,9 @@
       así que si se juega esa época va también. Formato + calendario por año (Grok verifica).
 
 ## 8 · ESCRITORIO / OBJETIVOS / AYUDANTE / NOTIS / AVANZAR
-- [ ] **[MOTOR]** "Lo que se espera de **vos**" → "de **ti**"; gráficos que se entiendan + llevarlo a Historia.
+- [~] **[MOTOR]** "Lo que se espera de vos" → **"de ti"** ✅ (7.25) + barrido de "vos" en la UI seria.
+      PENDIENTE: gráficos que se entiendan + llevarlo a Historia. (Audit voseo completo aparte: hinchas/
+      barra quedan en chileno marcado a propósito.)
 - [ ] **[MOTOR]** Cerebro local → renombrar a **"Ayudante"**, lectura más cercana tipo IA, que **puedas
       preguntarle**.
 - [ ] **[MOTOR]** "Lo que pasó esta semana": lo que valga la pena atender aparece en **notificaciones**.
@@ -118,7 +120,7 @@
 - [ ] **[MOTOR]** Modo carrera: **integrar todo lo que pasa** ahí.
 
 ## 13 · BARRA SUPERIOR
-- [ ] **[MOTOR]** **Tu plata personal** (no la del equipo) en la barra de arriba, junto a la fecha, etc.
+- [x] **[MOTOR]** **Tu plata personal** en la barra de arriba (chip "Tu plata", junto a Caja). ✅ (7.25)
 - [x] **[MOTOR]** Login como **botón de cuenta** arriba, al lado de Avanzar. ✅ (7.21)
 
 ## 14 · VIDA (estilo BitLife realista pero piola)
@@ -131,8 +133,8 @@
 - [ ] **[MOTOR]** **Casino**: tragamonedas, apostar cualquier monto, más realista y lindo.
 
 ## 15 · UI GLOBAL / AVISOS / DEV / DIOS / LOGIN
-- [ ] **[MOTOR]** **Avisos**: sacarlo de su vista y ponerlo como **campana grande** abajo a la derecha
-      del escritorio; al apretar, **ventana encima** con el fondo **blureado**.
+- [x] **[MOTOR]** **Avisos**: **campana grande flotante** abajo a la derecha (con badge); al apretar,
+      **ventana encima** con el fondo **blureado**. La campanita de la barra ahora abre el mismo modal. ✅ (7.25)
 - [ ] **[MOTOR]** **Modo Desarrollador**: potenciar para probar miles de cosas y optimizar el juego.
 - [ ] **[MOTOR]** **Modo Dios**: mejorar; si lo activás **te priva de logros**, **avisa antes de cagarla**,
       y que haya MÁS cosas (lo actual es poco).
