@@ -600,7 +600,16 @@ function bloqueoDecisiones(){
   return false;
 }
 /* ---------------- decisión ---------------- */
+/* puntúa una opción por su efecto neto sobre el club (para la pista del ayudante) */
+function puntajeOpcion(o){
+  let s=0; const ef=o.ef||{};
+  s+=(ef.plata||0)*0.02 + (ef.moral||0) + (ef.prestigio||0)*1.4 + (ef.capital||0)*1.2 - (ef.riesgo||0)*1.2 - (ef.deuda||0)*0.02;
+  const gr=o.grupos||{}; Object.keys(gr).forEach(k=>{ s+=gr[k]*0.8; });
+  const rp=o.rep||{}; Object.keys(rp).forEach(k=>{ s+=rp[k]*0.6; });
+  return s;
+}
 function abrirDecision(d,enModal){
+  let pistaOn=false;   /* el ayudante ya dio su lectura en esta decisión */
   const pintar=(cont)=>{
     cont.innerHTML="";
     const p=panel(BUZONES[d.buzon].n,BUZONES[d.buzon].ic,d.peso==="alto"?"alerta":"");
@@ -637,12 +646,25 @@ function abrirDecision(d,enModal){
       b.onclick=()=>{ if(enModal){ cerrarModal(); render(); } else irA("escritorio"); };
       p.cuerpo.appendChild(b);
     } else {
+      /* pista del ayudante: tibio/caliente/frío por opción, máx 3 por campeonato */
+      const clave="pistas_"+E.anio; const usadas=(E.flags&&E.flags[clave])||0; const quedan=3-usadas;
+      const scores=d.op.map(puntajeOpcion); const mx=Math.max.apply(null,scores), mn=Math.min.apply(null,scores);
+      if(!pistaOn){
+        const bp=el("button","btn-aqua chico"+(quedan<=0?" gris":""));
+        bp.innerHTML="🧑‍🏫 Pedir pista al ayudante"+(quedan>0?" <span class='mini'>("+quedan+" de 3 este campeonato)</span>":" <span class='mini'>(sin pistas)</span>");
+        bp.onclick=()=>{ if(quedan<=0){ aviso("Ya usaste las 3 pistas del ayudante este campeonato"); return; } if(!E.flags) E.flags={}; E.flags[clave]=usadas+1; pistaOn=true; pintar(cont); };
+        p.cuerpo.appendChild(bp);
+      } else {
+        p.cuerpo.appendChild(el("p","mini","🧑‍🏫 El ayudante te da su lectura: 🔥 la ve buena · 😐 tibia · 🧊 la ve mala. (Es su opinión, decidís vos.)"));
+      }
       const ops=el("div","ops");
       d.op.forEach((o,i)=>{
         const chk=requisitoCumplido(o);
         const b=el("button","op");
         b.disabled=!chk.ok;
-        b.innerHTML='<div class="t">'+resolverTokens(o.t,E)+'</div><div class="d">'+(o.d||"")+'</div>'+
+        let pista="";
+        if(pistaOn && mx!==mn){ pista=scores[i]===mx?" <span class='etq ok'>🔥 caliente</span>":(scores[i]===mn?" <span class='etq mal'>🧊 frío</span>":" <span class='etq neu'>😐 tibio</span>"); }
+        b.innerHTML='<div class="t">'+resolverTokens(o.t,E)+pista+'</div><div class="d">'+(o.d||"")+'</div>'+
           (textoRequisitos(o)?'<div class="req">'+textoRequisitos(o)+(chk.ok?"":" · <b>"+chk.txt+"</b>")+'</div>':"");
         b.onclick=()=>{
           const r=resolverDecision(d,i);

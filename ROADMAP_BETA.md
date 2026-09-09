@@ -77,8 +77,8 @@
 ## 6 · POST-PARTIDO / DELEGAR
 - [ ] **[MOTOR+GROK]** Preguntas del final = más una conferencia; hoy SIEMPRE sale lo mismo → Grok
       rellena pools.
-- [ ] **[MOTOR]** Al **delegar al ayudante**: botón "cómo responder" con pista **tibio / caliente /
-      frío**. Máx **3 delegaciones por campeonato** (y distinto cada campeonato).
+- [x] **[MOTOR]** Al decidir: botón **"🧑‍🏫 Pedir pista al ayudante"** que marca cada opción
+      🔥caliente / 😐tibio / 🧊frío según su efecto neto. Máx **3 por campeonato** (se resetea cada año). ✅ (7.38)
 
 ## 7 · COMPETICIONES
 - [x] **[MOTOR+GROK]** **Copa Libertadores** y **Copa Sudamericana** 2026: calendarios reales

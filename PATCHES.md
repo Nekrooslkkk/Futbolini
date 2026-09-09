@@ -1842,3 +1842,13 @@ libre.
 50k giros sin romper). Consola limpia.
 **1 línea:** el casino ahora tiene tragamonedas con onda futbolera y podés apostar el monto exacto que quieras.
 **Riesgos:** aislado en casino.js (Grok no lo tocó). Bajo.
+
+## 7.38 · Pista del ayudante al decidir (tibio/caliente/frío, 3 por campeonato)  ✅ (2026-09-08)
+**Archivos:** `js/ui.js` (abrirDecision + puntajeOpcion)
+**Qué:** en cualquier decisión, botón **"🧑‍🏫 Pedir pista al ayudante"**. Al pedirla, cada opción se marca
+🔥 caliente (la que el ayudante ve mejor) / 😐 tibio / 🧊 frío (la peor), según `puntajeOpcion` (suma
+ponderada de ef: plata/moral/prestigio/capital/riesgo/deuda + grupos + rep). **Máx 3 por campeonato**
+(contador `E.flags["pistas_"+anio]`, se resetea solo cada año). Es opinión: decide el jugador.
+**Probado:** navegador — botón aparece, marca caliente/frío, contador baja a 1/3, consola limpia.
+**1 línea:** cuando no sabés qué elegir, el ayudante te tira una pista (caliente/tibio/frío), pero solo 3 veces por campeonato.
+**Riesgos:** additivo en abrirDecision. Bajo.
