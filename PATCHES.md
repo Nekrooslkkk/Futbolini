@@ -1940,3 +1940,9 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 - **Versión:** Claude había dejado 7.37–7.43 sin subir el número; ahora el juego marca **7.44**.
 **1 línea:** cada club tiene historia que se lee, épocas extra para arrancar, y si la carrera se va al futuro el mundo cambia.
 **Riesgos:** wrap de `nuevoAnio` / `preguntasConferencia` / `ctxDeEvento`. Épocas B pre-2010 se juegan en 2026b con identidad encima. Bajo.
+
+## 7.45 · Fotos reales de estadio (Wikimedia Commons)  ✅ (2026-09-09)
+**Archivos:** `img/estadios/{ID}.jpg` (31 clubes), `img/FUENTES.md`, `js/data-estadios.js` (`ESTADIOS_FOTOS`, `fotoEstadioDe`), `js/ui.js` (`vistaEstadio`), `css/base.css`, `css/movil.css`, `img/LEEME.txt`. Se **borró** `GROK_PROMPT_HISTORIAS.md` (lo que quedaba era imágenes; ya está).
+**Qué:** se buscaron y bajaron fotos **con licencia libre** de Wikimedia Commons (CC BY, CC BY-SA o dominio público), miniaturas ~1280 px. Van en la vista Estadio con crédito en el pie. Santa Cruz (SCR) no tenía foto libre clara: se dejó vacío, no se inventó ni se bajó prensa con copyright. Escudos oficiales y caras de periodistas: no.
+**1 línea:** al entrar a Estadio ves la cancha de verdad, con el crédito de Commons abajo.
+**Riesgos:** fotos estáticas offline. Si falta el jpg, `onerror` esconde el recuadro. Bajo.

@@ -1912,6 +1912,20 @@ function vistaEstadio(){
   const aforo=(typeof aforoActual==="function")?aforoActual():((CLUB_POR_ID[E.club]||{aforo:0}).aforo);
   /* --- cabecera: recinto y estado --- */
   const ph=panel(nom,"🏟️");
+  const foto=(typeof fotoEstadioDe==="function")?fotoEstadioDe(E.club):null;
+  if(foto&&foto.src){
+    const fig=el("figure","foto-est-wrap");
+    const im=el("img","foto-est");
+    im.src=foto.src; im.alt=nom; im.loading="lazy";
+    im.onerror=function(){ fig.style.display="none"; };
+    const cap=el("figcaption","foto-est-cred");
+    const pd=/dominio p[uú]blico|public domain/i.test(foto.lic||"");
+    cap.textContent=pd
+      ? ("Dominio público · Wikimedia Commons")
+      : ("Foto: "+(foto.autor||"autor")+" · "+foto.lic+" · Wikimedia Commons");
+    fig.appendChild(im); fig.appendChild(cap);
+    ph.cuerpo.appendChild(fig);
+  }
   ph.cuerpo.appendChild(fila("Aforo",aforo.toLocaleString("es-CL")+" personas"));
   ph.cuerpo.appendChild(el("label","lb","Estado del recinto"));
   ph.cuerpo.appendChild(el("div",null,barrita(E.ind.estadio,"#a5854a")));
@@ -1947,7 +1961,7 @@ function vistaEstadio(){
   /* --- precios de entradas por sector real, con proyección en vivo --- */
   const sects=(typeof sectoresActuales==="function")?sectoresActuales():[];
   const pe=panel("Precios de entradas","🎫","agua");
-  pe.cuerpo.appendChild(el("p","mini","Fijá el precio de cada sector. Subir el precio deja más por entrada pero espanta público (la galería es la más sensible). La proyección se actualiza al instante."));
+  pe.cuerpo.appendChild(el("p","mini","Fija el precio de cada sector. Subir el precio deja más por entrada pero espanta público (la galería es la más sensible). La proyección se actualiza al instante."));
   const proy=el("div","resul mitad"); proy.id="proyTaq";
   const doc=el("div"); doc.id="docButacas";
   const setFill=(r,s)=>{ const pct=Math.round((r.value-s.min)/Math.max(1,(s.max-s.min))*100); r.style.setProperty("--fill",pct+"%"); };
@@ -2010,7 +2024,7 @@ function cargarPartidaArchivo(f){
 async function cambiarDeClub(){
   if(E&&E.club){ await guardar(); }        /* guarda la actual en su slot antes de salir */
   E=null; SEC="escritorio"; render();       /* render con E=null → pantallaInicio (elegir club) */
-  aviso("Elegí el club de tu nueva partida");
+  aviso("Elige el club de tu nueva partida");
 }
 async function continuarPartida(id){
   if(E&&E._slot===id){ aviso("Ya estás en esa partida"); return; }

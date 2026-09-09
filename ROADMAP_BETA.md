@@ -22,7 +22,7 @@
 - [ ] Ciberseguridad + cuentas sólidas.
 - [x] **Liga chilena completa** (Primera + Primera B + Copa Chile + Libertadores + Sudamericana) — con
       **ascenso/descenso** conectando Primera↔B y Copa Chile todos los años. ✅ (7.41)
-- [~] **Super modo histórico**: épocas extra + línea de tiempo 32 clubes + escenarios 2030→2226 (7.44). Falta fundación→hoy jugable año a año y fotos.
+- [~] **Super modo histórico**: épocas extra + línea de tiempo 32 clubes + escenarios 2030→2226 (7.44). Fotos de estadio Commons 31/32 (7.45). Falta fundación→hoy jugable año a año.
 
 ---
 

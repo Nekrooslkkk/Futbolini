@@ -118,3 +118,40 @@ function sectoresDe(clubId){
 }
 function estadioNombre(clubId){ const e=ESTADIOS_DATA[clubId]; return e?e.nombre:null; }
 function aforoDe(clubId){ const e=ESTADIOS_DATA[clubId]; return e?e.aforo:null; }
+
+/* 7.45 · fotos Wikimedia Commons (CC/PD). Crédito en pantalla. SCR no tenía foto libre. */
+const ESTADIOS_FOTOS={
+  CC:{src:"img/estadios/CC.jpg",autor:"Carlos Figueroa",lic:"CC BY-SA 4.0"},
+  UCH:{src:"img/estadios/UCH.jpg",autor:"Carlos Figueroa Rojas",lic:"CC BY-SA 4.0"},
+  UC:{src:"img/estadios/UC.jpg",autor:"JeanxcPalmer",lic:"CC BY-SA 4.0"},
+  EVE:{src:"img/estadios/EVE.jpg",autor:"Carlos yo",lic:"CC BY-SA 4.0"},
+  PAL:{src:"img/estadios/PAL.jpg",autor:"Carlos yo",lic:"CC BY-SA 4.0"},
+  COQ:{src:"img/estadios/COQ.jpg",autor:"dbravosilva",lic:"CC BY-SA 2.0"},
+  AUD:{src:"img/estadios/AUD.jpg",autor:"Ariel Cruz Pizarro",lic:"CC BY-SA 2.0"},
+  HUA:{src:"img/estadios/HUA.jpg",autor:"Municipalidad de Talcahuano",lic:"CC BY-SA 2.0"},
+  OHI:{src:"img/estadios/OHI.jpg",autor:"Benjamín Mejías Valencia",lic:"CC BY 2.0"},
+  NUB:{src:"img/estadios/NUB.jpg",autor:"Desconocido",lic:"dominio público"},
+  COB:{src:"img/estadios/COB.jpg",autor:"Ahmedd",lic:"CC BY-SA 4.0"},
+  CAL:{src:"img/estadios/CAL.jpg",autor:"Carlos Figueroa Rojas",lic:"CC BY-SA 4.0"},
+  LSE:{src:"img/estadios/LSE.jpg",autor:"Petakito",lic:"CC BY-SA 3.0"},
+  DCO:{src:"img/estadios/DCO.jpg",autor:"Daniblue21",lic:"CC BY-SA 4.0"},
+  UDC:{src:"img/estadios/UDC.jpg",autor:"Daniblue21",lic:"CC BY-SA 4.0"},
+  LIM:{src:"img/estadios/LIM.jpg",autor:"Carlos Figueroa Rojas",lic:"CC BY-SA 4.0"},
+  SW:{src:"img/estadios/SW.jpg",autor:"Açipni-Lovrij",lic:"CC BY-SA 4.0"},
+  CBL:{src:"img/estadios/CBL.jpg",autor:"Andre el gigante",lic:"CC BY-SA 4.0"},
+  SLQ:{src:"img/estadios/SLQ.jpg",autor:"Carlos yo",lic:"CC BY-SA 4.0"},
+  ANT:{src:"img/estadios/ANT.jpg",autor:"Juan Araya Contador",lic:"CC BY 2.0"},
+  MAG:{src:"img/estadios/MAG.jpg",autor:"Ahmedd",lic:"CC BY-SA 4.0"},
+  UES:{src:"img/estadios/UES.jpg",autor:"Carlos yo",lic:"CC BY-SA 4.0"},
+  REC:{src:"img/estadios/REC.jpg",autor:"Carlos Figueroa Rojas",lic:"CC BY-SA 4.0"},
+  PMO:{src:"img/estadios/PMO.jpg",autor:"Jonathan92",lic:"dominio público"},
+  SMA:{src:"img/estadios/SMA.jpg",autor:"Gobernación Provincial de Arica",lic:"CC BY 3.0 cl"},
+  COP:{src:"img/estadios/COP.jpg",autor:"Açipni-Lovrij",lic:"CC BY-SA 4.0"},
+  TEM:{src:"img/estadios/TEM.jpg",autor:"Claude Cobar",lic:"CC BY-SA 2.0"},
+  IQQ:{src:"img/estadios/IQQ.jpg",autor:"PipeNacho1985",lic:"CC BY-SA 4.0"},
+  USF:{src:"img/estadios/USF.jpg",autor:"Manxuc",lic:"CC BY-SA 4.0"},
+  CUR:{src:"img/estadios/CUR.jpg",autor:"José Joaquín Cortes",lic:"CC BY-SA 4.0"},
+  RAN:{src:"img/estadios/RAN.jpg",autor:"Tomás Jorquera",lic:"CC BY 2.0"}
+};
+function fotoEstadioDe(id){ return (ESTADIOS_FOTOS && ESTADIOS_FOTOS[id]) || null; }
+

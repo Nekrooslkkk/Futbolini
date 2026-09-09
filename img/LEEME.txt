@@ -1,9 +1,12 @@
 Imágenes locales de Futbolini (offline).
-Grok no puede meter fotos al repo: hay que SUBIRLAS acá.
 
-Qué falta (tanda 10 · GROK_PROMPT_BETA):
-- img/clubes/{ID}.svg  escudo ESTILIZADO (no calcar el oficial). IDs Primera: CC UCH UC PAL LIM EVE COQ AUD HUA OHI NUB COB CAL LSE DCO UDC. IDs B: CBL SW SLQ ANT MAG UES REC PMO SMA COP TEM IQQ USF CUR SCR RAN.
-- img/estadios/{ID}.jpg  tribuna/cancha, uso libre o placeholder.
-- img/periodistas/{slug}.jpg  retrato genérico; no foto de persona real sin permiso.
+Estadios (7.45):
+- img/estadios/{ID}.jpg  tribuna/cancha desde Wikimedia Commons (CC/PD).
+- Créditos: img/FUENTES.md y pie de foto en la vista Estadio.
+- Santa Cruz (SCR) no tenía foto libre: no hay archivo.
 
-Mientras no estén, el juego usa el glifo de texto (esc) de cada club.
+Escudos:
+- NO hay escudos oficiales. El juego dibuja SVG estilizado (js/data-escudos.js).
+
+Periodistas:
+- No hay retratos de personas reales. No se van a bajar.
