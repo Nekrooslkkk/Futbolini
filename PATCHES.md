@@ -1900,3 +1900,22 @@ válido (30 liga + 6 Copa Chile), simula la temporada en Primera sin crash; desc
 B); "otros" (mid-table, otro equipo swap); nombres correctos; consola limpia.
 **1 línea:** ganás en la B y ascendés, perdés en Primera y descendés, la otra división se simula, y la Copa Chile está todos los años.
 **Riesgos:** toca finDeTemporada/activarLiga/construirCalendario (core + Grok). Additivo y guardado; invariante probado. Medio.
+
+## 7.42 · Escudos estilizados por código + prompts de historias para Grok  ✅ (2026-09-08)
+**Archivos:** `js/data-escudos.js` (NUEVO), `index.html`, `js/ui.js`, `GROK_PROMPT_HISTORIAS.md` (NUEVO)
+**Qué:**
+- **Escudos estilizados** (`data-escudos.js`): `ESCUDOS_CLUB` con colores+sigla de los **32 clubes**
+  (Primera + B) y `escudoSVG(id,px)` que dibuja un escudo SVG genérico (forma de escudo, color primario,
+  banda secundaria, sigla legible por contraste). **NO son los oficiales** (sin copyright), 100% offline,
+  sin subir archivos. `escudoHTML(id,px,fallback)` cae al emoji si el club no está. Cableado en la barra
+  (`#escudo`) y en los 3 selectores de club del inicio, con fallback. Se ve lindo (captura).
+- **GROK_PROMPT_HISTORIAS.md**: prompts para que Grok cubra historias e integre tal cual — súper modo
+  histórico (épocas jugables + timeline real por club + escenarios futuros 2030→2226), storylines
+  profundos, más voz (relato/prensa/tuits/cuerpo técnico), y escudos (refinar ESCUDOS_CLUB / SVGs). Incluye
+  guía de integración (qué constantes existen, cómo mergear sin duplicar) y las reglas duras.
+**Imágenes (honesto):** no puedo bajar logos oficiales (copyright + offline + no meto archivos por red),
+pero generé escudos estilizados por código que dan el salto visual ya. Logos reales: el usuario los sube a
+`img/clubes/` cuando quiera, o Grok genera SVGs (tanda D).
+**Probado:** navegador — 32 escudos en el selector, escudo en la barra, consola limpia + captura.
+**1 línea:** los clubes ahora tienen escudo (estilizado, por código), y quedaron los prompts para que Grok cubra las historias y el súper histórico.
+**Riesgos:** data-escudos.js aislado + wiring con fallback al emoji. Bajo.

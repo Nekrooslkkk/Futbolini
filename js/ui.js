@@ -97,7 +97,8 @@ function pintarBarra(){
   if(!E){ $("#escudo").textContent="⚽"; if(badge) badge.classList.add("oculto"); return; }
   if(badge){ const n=notifsNoLeidas(); badge.textContent=n>9?"9+":String(n); badge.classList.toggle("oculto",!n); }
   const ic=(typeof infoClub==="function"&&infoClub(E.club))||(CLUB_INFO&&CLUB_INFO[E.club])||{esc:"⚽"};
-  $("#escudo").textContent=(ic&&ic.esc)||"⚽";
+  const _es=(typeof escudoHTML==="function")?escudoHTML(E.club,24,""):"";
+  if(_es) $("#escudo").innerHTML=_es; else $("#escudo").textContent=(ic&&ic.esc)||"⚽";
   const part=proximoPartido();
   const datos=[
    ["Club",E.clubNombre,false,"bd-club"],
@@ -166,7 +167,7 @@ function pantallaInicio(){
   Object.keys(CLUB_INFO).forEach(id=>{
     const c=CLUB_INFO[id];
     const ciu=(typeof ciudadDeClub==="function")?ciudadDeClub(id):"";
-    const b=el("button","icono",'<span class="g">'+c.esc+'</span><span class="n">'+c.n+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
+    const b=el("button","icono",'<span class="g">'+(typeof escudoHTML==="function"?escudoHTML(id,36,c.esc):c.esc)+'</span><span class="n">'+c.n+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
     b.onclick=()=>elegirEpoca(id);
     g.appendChild(b);
   });
@@ -180,7 +181,7 @@ function pantallaInicio(){
       soloNuevos.forEach(id=>{
         const c=CLUB_INFO_2026[id];
         const ciu=(typeof ciudadDeClub==="function")?ciudadDeClub(id):"";
-        const b=el("button","icono",'<span class="g">'+c.esc+'</span><span class="n">'+c.n+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
+        const b=el("button","icono",'<span class="g">'+(typeof escudoHTML==="function"?escudoHTML(id,36,c.esc):c.esc)+'</span><span class="n">'+c.n+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
         b.onclick=()=>elegirEpoca(id);
         g2.appendChild(b);
       });
@@ -193,7 +194,7 @@ function pantallaInicio(){
     LIGA_B_2026.forEach(c=>{
       const info=(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c;
       const ciu=c.ciudad||((typeof ciudadDeClub==="function")?ciudadDeClub(c.id):"");
-      const b=el("button","icono",'<span class="g">'+(info.esc||"🟠")+'</span><span class="n">'+(info.n||c.n)+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
+      const b=el("button","icono",'<span class="g">'+(typeof escudoHTML==="function"?escudoHTML(c.id,36,info.esc||"🟠"):(info.esc||"🟠"))+'</span><span class="n">'+(info.n||c.n)+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
       b.onclick=()=>elegirEpoca(c.id);
       g3.appendChild(b);
     });
