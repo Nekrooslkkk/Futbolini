@@ -182,6 +182,7 @@ function normalizarEstado(){
   if(!E) return;
   migrarSave(E);
   if(!E.eraBase) E.eraBase=baseEra(E.anio);
+  if(typeof initLigaMod==="function") initLigaMod();   /* ascenso/descenso: rosters por-save */
   if(typeof activarLiga==="function") activarLiga(E.eraBase);
   if(!E.flags) E.flags={};
   if(!Array.isArray(E.pendientesEncadenadas)) E.pendientesEncadenadas=[];
@@ -978,6 +979,48 @@ function crisisActiva(){
   return null;
 }
 /* ---------------- fin de temporada ---------------- */
+/* ---------- ascenso / descenso (Primera 2026 ↔ Primera B 2026b) ----------
+   La división del jugador se juega de verdad; la otra se simula por fuerza.
+   Cada temporada: 1 desciende de Primera y 1 asciende de la B (se intercambian).
+   Si el que cambia es el club del jugador, cambia su eraBase → juega la otra el año que viene. */
+function initLigaMod(){
+  if(!E || E.ligaMod) return;
+  if(!(E.eraBase===2026 || E.eraBase==="2026b")) return;
+  if(typeof LIGA_2026==="undefined" || typeof LIGA_B_2026==="undefined") return;
+  E.ligaMod={ 2026:LIGA_2026.map(c=>c.id), "2026b":LIGA_B_2026.map(c=>c.id) };
+  const div = E.eraBase===2026 ? 2026 : "2026b";
+  if(E.ligaMod[div].indexOf(E.club)<0) E.ligaMod[div].push(E.club);
+}
+function _fuerzaClubId(id){ const m=(typeof clubMapaTodos==="function")?clubMapaTodos():{}; const c=m[id]||CLUB_POR_ID[id]; return (c&&c.fuerza)||55; }
+function _ordenRealDiv(ids){ return ids.slice().sort((a,b)=>{ const A=E.tabla[a]||{pts:-1,gf:0,gc:0}, B=E.tabla[b]||{pts:-1,gf:0,gc:0}; return (B.pts-A.pts)||((B.gf-B.gc)-(A.gf-A.gc))||(B.gf-A.gf); }); }
+function _ordenSimDiv(ids){ return ids.slice().map(id=>({id:id,p:_fuerzaClubId(id)+ri(-14,14)})).sort((a,b)=>b.p-a.p).map(x=>x.id); }
+function nombreDeClub(id){ const m=(typeof clubMapaTodos==="function")?clubMapaTodos():{}; const c=m[id]||CLUB_POR_ID[id]; return (c&&(c.n||c.c))||id; }
+function procesarAscensoDescenso(){
+  if(!E || !(E.eraBase===2026 || E.eraBase==="2026b")) return null;
+  initLigaMod(); if(!E.ligaMod) return null;
+  const primeraIds=E.ligaMod[2026].slice(), bIds=E.ligaMod["2026b"].slice();
+  const tPrimera = (E.eraBase===2026) ? _ordenRealDiv(primeraIds) : _ordenSimDiv(primeraIds);
+  const tB       = (E.eraBase==="2026b") ? _ordenRealDiv(bIds) : _ordenSimDiv(bIds);
+  const desciende=tPrimera[tPrimera.length-1];   /* último de Primera baja */
+  const asciende=tB[0];                          /* campeón de la B sube */
+  if(!desciende || !asciende || desciende===asciende) return null;
+  E.ligaMod[2026]=primeraIds.filter(id=>id!==desciende).concat([asciende]);
+  E.ligaMod["2026b"]=bIds.filter(id=>id!==asciende).concat([desciende]);
+  let msg;
+  if(E.eraBase==="2026b" && asciende===E.club){ E.eraBase=2026; msg={tipo:"ascenso",baja:desciende,sube:asciende}; }
+  else if(E.eraBase===2026 && desciende===E.club){ E.eraBase="2026b"; msg={tipo:"descenso",baja:desciende,sube:asciende}; }
+  else { msg={tipo:"otros",baja:desciende,sube:asciende}; }
+  E.ascensoMsg=msg;
+  if(typeof activarLiga==="function") activarLiga(E.eraBase);
+  /* aviso persistente */
+  if(typeof notificar==="function"){
+    if(msg.tipo==="ascenso") notificar({t:"🎉 ¡ASCENSO a Primera División!",tipo:"bueno",bandeja:true,d:E.clubNombre+" sube a Primera. Bajó "+nombreDeClub(desciende)+". El año que viene se juega en la máxima categoría."});
+    else if(msg.tipo==="descenso") notificar({t:"📉 Descenso a la Primera B",tipo:"malo",bandeja:true,d:E.clubNombre+" perdió la categoría. Subió "+nombreDeClub(asciende)+". El año que viene se pelea el ascenso."});
+    else notificar({t:"Ascenso y descenso",tipo:"neutro",bandeja:false,d:"En el ascenso subió "+nombreDeClub(asciende)+" y bajó "+nombreDeClub(desciende)+"."});
+  }
+  if(typeof recordar==="function" && msg.tipo!=="otros") recordar("categoria",(msg.tipo==="ascenso"?"ascendiste a Primera con ":"descendiste a la B con ")+E.clubNombre,{peso:"alto",tono:msg.tipo==="ascenso"?"bueno":"malo"});
+  return msg;
+}
 function finDeTemporada(){
   const t=E.temporada;
   const pos=posicionEnTabla();
@@ -1007,7 +1050,9 @@ function finDeTemporada(){
     tipo:(campeon||copaGanada)?"bueno":(pos<=5?"neutro":"malo"),
     d:"Terminó la temporada "+E.anio+" en el "+ordinal(pos)+" lugar con "+t.pts+" puntos ("+t.pg+"G "+t.pe+"E "+t.pp+"P). "+
       "Premios de competencia: "+plata(premio)+". "+ev.txt,bandeja:false});
-  return {pos:pos,campeon:campeon,copa:copaGanada,premio:premio,ev:ev};
+  /* ascenso / descenso entre Primera y Primera B (con la tabla ya final) */
+  const asc=(typeof procesarAscensoDescenso==="function")?procesarAscensoDescenso():null;
+  return {pos:pos,campeon:campeon,copa:copaGanada,premio:premio,ev:ev,asc:asc};
 }
 function posicionEnTabla(){
   const arr=LIGA_ACT.map(c=>({id:c.id,...E.tabla[c.id]}));

@@ -187,8 +187,23 @@ function baseEra(anio){ return anio>=2010?2026:1991; }
 const LIGAS={1991:LIGA91, 2026:LIGA_2026};
 let LIGA_ACT=LIGA91;
 let CLUB_POR_ID={}; LIGA91.forEach(c=>CLUB_POR_ID[c.id]=c);
+/* mapa {id:club} con TODOS los clubes conocidos (Primera + Primera B + 1991) */
+function clubMapaTodos(){
+  /* los clubes modernos (2026 / Primera B) ganan el id ante colisiones con 1991
+     (ej: COB = Cobresal en 2026, pero Cobreloa en 1991). El ascenso/descenso es era moderna. */
+  const m={};
+  [LIGA_2026,(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null),LIGA91].forEach(L=>{ if(L) L.forEach(c=>{ if(!m[c.id]) m[c.id]=c; }); });
+  return m;
+}
 function activarLiga(base){
-  LIGA_ACT = LIGAS[base] || (base==="2026b"&&typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null) || LIGA91;
+  let liga = LIGAS[base] || (base==="2026b"&&typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null) || LIGA91;
+  /* override por-save para ascenso/descenso: la división trae a los clubes que corresponden esta temporada */
+  if(typeof E!=="undefined" && E && E.ligaMod && E.ligaMod[base] && (base===2026||base==="2026b")){
+    const mapa=clubMapaTodos();
+    const custom=E.ligaMod[base].map(id=>mapa[id]).filter(Boolean);
+    if(custom.length>=8) liga=custom;
+  }
+  LIGA_ACT = liga;
   CLUB_POR_ID={}; LIGA_ACT.forEach(c=>CLUB_POR_ID[c.id]=c);
 }
 

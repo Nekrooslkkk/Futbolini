@@ -1877,3 +1877,26 @@ Confirmación con el % de riesgo antes de jugártela; queda en la memoria y en a
 credibilidad mueve el riesgo, consola limpia.
 **1 línea:** el capital institucional ya sirve para jugadas de poder arriesgadas (lobby, purga, apretar al pito), con premio o cachetada según tu credibilidad.
 **Riesgos:** additivo en vistaInstitucion + usa aplicarEfectos/Grupos/Rep y E.mods existentes. Bajo.
+
+## 7.41 · ASCENSO / DESCENSO: Primera ↔ Primera B conectadas + Copa Chile todos los años  ✅ (2026-09-08)
+**Archivos:** `js/motor.js` (motor asc/desc + hooks), `js/data-liga.js` (activarLiga override + clubMapaTodos), `js/ui.js` (balance), `js/data-b2026.js` (Copa Chile 2026+)
+**Qué:** el pedido estrella — si ganás en la B ascendés; si sos último en Primera descendés; y la otra
+división vive (se simula).
+- **Override de liga por-save** (`E.ligaMod = {2026:[ids], "2026b":[ids]}`): `activarLiga` arma `LIGA_ACT`
+  desde esos ids (con `clubMapaTodos`), así el club del jugador aparece en la división que le toca.
+  `initLigaMod` lo inicializa en normalizarEstado.
+- **`procesarAscensoDescenso()`** (en `finDeTemporada`, con la tabla final): 1 desciende de Primera (último,
+  tabla real de tu división) y 1 asciende de la B (campeón, la otra división simulada por fuerza), se
+  intercambian. Si el que cambia sos vos, tu `eraBase` flipa (2026↔2026b) → el año que viene jugás la otra
+  categoría. Invariante verificado: divisiones disjuntas, 16 cada una, sin duplicados.
+- **Balance de fin de temporada** muestra 🎉 ¡ASCENSO! / 📉 DESCENSO / 🔁 (quién subió y bajó) + notificación.
+- **Copa Chile todos los años** (antes solo 2026): el wrapper de `construirCalendario` la agrega para
+  `anio>=2026`. 2026 usa los 8 grupos reales; 2027+ (o un ascendido sin grupo fijo) los **sortea el juego**
+  con el formato real (4 equipos, 2 Primera + 2 B, ida/vuelta, 6 fechas). `copaChileRivales` procedural.
+- **Fix colisión de id**: `COB` es Cobreloa en 1991 pero **Cobresal** en 2026 → `clubMapaTodos` prioriza los
+  clubes modernos, así los nombres del ascenso/Copa Chile salen bien.
+**Probado:** navegador — Cobreloa campeón B sube a Primera (baja UdeConce), rollover a 2027 arma calendario
+válido (30 liga + 6 Copa Chile), simula la temporada en Primera sin crash; descenso (último de Primera →
+B); "otros" (mid-table, otro equipo swap); nombres correctos; consola limpia.
+**1 línea:** ganás en la B y ascendés, perdés en Primera y descendés, la otra división se simula, y la Copa Chile está todos los años.
+**Riesgos:** toca finDeTemporada/activarLiga/construirCalendario (core + Grok). Additivo y guardado; invariante probado. Medio.

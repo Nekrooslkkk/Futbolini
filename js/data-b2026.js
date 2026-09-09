@@ -565,17 +565,30 @@ function grupoCopaChileDe(clubId){
   return null;
 }
 
-function partidosCopaChileGrupo(clubId){
-  var g=grupoCopaChileDe(clubId);
-  if(!g) return [];
-  var rivales=g.ids.filter(function(id){ return id!==clubId; });
+/* rivales del grupo de Copa Chile del club (formato real: 4 equipos, 2 de Primera + 2 de la B).
+   2026 usa los grupos reales; 2027+ (o un club sin grupo fijo, ej. un ascendido) los sortea el juego. */
+function copaChileRivales(clubId, anio){
+  if(anio===2026){ var g0=grupoCopaChileDe(clubId); if(g0) return {rivales:g0.ids.filter(function(id){return id!==clubId;}), letra:g0.letra}; }
+  var pr=(typeof E!=="undefined"&&E&&E.ligaMod&&E.ligaMod[2026])?E.ligaMod[2026].slice():((typeof LIGA_2026!=="undefined")?LIGA_2026.map(function(c){return c.id;}):[]);
+  var b =(typeof E!=="undefined"&&E&&E.ligaMod&&E.ligaMod["2026b"])?E.ligaMod["2026b"].slice():((typeof LIGA_B_2026!=="undefined")?LIGA_B_2026.map(function(c){return c.id;}):[]);
+  var soyPrimera=pr.indexOf(clubId)>=0;
+  var mismos=(soyPrimera?pr:b).filter(function(id){ return id!==clubId; });
+  var otros =(soyPrimera?b:pr).slice();
+  var seed=(typeof azarFijo==="function"&&typeof semilla==="function")?azarFijo(semilla("copachile"+anio+clubId)):Math.random;
+  function pick(arr,n){ var a=arr.slice(), o=[]; for(var k=0;k<n&&a.length;k++){ o.push(a.splice(Math.floor(seed()*a.length),1)[0]); } return o; }
+  return {rivales:pick(mismos,1).concat(pick(otros,2)), letra:String.fromCharCode(65+(Math.abs((anio+clubId.length))%8))};
+}
+function partidosCopaChileGrupo(clubId, anio){
+  var g=copaChileRivales(clubId, anio||2026);
+  var rivales=g.rivales.filter(Boolean);
+  if(rivales.length<3) return [];
   var out=[], i, riv, local, f, yo, elotro;
   /* 6 fechas: vs cada rival ida y vuelta, intercaladas */
   var orden=[[0,true],[1,false],[2,true],[0,false],[1,true],[2,false]];
   for(i=0;i<orden.length;i++){
     riv=rivales[orden[i][0]];
     local=orden[i][1];
-    yo=clubLookup(clubId); elotro=clubLookup(riv);
+    yo=clubLookup(riv?clubId:clubId); elotro=clubLookup(riv);
     if(!yo||!elotro) continue;
     f=COPA_CHILE_FECHAS_2026[i]||{m:7,d:1+i};
     out.push({
@@ -584,7 +597,7 @@ function partidosCopaChileGrupo(clubId){
       local:local, sede:local?yo.est:elotro.est,
       f:f, jugado:false,
       clima:(typeof climaDeFecha==="function")?climaDeFecha(f.m,"copaChile"+clubId+i):"despejado",
-      real:null, apodo:null, notaId:"CC26-"+g.letra+"-"+i
+      real:null, apodo:null, notaId:"CC"+(anio||26)+"-"+g.letra+"-"+i
     });
   }
   return out;
@@ -595,8 +608,9 @@ function partidosCopaChileGrupo(clubId){
   var orig=construirCalendario;
   construirCalendario=function(clubId, anio, conCopa){
     var cal=orig(clubId, anio, conCopa)||[];
-    if(anio===2026){
-      var extra=partidosCopaChileGrupo(clubId);
+    /* Copa Chile en toda la era moderna (2026 en adelante): 2026 real, 2027+ sorteado */
+    if(anio>=2026){
+      var extra=partidosCopaChileGrupo(clubId, anio);
       extra.forEach(function(p){ cal.push(p); });
       cal.sort(function(a,b){
         var oa=(typeof ordenFecha==="function")?ordenFecha(a.f):(a.f.m*100+(a.f.d||1));
