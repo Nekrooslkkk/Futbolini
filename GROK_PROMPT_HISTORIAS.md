@@ -94,6 +94,23 @@ Formatos: ver `GROK_PROMPT_BETA.md` (tandas 5-8). Mantené el tono chileno.
 
 ---
 
+## TANDA D0 · BUSCAR Y BAJAR LAS IMÁGENES (Grok tiene web; Claude no)
+Grok: **buscá y conseguí** las imágenes de los clubes y entregámelas listas para `img/`. El juego es offline,
+así que necesito **archivos locales** (o data URIs pegables). Prioridad y reglas:
+1. **Escudos** (`img/clubes/{ID}.svg` o `.webp`): buscá el logo de cada club. Preferí **fuentes de uso libre**
+   (Wikimedia Commons con licencia, kits de prensa oficiales del club, SVG de dominio público). Si el logo
+   tiene copyright y no hay versión libre, **generá un escudo estilizado** (no lo calques). Entregá cada uno
+   como: (a) archivo para subir, (b) o un **data URI** (`data:image/svg+xml;base64,...`) que yo pego en
+   `ESCUDOS_IMG[ID]`. IDs (32): CC UCH UC PAL LIM EVE COQ AUD HUA OHI NUB COB CAL LSE DCO UDC · CBL SW SLQ ANT
+   MAG UES REC PMO SMA COP TEM IQQ USF CUR SCR RAN.
+2. **Estadios** (`img/estadios/{ID}.jpg`): una foto de tribuna/cancha con **licencia libre** (Commons) o
+   placeholder. Nada con copyright cerrado.
+3. **Periodistas** (`img/periodistas/{slug}.jpg`): retrato **genérico/ilustrado**, NUNCA foto de una persona
+   real sin permiso.
+Entregá una tabla `{ID → url de origen + licencia}` para que quede claro de dónde salió cada una.
+Si algo no tiene licencia clara, **estilizado** y listo. (El motor de dibujo estilizado ya está en el juego,
+ver tanda D.)
+
 ## TANDA D · ESCUDOS SVG ESTILIZADOS (imágenes sin copyright)
 El juego usa colores reales pero **escudos estilizados** (no oficiales). Generá un SVG simple por club,
 cuadrado, con los **colores del club** y su **sigla/inicial**, forma de escudo. NADA de calcar el escudo
