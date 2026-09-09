@@ -51,3 +51,8 @@ function escudoHTML(id, px, fallbackEmoji){
   var s=escudoSVG(id, px);
   return s || (fallbackEmoji||"");
 }
+/* escudo chico inline para tablas/calendario (alineado al texto); "" si no hay */
+function escudoChip(id, px){
+  px=px||18; var s=escudoSVG(id, px);
+  return s?'<span style="display:inline-block;vertical-align:middle;width:'+px+'px;height:'+px+'px;margin-right:5px">'+s+'</span>':'';
+}

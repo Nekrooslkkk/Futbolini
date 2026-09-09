@@ -1919,3 +1919,12 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 **Probado:** navegador — 32 escudos en el selector, escudo en la barra, consola limpia + captura.
 **1 línea:** los clubes ahora tienen escudo (estilizado, por código), y quedaron los prompts para que Grok cubra las historias y el súper histórico.
 **Riesgos:** data-escudos.js aislado + wiring con fallback al emoji. Bajo.
+
+## 7.43 · Escudos por todos lados: tabla + calendario  ✅ (2026-09-08)
+**Archivos:** `js/data-escudos.js` (escudoChip), `js/ui.js`
+**Qué:** aprovechando los escudos estilizados (7.42), los llevé donde más se ven: **tabla de posiciones**
+(escritorio/calendario e Historia) y **calendario** (escudo del rival en cada fecha). Nuevo `escudoChip(id)`
+(escudo chico alineado al texto, "" si no hay → fallback limpio). Gran salto visual, todo por código, offline.
+**Probado:** navegador — 16 escudos en la tabla, 36 en el calendario, barra con escudo; captura; consola limpia.
+**1 línea:** la tabla y el calendario ahora muestran el escudo de cada club — se ve mucho más pro.
+**Riesgos:** additivo con fallback; reusa escudoChip. Bajo.

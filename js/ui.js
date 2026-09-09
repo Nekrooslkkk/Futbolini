@@ -1279,8 +1279,9 @@ function vistaCalendario(){
     const d=el("div","fila"+(c.jugado?" fila-click":""));
     const marc=c.jugado?(c.gf+"-"+c.gc):"—";
     const est=c.jugado?(c.gf>c.gc?"ok":(c.gf<c.gc?"mal":"neu")):"neu";
+    const _ecal=(typeof escudoChip==="function")?escudoChip(c.rivalId):"";
     d.innerHTML='<span>'+(i===E.idx?"▶ ":"")+(c.tipo==="copa"?"🏆 ":"")+
-      (c.local?"vs ":"a ")+c.rivalNombre+' <span class="mini">'+fechaTxt(c.f)+
+      (c.local?"vs ":"a ")+_ecal+c.rivalNombre+' <span class="mini">'+fechaTxt(c.f)+
       (c.tipo==="copa"?" · "+c.ronda:"")+(c.fecha?" · F"+c.fecha:"")+
       (c.jugado&&c.goleadores&&c.goleadores.length?" · ▶ ver repetición":"")+
       (!c.jugado&&c.real&&E.config&&E.config.spoiler?" · hist. "+c.real:"")+'</span></span>'+
@@ -1306,7 +1307,8 @@ function vistaCalendario(){
   const tb=el("tbody");
   arr.forEach((c,i)=>{
     const tr=el("tr",c.id===E.club?"yo":"");
-    tr.innerHTML="<td class='n'>"+(i+1)+"</td><td>"+c.n+"</td><td class='n'>"+c.pj+"</td><td class='n'>"+c.pg+
+    const _ec=(typeof escudoChip==="function")?escudoChip(c.id):"";
+    tr.innerHTML="<td class='n'>"+(i+1)+"</td><td>"+_ec+c.n+"</td><td class='n'>"+c.pj+"</td><td class='n'>"+c.pg+
       "</td><td class='n'>"+c.pe+"</td><td class='n'>"+c.pp+"</td><td class='n'>"+c.gf+"</td><td class='n'>"+c.gc+"</td><td class='n'>"+c.pts+"</td>";
     tb.appendChild(tr);
   });
@@ -1382,7 +1384,7 @@ function modalTablaHistorica(h){
     t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>G</th><th class='n'>E</th><th class='n'>P</th><th class='n'>GF</th><th class='n'>GC</th><th class='n'>Pts</th></tr></thead>";
     const tb=el("tbody");
     (h.tabla||[]).forEach((r,i)=>tb.appendChild(el("tr",r.id===h.club?"yo":"",
-      "<td class='n'>"+(i+1)+"</td><td>"+r.n+"</td><td class='n'>"+r.pj+"</td><td class='n'>"+r.pg+"</td><td class='n'>"+r.pe+"</td><td class='n'>"+r.pp+"</td><td class='n'>"+r.gf+"</td><td class='n'>"+r.gc+"</td><td class='n'>"+r.pts+"</td>")));
+      "<td class='n'>"+(i+1)+"</td><td>"+((typeof escudoChip==="function")?escudoChip(r.id):"")+r.n+"</td><td class='n'>"+r.pj+"</td><td class='n'>"+r.pg+"</td><td class='n'>"+r.pe+"</td><td class='n'>"+r.pp+"</td><td class='n'>"+r.gf+"</td><td class='n'>"+r.gc+"</td><td class='n'>"+r.pts+"</td>")));
     t.appendChild(tb); c.appendChild(t);
     if(h.goleador) c.appendChild(el("p","mini","Goleador de tu plantel: "+h.goleador.n+" con "+h.goleador.goles+" goles."));
     const b=el("button","btn-aqua ancho gris","Cerrar"); b.onclick=cerrarModal; c.appendChild(b);
