@@ -46,13 +46,55 @@ function escudoSVG(id, px){
     '<text x="20" y="30" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="'+fs+'" fill="'+tc+'">'+txt+'</text>'+
     '</svg>';
 }
-/* HTML listo para el glifo: escudo SVG si existe, si no el emoji que reciba de fallback */
+/* HTML listo para el glifo: archivo Commons/estilizado si hay, si no SVG inline, si no emoji */
 function escudoHTML(id, px, fallbackEmoji){
+  px=px||28;
+  var f=typeof ESCUDOS_FOTOS!=="undefined" && ESCUDOS_FOTOS[id];
+  if(f&&f.src){
+    return '<img class="esc-img" src="'+f.src+'" width="'+px+'" height="'+px+'" alt="" style="width:'+px+'px;height:'+px+'px;object-fit:contain;display:block" onerror="this.style.display=\'none\'">';
+  }
   var s=escudoSVG(id, px);
   return s || (fallbackEmoji||"");
 }
 /* escudo chico inline para tablas/calendario (alineado al texto); "" si no hay */
 function escudoChip(id, px){
-  px=px||18; var s=escudoSVG(id, px);
-  return s?'<span style="display:inline-block;vertical-align:middle;width:'+px+'px;height:'+px+'px;margin-right:5px">'+s+'</span>':'';
+  px=px||18;
+  var h=escudoHTML(id, px, "");
+  return h?'<span style="display:inline-block;vertical-align:middle;width:'+px+'px;height:'+px+'px;margin-right:5px">'+h+'</span>':'';
 }
+
+const ESCUDOS_FOTOS={
+  CC:{src:"img/clubes/CC.svg",tipo:"commons"},
+  UCH:{src:"img/clubes/UCH.png",tipo:"commons"},
+  UC:{src:"img/clubes/UC.svg",tipo:"commons"},
+  PAL:{src:"img/clubes/PAL.svg",tipo:"commons"},
+  LIM:{src:"img/clubes/LIM.svg",tipo:"estilizado"},
+  EVE:{src:"img/clubes/EVE.png",tipo:"commons"},
+  COQ:{src:"img/clubes/COQ.svg",tipo:"estilizado"},
+  AUD:{src:"img/clubes/AUD.png",tipo:"commons"},
+  HUA:{src:"img/clubes/HUA.svg",tipo:"commons"},
+  OHI:{src:"img/clubes/OHI.svg",tipo:"estilizado"},
+  NUB:{src:"img/clubes/NUB.png",tipo:"commons"},
+  COB:{src:"img/clubes/COB.svg",tipo:"estilizado"},
+  CAL:{src:"img/clubes/CAL.png",tipo:"commons"},
+  LSE:{src:"img/clubes/LSE.svg",tipo:"estilizado"},
+  DCO:{src:"img/clubes/DCO.svg",tipo:"commons"},
+  UDC:{src:"img/clubes/UDC.svg",tipo:"estilizado"},
+  CBL:{src:"img/clubes/CBL.svg",tipo:"commons"},
+  SW:{src:"img/clubes/SW.png",tipo:"commons"},
+  SLQ:{src:"img/clubes/SLQ.jpg",tipo:"commons"},
+  ANT:{src:"img/clubes/ANT.svg",tipo:"estilizado"},
+  MAG:{src:"img/clubes/MAG.png",tipo:"commons"},
+  UES:{src:"img/clubes/UES.svg",tipo:"estilizado"},
+  REC:{src:"img/clubes/REC.svg",tipo:"estilizado"},
+  PMO:{src:"img/clubes/PMO.svg",tipo:"estilizado"},
+  SMA:{src:"img/clubes/SMA.svg",tipo:"estilizado"},
+  COP:{src:"img/clubes/COP.png",tipo:"commons"},
+  TEM:{src:"img/clubes/TEM.svg",tipo:"estilizado"},
+  IQQ:{src:"img/clubes/IQQ.svg",tipo:"estilizado"},
+  USF:{src:"img/clubes/USF.svg",tipo:"estilizado"},
+  CUR:{src:"img/clubes/CUR.png",tipo:"commons"},
+  SCR:{src:"img/clubes/SCR.svg",tipo:"estilizado"},
+  RAN:{src:"img/clubes/RAN.png",tipo:"commons"},
+};
+function escudoArchivo(id){return (typeof ESCUDOS_FOTOS!=='undefined'&&ESCUDOS_FOTOS[id])||null;}

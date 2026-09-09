@@ -460,6 +460,11 @@ function periodistasEra(){
 }
 /* elige un periodista evitando los últimos usados (que no salga siempre el mismo) */
 let _ultPeris=[];
+function fichaPeriodista(per, pregunta){
+  const f=typeof fotoPeriodista==="function"?fotoPeriodista(per&&per.n):null;
+  const cara=f?'<img class="foto-peri" src="'+f.src+'" alt="" width="48" height="48" onerror="this.style.display=\'none\'">':'';
+  return cara+'<div><b>'+(per&&per.n||"")+'</b> <span class="mini">· '+(per&&per.m||"")+'</span><br>'+pregunta+'</div>';
+}
 function eligePeri(){
   const pool=periodistasEra();
   const libres=pool.filter(p=>_ultPeris.indexOf(p.n)<0);
@@ -547,7 +552,7 @@ function modalConferencia(part){
         "<div class='barrita' style='margin-top:3px'><i style='width:"+cl.pct+"%;--c:"+cl.col+"'></i></div>";
       c.appendChild(bar);
       const per=peris[idx]||eligePeri(), q=preguntas[idx];
-      c.appendChild(el("div","resul mitad","<b>"+per.n+"</b> <span class='mini'>· "+per.m+"</span><br>"+q.q));
+      c.appendChild(el("div","resul mitad peri-row", fichaPeriodista(per, q.q)));
       const ops=el("div","ops");
       q.ops.forEach(o=>{
         const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
@@ -564,7 +569,7 @@ function modalConferencia(part){
       /* responder con TUS palabras: se interpreta local (sentimiento), sin gastar plata ni buscar palabra guardada */
       if(typeof analizarOffline==="function"){
         const wrap=el("div"); wrap.style.marginTop="8px";
-        const ta=document.createElement("textarea"); ta.placeholder="…o contestá con tus propias palabras"; ta.maxLength=160;
+        const ta=document.createElement("textarea"); ta.placeholder="…o contesta con tus propias palabras"; ta.maxLength=160;
         ta.style.cssText="display:block;width:100%;box-sizing:border-box;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,.15);min-height:44px;font-family:inherit;font-size:14px";
         const bl=el("button","btn-aqua chico verde","✍️ Contestar con lo mío");
         bl.onclick=()=>{
@@ -1398,7 +1403,7 @@ function seccionPrensa(p,res,P){
     }
     const per=eligePeri();
     const q=elegirPreguntaPrensa(preguntasPostPartido(res,P));
-    zonaPrensa.appendChild(el("div","resul mitad","<b>"+per.n+"</b> <span class='mini'>· "+per.m+"</span><br>"+q.q));
+    zonaPrensa.appendChild(el("div","resul mitad peri-row", fichaPeriodista(per, q.q)));
     const ops=el("div","ops");
     q.ops.forEach(o=>{
       const a=POST_ARQ[o.k]||POST_ARQ.foco;

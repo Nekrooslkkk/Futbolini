@@ -1946,3 +1946,15 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 **Qué:** se buscaron y bajaron fotos **con licencia libre** de Wikimedia Commons (CC BY, CC BY-SA o dominio público), miniaturas ~1280 px. Van en la vista Estadio con crédito en el pie. Santa Cruz (SCR) no tenía foto libre clara: se dejó vacío, no se inventó ni se bajó prensa con copyright. Escudos oficiales y caras de periodistas: no.
 **1 línea:** al entrar a Estadio ves la cancha de verdad, con el crédito de Commons abajo.
 **Riesgos:** fotos estáticas offline. Si falta el jpg, `onerror` esconde el recuadro. Bajo.
+
+## 7.46 · Escudos en archivo + caras de prensa  ✅ (2026-09-09)
+**Archivos:** `img/clubes/{ID}.svg|.png` (32), `img/periodistas/{slug}.jpg|.svg`, `js/data-escudos.js` (`ESCUDOS_FOTOS`), `js/data-periodistas.js` (`PERIODISTAS_FOTOS`, `fotoPeriodista`), `js/ui-partido.js` (ficha con cara en conferencia y rueda post), `img/FUENTES.md`.
+**Qué:** se buscaron y bajaron de Wikimedia Commons escudos con licencia libre (histórico PD o el club lo soltó CC: Colo-Colo 1947, U, Palestino, Cobreloa, Calera, Wanderers, Huachipato 1964, Audax, Curicó, Concepción, Católica) y **19 retratos** de periodistas/ex jugadores que comentan (Palma, Guarello, Bonvallet, Carcuro, etc.). Donde no había licencia clara: SVG estilizado / avatar de iniciales. No se calca marca sin licencia. Homónimos descartados.
+**1 línea:** en la tabla ves el escudo de archivo; en conferencia ves la cara si Commons la tenía.
+**Riesgos:** `<img>` de SVG/PNG chicos. Si 404, el chip queda vacío (el inline SVG sigue de fallback si no hay archivo). Bajo.
+
+## 7.47 · Más escudos Commons + más caras de prensa  ✅ (2026-09-09)
+**Archivos:** `img/clubes/` (U, Everton, Ñublense, San Luis, Copiapó, Rangers, Magallanes, Huachipato), `img/periodistas/` (8 retratos más), `js/data-escudos.js`, `js/data-periodistas.js`, `img/FUENTES.md`.
+**Qué:** segundo pase de Wikimedia Commons. Se bajaron escudos con licencia libre que sí se ven como escudo (chuncho PD de la U, Everton PD, Ñublense, San Luis PD, Copiapó, Rangers PNG, Magallanes, Huachipato SVG del club). Se bajaron retratos CC/PD de Johnny Herrera, Felipe Bianchi, Ignacio Valenzuela, Mario Mauriziano, Claudio Bustíos, Jorge Cubillos, Ernesto Díaz Correa (Día del Locutor) y Rodrigo Sepúlveda (Teletón). Se descartaron homónimos y escudos de ciudad. El resto sigue estilizado / avatar. 7.46 no había salido a GitHub: esto lo incluye.
+**1 línea:** más escudos de verdad en la tabla y más caras en conferencia, sin calcar marca ni inventar retratos.
+**Riesgos:** archivos estáticos offline. `onerror` esconde el img si 404. Bajo.

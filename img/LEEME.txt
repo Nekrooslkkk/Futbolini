@@ -5,8 +5,15 @@ Estadios (7.45):
 - Créditos: img/FUENTES.md y pie de foto en la vista Estadio.
 - Santa Cruz (SCR) no tenía foto libre: no hay archivo.
 
-Escudos:
-- NO hay escudos oficiales. El juego dibuja SVG estilizado (js/data-escudos.js).
+Escudos (7.46–7.47):
+- img/clubes/{ID}.svg/.png/.jpg para los 32.
+- Si Commons tenía licencia libre (histórico PD o el club lo soltó CC), se usó esa.
+- 7.47 sumó: U (chuncho PD), Everton, Ñublense, San Luis, Copiapó, Rangers, Magallanes, Huachipato SVG del club.
+- Si no hay archivo libre: SVG estilizado del juego (no es el oficial).
+- No se calcan marcas sin licencia ni se usan escudos de ciudad.
 
-Periodistas:
-- No hay retratos de personas reales. No se van a bajar.
+Periodistas (7.46–7.47):
+- img/periodistas/{slug}.jpg si Commons tenía foto CC/PD de ESA persona.
+- 7.47 sumó: Johnny Herrera, Felipe Bianchi, Ignacio Valenzuela, Mario Mauriziano, Claudio Bustíos, Jorge Cubillos, Ernesto Díaz Correa, Rodrigo Sepúlveda.
+- Si no hay foto libre: avatar SVG con iniciales (no se inventa una cara).
+- Homónimos se descartaron (Luka Tudor político croata, Rocío González Navas, Nicanor Molinare compositor).

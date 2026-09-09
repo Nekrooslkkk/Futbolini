@@ -217,6 +217,7 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   .mas-item .ic{font-size:22px}
   .mas-item.on{outline:2px solid #2f9313;background:rgba(140,220,90,.28)}
   .foto-est{max-height:170px}
+  .foto-peri{width:44px;height:44px;flex-basis:44px}
 }
 
 /* Teléfonos muy angostos */
