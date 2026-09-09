@@ -529,6 +529,14 @@ function modalConferencia(part){
   const peris=mezcla(periodistasEra().slice()).slice(0,preguntas.length);   /* distintos periodistas */
   let idx=0; const dichos=[];
   modal(box=>{
+    const finalizar=()=>{
+      E.flags["conf_"+E.idx]=true;
+      notificar({t:"Conferencia de prensa dada",tipo:"neutro",bandeja:false,
+        d:"Respondiste "+preguntas.length+" preguntas: «"+dichos.join("» · «")+"». El clima de prensa quedó "+
+          ((typeof climaPrensa==="function"?climaPrensa().etq:"movido"))+" para el partido."});
+      guardar(); cerrarModal(); pantallaPrevia(part); aviso("Conferencia terminada");
+    };
+    const avanzar=()=>{ idx++; if(idx<preguntas.length) pintar(); else finalizar(); };
     const pintar=()=>{
       box.innerHTML="";
       box.appendChild(el("div","cab",'<span class="ic">🎤</span><span>Conferencia de prensa · '+(idx+1)+" de "+preguntas.length+'</span>'));
@@ -548,19 +556,30 @@ function modalConferencia(part){
           if(a.grupos) aplicarGrupos(a.grupos); if(a.rep) aplicarRep(a.rep); if(a.ef) aplicarEfectos(a.ef);
           if(typeof postProc==="function") postProc("@"+per.m.replace(/\s/g,""),"prensa","«"+o.t+"», dijo el DT en conferencia ante "+part.rivalNombre+".","neutro");
           dichos.push(o.t);
-          idx++;
-          if(idx<preguntas.length){ pintar(); }
-          else {
-            E.flags["conf_"+E.idx]=true;
-            notificar({t:"Conferencia de prensa dada",tipo:"neutro",bandeja:false,
-              d:"Respondiste "+preguntas.length+" preguntas: «"+dichos.join("» · «")+"». El clima de prensa quedó "+
-                ((typeof climaPrensa==="function"?climaPrensa().etq:"movido"))+" para el partido."});
-            guardar(); cerrarModal(); pantallaPrevia(part); aviso("Conferencia terminada");
-          }
+          avanzar();
         };
         ops.appendChild(b);
       });
       c.appendChild(ops);
+      /* responder con TUS palabras: se interpreta local (sentimiento), sin gastar plata ni buscar palabra guardada */
+      if(typeof analizarOffline==="function"){
+        const wrap=el("div"); wrap.style.marginTop="8px";
+        const ta=document.createElement("textarea"); ta.placeholder="…o contestá con tus propias palabras"; ta.maxLength=160;
+        ta.style.cssText="display:block;width:100%;box-sizing:border-box;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,.15);min-height:44px;font-family:inherit;font-size:14px";
+        const bl=el("button","btn-aqua chico verde","✍️ Contestar con lo mío");
+        bl.onclick=()=>{
+          const txt=(ta.value||"").trim(); if(!txt){ ta.focus(); return; }
+          const an=analizarOffline(txt); const s=an.sentimiento||0;
+          aplicarGrupos({hinchada:Math.round(s/8), prensa:Math.round(s/13)});
+          if(Math.abs(s)>=6) aplicarEfectos({moral:Math.round(s/14)});
+          if(typeof postProc==="function") postProc("@"+per.m.replace(/\s/g,""),"prensa","El DT respondió: «"+txt.slice(0,90)+"»", s>10?"bueno":(s<-10?"malo":"neutro"));
+          dichos.push('"'+txt.slice(0,32)+(txt.length>32?"…":"")+'"');
+          if(an.consecuencia) aviso(an.consecuencia);
+          avanzar();
+        };
+        wrap.appendChild(ta); wrap.appendChild(bl);
+        c.appendChild(wrap);
+      }
       const x=el("button","btn-aqua ancho gris",idx===0?"No hablar con la prensa":"Cortar acá la conferencia"); x.style.marginTop="6px";
       x.onclick=()=>{ if(idx===0) aplicarGrupos({prensa:-4}); E.flags["conf_"+E.idx]=true; guardar(); cerrarModal(); pantallaPrevia(part); aviso(idx===0?"Te fuiste sin hablar":"Cortaste la conferencia"); };
       c.appendChild(x);

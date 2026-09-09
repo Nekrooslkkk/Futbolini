@@ -1852,3 +1852,15 @@ ponderada de ef: plata/moral/prestigio/capital/riesgo/deuda + grupos + rep). **M
 **Probado:** navegador — botón aparece, marca caliente/frío, contador baja a 1/3, consola limpia.
 **1 línea:** cuando no sabés qué elegir, el ayudante te tira una pista (caliente/tibio/frío), pero solo 3 veces por campeonato.
 **Riesgos:** additivo en abrirDecision. Bajo.
+
+## 7.39 · Conferencia: contestar con tus propias palabras  ✅ (2026-09-08)
+**Archivos:** `js/ui-partido.js` (modalConferencia)
+**Qué:** además de las 3 opciones fijas, en cada pregunta hay un **textarea "✍️ Contestar con lo mío"**.
+Lo que escribís se interpreta con `analizarOffline` (heurística local, sin internet ni plata): el
+sentimiento resultante mueve hinchada (s/8), prensa (s/13) y moral (s/14), postea en Plop con el tono, y
+muestra la consecuencia. Refactoricé el cierre de la conferencia en `finalizar()`/`avanzar()` para no
+duplicar. No es palabra-clave rígida: escribís cualquier cosa y algo lo lee.
+**Probado:** navegador — textarea aparece, mensaje con garra sube la hinchada, la conferencia avanza,
+consola limpia.
+**1 línea:** en la conferencia ya podés escribir tu propia respuesta y el juego la interpreta (tono), sin gastar plata.
+**Riesgos:** refactor de modalConferencia (Grok tocó ui-partido.js; cambio additivo, verificado). Bajo.

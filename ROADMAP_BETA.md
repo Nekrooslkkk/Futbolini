@@ -58,8 +58,8 @@
 - [x] **[MOTOR]** **Clima**: mini-pestaña con simulación tipo Windows Vista. ✅ (7.32)
 - [~] **[MOTOR]** Conferencia de prensa **conectada a los indicadores** y que provoque algo real. *(deuda/caja/moral/hinchada disparan preguntas 7.32; falta texto libre)*
 - [ ] **[GROK/TUYO]** Imágenes de cada periodista.
-- [ ] **[MOTOR]** Respuesta **de texto libre** del usuario, interpretada localmente (sin gastar plata,
-      no por palabra-clave rígida: que ponga cualquier cosa y algo lo interprete → tono).
+- [x] **[MOTOR]** Respuesta **de texto libre** en la conferencia: escribís lo tuyo y `analizarOffline`
+      lo interpreta (tono → hinchada/prensa/moral), sin gastar plata. ✅ (7.39)
 - [ ] **[GROK]** Más preguntas/variantes (hoy "siempre sale lo mismo").
 
 ## 5 · DURANTE EL PARTIDO
