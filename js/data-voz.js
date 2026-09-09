@@ -370,8 +370,8 @@ function tuitDeCtx(ctx){
   return t;
 }
 function tonoDeCtx(ctx){
-  if(/gana|hat_trick|remontada|goleada|clasico_gana|arquero|invicto/.test(ctx)) return "bueno";
-  if(/pierde|expulsion|penal_errado|anulado_var|autogol/.test(ctx)) return "malo";
+  if(/gana|hat_trick|remontada|goleada|clasico_gana|arquero|invicto|atajada_penal|tiroLibre|debut/.test(ctx)) return "bueno";
+  if(/pierde|expulsion|penal_errado|anulado_var|autogol|lesion/.test(ctx)) return "malo";
   return "neutro";
 }
 function ctxDeEvento(P, ev){
@@ -411,6 +411,10 @@ function ctxDeEvento(P, ev){
   if(tipo==="roja"||(tipo==="tarjeta"&&(ev.roja||ev.color==="roja"||ev.rojaDirecta))) return "expulsion";
   if((tipo==="penal"||tipo==="penalRival")&&(ev.penalErrado||ev.err||ev.errado||ev.fallo)) return "penal_errado";
   if(ev.penalErrado) return "penal_errado";
+  /* 7.48 · contextos nuevos (los arma el motor generativo de plop-motor.js) */
+  if((tipo==="penal"||tipo==="penalRival")&&(ev.atajado||ev.save||ev.contenido)) return "atajada_penal";
+  if(tipo==="tiroLibre") return "tiroLibre";
+  if(tipo==="lesion") return "lesion_grave";
   if((tipo==="atajada"||tipo==="save"||ev.arqueroFigura||(tipo==="chance"&&ev.lado==="rival"))&&Math.random()<0.45) return "arquero_figura";
   return null;
 }

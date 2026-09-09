@@ -52,6 +52,7 @@ function plopEstado(){
     marcador:yo+"-"+ot, marcadorInv:ot+"-"+yo,
     goleador:tok("GOLEADOR")||"el 9", figura:tok("FIGURA")||"el 10",
     arquero:tok("ARQUERO")||"el 1", capitan:tok("CAPITAN")||"el capi", dt:(Eg.dt||"el DT"),
+    joven:tok("JOVEN")||"un cabro de inferiores",
     rival:rival, club:(Eg.clubNombre||"el club"),
     pos:(typeof posicionEnTabla==="function")?posicionEnTabla():0,
     sinPerder:(Eg.temporada&&Eg.temporada.sinPerder)||0,
@@ -183,6 +184,34 @@ const PLOP_GRAM={
     if(v==="dato") return "el presunto refuerzo de "+s.club+" tiene números interesantes. por ahora, humo.";
     if(v==="amargado") return "si es verdad que pongan la plata. si es mentira que dejen de vender humo.";
     return s.club+" evalúa un refuerzo. El club no confirma ni desmiente.";
+  },
+  tiroLibre:function(v,s){
+    if(v==="exaltado") return "GOLAZO DE TIRO LIBRE DE "+s.figura.toUpperCase()+" "+P1(FR.wn)+". LA PUSO DONDE NADIE LLEGA "+P1(FR.emoB);
+    if(v==="ironico") return "la barrera saltó, el arquero voló, y "+s.figura+" igual la metió. show privado.";
+    if(v==="dato") return "tiro libre de "+s.figura+" al ángulo. de esos que no se entrenan, se tienen.";
+    if(v==="tierno") return P1(FR.senora)+" ese tiro libre de "+s.figura+" me hizo gritar en la cocina.";
+    return "Tiro libre magistral de "+s.figura+". Fue el detalle del partido.";
+  },
+  atajada_penal:function(v,s){
+    if(v==="exaltado") return s.arquero.toUpperCase()+" LE ATAJÓ EL PENAL A "+s.rival.toUpperCase()+" "+P1(FR.wn)+". ES UNA PARED "+P1(FR.emoB);
+    if(v==="dato") return s.arquero+" contiene el penal. segundo del año que le tapa a un rival. figura.";
+    if(v==="ironico") return "el 9 de "+s.rival+" ya practica penales en el patio de la casa. "+s.arquero+" lo humilló.";
+    if(v==="cotidiano") return "salté del sillón cuando "+s.arquero+" atajó el penal. casi rompo la mesa.";
+    return "Penal atajado por "+s.arquero+". Mantuvo a "+s.club+" en partido.";
+  },
+  lesion_grave:function(v,s){
+    if(v==="amargado") return "se lesionó "+s.figura+" y justo ahora. este club no puede tener nada lindo mucho rato "+P1(FR.emoM);
+    if(v==="tierno") return P1(FR.senora)+" el pobre "+s.figura+" salió lesionado. que se recupere pronto el niño.";
+    if(v==="dato") return s.figura+" sale lesionado. si es de las malas, cambia el resto del torneo de "+s.club+".";
+    if(v==="ironico") return "justo el que jugaba bien. la ley de Murphy es hincha del club rival.";
+    return "Se retira lesionado "+s.figura+". Preocupa de cara a lo que viene.";
+  },
+  debut_juvenil:function(v,s){
+    if(v==="exaltado") return "DEBUTÓ "+s.joven.toUpperCase()+" DE LA CASA "+P1(FR.wn)+". CANTERA ES IDENTIDAD "+P1(FR.emoB);
+    if(v==="tierno") return P1(FR.senora)+" debutó "+s.joven+", un cabro de las inferiores. qué emoción.";
+    if(v==="dato") return "debut de "+s.joven+" en "+s.club+". de la cantera al primer equipo, ojo con ese nombre.";
+    if(v==="ironico") return "sacaron a un veterano y metieron a "+s.joven+". o es fe en la cantera o no había plata. igual bien.";
+    return s.joven+" hace su debut. "+s.club+" apuesta por la casa.";
   }
 };
 
@@ -224,7 +253,11 @@ function generarPlop(ctx){
       const g=generarPlop(ctx);
       if(g) return g;
     }
-    return base(ctx);
+    const b=base(ctx);
+    if(b) return b;
+    /* contexto sin pool aprobado (ej: tiroLibre, lesion_grave): generar siempre */
+    if(PLOP_GRAM[ctx]) return generarPlop(ctx);
+    return null;
   };
   tuitDeCtx._gen=true;
 })();

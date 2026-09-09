@@ -1958,3 +1958,8 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 **Qué:** segundo pase de Wikimedia Commons. Se bajaron escudos con licencia libre que sí se ven como escudo (chuncho PD de la U, Everton PD, Ñublense, San Luis PD, Copiapó, Rangers PNG, Magallanes, Huachipato SVG del club). Se bajaron retratos CC/PD de Johnny Herrera, Felipe Bianchi, Ignacio Valenzuela, Mario Mauriziano, Claudio Bustíos, Jorge Cubillos, Ernesto Díaz Correa (Día del Locutor) y Rodrigo Sepúlveda (Teletón). Se descartaron homónimos y escudos de ciudad. El resto sigue estilizado / avatar. 7.46 no había salido a GitHub: esto lo incluye.
 **1 línea:** más escudos de verdad en la tabla y más caras en conferencia, sin calcar marca ni inventar retratos.
 **Riesgos:** archivos estáticos offline. `onerror` esconde el img si 404. Bajo.
+
+## 7.48 · Más contextos generativos de Plop! + PREP segunda división
+- **plop-motor.js + data-voz.js**: 4 contextos nuevos en el motor generativo — `tiroLibre`, `atajada_penal`, `lesion_grave` (enganchados en ctxDeEvento a eventos reales del partido) y `debut_juvenil` (gramática lista; falta hook de cambio juvenil). tonoDeCtx actualizado. El wrap de tuitDeCtx ahora genera siempre en contextos sin pool. Token JOVEN sumado al estado.
+- **PREP_SEGUNDA.md (nuevo)**: doc de coordinación 3 IAs. Aclara que la Primera B YA está jugable (16 clubes, ~10 con roster real, ascenso/descenso, Copa Chile) y define los dos caminos para "agregar la segunda" (profundizar la B / agregar el 3er nivel Segunda Profesional) + prompt de Grok.
+**Probado:** node --check + harness generativo (los 4 contextos producen con estado real).
