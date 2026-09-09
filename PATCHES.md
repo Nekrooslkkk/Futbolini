@@ -1864,3 +1864,16 @@ duplicar. No es palabra-clave rígida: escribís cualquier cosa y algo lo lee.
 consola limpia.
 **1 línea:** en la conferencia ya podés escribir tu propia respuesta y el juego la interpreta (tono), sin gastar plata.
 **Riesgos:** refactor de modalConferencia (Grok tocó ui-partido.js; cambio additivo, verificado). Bajo.
+
+## 7.40 · Institución: Jugadas de poder (arriesgarse con el capital)  ✅ (2026-09-08)
+**Archivos:** `js/ui.js` (JUGADAS_PODER + hacerJugadaPoder + panel en vistaInstitucion)
+**Qué:** del brief (§9) — el capital institucional ahora deja **hacer más cosas y arriesgarte**. Nuevo
+panel "♟️ Jugadas de poder" en Institución con 5 movidas fuertes: **lobby en la ANFP** (TV/fixture),
+**golpe de autoridad** (camarín), **exprimir sponsors** (plata), **purga en el directorio** (poder) y
+**apretar al arbitraje** (mod de un año). Cada una cuesta capital y tira un dado: sale bien (premio) o
+mal (te explota). Tu **credibilidad baja el riesgo** (`probMalaJugada`: 90 cred → ~22% malo, 20 → ~57%).
+Confirmación con el % de riesgo antes de jugártela; queda en la memoria y en avisos.
+**Probado:** navegador — panel con 5 jugadas, 30 tiradas dieron ~18 buenas/12 malas (prob base 42%),
+credibilidad mueve el riesgo, consola limpia.
+**1 línea:** el capital institucional ya sirve para jugadas de poder arriesgadas (lobby, purga, apretar al pito), con premio o cachetada según tu credibilidad.
+**Riesgos:** additivo en vistaInstitucion + usa aplicarEfectos/Grupos/Rep y E.mods existentes. Bajo.

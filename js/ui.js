@@ -686,6 +686,46 @@ function abrirDecision(d,enModal){
   else { const v=$("#vista"); v.innerHTML=""; pintar(v); window.scrollTo({top:0}); }
 }
 /* ---------------- institución ---------------- */
+/* jugadas de poder: gastás capital para arriesgarte a un premio grande o a que te explote.
+   Tu credibilidad baja el riesgo de que salga mal. */
+const JUGADAS_PODER=[
+ {id:"lobby_anfp",n:"Lobby en la ANFP",ic:"🤝",costo:18,prob:0.42,
+  desc:"Movés tus contactos para pelear mejor reparto de TV y un fixture más amable.",
+  bueno:{ef:{plata:180},grupos:{anfp:6},msg:"Conseguiste un guiño: más plata de TV y calendario amigable."},
+  malo:{grupos:{anfp:-12,prensa:-6},ef:{riesgo:4},msg:"Se filtró la movida: la ANFP se ofende y la prensa habla de tráfico de influencias."}},
+ {id:"golpe_camarin",n:"Golpe de autoridad",ic:"✊",costo:12,prob:0.4,
+  desc:"Parás el camarín en seco: reglas nuevas, disciplina de hierro.",
+  bueno:{ef:{moral:8},grupos:{camarin:8},msg:"El grupo entendió el mensaje: se ordenan y tiran para el mismo lado."},
+  malo:{ef:{moral:-10},grupos:{camarin:-12},msg:"Se resintieron: un referente filtró que sos un dictador."}},
+ {id:"sponsor_agresivo",n:"Exprimir a los sponsors",ic:"💼",costo:15,prob:0.45,
+  desc:"Renegociás los contratos con la marca al límite.",
+  bueno:{ef:{plata:150},grupos:{sponsors:5},msg:"Sacaste más plata sin romper la relación."},
+  malo:{grupos:{sponsors:-14},rep:{credibilidad:-6},msg:"Un sponsor se fue con un portazo público."}},
+ {id:"purga_directorio",n:"Purga en el directorio",ic:"🪑",costo:25,prob:0.5,
+  desc:"Corrés a los que te hacen sombra y ponés gente tuya.",
+  bueno:{grupos:{directorio:10},ef:{capital:12},msg:"Consolidaste poder: el directorio ahora te responde."},
+  malo:{grupos:{directorio:-16,socios:-8},ef:{riesgo:5},msg:"Se armó una interna: te quedaste con enemigos adentro."}},
+ {id:"presion_arbitral",n:"Apretar al arbitraje",ic:"🧑‍⚖️",costo:16,prob:0.5,
+  desc:"Mandás un mensaje fuerte de cara al próximo partido.",
+  bueno:{mod:{id:"favor_arb",n:"Guiño arbitral",ef:{arbitraje:3},anios:1},msg:"El próximo pito parece mirarte con mejores ojos."},
+  malo:{grupos:{anfp:-10},rep:{credibilidad:-5},ef:{riesgo:4},msg:"Te expusiste: ahora el arbitraje te va a mirar con lupa."}}
+];
+function probMalaJugada(j){ return clamp(j.prob-(((E.rep&&E.rep.credibilidad)||50)-50)/200,0.1,0.85); }
+function hacerJugadaPoder(j){
+  if((E.capital||0)<j.costo){ aviso("No te alcanza el capital institucional ("+j.costo+" necesarios)"); return; }
+  if(!confirm(j.n+" — cuesta "+j.costo+" de capital y hay ~"+Math.round(probMalaJugada(j)*100)+"% de que salga mal. ¿Jugártela?")) return;
+  E.capital-=j.costo;
+  const malo=Math.random()<probMalaJugada(j);
+  const res=malo?j.malo:j.bueno;
+  if(res.ef) aplicarEfectos(res.ef);
+  if(res.grupos) aplicarGrupos(res.grupos);
+  if(res.rep) aplicarRep(res.rep);
+  if(res.mod) E.mods.push({id:res.mod.id,n:res.mod.n,hasta:E.anio+(res.mod.anios||1),ef:res.mod.ef||{}});
+  if(typeof recordar==="function") recordar("poder","te la jugaste con «"+j.n+"» y "+(malo?"te salió mal":"te salió bien"),{peso:"medio",tono:malo?"malo":"bueno"});
+  notificar({t:(malo?"❌ ":"✅ ")+"Jugada de poder: "+j.n,tipo:malo?"malo":"bueno",bandeja:false,d:res.msg});
+  aviso((malo?"❌ ":"✅ ")+res.msg);
+  guardar(); render();
+}
 function vistaInstitucion(){
   const v=$("#vista");
   const p=panel("Capital institucional","⚖️","agua");
@@ -695,6 +735,18 @@ function vistaInstitucion(){
     (E.capital>100?" Pasaste los 100: tienes un poder político enorme para hacer lo que quieras.":"")+
     " Este año vas a generar aproximadamente <b>"+signo(capitalAnual())+"</b>."));
   v.appendChild(p);
+
+  /* jugadas de poder (arriesgarse con el capital) */
+  const pp=panel("Jugadas de poder","♟️","alerta");
+  pp.cuerpo.appendChild(el("p","mini","Movidas fuertes: gastás capital para ir por un premio grande… o que te explote. Tu credibilidad ("+Math.round((E.rep&&E.rep.credibilidad)||50)+"/100) baja el riesgo de que salga mal."));
+  JUGADAS_PODER.forEach(j=>{
+    const b=el("button","op"); b.disabled=(E.capital||0)<j.costo;
+    const pm=Math.round(probMalaJugada(j)*100);
+    b.innerHTML='<div class="t">'+j.ic+" "+j.n+" · "+j.costo+' cap.</div><div class="d">'+j.desc+" <span class='mini'>(riesgo de que salga mal: ~"+pm+"%)</span></div>";
+    b.onclick=()=>hacerJugadaPoder(j);
+    pp.cuerpo.appendChild(b);
+  });
+  v.appendChild(pp);
 
   const pg=panel("Grupos de interés","👥");
   GRUPOS.forEach(g=>{

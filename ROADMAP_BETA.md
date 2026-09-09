@@ -105,7 +105,7 @@
 
 ## 9 · INSTITUCIÓN
 - [ ] **[MOTOR]** Opciones realistas; que se entienda lo de **grupos de interés**; poder hacer MÁS cosas.
-- [ ] **[MOTOR]** **Capital institucional** que deje hacer más cosas / arriesgarte (más realista).
+- [x] **[MOTOR]** **Capital institucional** con "Jugadas de poder": gastás capital para arriesgarte a un premio grande o a que te explote (lobby ANFP, golpe de camarín, exprimir sponsors, purga, apretar arbitraje). La credibilidad baja el riesgo. ✅ (7.40)
 
 ## 10 · ESTADIO
 - [ ] **[MOTOR/GROK]** **Modelo 3D** del estadio (o una foto real como mínimo).
