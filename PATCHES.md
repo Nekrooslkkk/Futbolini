@@ -1928,3 +1928,15 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 **Probado:** navegador — 16 escudos en la tabla, 36 en el calendario, barra con escudo; captura; consola limpia.
 **1 línea:** la tabla y el calendario ahora muestran el escudo de cada club — se ve mucho más pro.
 **Riesgos:** additivo con fallback; reusa escudoChip. Bajo.
+
+## 7.44 · Historias: línea de tiempo, épocas que faltaban, futuro y voz  ✅ (2026-09-08)
+**Archivos:** `js/data-historico.js` (nuevo), `js/ui.js`, `js/motor.js`, `js/util.js`, `css/base.css`, `index.html`. Se **borraron** `GROK_PROMPT.md`, `GROK_PROMPTS.md`, `GROK_PROMPT_BETA.md`, `GROK_PROMPT_HISTORIA.md` (ya ejecutados). `GROK_PROMPT_HISTORIAS.md` quedó solo con lo de imágenes.
+**Qué:**
+- **Línea de tiempo** de los 32 clubes (hechos públicos) en Historia. No se inventan citas.
+- **Épocas jugables extra** (concat, no pisan): Limache 2025, Cobreloa 2003, Wanderers 2019, U. Española 2005, Iquique 2014, San Felipe 2009, Magallanes 2023, Curicó 2017, Antofagasta 2018. Sin planteles inventados: si no hay documentado, rellena cantera.
+- **Escenarios futuros 2030→2226** (cercano/medio/lejano): no son hechos; disparan al azar al pasar de año.
+- **Arcos** para SLQ, SMA, COP, TEM, USF, CUR, SCR, RAN + 4 genéricos (tele, joya de cantera, asamblea, naming).
+- **Voz:** más relato, cuerpo técnico, preguntas de copa/ascenso/descenso, tuits. Conferencia usa sit de copa/tabla.
+- **Versión:** Claude había dejado 7.37–7.43 sin subir el número; ahora el juego marca **7.44**.
+**1 línea:** cada club tiene historia que se lee, épocas extra para arrancar, y si la carrera se va al futuro el mundo cambia.
+**Riesgos:** wrap de `nuevoAnio` / `preguntasConferencia` / `ctxDeEvento`. Épocas B pre-2010 se juegan en 2026b con identidad encima. Bajo.

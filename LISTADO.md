@@ -13,7 +13,7 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 5. 🟨 Planteles documentados de los 5 jugables. Faltan minutos, dorsal, contrato real.
 6. 🟨 XI rival: plantel real si existe; si no, apodo del club (5.1l).
 7. ✅ Copa Chile / Libertadores 2026 si el club está (7.33).
-8. ⬜ 1991: fixtures de UCH/UC, no solo CC.
+8. 🟨 1991: fixtures de UCH/UC, no solo CC. Plantel UC 1991 documentado.
 9. ⬜ Migración de save por temporada (no forzar partida nueva cada parche).
 10. ⬜ Verificar cada nombre contra fuente (Transfermarkt / wiki temporada).
 
@@ -25,7 +25,7 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 14. 🟨 Once pesa rol, moral y cansancio (5.1l).
 15. ✅ Árbitro con sesgo visible en previa y en vivo (7.36).
 16. 🟨 Clásico / copa pesan más; más polémica si hay VAR (5.1l).
-17. 🟨 Relato cita titulares (5.1l).
+17. 🟨 Relato cita titulares (5.1l). Pool grande + hist (7.44).
 
 ## C. Institución (no es un equipo, es un club)
 
@@ -62,7 +62,7 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 ## F. Vida del DT (después de que A–E piquen)
 
 41. 🟨 Vida amorosa por época: 1991 presentaciones, 2004 Messenger, 2012+ Match. Charla corta + citas (7.35).
-42. 🟨 Casino: ruleta animada + blackjack. Sigue pudiendo más.
+42. 🟨 Casino: ruleta + blackjack + tragamonedas, monto exacto (7.37).
 43. 🟨 Bienestar baja con racha y con no salir. Respiro existe.
 44. 🟨 Dinastía: hijos crecen, cantera a los 17, sucesor hijo/externo (5.1m).
 

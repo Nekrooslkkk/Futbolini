@@ -564,6 +564,12 @@ tr.cans-medio td.cans-medio,td.cans-medio{color:#8a5a10;font-weight:650}
 .titular{padding:6px 9px;border-radius:6px;margin:5px 0;border-left:3px solid rgba(90,140,200,.5);background:rgba(90,140,200,.07)}
 .titular b{font-size:12.5px}
 
+/* 7.44 · línea de tiempo del club */
+.hito-linea{padding:7px 9px;margin:4px 0;border-radius:6px;border-left:3px solid rgba(20,110,50,.45);
+  background:rgba(20,110,50,.06)}
+.hito-linea b{font-size:12.5px}
+body[data-tema="negro"] .hito-linea{border-left-color:rgba(120,190,255,.45);background:rgba(120,190,255,.08)}
+
 /* 6.35 · cerebro local */
 .cerebro{display:flex;flex-direction:column;gap:6px;margin-top:4px}
 .cere-row{display:flex;align-items:flex-start;gap:9px;padding:7px 9px;border-radius:6px;border:1px solid var(--linea);background:rgba(255,255,255,.04)}

@@ -1,46 +1,41 @@
-# ANALISIS.md — estado real y rumbo (al día · v7.36)
+# ANALISIS.md — estado real y rumbo (al día · v7.44)
 
 > **LEER PRIMERO.** Refleja el estado real del juego hoy. Para el detalle de
-> cada parche, ver `PATCHES.md`. GitHub HEAD de partida: `61958a2` (7.35).
-> Esta copia es **7.36**.
+> cada parche, ver `PATCHES.md`. GitHub HEAD de partida: `2d8a261` (7.43) + este 7.44.
+> Esta copia es **7.44**.
 
-## Dónde estamos (v7.36)
-7.35 + **jugar se siente jugar**: la previa pone Ver en vivo / Dirigir arriba
-(no al fondo del once), el cansancio se ve por cabeza, el árbitro sale con
-chip y sesgo, el escritorio pone el partido primero, y una hinchada en crisis
-cierra la popular.
+## Dónde estamos (v7.44)
+Claude avanzó **7.37–7.43** (casino tragamonedas, pistas del ayudante, conferencia libre,
+jugadas de poder, **ascenso/descenso Primera↔B**, Copa Chile todos los años, escudos
+estilizados en selector/tabla/calendario). No subió el número de versión: quedó en 7.36
+hasta este parche.
+
+**7.44** ejecuta `GROK_PROMPT_HISTORIAS`: línea de tiempo de los 32, épocas extra,
+escenarios futuros, arcos que faltaban y más voz. Prompts ya usados: **borrados**.
 
 | Área | Estado real |
 |---|---|
-| Motor de partido | Estable (7.30). Rasgos pesan (7.19). Relato con pool beta (7.31). |
-| Épocas | 1991, 2026, **2026b (Primera B)**, glorias (U 2011, PAL 1978, EVE 2008, etc.). |
-| Planteles B | Los 16 documentados (nombres reales; stats estimadas). Cantera rellena si faltan. |
-| Copa Chile 2026 | Grupos A–H reales. Top 2 → octavos: si el club está en el cuadro ANFP 2026, el cruce es el real (CBL–COQ, AUD–CC, etc.). Si no, pareja A↔C / B↔D / E↔G / F↔H. |
-| Libertadores 2026 | **Solo COQ (Grupo B) y UC (Grupo D)** a grupos. HUA Fase 2 vs Carabobo. OHI Fase 2 vs Bahia y Fase 3 vs Tolima. Colo-Colo, la U y el resto **no clasificaron**. |
-| Sudamericana 2026 | Primera fase: UCH–PAL (5 mar) y COB–AUD (3 mar, Calama). Grupos: PAL F, AUD G, OHI C (drop desde Lib). |
-| 2027+ | Si terminas 1–4 o ganas Copa Chile → Libertadores (sorteo del juego). 5–8 → Sudamericana. No se copia un sorteo CONMEBOL que no existe. |
-| Objetivos | La B pelea ascenso. Primera 2026 sin cupo pelea Libertadores **2027**. Nadie de Limache ni Cobreloa «clasifica» a la Lib 2026. |
-| Ayudante | Compositor local gratis (`informeSemanal` / `preguntarAyudante`). Cero API. |
-| DTs B (sep 2026) | Verificados al 8/09: COP Erwin Durán, PMO Emilio Mancilla, TEM Emiliano Astorga, USF Juan José Luvera, SCR Dalcio Giovagnoli. |
-| Previa | Clima Vista + canal. CTAs **Ver en vivo / Dirigir** arriba. Chip de árbitro. Cansancio en el XI. (7.36) |
-| Celular | Dock Aero + HUD de partido fijo al pulgar (7.34). Barra de jugar sticky. Desktop ≥720px intacto. |
-| Vida | 1991 presentaciones · 2004 Messenger · 2012+ Match. Sin -e. (7.35) |
-| Contratos | Cláusula de salida con año. Rechazarla enoja al jugador. (7.35) |
-| Estadio | Deuda alta clausura sectores. Hinchada < 22 cierra la popular. (7.36) |
-| Imágenes | Lista en `img/LEEME.txt`. El usuario sube. |
+| Motor de partido | Estable (7.30). Relato con pool beta + hist (7.44). |
+| Liga | Primera + B conectadas: 1 baja, 1 sube (7.41). Copa Chile todos los años. |
+| Libertadores 2026 | Solo COQ (B) y UC (D) a grupos. El resto, no. |
+| Épocas | 1991, 2026, 2026b + glorias previas **y** LIM 2025, CBL 2003, SW 2019, UES 2005, IQQ 2014, USF 2009, MAG 2023, CUR 2017, ANT 2018. |
+| Historia | Línea de tiempo por club (hechos públicos) en la vista Historia. |
+| Futuro | 2030–2226: escenarios generativos al pasar de año. No son hechos. |
+| Escudos | SVG estilizado por código (32 clubes). No oficiales. |
+| Celular | Dock + HUD (7.34). Previa Ver en vivo / Dirigir (7.36). |
+| Institución | Jugadas de poder con capital (7.40). Pistas 3/año (7.38). |
+| Casino | Ruleta + blackjack + tragamonedas, monto exacto (7.37). |
+| Imágenes | Lista corta en `GROK_PROMPT_HISTORIAS.md`. El usuario sube. |
 
-## Lo que quedó honesto-null (no se inventó)
-- Otros partidos del grupo CONMEBOL (los que no juega el jugador) se simulan por fuerza; no se copió el fixture ajeno completo.
-- Cuartos en adelante de Copa Chile 2026: procedural (el cuadro real todavía depende de quién gane octavos).
-- Si el jugador da vuelta la historia (pasa una fase que en 2026 perdió), el siguiente grupo es sorteo del juego, no un grupo CONMEBOL falso.
-- Fotos/escudos oficiales.
-- UC 1991 sigue mayormente generado.
-- Citas atribuidas a personas reales: cero.
-- Fase 7 multi, casino a fondo: no son la beta.
-- Árbitros: nombres **ficticios** (nunca silbantes reales).
+## Lo que quedó honesto-null
+- Planteles de las épocas nuevas **sin lista documentada**: cantera. No se inventan nombres como reales.
+- Fotos/escudos oficiales: no. Estilizados sí.
+- UC 1991: plantel documentado; fixture sigue generado.
+- Citas a personas reales: cero.
+- Fase 7 multi: congelado.
+- `cancha.js` / hilos Plop: otro chat.
 
-## Rumbo que sigue (no 7.36)
-- Hilos 4–6 de Plop (otro chat en `plop-motor.js`), partir `ui.js`.
-- Fotos: las manda el usuario a `img/`.
-- `cancha.js` fome (otro chat).
-- UC 1991: plantel documentado; el fixture sigue generado.
+## Rumbo que sigue
+- Fotos de estadio con licencia libre (el usuario o Grok con Commons).
+- Hilos 4–6 de Plop (`plop-motor.js`), partir `ui.js`.
+- UC 1991 fixture real.

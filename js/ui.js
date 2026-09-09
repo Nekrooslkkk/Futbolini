@@ -348,7 +348,7 @@ function elegirEpoca(id){
           nuevaPartida(id, anio, modo, extra2);
           if(!E || !E.club) throw new Error("nuevaPartida no dejó estado E");
           cerrarModal(); SEC="escritorio"; render();
-          aviso(sel.tipo==="gloria"?("Revivís: "+sel.ep.etq):("Empieza la temporada "+anio));
+          aviso(sel.tipo==="gloria"?("Reviviste: "+sel.ep.etq):("Empieza la temporada "+anio));
         }catch(err){
           console.error("Error al empezar partida:", err);
           aviso("Error al empezar: "+err.message, 6000);
@@ -1319,6 +1319,15 @@ function vistaCalendario(){
 /* ---------------- historia ---------------- */
 function vistaHistoria(){
   const v=$("#vista");
+  /* 7.44 · línea de tiempo real del club (hechos públicos) */
+  if(typeof HISTORIA_LINEA==="object" && HISTORIA_LINEA[E.club]){
+    const ph=panel("Línea del club","📜","agua");
+    HISTORIA_LINEA[E.club].forEach(h=>{
+      ph.cuerpo.appendChild(el("div","hito-linea","<b>"+h.anio+" · "+h.hito+"</b><div class='mini'>"+h.txt+"</div>"));
+    });
+    ph.cuerpo.appendChild(el("p","mini","Hechos públicos. Lo que pasa adentro de la partida es ficción del juego."));
+    v.appendChild(ph);
+  }
   if(E.eraBase===2026 || E.eraBase==="2026b"){
     const p2=panel(E.eraBase==="2026b"?"Época 2026 · Primera B":"Época 2026","📚","agua");
     p2.cuerpo.appendChild(el("p",null,(typeof eraDe==="function"?eraDe(E.eraBase):ERA[2026]).desc));

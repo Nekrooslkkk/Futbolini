@@ -100,7 +100,7 @@ function aplicarCorte2026(){
   const yo=E.tabla[E.club];
   if(yo) E.temporada=Object.assign({sinGanar:0},yo);
   E.flags=E.flags||{}; E.flags.corte2026=true;
-  if(typeof pushNotif==="function") pushNotif("Cortás en agosto","El campeonato ya se jugó hasta el 18/08. Los partidos anteriores están cargados. El próximo es el que sigue.","neutro");
+  if(typeof pushNotif==="function") pushNotif("Cortas en agosto","El campeonato ya se jugó hasta el 18/08. Los partidos anteriores están cargados. El próximo es el que sigue.","neutro");
 }
 function nuevaPartida(clubId,anio,modo,extra){
   let base=baseEra(anio);
