@@ -20,7 +20,8 @@
 - [ ] Todos los huecos argumentales tapados.
 - [ ] Todos los bugs resueltos.
 - [ ] Ciberseguridad + cuentas sólidas.
-- [ ] **Liga chilena completa** (Primera + Primera B + Copa Chile + Libertadores + Sudamericana).
+- [x] **Liga chilena completa** (Primera + Primera B + Copa Chile + Libertadores + Sudamericana) — con
+      **ascenso/descenso** conectando Primera↔B y Copa Chile todos los años. ✅ (7.41)
 - [ ] **Super modo histórico**: desde la creación de cada club hasta **2226** (con modernizaciones
       y problemas propios de cada época futura, escenarios que van cambiando según los cimientos).
 
