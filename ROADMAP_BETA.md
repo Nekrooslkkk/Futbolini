@@ -138,7 +138,7 @@
 - [ ] **[MOTOR]** Lo que te compras: más **visible** y mejor.
 - [ ] **[MOTOR+GROK]** Más **trabajos**; changas → **"pegas"** (chilenizar todo, hoy no es NADA chilensis).
 - [ ] **[GROK]** Vida social: más variedad (no repetido).
-- [ ] **[MOTOR]** **Casino**: tragamonedas, apostar cualquier monto, más realista y lindo.
+- [x] **[MOTOR]** **Casino**: tragamonedas (temática fútbol, RTP ~90%) + apostar cualquier monto (input numérico + slider) en ruleta y slot. ✅ (7.37)
 
 ## 15 · UI GLOBAL / AVISOS / DEV / DIOS / LOGIN
 - [x] **[MOTOR]** **Avisos**: **campana grande flotante** abajo a la derecha (con badge); al apretar,

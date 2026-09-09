@@ -98,6 +98,71 @@ function pintarHistRuleta(c){
   });
   c.appendChild(fila);
 }
+/* ---------- tragamonedas (temática fútbol; la casa gana a la larga, RTP ~88%) ---------- */
+const TRAGA_SIMBOLOS=[
+  {s:"⚽",w:6,x3:5},   {s:"👟",w:5,x3:6},   {s:"🥅",w:4,x3:9},
+  {s:"🧤",w:3,x3:14},  {s:"🔥",w:2,x3:24},  {s:"🏆",w:1,x3:75}
+];
+function tragaGirarUno(){
+  const tot=TRAGA_SIMBOLOS.reduce((s,x)=>s+x.w,0);
+  let r=Math.random()*tot;
+  for(const x of TRAGA_SIMBOLOS){ if((r-=x.w)<0) return x; }
+  return TRAGA_SIMBOLOS[0];
+}
+function girarTragamonedas(monto){
+  monto=Math.max(1,Math.min(Math.round(monto)||1,E.personal.bolsillo));
+  const r=[tragaGirarUno(),tragaGirarUno(),tragaGirarUno()];
+  let mult=0, linea="";
+  if(r[0].s===r[1].s && r[1].s===r[2].s){ mult=r[0].x3; linea="¡TRIPLE "+r[0].s+"!"; }
+  else if(r[0].s===r[1].s || r[1].s===r[2].s || r[0].s===r[2].s){ mult=1.2; linea="Par"; }
+  const pago=Math.round(monto*mult);
+  const neto=pago-monto;
+  E.personal.bolsillo=Math.round((E.personal.bolsillo||0)-monto+pago);
+  E.tragaHist=(E.tragaHist||[]); E.tragaHist.unshift(r.map(x=>x.s).join(" ")); if(E.tragaHist.length>8) E.tragaHist.pop();
+  return { reels:r.map(x=>x.s), mult:mult, pago:pago, neto:neto, gano:neto>0, linea:linea, monto:monto };
+}
+function modalTragamonedas(){
+  let monto=Math.max(2,Math.min(20,E.personal.bolsillo||0)), ultimo=null, girando=false;
+  modal(box=>{
+    const pintar=()=>{
+      box.innerHTML="";
+      box.appendChild(el("div","cab",'<span class="ic">🎰</span><span>Casino · tragamonedas</span>'));
+      const c=el("div","cuerpo"); box.appendChild(c);
+      c.appendChild(el("p","mini","Tres rodillos. Triple paga fuerte (🏆 hasta 75x), par paga 1,5x. La casa gana a la larga. Bolsillo: <b>"+plata(E.personal.bolsillo||0)+"</b>."));
+      const car=el("div","traga-car");
+      car.style.cssText="display:flex;gap:8px;justify-content:center;font-size:44px;margin:6px 0;padding:10px;border-radius:10px;background:rgba(0,40,25,.18);border:1px solid rgba(255,255,255,.35)";
+      (ultimo?ultimo.reels:["❔","❔","❔"]).forEach(s=>{ const d=el("div","",girando?"🎲":s); d.style.cssText="width:64px;text-align:center"; car.appendChild(d); });
+      c.appendChild(car);
+      if(E.tragaHist&&E.tragaHist.length) c.appendChild(el("p","mini","Últimas: "+E.tragaHist.slice(0,6).join("  ·  ")));
+      const maxB=Math.max(1,E.personal.bolsillo||0);
+      monto=Math.min(monto,maxB);
+      c.appendChild(el("label","lb","Apuesta: <b>"+plata(monto)+"</b>"));
+      const row=el("div"); row.style.cssText="display:flex;gap:8px;align-items:center";
+      const sm=el("input"); sm.type="range"; sm.min=1; sm.max=maxB; sm.value=monto; sm.className="rango"; sm.style.flex="1";
+      const nm=el("input"); nm.type="number"; nm.min=1; nm.max=maxB; nm.value=monto; nm.style.cssText="width:88px;padding:7px;border-radius:8px;border:1px solid rgba(0,0,0,.15)";
+      const sync=v=>{ monto=Math.max(1,Math.min(Math.round(v)||1,maxB)); sm.value=monto; nm.value=monto; const b=c.querySelector(".lb b"); if(b) b.textContent=plata(monto); };
+      sm.oninput=()=>sync(sm.value); nm.oninput=()=>sync(nm.value);
+      row.appendChild(sm); row.appendChild(nm); c.appendChild(row);
+      const bg=el("button","btn-aqua ancho verde"+((E.personal.bolsillo||0)<=0||girando?" gris":""),girando?"Girando…":"🎰 ¡Girar!");
+      bg.disabled=(E.personal.bolsillo||0)<=0||girando;
+      bg.onclick=()=>{
+        if(girando||(E.personal.bolsillo||0)<=0) return;
+        girando=true; pintar();
+        let k=0; const iv=setInterval(()=>{ const ds=car.querySelectorAll("div"); ds.forEach(d=>d.textContent=elige(TRAGA_SIMBOLOS).s); k++; },90);
+        setTimeout(()=>{ clearInterval(iv); ultimo=girarTragamonedas(monto); girando=false; guardar(); pintar(); },1400);
+      };
+      c.appendChild(bg);
+      if(ultimo&&!girando){
+        c.appendChild(el("div","resul "+(ultimo.gano?"bien":"mal"),
+          ultimo.reels.join(" ")+" — "+(ultimo.mult>=3?("🎉 "+ultimo.linea+" Ganaste "+plata(ultimo.pago)+" (neto +"+plata(ultimo.neto)+")"):(ultimo.mult>1?("Par: recuperás "+plata(ultimo.pago)+" (neto +"+plata(ultimo.neto)+")"):("Nada. Perdiste "+plata(ultimo.monto)+".")))));
+      }
+      const br=el("button","btn-aqua ancho","🎡 Ir a la ruleta"); br.style.marginTop="8px"; br.onclick=()=>{ cerrarModal(); modalCasino(); }; c.appendChild(br);
+      if((E.personal.bolsillo||0)<=0){ const bd=el("button","btn-aqua ancho rojo","Meter mano a la caja del club"); bd.style.marginTop="6px"; bd.onclick=()=>{ cerrarModal(); modalDesviar(); }; c.appendChild(bd); }
+      const x=el("button","btn-aqua ancho gris","Salir del casino"); x.style.marginTop="6px"; x.onclick=()=>{ cerrarModal(); render(); }; c.appendChild(x);
+    };
+    pintar();
+  });
+}
 function modalCasino(){
   let apId="rojo", monto=Math.max(5,Math.min(20,E.personal.bolsillo)), plenoNum=7, ultimo=null, girando=false;
   modal(box=>{
@@ -136,9 +201,12 @@ function modalCasino(){
       const maxB=Math.max(1,E.personal.bolsillo);
       monto=Math.min(monto,maxB);
       c.appendChild(el("label","lb","Ficha: <b>"+plata(monto)+"</b>"));
-      const sm=el("input"); sm.type="range"; sm.min=1; sm.max=maxB; sm.value=monto; sm.className="rango";
-      sm.oninput=()=>{ monto=parseInt(sm.value,10); const bs=c.querySelectorAll(".lb b"); if(bs.length) bs[bs.length-1].textContent=plata(monto); };
-      c.appendChild(sm);
+      const rowM=el("div"); rowM.style.cssText="display:flex;gap:8px;align-items:center";
+      const sm=el("input"); sm.type="range"; sm.min=1; sm.max=maxB; sm.value=monto; sm.className="rango"; sm.style.flex="1";
+      const nm=el("input"); nm.type="number"; nm.min=1; nm.max=maxB; nm.value=monto; nm.style.cssText="width:88px;padding:7px;border-radius:8px;border:1px solid rgba(0,0,0,.15)";
+      const syncM=v=>{ monto=Math.max(1,Math.min(parseInt(v,10)||1,maxB)); sm.value=monto; nm.value=monto; const bs=c.querySelectorAll(".lb b"); if(bs.length) bs[bs.length-1].textContent=plata(monto); };
+      sm.oninput=()=>syncM(sm.value); nm.oninput=()=>syncM(nm.value);
+      rowM.appendChild(sm); rowM.appendChild(nm); c.appendChild(rowM);
       const bg=el("button","btn-aqua ancho verde"+(E.personal.bolsillo<=0||girando?" gris":""),girando?"La bola corre…":"Girar la ruleta");
       bg.disabled=E.personal.bolsillo<=0||girando;
       bg.onclick=()=>{
@@ -161,8 +229,11 @@ function modalCasino(){
         c.appendChild(el("div","resul "+(ultimo.gano?"bien":"mal"),
           "Salió el <b>"+ultimo.n+" "+ultimo.color+"</b>. "+(ultimo.gano?"Ganaste "+plata(ultimo.pago)+" (neto "+plata(ultimo.neto)+").":"Perdiste "+plata(-ultimo.neto)+".")));
       }
-      const bj=el("button","btn-aqua ancho","Ir al blackjack");
-      bj.style.marginTop="8px"; bj.onclick=()=>{ cerrarModal(); modalBlackjack(); };
+      const bt=el("button","btn-aqua ancho","🎰 Tragamonedas");
+      bt.style.marginTop="8px"; bt.onclick=()=>{ cerrarModal(); modalTragamonedas(); };
+      c.appendChild(bt);
+      const bj=el("button","btn-aqua ancho","🃏 Ir al blackjack");
+      bj.style.marginTop="6px"; bj.onclick=()=>{ cerrarModal(); modalBlackjack(); };
       c.appendChild(bj);
       if(E.personal.bolsillo<=0){
         const bd=el("button","btn-aqua ancho rojo","Meter mano a la caja del club"); bd.style.marginTop="6px";
@@ -201,7 +272,7 @@ function modalDesviar(){
 /* panel para la sección Vida (casino personal) */
 function panelCasino(){
   const p=panel("Casino","🎰");
-  p.cuerpo.appendChild(el("p","mini","Plata personal. Ruleta europea y blackjack (la casa gana a la larga). Bolsillo: <b>"+plata(E.personal.bolsillo)+"</b>."));
+  p.cuerpo.appendChild(el("p","mini","Plata personal. Ruleta, tragamonedas y blackjack — apostá el monto que quieras (la casa gana a la larga). Bolsillo: <b>"+plata(E.personal.bolsillo)+"</b>."));
   const b=el("button","btn-aqua ancho verde","Ruleta");
   b.onclick=modalCasino;
   p.cuerpo.appendChild(b);

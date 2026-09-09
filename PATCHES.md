@@ -1828,3 +1828,17 @@ toggle fuera. Consola limpia.
 - **Relato de arranque:** más líneas de los primeros minutos (`data-36.js`, conserva `_beta` y `_35`).
 **1 línea:** para jugar no hay que bajar al fondo del once, ves quién está cansado y quién pita, y una hinchada en crisis te cierra la popular.
 **Riesgos:** CSS sticky de la barra de jugar (desktop top ~96px, celular bajo el header). `clausuraFactor` ahora mira también `flags.tribunaCerrada`. Bajo.
+
+## 7.37 · Casino: tragamonedas + apostar cualquier monto  ✅ (2026-09-08)
+**Archivos:** `js/casino.js` (archivo que Grok no tocó, cero colisión)
+**Qué:** del brief (§14 Vida) — el casino tenía ruleta + blackjack; faltaba la tragamonedas y apostar
+libre.
+- **Tragamonedas** temática fútbol (`girarTragamonedas` + `modalTragamonedas`): 3 rodillos con símbolos
+  ponderados (⚽👟🥅🧤🔥🏆), triple paga fuerte (🏆 75x), par 1.2x. **RTP ~90%** (la casa gana ~10%,
+  verificado con 500k giros). Animación de rodillos girando, historial de últimas jugadas.
+- **Apostar cualquier monto**: input **numérico** exacto además del slider, tanto en la ruleta como en la
+  tragamonedas (antes solo slider). Botones de navegación entre ruleta / tragamonedas / blackjack.
+**Probado:** node --check + navegador (RTP 90.1%, modal abre con input numérico, botón en la ruleta,
+50k giros sin romper). Consola limpia.
+**1 línea:** el casino ahora tiene tragamonedas con onda futbolera y podés apostar el monto exacto que quieras.
+**Riesgos:** aislado en casino.js (Grok no lo tocó). Bajo.
