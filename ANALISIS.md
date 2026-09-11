@@ -1,8 +1,15 @@
-# ANALISIS.md — estado real y rumbo (al día · v7.44)
+# ANALISIS.md — estado real y rumbo (al día · v7.52)
 
 > **LEER PRIMERO.** Refleja el estado real del juego hoy. Para el detalle de
-> cada parche, ver `PATCHES.md`. GitHub HEAD de partida: `2d8a261` (7.43) + este 7.44.
-> Esta copia es **7.44**.
+> cada parche, ver `PATCHES.md`. HEAD: `e7d1b70` (7.52).
+
+## Actualización 7.48–7.52 (Claude)
+- **7.48** Más contextos generativos de Plop! (tiro libre, atajada de penal, lesión, debut).
+- **7.49** **Segunda División Profesional (3er nivel)** jugable: 14 clubes reales (`data-segunda2026.js`), rosters cantera.
+- **7.50** **Ascenso/descenso de 3 niveles** Primera ↔ B ↔ Segunda.
+- **7.51** FIX: la Segunda recibía el calendario de Primera → arreglado (round-robin propio); esto rompía el avance post-partido.
+- **7.52** Botón Avanzar: confirma antes de cerrar la temporada (avance irreversible).
+- **Pendiente:** planteles reales de Segunda (Grok, ver `GROK_TAREAS.md`), formato grupos+liguilla, Copa de la Liga/Supercopa.
 
 ## Dónde estamos (v7.44)
 Claude avanzó **7.37–7.43** (casino tragamonedas, pistas del ayudante, conferencia libre,
