@@ -1978,3 +1978,6 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 - **motor.js**: título de campeón usa el nombre de la división (Segunda/B/Primera). El fin de temporada ya dispara el ascenso de 3 niveles.
 - **ui-partido.js**: título del partido muestra "Segunda División · fecha N".
 **Probado:** headless — calendario 26 fechas con rivales de Segunda, temporada completa, procesarSemanaPostPartido OK, 0 errores.
+
+## 7.52 · Botón Avanzar: confirmar antes de cerrar la temporada
+- **ui.js**: `avanzar()` cerraba la temporada de una (premios, ascensos/descensos, salto de año) sin preguntar. Ahora confirma antes, avisando que es irreversible. El resto del botón ya obligaba lo obligatorio (crisis → decisiones bloqueantes → atender fuertes → previa/preguntas) y el ⏩ "hasta fin de temporada" ya confirmaba. Con el fix del calendario de Segunda (7.51), el avance post-partido ya funciona en las tres divisiones.

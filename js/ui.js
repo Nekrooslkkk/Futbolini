@@ -2446,7 +2446,13 @@ function avanzar(){
     if(fuertes.length){ E.flags[kf]=true; modalAtiende(fuertes); return; }
   }
   const part=proximoPartido();
-  if(!part){ cerrarTemporada(); return; }
+  if(!part){
+    /* 7.52 · el cierre de temporada avanza TODO de una (premios, ascensos/descensos,
+       salto de año): confirmar antes, es irreversible. */
+    const conf=(typeof confirm==="function")?confirm("Se acabó el calendario "+E.anio+". Al cerrar la temporada se reparten premios, se juegan los ascensos y descensos, y saltas al año siguiente. Esto no se puede deshacer.\n\n¿Cerrar la temporada?"):true;
+    if(conf) cerrarTemporada();
+    return;
+  }
   if(!part.jugado){ modalAvancePartido(part); return; }
   const r=procesarSemanaPostPartido();
   if(typeof chequearTinderMentira==="function") chequearTinderMentira();
