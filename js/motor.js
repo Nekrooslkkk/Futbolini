@@ -1016,8 +1016,8 @@ function crisisActiva(){
 /* ---------------- fin de temporada ---------------- */
 /* ---------- ascenso / descenso (Primera 2026 ↔ Primera B 2026b) ----------
    La división del jugador se juega de verdad; la otra se simula por fuerza.
-   Cada temporada: 1 desciende de Primera y 1 asciende de la B (se intercambian).
-   Si el que cambia es el club del jugador, cambia su eraBase → juega la otra el año que viene. */
+   Cada temporada bajan/suben los cupos reales entre niveles (ver _cuposDiv: Primera↔B = 2,
+   B↔Segunda = 1). Si el que cambia es el club del jugador, cambia su eraBase → juega la otra el año que viene. */
 function initLigaMod(){
   if(!E || E.ligaMod) return;
   if(!(E.eraBase===2026 || E.eraBase==="2026b" || E.eraBase==="2026c")) return;
@@ -1032,38 +1032,53 @@ function _ordenRealDiv(ids){ return ids.slice().sort((a,b)=>{ const A=E.tabla[a]
 function _ordenSimDiv(ids){ return ids.slice().map(id=>({id:id,p:_fuerzaClubId(id)+ri(-14,14)})).sort((a,b)=>b.p-a.p).map(x=>x.id); }
 function nombreDeClub(id){ const m=(typeof clubMapaTodos==="function")?clubMapaTodos():{}; const c=m[id]||CLUB_POR_ID[id]; return (c&&(c.n||c.c))||id; }
 function _nombreDiv(t){ return t===2026?"Primera División":(t==="2026b"?"Primera B":(t==="2026c"?"Segunda División":"la liga")); }
+/* 7.63 · cupos reales de ascenso/descenso por par de divisiones.
+   Primera 2026 baja 2 (los reales) y la B sube 2 (campeón + liguilla) → tamaños 16/16 intactos.
+   B↔Segunda: 1 (campeón de Segunda sube; el último de la B baja). Balanceado = no cambia el nº de clubes. */
+function _cuposDiv(up,lo){ return (up===2026 && lo==="2026b")?2:1; }
+/* nombres de una lista de ids como texto ("A", "A y B", "A, B y C") */
+function _nombresLista(ids){
+  const ns=(ids||[]).map(id=>(typeof nombreDeClub==="function")?nombreDeClub(id):id);
+  if(!ns.length) return "";
+  if(ns.length===1) return ns[0];
+  return ns.slice(0,-1).join(", ")+" y "+ns[ns.length-1];
+}
 function procesarAscensoDescenso(){
   if(!E || !(E.eraBase===2026 || E.eraBase==="2026b" || E.eraBase==="2026c")) return null;
   initLigaMod(); if(!E.ligaMod) return null;
-  /* 7.50 · cadena de divisiones (2 o 3 niveles). Para cada par adyacente:
-     baja el último del de arriba, sube el campeón del de abajo. Solo la división
-     del jugador se ordena por su tabla real; las otras se simulan por fuerza. */
+  /* 7.50/7.63 · cadena de divisiones (2 o 3 niveles). Para cada par adyacente bajan/suben
+     los N cupos reales. Solo la división del jugador se ordena por su tabla real; las otras
+     se simulan por fuerza. */
   const tiers=[2026,"2026b"]; if(E.ligaMod["2026c"]) tiers.push("2026c");
   const orden={};
   tiers.forEach(t=>{ const ids=(E.ligaMod[t]||[]).slice(); orden[t]=(E.eraBase===t)?_ordenRealDiv(ids):_ordenSimDiv(ids); });
   const cambios=[];
   for(let i=0;i<tiers.length-1;i++){
     const up=tiers[i], lo=tiers[i+1];
-    const baja=orden[up][orden[up].length-1], sube=orden[lo][0];
-    if(baja && sube && baja!==sube) cambios.push({up:up,lo:lo,baja:baja,sube:sube});
+    const n=_cuposDiv(up,lo);
+    const bajan=orden[up].slice(-n).filter(Boolean);
+    const suben=orden[lo].slice(0,n).filter(Boolean);
+    if(bajan.length && suben.length) cambios.push({up:up,lo:lo,bajan:bajan,suben:suben});
   }
   if(!cambios.length) return null;
   cambios.forEach(c=>{
-    E.ligaMod[c.up]=E.ligaMod[c.up].filter(id=>id!==c.baja).concat([c.sube]);
-    E.ligaMod[c.lo]=E.ligaMod[c.lo].filter(id=>id!==c.sube).concat([c.baja]);
+    E.ligaMod[c.up]=E.ligaMod[c.up].filter(id=>c.bajan.indexOf(id)<0).concat(c.suben);
+    E.ligaMod[c.lo]=E.ligaMod[c.lo].filter(id=>c.suben.indexOf(id)<0).concat(c.bajan);
   });
   let msg=null;
   cambios.forEach(c=>{
-    if(c.sube===E.club){ E.eraBase=c.up; msg={tipo:"ascenso",baja:c.baja,sube:c.sube,up:c.up,lo:c.lo}; }
-    else if(c.baja===E.club){ E.eraBase=c.lo; msg={tipo:"descenso",baja:c.baja,sube:c.sube,up:c.up,lo:c.lo}; }
+    if(c.suben.indexOf(E.club)>=0){ E.eraBase=c.up; msg={tipo:"ascenso",baja:c.bajan[0],sube:E.club,up:c.up,lo:c.lo,bajan:c.bajan,suben:c.suben}; }
+    else if(c.bajan.indexOf(E.club)>=0){ E.eraBase=c.lo; msg={tipo:"descenso",baja:E.club,sube:c.suben[0],up:c.up,lo:c.lo,bajan:c.bajan,suben:c.suben}; }
   });
-  if(!msg) msg={tipo:"otros",baja:cambios[0].baja,sube:cambios[0].sube,up:cambios[0].up,lo:cambios[0].lo};
+  if(!msg){ const c=cambios[0]; msg={tipo:"otros",baja:c.bajan[0],sube:c.suben[0],up:c.up,lo:c.lo,bajan:c.bajan,suben:c.suben}; }
   E.ascensoMsg=msg;
   if(typeof activarLiga==="function") activarLiga(E.eraBase);
   if(typeof notificar==="function"){
-    if(msg.tipo==="ascenso") notificar({t:"🎉 ¡ASCENSO a "+_nombreDiv(msg.up)+"!",tipo:"bueno",bandeja:true,d:E.clubNombre+" sube. Bajó "+nombreDeClub(msg.baja)+". El año que viene se juega en "+_nombreDiv(msg.up)+"."});
-    else if(msg.tipo==="descenso") notificar({t:"📉 Descenso a "+_nombreDiv(msg.lo),tipo:"malo",bandeja:true,d:E.clubNombre+" perdió la categoría. Subió "+nombreDeClub(msg.sube)+". El año que viene se pelea el ascenso en "+_nombreDiv(msg.lo)+"."});
-    else notificar({t:"Ascensos y descensos",tipo:"neutro",bandeja:false,d:"En el ascenso subió "+nombreDeClub(msg.sube)+" y bajó "+nombreDeClub(msg.baja)+"."});
+    /* "los que bajaron con vos" / "los que subieron con vos": el resto de los cupos aparte del jugador */
+    const otrosBajan=(msg.bajan||[]).filter(id=>id!==E.club), otrosSuben=(msg.suben||[]).filter(id=>id!==E.club);
+    if(msg.tipo==="ascenso") notificar({t:"🎉 ¡ASCENSO a "+_nombreDiv(msg.up)+"!",tipo:"bueno",bandeja:true,d:E.clubNombre+" sube"+(otrosSuben.length?" junto a "+_nombresLista(otrosSuben):"")+". Bajó "+_nombresLista(msg.bajan)+". El año que viene se juega en "+_nombreDiv(msg.up)+"."});
+    else if(msg.tipo==="descenso") notificar({t:"📉 Descenso a "+_nombreDiv(msg.lo),tipo:"malo",bandeja:true,d:E.clubNombre+" perdió la categoría"+(otrosBajan.length?" junto a "+_nombresLista(otrosBajan):"")+". Subió "+_nombresLista(msg.suben)+". El año que viene se pelea el ascenso en "+_nombreDiv(msg.lo)+"."});
+    else notificar({t:"Ascensos y descensos",tipo:"neutro",bandeja:false,d:"En "+_nombreDiv(msg.lo)+" subió "+_nombresLista(msg.suben)+" y bajó "+_nombresLista(msg.bajan)+"."});
   }
   if(typeof recordar==="function" && msg.tipo!=="otros") recordar("categoria",(msg.tipo==="ascenso"?"ascendiste a "+_nombreDiv(msg.up)+" con ":"descendiste a "+_nombreDiv(msg.lo)+" con ")+E.clubNombre,{peso:"alto",tono:msg.tipo==="ascenso"?"bueno":"malo"});
   return msg;

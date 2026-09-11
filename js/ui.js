@@ -2618,10 +2618,12 @@ function cerrarTemporada(){
     p.cuerpo.appendChild(fila("Deuda",plata(E.deuda)));
     p.cuerpo.appendChild(el("div","resul "+(r.ev.nivel==="excelente"||r.ev.nivel==="cumplido"?"bien":"mal"),"<b>El directorio:</b> "+r.ev.txt));
     if(r.asc){
-      const nn=(typeof nombreDeClub==="function")?nombreDeClub:(x=>x);
-      if(r.asc.tipo==="ascenso") p.cuerpo.appendChild(el("div","resul bien","<b>🎉 ¡ASCENSO!</b> "+E.clubNombre+" sube a Primera División. Baja "+nn(r.asc.baja)+". El año que viene, la máxima categoría."));
-      else if(r.asc.tipo==="descenso") p.cuerpo.appendChild(el("div","resul mal","<b>📉 DESCENSO.</b> "+E.clubNombre+" pierde la categoría y baja a la Primera B. Sube "+nn(r.asc.sube)+". El año que viene, a pelear el ascenso."));
-      else if(r.asc.tipo==="otros") p.cuerpo.appendChild(el("p","mini","🔁 En el ascenso: subió <b>"+nn(r.asc.sube)+"</b> y bajó <b>"+nn(r.asc.baja)+"</b>."));
+      const nd=(typeof _nombreDiv==="function")?_nombreDiv:(t=>String(t));
+      const nl=(typeof _nombresLista==="function")?_nombresLista:(a=>(a||[]).join(", "));
+      const otrosB=(r.asc.bajan||[]).filter(id=>id!==E.club), otrosS=(r.asc.suben||[]).filter(id=>id!==E.club);
+      if(r.asc.tipo==="ascenso") p.cuerpo.appendChild(el("div","resul bien","<b>🎉 ¡ASCENSO!</b> "+E.clubNombre+" sube a "+nd(r.asc.up)+(otrosS.length?" junto a "+nl(otrosS):"")+". Baja "+nl(r.asc.bajan)+". El año que viene, arriba."));
+      else if(r.asc.tipo==="descenso") p.cuerpo.appendChild(el("div","resul mal","<b>📉 DESCENSO.</b> "+E.clubNombre+" pierde la categoría y baja a "+nd(r.asc.lo)+(otrosB.length?" junto a "+nl(otrosB):"")+". Sube "+nl(r.asc.suben)+". El año que viene, a pelear el ascenso."));
+      else if(r.asc.tipo==="otros") p.cuerpo.appendChild(el("p","mini","🔁 En "+nd(r.asc.lo)+": subió <b>"+nl(r.asc.suben)+"</b> y bajó <b>"+nl(r.asc.bajan)+"</b>."));
     }
     const tot=E.coincidencias.length+E.divergencias.length;
     if(tot) p.cuerpo.appendChild(el("p","mini","Fidelidad histórica del año: "+Math.round(E.coincidencias.length*100/tot)+"%."));

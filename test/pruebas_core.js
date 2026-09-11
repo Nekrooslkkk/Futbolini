@@ -75,8 +75,11 @@
       nuevaPartida("CC",2026,"historico");
       initLigaMod();
       E.tabla={}; (E.ligaMod[2026]||[]).forEach(function(id,i){ E.tabla[id]={pts:(id==="CC"?1:40+i),gf:10,gc:60}; });
+      var nAntes=(E.ligaMod[2026]||[]).length;
       var m=procesarAscensoDescenso();
       ok(m && m.tipo==="descenso" && E.eraBase==="2026b", "colista de Primera baja a la B (2 niveles intacto)");
+      ok(m && (m.bajan||[]).length===2, "Primera baja 2 clubes (cupo real): "+((m&&m.bajan)||[]).length);
+      ok((E.ligaMod[2026]||[]).length===nAntes, "Primera conserva su tamaño tras el recambio ("+(E.ligaMod[2026]||[]).length+")");
     }, "Descenso Primera→B");
 
     /* T5 · Copa Chile corre sin reventar */

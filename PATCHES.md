@@ -2029,3 +2029,11 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 - **ui.js**: `pintarMenu` agrega la píldora de Cuenta; arranque prende `nav-lateral` por defecto (pref. `futbolini3_lateral` en Store); `vistaAjustes` trae conmutador **Barra lateral (Wii) / Pestañas arriba**.
 - **util.js**: VERSION 7.55 → **7.62**.
 **Probado:** node --check + suite 26/26 + capturas headless a 1280px (lateral Wii, cuenta fuera de la barra) y 390px (dock intacto, sin fuga del lateral).
+
+## 7.63 · Ascenso/descenso con los cupos REALES (Primera baja 2)
+- **motor.js** `procesarAscensoDescenso`: antes bajaba/subía **1** por par de divisiones. Ahora cada par usa sus cupos reales vía **`_cuposDiv(up,lo)`**: **Primera↔B = 2** (los 2 reales que bajan; la B sube campeón + liguilla) y **B↔Segunda = 1**. Los recambios son balanceados (bajan N, suben N) → los tamaños 16/16/14 **no cambian**. `msg` ahora trae `bajan`/`suben` (arrays) además de `baja`/`sube` (compat). Helper **`_nombresLista(ids)`** para redactar "A, B y C".
+- Avisos de ascenso/descenso enriquecidos: dicen **con quién** bajaste/subiste y usan `_nombreDiv` (ya no hardcodean "Primera B").
+- **ui.js** (balance de fin de temporada): el bloque de ascenso/descenso usa `_nombreDiv(up/lo)` + `_nombresLista` (antes decía siempre "Primera División"/"Primera B", mal para 3 niveles/2 cupos).
+- **test/pruebas_core.js**: +2 checks (Primera baja 2 clubes; Primera conserva su tamaño). Suite **28/28**.
+- **util.js**: VERSION 7.62 → **7.63**.
+**Probado:** node --check + suite 28/28 verde.
