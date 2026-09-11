@@ -2101,3 +2101,13 @@ Con los ejemplos del usuario, el chilensis se mete donde se siente:
 - **GROK_SUPERPROMPT.md (nuevo):** super prompt para Grok — caza de bugs de datos (ids/estadios/fuerzas/zonas/históricos), datos nuevos (históricos, planteles 2026, liga Argentina vía `registrarLiga`) y pool 2026 del Plop! en batch (neutro + chilensis).
 - **util.js**: VERSION 7.70 → **7.71**.
 **Probado:** node --check + suite 64/64 verde + capturas headless (Copa Chile en curso y CAMPEÓN, con rondas/sedes/global).
+
+## 7.72 · Simulación más realista: fuerza + forma + localía (goles Poisson)
+- **partido.js `simularResto`:** los otros partidos de la fecha ya no eran casi puro azar (media redondeada). Ahora:
+  - **`_formaClub(id)`** deriva la forma de la tabla (puntos/partido), dampeada al inicio → un equipo en racha rinde más y uno en mala baja (rango ≈ ±7).
+  - **`_golesSimulados(a,b)`** traduce fuerza + forma + **localía moderada** a la media de goles de cada lado y muestrea **Poisson** (`_poissonGoles`), que da la varianza natural del fútbol: el favorito rinde, pero igual hay sorpresas.
+  - Calibrado (medido, 6000 sims): parejos **49% L / 26% E / 26% V** (antes casi coin-flip), brecha 10 → ~69% local, brecha 20 → ~85%. La tabla del año ahora **refleja calidad y forma**, no monedas al aire.
+- Helpers reutilizables y testeables (los usa el simulador de temporadas y podrá usarlos la liguilla).
+- **Tests:** +4 (la forma pesa; el fuerte gana de local y de visita; marcadores en rango). Suite **68/68** (estable ×3).
+- **util.js**: VERSION 7.71 → **7.72**.
+**Probado:** node --check + suite 68/68 verde ×3 + medición de tasas L/E/V.

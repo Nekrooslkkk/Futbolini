@@ -138,6 +138,25 @@
       setIdioma("neutro");
     }, "Chilensis gol");
 
+    /* T4a05 · simulación realista: fuerza + forma + localía (7.72) */
+    grupo("Simulación realista (7.72)");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      E.tabla["ZFUE"]={pj:8,pg:7,pe:1,pp:0,gf:20,gc:5,pts:22};
+      E.tabla["ZMAL"]={pj:8,pg:0,pe:1,pp:7,gf:4,gc:20,pts:1};
+      ok(typeof _formaClub==="function" && _formaClub("ZFUE")>0 && _formaClub("ZMAL")<0, "la forma pesa (racha buena +, mala -)");
+      var fuerte={id:"ZA",fuerza:84}, debil={id:"ZB",fuerza:48};
+      var win=0,los=0,N=400;
+      for(var i=0;i<N;i++){ var g=_golesSimulados(fuerte,debil); if(g[0]>g[1])win++; else if(g[0]<g[1])los++; }
+      ok(win>los*1.8, "el fuerte de local le gana al débil la gran mayoría ("+win+"G/"+los+"P de "+N+")");
+      var w2=0,l2=0;
+      for(var j=0;j<N;j++){ var h=_golesSimulados(debil,fuerte); if(h[1]>h[0])w2++; else if(h[1]<h[0])l2++; }
+      ok(w2>l2, "el fuerte de visita igual gana más que pierde ("+w2+">"+l2+")");
+      /* válido siempre: goles en rango 0..6 */
+      var okRango=true; for(var k=0;k<50;k++){ var gg=_golesSimulados(fuerte,debil); if(gg[0]<0||gg[0]>6||gg[1]<0||gg[1]>6) okRango=false; }
+      ok(okRango, "los marcadores quedan en rango (0..6)");
+    }, "Sim realista");
+
     /* T4a1 · menú de inicio: el picker lista y filtra clubes sin romper */
     grupo("Menú de inicio (picker)");
     safe(function(){

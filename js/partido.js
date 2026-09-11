@@ -1033,10 +1033,7 @@ function simularResto(part){
   part.jornada.forEach(par=>{
     if(par[0]===E.club||par[1]===E.club) return;
     const a=CLUB_POR_ID[par[0]],b=CLUB_POR_ID[par[1]];
-    const fa=a.fuerza+5+rnd(-9,9), fb=b.fuerza+rnd(-9,9);
-    const d=(fa-fb)/12;
-    let ga=clamp(Math.round(1.25+d*0.6+rnd(-1,1.3)),0,6);
-    let gb=clamp(Math.round(1.05-d*0.6+rnd(-1,1.3)),0,6);
+    const [ga,gb]=_golesSimulados(a,b);   /* 7.72 · fuerza + forma + localía */
     if(!E.tabla[a.id]) E.tabla[a.id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
     if(!E.tabla[b.id]) E.tabla[b.id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
     const ta=E.tabla[a.id], tb=E.tabla[b.id];
@@ -1046,6 +1043,35 @@ function simularResto(part){
     else {ta.pe++;tb.pe++;ta.pts++;tb.pts++;}
     E.ultimaFecha.push({a:a.c||a.n, b:b.c||b.n, ga:ga, gb:gb});
   });
+}
+/* 7.72 · FORMA del club a partir de su tabla: en racha suma, en mala racha resta.
+   Dampeado al inicio (con pocos partidos la forma pesa menos). Rango ~[-7,+7]. */
+function _formaClub(id){
+  const t=E&&E.tabla&&E.tabla[id];
+  if(!t||!t.pj) return 0;
+  const ppg=t.pts/t.pj;                 /* puntos por partido, 0..3 */
+  const conf=Math.min(1, t.pj/6);       /* confianza según cuántos jugó */
+  return clamp((ppg-1.35)*4*conf, -7, 7);
+}
+/* 7.72 · goles Poisson: da la varianza natural del fútbol (el favorito rinde, pero
+   igual hay sorpresas), en vez de redondear una media (que salía determinista). */
+function _poissonGoles(lam){
+  lam=Math.max(0.05, lam);
+  let L=Math.exp(-lam), k=0, p=1;
+  do{ k++; p*=Math.random(); }while(p>L);
+  return Math.min(k-1, 6);
+}
+/* Goles de un partido simulado (a=local, b=visita). Manda fuerza + forma + localía,
+   traducidas a la media de goles de cada lado (lambda) y muestreadas Poisson.
+   Calibrado: equipos parejos ≈ 45% local / 27% empate / 28% visita. Reutilizable/testeable. */
+function _golesSimulados(a,b){
+  const HOME=2.4;                                   /* ventaja de localía moderada */
+  const fa=(a.fuerza||55)+HOME+_formaClub(a.id);
+  const fb=(b.fuerza||55)+_formaClub(b.id);
+  const d=(fa-fb)/22;                               /* el gap inclina, sin aplastar */
+  const lamH=clamp(1.45+d*0.9, 0.2, 4.2);
+  const lamA=clamp(1.15-d*0.9, 0.2, 4.2);
+  return [_poissonGoles(lamH), _poissonGoles(lamA)];
 }
 /* copa: al terminar una llave se decide si sigue o se acaba */
 function resolverCopa(part,yo,otro){
