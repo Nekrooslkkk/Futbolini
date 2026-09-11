@@ -1,0 +1,87 @@
+/* ============================================================
+   FUTBOLINI · lateral.css
+   7.62 · Navegación lateral estilo "canales de la Wii" para PC.
+   - El #menu deja de ser una fila de pestañas arriba y pasa a ser
+     una BARRA VERTICAL a la izquierda (botones grandes ícono+texto).
+   - La #barra de arriba queda como BARRA DE TAREAS (datos + acciones).
+   - El botón de cuenta (👤) se saca de la barra y baja al pie del
+     lateral (se pidió: la barra con lo necesario MENOS la cuenta).
+   Todo va detrás de body.nav-lateral y SOLO en PC (>=901px): en el
+   celular sigue mandando el dock de movil.css sin tocar nada.
+   ============================================================ */
+
+/* La cuenta vive en el lateral, no en la fila horizontal: por defecto
+   escondida, se muestra recién dentro del lateral en PC (ver más abajo). */
+.mi-cuenta{display:none}
+
+@media(min-width:901px){
+  body.nav-lateral{ --lat-w:164px; }
+
+  /* ---- barra de tareas (arriba, a lo ancho) ---- */
+  body.nav-lateral #barra{ padding-left:14px; padding-right:14px; }
+  /* la cuenta se saca de la barra de acciones */
+  body.nav-lateral .barra-acc #btnCuenta{ display:none; }
+
+  /* ---- lateral tipo Wii ---- */
+  body.nav-lateral #menu{
+    position:fixed; left:0; top:52px; bottom:0; width:var(--lat-w);
+    z-index:44; display:flex; flex-direction:column; align-items:stretch;
+    gap:8px; padding:12px 9px 14px; margin:0;
+    overflow-y:auto; overflow-x:hidden; scrollbar-width:thin;
+    background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.14));
+    border-right:1px solid rgba(255,255,255,.5);
+    box-shadow:inset -1px 0 0 rgba(255,255,255,.35), 3px 0 14px rgba(0,30,10,.14);
+    backdrop-filter:blur(3px);
+  }
+  body.nav-lateral #menu::-webkit-scrollbar{width:7px}
+  body.nav-lateral #menu::-webkit-scrollbar-thumb{background:rgba(30,90,160,.3);border-radius:6px}
+
+  /* cada botón = un "canal": ícono en cuadro brillante + rótulo */
+  body.nav-lateral #menu .mi{
+    flex:0 0 auto; width:100%; display:flex; align-items:center; gap:10px;
+    padding:9px 10px; border-radius:11px; font-size:13px; font-weight:700;
+    text-align:left; white-space:normal; line-height:1.15;
+    border:1px solid rgba(255,255,255,.55);
+    background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.28));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.85), 0 2px 5px rgba(0,30,10,.14);
+  }
+  /* el ícono (primer <span>) en un cuadrito glossy como los canales Wii */
+  body.nav-lateral #menu .mi > span:first-child{
+    flex:0 0 34px; width:34px; height:34px; border-radius:9px;
+    display:grid; place-items:center; font-size:18px;
+    background:linear-gradient(180deg,#ffffff,#d7ecff);
+    border:1px solid rgba(255,255,255,.8);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95), inset 0 -4px 7px rgba(40,90,150,.16);
+  }
+  body.nav-lateral #menu .mi > span:nth-child(2){ flex:1 1 auto; }
+
+  body.nav-lateral #menu .mi:hover{ transform:translateX(2px);
+    background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.4)); }
+
+  /* seleccionado: resplandor azul + barrita de acento a la izquierda */
+  body.nav-lateral #menu .mi[aria-selected="true"]{
+    background:linear-gradient(180deg,#eaf6ff,#bfe0ff);
+    border-color:rgba(90,160,230,.7);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95), inset 3px 0 0 #3f8fe0,
+      0 3px 9px rgba(40,110,190,.28);
+  }
+  body.nav-lateral #menu .mi[aria-selected="true"] > span:first-child{
+    background:linear-gradient(180deg,#ffffff,#bfe0ff);
+  }
+
+  /* pip de avisos/decisiones arriba a la derecha del canal */
+  body.nav-lateral #menu .mi .pip{ position:absolute; top:5px; right:7px; }
+
+  /* la cuenta al fondo del lateral */
+  body.nav-lateral #menu .mi-cuenta{ display:flex; margin-top:auto; }
+
+  /* ---- el contenido se corre a la derecha del lateral ---- */
+  body.nav-lateral #vista{ margin-left:var(--lat-w); margin-right:auto;
+    padding-left:16px; padding-right:16px; }
+  body.nav-lateral #pie{ margin-left:var(--lat-w); }
+
+  /* en partido el lateral estorba: se oculta y el contenido vuelve a lo ancho */
+  body.nav-lateral.en-partido #menu{ display:none; }
+  body.nav-lateral.en-partido #vista,
+  body.nav-lateral.en-partido #pie{ margin-left:auto; }
+}

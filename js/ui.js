@@ -127,6 +127,12 @@ function pintarMenu(){
     b.onclick=()=>irA(id);
     m.appendChild(b);
   });
+  /* 7.62 · la cuenta se saca de la barra de tareas y baja al pie del lateral (CSS la
+     muestra solo en modo nav-lateral en PC; en el resto queda oculta con .mi-cuenta). */
+  const c=el("button","mi mi-cuenta",'<span>👤</span><span>Cuenta</span>');
+  c.setAttribute("role","tab"); c.setAttribute("aria-selected","false"); c.title="Tu cuenta";
+  c.onclick=()=>{ if(typeof modalCuenta==="function") modalCuenta(); };
+  m.appendChild(c);
 }
 /* ---------------- render ---------------- */
 function render(){
@@ -2148,6 +2154,18 @@ function vistaAjustes(){
     f.appendChild(b);
   });
   p.cuerpo.appendChild(f);
+  /* 7.62 · barra lateral tipo Wii (solo afecta en PC; en el celular manda el dock) */
+  p.cuerpo.appendChild(el("label","lb","Navegación (PC)"));
+  const fnav=el("div","fichas");
+  const lateralOn=document.body.classList.contains("nav-lateral");
+  [[true,"Barra lateral (Wii)"],[false,"Pestañas arriba"]].forEach(([on,n])=>{
+    const b=el("button","ficha",n);
+    b.setAttribute("aria-pressed",lateralOn===on?"true":"false");
+    b.onclick=()=>{ document.body.classList.toggle("nav-lateral",on); Store.set("futbolini3_lateral",on); render(); };
+    fnav.appendChild(b);
+  });
+  p.cuerpo.appendChild(fnav);
+  p.cuerpo.appendChild(el("p","mini","La barra lateral pone los accesos a la izquierda (como los canales de la Wii) y deja arriba la barra de tareas. En el celular no cambia nada: sigue el menú de abajo."));
   p.cuerpo.appendChild(el("div","resul mitad","<b>Aviso.</b> Clubes, jugadores y dirigentes reales aparecen con su nombre. "+
     "Resultados, títulos y fechas se apoyan en registros públicos. Todo lo demás (conversaciones, negociaciones, conflictos internos, frases) "+
     "es ficción escrita para el juego."));
@@ -2792,6 +2810,9 @@ document.addEventListener("keydown",function(e){
   }
   const t=await Store.get("futbolini3_tema");
   document.body.dataset.tema=t||"aero";
+  /* 7.62 · navegación lateral tipo Wii en PC (por defecto encendida; conmutable en Ajustes) */
+  try{ const nl=await Store.get("futbolini3_lateral"); document.body.classList.toggle("nav-lateral", nl!==false); }
+  catch(e){ document.body.classList.add("nav-lateral"); }
   let lista=[]; try{ lista=await migrarSlots(); }catch(e){ console.error("No se pudo migrar slots:",e); }
   let g=null;
   try{

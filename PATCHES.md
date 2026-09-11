@@ -2022,3 +2022,10 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 - **REGLAS.md (nuevo)**: memoria fija de los formatos reales de cada torneo (Primera/B/Segunda/Copa Chile/Supercopa) con lo que varía por año marcado ⚠️, la pirámide ANFP, y un **esquema + prompt de Grok para copiar la Liga Argentina** (una liga = array de clubes + info/ind/caja; `data-segunda2026.js` es el molde). División de trabajo Grok (datos) / Claude (código).
 - **ui.js**: botón **⚙️ Ajustes** siempre en la barra (inyectado, sin tocar index.html) y `render()` enruta Ajustes **sin partida activa** → se pueden borrar guardados, cambiar tema y cargar respaldo sin entrar a un club. `vistaAjustes` esconde lo que necesita partida (guardar/descargar/borrar-actual) y agrega "Volver al inicio".
 **Probado:** node --check + suite 26/26 + captura headless (barra con ⚙️ y Ajustes pre-partida).
+
+## 7.62 · Navegación lateral tipo Wii en PC (barra de tareas arriba)
+- **css/lateral.css (nuevo)** + `<link>` en `index.html` (último, gana en PC): detrás de `body.nav-lateral` y `@media(min-width:901px)`, el `#menu` deja de ser fila de pestañas arriba y pasa a ser **barra vertical a la izquierda** con botones grandes ícono+rótulo (cada ícono en un cuadrito glossy, como los **canales de la Wii**); el seleccionado lleva resplandor azul + barrita de acento. El `#vista`/`#pie` se corren a la derecha del lateral. En **partido** el lateral se oculta. En el **celular no cambia nada**: sigue mandando el dock de `movil.css`.
+- La **cuenta (👤) sale de la barra de tareas** y baja al pie del lateral (`.mi-cuenta`, añadida en `pintarMenu`; oculta salvo en modo lateral en PC). Los **Ajustes (⚙️) siguen en la barra**.
+- **ui.js**: `pintarMenu` agrega la píldora de Cuenta; arranque prende `nav-lateral` por defecto (pref. `futbolini3_lateral` en Store); `vistaAjustes` trae conmutador **Barra lateral (Wii) / Pestañas arriba**.
+- **util.js**: VERSION 7.55 → **7.62**.
+**Probado:** node --check + suite 26/26 + capturas headless a 1280px (lateral Wii, cuenta fuera de la barra) y 390px (dock intacto, sin fuga del lateral).
