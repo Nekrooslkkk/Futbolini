@@ -361,7 +361,11 @@ const ARCOS_NUEVOS={
 /* ---------- helpers ---------- */
 let _ultTuits=[];
 function tuitDeCtx(ctx){
-  const pool=TUITS_MOMENTO.filter(x=>x.ctx===ctx);
+  let pool=TUITS_MOMENTO.filter(x=>x.ctx===ctx);
+  /* 7.70 · suma el pool del idioma activo (ej. chilensis crudo en modo cl) */
+  if(typeof IDIOMA!=="undefined" && typeof TUITS_IDIOMA!=="undefined" && TUITS_IDIOMA[IDIOMA] && TUITS_IDIOMA[IDIOMA][ctx]){
+    pool=TUITS_IDIOMA[IDIOMA][ctx].map(t=>({ctx:ctx,quien:t.quien,txt:t.txt})).concat(pool);
+  }
   if(!pool.length) return null;
   const libres=pool.filter(x=>_ultTuits.indexOf(x.txt)<0);
   const usar=libres.length?libres:pool;
@@ -370,7 +374,7 @@ function tuitDeCtx(ctx){
   return t;
 }
 function tonoDeCtx(ctx){
-  if(/gana|hat_trick|remontada|goleada|clasico_gana|arquero|invicto|atajada_penal|tiroLibre|debut/.test(ctx)) return "bueno";
+  if(/gana|hat_trick|remontada|goleada|clasico_gana|arquero|invicto|atajada_penal|tiroLibre|debut|gol_propio/.test(ctx)) return "bueno";
   if(/pierde|expulsion|penal_errado|anulado_var|autogol|lesion/.test(ctx)) return "malo";
   return "neutro";
 }
@@ -400,7 +404,7 @@ function ctxDeEvento(P, ev){
     if(dif>=3) return "goleada_favor";
     if(m>=80&&dif>0) return "gana_agonico";
     if(P._ibaAbajo) return "remontada";
-    return null;
+    return "gol_propio";   /* 7.70 · gol comun igual dispara reaccion (el hincha grita; en cl, crudo) */
   }
   if(tipo==="golRival"){
     if(local&&dif<0&&m>=55) return "pierde_local";

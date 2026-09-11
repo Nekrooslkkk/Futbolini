@@ -2086,3 +2086,11 @@ Dos herramientas para probar el juego a fondo y para crecer:
 - **Tests:** +6 (T existe, neutro base, chilensis cambia, default fallback, pt traduce, clave sólo-neutro cae a neutro desde pt). Suite **62/62**.
 - **util.js**: VERSION 7.68 → **7.69**.
 **Probado:** node --check + suite 62/62 verde + captura del inicio en Chilensis.
+
+## 7.70 · Chilensis en cancha: el gol erupciona + el directorio picado
+Con los ejemplos del usuario, el chilensis se mete donde se siente:
+- **Gol (idiomas.js `TUITS_IDIOMA.cl` + data-voz.js):** en modo Chilensis, un gol dispara tuits crudos de hincha (*"GOOOOL CONCHETUMARE, TE AMO {GOLEADOR}, HAZME UN HIJO!!"* y variantes). `tuitDeCtx` suma el pool del idioma activo al pool base; un gol común ahora devuelve ctx `gol_propio` (antes `null`) para que el hincha grite. **Neutro/pt quedan limpios** (sin garabatos): el pool crudo vive solo en `cl`.
+- **Directorio (carrera.js `evaluarMandato`):** si quedás corto en modo Chilensis, el veredicto es *"NECESITAMOS MEJORES RESULTADOS CTM, SI NO, TE VAI CAGANDO."* (y variantes por nivel). En neutro sigue el texto formal.
+- **Tests:** +2 (neutro no fuerza tuit en gol común; chilensis sí erupciona). Suite **64/64**.
+- **util.js**: VERSION 7.69 → **7.70**.
+**Probado:** node --check + suite 64/64 verde.

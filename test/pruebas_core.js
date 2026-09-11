@@ -128,6 +128,15 @@
       if(typeof FRASES==="object"){ FRASES.neutro.__prueba_fb="valor_neutro"; ok(T("__prueba_fb")==="valor_neutro", "clave sólo-neutro cae a neutro desde pt"); delete FRASES.neutro.__prueba_fb; }
       setIdioma("neutro");
     }, "Idiomas");
+    safe(function(){
+      /* 7.70 · el gol común erupciona SOLO en chilensis; neutro queda limpio */
+      setIdioma("neutro");
+      ok(typeof tuitDeCtx==="function" && tuitDeCtx("gol_propio")===null, "en neutro un gol común no fuerza tuit");
+      setIdioma("cl");
+      var t=tuitDeCtx("gol_propio");
+      ok(t && /GOOOO|CTM|GOL/i.test(t.txt||""), "en chilensis el gol erupciona");
+      setIdioma("neutro");
+    }, "Chilensis gol");
 
     /* T4a1 · menú de inicio: el picker lista y filtra clubes sin romper */
     grupo("Menú de inicio (picker)");

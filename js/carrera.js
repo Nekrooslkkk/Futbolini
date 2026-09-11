@@ -157,12 +157,22 @@ function evaluarMandato(pos,campeon,copa){
   else nivel="fracaso";
   const resumen="Cumpliste "+cumplidos+" de "+objs.length+" metas — "+
     detalle.map(d=>(d.ok?"✓ ":"✗ ")+d.t).join(" · ")+".";
-  const texto={
+  let texto={
     excelente:"Temporada para el recuerdo. "+resumen,
     cumplido:"Se cumplió lo esencial. "+resumen+" Nadie sale a aplaudir, pero tu silla está firme.",
     insuficiente:"Quedaste corto. "+resumen+" Hay paciencia, pero se está acabando.",
     fracaso:"Fracaso rotundo. "+resumen+" El directorio ya mira para otro lado."
   }[nivel];
+  /* 7.70 · el directorio, en chilensis crudo (solo en modo cl) */
+  if(typeof IDIOMA!=="undefined" && IDIOMA==="cl"){
+    const cl={
+      excelente:"Quedó la grande, felicitaciones. "+resumen,
+      cumplido:"Cumpliste lo justo y necesario. "+resumen+" Tu silla aguanta, pero no te dormái.",
+      insuficiente:"NECESITAMOS MEJORES RESULTADOS CTM, SI NO, TE VAI CAGANDO. "+resumen,
+      fracaso:"Esto quedó la escoba, po. "+resumen+" El directorio ya te está buscando reemplazo."
+    }[nivel];
+    if(cl) texto=cl;
+  }
   const efectos={excelente:{dir:18,rep:12,cap:12},cumplido:{dir:6,rep:4,cap:5},
     insuficiente:{dir:-14,rep:-8,cap:-8},fracaso:{dir:-28,rep:-16,cap:-14}}[nivel];
   aplicarGrupos({directorio:efectos.dir,socios:Math.round(efectos.dir*0.6),hinchada:Math.round(efectos.dir*0.8)});

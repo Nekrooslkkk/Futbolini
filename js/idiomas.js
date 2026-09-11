@@ -66,6 +66,27 @@ var FRASES={
   }
 };
 
+/* ---- Pools de tuits POR IDIOMA (se suman a los del pool base según contexto).
+   Chilensis crudo de cancha (aparece SOLO en modo Chilensis; neutro/pt quedan limpios).
+   Escrito con la voz del usuario. Placeholder {GOLEADOR}. --- */
+var _GOL_CL=[
+  {quien:"@barra_del_sur", txt:"GOOOOOOOL GOOOOOL CONCHETUMARE, TE AMO {GOLEADOR}, HAZME UN HIJO!!"},
+  {quien:"@weon_del_metro", txt:"GOOOOL WN GOOOOL, {GOLEADOR} ERÍS GRANDE, LA CTM QUE TE AMO"},
+  {quien:"@hincha_insomne", txt:"AAAAAH GOOOOOL, {GOLEADOR} POR LA CHUCHA QUE JUEGA BIEN, GRÍTALO"},
+  {quien:"@pibe_popular23", txt:"SE ROMPIÓ LA RED CTM, {GOLEADOR} ERÍS UN CRACK, TE LLEVO AL ALTAR"},
+  {quien:"@dona_del_barrio", txt:"gooool mijito lindo, {GOLEADOR} me lo saludan a la mamá, qué golazo por dios"}
+];
+var TUITS_IDIOMA={
+  cl:{
+    gol_propio:_GOL_CL,
+    gana_agonico:_GOL_CL.concat([{quien:"@albo_insomne", txt:"EN LA HORA CTM, {GOLEADOR} NOS SALVÓ LA VIDA, LLORO"}]),
+    remontada:_GOL_CL.concat([{quien:"@garrafal_cl", txt:"DE LA NADA WN, {GOLEADOR} DIO VUELTA TODO, QUÉ EQUIPO CTM"}]),
+    clasico_gana:_GOL_CL.concat([{quien:"@barra_del_sur", txt:"EN EL CLÁSICO CTM, {GOLEADOR} LOS HIZO LLORAR, ESTO NO SE OLVIDA"}]),
+    goleada_favor:_GOL_CL,
+    hat_trick:[{quien:"@datofutbol_cl", txt:"TRES {GOLEADOR}, TRES CTM. HÁGANLE UNA ESTATUA AL TIRO"}].concat(_GOL_CL)
+  }
+};
+
 /* Resuelve una clave por el idioma activo, con fallback a neutro y a un default. */
 function T(clave, neutro){
   var pack=FRASES[IDIOMA];
