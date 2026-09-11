@@ -1997,3 +1997,7 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 - **test/ (nuevo)**: `pruebas_core.js` + `correr.sh` + `README.md`. Corren el juego real en Chromium headless y validan: arranque de las 3 divisiones, calendario propio de Segunda, temporada completa, ascenso/descenso de 3 niveles, Copa Chile y round-trip de guardado. `bash test/correr.sh` → sale 0 si TODO VERDE. Es la prioridad técnica #2 (net para las 3 IAs).
 - **FIX (motor.js)**: la suite cazó un bug real — `nuevaPartida` llamaba a `activarLiga` ANTES de rehacer `E`, arrastrando el `ligaMod` (ascenso/descenso) del save anterior; si en esa partida tu club había descendido, la nueva partida armaba un `CLUB_POR_ID` sin tu club → crash al construir el calendario. Ahora se limpia `E.ligaMod` al inicio de nuevaPartida. Guard extra en data-liga.js.
 **Probado:** `bash test/correr.sh` → 18/18 verde, exit 0.
+
+## 7.57 · Backend endurecido (antes de cuentas reales)
+- **server/index.js**: CORS restringido a `ALLOWED_ORIGINS` (por defecto el GitHub Pages del juego + localhost; el resto no obtiene el origen reflejado). Rate limiting por IP en memoria: login/registro 10/min (anti fuerza bruta), API 120/min. Validación del guardado: rechaza no-objeto/array (400) y tamaño > `SAVE_MAX` (2 MB → 413). Variables nuevas: ALLOWED_ORIGINS, SAVE_MAX. Sin dependencias.
+**Probado:** server en vivo — CORS refleja solo el permitido, evil.com bloqueado; 429 tras 10 logins; guardado 2.3MB→413, normal→200, array→400.

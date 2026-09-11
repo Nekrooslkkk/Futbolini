@@ -9,6 +9,10 @@
    - Servir datos vivos para actualizar el juego sin redeploy (/api/datos).
    - Servir el juego estático (index.html, js/, css/) en la misma URL.
 
+   Endurecido (7.56): CORS restringido a ALLOWED_ORIGINS, rate limiting por IP
+   (login/registro 10/min, API 120/min) y validación de tamaño/forma del guardado
+   (SAVE_MAX, por defecto 2 MB). Variables: ALLOWED_ORIGINS (coma-separado), SAVE_MAX.
+
    Cómo correr:  PORT=8080 DATA_DIR=./datos ADMIN_KEY=loquesea node index.js
    ============================================================ */
 
@@ -22,6 +26,26 @@ const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "datos");
 const ADMIN_KEY = process.env.ADMIN_KEY || "";
 const TOKEN_TTL = 1000 * 60 * 60 * 24 * 30;
 const MAX_BODY = 5 * 1024 * 1024;
+const SAVE_MAX = parseInt(process.env.SAVE_MAX || String(2 * 1024 * 1024), 10);  /* 2 MB por partida */
+/* CORS: orígenes permitidos (coma-separados en ALLOWED_ORIGINS). Por defecto el
+   GitHub Pages del juego + localhost. El propio Railway se sirve same-origin. */
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ||
+  "https://nekrooslkkk.github.io,http://localhost:8080,http://127.0.0.1:8080")
+  .split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+/* rate limiting en memoria por IP (sin dependencias). */
+const _rl = new Map();
+function ipDe(req) {
+  const xf = (req.headers["x-forwarded-for"] || "").split(",")[0].trim();
+  return xf || (req.socket && req.socket.remoteAddress) || "?";
+}
+function limitar(clave, max, ventanaMs) {
+  const ahora = Date.now();
+  let e = _rl.get(clave);
+  if (!e || ahora > e.reset) { e = { n: 0, reset: ahora + ventanaMs }; _rl.set(clave, e); }
+  e.n++;
+  return e.n > max;   /* true = pasó el límite */
+}
+setInterval(function () { const ahora = Date.now(); _rl.forEach(function (v, k) { if (ahora > v.reset) _rl.delete(k); }); }, 60000);
 const PUBLIC = path.join(__dirname, "..");
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -63,7 +87,10 @@ function verificarPass(pass, guardado) {
 function nuevoToken() { return crypto.randomBytes(24).toString("hex"); }
 
 function cors(res, origin) {
-  res.setHeader("Access-Control-Allow-Origin", origin || "*");
+  /* solo se refleja el origen si está en la lista blanca; si no, se responde con
+     el primero permitido (el navegador bloqueará el cruce no autorizado). */
+  const permitido = (origin && ALLOWED_ORIGINS.indexOf(origin) >= 0) ? origin : (ALLOWED_ORIGINS[0] || "null");
+  res.setHeader("Access-Control-Allow-Origin", permitido);
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-admin-key");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Vary", "Origin");
@@ -138,9 +165,11 @@ const rutas = {
     const sesion = usuarioDeToken(req);
     if (!sesion) return responder(res, 401, { ok: false, msg: "Entra a tu cuenta primero." });
     const b = await leerCuerpo(req);
-    if (!b || typeof b.estado !== "object") return responder(res, 400, { ok: false, msg: "Falta el estado de la partida." });
+    if (!b || typeof b.estado !== "object" || Array.isArray(b.estado)) return responder(res, 400, { ok: false, msg: "Falta el estado de la partida." });
+    const serial = JSON.stringify(b.estado);
+    if (serial.length > SAVE_MAX) return responder(res, 413, { ok: false, msg: "La partida es demasiado grande para guardar en la nube." });
     const id = crypto.createHash("sha1").update(sesion.email).digest("hex");
-    escribirJSON(path.join(DATA_DIR, "saves", id + ".json"), { estado: b.estado, updated: Date.now() });
+    fs.writeFileSync(path.join(DATA_DIR, "saves", id + ".json"), JSON.stringify({ estado: b.estado, updated: Date.now() }));
     responder(res, 200, { ok: true });
   },
 
@@ -173,6 +202,15 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "OPTIONS") { res.writeHead(204); return res.end(); }
   const url = (req.url || "/").split("?")[0].replace(/\/+$/, "") || "/";
   const clave = req.method + " " + url;
+  /* rate limiting solo en la API (los estáticos van libres). Login/registro más
+     estricto para frenar fuerza bruta. */
+  if (url.indexOf("/api/") === 0) {
+    const ip = ipDe(req);
+    if ((url === "/api/registro" || url === "/api/entrar") && limitar("auth:" + ip, 10, 60000))
+      return responder(res, 429, { ok: false, msg: "Demasiados intentos. Espera un minuto." });
+    if (limitar("api:" + ip, 120, 60000))
+      return responder(res, 429, { ok: false, msg: "Demasiadas peticiones. Espera un momento." });
+  }
   const handler = rutas[clave];
   if (handler) {
     try { await handler(req, res); }
