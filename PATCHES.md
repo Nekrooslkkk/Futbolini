@@ -2118,3 +2118,12 @@ Con los ejemplos del usuario, el chilensis se mete donde se siente:
 - **Tests:** +3 (resolverTokens no deja tokens; una decisión con token en la opción se renderiza sin `{...}` crudos). Suite **71/71**.
 - **util.js**: VERSION 7.72 → **7.73**.
 **Probado:** node --check + suite 71/71 verde.
+
+## 7.74 · Amistosos jugables (pretemporada / poner a punto la forma)
+- **partido.js `terminarPartido`:** rama nueva `tipo:"amistoso"` — **no toca la tabla, ni la copa, ni el resto de la fecha, ni gasta la semana** (`E.idx` intacto). Aplica lo bueno de jugar: rueda minutos, sube la **forma** del once y deja **taquilla** si sos local. Efecto anímico liviano; no cuentan promesas ni rachas. Devuelve `{amistoso:true, esLiga:false}`.
+- **ui.js:** `modalAmistoso()` (elegir rival de **cualquier división** con buscador) + `jugarAmistoso(rivalId)` (arma el partido y lo lanza por el motor completo, en vivo o dirigido). Panel **"🤝 Amistosos"** en el Calendario para jugar uno cuando quieras.
+- **ui-partido.js:** la previa muestra "🤝 Amistoso" con su aviso; el cierre dice **"Volver al club"** y **no avanza la semana**; el checklist reemplaza el "es CLÁSICO" por una nota de bajo riesgo.
+- **GROK_PROMPTS.md (nuevo):** batería de **12 prompts** independientes para Grok (planteles reales por tandas, liga Argentina, históricos, DTs, estadios/aforos, Copa de la Liga/Supercopa, pools de tuits 2026 por contexto en neutro+chilensis, personas del Plop!, chilenización, y QA de inconsistencias).
+- **Tests:** +4 (el amistoso no gasta fecha, no suma PJ, no toca la tabla, se marca no-liga). Suite **75/75**.
+- **util.js**: VERSION 7.73 → **7.74**.
+**Probado:** node --check + suite 75/75 verde + captura de la previa del amistoso.

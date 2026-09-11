@@ -1386,6 +1386,49 @@ function panelCopas(v){
     v.appendChild(pc);
   });
 }
+/* 7.74 · AMISTOSOS jugables (pretemporada / cuando quieras). No cuentan para la
+   tabla ni gastan la semana: rueda minutos, sube forma y deja taquilla si eres local. */
+function jugarAmistoso(rivalId){
+  const m=(typeof clubMapaTodos==="function")?clubMapaTodos():{};
+  const riv=m[rivalId]||CLUB_POR_ID[rivalId];
+  if(!riv){ aviso("No encontré ese rival"); return; }
+  const local=Math.random()<0.6;
+  const yoEst=(CLUB_POR_ID[E.club]&&CLUB_POR_ID[E.club].est)||"tu estadio";
+  const prox=(typeof proximoPartido==="function"&&proximoPartido());
+  const fmes=(prox&&prox.f&&prox.f.m)||6;
+  const part={ tipo:"amistoso", amistoso:true, rivalId:rivalId, rivalNombre:riv.n||riv.c||rivalId,
+    fuerzaRival:(riv.fuerza||55), local:local, sede:local?yoEst:(riv.est||"cancha neutral"),
+    f:{m:fmes,d:15}, clima:"despejado", jugado:false, torneo:"Amistoso" };
+  if(typeof cerrarModal==="function") cerrarModal();
+  SEC="partido";
+  if(typeof pantallaPrevia==="function") pantallaPrevia(part);
+}
+function modalAmistoso(){
+  if(!E||!E.club){ aviso("Primero entra a un club"); return; }
+  const m=(typeof clubMapaTodos==="function")?clubMapaTodos():{};
+  const ids=Object.keys(m).filter(id=>id!==E.club);
+  modal(box=>{
+    box.appendChild(el("div","cab",'<span class="ic">🤝</span><span>Elegir rival de amistoso</span>'));
+    const c=el("div","cuerpo"); box.appendChild(c);
+    c.appendChild(el("p","mini","Un amistoso contra quien quieras (de cualquier división). No cuenta para la tabla ni gasta la semana: sirve para rodar minutos y subir la forma."));
+    const inp=el("input","pick-buscar"); inp.type="search"; inp.placeholder="Buscar club o ciudad…"; inp.style.marginBottom="8px"; c.appendChild(inp);
+    const grid=el("div","iconos"); c.appendChild(grid);
+    const pinta=()=>{
+      grid.innerHTML="";
+      const q=(inp.value||"").trim().toLowerCase();
+      let vis=ids.map(id=>({id:id,c:m[id]})).filter(x=>x.c && (!q || (x.c.n||"").toLowerCase().indexOf(q)>=0 || (x.c.ciudad||"").toLowerCase().indexOf(q)>=0));
+      vis=vis.sort((a,b)=>(b.c.fuerza||0)-(a.c.fuerza||0)).slice(0,60);
+      vis.forEach(x=>{
+        const esc=(typeof escudoHTML==="function")?escudoHTML(x.id,30,x.c.esc||"⚪"):(x.c.esc||"⚪");
+        const b=el("button","icono",'<span class="g">'+esc+'</span><span class="n">'+(x.c.n||x.id)+'</span>'+(x.c.ciudad?'<span class="ciu">'+x.c.ciudad+'</span>':''));
+        b.onclick=()=>jugarAmistoso(x.id);
+        grid.appendChild(b);
+      });
+      if(!vis.length) grid.appendChild(el("p","mini","Nada con esa búsqueda."));
+    };
+    inp.oninput=pinta; pinta();
+  });
+}
 function vistaCalendario(){
   const v=$("#vista");
   const p=panel("Calendario "+E.anio,"📅");
@@ -1415,6 +1458,13 @@ function vistaCalendario(){
   /* 7.71 · Copa(s) del año con TODO el detalle: por torneo, ronda por ronda,
      resultado, global de la llave y estado (avanza / eliminado / CAMPEÓN). */
   panelCopas(v);
+  /* 7.74 · amistosos: jugá uno cuando quieras (pretemporada / poner a punto la forma) */
+  const pa=panel("🤝 Amistosos","🤝","agua");
+  pa.cuerpo.appendChild(el("p","mini","Un partido amistoso contra el rival que elijas. No cuenta para la tabla ni gasta la semana: rueda minutos y sube la forma del plantel."));
+  const ba=el("button","btn-aqua ancho verde","🤝 Jugar un amistoso");
+  ba.onclick=()=>{ if(typeof modalAmistoso==="function") modalAmistoso(); };
+  pa.cuerpo.appendChild(ba);
+  v.appendChild(pa);
 
   const _clubesTabla=(typeof clubesLigaActual==="function")?clubesLigaActual():LIGA_ACT;
   const _esSeg=(E.eraBase==="2026c");

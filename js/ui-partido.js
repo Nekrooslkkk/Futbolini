@@ -21,7 +21,8 @@ document.addEventListener("keydown",partidoTeclas);
 /* 6.31 · qué conviene tener listo antes de jugar (reconoce el estado real) */
 function checklistPrevia(part,once){
   const items=[];
-  const clasico=(typeof esClasico==="function")&&esClasico(part);
+  const clasico=(typeof esClasico==="function")&&esClasico(part)&&part.tipo!=="amistoso";
+  if(part.tipo==="amistoso") items.push({warn:false,ok:true,t:"Amistoso — bajo riesgo",d:"No cuenta para la tabla ni gasta la semana. Rueda minutos y sube la forma; podés probar el once tranquilo."});
   if(clasico) items.push({warn:false,ok:true,t:"Hoy es CLÁSICO ante "+part.rivalNombre,d:"Vale doble para la gente. Es tu objetivo institucional del año."});
   if(typeof arbitroDe==="function"){
     const arb=arbitroDe(part);
@@ -109,8 +110,9 @@ function pantallaPrevia(part){
   const ligaTit=E.eraBase==="2026b"?"Liga de Ascenso · fecha "+part.fecha
     :(E.eraBase==="2026c"?"Segunda División · fecha "+part.fecha
     :(E.anio>=2010?"Liga de Primera · fecha "+part.fecha:"Campeonato Nacional · fecha "+part.fecha));
-  const copaTit=part.tipo==="copa"?((part.torneo||"Copa")+" · "+part.ronda):ligaTit;
-  const cab=panel(copaTit, part.tipo==="copa"?"🏆":"⚽", part.tipo==="copa"?"agua":"");
+  const copaTit=part.tipo==="copa"?((part.torneo||"Copa")+" · "+part.ronda):(part.tipo==="amistoso"?"🤝 Amistoso":ligaTit);
+  const cab=panel(copaTit, part.tipo==="copa"?"🏆":(part.tipo==="amistoso"?"🤝":"⚽"), part.tipo==="copa"?"agua":"");
+  if(part.tipo==="amistoso") cab.cuerpo.appendChild(el("p","mini","Amistoso: no cuenta para la tabla ni gasta la semana. Roda minutos, sube la forma y deja taquilla si eres local."));
   cab.cuerpo.appendChild(el("h2","tit",(part.local?E.clubNombre+" vs "+part.rivalNombre:part.rivalNombre+" vs "+E.clubNombre)));
   cab.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" en "+part.sede+" · "+fechaTxt(part.f)+" de "+E.anio+
     (part.apodo?" · "+part.apodo:"")));
@@ -1276,14 +1278,15 @@ function cerrarPartido(){
   /* rueda de prensa: manual (mini-decisión) o automática (ayudante) */
   seccionPrensa(p,res,P);
 
-  const b=el("button","btn-aqua ancho verde","Cerrar y seguir la semana");
+  const esAmistoso=P.part&&P.part.amistoso;
+  const b=el("button","btn-aqua ancho verde",esAmistoso?"Volver al club":"Cerrar y seguir la semana");
   b.onclick=()=>{
     P_ACTUAL=null;
-    if(typeof procesarSemanaPostPartido==="function"){
+    if(!esAmistoso && typeof procesarSemanaPostPartido==="function"){
       const r=procesarSemanaPostPartido();
       if(r&&r.ev&&r.ev.tipo==="decision") return;
     }
-    irA("escritorio");
+    irA(esAmistoso?"plantel":"escritorio");   /* 7.74 · el amistoso no gasta la semana */
   };
   p.cuerpo.appendChild(b);
   $("#vista").appendChild(p);

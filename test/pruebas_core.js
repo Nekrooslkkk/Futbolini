@@ -138,6 +138,23 @@
       setIdioma("neutro");
     }, "Chilensis gol");
 
+    /* T4a03 · amistosos: no tocan tabla/fecha/temporada (7.74) */
+    grupo("Amistosos (7.74)");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var idx0=E.idx, pj0=(E.temporada&&E.temporada.pj)||0;
+      var ptsCC0=(E.tabla&&E.tabla["CC"]&&E.tabla["CC"].pts)||0;
+      var m=(typeof clubMapaTodos==="function")?clubMapaTodos():{};
+      var riv="UCH", rc=m[riv]||CLUB_POR_ID[riv]||{n:"Rival",fuerza:60};
+      var part={tipo:"amistoso",amistoso:true,rivalId:riv,rivalNombre:rc.n||"Rival",fuerzaRival:rc.fuerza||60,
+        local:true,sede:"casa",f:{m:6,d:15},clima:"despejado",jugado:false,torneo:"Amistoso"};
+      var P=iniciarPartido(part,"simular"); correrHasta(P,90); var res=terminarPartido(P);
+      ok(res && res.amistoso===true && res.esLiga===false, "el amistoso se marca (no liga)");
+      ok(E.idx===idx0, "no gasta la fecha (idx intacto)");
+      ok(((E.temporada&&E.temporada.pj)||0)===pj0, "no suma partidos de temporada");
+      ok(((E.tabla&&E.tabla["CC"]&&E.tabla["CC"].pts)||0)===ptsCC0, "no toca la tabla");
+    }, "Amistoso");
+
     /* T4a04 · tokens de decisiones: no quedan crudos en pantalla (7.73) */
     grupo("Tokens en decisiones (7.73)");
     safe(function(){

@@ -918,8 +918,20 @@ function terminarPartido(P){
     const riv=part.rivalId&&E.tabla[part.rivalId];
     if(riv){ riv.pj++; riv.gf+=otro; riv.gc+=yo; if(otro>yo){ riv.pg++; riv.pts+=pv; } else if(otro===yo){ riv.pe++; riv.pts++; } else riv.pp++; }
     simularResto(part);
+  } else if(part.tipo==="amistoso"){
+    /* 7.74 · amistoso: NO toca tabla, ni copa, ni el resto de la fecha. Solo forma/plata. */
   } else {
     resolverCopa(part,yo,otro);
+  }
+  /* 7.74 · amistoso: efecto liviano (roda minutos, sube forma un poco), sin drama de grupos
+     ni rachas ni promesas ni notificación de resultado de liga. */
+  if(part.tipo==="amistoso"){
+    aplicarEfectos({moral: yo>otro?1:(yo<otro?-1:0)});
+    part.jugado=true;
+    if(typeof guardar==="function") guardar();
+    return {yo:yo,otro:otro,gente:gente,caja:caja,posAntes:null,posDespues:null,
+      golesDetalle:(P.golesDetalle||[]),tarjetas:(P.tarjetas||[]),lesionados:(P.lesionados||[]),
+      esLiga:false, amistoso:true};
   }
   /* efectos anímicos */
   if(yo>otro){ aplicarEfectos({moral:3,hinchada:2}); aplicarGrupos({hinchada:4,camarin:3,directorio:2,tecnico:2}); }
