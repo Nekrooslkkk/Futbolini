@@ -103,6 +103,10 @@ function aplicarCorte2026(){
   if(typeof pushNotif==="function") pushNotif("Cortas en agosto","El campeonato ya se jugó hasta el 18/08. Los partidos anteriores están cargados. El próximo es el que sigue.","neutro");
 }
 function nuevaPartida(clubId,anio,modo,extra){
+  /* 7.54 · no arrastrar la liga custom (ascenso/descenso) del save anterior:
+     activarLiga corre ANTES de rehacer E, y si el E viejo traía ligaMod con el
+     club anterior descendido, armaba un CLUB_POR_ID sin el club nuevo → crash. */
+  if(typeof E!=="undefined" && E) E.ligaMod=null;
   let base=baseEra(anio);
   if(extra&&extra.epoca&&extra.epoca.liga) base=extra.epoca.liga;
   if(extra&&extra.categoria==="B") base="2026b";

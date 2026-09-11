@@ -1992,3 +1992,8 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 ## 7.55 · Versionado consistente de partidas
 - **motor.js / ui.js**: partidas nuevas, guardados, exportaciones e importaciones usan `SAVE_VER` en vez de un número fijo. Las migraciones futuras ya no pueden quedar desfasadas del archivo de respaldo.
 - **scripts/verificar.js**: la verificación automática impide que la exportación vuelva a escribir una versión de save fija.
+
+## 7.56 · Pruebas automáticas (regresión) + FIX ligaMod contaminado
+- **test/ (nuevo)**: `pruebas_core.js` + `correr.sh` + `README.md`. Corren el juego real en Chromium headless y validan: arranque de las 3 divisiones, calendario propio de Segunda, temporada completa, ascenso/descenso de 3 niveles, Copa Chile y round-trip de guardado. `bash test/correr.sh` → sale 0 si TODO VERDE. Es la prioridad técnica #2 (net para las 3 IAs).
+- **FIX (motor.js)**: la suite cazó un bug real — `nuevaPartida` llamaba a `activarLiga` ANTES de rehacer `E`, arrastrando el `ligaMod` (ascenso/descenso) del save anterior; si en esa partida tu club había descendido, la nueva partida armaba un `CLUB_POR_ID` sin tu club → crash al construir el calendario. Ahora se limpia `E.ligaMod` al inicio de nuevaPartida. Guard extra en data-liga.js.
+**Probado:** `bash test/correr.sh` → 18/18 verde, exit 0.

@@ -390,7 +390,7 @@ function construirCalendario(clubId, anio, conCopa){
       const riv=CLUB_POR_ID[p.rival]; if(!riv) return;
       cal.push({tipo:"liga", torneo:anio>=2010?"Liga de Primera":"Campeonato Nacional", fecha:p.fecha, rivalId:p.rival,
         rivalNombre:riv.n, fuerzaRival:riv.fuerza, local:p.local,
-        sede:p.local?CLUB_POR_ID[clubId].est:riv.est,
+        sede:p.local?((CLUB_POR_ID[clubId]&&CLUB_POR_ID[clubId].est)||"local"):riv.est,
         f:p.f, jugado:false, clima:climaDeFecha(p.f.m,"liga"+clubId+anio+i), real:p.real,
         jornada:emparejarFecha(anio,p.fecha,clubId,p.rival)});
     });
