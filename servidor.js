@@ -19,7 +19,14 @@ const MIME={
   ".mp3":"audio/mpeg",".ogg":"audio/ogg",".wav":"audio/wav",
   ".txt":"text/plain; charset=utf-8",".md":"text/plain; charset=utf-8"
 };
-const VERSION={nombre:"Futbolini",build:"7.53",offline:true,ia:"heuristica-local"};
+function versionDelJuego(){
+  try{
+    const fuente=fs.readFileSync(path.join(ROOT,"js","util.js"),"utf8");
+    const match=fuente.match(/const VERSION\s*=\s*["']([^"']+)["']/);
+    return match?match[1]:"desconocida";
+  }catch(e){ return "desconocida"; }
+}
+function versionInfo(){ return {nombre:"Futbolini",build:versionDelJuego(),offline:true,ia:"heuristica-local"}; }
 
 function send(res,code,body,type){
   res.writeHead(code,{"Content-Type":type||"text/plain; charset=utf-8","Cache-Control":"no-cache"});
@@ -27,7 +34,7 @@ function send(res,code,body,type){
 }
 function api(req,res){
   if(req.url==="/api/health"||req.url==="/api/version"){
-    send(res,200,JSON.stringify(VERSION),"application/json; charset=utf-8");
+    send(res,200,JSON.stringify(versionInfo()),"application/json; charset=utf-8");
     return true;
   }
   if(req.url==="/api/pensar" && req.method==="POST"){
@@ -66,6 +73,6 @@ const server=http.createServer((req,res)=>{
   });
 });
 server.listen(PORT,()=>{
-  console.log("Futbolini "+VERSION.build+" → http://localhost:"+PORT+"/");
+  console.log("Futbolini "+versionDelJuego()+" → http://localhost:"+PORT+"/");
   console.log("API: /api/health  (mismo servidor para el 1.0)");
 });

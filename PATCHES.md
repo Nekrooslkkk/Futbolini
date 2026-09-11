@@ -1984,3 +1984,7 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 
 ## 7.53 · Versión visible sincronizada
 - **util.js / index.html / servidor.js**: la fuente única y el badge pasan a 7.53. El servidor local antiguo deja de responder que es 5.1h. Así la interfaz y ambos modos de servidor informan la misma versión jugable.
+
+## 7.54 · Verificación automática y versión centralizada
+- **util.js / index.html / server/**: `js/util.js` es la única fuente de la versión. La interfaz la toma al cargar y ambos servidores la leen directamente al responder su endpoint de salud; ya no hay números duplicados que editar.
+- **scripts/verificar.js / GitHub Actions**: cada push o pull request a `main` valida la sintaxis completa y que la versión no vuelva a duplicarse. Se puede correr localmente con `npm run check`, sin instalar dependencias.

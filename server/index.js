@@ -33,6 +33,14 @@ const MIME = {
   ".txt": "text/plain; charset=utf-8", ".md": "text/plain; charset=utf-8"
 };
 
+function versionDelJuego() {
+  try {
+    const fuente = fs.readFileSync(path.join(PUBLIC, "js", "util.js"), "utf8");
+    const match = fuente.match(/const VERSION\s*=\s*["']([^"']+)["']/);
+    return match ? match[1] : "desconocida";
+  } catch (e) { return "desconocida"; }
+}
+
 fs.mkdirSync(path.join(DATA_DIR, "saves"), { recursive: true });
 
 function rutaUsuarios() { return path.join(DATA_DIR, "usuarios.json"); }
@@ -98,7 +106,7 @@ function servirEstatico(url, res) {
 }
 
 const rutas = {
-  "GET /api/salud": async (req, res) => responder(res, 200, { ok: true, servicio: "futbolini", hora: new Date().toISOString() }),
+  "GET /api/salud": async (req, res) => responder(res, 200, { ok: true, servicio: "futbolini", version: versionDelJuego(), hora: new Date().toISOString() }),
 
   "POST /api/registro": async (req, res) => {
     const b = await leerCuerpo(req);

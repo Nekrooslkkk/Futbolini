@@ -5,7 +5,8 @@
   "description": "Simulador de conduccion de clubes chilenos",
   "scripts": {
     "start": "node server/index.js",
-    "local": "node servidor.js"
+    "local": "node servidor.js",
+    "check": "node scripts/verificar.js"
   },
   "engines": {
     "node": ">=18"
