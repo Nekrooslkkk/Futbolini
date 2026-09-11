@@ -9,10 +9,15 @@ solo con esas.
 USO:  python3 scripts/fotos_contacto.py
       (abrí img/_contacto.html en el navegador)
 """
-import os, html
+import os, html, json
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IMG = os.path.join(RAIZ, "img")
+META = {}
+try:
+    META = json.load(open(os.path.join(IMG, "_fotos_meta.json"), encoding="utf-8"))
+except Exception:
+    META = {}
 CARPETAS = ["estadios", "clubes", "periodistas"]
 EXTS = (".jpg", ".jpeg", ".png", ".webp", ".gif")
 
@@ -34,8 +39,10 @@ def main():
         partes.append("<h2>%s (%d)</h2><div class=g>" % (carp, len(files)))
         for f in files:
             rel = carp + "/" + f
+            m = META.get(rel, {})
+            etq = f + (("  ·  " + m["nombre"]) if m.get("nombre") else "")
             partes.append('<div class=c><img loading=lazy src="%s"><div class=n>%s</div></div>'
-                          % (html.escape(rel), html.escape(f)))
+                          % (html.escape(rel), html.escape(etq)))
         partes.append("</div>")
         total += len(files)
     out = os.path.join(IMG, "_contacto.html")

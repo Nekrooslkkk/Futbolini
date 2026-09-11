@@ -98,10 +98,15 @@
 >   "url":"https://.../archivo-exacto.jpg", "autor":"Fotógrafo", "lic":"CC BY-SA 4.0" }
 > ```
 > Reglas:
-> 1. **`url` = archivo directo, no una búsqueda ni una página.** De donde sea (sitio oficial del
->    club, prensa con permiso, Wikimedia) **mientras sea el archivo exacto y verificado**. Si pegás
->    un link que no termina en imagen o que es una búsqueda, el script lo **rechaza** (valida que
->    sean bytes de imagen de verdad, no HTML). Así no entra basura.
+> 1. **`url` = archivo directo, no una búsqueda ni una página.** El link **termina en**
+>    `.jpg/.png/.webp`. El script **RECHAZA** automáticamente: búsquedas de Google/Bing, páginas
+>    de Commons (`commons.wikimedia.org/wiki/File:…` — esa es la PÁGINA; el archivo está en
+>    `upload.wikimedia.org/...`), categorías, thumbnails de buscador, y cualquier cosa que no sean
+>    bytes de imagen. Fue justo el bug: se pegaba un resultado de búsqueda y bajaba cualquier foto.
+>    Entonces: buscá el archivo, abrilo, copiá el **enlace directo** (el que muestra solo la imagen).
+> 1b. **El `nombre` tiene que describir EXACTO la foto** (ej. "Estadio Monumental David Arellano,
+>    Macul"). La hoja de contacto muestra ese nombre debajo de cada imagen, así el usuario cacha al
+>    toque si una salió de otro estadio. Si no estás 100% seguro de que la foto es esa, `sin_foto:true`.
 > 2. Preferí **licencia libre** (Commons/CC/dominio público) y anotá `autor` y `lic` para el crédito.
 >    Si es del sitio oficial, decilo en `lic`.
 > 3. Si de un ítem **no hay foto verificable**, ponelo con `"sin_foto":true` y sin `url` (el juego
