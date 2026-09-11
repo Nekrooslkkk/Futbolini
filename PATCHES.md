@@ -2013,3 +2013,7 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 - **ui.js (pantallaSinClub)**: al destituirte SIEMPRE hay salida por abajo — ofertas de Segunda para reconstruirte. Ya no existe "Nadie te contrata → terminar"; retirarse es una decisión tuya (con confirmación), nunca un castigo forzado. Info de club universal (Primera/B/Segunda).
 - **test**: caso nuevo (quemado igual recibe rescate de Segunda, aceptar sigue sin game over, carrera preservada).
 **Probado:** `bash test/correr.sh` → 26/26 verde.
+
+## 7.60 · Rendimiento: memoizar clubMapaTodos
+- **data-liga.js**: `clubMapaTodos()` reconstruía el mapa de TODOS los clubes en cada llamada, y el simulador (`_fuerzaClubId`, orden de divisiones, resto de la fecha) lo pide por-club → O(n²). Ahora se arma una sola vez (los arrays de liga son estáticos). Menos trabajo en la simulación de fechas y ascensos, sin cambiar comportamiento.
+**Probado:** `bash test/correr.sh` → 26/26 verde (comportamiento idéntico).

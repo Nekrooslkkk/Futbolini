@@ -187,12 +187,17 @@ function baseEra(anio){ return anio>=2010?2026:1991; }
 const LIGAS={1991:LIGA91, 2026:LIGA_2026};
 let LIGA_ACT=LIGA91;
 let CLUB_POR_ID={}; LIGA91.forEach(c=>CLUB_POR_ID[c.id]=c);
-/* mapa {id:club} con TODOS los clubes conocidos (Primera + Primera B + 1991) */
+/* mapa {id:club} con TODOS los clubes conocidos (Primera + Primera B + Segunda + 1991).
+   7.60 · memoizado: los arrays de liga son estáticos, así que se arma una sola vez
+   (antes se reconstruía en cada llamada, y el simulador lo pide por-club → O(n²)). */
+let _mapaTodosCache=null;
 function clubMapaTodos(){
+  if(_mapaTodosCache) return _mapaTodosCache;
   /* los clubes modernos (2026 / Primera B) ganan el id ante colisiones con 1991
      (ej: COB = Cobresal en 2026, pero Cobreloa en 1991). El ascenso/descenso es era moderna. */
   const m={};
   [LIGA_2026,(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null),(typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null),LIGA91].forEach(L=>{ if(L) L.forEach(c=>{ if(!m[c.id]) m[c.id]=c; }); });
+  _mapaTodosCache=m;
   return m;
 }
 function activarLiga(base){
