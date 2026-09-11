@@ -702,14 +702,14 @@ function abrirDecision(d,enModal){
         b.disabled=!chk.ok;
         let pista="";
         if(pistaOn && mx!==mn){ pista=scores[i]===mx?" <span class='etq ok'>🔥 caliente</span>":(scores[i]===mn?" <span class='etq mal'>🧊 frío</span>":" <span class='etq neu'>😐 tibio</span>"); }
-        b.innerHTML='<div class="t">'+resolverTokens(o.t,E)+pista+'</div><div class="d">'+(o.d||"")+'</div>'+
+        b.innerHTML='<div class="t">'+resolverTokens(o.t,E)+pista+'</div><div class="d">'+resolverTokens(o.d||"",E)+'</div>'+
           (textoRequisitos(o)?'<div class="req">'+textoRequisitos(o)+(chk.ok?"":" · <b>"+chk.txt+"</b>")+'</div>':"");
         b.onclick=()=>{
           const r=resolverDecision(d,i);
           if(!r) return;
           notificar({t:"Decisión: "+resolverTokens(d.t,E),
             tipo:r.tier==="bien"?"bueno":(r.tier==="mal"?"malo":"neutro"),
-            d:"Elegiste «"+resolverTokens(o.t,E)+"». "+r.txt,extra:r.extra,bandeja:false});
+            d:"Elegiste «"+resolverTokens(o.t,E)+"». "+resolverTokens(r.txt||"",E),extra:r.extra,bandeja:false});
           aviso(r.hist?"Seguiste el camino histórico":"Tu línea se separa de la historia");
           pintar(cont);
           pintarBarra(); pintarMenu();

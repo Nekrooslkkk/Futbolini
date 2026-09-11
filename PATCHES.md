@@ -2111,3 +2111,10 @@ Con los ejemplos del usuario, el chilensis se mete donde se siente:
 - **Tests:** +4 (la forma pesa; el fuerte gana de local y de visita; marcadores en rango). Suite **68/68** (estable ×3).
 - **util.js**: VERSION 7.71 → **7.72**.
 **Probado:** node --check + suite 68/68 verde ×3 + medición de tasas L/E/V.
+
+## 7.73 · Bug: tokens crudos en decisiones ({CRACK}, {IDOLO}…)
+- **ui.js (`abrirDecision`):** la **descripción de cada opción** (`o.d`) y el **texto del desenlace** (`r.txt`) se mostraban **sin resolver los tokens** → aparecía literal "El {CRACK} es la ficha." o el token pelado. Ahora ambos pasan por `resolverTokens(...)`, igual que el título y el cuerpo. `{CRACK}`, `{IDOLO}`, `{JOVEN}`, etc. se reemplazan por el jugador real del plantel.
+- Nota: el "**Arturo Vidal**" del médico NO era un hardcodeo: `{IDOLO}` se resuelve al ídolo real de tu club (en Colo-Colo, Vidal). Estaba bien; lo que fallaba era el `{CRACK}` sin sustituir en las opciones.
+- **Tests:** +3 (resolverTokens no deja tokens; una decisión con token en la opción se renderiza sin `{...}` crudos). Suite **71/71**.
+- **util.js**: VERSION 7.72 → **7.73**.
+**Probado:** node --check + suite 71/71 verde.

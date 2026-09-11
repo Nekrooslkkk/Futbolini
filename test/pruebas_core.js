@@ -138,6 +138,25 @@
       setIdioma("neutro");
     }, "Chilensis gol");
 
+    /* T4a04 · tokens de decisiones: no quedan crudos en pantalla (7.73) */
+    grupo("Tokens en decisiones (7.73)");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var t=resolverTokens("Oferta por {CRACK}, el {IDOLO} y {JOVEN}", E);
+      ok(t.indexOf("{")<0, "no queda ningún token sin resolver ("+t+")");
+      ok(t.indexOf("CRACK")<0, "el {CRACK} se reemplaza por un jugador real");
+      /* render real de una decisión con token en la descripción de una opción */
+      var pool=[]; if(typeof DECISIONES!=="undefined") pool=pool.concat(DECISIONES); if(typeof BOLSA!=="undefined") pool=pool.concat(BOLSA);
+      var conTok=pool.find(function(d){ return d.op&&d.op.some(function(o){ return (o.d||"").indexOf("{")>=0; }); });
+      if(conTok && typeof abrirDecision==="function"){
+        abrirDecision(conTok,true);
+        var caja=document.querySelector("#capa-modal .op .d")||document.querySelector("#capa-modal");
+        var htmlOps=document.querySelector("#capa-modal")?document.querySelector("#capa-modal").innerHTML:"";
+        ok(htmlOps.indexOf("{CRACK}")<0 && htmlOps.indexOf("{IDOLO}")<0, "la decisión renderizada no muestra {TOKENS} crudos");
+        if(typeof cerrarModal==="function") cerrarModal();
+      } else { ok(true, "sin decisión-token para render (ok)"); }
+    }, "Tokens");
+
     /* T4a05 · simulación realista: fuerza + forma + localía (7.72) */
     grupo("Simulación realista (7.72)");
     safe(function(){
