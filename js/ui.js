@@ -2493,6 +2493,37 @@ function avanzarRapido(hastaFin){
   if(typeof guardar==="function") guardar();
   return {fechas:fechas,partidos:partidos,ganados:ganados,freno:freno};
 }
+/* 7.67 · SIMULAR VARIAS TEMPORADAS (testeo hasta el final). Juega lo que queda de
+   la temporada, la cierra sola (finDeTemporada), juega la liguilla si toca (postura
+   equilibrada), y si te echan toma un club de rescate para seguir. Deja el historial
+   lleno "como si hubieras jugado" — el resultado lo decide el juego, no un truco. */
+function simularTemporadas(nTemps){
+  if(!E||E.carrera.fin){ return {temps:0,freno:"sin partida activa",anio:E&&E.anio}; }
+  let temps=0, freno=null;
+  const tope=Math.max(1,Math.min(nTemps||1,60));
+  for(let s=0;s<tope;s++){
+    if(E.carrera.fin){ freno="fin de la carrera"; break; }
+    avanzarRapido(true);                    /* juega lo que quede de la temporada */
+    if(typeof proximoPartido==="function" && proximoPartido()){
+      freno="se frenó antes del cierre (crisis/sucesión: resolvela y seguí)"; break;
+    }
+    if(typeof finDeTemporada==="function") finDeTemporada();
+    if(E.liguillaPend){                     /* la liguilla se juega sola, equilibrada */
+      const sim=(typeof simularLiguilla==="function")?simularLiguilla(E.liguillaPend.rival,0):{gano:Math.random()<0.5};
+      if(typeof liguillaResolverAscenso==="function") liguillaResolverAscenso(sim.gano);
+    }
+    if(typeof riesgoDestitucion==="function" && riesgoDestitucion()){
+      if(typeof destituir==="function") destituir("Simulación: el directorio cerró el ciclo tras "+E.anio+".");
+      const of=(typeof ofertaDeRescate==="function")?ofertaDeRescate():[];
+      if(of.length && typeof aceptarClub==="function"){ aceptarClub(of[0].id, E.anio+1); }
+      else { if(typeof finDeCarrera==="function") finDeCarrera("Sin club para seguir dirigiendo."); else E.carrera.fin=true; freno="sin club para seguir"; break; }
+    } else if(typeof nuevoAnio==="function"){ nuevoAnio(); }
+    temps++;
+  }
+  if(typeof render==="function"){ SEC="escritorio"; render(); }
+  if(typeof guardar==="function") guardar();
+  return {temps:temps, freno:freno, anio:E&&E.anio};
+}
 function modalAvanceRapido(){
   if(!E||E.carrera.fin||E.carrera.enParo){ aviso("No hay una partida activa"); return; }
   modal(box=>{
@@ -2504,8 +2535,16 @@ function modalAvanceRapido(){
     const b1=el("button","btn-aqua ancho verde","⏩ Simular la próxima fecha"); b1.onclick=()=>correr(false);
     const b2=el("button","btn-aqua ancho","⏭️ Simular hasta fin de temporada"); b2.style.marginTop="6px";
     b2.onclick=()=>{ if(confirm("Voy a simular todos los partidos que quedan de la temporada, delegando las decisiones. ¿Seguir?")) correr(true); };
-    const b3=el("button","btn-aqua ancho gris","Cancelar"); b3.style.marginTop="6px"; b3.onclick=cerrarModal;
-    cc.appendChild(b1); cc.appendChild(b2); cc.appendChild(b3);
+    /* 7.67 · testeo: correr varias temporadas seguidas dejando el historial lleno */
+    cc.appendChild(el("p","mini","Para probar el juego a fondo: simulo temporadas enteras seguidas (cierre, ascensos/descensos, liguilla y hasta un club de rescate si te echan). El historial queda como si las hubieras jugado — el resultado lo decide el juego."));
+    const correrN=(n,txt)=>{ if(!confirm(txt)) return; cerrarModal(); const r=simularTemporadas(n);
+      aviso("⏭️ "+r.temps+" temporada"+(r.temps!==1?"s":"")+" simulada"+(r.temps!==1?"s":"")+" · ahora "+r.anio+(r.freno?" · "+r.freno:""),5000); };
+    const b3=el("button","btn-aqua ancho","⏭️⏭️ Simular 5 temporadas"); b3.style.marginTop="6px";
+    b3.onclick=()=>correrN(5,"Voy a simular 5 temporadas completas seguidas (con cierres, ascensos y liguillas automáticas). ¿Seguir?");
+    const b4=el("button","btn-aqua ancho","🏁 Simular hasta el final (máx 40)"); b4.style.marginTop="6px";
+    b4.onclick=()=>correrN(40,"Voy a simular la carrera hasta el final (o 40 temporadas). Ideal para testear el juego completo. ¿Seguir?");
+    const b5=el("button","btn-aqua ancho gris","Cancelar"); b5.style.marginTop="6px"; b5.onclick=cerrarModal;
+    cc.appendChild(b1); cc.appendChild(b2); cc.appendChild(b3); cc.appendChild(b4); cc.appendChild(b5);
   });
 }
 function avanzar(){

@@ -48,9 +48,26 @@ Ascenso/descenso **encadenado** entre niveles (implementado: Primera↔B↔Segun
 
 El motor ya está preparado: una "era"/división es un **array de clubes** registrado en
 `LIGAS[...]` + entradas en `CLUB_INFO_2026 / IND_BASE_2026 / CAJA_BASE_2026` +
-`ESTATUTO_INICIAL / PODER_CLUB`. La **Segunda** (`data-segunda2026.js`) es el molde:
-copiar ese archivo, cambiar los datos, y listo. No hay que tocar el motor para una liga
-corrida; el formato especial (grupos/liguilla) se agrega aparte.
+`ESTATUTO_INICIAL / PODER_CLUB`.
+
+### Forma FÁCIL (7.67): `registrarLiga(cfg)` — una sola llamada
+En vez de copiar todo a mano, definís el **array de clubes** y llamás a
+**`registrarLiga`** (en `js/liga-registrar.js`): deriva `CLUB_INFO/IND/CAJA/ESTATUTO/PODER`
+de la **`fuerza`** de cada club (y respeta lo que pongas explícito). Ejemplo:
+```js
+// js/data-argentina2026.js  (nuevo, cargar después de liga-registrar.js)
+const LIGA_ARG_2026=[
+  { id:"BOC", n:"Boca Juniors", c:"Boca", fuerza:82, aforo:54000, est:"La Bombonera", ciudad:"Buenos Aires", z:"—" },
+  { id:"RIV", n:"River Plate",  c:"River", fuerza:84, aforo:70000, est:"Monumental",  ciudad:"Buenos Aires", z:"—" },
+  // ... el resto (id de 3 letras únicas)
+];
+registrarLiga({ eraKey:"arg2026", clubs:LIGA_ARG_2026, baseEra:2026, nombre:"Liga Profesional Argentina" });
+```
+Campos opcionales por club si querés afinar: `esc` (emoji), `dt`, `desc`, `ind{...}`,
+`caja{plata,deuda}`, `estatuto{...}`, `poder{...}`. Con eso la liga queda **cableada**.
+Falta sólo el gancho de **selección/formato** en el motor (selector de época y, si tiene
+grupos/playoffs, su regla) — eso lo hace Claude cuando llegan los datos. El molde
+"a mano" sigue siendo `data-segunda2026.js` (por si necesitás control fino).
 
 ## Esquema de un club (igual a `LIGA_C_2026`)
 ```js

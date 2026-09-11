@@ -112,6 +112,34 @@
       var zc={norte:0,sur:0}; (E.ligaMod["2026c"]||[]).forEach(function(id){ var z=zonaSegDe(id); if(z) zc[z]++; });
       ok((E.ligaMod["2026c"]||[]).length===14 && zc.norte===7 && zc.sur===7, "Segunda 14, zonas 7/7 tras perder");
     }, "Pierde liguilla");
+
+    /* T4a2 · registrarLiga: una liga nueva se cablea con UNA llamada */
+    grupo("registrarLiga (empaquetado)");
+    safe(function(){
+      var demo=[{id:"ZZA",n:"Demo Uno",c:"Uno",fuerza:70,aforo:20000,est:"Estadio Uno",ciudad:"Uno",z:"—"},
+                {id:"ZZB",n:"Demo Dos",c:"Dos",fuerza:50,aforo:8000,est:"Estadio Dos",ciudad:"Dos",z:"—"}];
+      var n=(typeof registrarLiga==="function")?registrarLiga({eraKey:"demo9",clubs:demo,baseEra:2026,nombre:"Liga Demo"}):0;
+      ok(n===2, "registrarLiga cableó los 2 clubes de una");
+      ok(typeof LIGAS==="object" && LIGAS["demo9"] && LIGAS["demo9"].length===2, "la liga quedó en LIGAS['demo9']");
+      ok(typeof ERA==="object" && ERA["demo9"] && ERA["demo9"].n==="Liga Demo", "la época quedó registrada con su nombre");
+      ok(typeof CLUB_INFO_2026!=="undefined" && CLUB_INFO_2026.ZZA && CLUB_INFO_2026.ZZA.n==="Demo Uno", "CLUB_INFO derivado");
+      ok(typeof IND_BASE_2026!=="undefined" && IND_BASE_2026.ZZA && IND_BASE_2026.ZZA.plantel>IND_BASE_2026.ZZB.plantel, "IND_BASE derivado de la fuerza (70>50)");
+      ok(typeof CAJA_BASE_2026!=="undefined" && CAJA_BASE_2026.ZZA && CAJA_BASE_2026.ZZA.plata>0, "CAJA_BASE derivada");
+    }, "registrarLiga");
+
+    /* T4b · simular varias temporadas seguidas (testeo hasta el final) */
+    grupo("Simular temporadas (testeo)");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var anio0=E.anio, histo0=(E.historialAnual||[]).length;
+      var _r=Math.random; Math.random=function(){return 0.42;};
+      var res; try{ res=simularTemporadas(3); } finally { Math.random=_r; }
+      ok(res && res.temps>=1, "corrió al menos 1 temporada ("+(res&&res.temps)+")");
+      ok(E.anio>anio0, "el año avanzó ("+anio0+"→"+E.anio+")");
+      ok((E.historialAnual||[]).length>histo0, "el historial quedó lleno ("+(E.historialAnual||[]).length+" temporadas)");
+      ok(!E.carrera.enParo && !E.carrera.fin, "la carrera sigue viva tras simular");
+    }, "Simular temporadas");
+
     safe(function(){
       nuevaPartida("CC",2026,"historico");
       initLigaMod();

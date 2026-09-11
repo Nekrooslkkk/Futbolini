@@ -2061,3 +2061,11 @@ La Segunda dejó de ser liga corrida de 14 y ahora se juega **como es de verdad*
 - **Tests:** +7 checks (liguilla pendiente/diferida; gana → sube con zonas 7/7 y Segunda 14; pierde → sube el rival y el jugador se queda). Suite **43/43**.
 - **util.js**: VERSION 7.65 → **7.66**.
 **Probado:** node --check + suite 43/43 verde + captura headless del flujo completo (temporada simulada → balance → liguilla → postura → global 4‑1 → ascenso a Primera B).
+
+## 7.67 · Testeo hasta el final + ligas empaquetadas (una llamada)
+Dos herramientas para probar el juego a fondo y para crecer:
+- **Simular varias temporadas (ui.js `simularTemporadas`):** en Avance rápido hay dos botones nuevos — **"⏭️⏭️ Simular 5 temporadas"** y **"🏁 Simular hasta el final (máx 40)"**. Corre temporadas enteras seguidas: juega lo que queda, **cierra la temporada** sola (ascensos/descensos), **juega la liguilla** si el jugador la clasifica (postura equilibrada) y, si te **echan**, toma un **club de rescate** para seguir. Deja `cronica`/`historialAnual`/`titulos` llenos "como si hubieras jugado" — el resultado lo decide el juego, no un truco. Se frena y avisa si hay crisis/sucesión que pida mano.
+- **`registrarLiga(cfg)` (nuevo `js/liga-registrar.js`):** agregar una liga deja de ser copiar 5 bloques a mano. Definís el **array de clubes** y una línea: `registrarLiga({eraKey, clubs, baseEra, nombre})`. El helper deriva `CLUB_INFO/IND_BASE/CAJA_BASE/ESTATUTO/PODER` de la **fuerza** de cada club (y respeta overrides `ind/caja/estatuto/poder/esc/dt/desc`). Cargado en `index.html` tras `data-segunda2026.js`. **REGLAS.md** documenta el recipe (ejemplo Argentina).
+- **Tests:** +7 (registrarLiga cablea 2 clubes de una, IND deriva de fuerza; simular 3 temporadas avanza el año y llena el historial sin romper). Suite **53/53**.
+- **util.js**: VERSION 7.66 → **7.67**.
+**Probado:** node --check + suite 53/53 verde.
