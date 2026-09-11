@@ -1048,7 +1048,8 @@ function finDeTemporada(){
   /* premios */
   let premio=[0,420,260,180,120][Math.min(4,pos)]||70;
   aplicarEfectos({plata:premio});
-  if(campeon){ E.titulos.push(E.anio+" · Campeón del Campeonato Nacional"); aplicarEfectos({prestigio:7,hinchada:7,moral:6}); aplicarRep({publica:8,credibilidad:6});
+  const _divNom=(typeof _nombreDiv==="function")?_nombreDiv(E.eraBase):"Campeonato Nacional";
+  if(campeon){ E.titulos.push(E.anio+" · Campeón de "+(_divNom==="Primera División"?"la Primera División":_divNom)); aplicarEfectos({prestigio:7,hinchada:7,moral:6}); aplicarRep({publica:8,credibilidad:6});
     if(typeof recordar==="function") recordar("titulo","saliste campeón nacional en "+E.anio,{peso:"alto",tono:"bueno"}); }
   /* copa */
   const copa=E.calendario.filter(p=>p.tipo==="copa");

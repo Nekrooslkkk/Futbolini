@@ -1972,3 +1972,9 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 ## 7.50 · Ascenso/descenso de 3 niveles (Primera ↔ B ↔ Segunda)
 - **motor.js**: procesarAscensoDescenso generalizado a cadena de divisiones. Para cada par adyacente baja el último de arriba y sube el campeón de abajo; solo la división del jugador se ordena por tabla real, las otras se simulan. initLigaMod + activarLiga reconocen "2026c". Avisos y memoria con el nombre de división correcto. El caso 2 niveles (Primera↔B) queda idéntico.
 **Probado:** headless — campeón de Segunda sube a B (eraBase 2026c→2026b), Primera colista baja a B, B mid-table se mantiene con la cadena moviendo al resto; tamaños de división preservados; 0 errores.
+
+## 7.51 · FIX Segunda: calendario correcto + avance post-partido + títulos por división
+- **data-liga.js**: un club de Segunda (2026c) recibía por error el calendario de Primera (LIGA_CC_2026) porque el gate solo excluía "2026b". Ahora excluye "2026b" y "2026c" → arma el round-robin de Segunda (rivales de Segunda, torneo "Segunda División"). Esto es lo que rompía el avance post-partido (calendario inválido → sin próximo partido → sin previa/preguntas). eraDe reconoce 2026c.
+- **motor.js**: título de campeón usa el nombre de la división (Segunda/B/Primera). El fin de temporada ya dispara el ascenso de 3 niveles.
+- **ui-partido.js**: título del partido muestra "Segunda División · fecha N".
+**Probado:** headless — calendario 26 fechas con rivales de Segunda, temporada completa, procesarSemanaPostPartido OK, 0 errores.

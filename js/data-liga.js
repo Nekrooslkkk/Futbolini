@@ -178,7 +178,7 @@ const ERA={
    desc:"Fútbol moderno: la victoria vale 3 puntos, sociedades anónimas, plata de TV y valores inflados."}
 };
 function eraDe(base){
-  if(base==="2026b" || base===2026) return ERA[2026];
+  if(base==="2026b" || base==="2026c" || base===2026) return ERA[2026];
   return ERA[base] || (base>=2010?ERA[2026]:ERA[1991]);
 }
 function baseEra(anio){ return anio>=2010?2026:1991; }
@@ -397,7 +397,7 @@ function construirCalendario(clubId, anio, conCopa){
     cal.sort((a,b)=>ordenFecha(a.f)-ordenFecha(b.f));
     return cal;
   }
-  if(anio===2026 && typeof LIGA_CC_2026!=="undefined" && !(typeof E!=="undefined"&&E&&E.eraBase==="2026b")){
+  if(anio===2026 && typeof LIGA_CC_2026!=="undefined" && !(typeof E!=="undefined"&&E&&(E.eraBase==="2026b"||E.eraBase==="2026c"))){
     LIGA_CC_2026.forEach(p=>{
       const pares=emparejarFecha(anio,p.fecha,clubId,null);
       const mio=pares.find(x=>x[0]===clubId||x[1]===clubId);
@@ -418,7 +418,7 @@ function construirCalendario(clubId, anio, conCopa){
     const mio=jornada.find(p=>p[0]===clubId||p[1]===clubId);
     if(!mio) return;
     const local=mio[0]===clubId, rival=local?mio[1]:mio[0];
-    cal.push({tipo:"liga", torneo:(typeof E!=="undefined"&&E&&E.eraBase==="2026b")?"Liga de Ascenso":"Campeonato Nacional", fecha:i+1, rivalId:rival,
+    cal.push({tipo:"liga", torneo:(typeof E!=="undefined"&&E&&E.eraBase==="2026b")?"Liga de Ascenso":((typeof E!=="undefined"&&E&&E.eraBase==="2026c")?"Segunda División":"Campeonato Nacional"), fecha:i+1, rivalId:rival,
       rivalNombre:CLUB_POR_ID[rival].n, fuerzaRival:CLUB_POR_ID[rival].fuerza,
       local:local, sede:local?CLUB_POR_ID[clubId].est:CLUB_POR_ID[rival].est,
       f:fechas[i], jugado:false, clima:climaDeFecha(fechas[i].m,"liga"+clubId+anio+i), jornada:jornada});

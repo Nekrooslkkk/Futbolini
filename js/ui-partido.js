@@ -107,7 +107,8 @@ function pantallaPrevia(part){
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
   document.body.classList.remove("en-partido","hay-momento");
   const ligaTit=E.eraBase==="2026b"?"Liga de Ascenso · fecha "+part.fecha
-    :(E.anio>=2010?"Liga de Primera · fecha "+part.fecha:"Campeonato Nacional · fecha "+part.fecha);
+    :(E.eraBase==="2026c"?"Segunda División · fecha "+part.fecha
+    :(E.anio>=2010?"Liga de Primera · fecha "+part.fecha:"Campeonato Nacional · fecha "+part.fecha));
   const copaTit=part.tipo==="copa"?((part.torneo||"Copa")+" · "+part.ronda):ligaTit;
   const cab=panel(copaTit, part.tipo==="copa"?"🏆":"⚽", part.tipo==="copa"?"agua":"");
   cab.cuerpo.appendChild(el("h2","tit",(part.local?E.clubNombre+" vs "+part.rivalNombre:part.rivalNombre+" vs "+E.clubNombre)));
