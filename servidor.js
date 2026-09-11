@@ -19,7 +19,7 @@ const MIME={
   ".mp3":"audio/mpeg",".ogg":"audio/ogg",".wav":"audio/wav",
   ".txt":"text/plain; charset=utf-8",".md":"text/plain; charset=utf-8"
 };
-const VERSION={nombre:"Futbolini",build:"5.1h",offline:true,ia:"heuristica-local"};
+const VERSION={nombre:"Futbolini",build:"7.53",offline:true,ia:"heuristica-local"};
 
 function send(res,code,body,type){
   res.writeHead(code,{"Content-Type":type||"text/plain; charset=utf-8","Cache-Control":"no-cache"});
