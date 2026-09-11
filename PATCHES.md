@@ -2078,3 +2078,11 @@ Dos herramientas para probar el juego a fondo y para crecer:
 - **Tests:** +3 (el picker lista 46 clubes, 5 filtros, buscador). Suite **56/56**. Capturas headless: inicio completo (46) y filtro Segunda (14).
 - **util.js**: VERSION 7.67 → **7.68**.
 **Probado:** node --check + suite 56/56 verde + capturas (inicio nuevo, filtro Segunda funcionando).
+
+## 7.69 · Sistema de idioma/registro: Neutro · Chilensis · Português
+- **`js/idiomas.js` (nuevo):** `IDIOMA` + `T(clave, neutro)` con **fallback a neutro** (lo que no esté traducido nunca queda en blanco → se puede traducir de a poco sin romper). Packs `FRASES.neutro/cl/pt`. Cargado temprano (tras `util.js`) para que `T()` esté en todo el juego.
+- **Chilensis de verdad** (sin voseo argentino): -ai/-ís, "po", "cachái", "pa'". Ej.: *"No manejái un equipo, po. Manejái una institución."* Es un **arranque respetuoso** para que el usuario lo pula con su voz; el pack pt es semilla (usuario/Grok afinan).
+- **Selector en Ajustes** (🌎 Neutro / 🇨🇱 Chilensis / 🇧🇷 Português), pref `futbolini3_idioma`, aplicado al boot. La pantalla de **inicio** ya pasa por `T()` (headline, bajada, "Elegí tu club", buscador, filtros, panel de duelo) como demo coherente; el resto se convierte incremental.
+- **Tests:** +6 (T existe, neutro base, chilensis cambia, default fallback, pt traduce, clave sólo-neutro cae a neutro desde pt). Suite **62/62**.
+- **util.js**: VERSION 7.68 → **7.69**.
+**Probado:** node --check + suite 62/62 verde + captura del inicio en Chilensis.

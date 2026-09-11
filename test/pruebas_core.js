@@ -113,6 +113,22 @@
       ok((E.ligaMod["2026c"]||[]).length===14 && zc.norte===7 && zc.sur===7, "Segunda 14, zonas 7/7 tras perder");
     }, "Pierde liguilla");
 
+    /* T4a0 · idiomas: T() resuelve por registro con fallback a neutro */
+    grupo("Idiomas (neutro/chilensis/pt)");
+    safe(function(){
+      ok(typeof T==="function" && typeof setIdioma==="function", "existe el sistema de idioma");
+      setIdioma("neutro");
+      ok(T("ini_headline")==="No manejas un equipo. Manejas una institución.", "neutro es la base");
+      setIdioma("cl");
+      ok(T("ini_headline").toLowerCase().indexOf("manejái")>=0, "chilensis cambia el texto");
+      ok(T("clave_que_no_existe_xyz","porDefecto")==="porDefecto", "clave sin traducir cae al default");
+      setIdioma("pt");
+      ok(T("ini_elige").toLowerCase().indexOf("clube")>=0, "portugués traduce");
+      /* fallback a neutro: inyecto una clave sólo en neutro y la pido en pt */
+      if(typeof FRASES==="object"){ FRASES.neutro.__prueba_fb="valor_neutro"; ok(T("__prueba_fb")==="valor_neutro", "clave sólo-neutro cae a neutro desde pt"); delete FRASES.neutro.__prueba_fb; }
+      setIdioma("neutro");
+    }, "Idiomas");
+
     /* T4a1 · menú de inicio: el picker lista y filtra clubes sin romper */
     grupo("Menú de inicio (picker)");
     safe(function(){

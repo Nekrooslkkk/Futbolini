@@ -182,11 +182,12 @@ function pickerClubes(cont){
   if(typeof LIGA_B_2026!=="undefined") LIGA_B_2026.forEach(c=>add(c.id,(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c,"Primera B",false));
   if(typeof LIGA_C_2026!=="undefined") LIGA_C_2026.forEach(c=>add(c.id,(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c,"Segunda",false));
 
-  const filtros=[["todos","Todos"],["Primera","Primera"],["Primera B","Primera B"],["Segunda","Segunda"],["clasico","Clásicos '91"]];
+  const _T=(typeof T==="function")?T:((k,d)=>d);
+  const filtros=[["todos",_T("ini_f_todos","Todos")],["Primera","Primera"],["Primera B","Primera B"],["Segunda","Segunda"],["clasico",_T("ini_f_clasicos","Clásicos '91")]];
   let fAct="todos", q="";
   const barra=el("div","picker-barra");
   const tabs=el("div","picker-tabs"); barra.appendChild(tabs);
-  const inp=el("input","pick-buscar"); inp.type="search"; inp.placeholder="Buscar club o ciudad…"; inp.setAttribute("aria-label","Buscar club");
+  const inp=el("input","pick-buscar"); inp.type="search"; inp.placeholder=_T("ini_buscar","Buscar club o ciudad…"); inp.setAttribute("aria-label","Buscar club");
   barra.appendChild(inp);
   const cont2=el("span","pick-cont",""); barra.appendChild(cont2);
   const grid=el("div","iconos picker-grid");
@@ -218,9 +219,10 @@ function pickerClubes(cont){
 function pantallaInicio(){
   const v=$("#vista");
   const p=panel("Futbolini "+(typeof VERSION!=="undefined"?VERSION:""),"🏟️");
-  p.cuerpo.appendChild(el("h2","tit","No manejas un equipo. Manejas una institución."));
-  p.cuerpo.appendChild(el("p",null,"Gente con intereses distintos empujando para lados distintos, plata que se acaba, "+
-   "reglas internas que puedes cambiar si tienes el poder para hacerlo, y una historia real que puedes seguir o romper."));
+  const _T=(typeof T==="function")?T:((k,d)=>d);
+  p.cuerpo.appendChild(el("h2","tit",_T("ini_headline","No manejas un equipo. Manejas una institución.")));
+  p.cuerpo.appendChild(el("p",null,_T("ini_bajada","Gente con intereses distintos empujando para lados distintos, plata que se acaba, "+
+   "reglas internas que puedes cambiar si tienes el poder para hacerlo, y una historia real que puedes seguir o romper.")));
   p.cuerpo.appendChild(el("div","resul mitad",
    "<b>Antes de entrar.</b> Este juego usa nombres reales de clubes, jugadores y dirigentes del fútbol chileno. "+
    "Los resultados, títulos y fechas se apoyan en registros públicos, pero <b>todo lo demás es ficción</b>: "+
@@ -228,16 +230,16 @@ function pantallaInicio(){
    "para efectos del juego. Nada de lo que pase acá adentro ocurrió así en la vida real."));
   v.appendChild(p);
 
-  const paso1=panel("1 · Elige club","⚪");
+  const paso1=panel((typeof T==="function"?T("ini_elige","1 · Elige club"):"1 · Elige club"),"⚪");
   pickerClubes(paso1.cuerpo);
   paso1.cuerpo.appendChild(el("p","mini","Los clásicos se pueden jugar en 1991 (calendario real, Copa Libertadores de Colo-Colo) o en 2026. Primera B arranca en la Liga de Ascenso y Segunda en su zona (Norte/Sur). Planteles documentados donde hay; el resto se rellena con cantera."));
   v.appendChild(paso1);
 
   /* 7.00 · duelo P2P contra un amigo */
   if(typeof modalDuelo==="function"){
-    const pm=panel("… o juega contra un amigo","🎮","agua");
-    pm.cuerpo.appendChild(el("p","mini","Un duelo dirigido, en vivo, sin cuentas ni servidor: se conectan con un código y cada uno maneja su club."));
-    const bm=el("button","btn-aqua ancho verde","🎮 Duelo con un amigo");
+    const pm=panel(_T("ini_amigo_tit","… o juega contra un amigo"),"🎮","agua");
+    pm.cuerpo.appendChild(el("p","mini",_T("ini_amigo_txt","Un duelo dirigido, en vivo, sin cuentas ni servidor: se conectan con un código y cada uno maneja su club.")));
+    const bm=el("button","btn-aqua ancho verde",_T("ini_amigo_btn","🎮 Duelo con un amigo"));
     bm.onclick=()=>modalDuelo();
     pm.cuerpo.appendChild(bm);
     v.appendChild(pm);
@@ -2189,6 +2191,19 @@ function vistaAjustes(){
   });
   p.cuerpo.appendChild(fperf);
   p.cuerpo.appendChild(el("p","mini","El modo liviano apaga burbujas, desenfoques y animaciones pesadas: el juego vuela en equipos lentos o celulares viejos. Se autoenciende solo si detecta un equipo flaco."));
+  /* 7.69 · idioma / registro (neutro · chilensis · português) */
+  if(typeof IDIOMAS_DISPONIBLES!=="undefined" && typeof setIdioma==="function"){
+    p.cuerpo.appendChild(el("label","lb",(typeof T==="function"?T("aj_idioma","Idioma"):"Idioma")));
+    const fidi=el("div","fichas");
+    IDIOMAS_DISPONIBLES.forEach(([k,n])=>{
+      const b=el("button","ficha",n);
+      b.setAttribute("aria-pressed",(typeof idiomaActual==="function"&&idiomaActual()===k)?"true":"false");
+      b.onclick=()=>{ setIdioma(k); Store.set("futbolini3_idioma",k); render(); };
+      fidi.appendChild(b);
+    });
+    p.cuerpo.appendChild(fidi);
+    p.cuerpo.appendChild(el("p","mini",(typeof T==="function"?T("aj_idioma_txt","Cambia el registro de los textos del juego. Lo que aún no esté traducido se muestra en español neutro."):"")));
+  }
   p.cuerpo.appendChild(el("div","resul mitad","<b>Aviso.</b> Clubes, jugadores y dirigentes reales aparecen con su nombre. "+
     "Resultados, títulos y fechas se apoyan en registros públicos. Todo lo demás (conversaciones, negociaciones, conflictos internos, frases) "+
     "es ficción escrita para el juego."));
@@ -2941,6 +2956,8 @@ document.addEventListener("keydown",function(e){
     }
     document.body.classList.toggle("perf", !!pf);
   }catch(e){}
+  /* 7.69 · idioma/registro (neutro por defecto; conmutable en Ajustes) */
+  try{ const idi=await Store.get("futbolini3_idioma"); if(idi && typeof setIdioma==="function") setIdioma(idi); }catch(e){}
   let lista=[]; try{ lista=await migrarSlots(); }catch(e){ console.error("No se pudo migrar slots:",e); }
   let g=null;
   try{
