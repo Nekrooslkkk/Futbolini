@@ -2007,3 +2007,9 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 - **ui.js (Finanzas)**: botón "🔁 Refinanciar" con modal que explica en 3 pasos (interés semanal antes→después, deuda antes→después, condiciones) antes de confirmar. Cierra la economía explicativa (nunca callejón sin salida).
 - **test/pruebas_core.js**: caso nuevo (baja tasa, sube deuda, no se apila).
 **Probado:** `bash test/correr.sh` → 22/22 verde.
+
+## 7.59 · Nunca game over: si te echan, sigues desde la división más baja
+- **carrera.js**: `ofertaDeRescate()` devuelve 3 clubes de la división más baja que exista (hoy la Segunda; si se agrega una 4ª, esa). `aceptarClub(id, anioForz)` acepta año forzado para caer al modern-tier y preserva rep/carrera/títulos/crónica.
+- **ui.js (pantallaSinClub)**: al destituirte SIEMPRE hay salida por abajo — ofertas de Segunda para reconstruirte. Ya no existe "Nadie te contrata → terminar"; retirarse es una decisión tuya (con confirmación), nunca un castigo forzado. Info de club universal (Primera/B/Segunda).
+- **test**: caso nuevo (quemado igual recibe rescate de Segunda, aceptar sigue sin game over, carrera preservada).
+**Probado:** `bash test/correr.sh` → 26/26 verde.

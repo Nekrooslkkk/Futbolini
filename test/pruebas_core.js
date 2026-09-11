@@ -115,6 +115,21 @@
       ok(r2 && !r2.ok, "no se puede refinanciar dos veces seguidas");
     }, "Refinanciar deuda");
 
+    /* T8 · nunca game over: rescate desde la división más baja */
+    grupo("Nunca game over (7.59)");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      E.rep.publica=5; E.rep.credibilidad=5;   /* nombre quemado */
+      var resc=ofertaDeRescate();
+      ok(resc.length>0, "hay oferta de rescate aunque estés quemado ("+resc.length+")");
+      var segIds=(typeof idsSegunda==="function")?idsSegunda():[];
+      ok(resc.every(function(c){ return segIds.indexOf(c.id)>=0; }), "el rescate es de la división más baja (Segunda)");
+      var titAntes=E.titulos.length;
+      aceptarClub(resc[0].id, 2026);
+      ok(E.eraBase==="2026c" && !E.carrera.fin && !E.carrera.enParo, "al aceptar sigue en Segunda (sin game over)");
+      ok(E.titulos.length===titAntes, "la carrera se preserva (títulos)");
+    }, "Rescate desde Segunda");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }

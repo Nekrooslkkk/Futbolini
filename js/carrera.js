@@ -202,15 +202,27 @@ function ofertasDeTrabajo(){
   if(E.flags.cisma) return [];
   return posibles;
 }
-function aceptarClub(id){
+function aceptarClub(id, anioForz){
   const prev=E.rep, carrera=E.carrera, titulos=E.titulos, cronica=E.cronica;
-  const anio=E.anio, modo=E.modo;
+  const anio=anioForz||E.anio, modo=E.modo;
   nuevaPartida(id,anio,modo);
-  E.rep=prev; E.carrera=carrera; E.carrera.club=id; E.carrera.desde=anio;
+  E.rep=prev; E.carrera=carrera; E.carrera.club=id; E.carrera.desde=E.anio;
   E.carrera.enParo=false; E.carrera.malos=0;
   E.titulos=titulos; E.cronica=cronica;
   aplicarGrupos({directorio:10,prensa:5});
   guardar();
+}
+/* 7.59 · nunca game over: la división MÁS BAJA que exista siempre te da una
+   oportunidad para reconstruirte (hoy la Segunda; si se agrega una 4ª, esa). */
+function divisionMasBaja(){
+  if(typeof LIGA_C_2026!=="undefined" && LIGA_C_2026.length) return LIGA_C_2026;
+  if(typeof LIGA_B_2026!=="undefined" && LIGA_B_2026.length) return LIGA_B_2026;
+  return (typeof LIGA_2026!=="undefined")?LIGA_2026:[];
+}
+function ofertaDeRescate(){
+  const pool=divisionMasBaja().filter(function(c){ return c.id!==E.club; });
+  const barajado=(typeof mezcla==="function")?mezcla(pool):pool.slice();
+  return barajado.slice(0,3);
 }
 function finDeCarrera(motivo){
   E.carrera.fin=true; E.carrera.motivoFin=motivo;

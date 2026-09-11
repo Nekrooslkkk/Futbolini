@@ -1493,24 +1493,30 @@ function pantallaSinClub(){
   const p=panel("Estás sin club","🚪","alerta");
   p.cuerpo.appendChild(el("h2","tit","Te destituyeron"));
   p.cuerpo.appendChild(el("p",null,E.carrera.motivo));
-  const ofertas=ofertasDeTrabajo();
-  if(estadoCarrera()!=="ok"||!ofertas.length){
-    p.cuerpo.appendChild(el("div","resul mal","Nadie te quiere contratar. Tu nombre está quemado en el fútbol chileno."));
-    const b=el("button","btn-aqua ancho rojo","Terminar la carrera");
-    b.onclick=()=>{ finDeCarrera("Nadie volvió a llamarte."); render(); };
-    p.cuerpo.appendChild(b);
-  } else {
+  const _info=id=>((typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[id])||CLUB_INFO[id]||{n:id,esc:"⚽",desc:""});
+  const btn=(id,anioForz)=>{ const inf=_info(id); const b=el("button","op");
+    b.innerHTML='<div class="t">'+(inf.esc||"⚽")+" "+inf.n+'</div>'+(inf.desc?'<div class="d">'+inf.desc+'</div>':'');
+    b.onclick=()=>{ aceptarClub(id,anioForz); SEC="escritorio"; render(); aviso("Nuevo desafío: "+inf.n); }; return b; };
+  const quemado=(estadoCarrera()!=="ok");
+  const ofertas=quemado?[]:ofertasDeTrabajo();
+  if(ofertas.length){
     p.cuerpo.appendChild(el("h3","sub","Ofertas sobre la mesa"));
-    ofertas.forEach(o=>{
-      const b=el("button","op");
-      b.innerHTML='<div class="t">'+CLUB_INFO[o.id].esc+" "+o.n+'</div><div class="d">'+CLUB_INFO[o.id].desc+'</div>';
-      b.onclick=()=>{ aceptarClub(o.id); SEC="escritorio"; render(); aviso("Nuevo desafío: "+o.n); };
-      p.cuerpo.appendChild(b);
-    });
-    const b=el("button","btn-aqua ancho gris","Retirarme del fútbol");
-    b.onclick=()=>{ finDeCarrera("Decidiste no seguir."); render(); };
-    p.cuerpo.appendChild(b);
+    ofertas.forEach(o=>p.cuerpo.appendChild(btn(o.id)));
   }
+  /* 7.59 · SIEMPRE hay salida por abajo: la división más baja te da una chance.
+     Nunca hay game over forzado; retirarse es una decisión tuya, no un castigo. */
+  const rescate=(typeof ofertaDeRescate==="function")?ofertaDeRescate():[];
+  if(rescate.length){
+    p.cuerpo.appendChild(el("h3","sub",ofertas.length?"… o volver a empezar desde abajo":"Empezar de nuevo desde abajo"));
+    p.cuerpo.appendChild(el("p","mini",quemado
+      ?"Tu nombre está quemado arriba, pero en la Segunda División te dan la oportunidad de reconstruirte. De acá para arriba."
+      :"Si querés el desafío de subir desde el fondo, la Segunda te espera."));
+    rescate.forEach(o=>p.cuerpo.appendChild(btn(o.id,2026)));
+  }
+  const b=el("button","btn-aqua ancho gris","Retirarme del fútbol");
+  b.style.marginTop="8px";
+  b.onclick=()=>{ if(confirm("¿Seguro que querés retirarte? Podés seguir dirigiendo desde la Segunda División en vez de terminar la carrera.")){ finDeCarrera("Decidiste no seguir."); render(); } };
+  p.cuerpo.appendChild(b);
   return p;
 }
 function pantallaFinCarrera(){
