@@ -1060,18 +1060,22 @@ function resolverCopa(part,yo,otro){
   let pasa;
   if(k==="Grupo 2"){ pasa=(acc.gf-acc.gc)>=-1; }
   else { pasa=acc.gf>acc.gc||(acc.gf===acc.gc&&Math.random()<0.5); }
+  /* 7.71 · el torneo real (Copa Chile / Libertadores / Sudamericana), no hardcodeado */
+  const torneo=part.torneo||"la Copa";
+  const esAmerica=/Libertadores|Sudamericana/i.test(torneo);
   if(!pasa){
     E.calendario=E.calendario.filter(p=>!(p.tipo==="copa"&&!p.jugado));
-    notificar({t:"Eliminado de la Copa Libertadores",d:"El club queda fuera en "+k+" ("+acc.gf+"-"+acc.gc+" en la llave). Se resiente la moral y baja algo de prestigio.",tipo:"malo"});
+    notificar({t:"Eliminado de "+torneo,d:"El club queda fuera en "+k+" ("+acc.gf+"-"+acc.gc+" en la llave). Se resiente la moral y baja algo de prestigio.",tipo:"malo"});
     aplicarEfectos({moral:-5,prestigio:-2});
   } else if(k==="FINAL"){
     E.flags.copaCampeon=true;
-    notificar({t:"CAMPEÓN DE AMÉRICA",d:"El club gana la Copa Libertadores "+E.anio+". Estalla la hinchada, se dispara el prestigio y entran premios grandes.",tipo:"bueno"});
+    E.flags.copaCampeonTorneo=torneo;   /* 7.71 · qué copa se ganó, para títulos/balance/panel */
+    notificar({t:"🏆 CAMPEÓN — "+torneo,d:"El club gana "+torneo+" "+E.anio+". Estalla la hinchada, se dispara el prestigio y entran premios grandes.",tipo:"bueno"});
     aplicarGrupos({hinchada:22,socios:14,camarin:18,directorio:20,prensa:14,comunidad:10,anfp:6,sponsors:16,tecnico:15});
     aplicarRep({publica:25,credibilidad:15});
   } else {
     aplicarEfectos({plata:130});
-    notificar({t:"Avanza en la Copa",d:"El club supera "+k+" ("+acc.gf+"-"+acc.gc+"). Entran "+plata(130)+" por premios y sube la moral.",tipo:"bueno"});
+    notificar({t:"Avanza en "+torneo,d:"El club supera "+k+" ("+acc.gf+"-"+acc.gc+"). Entran "+plata(130)+" por premios y sube la moral.",tipo:"bueno"});
     aplicarEfectos({moral:5,prestigio:3});
   }
 }

@@ -1337,6 +1337,55 @@ function modalRepeticion(c){
     const b=el("button","btn-aqua ancho gris","Cerrar"); b.onclick=cerrarModal; cc.appendChild(b);
   });
 }
+/* 7.71 · Recorrido de copa(s) del año, ronda por ronda, con global y estado.
+   Todo se deriva del calendario + E.flags.copaAcum + copaCampeon (Copa Chile incluida). */
+function panelCopas(v){
+  const copaMatches=(E.calendario||[]).filter(p=>p.tipo==="copa");
+  if(!copaMatches.length) return;
+  /* agrupar por torneo, preservando el orden de aparición */
+  const torneos=[], porTorneo={};
+  copaMatches.forEach(m=>{ const t=m.torneo||"Copa"; if(!porTorneo[t]){ porTorneo[t]=[]; torneos.push(t); } porTorneo[t].push(m); });
+  const acum=(E.flags&&E.flags.copaAcum)||{};
+  const campeonTorneo=E.flags&&E.flags.copaCampeon?(E.flags.copaCampeonTorneo||null):null;
+  torneos.forEach(t=>{
+    const ms=porTorneo[t];
+    const jugados=ms.filter(m=>m.jugado);
+    const esCampeon=(campeonTorneo===t);
+    const icono=/Chile/i.test(t)?"🇨🇱":(/Libertadores/i.test(t)?"🏆":(/Sudamericana/i.test(t)?"🥈":"🏆"));
+    const pc=panel(icono+" "+t,"🏆",esCampeon?"agua":"");
+    if(esCampeon) pc.cuerpo.appendChild(el("div","resul bien","<b>🏆 ¡CAMPEÓN!</b> "+E.clubNombre+" levantó "+t+" "+E.anio+". Quedó en la vitrina."));
+    /* rondas en orden */
+    const rondas=[], porRonda={};
+    ms.forEach(m=>{ const r=m.ronda||"Fase"; if(!porRonda[r]){ porRonda[r]=[]; rondas.push(r); } porRonda[r].push(m); });
+    rondas.forEach(r=>{
+      const partidos=porRonda[r];
+      const jug=partidos.filter(x=>x.jugado);
+      const ac=acum[r];
+      const cab=el("div","cr-ronda");
+      let estado="";
+      if(jug.length===partidos.length){
+        if(ac){ const gd=ac.gf-ac.gc; estado=esCampeon&&r==="FINAL"?"🏆 título":(gd>0?"✓ avanza":(gd===0?"= definió":"✗ eliminado")); }
+      } else estado="· en curso";
+      cab.innerHTML='<b>'+r+'</b>'+(ac?' <span class="mini">global '+ac.gf+'-'+ac.gc+'</span>':'')+(estado?' <span class="mini">'+estado+'</span>':'');
+      pc.cuerpo.appendChild(cab);
+      partidos.forEach(m=>{
+        const marc=m.jugado?(m.gf+"-"+m.gc):"—";
+        const est=m.jugado?(m.gf>m.gc?"ok":(m.gf<m.gc?"mal":"neu")):"neu";
+        const _ec=(typeof escudoChip==="function")?escudoChip(m.rivalId):"";
+        const fila=el("div","fila"+(m.jugado&&m.goleadores&&m.goleadores.length?" fila-click":""));
+        fila.innerHTML='<span>'+(m.local?"vs ":"a ")+_ec+(m.rivalNombre||"Rival")+' <span class="mini">'+fechaTxt(m.f)+(m.sede?" · "+m.sede:"")+'</span></span><b class="etq '+est+'">'+marc+'</b>';
+        if(m.jugado&&m.goleadores&&m.goleadores.length){ fila.style.cursor="pointer"; fila.onclick=()=>modalRepeticion(m); }
+        pc.cuerpo.appendChild(fila);
+      });
+    });
+    /* resumen abajo */
+    const gTot=jugados.reduce((s,m)=>s+(m.gf||0),0), gcTot=jugados.reduce((s,m)=>s+(m.gc||0),0);
+    const g=jugados.filter(m=>m.gf>m.gc).length, e=jugados.filter(m=>m.gf===m.gc).length, pe=jugados.filter(m=>m.gf<m.gc).length;
+    pc.cuerpo.appendChild(el("p","mini","Recorrido: "+jugados.length+" jugados · "+g+"G "+e+"E "+pe+"P · goles "+gTot+":"+gcTot+
+      (esCampeon?" · <b>Campeón</b> 🏆":(jugados.length&&!copaMatches.some(x=>x.torneo===t&&!x.jugado)?" · eliminado":" · en carrera"))));
+    v.appendChild(pc);
+  });
+}
 function vistaCalendario(){
   const v=$("#vista");
   const p=panel("Calendario "+E.anio,"📅");
@@ -1363,6 +1412,9 @@ function vistaCalendario(){
     pr.cuerpo.appendChild(el("p","mini","Se simula con la fuerza de cada club. Los cruce oficiales (CC/UCH/UC) se respetan; el resto es emparejamiento fijo de la fecha."));
     v.appendChild(pr);
   }
+  /* 7.71 · Copa(s) del año con TODO el detalle: por torneo, ronda por ronda,
+     resultado, global de la llave y estado (avanza / eliminado / CAMPEÓN). */
+  panelCopas(v);
 
   const _clubesTabla=(typeof clubesLigaActual==="function")?clubesLigaActual():LIGA_ACT;
   const _esSeg=(E.eraBase==="2026c");
@@ -1447,7 +1499,7 @@ function vistaHistoria(){
   if(!E.historialAnual||!E.historialAnual.length) ph.cuerpo.appendChild(el("p","mini","Todavía no cerraste ninguna temporada. Cuando termine un año, su tabla final queda guardada acá."));
   (E.historialAnual||[]).forEach(h=>{
     const b=el("button","op");
-    const remate=h.copa?"🏆 Campeón de América":(h.campeon?"🥇 Campeón nacional":ordinal(h.pos)+" en la tabla");
+    const remate=h.copa?("🏆 "+((h.copa===true||h.copa==="Campeón")?"Campeón de copa":h.copa)):(h.campeon?"🥇 Campeón nacional":ordinal(h.pos)+" en la tabla");
     b.innerHTML='<div class="t">'+h.anio+' · '+remate+'</div>'+
       '<div class="d">'+(h.goleador?("Goleador del plantel: "+h.goleador.n+" ("+h.goleador.goles+")"):"")+'</div>';
     b.onclick=()=>modalTablaHistorica(h);
@@ -2688,7 +2740,7 @@ function cerrarTemporada(){
     box.classList.remove("panel");
     const p=panel("Balance "+E.anio,"🏁",r.campeon||r.copa?"":"alerta");
     p.cuerpo.appendChild(el("div","centro",'<div style="font-size:44px">'+(r.copa?"🏆":(r.campeon?"🥇":(r.pos<=3?"🥈":"📉")))+'</div>'));
-    p.cuerpo.appendChild(el("h2","tit centro",r.copa?"Campeón de América":(r.campeon?"Campeón nacional":ordinal(r.pos)+" en el Campeonato Nacional")));
+    p.cuerpo.appendChild(el("h2","tit centro",r.copa?("Campeón — "+(r.copaNom||"Copa")):(r.campeon?"Campeón nacional":ordinal(r.pos)+" en el Campeonato Nacional")));
     p.cuerpo.appendChild(fila("Puntos",E.temporada.pts+" en "+E.temporada.pj+" partidos"));
     p.cuerpo.appendChild(fila("Premios de competencia",plata(r.premio)));
     p.cuerpo.appendChild(fila("Caja al cierre",plata(E.plata)));

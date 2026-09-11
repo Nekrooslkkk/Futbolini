@@ -2094,3 +2094,10 @@ Con los ejemplos del usuario, el chilensis se mete donde se siente:
 - **Tests:** +2 (neutro no fuerza tuit en gol común; chilensis sí erupciona). Suite **64/64**.
 - **util.js**: VERSION 7.69 → **7.70**.
 **Probado:** node --check + suite 64/64 verde.
+
+## 7.71 · Copa Chile con TODO el detalle en el calendario (+ bug del torneo)
+- **Bug arreglado (partido.js/motor.js/ui.js):** al ganar la **Copa Chile** el juego decía "Copa Libertadores" / "Campeón de América" (hardcodeado). Ahora `resolverCopa` usa `part.torneo` real y guarda **`E.flags.copaCampeonTorneo`**; el **título**, el **balance de fin de temporada** y el **historial** nombran la copa correcta (Chile / Libertadores / Sudamericana). `nuevoAnio` limpia los flags de copa del año anterior.
+- **Panel de Copas en el calendario (ui.js `panelCopas`):** nuevo panel que muestra el recorrido **ronda por ronda** de cada torneo del año: rival (con escudo), fecha, **sede**, resultado, **global de la llave**, y estado (✓ avanza / ✗ eliminado / 🏆 título). Banner **"🏆 ¡CAMPEÓN!"** cuando corresponde y un resumen ("Recorrido: N jugados · G-E-P · goles X:Y · Campeón/eliminado/en carrera"). Los partidos con goleadores abren la repetición.
+- **GROK_SUPERPROMPT.md (nuevo):** super prompt para Grok — caza de bugs de datos (ids/estadios/fuerzas/zonas/históricos), datos nuevos (históricos, planteles 2026, liga Argentina vía `registrarLiga`) y pool 2026 del Plop! en batch (neutro + chilensis).
+- **util.js**: VERSION 7.70 → **7.71**.
+**Probado:** node --check + suite 64/64 verde + capturas headless (Copa Chile en curso y CAMPEÓN, con rondas/sedes/global).

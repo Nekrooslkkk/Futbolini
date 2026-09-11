@@ -1203,21 +1203,23 @@ function finDeTemporada(){
   /* copa */
   const copa=E.calendario.filter(p=>p.tipo==="copa");
   const copaGanada=E.flags.copaCampeon;
-  if(copaGanada){ E.titulos.push(E.anio+" · Copa Libertadores"); aplicarEfectos({prestigio:14,plata:600,hinchada:10}); aplicarRep({publica:14,credibilidad:10});
-    if(typeof recordar==="function") recordar("titulo","levantaste la Copa Libertadores con "+E.clubNombre,{peso:"alto",tono:"bueno"}); }
+  const copaNom=E.flags.copaCampeonTorneo||"la Copa";   /* 7.71 · qué copa fue (Chile/Libertadores/Sudamericana) */
+  const copaEsAmerica=/Libertadores|Sudamericana/i.test(copaNom);
+  if(copaGanada){ E.titulos.push(E.anio+" · "+copaNom); aplicarEfectos({prestigio:14,plata:600,hinchada:10}); aplicarRep({publica:14,credibilidad:10});
+    if(typeof recordar==="function") recordar("titulo","levantaste "+copaNom+" con "+E.clubNombre,{peso:"alto",tono:"bueno"}); }
   /* evaluación del mandato */
   const ev=evaluarMandato(pos,campeon,copaGanada);
   /* balance y crónica */
   guardarHistorial(pos,campeon,copaGanada);
-  E.cronica.unshift({anio:E.anio,pos:pos,pts:t.pts,campeon:campeon,copa:copaGanada?"Campeón":null,
+  E.cronica.unshift({anio:E.anio,pos:pos,pts:t.pts,campeon:campeon,copa:copaGanada?copaNom:null,
     plata:Math.round(E.plata),deuda:Math.round(E.deuda),ev:ev});
-  notificar({t:"Balance "+E.anio+": "+(copaGanada?"Campeón de América":campeon?"Campeón nacional":ordinal(pos)+" en el Nacional"),
+  notificar({t:"Balance "+E.anio+": "+(copaGanada?("Campeón — "+copaNom):campeon?"Campeón nacional":ordinal(pos)+" en el Nacional"),
     tipo:(campeon||copaGanada)?"bueno":(pos<=5?"neutro":"malo"),
     d:"Terminó la temporada "+E.anio+" en el "+ordinal(pos)+" lugar con "+t.pts+" puntos ("+t.pg+"G "+t.pe+"E "+t.pp+"P). "+
       "Premios de competencia: "+plata(premio)+". "+ev.txt,bandeja:false});
   /* ascenso / descenso entre Primera y Primera B (con la tabla ya final) */
   const asc=(typeof procesarAscensoDescenso==="function")?procesarAscensoDescenso():null;
-  return {pos:pos,campeon:campeon,copa:copaGanada,premio:premio,ev:ev,asc:asc};
+  return {pos:pos,campeon:campeon,copa:copaGanada,copaNom:copaGanada?copaNom:null,premio:premio,ev:ev,asc:asc};
 }
 function posicionEnTabla(){
   const arr=clubesLigaActual().map(c=>({id:c.id,...E.tabla[c.id]}));
@@ -1301,6 +1303,7 @@ function nuevoAnio(){
   GRUPOS.forEach(g=>{ const x=E.grupos[g.id]; x.aprob=Math.round(x.aprob*0.72); });
   E.temporada={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0};
   E.idx=0; E.decPend=[]; E.bandeja=[]; E.pendientesEncadenadas=[]; E.decProc={}; E.mercado=null; E.flags.copaCampeon=false;
+  E.flags.copaCampeonTorneo=null; E.flags.copaAcum={};   /* 7.71 · limpiar la copa del año anterior */
   E.ofertasPend=[]; E.mercadoLog={rechazadas:{},vendidos:[]}; E.promesas=[];
   /* 5.0 · nuevas metas de la dirigencia para el año que arranca */
   E.flags.clasicoGanado=false;
