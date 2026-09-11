@@ -1086,16 +1086,30 @@ function procesarAscensoDescenso(){
   const tiers=[2026,"2026b"]; if(E.ligaMod["2026c"]) tiers.push("2026c");
   const orden={};
   tiers.forEach(t=>{ const ids=(E.ligaMod[t]||[]).slice(); orden[t]=(E.eraBase===t)?_ordenRealDiv(ids):_ordenSimDiv(ids); });
+  E.liguillaPend=null;
   const cambios=[];
   for(let i=0;i<tiers.length-1;i++){
     const up=tiers[i], lo=tiers[i+1];
     const n=_cuposDiv(up,lo);
     const bajan=orden[up].slice(-n).filter(Boolean);
-    /* Segunda sube por LIGUILLA de campeones de zona (1 cupo); las demás, por tabla. */
-    const suben=(lo==="2026c")?[_ascensoSegunda()].filter(Boolean):orden[lo].slice(0,n).filter(Boolean);
-    if(bajan.length && suben.length) cambios.push({up:up,lo:lo,bajan:bajan,suben:suben});
+    if(lo==="2026c"){
+      /* Segunda sube por LIGUILLA de campeones de zona (1 cupo). Si el JUGADOR es uno de los
+         finalistas, se DIFIERE para que la juegue (E.liguillaPend); si no, se resuelve solo. */
+      const cn=_campeonZonaSeg("norte"), cs=_campeonZonaSeg("sur");
+      const finalistas=[cn,cs].filter(Boolean);
+      if(E.eraBase==="2026c" && finalistas.indexOf(E.club)>=0){
+        const rival=(E.club===cn)?cs:cn;
+        E.liguillaPend={rival:rival||null, baja:(bajan[0]||null), norte:cn, sur:cs};
+        continue;   /* no aplicamos este par ahora: lo cierra la liguilla jugada */
+      }
+      const suben=[_ascensoSegunda()].filter(Boolean);
+      if(bajan.length && suben.length) cambios.push({up:up,lo:lo,bajan:bajan,suben:suben});
+    } else {
+      const suben=orden[lo].slice(0,n).filter(Boolean);
+      if(bajan.length && suben.length) cambios.push({up:up,lo:lo,bajan:bajan,suben:suben});
+    }
   }
-  if(!cambios.length) return null;
+  if(!cambios.length){ return E.liguillaPend?{tipo:"liguilla",pend:E.liguillaPend}:null; }
   cambios.forEach(c=>{
     E.ligaMod[c.up]=E.ligaMod[c.up].filter(id=>c.bajan.indexOf(id)<0).concat(c.suben);
     E.ligaMod[c.lo]=E.ligaMod[c.lo].filter(id=>c.suben.indexOf(id)<0).concat(c.bajan);
@@ -1118,7 +1132,54 @@ function procesarAscensoDescenso(){
     else notificar({t:"Ascensos y descensos",tipo:"neutro",bandeja:false,d:"En "+_nombreDiv(msg.lo)+" subió "+_nombresLista(msg.suben)+" y bajó "+_nombresLista(msg.bajan)+"."});
   }
   if(typeof recordar==="function" && msg.tipo!=="otros") recordar("categoria",(msg.tipo==="ascenso"?"ascendiste a "+_nombreDiv(msg.up)+" con ":"descendiste a "+_nombreDiv(msg.lo)+" con ")+E.clubNombre,{peso:"alto",tono:msg.tipo==="ascenso"?"bueno":"malo"});
+  /* si quedó una liguilla pendiente para el jugador, ese es el mensaje que manda: la juega él */
+  if(E.liguillaPend){ const lm={tipo:"liguilla",pend:E.liguillaPend}; E.ascensoMsg=lm; return lm; }
   return msg;
+}
+/* 7.66 · resolver el ascenso de Segunda por la liguilla que YA jugó el jugador.
+   sube = el ganador (el club del jugador si ganó, si no el rival). Aplica el recambio
+   con la B (el que baja hereda la zona) y, si subió el jugador, cambia su eraBase. */
+function liguillaResolverAscenso(gano){
+  const pend=E.liguillaPend; if(!pend) return null;
+  const sube=gano?E.club:pend.rival, baja=pend.baja;
+  if(sube && E.ligaMod && E.ligaMod["2026b"] && E.ligaMod["2026c"]){
+    E.ligaMod["2026b"]=E.ligaMod["2026b"].filter(id=>id!==baja && id!==sube).concat([sube]);
+    E.ligaMod["2026c"]=E.ligaMod["2026c"].filter(id=>id!==sube && id!==baja).concat(baja?[baja]:[]);
+    const zs=_zonaSegInit(); const zLibre=zs[sube]||"norte"; delete zs[sube]; if(baja) zs[baja]=zLibre;
+  }
+  const msg={tipo:gano?"ascenso":"descenso_liguilla",sube:sube,baja:baja,rival:pend.rival};
+  if(gano){ E.eraBase="2026b"; if(typeof activarLiga==="function") activarLiga(E.eraBase);
+    if(typeof notificar==="function") notificar({t:"🎉 ¡ASCENSO por la liguilla!",tipo:"bueno",bandeja:true,d:E.clubNombre+" ganó la final del ascenso a "+nombreDeClub(pend.rival)+" y sube a Primera B. Bajó "+nombreDeClub(baja)+"."});
+    if(typeof recordar==="function") recordar("categoria","ganaste la liguilla y ascendiste a Primera B con "+E.clubNombre,{peso:"alto",tono:"bueno"});
+    E.titulos.push(E.anio+" · Campeón de la Liguilla (ascenso a Primera B)");
+  } else {
+    if(typeof activarLiga==="function") activarLiga(E.eraBase);
+    if(typeof notificar==="function") notificar({t:"Se escapó el ascenso",tipo:"malo",bandeja:true,d:"Perdiste la final de la liguilla con "+nombreDeClub(pend.rival)+". Subió el rival; "+E.clubNombre+" se queda un año más en Segunda."});
+    if(typeof recordar==="function") recordar("categoria","perdiste la liguilla del ascenso con "+E.clubNombre,{peso:"medio",tono:"malo"});
+  }
+  E.ascensoMsg=msg; E.liguillaPend=null;
+  return msg;
+}
+/* Simula un cruce a dos partidos (ida y vuelta) entre el club del jugador y el rival.
+   La postura del jugador (-1 defensivo, 0 equilibrado, 1 ofensivo) inclina el resultado.
+   Devuelve marcadores y si el jugador pasó (por global; el rival define penales si hay empate). */
+function simularLiguilla(rivalId, postura){
+  let fMi=_fuerzaClubId(E.club);
+  try{ if(typeof fuerzaEquipo==="function" && typeof onceIdeal==="function"){ const fe=fuerzaEquipo(onceIdeal()); if(fe && typeof fe.base==="number") fMi=fe.base; } }catch(e){}
+  fMi+=(postura||0)*3;
+  const fRi=_fuerzaClubId(rivalId);
+  const leg=(local)=>{
+    const emp=(local?4:0)+(postura||0)*1.2;
+    const d=(fMi+emp - fRi)/12;
+    const gm=Math.max(0,Math.round(1.15+d*0.6+rnd(-1,1.2)));
+    const gr=Math.max(0,Math.round(1.05-d*0.55+rnd(-1,1.2)));
+    return [gm,gr];
+  };
+  const ida=leg(true), vuelta=leg(false);
+  const gm=ida[0]+vuelta[0], gr=ida[1]+vuelta[1];
+  let gano=gm>gr, penales=null;
+  if(gm===gr){ const pm=_fuerzaClubId(E.club)+(postura||0)*2+ri(-8,8), pr=_fuerzaClubId(rivalId)+ri(-8,8); gano=pm>=pr; penales=gano?"Ganó en penales":"Perdió en penales"; }
+  return {ida:ida, vuelta:vuelta, gm:gm, gr:gr, gano:gano, penales:penales, rival:rivalId};
 }
 function finDeTemporada(){
   const t=E.temporada;

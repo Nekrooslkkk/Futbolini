@@ -41,6 +41,8 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   body.con-dock #btnRapido,
   body.con-dock #btnTemas,
   body.con-dock #btnAvisos,
+  body.con-dock #btnCuenta,
+  body.con-dock #btnAjustes,
   body.con-dock .campana,
   body.en-partido #btnAvanzar,
   body.en-partido #btnRapido,

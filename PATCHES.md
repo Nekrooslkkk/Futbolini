@@ -2054,3 +2054,10 @@ La Segunda dejó de ser liga corrida de 14 y ahora se juega **como es de verdad*
 - **Tests:** +8 checks (calendario zonal 12 fechas + misma zona; temporada completa de Segunda con byes y cierre; ascenso por liguilla con `Math.random` fijado; zonas 7/7 tras el recambio). Suite **36/36** (estable ×3).
 - **REGLAS.md** actualizado (Segunda: implementado). **util.js**: VERSION 7.64 → **7.65**.
 **Probado:** node --check + suite 36/36 verde ×3 + captura headless (Zona Sur: 7 clubes, F1–F12 contra la zona, Copa Chile intercalada).
+
+## 7.66 · Liguilla de ascenso JUGABLE + barra móvil más limpia
+- **Liguilla jugable (motor.js + ui.js):** si el jugador sale **campeón de su zona** en Segunda, el ascenso ya **no se resuelve solo**: `procesarAscensoDescenso` lo **difiere** (`E.liguillaPend`, devuelve `tipo:"liguilla"`) y el cierre de temporada ofrece **"🏆 Jugar la liguilla de ascenso"**. El jugador elige **postura** (aguantar / equilibrado / ir al frente), se simula el cruce **ida y vuelta** (`simularLiguilla`, con la fuerza real del once + azar + penales si hay empate) y `liguillaResolverAscenso(gano)` aplica el recambio con la B (el que baja hereda la zona → **7 y 7**), cambia `eraBase` y da el título si sube. El B‑relegado (independiente) se calcula igual arriba. Si el jugador **no** es finalista, la liguilla se resuelve sola (como antes).
+- **Móvil más limpio:** en juego la barra de tareas ya no arrastra los botones **👤 cuenta** ni **⚙️ ajustes** (`movil.css`: se ocultan con `con-dock`) → los 3 datos vitales respiran. La **cuenta** ahora vive también en el panel **"Más"** (`abrirMasMovil`), así sigue al alcance sin la barra.
+- **Tests:** +7 checks (liguilla pendiente/diferida; gana → sube con zonas 7/7 y Segunda 14; pierde → sube el rival y el jugador se queda). Suite **43/43**.
+- **util.js**: VERSION 7.65 → **7.66**.
+**Probado:** node --check + suite 43/43 verde + captura headless del flujo completo (temporada simulada → balance → liguilla → postura → global 4‑1 → ascenso a Primera B).

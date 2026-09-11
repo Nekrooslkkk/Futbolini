@@ -75,6 +75,9 @@ function abrirMasMovil(){
     const br=el("button","btn-aqua ancho","⏩ Avance rápido");
     br.onclick=function(){ cerrarModal(); if(typeof modalAvanceRapido==="function") modalAvanceRapido(); };
     acc.appendChild(br);
+    const bcu=el("button","btn-aqua ancho","👤 Tu cuenta"); bcu.style.marginTop="6px";
+    bcu.onclick=function(){ cerrarModal(); if(typeof modalCuenta==="function") modalCuenta(); };
+    acc.appendChild(bcu);
     const bt=el("button","btn-aqua ancho","◐ Cambiar tema"); bt.style.marginTop="6px";
     bt.onclick=function(){ cerrarModal(); const b=$("#btnTemas"); if(b) b.click(); };
     acc.appendChild(bt);
@@ -2626,7 +2629,8 @@ function cerrarTemporada(){
       const nd=(typeof _nombreDiv==="function")?_nombreDiv:(t=>String(t));
       const nl=(typeof _nombresLista==="function")?_nombresLista:(a=>(a||[]).join(", "));
       const otrosB=(r.asc.bajan||[]).filter(id=>id!==E.club), otrosS=(r.asc.suben||[]).filter(id=>id!==E.club);
-      if(r.asc.tipo==="ascenso") p.cuerpo.appendChild(el("div","resul bien","<b>🎉 ¡ASCENSO!</b> "+E.clubNombre+" sube a "+nd(r.asc.up)+(otrosS.length?" junto a "+nl(otrosS):"")+". Baja "+nl(r.asc.bajan)+". El año que viene, arriba."));
+      if(r.asc.tipo==="liguilla") p.cuerpo.appendChild(el("div","resul bien","<b>🏆 ¡CAMPEÓN DE TU ZONA!</b> "+E.clubNombre+" jugará la <b>liguilla de ascenso</b> contra "+(r.asc.pend&&r.asc.pend.rival?nombreDeClub(r.asc.pend.rival):"el campeón de la otra zona")+". Ganás, subís a Primera B."));
+      else if(r.asc.tipo==="ascenso") p.cuerpo.appendChild(el("div","resul bien","<b>🎉 ¡ASCENSO!</b> "+E.clubNombre+" sube a "+nd(r.asc.up)+(otrosS.length?" junto a "+nl(otrosS):"")+". Baja "+nl(r.asc.bajan)+". El año que viene, arriba."));
       else if(r.asc.tipo==="descenso") p.cuerpo.appendChild(el("div","resul mal","<b>📉 DESCENSO.</b> "+E.clubNombre+" pierde la categoría y baja a "+nd(r.asc.lo)+(otrosB.length?" junto a "+nl(otrosB):"")+". Sube "+nl(r.asc.suben)+". El año que viene, a pelear el ascenso."));
       else if(r.asc.tipo==="otros") p.cuerpo.appendChild(el("p","mini","🔁 En "+nd(r.asc.lo)+": subió <b>"+nl(r.asc.suben)+"</b> y bajó <b>"+nl(r.asc.bajan)+"</b>."));
     }
@@ -2642,15 +2646,68 @@ function cerrarTemporada(){
         p.cuerpo.appendChild(ul);
       }
     }
-    if(riesgoDestitucion()){
+    const _seguir=()=>{ nuevoAnio(); SEC="escritorio"; render(); aviso("Temporada "+E.anio); };
+    if(r.asc && r.asc.tipo==="liguilla" && r.asc.pend){
+      /* ganaste tu zona: la liguilla de ascenso se JUEGA antes de pasar de año */
+      const b=el("button","btn-aqua ancho verde","🏆 Jugar la liguilla de ascenso");
+      b.onclick=()=>{ cerrarModal(); liguillaJugable(r.asc.pend, _seguir); };
+      p.cuerpo.appendChild(b);
+    } else if(riesgoDestitucion()){
       const b=el("button","btn-aqua ancho rojo","Ver qué decidió el directorio");
       b.onclick=()=>{ cerrarModal(); destituir("Después de la temporada "+E.anio+", el directorio decidió terminar el ciclo. "+r.ev.txt); render(); };
       p.cuerpo.appendChild(b);
     } else {
       const b=el("button","btn-aqua ancho verde","Continuar a "+(E.anio+1));
-      b.onclick=()=>{ cerrarModal(); nuevoAnio(); SEC="escritorio"; render(); aviso("Temporada "+E.anio); };
+      b.onclick=()=>{ cerrarModal(); _seguir(); };
       p.cuerpo.appendChild(b);
     }
+    box.appendChild(p);
+  },{cerrarFuera:false});
+}
+/* ---------------- liguilla de ascenso (jugable) ---------------- */
+function liguillaJugable(pend, onDone){
+  const rival=pend&&pend.rival;
+  const rivalN=rival?(typeof nombreDeClub==="function"?nombreDeClub(rival):rival):"el campeón de la otra zona";
+  modal(box=>{
+    box.classList.remove("panel");
+    const p=panel("Liguilla de ascenso","🏆","agua");
+    p.cuerpo.appendChild(el("div","centro",'<div style="font-size:40px">🥊</div>'));
+    p.cuerpo.appendChild(el("h2","tit centro",E.clubNombre+" vs "+rivalN));
+    p.cuerpo.appendChild(el("p","mini centro","Final a ida y vuelta por el ascenso a Primera B. Elegí cómo la jugás: el planteamiento inclina el cruce."));
+    const cont=el("div"); cont.style.marginTop="10px";
+    const posturas=[["🛡️ Aguantar",-1,"Te parás firme atrás y salís de contra. Menos riesgo, menos gol."],
+                    ["⚖️ Equilibrado",0,"Ni muy arriba ni muy atrás. La fuerza real manda."],
+                    ["⚔️ Ir al frente",1,"Presión alta y a buscarlo. Más gol tuyo… y más expuesto."]];
+    posturas.forEach(([et,val,desc])=>{
+      const b=el("button","btn-aqua ancho","");
+      b.innerHTML='<b>'+et+'</b>';
+      b.style.marginTop="6px"; b.title=desc;
+      b.onclick=()=>{ _liguillaResultado(pend, val, onDone); };
+      cont.appendChild(b);
+      cont.appendChild(el("p","mini",desc));
+    });
+    p.cuerpo.appendChild(cont);
+    box.appendChild(p);
+  },{cerrarFuera:false});
+}
+function _liguillaResultado(pend, postura, onDone){
+  const sim=(typeof simularLiguilla==="function")?simularLiguilla(pend.rival, postura):{ida:[0,0],vuelta:[0,0],gm:0,gr:0,gano:Math.random()<0.5,penales:null,rival:pend.rival};
+  if(typeof liguillaResolverAscenso==="function") liguillaResolverAscenso(sim.gano);
+  const rivalN=(typeof nombreDeClub==="function"?nombreDeClub(pend.rival):pend.rival);
+  modal(box=>{
+    box.classList.remove("panel");
+    const p=panel("Resultado de la liguilla","🏆",sim.gano?"":"alerta");
+    p.cuerpo.appendChild(el("div","centro",'<div style="font-size:44px">'+(sim.gano?"🎉":"😞")+'</div>'));
+    p.cuerpo.appendChild(el("h2","tit centro",sim.gano?"¡ASCENSO a Primera B!":"Se quedó en Segunda"));
+    p.cuerpo.appendChild(fila("Ida ("+E.clubNombre+" local)",sim.ida[0]+" - "+sim.ida[1]));
+    p.cuerpo.appendChild(fila("Vuelta (en "+rivalN+")",sim.vuelta[1]+" - "+sim.vuelta[0]));
+    p.cuerpo.appendChild(fila("Global",sim.gm+" - "+sim.gr+(sim.penales?" · "+sim.penales:"")));
+    p.cuerpo.appendChild(el("div","resul "+(sim.gano?"bien":"mal"),
+      sim.gano?("<b>🎉 ¡Campeón de la liguilla!</b> "+E.clubNombre+" le ganó a "+rivalN+" y sube a Primera B. El año que viene, el ascenso.")
+              :("<b>Se escapó.</b> "+rivalN+" ganó la final y sube. "+E.clubNombre+" pelea otro año en Segunda.")));
+    const b=el("button","btn-aqua ancho verde","Continuar a "+(E.anio+1));
+    b.onclick=()=>{ cerrarModal(); if(typeof onDone==="function") onDone(); };
+    p.cuerpo.appendChild(b);
     box.appendChild(p);
   },{cerrarFuera:false});
 }

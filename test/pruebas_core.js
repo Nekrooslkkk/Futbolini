@@ -85,16 +85,33 @@
       nuevaPartida("SMO",2026,"historico",{categoria:"C"});
       initLigaMod();
       E.tabla={}; (E.ligaMod["2026c"]||[]).forEach(function(id,i){ E.tabla[id]={pts:(id==="SMO"?90:70-i),gf:40,gc:20}; });
-      /* liguilla sin azar: SMO (Sur, fuerza más alta) gana el cruce contra el campeón Norte */
-      var _r=Math.random; Math.random=function(){ return 0.5; };
-      var m; try{ m=procesarAscensoDescenso(); } finally { Math.random=_r; }
-      ok(m && m.tipo==="ascenso" && E.eraBase==="2026b", "campeón de zona gana la liguilla y sube a Primera B");
+      /* 7.66 · el jugador campeón de su zona NO asciende solo: se difiere para jugar la liguilla */
+      var m=procesarAscensoDescenso();
+      ok(m && m.tipo==="liguilla" && E.liguillaPend, "campeón de zona: la liguilla queda PENDIENTE (jugable)");
+      ok(E.eraBase==="2026c", "sigue en Segunda hasta jugar la liguilla");
+      ok(E.liguillaPend && E.liguillaPend.rival && zonaSegDe(E.liguillaPend.rival)==="norte", "el rival es el campeón de la otra zona (Norte)");
+      /* gana la liguilla → sube a la B; zonas quedan 7 y 7, Segunda 14 */
+      var r=liguillaResolverAscenso(true);
+      ok(r && r.tipo==="ascenso" && E.eraBase==="2026b", "gana la liguilla y sube a Primera B");
       ok((E.ligaMod["2026b"]||[]).indexOf("SMO")>=0, "SMO queda registrado en la B");
-      /* zonas siguen 7 y 7 tras el recambio B↔Segunda */
       var zc={norte:0,sur:0}; (E.ligaMod["2026c"]||[]).forEach(function(id){ var z=zonaSegDe(id); if(z) zc[z]++; });
       ok((E.ligaMod["2026c"]||[]).length===14, "Segunda mantiene 14 clubes ("+(E.ligaMod["2026c"]||[]).length+")");
       ok(zc.norte===7 && zc.sur===7, "zonas quedan 7 y 7 (N:"+zc.norte+" S:"+zc.sur+")");
-    }, "Ascenso Segunda→B");
+    }, "Ascenso Segunda→B (liguilla)");
+    safe(function(){
+      /* perder la liguilla: el rival sube, el jugador se queda en Segunda (14, zonas 7/7) */
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      initLigaMod();
+      E.tabla={}; (E.ligaMod["2026c"]||[]).forEach(function(id,i){ E.tabla[id]={pts:(id==="SMO"?90:70-i),gf:40,gc:20}; });
+      procesarAscensoDescenso();
+      var rival=E.liguillaPend&&E.liguillaPend.rival;
+      var r=liguillaResolverAscenso(false);
+      ok(r && r.tipo==="descenso_liguilla" && E.eraBase==="2026c", "pierde la liguilla y se queda en Segunda");
+      ok((E.ligaMod["2026b"]||[]).indexOf(rival)>=0, "el rival ascendió a la B");
+      ok((E.ligaMod["2026c"]||[]).indexOf("SMO")>=0, "SMO sigue en Segunda");
+      var zc={norte:0,sur:0}; (E.ligaMod["2026c"]||[]).forEach(function(id){ var z=zonaSegDe(id); if(z) zc[z]++; });
+      ok((E.ligaMod["2026c"]||[]).length===14 && zc.norte===7 && zc.sur===7, "Segunda 14, zonas 7/7 tras perder");
+    }, "Pierde liguilla");
     safe(function(){
       nuevaPartida("CC",2026,"historico");
       initLigaMod();
