@@ -141,6 +141,7 @@ function pintarMenu(){
 function render(){
   if(typeof detenerPlopBots==="function") detenerPlopBots();
   document.body.classList.remove("en-partido","hay-momento");
+  document.body.classList.toggle("con-juego", !!E);   /* 7.68 · lateral sólo corre el contenido si hay partida */
   pintarBarra(); pintarMenu();
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="full";
   $("#btnAvanzar").classList.toggle("oculto",!E);
@@ -162,6 +163,58 @@ function render(){
   if(typeof pintarDock==="function") pintarDock();
 }
 /* ---------------- inicio ---------------- */
+/* 7.68 · picker de clubes: filtros por división + buscador + cards animadas.
+   Reemplaza la pared de botones por algo navegable y liviano. */
+function pickerClubes(cont){
+  const lista=[], visto={};
+  const add=(id,info,div,clasico)=>{
+    if(!info||visto[id]) return; visto[id]=1;
+    lista.push({id:id, n:info.n||id, esc:info.esc,
+      ciu:(info.ciudad||((typeof ciudadDeClub==="function")?ciudadDeClub(id):""))||"",
+      div:div, clasico:!!clasico});
+  };
+  const idsB=(typeof idsPrimeraB==="function")?idsPrimeraB():((typeof LIGA_B_2026!=="undefined")?LIGA_B_2026.map(c=>c.id):[]);
+  const idsC=(typeof idsSegunda==="function")?idsSegunda():((typeof LIGA_C_2026!=="undefined")?LIGA_C_2026.map(c=>c.id):[]);
+  if(typeof CLUB_INFO!=="undefined") Object.keys(CLUB_INFO).forEach(id=>add(id,CLUB_INFO[id],"Primera",true));
+  if(typeof CLUB_INFO_2026!=="undefined") Object.keys(CLUB_INFO_2026)
+    .filter(id=>(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]) && idsB.indexOf(id)<0 && idsC.indexOf(id)<0)
+    .forEach(id=>add(id,CLUB_INFO_2026[id],"Primera",false));
+  if(typeof LIGA_B_2026!=="undefined") LIGA_B_2026.forEach(c=>add(c.id,(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c,"Primera B",false));
+  if(typeof LIGA_C_2026!=="undefined") LIGA_C_2026.forEach(c=>add(c.id,(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c,"Segunda",false));
+
+  const filtros=[["todos","Todos"],["Primera","Primera"],["Primera B","Primera B"],["Segunda","Segunda"],["clasico","Clásicos '91"]];
+  let fAct="todos", q="";
+  const barra=el("div","picker-barra");
+  const tabs=el("div","picker-tabs"); barra.appendChild(tabs);
+  const inp=el("input","pick-buscar"); inp.type="search"; inp.placeholder="Buscar club o ciudad…"; inp.setAttribute("aria-label","Buscar club");
+  barra.appendChild(inp);
+  const cont2=el("span","pick-cont",""); barra.appendChild(cont2);
+  const grid=el("div","iconos picker-grid");
+  const tabBtns={};
+  filtros.forEach(([k,n])=>{
+    const t=el("button","pick-tab",n); t.type="button"; t.setAttribute("aria-pressed",k==="todos"?"true":"false");
+    t.onclick=()=>{ fAct=k; Object.keys(tabBtns).forEach(x=>tabBtns[x].setAttribute("aria-pressed",x===k?"true":"false")); pinta(); };
+    tabBtns[k]=t; tabs.appendChild(t);
+  });
+  function pinta(){
+    grid.innerHTML="";
+    const qq=q.trim().toLowerCase();
+    const vis=lista.filter(c=>(fAct==="todos"||(fAct==="clasico"?c.clasico:c.div===fAct))
+      && (!qq || c.n.toLowerCase().indexOf(qq)>=0 || (c.ciu||"").toLowerCase().indexOf(qq)>=0));
+    vis.forEach((c,i)=>{
+      const esc=(typeof escudoHTML==="function")?escudoHTML(c.id,36,c.esc||"⚪"):(c.esc||"⚪");
+      const b=el("button","icono card-in",'<span class="g">'+esc+'</span><span class="n">'+c.n+'</span>'+(c.ciu?'<span class="ciu">'+c.ciu+'</span>':''));
+      b.style.animationDelay=Math.min(i*20,340)+"ms";
+      b.title=c.n+(c.ciu?" · "+c.ciu:"")+" · "+c.div;
+      b.onclick=()=>elegirEpoca(c.id);
+      grid.appendChild(b);
+    });
+    if(!vis.length) grid.appendChild(el("p","mini","No hay clubes con ese filtro/búsqueda."));
+    cont2.textContent=vis.length+" club"+(vis.length===1?"":"es");
+  }
+  inp.oninput=()=>{ q=inp.value; pinta(); };
+  cont.appendChild(barra); cont.appendChild(grid); pinta();
+}
 function pantallaInicio(){
   const v=$("#vista");
   const p=panel("Futbolini "+(typeof VERSION!=="undefined"?VERSION:""),"🏟️");
@@ -176,58 +229,8 @@ function pantallaInicio(){
   v.appendChild(p);
 
   const paso1=panel("1 · Elige club","⚪");
-  /* clubes de las dos épocas: los 5 clásicos (1991+2026) y los nuevos (solo 2026) */
-  const g=el("div","iconos");
-  Object.keys(CLUB_INFO).forEach(id=>{
-    const c=CLUB_INFO[id];
-    const ciu=(typeof ciudadDeClub==="function")?ciudadDeClub(id):"";
-    const b=el("button","icono",'<span class="g">'+(typeof escudoHTML==="function"?escudoHTML(id,36,c.esc):c.esc)+'</span><span class="n">'+c.n+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
-    b.onclick=()=>elegirEpoca(id);
-    g.appendChild(b);
-  });
-  paso1.cuerpo.appendChild(g);
-  const idsB=(typeof idsPrimeraB==="function")?idsPrimeraB():((typeof LIGA_B_2026!=="undefined")?LIGA_B_2026.map(c=>c.id):[]);
-  const idsC=(typeof idsSegunda==="function")?idsSegunda():((typeof LIGA_C_2026!=="undefined")?LIGA_C_2026.map(c=>c.id):[]);
-  if(typeof CLUB_INFO_2026!=="undefined"){
-    const soloNuevos=Object.keys(CLUB_INFO_2026).filter(id=>!CLUB_INFO[id] && idsB.indexOf(id)<0 && idsC.indexOf(id)<0);
-    if(soloNuevos.length){
-      paso1.cuerpo.appendChild(el("h3","sub","… o un club de la Primera 2026"));
-      const g2=el("div","iconos");
-      soloNuevos.forEach(id=>{
-        const c=CLUB_INFO_2026[id];
-        const ciu=(typeof ciudadDeClub==="function")?ciudadDeClub(id):"";
-        const b=el("button","icono",'<span class="g">'+(typeof escudoHTML==="function"?escudoHTML(id,36,c.esc):c.esc)+'</span><span class="n">'+c.n+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
-        b.onclick=()=>elegirEpoca(id);
-        g2.appendChild(b);
-      });
-      paso1.cuerpo.appendChild(g2);
-    }
-  }
-  if(typeof LIGA_B_2026!=="undefined" && LIGA_B_2026.length){
-    paso1.cuerpo.appendChild(el("h3","sub","… o un club de la Primera B 2026"));
-    const g3=el("div","iconos");
-    LIGA_B_2026.forEach(c=>{
-      const info=(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c;
-      const ciu=c.ciudad||((typeof ciudadDeClub==="function")?ciudadDeClub(c.id):"");
-      const b=el("button","icono",'<span class="g">'+(typeof escudoHTML==="function"?escudoHTML(c.id,36,info.esc||"🟠"):(info.esc||"🟠"))+'</span><span class="n">'+(info.n||c.n)+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
-      b.onclick=()=>elegirEpoca(c.id);
-      g3.appendChild(b);
-    });
-    paso1.cuerpo.appendChild(g3);
-  }
-  if(typeof LIGA_C_2026!=="undefined" && LIGA_C_2026.length){
-    paso1.cuerpo.appendChild(el("h3","sub","… o un club de la Segunda División 2026"));
-    const g4=el("div","iconos");
-    LIGA_C_2026.forEach(c=>{
-      const info=(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c;
-      const ciu=c.ciudad||"";
-      const b=el("button","icono",'<span class="g">'+(typeof escudoHTML==="function"?escudoHTML(c.id,36,info.esc||"⚪"):(info.esc||"⚪"))+'</span><span class="n">'+(info.n||c.n)+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
-      b.onclick=()=>elegirEpoca(c.id);
-      g4.appendChild(b);
-    });
-    paso1.cuerpo.appendChild(g4);
-  }
-  paso1.cuerpo.appendChild(el("p","mini","Los 5 primeros se pueden jugar en 1991 (calendario real, Copa Libertadores de Colo-Colo) o en 2026. Los de Primera 2026 son de la división de honor. Los de Primera B arrancan en la Liga de Ascenso 2026 (Cobreloa primero; planteles documentados, el resto se rellena con cantera)."));
+  pickerClubes(paso1.cuerpo);
+  paso1.cuerpo.appendChild(el("p","mini","Los clásicos se pueden jugar en 1991 (calendario real, Copa Libertadores de Colo-Colo) o en 2026. Primera B arranca en la Liga de Ascenso y Segunda en su zona (Norte/Sur). Planteles documentados donde hay; el resto se rellena con cantera."));
   v.appendChild(paso1);
 
   /* 7.00 · duelo P2P contra un amigo */
@@ -2174,6 +2177,18 @@ function vistaAjustes(){
   });
   p.cuerpo.appendChild(fnav);
   p.cuerpo.appendChild(el("p","mini","La barra lateral pone los accesos a la izquierda (como los canales de la Wii) y deja arriba la barra de tareas. En el celular no cambia nada: sigue el menú de abajo."));
+  /* 7.68 · modo rendimiento (para que corra en cualquier equipo) */
+  p.cuerpo.appendChild(el("label","lb","Rendimiento"));
+  const fperf=el("div","fichas");
+  const perfOn=document.body.classList.contains("perf");
+  [[false,"✨ Full efectos"],[true,"⚡ Modo liviano"]].forEach(([on,n])=>{
+    const b=el("button","ficha",n);
+    b.setAttribute("aria-pressed",perfOn===on?"true":"false");
+    b.onclick=()=>{ document.body.classList.toggle("perf",on); Store.set("futbolini3_perf",on); if(typeof burbujas==="function"&&!on) burbujas(); render(); };
+    fperf.appendChild(b);
+  });
+  p.cuerpo.appendChild(fperf);
+  p.cuerpo.appendChild(el("p","mini","El modo liviano apaga burbujas, desenfoques y animaciones pesadas: el juego vuela en equipos lentos o celulares viejos. Se autoenciende solo si detecta un equipo flaco."));
   p.cuerpo.appendChild(el("div","resul mitad","<b>Aviso.</b> Clubes, jugadores y dirigentes reales aparecen con su nombre. "+
     "Resultados, títulos y fechas se apoyan en registros públicos. Todo lo demás (conversaciones, negociaciones, conflictos internos, frases) "+
     "es ficción escrita para el juego."));
@@ -2916,6 +2931,16 @@ document.addEventListener("keydown",function(e){
   /* 7.62 · navegación lateral tipo Wii en PC (por defecto encendida; conmutable en Ajustes) */
   try{ const nl=await Store.get("futbolini3_lateral"); document.body.classList.toggle("nav-lateral", nl!==false); }
   catch(e){ document.body.classList.add("nav-lateral"); }
+  /* 7.68 · modo rendimiento: si nunca se eligió, se autoenciende en equipos flacos
+     (pocos núcleos / poca RAM) para que corra en cualquier cosa. Conmutable en Ajustes. */
+  try{
+    let pf=await Store.get("futbolini3_perf");
+    if(pf===undefined||pf===null){
+      const flaco=(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)||(navigator.deviceMemory&&navigator.deviceMemory<=4);
+      pf=!!flaco;
+    }
+    document.body.classList.toggle("perf", !!pf);
+  }catch(e){}
   let lista=[]; try{ lista=await migrarSlots(); }catch(e){ console.error("No se pudo migrar slots:",e); }
   let g=null;
   try{

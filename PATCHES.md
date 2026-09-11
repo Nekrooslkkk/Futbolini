@@ -2069,3 +2069,12 @@ Dos herramientas para probar el juego a fondo y para crecer:
 - **Tests:** +7 (registrarLiga cablea 2 clubes de una, IND deriva de fuerza; simular 3 temporadas avanza el año y llena el historial sin romper). Suite **53/53**.
 - **util.js**: VERSION 7.66 → **7.67**.
 **Probado:** node --check + suite 53/53 verde.
+
+## 7.68 · Menú de inicio nuevo (filtros + buscador + animaciones) y Modo rendimiento
+- **Picker de clubes (ui.js `pickerClubes` + css/inicio.css):** la pared de botones por división se reemplazó por un selector con **filtros** (Todos / Primera / Primera B / Segunda / Clásicos '91), **buscador** por club o ciudad, contador ("46 clubes") y **cards con animación de entrada** (stagger por índice), brillo al pasar el mouse y escudo que hace zoom. Una lista unificada y deduplicada de todas las divisiones. Arregla el desorden y el scroll eterno del inicio.
+- **Layout lateral:** el contenido sólo se corre a la derecha **con partida activa** (`body.con-juego`); en el inicio/ajustes ya no queda el hueco del lateral.
+- **Modo rendimiento (config, "que corra en cualquier cosa"):** clase `body.perf` que apaga burbujas, desenfoques (`backdrop-filter`) y animaciones pesadas. Conmutable en **Ajustes** ("✨ Full efectos / ⚡ Modo liviano", pref `futbolini3_perf`) y **se autoenciende** en equipos flacos (`hardwareConcurrency<=4` o `deviceMemory<=4`).
+- **css/inicio.css** cargado tras lateral.css. Respeta `prefers-reduced-motion`. En celular: buscador a lo ancho y tabs con scroll horizontal.
+- **Tests:** +3 (el picker lista 46 clubes, 5 filtros, buscador). Suite **56/56**. Capturas headless: inicio completo (46) y filtro Segunda (14).
+- **util.js**: VERSION 7.67 → **7.68**.
+**Probado:** node --check + suite 56/56 verde + capturas (inicio nuevo, filtro Segunda funcionando).

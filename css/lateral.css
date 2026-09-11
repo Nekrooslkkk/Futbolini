@@ -75,10 +75,12 @@
   /* la cuenta al fondo del lateral */
   body.nav-lateral #menu .mi-cuenta{ display:flex; margin-top:auto; }
 
-  /* ---- el contenido se corre a la derecha del lateral ---- */
-  body.nav-lateral #vista{ margin-left:var(--lat-w); margin-right:auto;
+  /* ---- el contenido se corre a la derecha del lateral (sólo con partida) ---- */
+  body.nav-lateral.con-juego #vista{ margin-left:var(--lat-w); margin-right:auto;
     padding-left:16px; padding-right:16px; }
-  body.nav-lateral #pie{ margin-left:var(--lat-w); }
+  body.nav-lateral.con-juego #pie{ margin-left:var(--lat-w); }
+  /* sin partida (inicio/ajustes) el menú se esconde y no hay que dejar hueco */
+  body.nav-lateral:not(.con-juego) #menu{ display:none; }
 
   /* en partido el lateral estorba: se oculta y el contenido vuelve a lo ancho */
   body.nav-lateral.en-partido #menu{ display:none; }

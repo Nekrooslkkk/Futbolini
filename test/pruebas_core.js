@@ -113,6 +113,19 @@
       ok((E.ligaMod["2026c"]||[]).length===14 && zc.norte===7 && zc.sur===7, "Segunda 14, zonas 7/7 tras perder");
     }, "Pierde liguilla");
 
+    /* T4a1 · menú de inicio: el picker lista y filtra clubes sin romper */
+    grupo("Menú de inicio (picker)");
+    safe(function(){
+      var d=document.createElement("div");
+      if(typeof pickerClubes==="function") pickerClubes(d);
+      var cards=d.querySelectorAll(".icono").length;
+      ok(cards>=40, "el picker lista todos los clubes ("+cards+")");
+      var tabs=d.querySelectorAll(".pick-tab").length;
+      ok(tabs===5, "hay 5 filtros (Todos/Primera/B/Segunda/Clásicos)");
+      var buscar=d.querySelector(".pick-buscar");
+      ok(!!buscar, "hay buscador de club/ciudad");
+    }, "Picker inicio");
+
     /* T4a2 · registrarLiga: una liga nueva se cablea con UNA llamada */
     grupo("registrarLiga (empaquetado)");
     safe(function(){

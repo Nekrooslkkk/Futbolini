@@ -1,0 +1,59 @@
+/* ============================================================
+   FUTBOLINI · inicio.css  (7.68)
+   Menú de inicio: elección de club con filtros + buscador + cards
+   con animación. Y "Modo rendimiento" (body.perf) para que corra en
+   cualquier equipo (mata burbujas/blur/animaciones pesadas).
+   ============================================================ */
+
+/* ---- barra de filtros del picker ---- */
+.picker-barra{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.picker-tabs{display:flex;flex-wrap:wrap;gap:5px;flex:1 1 auto}
+.pick-tab{border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700;cursor:pointer;
+  border:1px solid rgba(255,255,255,.55);
+  background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,.28));
+  color:var(--tinta,#12351a);transition:transform .12s,filter .12s,background .15s}
+.pick-tab:hover{transform:translateY(-1px)}
+.pick-tab[aria-pressed="true"]{background:linear-gradient(180deg,#eaf6ff,#bfe0ff);
+  border-color:rgba(90,160,230,.7);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 2px 7px rgba(40,110,190,.25)}
+.pick-buscar{flex:0 0 auto;min-width:150px;max-width:230px;box-sizing:border-box;
+  padding:8px 12px;border-radius:999px;border:1px solid rgba(0,0,0,.14);font-size:13px;
+  background:rgba(255,255,255,.72)}
+.pick-buscar:focus{outline:2px solid rgba(90,160,230,.55);outline-offset:1px}
+.pick-cont{font-size:11px;opacity:.7;font-weight:600;white-space:nowrap;margin-left:2px}
+
+/* ---- entrada animada de las cards (stagger por índice) ---- */
+@keyframes cardIn{from{opacity:0;transform:translateY(9px) scale(.97)}to{opacity:1;transform:none}}
+.icono.card-in{animation:cardIn .34s cubic-bezier(.2,.8,.2,1) both}
+.icono .g{transition:transform .16s}
+.icono:hover .g{transform:scale(1.14) rotate(-3deg)}
+.icono:active{transform:translateY(0) scale(.97)}
+
+/* el escudo grande del inicio brilla suave */
+.icono{position:relative;overflow:hidden}
+.icono::after{content:"";position:absolute;top:-40%;left:-60%;width:40%;height:180%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);
+  transform:skewX(-18deg);transition:left .5s ease;pointer-events:none}
+.icono:hover::after{left:130%}
+
+/* ---- MODO RENDIMIENTO: que corra en cualquier cosa ---- */
+body.perf .burbujas,body.perf #fondo .aurora,body.perf #fondo .destello{display:none !important}
+body.perf .panel,body.perf .modal-fondo,body.perf .ctrlPartido{
+  backdrop-filter:none !important;-webkit-backdrop-filter:none !important}
+body.perf *{animation-duration:.001s !important;animation-delay:0s !important;
+  transition-duration:.05s !important}
+body.perf .icono::after{display:none}
+body.perf .icono:hover,body.perf .pick-tab:hover,body.perf .mi:hover{transform:none}
+
+@media (prefers-reduced-motion:reduce){
+  .icono.card-in{animation:none}
+  .icono::after{display:none}
+  .icono:hover .g{transform:none}
+}
+
+/* celular: buscador a lo ancho, tabs con scroll horizontal suave */
+@media(max-width:640px){
+  .picker-barra{flex-direction:column;align-items:stretch}
+  .picker-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .picker-tabs::-webkit-scrollbar{display:none}
+  .pick-buscar{max-width:none;width:100%}
+}
