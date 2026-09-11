@@ -192,7 +192,7 @@ function clubMapaTodos(){
   /* los clubes modernos (2026 / Primera B) ganan el id ante colisiones con 1991
      (ej: COB = Cobresal en 2026, pero Cobreloa en 1991). El ascenso/descenso es era moderna. */
   const m={};
-  [LIGA_2026,(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null),LIGA91].forEach(L=>{ if(L) L.forEach(c=>{ if(!m[c.id]) m[c.id]=c; }); });
+  [LIGA_2026,(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null),(typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null),LIGA91].forEach(L=>{ if(L) L.forEach(c=>{ if(!m[c.id]) m[c.id]=c; }); });
   return m;
 }
 function activarLiga(base){

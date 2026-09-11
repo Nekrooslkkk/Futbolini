@@ -65,7 +65,7 @@ const CAJA_BASE_2026={CC:{plata:1200,deuda:3000},UCH:{plata:900,deuda:1800},UC:{
  PAL:{plata:520,deuda:480},LIM:{plata:300,deuda:200}};
 /* Devuelve el set de datos de club según la época (1991 o 2026). */
 function datosEra(base){
-  if(base===2026 || base==="2026b")
+  if(base===2026 || base==="2026b" || base==="2026c")
     return {info:CLUB_INFO_2026, ind:IND_BASE_2026, caja:CAJA_BASE_2026};
   return {info:CLUB_INFO, ind:IND_BASE, caja:CAJA_BASE};
 }
@@ -106,7 +106,10 @@ function nuevaPartida(clubId,anio,modo,extra){
   let base=baseEra(anio);
   if(extra&&extra.epoca&&extra.epoca.liga) base=extra.epoca.liga;
   if(extra&&extra.categoria==="B") base="2026b";
+  if(extra&&extra.categoria==="C") base="2026c";
   if(typeof esClubB==="function" && esClubB(clubId) && (anio>=2010 || base===2026 || base==="2026b")) base="2026b";
+  /* 7.49 · Segunda División Profesional (3er nivel) */
+  if(typeof esClubC==="function" && esClubC(clubId) && (anio>=2010 || base===2026 || base==="2026c")) base="2026c";
   activarLiga(base);
   const D=datosEra(base);
   const info=D.info[clubId];

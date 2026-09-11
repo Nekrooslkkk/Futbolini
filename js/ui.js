@@ -173,8 +173,9 @@ function pantallaInicio(){
   });
   paso1.cuerpo.appendChild(g);
   const idsB=(typeof idsPrimeraB==="function")?idsPrimeraB():((typeof LIGA_B_2026!=="undefined")?LIGA_B_2026.map(c=>c.id):[]);
+  const idsC=(typeof idsSegunda==="function")?idsSegunda():((typeof LIGA_C_2026!=="undefined")?LIGA_C_2026.map(c=>c.id):[]);
   if(typeof CLUB_INFO_2026!=="undefined"){
-    const soloNuevos=Object.keys(CLUB_INFO_2026).filter(id=>!CLUB_INFO[id] && idsB.indexOf(id)<0);
+    const soloNuevos=Object.keys(CLUB_INFO_2026).filter(id=>!CLUB_INFO[id] && idsB.indexOf(id)<0 && idsC.indexOf(id)<0);
     if(soloNuevos.length){
       paso1.cuerpo.appendChild(el("h3","sub","… o un club de la Primera 2026"));
       const g2=el("div","iconos");
@@ -200,6 +201,18 @@ function pantallaInicio(){
     });
     paso1.cuerpo.appendChild(g3);
   }
+  if(typeof LIGA_C_2026!=="undefined" && LIGA_C_2026.length){
+    paso1.cuerpo.appendChild(el("h3","sub","… o un club de la Segunda División 2026"));
+    const g4=el("div","iconos");
+    LIGA_C_2026.forEach(c=>{
+      const info=(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c;
+      const ciu=c.ciudad||"";
+      const b=el("button","icono",'<span class="g">'+(typeof escudoHTML==="function"?escudoHTML(c.id,36,info.esc||"⚪"):(info.esc||"⚪"))+'</span><span class="n">'+(info.n||c.n)+'</span>'+(ciu?'<span class="ciu">'+ciu+'</span>':''));
+      b.onclick=()=>elegirEpoca(c.id);
+      g4.appendChild(b);
+    });
+    paso1.cuerpo.appendChild(g4);
+  }
   paso1.cuerpo.appendChild(el("p","mini","Los 5 primeros se pueden jugar en 1991 (calendario real, Copa Libertadores de Colo-Colo) o en 2026. Los de Primera 2026 son de la división de honor. Los de Primera B arrancan en la Liga de Ascenso 2026 (Cobreloa primero; planteles documentados, el resto se rellena con cantera)."));
   v.appendChild(paso1);
 
@@ -217,12 +230,15 @@ function elegirEpoca(id){
   /* 7.00 · clubes que solo existen en 2026 (no tienen datos 1991) */
   const solo2026=(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]);
   const esB=(typeof esClubB==="function")?esClubB(id):false;
+  const esC=(typeof esClubC==="function")?esClubC(id):false;
   let modo="historico", corte=false;
   const glorias=(typeof epocasDe==="function")?epocasDe(id):[];
   /* 7.10 · UN solo selector de "cuándo empezar": épocas base + glorias unificadas,
      sin dos selectores peleando (arregla el bug de perder continuidad al elegir gloria). */
   const puntos=[];
-  if(esB){
+  if(esC){
+    puntos.push({k:"b2026c",tipo:"base",base:"2026c",anio:2026,etq:"2026 · Segunda División"});
+  } else if(esB){
     puntos.push({k:"b2026b",tipo:"base",base:"2026b",anio:2026,etq:"2026 · Primera B"});
   } else if(solo2026){
     puntos.push({k:"b2026",tipo:"base",base:2026,anio:2026,etq:"2026 · Actual"});
@@ -281,7 +297,8 @@ function elegirEpoca(id){
       if(sel.tipo==="gloria"&&sel.ep){
         c.appendChild(el("div","resul mitad","<b>"+sel.ep.etq+".</b> "+(sel.ep.desc||"")+(sel.ep.dt?" · DT <b>"+sel.ep.dt+"</b>":"")));
       }else{
-        if(esB) c.appendChild(el("p","mini","Este club juega en la Primera B 2026 (Liga de Ascenso). Victoria vale 3 puntos. Copa Chile con grupos reales."));
+        if(esC) c.appendChild(el("p","mini","Este club juega en la Segunda División Profesional 2026 (3er nivel). Victoria vale 3 puntos. El objetivo es ascender a la Primera B."));
+        else if(esB) c.appendChild(el("p","mini","Este club juega en la Primera B 2026 (Liga de Ascenso). Victoria vale 3 puntos. Copa Chile con grupos reales."));
         else if(solo2026) c.appendChild(el("p","mini","Este club juega en la Primera División 2026."));
         const eraObj=(typeof eraDe==="function"?eraDe(sel.base):ERA[sel.base])||ERA[2026];
         c.appendChild(el("p","mini",(eraObj&&eraObj.desc)||""));
@@ -308,8 +325,9 @@ function elegirEpoca(id){
 
       c.appendChild(el("h3","sub","3 · Briefing"));
       const eraObj2=(typeof eraDe==="function"?eraDe(sel.base):ERA[sel.base])||ERA[2026];
-      const ligaN=sel.base==="2026b"?(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026.length:16)
-        :(sel.base===2026?LIGA_2026.length:LIGA91.length);
+      const ligaN=sel.base==="2026c"?(typeof LIGA_C_2026!=="undefined"?LIGA_C_2026.length:14)
+        :(sel.base==="2026b"?(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026.length:16)
+        :(sel.base===2026?LIGA_2026.length:LIGA91.length));
       c.appendChild(fila("Época","Campeonato "+sel.anio+" · "+ligaN+" equipos · victoria vale "+eraObj2.puntosVictoria+" puntos"));
       c.appendChild(fila("Deportivo","plantel "+ib.plantel+" · cantera "+ib.cantera));
       c.appendChild(fila("Económico",plata(cb.plata)+" en caja · "+plata(cb.deuda)+" de deuda"));
