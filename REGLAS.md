@@ -44,7 +44,14 @@ Ascenso/descenso **encadenado** entre niveles (implementado: Primera↔B↔Segun
 
 ---
 
-# Cómo agregar una liga extranjera (ej: Argentina) — fácil, por prompt
+## Liga Profesional Argentina 2026 (era `arg2026`) — datos 7.76
+- **30 clubes** reales (Wikipedia / AFA, sep 2026). IDs de 3 letras que no chocan con Chile (`BOC`, `RIV`, `RAC`…).
+- **Formato real:** Apertura + Clausura, cada uno en **2 zonas de 15**. Descienden **2**: 1 por promedio (coeficiente) + 1 colista de la anual. Campeón de cada torneo → Libertadores 2027. Ascendieron Gimnasia (Mza) y Estudiantes (RC); bajaron Godoy Cruz y San Martín (SJ).
+- **En el juego hoy:** una rueda de **29 fechas** (ida), 3 pts. Calendario muestra la tabla de los 30. Las zonas A/B están en el campo `z` de cada club para cuando se arme el formato real (playoffs / promedio). `fixturesLiga` no banca n impar (zona de 15).
+- Archivo: `js/data-argentina2026.js` (`registrarLiga`). Planteles: **cantera** (no se inventan nombres).
+- Segunda 2026: DTs de la ficha pública (Paredes, Viale, Ramos…) y estadios cruzados (City = Lo Barnechea, Ovalle = Diaguita). Planteles: cantera.
+
+---
 
 El motor ya está preparado: una "era"/división es un **array de clubes** registrado en
 `LIGAS[...]` + entradas en `CLUB_INFO_2026 / IND_BASE_2026 / CAJA_BASE_2026` +

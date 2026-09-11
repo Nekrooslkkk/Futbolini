@@ -186,6 +186,56 @@ var HISTORIA_LINEA={
     {anio:1902,hito:"Fundación",txt:"Rangers de Talca. El piducano, Fiscal, yo-yo eterno."},
     {anio:1969,hito:"Subcampeón",txt:"Cerca del título nacional. Memoria de grandeza provincial."},
     {anio:2026,hito:"Hoy",txt:"B. Talca pide un equipo de ciudad, no un puente a Santiago."}
+  ],
+  SMO:[
+    {anio:1909,hito:"Fundación",txt:"Santiago Morning nace el 16 de agosto de 1909. El chaguito, bohemio de Santiago."},
+    {anio:2005,hito:"Primera",txt:"Ciclos en honor. Camiseta con pasado grande; el presente no siempre acompaña."},
+    {anio:2025,hito:"Descenso",txt:"Baja de la B a Segunda. El TAS confirmó el descuento de puntos que definió la tabla."},
+    {anio:2026,hito:"Hoy",txt:"Segunda, zona Sur, Municipal de La Pintana. Esteban Paredes en el banco. Pelea por volver a la B."}
+  ],
+  LSC:[
+    {anio:1966,hito:"Fundación",txt:"Lota Schwager nace de la fusión minera en la cuenca del carbón (Coronel)."},
+    {anio:2026,hito:"Hoy",txt:"Vuelve al profesionalismo. Estadio Federico Schwager. La cuenca lo siente como bandera."}
+  ],
+  OSO:[
+    {anio:1983,hito:"Fundación",txt:"Provincial Osorno. El toro del sur. Estuvo en Primera: el Campeonato Nacional 1991 lo tiene en la tabla."},
+    {anio:1991,hito:"Primera",txt:"Jugó el Nacional 1991 (19 pts, descendió junto a Wanderers). Hecho de tabla, no de leyenda."},
+    {anio:2026,hito:"Hoy",txt:"Segunda, zona Sur. Rubén Marcos Peralta (~12.000). Estadio grande para la categoría."}
+  ],
+  LIN:[
+    {anio:2026,hito:"Hoy",txt:"Deportes Linares, albirrojo del Maule. Fiscal Tucapel Bustamante. Zona Sur, pelea el salto a la B."}
+  ],
+  CLC:[
+    {anio:2026,hito:"Hoy",txt:"Colchagua de San Fernando. Estadio Jorge Silva. Volvió al profesionalismo. Valle de Colchagua, no vitrina."}
+  ],
+  TRA:[
+    {anio:1906,hito:"Fundación",txt:"Trasandino de Los Andes. Club de cordillera, cerca del paso a Argentina."},
+    {anio:2026,hito:"Hoy",txt:"Segunda, zona Norte. Regional de Los Andes. Pelea el ascenso a la B."}
+  ],
+  COL:[
+    {anio:2025,hito:"Ascenso",txt:"Atlético Colina campeón de Tercera A: vuelve al profesionalismo."},
+    {anio:2026,hito:"Hoy",txt:"Zona Norte. Municipal de Colina. Comuna al norte de Santiago, club en crecimiento."}
+  ],
+  OVA:[
+    {anio:2026,hito:"Hoy",txt:"Provincial Ovalle, Limarí, Cuarta Región. Estadio Diaguita. Zona Norte."}
+  ],
+  CNA:[
+    {anio:2026,hito:"Hoy",txt:"Concón National. Club joven del litoral. Sin pasado en divisiones mayores: escribe el propio."}
+  ],
+  BSA:[
+    {anio:2026,hito:"Hoy",txt:"Brujas de Salamanca, Choapa. Identidad de pueblo. Zona Norte."}
+  ],
+  RSJ:[
+    {anio:2026,hito:"Hoy",txt:"Real San Joaquín. Club-escuela de Santiago, formador. Poco aforo, muchos cadetes."}
+  ],
+  SCI:[
+    {anio:2026,hito:"Hoy",txt:"Santiago City. Municipal de Lo Barnechea. Proyecto joven de la capital. Sin historia en categorías mayores."}
+  ],
+  GVE:[
+    {anio:2026,hito:"Hoy",txt:"General Velásquez de San Vicente de Tagua Tagua. Augusto Rodríguez. Club de pueblo del secano. Zona Sur."}
+  ],
+  REN:[
+    {anio:2026,hito:"Hoy",txt:"Deportes Rengo, valle de Cachapoal. Municipal Guillermo Guzmán Díaz. Primero, sobrevivir."}
   ]
 };
 

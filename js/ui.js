@@ -175,15 +175,17 @@ function pickerClubes(cont){
   };
   const idsB=(typeof idsPrimeraB==="function")?idsPrimeraB():((typeof LIGA_B_2026!=="undefined")?LIGA_B_2026.map(c=>c.id):[]);
   const idsC=(typeof idsSegunda==="function")?idsSegunda():((typeof LIGA_C_2026!=="undefined")?LIGA_C_2026.map(c=>c.id):[]);
+  const idsA=(typeof idsArgentina==="function")?idsArgentina():((typeof LIGA_ARG_2026!=="undefined")?LIGA_ARG_2026.map(c=>c.id):[]);
   if(typeof CLUB_INFO!=="undefined") Object.keys(CLUB_INFO).forEach(id=>add(id,CLUB_INFO[id],"Primera",true));
   if(typeof CLUB_INFO_2026!=="undefined") Object.keys(CLUB_INFO_2026)
-    .filter(id=>(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]) && idsB.indexOf(id)<0 && idsC.indexOf(id)<0)
+    .filter(id=>(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]) && idsB.indexOf(id)<0 && idsC.indexOf(id)<0 && idsA.indexOf(id)<0)
     .forEach(id=>add(id,CLUB_INFO_2026[id],"Primera",false));
   if(typeof LIGA_B_2026!=="undefined") LIGA_B_2026.forEach(c=>add(c.id,(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c,"Primera B",false));
   if(typeof LIGA_C_2026!=="undefined") LIGA_C_2026.forEach(c=>add(c.id,(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c,"Segunda",false));
+  if(typeof LIGA_ARG_2026!=="undefined") LIGA_ARG_2026.forEach(c=>add(c.id,(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c,"Argentina",false));
 
   const _T=(typeof T==="function")?T:((k,d)=>d);
-  const filtros=[["todos",_T("ini_f_todos","Todos")],["Primera","Primera"],["Primera B","Primera B"],["Segunda","Segunda"],["clasico",_T("ini_f_clasicos","Clásicos '91")]];
+  const filtros=[["todos",_T("ini_f_todos","Todos")],["Primera","Primera"],["Primera B","Primera B"],["Segunda","Segunda"],["Argentina","Argentina"],["clasico",_T("ini_f_clasicos","Clásicos '91")]];
   let fAct="todos", q="";
   const barra=el("div","picker-barra");
   const tabs=el("div","picker-tabs"); barra.appendChild(tabs);
@@ -250,12 +252,15 @@ function elegirEpoca(id){
   const solo2026=(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]);
   const esB=(typeof esClubB==="function")?esClubB(id):false;
   const esC=(typeof esClubC==="function")?esClubC(id):false;
+  const esArg=(typeof esClubArg==="function")?esClubArg(id):false;
   let modo="historico", corte=false;
   const glorias=(typeof epocasDe==="function")?epocasDe(id):[];
   /* 7.10 · UN solo selector de "cuándo empezar": épocas base + glorias unificadas,
      sin dos selectores peleando (arregla el bug de perder continuidad al elegir gloria). */
   const puntos=[];
-  if(esC){
+  if(esArg){
+    puntos.push({k:"barg",tipo:"base",base:"arg2026",anio:2026,etq:"2026 · Liga Profesional"});
+  } else if(esC){
     puntos.push({k:"b2026c",tipo:"base",base:"2026c",anio:2026,etq:"2026 · Segunda División"});
   } else if(esB){
     puntos.push({k:"b2026b",tipo:"base",base:"2026b",anio:2026,etq:"2026 · Primera B"});
@@ -316,7 +321,8 @@ function elegirEpoca(id){
       if(sel.tipo==="gloria"&&sel.ep){
         c.appendChild(el("div","resul mitad","<b>"+sel.ep.etq+".</b> "+(sel.ep.desc||"")+(sel.ep.dt?" · DT <b>"+sel.ep.dt+"</b>":"")));
       }else{
-        if(esC) c.appendChild(el("p","mini","Este club juega en la Segunda División Profesional 2026 (3er nivel). Victoria vale 3 puntos. El objetivo es ascender a la Primera B."));
+        if(esArg) c.appendChild(el("p","mini","Este club juega en la Liga Profesional Argentina 2026 (30 clubes). Victoria vale 3 puntos. Una rueda de 29 fechas. Plantel de cantera (no se inventan nombres)."));
+        else if(esC) c.appendChild(el("p","mini","Este club juega en la Segunda División Profesional 2026 (3er nivel). Victoria vale 3 puntos. El objetivo es ascender a la Primera B."));
         else if(esB) c.appendChild(el("p","mini","Este club juega en la Primera B 2026 (Liga de Ascenso). Victoria vale 3 puntos. Copa Chile con grupos reales."));
         else if(solo2026) c.appendChild(el("p","mini","Este club juega en la Primera División 2026."));
         const eraObj=(typeof eraDe==="function"?eraDe(sel.base):ERA[sel.base])||ERA[2026];
@@ -344,9 +350,10 @@ function elegirEpoca(id){
 
       c.appendChild(el("h3","sub","3 · Briefing"));
       const eraObj2=(typeof eraDe==="function"?eraDe(sel.base):ERA[sel.base])||ERA[2026];
-      const ligaN=sel.base==="2026c"?(typeof LIGA_C_2026!=="undefined"?LIGA_C_2026.length:14)
+      const ligaN=sel.base==="arg2026"?(typeof LIGA_ARG_2026!=="undefined"?LIGA_ARG_2026.length:30)
+        :(sel.base==="2026c"?(typeof LIGA_C_2026!=="undefined"?LIGA_C_2026.length:14)
         :(sel.base==="2026b"?(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026.length:16)
-        :(sel.base===2026?LIGA_2026.length:LIGA91.length));
+        :(sel.base===2026?LIGA_2026.length:LIGA91.length)));
       c.appendChild(fila("Época","Campeonato "+sel.anio+" · "+ligaN+" equipos · victoria vale "+eraObj2.puntosVictoria+" puntos"));
       c.appendChild(fila("Deportivo","plantel "+ib.plantel+" · cantera "+ib.cantera));
       c.appendChild(fila("Económico",plata(cb.plata)+" en caja · "+plata(cb.deuda)+" de deuda"));
@@ -381,7 +388,10 @@ function elegirEpoca(id){
           }
           const extra=sel.tipo==="gloria"?{epoca:sel.ep}
             :(sel.base===2026&&corte?{corte:true}:null);
-          const extra2=(esB||sel.base==="2026b")?Object.assign(extra||{},{categoria:"B"}):extra;
+          let extra2=extra;
+          if(esB||sel.base==="2026b") extra2=Object.assign(extra||{},{categoria:"B"});
+          if(esC||sel.base==="2026c") extra2=Object.assign(extra||{},{categoria:"C"});
+          if(esArg||sel.base==="arg2026") extra2=Object.assign(extra||{},{categoria:"ARG"});
           nuevaPartida(id, anio, modo, extra2);
           if(!E || !E.club) throw new Error("nuevaPartida no dejó estado E");
           cerrarModal(); SEC="escritorio"; render();
@@ -543,7 +553,7 @@ function vistaEscritorio(){
     inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); responder(); } };
     const bq=el("button","btn-aqua chico","Preguntar"); bq.style.marginTop="6px"; bq.onclick=responder;
     const chips=el("div","fichas"); chips.style.marginTop="6px";
-    ["Informe de la semana","¿Cómo viene el rival?","¿Hay Libertadores?","¿Cómo estamos de plata?","¿Y el camarín?"].forEach(txt=>{
+    ["Informe de la semana","¿El domingo?","¿Cómo viene el rival?","¿Cómo estamos de plata?","¿Hablo con el capitán?"].forEach(txt=>{
       const c=el("button","ficha",txt); c.onclick=()=>{ inp.value=txt; responder(); }; chips.appendChild(c);
     });
     qbox.appendChild(inp); qbox.appendChild(bq); qbox.appendChild(chips); qbox.appendChild(resp);

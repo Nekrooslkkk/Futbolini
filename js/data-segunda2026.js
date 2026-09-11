@@ -10,9 +10,10 @@
    corrida (round-robin); el formato exacto grupos+liguilla queda como
    refinamiento de reglas. La zona real queda guardada en `z` para eso.
 
-   Nombres de clubes/ciudades/estadios: reales documentados. DTs: no se
-   documentan (no se inventan nombres) → cuerpo técnico. Planteles: cantera
-   (armarPlantel rellena); NUNCA se inventa un jugador como real.
+   Nombres de clubes/ciudades/estadios: reales documentados (Wikipedia /
+   ANFP, sep 2026). DTs 2026: los de la ficha pública de la Liga de Segunda
+   (Paredes, Viale, Ramos, etc.). Planteles: cantera (armarPlantel rellena);
+   NUNCA se inventa un jugador como real.
 
    IDs nuevos (no chocan con Primera ni Primera B):
    COL Atlético Colina · BSA Brujas de Salamanca · CNA Concón National ·
@@ -24,21 +25,21 @@
 
 const LIGA_C_2026=[
  /* --- Zona Norte --- */
- {id:"TRA",n:"Trasandino",            c:"Trasandino",   fuerza:48, aforo:5000, est:"Estadio Regional de Los Andes",   ciudad:"Los Andes",  z:"norte"},
- {id:"COL",n:"Atlético Colina",       c:"A. Colina",    fuerza:47, aforo:3000, est:"Estadio Municipal de Colina",     ciudad:"Colina",     z:"norte"},
- {id:"OVA",n:"Provincial Ovalle",     c:"Ovalle",       fuerza:46, aforo:5000, est:"Estadio Municipal de Ovalle",     ciudad:"Ovalle",     z:"norte"},
- {id:"CNA",n:"Concón National",       c:"Concón Nat.",  fuerza:46, aforo:2500, est:"Estadio Atlético Municipal",      ciudad:"Concón",     z:"norte"},
+ {id:"TRA",n:"Trasandino",            c:"Trasandino",   fuerza:48, aforo:3500, est:"Estadio Regional de Los Andes",   ciudad:"Los Andes",  z:"norte"},
+ {id:"COL",n:"Atlético Colina",       c:"A. Colina",    fuerza:47, aforo:4000, est:"Estadio Municipal Manuel Rojas",  ciudad:"Colina",     z:"norte"},
+ {id:"OVA",n:"Provincial Ovalle",     c:"Ovalle",       fuerza:46, aforo:5160, est:"Estadio Diaguita",                ciudad:"Ovalle",     z:"norte"},
+ {id:"CNA",n:"Concón National",       c:"Concón Nat.",  fuerza:46, aforo:3000, est:"Estadio Atlético Municipal",      ciudad:"Concón",     z:"norte"},
  {id:"BSA",n:"Brujas de Salamanca",   c:"Salamanca",    fuerza:45, aforo:3000, est:"Estadio Municipal de Salamanca",  ciudad:"Salamanca",  z:"norte"},
  {id:"RSJ",n:"Real San Joaquín",      c:"San Joaquín",  fuerza:45, aforo:2000, est:"Estadio Municipal de San Joaquín",ciudad:"Santiago",   z:"norte"},
- {id:"SCI",n:"Santiago City",         c:"Santiago City",fuerza:45, aforo:2500, est:"Estadio Municipal de Las Condes", ciudad:"Santiago",   z:"norte"},
+ {id:"SCI",n:"Santiago City",         c:"Santiago City",fuerza:45, aforo:2500, est:"Estadio Municipal de Lo Barnechea",ciudad:"Santiago",  z:"norte"},
  /* --- Zona Sur --- */
- {id:"SMO",n:"Santiago Morning",      c:"S. Morning",   fuerza:54, aforo:6000, est:"Estadio Municipal de La Pintana", ciudad:"Santiago",   z:"sur"},
+ {id:"SMO",n:"Santiago Morning",      c:"S. Morning",   fuerza:54, aforo:5000, est:"Estadio Municipal de La Pintana", ciudad:"Santiago",   z:"sur"},
  {id:"LSC",n:"Lota Schwager",         c:"Lota Schwager",fuerza:50, aforo:4000, est:"Estadio Federico Schwager",       ciudad:"Coronel",    z:"sur"},
- {id:"OSO",n:"Provincial Osorno",     c:"Osorno",       fuerza:49, aforo:8000, est:"Estadio Rubén Marcos Peralta",    ciudad:"Osorno",     z:"sur"},
- {id:"LIN",n:"Deportes Linares",      c:"Linares",      fuerza:48, aforo:5000, est:"Estadio Fiscal de Linares",       ciudad:"Linares",    z:"sur"},
- {id:"CLC",n:"Colchagua",             c:"Colchagua",    fuerza:47, aforo:5000, est:"Estadio Municipal de San Fernando",ciudad:"San Fernando",z:"sur"},
- {id:"GVE",n:"General Velásquez",     c:"Gral. Velásquez",fuerza:45,aforo:3000,est:"Estadio Municipal de San Vicente",ciudad:"San Vicente",z:"sur"},
- {id:"REN",n:"Deportes Rengo",        c:"Rengo",        fuerza:44, aforo:3000, est:"Estadio Municipal de Rengo",      ciudad:"Rengo",      z:"sur"}
+ {id:"OSO",n:"Provincial Osorno",     c:"Osorno",       fuerza:49, aforo:12000,est:"Estadio Rubén Marcos Peralta",    ciudad:"Osorno",     z:"sur"},
+ {id:"LIN",n:"Deportes Linares",      c:"Linares",      fuerza:48, aforo:4000, est:"Estadio Fiscal Tucapel Bustamante",ciudad:"Linares",   z:"sur"},
+ {id:"CLC",n:"Colchagua",             c:"Colchagua",    fuerza:47, aforo:7200, est:"Estadio Jorge Silva Valenzuela",  ciudad:"San Fernando",z:"sur"},
+ {id:"GVE",n:"General Velásquez",     c:"Gral. Velásquez",fuerza:45,aforo:3000,est:"Estadio Municipal Augusto Rodríguez",ciudad:"San Vicente",z:"sur"},
+ {id:"REN",n:"Deportes Rengo",        c:"Rengo",        fuerza:44, aforo:3000, est:"Estadio Municipal Guillermo Guzmán Díaz",ciudad:"Rengo",z:"sur"}
 ];
 function idsSegunda(){ return LIGA_C_2026.map(function(c){ return c.id; }); }
 function esClubC(id){ return idsSegunda().indexOf(id)>=0; }
@@ -50,33 +51,33 @@ if(typeof ERA==="object" && ERA[2026]) ERA["2026c"]=ERA[2026];
 /* ---------- identidad / indicadores / caja / estatuto / poder ---------- */
 (function integrarSegunda2026(){
   if(typeof CLUB_INFO_2026!=="undefined") Object.assign(CLUB_INFO_2026,{
-    SMO:{n:"Santiago Morning",esc:"⚫",est:"Estadio Municipal de La Pintana",dt:"el cuerpo técnico",
+    SMO:{n:"Santiago Morning",esc:"⚫",est:"Estadio Municipal de La Pintana",dt:"Esteban Paredes",
       desc:"El chaguito, bohemio de Santiago y de larga historia. Bajó a Segunda y en 2026 pelea por volver a la B. Camiseta con pasado grande, presente de pelea."},
-    LSC:{n:"Lota Schwager",esc:"⚫",est:"Estadio Federico Schwager",dt:"el cuerpo técnico",
+    LSC:{n:"Lota Schwager",esc:"⚫",est:"Estadio Federico Schwager",dt:"Renato Ramos",
       desc:"El minero del carbón, de Coronel. Vuelve al profesionalismo tras años abajo. La cuenca lo siente como bandera."},
-    OSO:{n:"Provincial Osorno",esc:"🔴",est:"Estadio Rubén Marcos Peralta",dt:"el cuerpo técnico",
+    OSO:{n:"Provincial Osorno",esc:"🔴",est:"Estadio Rubén Marcos Peralta",dt:"Jeremías Viale",
       desc:"El toro del sur. Osorno y un estadio grande para la categoría: si llena, incomoda a cualquiera."},
-    LIN:{n:"Deportes Linares",esc:"🔵",est:"Estadio Fiscal de Linares",dt:"el cuerpo técnico",
+    LIN:{n:"Deportes Linares",esc:"🔵",est:"Estadio Fiscal Tucapel Bustamante",dt:"Rodrigo Meléndez",
       desc:"El albirrojo del Maule. Club de región con hinchada fiel y ganas de dar el salto a la B."},
-    CLC:{n:"Colchagua",esc:"🟡",est:"Estadio Municipal de San Fernando",dt:"el cuerpo técnico",
+    CLC:{n:"Colchagua",esc:"🟡",est:"Estadio Jorge Silva Valenzuela",dt:"Raúl González",
       desc:"El de San Fernando, valle de Colchagua. Volvió tras años afuera y quiere quedarse arriba."},
-    TRA:{n:"Trasandino",esc:"🟢",est:"Estadio Regional de Los Andes",dt:"el cuerpo técnico",
+    TRA:{n:"Trasandino",esc:"🟢",est:"Estadio Regional de Los Andes",dt:"Fernando Gutiérrez",
       desc:"El de Los Andes, cerca de la cordillera. Club chico de tradición que pelea el ascenso a la B."},
-    COL:{n:"Atlético Colina",esc:"🔵",est:"Estadio Municipal de Colina",dt:"el cuerpo técnico",
+    COL:{n:"Atlético Colina",esc:"🔵",est:"Estadio Municipal Manuel Rojas",dt:"Fernando Vergara",
       desc:"Recién campeón de la Tercera A, vuelve al profesionalismo. Comuna en crecimiento al norte de Santiago."},
-    OVA:{n:"Provincial Ovalle",esc:"🟠",est:"Estadio Municipal de Ovalle",dt:"el cuerpo técnico",
+    OVA:{n:"Provincial Ovalle",esc:"🟠",est:"Estadio Diaguita",dt:"Víctor Quintanilla",
       desc:"El del Limarí. Club de la cuarta región que busca hacerse un nombre en el profesionalismo."},
-    CNA:{n:"Concón National",esc:"🔵",est:"Estadio Atlético Municipal",dt:"el cuerpo técnico",
+    CNA:{n:"Concón National",esc:"🔵",est:"Estadio Atlético Municipal",dt:"Orlando Gutiérrez",
       desc:"Club joven de Concón, litoral central. Sin pasado en divisiones mayores: todo por construir."},
-    BSA:{n:"Brujas de Salamanca",esc:"🟣",est:"Estadio Municipal de Salamanca",dt:"el cuerpo técnico",
+    BSA:{n:"Brujas de Salamanca",esc:"🟣",est:"Estadio Municipal de Salamanca",dt:"Felipe Cornejo",
       desc:"Las brujas del Choapa. Salamanca y su leyenda: club chico de identidad fuerte."},
-    RSJ:{n:"Real San Joaquín",esc:"⚪",est:"Estadio Municipal de San Joaquín",dt:"el cuerpo técnico",
+    RSJ:{n:"Real San Joaquín",esc:"⚪",est:"Estadio Municipal de San Joaquín",dt:"Jaime Lizama",
       desc:"Club-escuela de Santiago, formador. Poco aforo, mucho cabro con proyección."},
-    SCI:{n:"Santiago City",esc:"🔵",est:"Estadio Municipal de Las Condes",dt:"el cuerpo técnico",
+    SCI:{n:"Santiago City",esc:"🔵",est:"Estadio Municipal de Lo Barnechea",dt:"Cristian Febre",
       desc:"Proyecto joven de la capital. Sin historia en categorías mayores: escribe la propia."},
-    GVE:{n:"General Velásquez",esc:"🔴",est:"Estadio Municipal de San Vicente",dt:"el cuerpo técnico",
+    GVE:{n:"General Velásquez",esc:"🔴",est:"Estadio Municipal Augusto Rodríguez",dt:"Matías Garrido",
       desc:"El de San Vicente de Tagua Tagua. Club de pueblo del secano, de aguante en la categoría."},
-    REN:{n:"Deportes Rengo",esc:"🟢",est:"Estadio Municipal de Rengo",dt:"el cuerpo técnico",
+    REN:{n:"Deportes Rengo",esc:"🟢",est:"Estadio Municipal Guillermo Guzmán Díaz",dt:"Víctor Fuentes",
       desc:"El de Rengo, valle de Cachapoal. Recién llegado al profesionalismo, a sobrevivir primero."}
   });
   if(typeof IND_BASE_2026!=="undefined") Object.assign(IND_BASE_2026,{

@@ -178,6 +178,7 @@ const ERA={
    desc:"Fútbol moderno: la victoria vale 3 puntos, sociedades anónimas, plata de TV y valores inflados."}
 };
 function eraDe(base){
+  if(base==="arg2026") return (ERA.arg2026)||ERA[2026];
   if(base==="2026b" || base==="2026c" || base===2026) return ERA[2026];
   return ERA[base] || (base>=2010?ERA[2026]:ERA[1991]);
 }
@@ -196,7 +197,7 @@ function clubMapaTodos(){
   /* los clubes modernos (2026 / Primera B) ganan el id ante colisiones con 1991
      (ej: COB = Cobresal en 2026, pero Cobreloa en 1991). El ascenso/descenso es era moderna. */
   const m={};
-  [LIGA_2026,(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null),(typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null),LIGA91].forEach(L=>{ if(L) L.forEach(c=>{ if(!m[c.id]) m[c.id]=c; }); });
+  [LIGA_2026,(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null),(typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null),(typeof LIGA_ARG_2026!=="undefined"?LIGA_ARG_2026:null),LIGA91].forEach(L=>{ if(L) L.forEach(c=>{ if(!m[c.id]) m[c.id]=c; }); });
   _mapaTodosCache=m;
   return m;
 }
@@ -402,7 +403,7 @@ function construirCalendario(clubId, anio, conCopa){
     cal.sort((a,b)=>ordenFecha(a.f)-ordenFecha(b.f));
     return cal;
   }
-  if(anio===2026 && typeof LIGA_CC_2026!=="undefined" && !(typeof E!=="undefined"&&E&&(E.eraBase==="2026b"||E.eraBase==="2026c"))){
+  if(anio===2026 && typeof LIGA_CC_2026!=="undefined" && !(typeof E!=="undefined"&&E&&(E.eraBase==="2026b"||E.eraBase==="2026c"||E.eraBase==="arg2026"))){
     LIGA_CC_2026.forEach(p=>{
       const pares=emparejarFecha(anio,p.fecha,clubId,null);
       const mio=pares.find(x=>x[0]===clubId||x[1]===clubId);

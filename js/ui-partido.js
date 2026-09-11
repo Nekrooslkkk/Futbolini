@@ -22,7 +22,7 @@ document.addEventListener("keydown",partidoTeclas);
 function checklistPrevia(part,once){
   const items=[];
   const clasico=(typeof esClasico==="function")&&esClasico(part)&&part.tipo!=="amistoso";
-  if(part.tipo==="amistoso") items.push({warn:false,ok:true,t:"Amistoso — bajo riesgo",d:"No cuenta para la tabla ni gasta la semana. Rueda minutos y sube la forma; podés probar el once tranquilo."});
+  if(part.tipo==="amistoso") items.push({warn:false,ok:true,t:"Amistoso — bajo riesgo",d:"No cuenta para la tabla ni gasta la semana. Rueda minutos y sube la forma; podís probar el once tranquilo."});
   if(clasico) items.push({warn:false,ok:true,t:"Hoy es CLÁSICO ante "+part.rivalNombre,d:"Vale doble para la gente. Es tu objetivo institucional del año."});
   if(typeof arbitroDe==="function"){
     const arb=arbitroDe(part);

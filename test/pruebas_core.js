@@ -138,23 +138,6 @@
       setIdioma("neutro");
     }, "Chilensis gol");
 
-    /* T4a03 · amistosos: no tocan tabla/fecha/temporada (7.74) */
-    grupo("Amistosos (7.74)");
-    safe(function(){
-      nuevaPartida("CC",2026,"historico");
-      var idx0=E.idx, pj0=(E.temporada&&E.temporada.pj)||0;
-      var ptsCC0=(E.tabla&&E.tabla["CC"]&&E.tabla["CC"].pts)||0;
-      var m=(typeof clubMapaTodos==="function")?clubMapaTodos():{};
-      var riv="UCH", rc=m[riv]||CLUB_POR_ID[riv]||{n:"Rival",fuerza:60};
-      var part={tipo:"amistoso",amistoso:true,rivalId:riv,rivalNombre:rc.n||"Rival",fuerzaRival:rc.fuerza||60,
-        local:true,sede:"casa",f:{m:6,d:15},clima:"despejado",jugado:false,torneo:"Amistoso"};
-      var P=iniciarPartido(part,"simular"); correrHasta(P,90); var res=terminarPartido(P);
-      ok(res && res.amistoso===true && res.esLiga===false, "el amistoso se marca (no liga)");
-      ok(E.idx===idx0, "no gasta la fecha (idx intacto)");
-      ok(((E.temporada&&E.temporada.pj)||0)===pj0, "no suma partidos de temporada");
-      ok(((E.tabla&&E.tabla["CC"]&&E.tabla["CC"].pts)||0)===ptsCC0, "no toca la tabla");
-    }, "Amistoso");
-
     /* T4a04 · tokens de decisiones: no quedan crudos en pantalla (7.73) */
     grupo("Tokens en decisiones (7.73)");
     safe(function(){
@@ -201,7 +184,7 @@
       var cards=d.querySelectorAll(".icono").length;
       ok(cards>=40, "el picker lista todos los clubes ("+cards+")");
       var tabs=d.querySelectorAll(".pick-tab").length;
-      ok(tabs===5, "hay 5 filtros (Todos/Primera/B/Segunda/Clásicos)");
+      ok(tabs===6, "hay 6 filtros (Todos/Primera/B/Segunda/Argentina/Clásicos)");
       var buscar=d.querySelector(".pick-buscar");
       ok(!!buscar, "hay buscador de club/ciudad");
     }, "Picker inicio");
@@ -243,6 +226,23 @@
       ok(m && (m.bajan||[]).length===2, "Primera baja 2 clubes (cupo real): "+((m&&m.bajan)||[]).length);
       ok((E.ligaMod[2026]||[]).length===nAntes, "Primera conserva su tamaño tras el recambio ("+(E.ligaMod[2026]||[]).length+")");
     }, "Descenso Primera→B");
+
+    /* T4a03 · amistosos: no tocan tabla/fecha/temporada (7.74 GitHub, merge 7.76) */
+    grupo("Amistosos (7.74)");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var idx0=E.idx, pj0=(E.temporada&&E.temporada.pj)||0;
+      var ptsCC0=(E.tabla&&E.tabla["CC"]&&E.tabla["CC"].pts)||0;
+      var m=(typeof clubMapaTodos==="function")?clubMapaTodos():{};
+      var riv="UCH", rc=m[riv]||CLUB_POR_ID[riv]||{n:"Rival",fuerza:60};
+      var part={tipo:"amistoso",amistoso:true,rivalId:riv,rivalNombre:rc.n||"Rival",fuerzaRival:rc.fuerza||60,
+        local:true,sede:"casa",f:{m:6,d:15},clima:"despejado",jugado:false,torneo:"Amistoso"};
+      var P=iniciarPartido(part,"simular"); correrHasta(P,90); var res=terminarPartido(P);
+      ok(res && res.amistoso===true && res.esLiga===false, "el amistoso se marca (no liga)");
+      ok(E.idx===idx0, "no gasta la fecha (idx intacto)");
+      ok(((E.temporada&&E.temporada.pj)||0)===pj0, "no suma partidos de temporada");
+      ok(((E.tabla&&E.tabla["CC"]&&E.tabla["CC"].pts)||0)===ptsCC0, "no toca la tabla");
+    }, "Amistoso");
 
     /* T5 · Copa Chile corre sin reventar */
     grupo("Copa Chile");
@@ -294,6 +294,126 @@
       ok(E.eraBase==="2026c" && !E.carrera.fin && !E.carrera.enParo, "al aceptar sigue en Segunda (sin game over)");
       ok(E.titulos.length===titAntes, "la carrera se preserva (títulos)");
     }, "Rescate desde Segunda");
+
+    /* T9 · 7.74 pulido: formato, mundo, decisiones club-correctas, metas Segunda */
+    grupo("Pulido 7.74 (país + decisiones + metas)");
+    safe(function(){
+      ok(typeof COPA_LIGA_GRUPOS_2026==="object" && COPA_LIGA_GRUPOS_2026.A, "formato 2026 cargado (Copa de la Liga)");
+      ok(typeof mundoInit==="function" && typeof panelMundoCalendario==="function", "mundo.js cargado");
+      ok(typeof recortarDecisiones74==="function" && typeof comoHacerObjetivo==="function", "pulido.js cargado");
+    }, "Scripts 7.74");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var copa=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"; });
+      var ligaCopa=copa.filter(function(p){ return p.torneo==="Copa de la Liga"; });
+      ok(ligaCopa.length>0, "Primera tiene Copa de la Liga en el calendario ("+ligaCopa.length+")");
+      ok(E.mundo && E.mundo.ligas && E.mundo.ligas["2026"], "mundo tiene tabla de Primera");
+    }, "Calendario Primera + mundo");
+    safe(function(){
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      var chile=(E.calendario||[]).filter(function(p){ return p.torneo==="Copa Chile"; });
+      ok(chile.length===0, "Segunda 2026 no juega Copa Chile ("+chile.length+")");
+      ok(E.mundo && E.mundo.ligas && E.mundo.ligas["2026"] && E.mundo.ligas["2026b"], "desde Segunda el país tiene Primera y B");
+      ok(!(E.objetivos||[]).some(function(o){ return /Libertadores/.test(o.t||""); }), "Segunda no pide Libertadores");
+      ok((E.objetivos||[]).some(function(o){ return /zona|liguilla|ascenso/i.test((o.t||"")+(o.detalle||"")); }), "metas de Segunda hablan de zona/liguilla");
+      var vic=(E.objetivos||[]).find(function(o){ return o.id==="vic"; });
+      ok(!vic || vic.meta<=8, "victorias de Segunda caben en 12 fechas (meta="+(vic&&vic.meta)+")");
+      var dep=(E.objetivos||[]).find(function(o){ return o.id==="dep"; });
+      ok(!dep || dep.meta<=4, "posición meta de Segunda no es 14° de 16 (meta="+(dep&&dep.meta)+")");
+      ok((E.objetivos||[]).every(function(o){ return typeof comoHacerObjetivo==="function" && comoHacerObjetivo(o).length>20; }), "cada meta tiene 'cómo hacerlo'");
+    }, "Segunda: copa/metas/mundo");
+    safe(function(){
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      var d=(typeof decisionPorId==="function")?decisionPorId("b_cantera_cancha"):null;
+      ok(d && !/Monumental/i.test(d.d||""), "cantera de Segunda no nombra el Monumental");
+      ok(typeof textoAjenoClub74==="function" && d && textoAjenoClub74({t:"x",d:"No es el Monumental. Macul espera."})===true, "filtro bloquea Monumental ajeno");
+      ok(textoAjenoClub74({t:"x",d:"potrero que se inunda en La Pintana"})===false, "texto genérico de cantera sí pasa");
+      repartirDecisiones();
+      ok((E.decPend||[]).every(function(x){ var dd=decisionPorId(x.id); return !dd || !textoAjenoClub74(dd); }), "ninguna decisión pendiente es de otro club");
+    }, "Decisiones club-correctas");
+    safe(function(){
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      var r=(typeof preguntarAyudante==="function")?preguntarAyudante("¿Hay Libertadores?"):"";
+      ok(/no hay Libertadores|Segunda/i.test(r), "ayudante en Segunda no promete Libertadores: "+r.slice(0,80));
+      var r2=preguntarAyudante("qué hago con la meta");
+      ok(r2 && r2.length>40, "ayudante explica la meta ("+r2.length+" chars)");
+      var p=(typeof pendientesAtender==="function")?pendientesAtender():[];
+      var fin=p.filter(function(x){ return /finanza|deuda|Meta en riesgo/i.test(x.t+" "+(x.d||"")); });
+      /* si hay meta en riesgo, el texto dice cómo; si no, igual la función no revienta */
+      ok(true, "atiende corre ("+p.length+" items)");
+    }, "Ayudante y atiende");
+    safe(function(){
+      ok(typeof ESTATUTOS!=="undefined" && ESTATUTOS.some(function(c){ return c.id==="comunicacion"; }), "estatuto de comunicación");
+      ok(ESTATUTOS.some(function(c){ return c.id==="formacion"; }), "estatuto de edad del plantel");
+      ok(typeof JUGADAS_PODER!=="undefined" && JUGADAS_PODER.length>=8, "más jugadas de poder ("+JUGADAS_PODER.length+")");
+      ok(typeof pactosBarra==="function" && pactosBarra().length>=5, "más pactos de barra ("+pactosBarra().length+")");
+    }, "Institución expandida");
+
+    /* T10 · 7.75 tablas del país + ayudante no tutorial */
+    grupo("Pulido 7.75 (tablas de todo + ayudante)");
+    safe(function(){
+      ok(typeof mundoPintarTabla==="function", "mundoPintarTabla existe");
+      ok(typeof pulirCalendario75==="function", "pulirCalendario75 existe");
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      ok(E.mundo && E.mundo.ligas && E.mundo.ligas["2026"] && E.mundo.ligas["2026b"] && E.mundo.ligas["2026cN"], "mundo tiene las 3 divisiones");
+      var chips=(typeof chipsAyudante74==="function")?chipsAyudante74():[];
+      ok(chips.length>=4, "chips del ayudante ("+chips.length+")");
+      ok(chips.every(function(c){ return !/Libertadores/i.test(c); }), "chips no dicen Libertadores: "+chips.join(" · "));
+      ok(chips.some(function(c){ return /domingo/i.test(c); }), "chip ¿El domingo?");
+      var r=(typeof preguntarAyudante==="function")?preguntarAyudante("¿El domingo?"):"";
+      ok(/vs |rival|Fecha|local|visita|partido|Morning|favorito|parejo|fuerte/i.test(r), "¿El domingo? habla del partido: "+String(r).slice(0,90));
+      SEC="calendario";
+      if(typeof render==="function") render();
+      ok(E.uiMundoTab==="tablas", "tab default = tablas");
+      ok(document.querySelector(".tablas-pais"), "grid tablas-pais en Calendario");
+      ok(document.querySelectorAll(".tablas-pais .tabla-liga").length>=4, "4 tablas de liga en el grid ("+document.querySelectorAll(".tablas-pais .tabla-liga").length+")");
+      ok(document.querySelector(".tablas-copa"), "grupos de copa en Tablas");
+      var dups=Array.prototype.filter.call(document.querySelectorAll("#vista .panel .cab span:last-child"), function(s){ return /^Tabla de posiciones/.test(s.textContent||""); });
+      ok(dups.length===0, "no queda la tabla suelta de una sola liga ("+dups.length+")");
+    }, "Calendario tablas + chips");
+
+    /* T11 · 7.76 Grok: Argentina + historia Segunda + tuits/voz */
+    grupo("Grok 7.76 (Argentina + Segunda + voz)");
+    safe(function(){
+      ok(typeof LIGA_ARG_2026==="object" && LIGA_ARG_2026.length===30, "30 clubes de la Liga Profesional");
+      ok(typeof esClubArg==="function" && esClubArg("BOC") && esClubArg("RIV") && !esClubArg("CC"), "IDs Boca/River no chocan con Chile");
+      var chile={};
+      [LIGA_2026,LIGA_B_2026,LIGA_C_2026,LIGA91].forEach(function(L){ if(L) L.forEach(function(c){ chile[c.id]=c.n; }); });
+      var choc=LIGA_ARG_2026.filter(function(c){ return chile[c.id]; });
+      ok(choc.length===0, "ningún id argentino choca con Chile ("+(choc[0]&&choc[0].id||"0")+")");
+    }, "IDs Argentina");
+    safe(function(){
+      nuevaPartida("BOC",2026,"historico",{categoria:"ARG"});
+      ok(E && E.eraBase==="arg2026", "Boca arranca en era arg2026");
+      ok((E.calendario||[]).filter(function(p){ return p.tipo==="liga"; }).length===29, "29 fechas (una rueda): "+((E.calendario||[]).filter(function(p){ return p.tipo==="liga"; }).length));
+      ok(!(E.calendario||[]).some(function(p){ return p.torneo==="Copa Chile"; }), "Argentina no juega Copa Chile");
+      ok(E.clubNombre==="Boca Juniors", "nombre Boca");
+      ok(E.mundo && E.mundo.ligas && E.mundo.ligas.arg2026 && E.mundo.ligas.arg2026.ids.length===30, "mundo tiene liga Argentina 30");
+      SEC="calendario";
+      if(typeof render==="function") render();
+      ok(document.querySelector(".tablas-pais"), "grid tablas-pais en Calendario Argentina");
+      ok(/Liga Profesional/i.test((document.querySelector(".tablas-pais")||{textContent:""}).textContent||""), "tabla dice Liga Profesional");
+      ok(!document.querySelector(".tablas-copa"), "Argentina no muestra grupos de Copa Chile");
+    }, "Partida Boca");
+    safe(function(){
+      ok(typeof HISTORIA_LINEA==="object" && HISTORIA_LINEA.SMO && HISTORIA_LINEA.SMO.length>=2, "historia Santiago Morning");
+      ok(HISTORIA_LINEA.OSO && /1991/.test(HISTORIA_LINEA.OSO.map(function(h){return h.txt;}).join(" ")), "Osorno: hecho de Primera 1991");
+      ok(HISTORIA_LINEA.TRA && HISTORIA_LINEA.LSC && HISTORIA_LINEA.COL, "Trasandino, Lota y Colina tienen línea");
+      var ids=["SMO","LSC","OSO","LIN","CLC","TRA","COL","OVA","CNA","BSA","RSJ","SCI","GVE","REN"];
+      ok(ids.every(function(id){ return HISTORIA_LINEA[id] && HISTORIA_LINEA[id].length; }), "los 14 de Segunda tienen HISTORIA_LINEA");
+      ok(/Paredes/.test((HISTORIA_LINEA.SMO||[]).map(function(h){return h.txt;}).join(" ")), "Morning 2026 nombra a Paredes");
+    }, "Historia Segunda");
+    safe(function(){
+      ok(typeof CLUB_INFO_2026==="object" && /Paredes/.test(CLUB_INFO_2026.SMO&&CLUB_INFO_2026.SMO.dt||""), "DT Morning: Esteban Paredes");
+      ok(/Viale/.test(CLUB_INFO_2026.OSO&&CLUB_INFO_2026.OSO.dt||""), "DT Osorno: Jeremías Viale");
+      ok(/Lo Barnechea/.test(CLUB_INFO_2026.SCI&&CLUB_INFO_2026.SCI.est||""), "Santiago City: Lo Barnechea");
+      ok((LIGA_C_2026.filter(function(c){ return c.z==="norte"; }).length===7) && (LIGA_C_2026.filter(function(c){ return c.z==="sur"; }).length===7), "Segunda 7 y 7");
+    }, "DTs y estadios Segunda");
+    safe(function(){
+      ok(typeof TUITS_76==="object" && TUITS_76.length>=180, "pool tuits 76 ("+((TUITS_76&&TUITS_76.length)||0)+")");
+      ok(typeof VOZ_76==="object" && VOZ_76.length>=80, "pool voz 76 ("+((VOZ_76&&VOZ_76.length)||0)+")");
+      ok(TUITS_76.every(function(t){ return !/\bvos tenés\b|\bandá\b|\bmirá\b/i.test(t.txt); }), "tuits sin voseo argentino típico");
+    }, "Tuits y voz");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

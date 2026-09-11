@@ -1,0 +1,163 @@
+/* ============================================================
+   FUTBOLINI 7.75 · pulido.css
+   Escritorio, decisiones, barras, noticias, institución, mercado,
+   tablas del país en Calendario.
+   Frutiger Aero: vidrio, brillo superior, sombra corta. Nada de IA-slop.
+   ============================================================ */
+
+/* --- paneles: un poco más de vidrio Vista --- */
+.panel{
+  animation: panelIn .28s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes panelIn{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}
+}
+.panel.dec{ animation: decIn .32s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes decIn{
+  from{opacity:0;transform:translateY(14px) scale(.98)}
+  to{opacity:1;transform:none}
+}
+
+/* --- barras de carga más "pantalla Vista" --- */
+.barrita{
+  height:10px;border-radius:8px;position:relative;
+  box-shadow:inset 0 1px 3px rgba(0,40,20,.28), 0 1px 0 rgba(255,255,255,.45);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 40%),
+    rgba(0,50,30,.18);
+}
+.barrita i{
+  position:relative;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+}
+.barrita i::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
+  animation: barraShine 2.4s ease-in-out infinite;
+}
+@keyframes barraShine{ 0%,100%{transform:translateX(-60%)} 50%{transform:translateX(60%)} }
+
+/* --- decisiones sobre la mesa --- */
+.op.dec-card{
+  text-align:left;width:100%;
+  padding:11px 12px;margin:0;
+  border-radius:10px;
+  border:1px solid rgba(20,80,40,.22);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.18));
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset, 0 4px 10px rgba(8,40,16,.12);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.op.dec-card:hover:not(:disabled){
+  transform:translateY(-2px);
+  box-shadow:0 1px 0 rgba(255,255,255,.8) inset, 0 8px 16px rgba(8,40,16,.18);
+}
+.op.dec-card:active:not(:disabled){ transform:scale(.96); }
+.op.dec-card .peso-alto{
+  display:inline-block;margin-left:6px;font-size:10px;font-weight:800;
+  color:#8a1a12;background:rgba(255,200,180,.55);padding:1px 6px;border-radius:5px;
+}
+.dec .ops .op{ animation: opIn .22s ease both; }
+.dec .ops .op:nth-child(1){animation-delay:.04s}
+.dec .ops .op:nth-child(2){animation-delay:.08s}
+.dec .ops .op:nth-child(3){animation-delay:.12s}
+.dec .ops .op:nth-child(4){animation-delay:.16s}
+@keyframes opIn{ from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:none} }
+
+/* --- noticias tipo diario --- */
+.noticia{
+  padding:10px 12px;margin:7px 0;border-radius:8px;
+  border:1px solid rgba(20,70,40,.18);
+  background:linear-gradient(180deg,rgba(255,255,248,.7),rgba(240,248,236,.4));
+  box-shadow:0 1px 0 rgba(255,255,255,.8) inset;
+}
+.noticia.imp{ border-left:4px solid #2f7dd0; }
+.noticia.chiste{ border-left:4px solid #d68a1f; }
+.noticia.club{ border-left:4px solid #3aa049; }
+.noticia.malo{ border-left:4px solid #c0392b; }
+.noticia b{ display:block; font-size:13.5px; margin-bottom:2px; }
+.noticia .mini{ margin:0; }
+
+/* --- metas: cómo hacer --- */
+.obj-hacer{
+  font-size:12px;line-height:1.45;margin-top:6px;
+  padding:7px 8px;border-radius:6px;
+  background:rgba(47,125,208,.1);border:1px solid rgba(47,125,208,.22);
+}
+.obj.riesgo{ box-shadow:0 0 0 2px rgba(192,57,43,.25); }
+.obj.cumplido{ box-shadow:0 0 0 2px rgba(47,168,79,.25); }
+
+/* --- atiende --- */
+.atiende-item .req{ margin-top:3px; font-size:11.5px; line-height:1.4; }
+
+/* --- institución: grupos como tarjetas --- */
+.grupo-card{
+  padding:8px 10px;margin:8px 0;border-radius:8px;
+  border:1px solid var(--linea);
+  background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,.12));
+}
+.grupo-card .como{ margin-top:4px; font-size:11px; line-height:1.4; opacity:.82; }
+.jugada-op .d{ line-height:1.4; }
+.jugada-op .req{ margin-top:6px; font-size:11.5px; line-height:1.4; opacity:.9; }
+
+/* --- mercado --- */
+.merc-card{
+  padding:10px 12px;margin:8px 0;border-radius:10px;
+  border:1px solid var(--linea);
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.16));
+}
+.merc-need{ font-size:11px; font-weight:700; color:#166b28; margin-top:4px; }
+
+/* --- mundo / calendario país --- */
+.mundo-tabs{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 10px; }
+.mundo-tabs .ficha.on{
+  background:linear-gradient(180deg,#8ade2c,#3fa416); color:#0c3318; font-weight:800;
+  border-color:#166b10;
+}
+.mundo-wrap{ margin-top:10px; margin-bottom:8px; }
+.mundo-cont .tabla-liga{ font-size:12px; }
+.ficha[aria-pressed="true"]{ font-weight:800; }
+
+.tablas-pais{
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+}
+.tablas-pais-1{ grid-template-columns:1fr; }
+.tablas-pais .panel{ margin:0; }
+.tablas-copa{
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px;
+}
+.tabla-grupo{
+  padding:8px; border-radius:8px;
+  border:1px solid rgba(20,80,40,.18);
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(240,248,236,.2));
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset;
+}
+.tabla-grupo .sub{ margin:0 0 6px; font-size:12px; }
+.tabla-grupo .tabla-liga{ width:100%; font-size:11px; }
+.mundo-tit{ margin:4px 0 2px; font-size:16px; }
+
+/* --- escritorio: un poco más de vidrio Vista --- */
+#vista .rejilla .panel{
+  backdrop-filter:blur(10px);
+  background:linear-gradient(180deg,rgba(255,255,255,.52),rgba(230,248,236,.20));
+}
+body.perf #vista .rejilla .panel,
+body.anim-off #vista .rejilla .panel{ backdrop-filter:none; }
+
+.btn-aqua:active:not(:disabled){ transform:scale(.96); }
+
+/* --- reduced motion / modo liviano --- */
+@media (prefers-reduced-motion:reduce){
+  .panel, .panel.dec, .dec .ops .op, .barrita i::after{ animation:none !important; }
+}
+body.perf .panel, body.perf .panel.dec, body.perf .dec .ops .op{ animation:none !important; }
+body.perf .barrita i::after{ display:none; }
+body.anim-off .panel, body.anim-off .panel.dec, body.anim-off .dec .ops .op{ animation:none !important; }
+body.anim-off .barrita i::after{ display:none; }
+
+@media (max-width:720px){
+  .op.dec-card{ padding:12px; }
+  .barrita{ height:12px; }
+  .tablas-pais, .tablas-copa{ grid-template-columns:1fr; }
+}

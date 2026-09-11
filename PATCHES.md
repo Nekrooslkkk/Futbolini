@@ -2120,10 +2120,50 @@ Con los ejemplos del usuario, el chilensis se mete donde se siente:
 **Probado:** node --check + suite 71/71 verde.
 
 ## 7.74 · Amistosos jugables (pretemporada / poner a punto la forma)
-- **partido.js `terminarPartido`:** rama nueva `tipo:"amistoso"` — **no toca la tabla, ni la copa, ni el resto de la fecha, ni gasta la semana** (`E.idx` intacto). Aplica lo bueno de jugar: rueda minutos, sube la **forma** del once y deja **taquilla** si sos local. Efecto anímico liviano; no cuentan promesas ni rachas. Devuelve `{amistoso:true, esLiga:false}`.
-- **ui.js:** `modalAmistoso()` (elegir rival de **cualquier división** con buscador) + `jugarAmistoso(rivalId)` (arma el partido y lo lanza por el motor completo, en vivo o dirigido). Panel **"🤝 Amistosos"** en el Calendario para jugar uno cuando quieras.
-- **ui-partido.js:** la previa muestra "🤝 Amistoso" con su aviso; el cierre dice **"Volver al club"** y **no avanza la semana**; el checklist reemplaza el "es CLÁSICO" por una nota de bajo riesgo.
-- **GROK_PROMPTS.md (nuevo):** batería de **12 prompts** independientes para Grok (planteles reales por tandas, liga Argentina, históricos, DTs, estadios/aforos, Copa de la Liga/Supercopa, pools de tuits 2026 por contexto en neutro+chilensis, personas del Plop!, chilenización, y QA de inconsistencias).
-- **Tests:** +4 (el amistoso no gasta fecha, no suma PJ, no toca la tabla, se marca no-liga). Suite **75/75**.
+Claude en GitHub (`ba1fa7ff`). Se conserva entero en 7.76:
+
+- **partido.js `terminarPartido`:** rama `tipo:"amistoso"` — **no toca la tabla, ni la copa, ni el resto de la fecha, ni gasta la semana** (`E.idx` intacto). Rueda minutos, sube la **forma** del once y deja **taquilla** si eres local. Devuelve `{amistoso:true, esLiga:false}`.
+- **ui.js:** `modalAmistoso()` + `jugarAmistoso(rivalId)`. Panel **"🤝 Amistosos"** en el Calendario.
+- **ui-partido.js:** previa "🤝 Amistoso"; cierre **"Volver al club"** sin avanzar la semana.
+- **GROK_PROMPTS.md:** batería de 12 prompts (se deja como está en GitHub).
+- **Tests:** +4. Suite **75/75** en ese commit.
 - **util.js**: VERSION 7.73 → **7.74**.
-**Probado:** node --check + suite 75/75 verde + captura de la previa del amistoso.
+**Probado:** node --check + suite 75/75 verde (commit GitHub).
+
+## 7.74b · Pulido: país, decisiones club-correctas, metas, institución, mercado
+Pedido del autor: decisiones distintas por club (sin Monumental en Segunda), atiende que te diga **qué hacer**, escritorio más Vista, metas de verdad, chilensis + prompt a Grok, ayudante que ayude, noticias de diario, poder/grupos/estatutos/barra entendibles, institución con barras, calendario del **país entero** (aunque no lo juegues) con la misma física.
+
+- **`js/data-formato2026.js` por fin se carga** (después de historico): Copa de la Liga, Supercopa, Segunda zonal, cascada CONMEBOL. Sin esto el overlay de formato 2026 nunca corría.
+- **`js/mundo.js` (nuevo):** el país se simula cada fecha (Poisson + forma + localía, igual que 7.72). Tablas de Primera / B / 2ª Norte / 2ª Sur, grupos de Copa Chile y Copa de la Liga, chilenos en CONMEBOL. En Calendario hay pestañas. Si estás en Segunda y un grande gana arriba, lo ves.
+- **`js/pulido.js` + `css/pulido.css`:** capa última. Decisiones filtradas por club/era/tag (tope 3 bolsa/semana, rotación). Metas de Segunda = liguilla de zona, no Libertadores ni “14° de 16”. Cada meta trae **Cómo**. Atiende explica el paso concreto (finanzas → vender prescindible, etc.). Ayudante responde Libertadores/zona/poder/barra/mercado según la división. Jugadas de poder con requisito de grupo, una por año, 4 nuevas. Estatutos de comunicación y edad del plantel. Más pactos de barra e interacciones. Mercado marca los huecos del plantel. Ajustes: animaciones on/off.
+- **Bug Monumental:** `b_cantera_cancha` ya no dice “No es el Monumental”. El filtro `textoAjenoClub74` bloquea Monumental/Macul/Santa Laura/etc. si no es ese club. `clubLookup` también busca Segunda.
+- **`GROK_SUPERPROMPT.md`:** se borró el prompt usado (caza de ids / liga Argentina / 200 tuits). Quedó **uno de lenguaje** que copia la voz del autor (directo, “po”, “brigido”, “no sé cuántas veces te he pedido”).
+- **`idiomas.js`:** más claves de escritorio/atiende/poder/mercado en neutro y chilensis (sin voseo argentino en neutro).
+- **Tests:** +23 (formato cargado, Copa de la Liga en Primera, Segunda sin Copa Chile, mundo con tablas del país, metas sin Libertadores, cantera sin Monumental, ayudante, estatutos extra). Suite **94/94**.
+- **util.js:** VERSION 7.73 → **7.74**.
+**Probado:** node --check + suite **94/94** verde (liguilla jugable de Segunda se mantiene; Primera baja 2).
+
+## 7.75 · Tablas de todo el país, ayudante menos tutorial, superprompt A+B+C
+Pedido: el calendario tiene que mostrar **la tabla de todas las cosas**; el ayudante no sea tan obvio; recuperar el GROK_SUPERPROMPT de caza de ids / liga Argentina / 200 tuits y mejorarlo.
+
+- **Calendario:** pestaña default `Tablas` con las 4 ligas (Primera, B, 2ª Norte, 2ª Sur) a tabla completa + 8 grupos de Copa Chile + 4 de Copa de la Liga + chilenos en CONMEBOL. Se pone arriba, justo después de tus fechas. Se saca la "Tabla de posiciones" suelta (era duplicado). Misma física 7.72.
+- **Ayudante:** chips naturales (`¿El domingo?`, `¿Vendemos a alguien?`, `¿Hablo con el capitán?`). Nada de `¿Hay Libertadores?` en Segunda. Entiende esas preguntas. El cerebro de Segunda dice tu puesto en la zona, no un tutorial de calendario.
+- **`GROK_SUPERPROMPT.md`:** volvieron TAREA A (caza de ids + Monumental ajeno, Copa Chile en Segunda, metas Libertadores en B-C), B (Argentina + HISTORIA Segunda), C (200 tuits Plop). Se suma D (lenguaje, más corto). Claude también le pide los huecos.
+- **Tests:** +12. Suite **106/106**.
+- **util.js:** VERSION 7.74 → **7.75**.
+**Probado:** node --check + suite **106/106** verde (HTTP Playwright).
+
+## 7.76 · Grok: caza + Argentina + historia Segunda + tuits + voz
+Claude promptó el GROK_SUPERPROMPT. Se hornea, no se deja en un .md:
+
+- **TAREA A:** `GROK_CAZA.md`. IDs Argentina no chocan. Monumental de decisiones es de CC. `COB` 1991/2026 documentado. Planteles de Segunda: no se inventan. Bombonera ya no se filtra si el club es Boca.
+- **TAREA B:** `js/data-argentina2026.js` — 30 clubes reales de la Liga Profesional 2026 (`registrarLiga`, era `arg2026`). Filtro **Argentina** en el picker. Una rueda de 29 fechas, 3 pts. Formato real (zonas 15, promedio, Apertura/Clausura) queda en `REGLAS.md` y en el campo `z`. **HISTORIA_LINEA** de los 14 de Segunda (hechos públicos; Osorno 1991 está en la tabla real; Morning 2025 bajó con TAS). Calendario de Boca muestra la tabla de los 30, no Copa Chile.
+- **TAREA B bis:** DTs 2026 de Segunda documentados (Paredes, Viale, Ramos…). Estadios/aforos cruzados (City = Lo Barnechea, Ovalle = Diaguita, Osorno 12.000).
+- **TAREA C:** `js/data-tuits-76.js` — 200+ tuits (crisis, fichaje, mercado, Segunda, VAR, conferencia, lodazal, deuda, cantera…). Se suman al pool Plop. Sin voseo argentino.
+- **TAREA D:** `js/data-voz-76.js` — 80+ frases (neutro/cl) y noticias de escritorio.
+- **Tests:** + Argentina tabla, DTs Segunda, pool 200/80.
+- **util.js:** VERSION 7.75 → **7.76**.
+- **Merge 7.74 GitHub:** se conserva el 7.74 de Claude (`ba1fa7ff`, amistosos jugables: `jugarAmistoso` / `modalAmistoso` / `terminarPartido` no gasta fecha ni toca tabla). GROK_PROMPTS.md no se toca.
+**Probado:** node --check + suite HTTP Playwright **129/129**.
+
+
