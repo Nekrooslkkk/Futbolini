@@ -2017,3 +2017,8 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 ## 7.60 · Rendimiento: memoizar clubMapaTodos
 - **data-liga.js**: `clubMapaTodos()` reconstruía el mapa de TODOS los clubes en cada llamada, y el simulador (`_fuerzaClubId`, orden de divisiones, resto de la fecha) lo pide por-club → O(n²). Ahora se arma una sola vez (los arrays de liga son estáticos). Menos trabajo en la simulación de fechas y ascensos, sin cambiar comportamiento.
 **Probado:** `bash test/correr.sh` → 26/26 verde (comportamiento idéntico).
+
+## 7.61 · Reglas canónicas + Ajustes accesibles desde el inicio
+- **REGLAS.md (nuevo)**: memoria fija de los formatos reales de cada torneo (Primera/B/Segunda/Copa Chile/Supercopa) con lo que varía por año marcado ⚠️, la pirámide ANFP, y un **esquema + prompt de Grok para copiar la Liga Argentina** (una liga = array de clubes + info/ind/caja; `data-segunda2026.js` es el molde). División de trabajo Grok (datos) / Claude (código).
+- **ui.js**: botón **⚙️ Ajustes** siempre en la barra (inyectado, sin tocar index.html) y `render()` enruta Ajustes **sin partida activa** → se pueden borrar guardados, cambiar tema y cargar respaldo sin entrar a un club. `vistaAjustes` esconde lo que necesita partida (guardar/descargar/borrar-actual) y agrega "Volver al inicio".
+**Probado:** node --check + suite 26/26 + captura headless (barra con ⚙️ y Ajustes pre-partida).

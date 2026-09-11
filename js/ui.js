@@ -136,7 +136,12 @@ function render(){
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="full";
   $("#btnAvanzar").classList.toggle("oculto",!E);
   { const br=document.getElementById("btnRapido"); if(br) br.classList.toggle("oculto",!E); }
-  if(!E){ pantallaInicio(); if(typeof pintarDock==="function") pintarDock(); return; }
+  if(!E){
+    /* 7.61 · Ajustes accesibles SIN partida activa: borrar guardados, tema,
+       cargar respaldo, sin tener que entrar a un club primero. */
+    if(SEC==="ajustes"){ v.dataset.sec="full"; vistaAjustes(); if(typeof pintarDock==="function") pintarDock(); return; }
+    pantallaInicio(); if(typeof pintarDock==="function") pintarDock(); return;
+  }
   if(E.carrera.fin){ v.appendChild(pantallaFinCarrera()); if(typeof pintarDock==="function") pintarDock(); return; }
   if(E.dinastia&&E.dinastia.sucesionPendiente){ v.appendChild(pantallaSucesion()); if(typeof pintarDock==="function") pintarDock(); return; }
   if(E.carrera.enParo){ v.appendChild(pantallaSinClub()); if(typeof pintarDock==="function") pintarDock(); return; }
@@ -2146,26 +2151,34 @@ function vistaAjustes(){
   p.cuerpo.appendChild(el("div","resul mitad","<b>Aviso.</b> Clubes, jugadores y dirigentes reales aparecen con su nombre. "+
     "Resultados, títulos y fechas se apoyan en registros públicos. Todo lo demás (conversaciones, negociaciones, conflictos internos, frases) "+
     "es ficción escrita para el juego."));
-  const b1=el("button","btn-aqua chico","Guardar ahora"); b1.onclick=async()=>{ await guardar(); aviso("Partida guardada"); };
-  const b2=el("button","btn-aqua chico rojo","Borrar esta partida"); b2.style.marginLeft="6px";
-  b2.onclick=async()=>{
-    if(E&&E._slot){ borrarPartidaUI(E._slot,E.clubNombre); }
-    else if(confirm("¿Borrar la partida guardada?")){ await Store.del(LLAVE); E=null; render(); }
-  };
-  p.cuerpo.appendChild(b1); p.cuerpo.appendChild(b2);
+  if(E){
+    const b1=el("button","btn-aqua chico","Guardar ahora"); b1.onclick=async()=>{ await guardar(); aviso("Partida guardada"); };
+    const b2=el("button","btn-aqua chico rojo","Borrar esta partida"); b2.style.marginLeft="6px";
+    b2.onclick=async()=>{
+      if(E&&E._slot){ borrarPartidaUI(E._slot,E.clubNombre); }
+      else if(confirm("¿Borrar la partida guardada?")){ await Store.del(LLAVE); E=null; render(); }
+    };
+    p.cuerpo.appendChild(b1); p.cuerpo.appendChild(b2);
+  } else {
+    p.cuerpo.appendChild(el("p","mini","Estás en Ajustes sin una partida abierta. Desde acá puedes borrar guardados (arriba), cambiar el tema o cargar un respaldo — sin tener que entrar a un club."));
+  }
   v.appendChild(p);
 
   /* ---- Respaldo de partida (archivo, 100% offline) ---- */
   const pr=panel("Respaldo de partida","💾");
   pr.cuerpo.appendChild(el("p","mini","Descarga tu partida como archivo y guárdala donde quieras (Drive, mail, WhatsApp a ti mismo). En otro equipo la cargas y sigues donde ibas. No necesita internet ni cuenta."));
-  const bDesc=el("button","btn-aqua chico","Descargar partida");
-  bDesc.onclick=()=>descargarPartida();
-  const bCarg=el("button","btn-aqua chico"); bCarg.textContent="Cargar partida"; bCarg.style.marginLeft="6px";
+  if(E){ const bDesc=el("button","btn-aqua chico","Descargar partida"); bDesc.onclick=()=>descargarPartida(); pr.cuerpo.appendChild(bDesc); }
+  const bCarg=el("button","btn-aqua chico"); bCarg.textContent="Cargar partida"; if(E) bCarg.style.marginLeft="6px";
   const inp=el("input"); inp.type="file"; inp.accept="application/json,.json,.fut"; inp.style.display="none";
   inp.onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(f) cargarPartidaArchivo(f); inp.value=""; };
   bCarg.onclick=()=>inp.click();
-  pr.cuerpo.appendChild(bDesc); pr.cuerpo.appendChild(bCarg); pr.cuerpo.appendChild(inp);
+  pr.cuerpo.appendChild(bCarg); pr.cuerpo.appendChild(inp);
   v.appendChild(pr);
+  if(!E){
+    const bv=el("button","btn-aqua ancho verde","← Volver al inicio");
+    bv.onclick=()=>{ SEC="escritorio"; render(); };
+    v.appendChild(bv);
+  }
 
   /* ---- Cuenta en la nube (opcional) ---- */
   if(typeof nubeActiva==="function"){
@@ -2668,6 +2681,19 @@ $("#btnTemas").onclick=()=>{
   const i=(orden.indexOf(document.body.dataset.tema)+1)%orden.length;
   document.body.dataset.tema=orden[i]; Store.set("futbolini3_tema",orden[i]); render();
 };
+/* 7.61 · botón de Ajustes SIEMPRE en la barra (también sin partida): así se
+   pueden borrar guardados / cambiar tema / cargar respaldo sin entrar a un club.
+   Inyectado por JS para no depender de editar index.html. */
+(function(){
+  const acc=document.querySelector(".barra-acc");
+  if(acc && !document.getElementById("btnAjustes")){
+    const b=document.createElement("button");
+    b.className="btn-aqua chico"; b.id="btnAjustes"; b.title="Ajustes"; b.setAttribute("aria-label","Ajustes"); b.textContent="⚙️";
+    b.onclick=()=>{ SEC="ajustes"; render(); };
+    const temas=document.getElementById("btnTemas");
+    if(temas) acc.insertBefore(b, temas); else acc.appendChild(b);
+  }
+})();
 /* ---------- pantalla de arranque (que entrar no sea fome) ---------- */
 function pantallaArranque(haySave,slots){
   slots=slots||[];

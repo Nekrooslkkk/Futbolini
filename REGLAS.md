@@ -1,0 +1,84 @@
+# REGLAS.md — reglas canónicas de los torneos (memoria fija)
+
+> **Fuente de verdad de los formatos.** Cuando toques ligas, ascensos, descensos,
+> cupos o copas, respetá esto. Los formatos del fútbol chileno **cambian casi todos
+> los años** (número de descensos, cupos internacionales, etc.): lo marcado con ⚠️
+> hay que verificar por temporada. Integridad: nombres reales + stats estimadas;
+> nunca inventar un club/jugador/cita como real.
+
+## Pirámide del fútbol chileno (ANFP)
+1. **Primera División** ("Liga de Primera") — 1er nivel. En el juego: era `2026`.
+2. **Primera B** ("Liga de Ascenso") — 2º nivel. En el juego: era `2026b`.
+3. **Segunda División Profesional** — 3er nivel. En el juego: era `2026c`.
+4. **Tercera División A / B** — amateur/semi. (No modelada aún.)
+
+Ascenso/descenso **encadenado** entre niveles (implementado: Primera↔B↔Segunda,
+`procesarAscensoDescenso` en `motor.js`).
+
+## Primera División 2026 (era 2026)
+- **16 clubes**, todos contra todos ida y vuelta (**30 fechas**). Victoria **3 pts**.
+- **Descensos:** ⚠️ 2 al año (los 2 últimos) — verificar por temporada (a veces 1 directo + promoción).
+- **Cupos internacionales:** campeón y escoltas a **Copa Libertadores**; siguientes a **Copa Sudamericana**; también entra el campeón de **Copa Chile**. ⚠️ el reparto exacto de cupos cambia por año.
+- En el juego hoy: liga corrida de 16, 3 pts, 1 desciende / 1 asciende (simplificado; el real son 2 — pendiente afinar).
+
+## Primera B 2026 (era 2026b)
+- **16 clubes**, liga corrida. Victoria **3 pts**.
+- **Ascenso:** el **campeón** sube directo a Primera; una **liguilla** (playoff) define un 2º ascenso. ⚠️ formato de liguilla varía.
+- **Descenso:** el último (o últimos) baja a Segunda División.
+
+## Segunda División Profesional 2026 (era 2026c)
+- **14 clubes**, en **dos zonas: Norte y Sur (7 y 7)**. Victoria **3 pts**.
+- **Ascenso:** los mejores de cada zona disputan una **liguilla**; el ganador **asciende a Primera B**.
+- **Descenso:** los peores de cada zona definen el descenso a **Tercera A**.
+- La zona real de cada club está en el campo `z` de `LIGA_C_2026` (`data-segunda2026.js`).
+- En el juego hoy: liga corrida de 14 (round-robin). **Pendiente:** implementar grupos Norte/Sur + liguilla.
+
+## Copa Chile
+- Copa nacional con **clubes de todas las divisiones**. Fase de grupos zonales → eliminación directa.
+- El **campeón** clasifica a torneo internacional y a la **Supercopa**.
+- En el juego: `data-copas2026.js` (grupos + KO). ⚠️ formato exacto cambia por año.
+
+## Supercopa de Chile
+- Partido único: **campeón de Primera vs campeón de Copa Chile**. (No modelada aún; candidata para la "Copa de la Liga" que pidió el usuario si no se refería a otra cosa.)
+
+---
+
+# Cómo agregar una liga extranjera (ej: Argentina) — fácil, por prompt
+
+El motor ya está preparado: una "era"/división es un **array de clubes** registrado en
+`LIGAS[...]` + entradas en `CLUB_INFO_2026 / IND_BASE_2026 / CAJA_BASE_2026` +
+`ESTATUTO_INICIAL / PODER_CLUB`. La **Segunda** (`data-segunda2026.js`) es el molde:
+copiar ese archivo, cambiar los datos, y listo. No hay que tocar el motor para una liga
+corrida; el formato especial (grupos/liguilla) se agrega aparte.
+
+## Esquema de un club (igual a `LIGA_C_2026`)
+```js
+{ id:"BOC", n:"Boca Juniors", c:"Boca", fuerza:82, aforo:54000,
+  est:"Estadio Alberto J. Armando", ciudad:"Buenos Aires", z:"—" }
+```
+Y su plantel real (opcional; si falta, se rellena con cantera):
+```js
+const PLANTEL_BOC_2026=[ ["Nombre Apellido","ARQ|DEF|VOL|DEL",edad,niv(40-90),proy,sueldo,valor,["rasgos"]], ... ];
+```
+
+## Prompt para Grok — copiar la Liga Profesional Argentina 2026 (realismo actual)
+> Arma la **Liga Profesional Argentina 2026** para Futbolini, con el mismo formato que
+> `js/data-segunda2026.js` (que es el molde). Necesito, con datos REALES documentados
+> (Wikipedia/AFA/Transfermarkt, 2026):
+> 1. **Lista completa de clubes** de la Primera División Argentina 2026 con: `id` (3 letras
+>    únicas, que no choquen con los ids chilenos), nombre, ciudad, estadio, aforo y una
+>    `fuerza` estimada 40–90.
+> 2. **Formato real del torneo 2026**: cuántos equipos, cómo se juega (zonas/grupos, fase
+>    campeonato, playoffs), cuántos descienden y cómo (tabla anual + promedios), y cupos a
+>    Libertadores/Sudamericana. Resumilo claro para que Claude lo implemente.
+> 3. (Opcional, por impacto) **planteles reales** de los clubes grandes primero, en el
+>    formato `PLANTEL_<ID>_2026` de arriba. Solo nombres documentados; si no tenés a alguien,
+>    lo dejás fuera (el juego rellena). No inventes nombres como reales.
+>
+> Entregá los clubes como un array `LIGA_ARG_2026` + los bloques `CLUB_INFO`/`IND`/`CAJA`/
+> `ESTATUTO`/`PODER` (mirá cómo lo hace `data-segunda2026.js`). Claude registra la liga en
+> el motor (`LIGAS["arg2026"]`, selector, ascenso/descenso propio de Argentina) y arma el
+> formato real que le pases en el punto 2.
+
+> Nota de división de trabajo: **Grok** trae los datos (clubes/planteles) y el resumen del
+> formato; **Claude** hace el código (registro de la liga, selector, reglas del torneo).
