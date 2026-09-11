@@ -15,7 +15,7 @@
 - [x] **Momentos del partido más potentes**: flash de momentazo (gol/roja/penal) — commit pendiente.
 - [ ] **Cancha pixel v2**: pequeños detalles (arquero que se mueve en el penal, pelota con estela corta, red que vibra en el gol).
 - [x] **Más contextos generativos**: tiroLibre/atajada_penal/lesion_grave enganchados; debut_juvenil gramática lista — commit pendiente.
-- [ ] **Economía**: botón "refinanciar" (baja el interés semanal a cambio de estirar el total), explicado paso a paso.
+- [x] **Economía**: botón "refinanciar" (baja interés, estira total), explicado paso a paso — commit pendiente.
 - [ ] **Chilenización de docs .md** (no user-facing, baja prioridad).
 
 ## 🔒 Bloqueadas (necesito algo tuyo)

@@ -101,6 +101,20 @@
       ok(JSON.stringify(E2).length===snap.length, "sin pérdida en la serialización");
     }, "Guardado round-trip");
 
+    /* T7 · economía: refinanciar */
+    grupo("Economía · refinanciar (7.58)");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      E.deuda=1000; E.mods=[];
+      var tasaAntes=tasaInteresAnual();
+      var r=refinanciarDeuda();
+      ok(r && r.ok, "refinanciar aplica con deuda alta");
+      ok(tasaInteresAnual() < tasaAntes, "baja la tasa de interés ("+tasaAntes.toFixed(2)+"→"+tasaInteresAnual().toFixed(2)+")");
+      ok(E.deuda > 1000, "sube la deuda total ("+Math.round(E.deuda)+")");
+      var r2=refinanciarDeuda();
+      ok(r2 && !r2.ok, "no se puede refinanciar dos veces seguidas");
+    }, "Refinanciar deuda");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }

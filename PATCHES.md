@@ -2001,3 +2001,9 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 ## 7.57 · Backend endurecido (antes de cuentas reales)
 - **server/index.js**: CORS restringido a `ALLOWED_ORIGINS` (por defecto el GitHub Pages del juego + localhost; el resto no obtiene el origen reflejado). Rate limiting por IP en memoria: login/registro 10/min (anti fuerza bruta), API 120/min. Validación del guardado: rechaza no-objeto/array (400) y tamaño > `SAVE_MAX` (2 MB → 413). Variables nuevas: ALLOWED_ORIGINS, SAVE_MAX. Sin dependencias.
 **Probado:** server en vivo — CORS refleja solo el permitido, evil.com bloqueado; 429 tras 10 logins; guardado 2.3MB→413, normal→200, array→400.
+
+## 7.58 · Economía: refinanciar la deuda (explicado paso a paso)
+- **motor.js**: `refinanciarDeuda()` baja el interés (mod interes -0.06 por 6 años, 16%→10%) a cambio de subir la deuda total 18%. `previewRefinanciar()`/`interesSemanal()`/`estaRefinanciado()` para mostrar antes/después. No se puede apilar mientras está activo.
+- **ui.js (Finanzas)**: botón "🔁 Refinanciar" con modal que explica en 3 pasos (interés semanal antes→después, deuda antes→después, condiciones) antes de confirmar. Cierra la economía explicativa (nunca callejón sin salida).
+- **test/pruebas_core.js**: caso nuevo (baja tasa, sube deuda, no se apila).
+**Probado:** `bash test/correr.sh` → 22/22 verde.

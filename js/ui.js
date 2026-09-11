@@ -1098,6 +1098,34 @@ function vistaFinanzas(){
     });
     pd.cuerpo.appendChild(pr);
   }
+  /* 7.58 · refinanciar: baja el interés semanal estirando el total (explicado) */
+  if(typeof refinanciarDeuda==="function" && typeof previewRefinanciar==="function"){
+    const pv=previewRefinanciar();
+    if(typeof estaRefinanciado==="function" && estaRefinanciado()){
+      pd.cuerpo.appendChild(el("div","resul mitad","<b>Deuda refinanciada</b> — el interés semanal está más bajo por unos años. No se puede volver a refinanciar mientras esté activo."));
+    } else {
+      pd.cuerpo.appendChild(el("p","mini","¿La deuda te ahoga cada semana? <b>Refinanciar</b> baja el interés semanal a cambio de estirar el total (te sale más caro en total, pero respiras ahora)."));
+      const br=el("button","btn-aqua chico"+(pv.puede?"":" gris"),"🔁 Refinanciar la deuda");
+      br.disabled=!pv.puede;
+      br.title=pv.puede?"":"Necesitas al menos "+plata(300)+" de deuda para que valga la pena.";
+      br.onclick=()=>{
+        modal(box=>{
+          box.appendChild(el("div","cab",'<span class="ic">🔁</span><span>Refinanciar la deuda</span>'));
+          const c=el("div","cuerpo"); box.appendChild(c);
+          c.appendChild(el("p","mini","Es un cambio grande. Mirá qué pasa, paso a paso, antes de confirmar:"));
+          c.appendChild(el("div","resul mitad","<b>1.</b> Tu interés semanal baja de <b>"+plata(pv.interesAntes)+"</b> a <b>"+plata(pv.interesDesp)+"</b> por semana. Respiras en la caja."));
+          c.appendChild(el("div","resul mitad","<b>2.</b> A cambio, la deuda total sube de <b>"+plata(pv.deudaAntes)+"</b> a <b>"+plata(pv.deudaDesp)+"</b> (cuesta "+plata(pv.costo)+" por estirar el plazo)."));
+          c.appendChild(el("div","resul mitad","<b>3.</b> Dura unos años. Mientras esté activa no puedes volver a refinanciar. Al directorio no le encanta estirar deuda."));
+          c.appendChild(el("p","mini","En una línea: <b>menos presión cada semana ahora, más caro en total.</b> Sirve si estás ahogado; no si ya vas holgado."));
+          const bok=el("button","btn-aqua ancho verde","Sí, refinanciar"); bok.style.marginTop="8px";
+          bok.onclick=()=>{ const r=refinanciarDeuda(); cerrarModal(); if(!r.ok){ aviso(r.msg); return; } guardar(); render(); aviso("Deuda refinanciada: interés semanal más bajo, total más alto."); };
+          const bno=el("button","btn-aqua ancho gris","Mejor no"); bno.style.marginTop="6px"; bno.onclick=cerrarModal;
+          c.appendChild(bok); c.appendChild(bno);
+        });
+      };
+      pd.cuerpo.appendChild(br);
+    }
+  }
   /* delegar la gestión financiera al Tesorero */
   if(E.finanzas){
     const dl=el("div","resul mitad"); dl.style.marginTop="8px";

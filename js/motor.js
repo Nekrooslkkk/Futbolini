@@ -780,6 +780,34 @@ function egresosAnuales(){
   const inter=Math.round(E.deuda*(0.16+modSuma("interes")));
   return {planilla:planilla,operacion:oper,intereses:inter};
 }
+/* 7.58 · refinanciar la deuda: bajás el interés semanal a cambio de estirar el
+   total (te sale más caro en total, pero respirás ahora). */
+function tasaInteresAnual(){ return 0.16+((typeof modSuma==="function")?modSuma("interes"):0); }
+function interesSemanal(){ return Math.round((E.deuda||0)*tasaInteresAnual()/40); }
+function estaRefinanciado(){ return (E.mods||[]).some(function(m){ return m.id==="refinanciado"; }); }
+/* preview: qué pasaría si refinanciás ahora (sin aplicar nada) */
+function previewRefinanciar(){
+  const costo=Math.round((E.deuda||0)*0.18);
+  const tasaDesp=Math.max(0.06, tasaInteresAnual()-0.06);
+  const deudaDesp=(E.deuda||0)+costo;
+  return {
+    puede: (E.deuda||0)>=300 && !estaRefinanciado(),
+    costo:costo,
+    interesAntes: interesSemanal(),
+    interesDesp: Math.round(deudaDesp*tasaDesp/40),
+    deudaAntes: Math.round(E.deuda||0),
+    deudaDesp: deudaDesp
+  };
+}
+function refinanciarDeuda(){
+  if((E.deuda||0) < 300) return {ok:false, msg:"Tu deuda es muy baja para que valga la pena refinanciar."};
+  if(estaRefinanciado()) return {ok:false, msg:"Ya tienes la deuda refinanciada; el efecto sigue activo."};
+  const costo=Math.round(E.deuda*0.18);
+  aplicarEfectos({deuda:costo});
+  agregarMod({id:"refinanciado", n:"Deuda refinanciada", anios:6, ef:{interes:-0.06}});
+  if(typeof aplicarGrupos==="function") aplicarGrupos({directorio:-3});   /* al directorio no le gusta estirar deuda */
+  return {ok:true, costo:costo};
+}
 /* 7.18 · deuda en cuotas (se reinyecta sobre el motor 7.30 de GitHub) */
 function recotarDeuda(){
   if(!E) return;
