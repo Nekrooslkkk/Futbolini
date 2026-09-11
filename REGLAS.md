@@ -31,7 +31,8 @@ Ascenso/descenso **encadenado** entre niveles (implementado: Primera↔B↔Segun
 - **Ascenso:** los mejores de cada zona disputan una **liguilla**; el ganador **asciende a Primera B**.
 - **Descenso:** los peores de cada zona definen el descenso a **Tercera A**.
 - La zona real de cada club está en el campo `z` de `LIGA_C_2026` (`data-segunda2026.js`).
-- En el juego hoy: liga corrida de 14 (round-robin). **Pendiente:** implementar grupos Norte/Sur + liguilla.
+- **Implementado (7.65):** se juega por **zona** (Norte/Sur, 7 clubes → **12 fechas** ida y vuelta contra la propia zona); la tabla, la posición y el "campeón" son **por zona**. El **ascenso** lo define una **liguilla** entre el 1º de Norte y el 1º de Sur (hoy se resuelve por fuerza + azar; **pendiente**: hacerla jugable). Las zonas se mantienen **7 y 7** aunque haya ascensos/descensos: el que baja de la B hereda el cupo de zona del que sube (`E.zonaSeg`, `zonaSegDe()` en `motor.js`).
+- **Pendiente:** descenso a Tercera A (no modelada) y liguilla jugable por el usuario.
 
 ## Copa Chile
 - Copa nacional con **clubes de todas las divisiones**. Fase de grupos zonales → eliminación directa.

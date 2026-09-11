@@ -418,6 +418,30 @@ function construirCalendario(clubId, anio, conCopa){
     cal.sort((a,b)=>ordenFecha(a.f)-ordenFecha(b.f));
     return cal;
   }
+  /* 7.65 · Segunda División: se juega SOLO contra la propia zona (Norte/Sur, 7 clubes → 12 fechas
+     ida y vuelta). El resto de la fecha que se simula (part.jornada) queda acotado a la zona. */
+  if(typeof E!=="undefined" && E && E.eraBase==="2026c"){
+    const zonaDe=(typeof zonaSegDe==="function")?zonaSegDe:(typeof clubZona==="function"?clubZona:(()=>null));
+    const zMia=zonaDe(clubId);
+    const zonaClubs=LIGA_ACT.filter(c=>zonaDe(c.id)===zMia);
+    if(zMia && zonaClubs.length>=2){
+      const fxZ=fixturesLiga(zonaClubs), fechasZ=fechasTemporada();
+      const zTxt="Segunda División · Zona "+(zMia==="norte"?"Norte":"Sur");
+      fxZ.forEach((jornada,i)=>{
+        const limpia=jornada.filter(p=>p[0]!==p[1]);   /* fuera los byes (zona impar) */
+        const mio=limpia.find(p=>p[0]===clubId||p[1]===clubId);
+        if(!mio) return;   /* fecha libre (bye): el jugador descansa */
+        const local=mio[0]===clubId, rival=local?mio[1]:mio[0];
+        if(!CLUB_POR_ID[rival]) return;
+        cal.push({tipo:"liga", torneo:zTxt, fecha:i+1, rivalId:rival,
+          rivalNombre:CLUB_POR_ID[rival].n, fuerzaRival:CLUB_POR_ID[rival].fuerza,
+          local:local, sede:local?CLUB_POR_ID[clubId].est:CLUB_POR_ID[rival].est,
+          f:fechasZ[i], jugado:false, clima:climaDeFecha(fechasZ[i].m,"liga"+clubId+anio+i), jornada:limpia});
+      });
+      cal.sort((a,b)=>(a.f.m*100+(a.f.d||15))-(b.f.m*100+(b.f.d||15)));
+      return cal;
+    }
+  }
   const fx=fixturesLiga(LIGA_ACT), fechas=fechasTemporada();
   fx.forEach((jornada,i)=>{
     const mio=jornada.find(p=>p[0]===clubId||p[1]===clubId);

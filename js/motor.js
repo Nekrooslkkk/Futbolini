@@ -275,7 +275,7 @@ function normalizarEstado(){
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){
-  const arr=LIGA_ACT.map(c=>Object.assign({id:c.id,n:c.n},E.tabla[c.id]));
+  const arr=clubesLigaActual().map(c=>Object.assign({id:c.id,n:c.n},E.tabla[c.id]));
   arr.sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc)||b.gf-a.gf);
   return arr;
 }
@@ -1032,6 +1032,40 @@ function _ordenRealDiv(ids){ return ids.slice().sort((a,b)=>{ const A=E.tabla[a]
 function _ordenSimDiv(ids){ return ids.slice().map(id=>({id:id,p:_fuerzaClubId(id)+ri(-14,14)})).sort((a,b)=>b.p-a.p).map(x=>x.id); }
 function nombreDeClub(id){ const m=(typeof clubMapaTodos==="function")?clubMapaTodos():{}; const c=m[id]||CLUB_POR_ID[id]; return (c&&(c.n||c.c))||id; }
 function _nombreDiv(t){ return t===2026?"Primera División":(t==="2026b"?"Primera B":(t==="2026c"?"Segunda División":"la liga")); }
+/* ---- Segunda División: zonas Norte/Sur (7.65) ----
+   La Segunda se juega en dos zonas de 7. La zona de cada club vive en E.zonaSeg
+   (sembrada de LIGA_C_2026.z) para que sobreviva a ascensos/descensos: cuando un
+   club sube a la B, su cupo de zona lo hereda el que baja de la B → las zonas quedan
+   siempre 7 y 7. */
+function _zonaSegInit(){
+  if(typeof E==="undefined"||!E) return {};
+  if(!E.zonaSeg){ E.zonaSeg={}; if(typeof LIGA_C_2026!=="undefined") LIGA_C_2026.forEach(c=>{ E.zonaSeg[c.id]=c.z; }); }
+  return E.zonaSeg;
+}
+function zonaSegDe(id){ const zs=_zonaSegInit(); if(zs[id]) return zs[id]; return (typeof clubZona==="function")?clubZona(id):null; }
+function nombreZona(z){ return z==="norte"?"Norte":(z==="sur"?"Sur":""); }
+/* Los clubes que compiten con el jugador esta temporada: en Segunda es su ZONA (7),
+   en el resto es toda la liga. */
+function clubesLigaActual(){
+  if(typeof E!=="undefined" && E && E.eraBase==="2026c"){
+    const z=zonaSegDe(E.club);
+    if(z){ const zn=LIGA_ACT.filter(c=>zonaSegDe(c.id)===z); if(zn.length) return zn; }
+  }
+  return LIGA_ACT.slice();
+}
+/* Campeón de una zona de Segunda: la del jugador por tabla real, la otra simulada por fuerza. */
+function _campeonZonaSeg(z){
+  const ids=(E.ligaMod&&E.ligaMod["2026c"]?E.ligaMod["2026c"]:LIGA_ACT.map(c=>c.id)).filter(id=>zonaSegDe(id)===z);
+  if(!ids.length) return null;
+  return (E.eraBase==="2026c" && zonaSegDe(E.club)===z)?_ordenRealDiv(ids)[0]:_ordenSimDiv(ids)[0];
+}
+/* Ascenso de Segunda: los campeones de Norte y Sur juegan una liguilla; el ganador sube a la B. */
+function _ascensoSegunda(){
+  const cn=_campeonZonaSeg("norte"), cs=_campeonZonaSeg("sur");
+  if(!cn) return cs; if(!cs) return cn;
+  const pn=_fuerzaClubId(cn)+ri(-10,10), ps=_fuerzaClubId(cs)+ri(-10,10);
+  return pn>=ps?cn:cs;
+}
 /* 7.63 · cupos reales de ascenso/descenso por par de divisiones.
    Primera 2026 baja 2 (los reales) y la B sube 2 (campeón + liguilla) → tamaños 16/16 intactos.
    B↔Segunda: 1 (campeón de Segunda sube; el último de la B baja). Balanceado = no cambia el nº de clubes. */
@@ -1057,13 +1091,16 @@ function procesarAscensoDescenso(){
     const up=tiers[i], lo=tiers[i+1];
     const n=_cuposDiv(up,lo);
     const bajan=orden[up].slice(-n).filter(Boolean);
-    const suben=orden[lo].slice(0,n).filter(Boolean);
+    /* Segunda sube por LIGUILLA de campeones de zona (1 cupo); las demás, por tabla. */
+    const suben=(lo==="2026c")?[_ascensoSegunda()].filter(Boolean):orden[lo].slice(0,n).filter(Boolean);
     if(bajan.length && suben.length) cambios.push({up:up,lo:lo,bajan:bajan,suben:suben});
   }
   if(!cambios.length) return null;
   cambios.forEach(c=>{
     E.ligaMod[c.up]=E.ligaMod[c.up].filter(id=>c.bajan.indexOf(id)<0).concat(c.suben);
     E.ligaMod[c.lo]=E.ligaMod[c.lo].filter(id=>c.suben.indexOf(id)<0).concat(c.bajan);
+    /* zonas de Segunda: el que baja de la B hereda el cupo de zona del que ascendió → 7 y 7 */
+    if(c.lo==="2026c"){ const zs=_zonaSegInit(); const zLibre=zs[c.suben[0]]||"norte"; delete zs[c.suben[0]]; if(c.bajan[0]) zs[c.bajan[0]]=zLibre; }
   });
   let msg=null;
   cambios.forEach(c=>{
@@ -1096,7 +1133,11 @@ function finDeTemporada(){
   let premio=[0,420,260,180,120][Math.min(4,pos)]||70;
   aplicarEfectos({plata:premio});
   const _divNom=(typeof _nombreDiv==="function")?_nombreDiv(E.eraBase):"Campeonato Nacional";
-  if(campeon){ E.titulos.push(E.anio+" · Campeón de "+(_divNom==="Primera División"?"la Primera División":_divNom)); aplicarEfectos({prestigio:7,hinchada:7,moral:6}); aplicarRep({publica:8,credibilidad:6});
+  /* en Segunda el pos===1 es el 1º de tu ZONA: el título dice la zona, no "campeón nacional" */
+  const _tituloCampeon=(E.eraBase==="2026c")
+    ? ("Campeón Zona "+nombreZona(zonaSegDe(E.club))+" (Segunda División)")
+    : ("Campeón de "+(_divNom==="Primera División"?"la Primera División":_divNom));
+  if(campeon){ E.titulos.push(E.anio+" · "+_tituloCampeon); aplicarEfectos({prestigio:7,hinchada:7,moral:6}); aplicarRep({publica:8,credibilidad:6});
     if(typeof recordar==="function") recordar("titulo","saliste campeón nacional en "+E.anio,{peso:"alto",tono:"bueno"}); }
   /* copa */
   const copa=E.calendario.filter(p=>p.tipo==="copa");
@@ -1118,7 +1159,7 @@ function finDeTemporada(){
   return {pos:pos,campeon:campeon,copa:copaGanada,premio:premio,ev:ev,asc:asc};
 }
 function posicionEnTabla(){
-  const arr=LIGA_ACT.map(c=>({id:c.id,...E.tabla[c.id]}));
+  const arr=clubesLigaActual().map(c=>({id:c.id,...E.tabla[c.id]}));
   arr.sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc)||b.gf-a.gf);
   return arr.findIndex(x=>x.id===E.club)+1;
 }

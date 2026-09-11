@@ -1356,8 +1356,11 @@ function vistaCalendario(){
     v.appendChild(pr);
   }
 
-  const pt=panel("Tabla de posiciones","📊","agua");
-  const arr=LIGA_ACT.map(c=>Object.assign({id:c.id,n:c.n},E.tabla[c.id]||{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}));
+  const _clubesTabla=(typeof clubesLigaActual==="function")?clubesLigaActual():LIGA_ACT;
+  const _esSeg=(E.eraBase==="2026c");
+  const _zTxt=_esSeg&&typeof zonaSegDe==="function"&&typeof nombreZona==="function"?(" · Zona "+nombreZona(zonaSegDe(E.club))):"";
+  const pt=panel("Tabla de posiciones"+_zTxt,"📊","agua");
+  const arr=_clubesTabla.map(c=>Object.assign({id:c.id,n:c.n},E.tabla[c.id]||{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}));
   arr.sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc));
   const t=el("table","tabla-liga");
   t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>G</th><th class='n'>E</th><th class='n'>P</th><th class='n'>GF</th><th class='n'>GC</th><th class='n'>Pts</th></tr></thead>";
@@ -1370,7 +1373,9 @@ function vistaCalendario(){
     tb.appendChild(tr);
   });
   t.appendChild(tb); pt.cuerpo.appendChild(t);
-  pt.cuerpo.appendChild(el("p","mini","Época "+((typeof eraDe==="function"?eraDe(E.eraBase):ERA[E.eraBase])||ERA[2026]).n+": la victoria vale "+((typeof eraDe==="function"?eraDe(E.eraBase):ERA[E.eraBase])||ERA[2026]).puntosVictoria+" puntos. Campeonato de "+LIGA_ACT.length+" equipos."));
+  const _eraObj=((typeof eraDe==="function"?eraDe(E.eraBase):ERA[E.eraBase])||ERA[2026]);
+  pt.cuerpo.appendChild(el("p","mini","Época "+_eraObj.n+": la victoria vale "+_eraObj.puntosVictoria+" puntos. "+
+    (_esSeg?("Zona de "+arr.length+" equipos (Norte/Sur). El 1º de cada zona juega la liguilla; el ganador sube a la B."):("Campeonato de "+LIGA_ACT.length+" equipos."))));
   v.appendChild(pt);
 }
 /* ---------------- historia ---------------- */

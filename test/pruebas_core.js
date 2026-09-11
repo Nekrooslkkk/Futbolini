@@ -45,9 +45,13 @@
       nuevaPartida("SMO",2026,"historico",{categoria:"C"});
       var liga=(E.calendario||[]).filter(function(p){return p.tipo==="liga";});
       var segIds=(typeof idsSegunda==="function")?idsSegunda():[];
+      var zMia=(typeof zonaSegDe==="function")?zonaSegDe("SMO"):null;
       ok(liga.length>0, "Segunda tiene fechas de liga");
       ok(liga.every(function(p){ return segIds.indexOf(p.rivalId)>=0; }), "todos los rivales de liga son de Segunda");
-      ok(liga[0] && liga[0].torneo==="Segunda División", "torneo rotulado 'Segunda División'");
+      ok(liga[0] && liga[0].torneo.indexOf("Segunda División")===0, "torneo rotulado 'Segunda División ...'");
+      /* 7.65 · zonal: SMO (Sur) solo juega contra su zona (7 clubes → 12 fechas ida y vuelta) */
+      ok(liga.every(function(p){ return zonaSegDe(p.rivalId)===zMia; }), "todos los rivales son de la MISMA zona ("+zMia+")");
+      ok(liga.length===12, "12 fechas zonales (6 rivales ida y vuelta): "+liga.length);
     }, "Calendario Segunda");
 
     /* T3 · simular una temporada completa (Primera) sin romper */
@@ -61,15 +65,35 @@
       ok(suma>=16, "la tabla tiene todos los equipos ("+suma+")");
     }, "Temporada Primera");
 
+    /* T3b · temporada COMPLETA de Segunda (zonal): byes, cierre, liguilla, sin excepción */
+    grupo("Temporada de Segunda (zonal)");
+    safe(function(){
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      var liga0=(E.calendario||[]).filter(function(p){return p.tipo==="liga";}).length;
+      var n=simularTemporada(60);
+      ok(n>0, "se jugó la fase zonal ("+n+" partidos, liga="+liga0+")");
+      ok(!( (typeof proximoPartido==="function") && proximoPartido()), "el calendario zonal se agotó");
+      ok(E.temporada && E.temporada.pj>0, "la tabla de la zona avanzó (PJ="+(E.temporada&&E.temporada.pj)+")");
+      var _r=Math.random; Math.random=function(){return 0.5;};
+      var fin; try{ fin=finDeTemporada(); } finally { Math.random=_r; }
+      ok(fin && typeof fin.pos==="number", "cierre de temporada de Segunda sin excepción (pos "+(fin&&fin.pos)+")");
+    }, "Temporada Segunda");
+
     /* T4 · ascenso/descenso de 3 niveles */
     grupo("Ascenso/descenso 3 niveles");
     safe(function(){
       nuevaPartida("SMO",2026,"historico",{categoria:"C"});
       initLigaMod();
       E.tabla={}; (E.ligaMod["2026c"]||[]).forEach(function(id,i){ E.tabla[id]={pts:(id==="SMO"?90:70-i),gf:40,gc:20}; });
-      var m=procesarAscensoDescenso();
-      ok(m && m.tipo==="ascenso" && E.eraBase==="2026b", "campeón de Segunda sube a Primera B");
+      /* liguilla sin azar: SMO (Sur, fuerza más alta) gana el cruce contra el campeón Norte */
+      var _r=Math.random; Math.random=function(){ return 0.5; };
+      var m; try{ m=procesarAscensoDescenso(); } finally { Math.random=_r; }
+      ok(m && m.tipo==="ascenso" && E.eraBase==="2026b", "campeón de zona gana la liguilla y sube a Primera B");
       ok((E.ligaMod["2026b"]||[]).indexOf("SMO")>=0, "SMO queda registrado en la B");
+      /* zonas siguen 7 y 7 tras el recambio B↔Segunda */
+      var zc={norte:0,sur:0}; (E.ligaMod["2026c"]||[]).forEach(function(id){ var z=zonaSegDe(id); if(z) zc[z]++; });
+      ok((E.ligaMod["2026c"]||[]).length===14, "Segunda mantiene 14 clubes ("+(E.ligaMod["2026c"]||[]).length+")");
+      ok(zc.norte===7 && zc.sur===7, "zonas quedan 7 y 7 (N:"+zc.norte+" S:"+zc.sur+")");
     }, "Ascenso Segunda→B");
     safe(function(){
       nuevaPartida("CC",2026,"historico");

@@ -2043,3 +2043,14 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 - **index.html**: `#menu` con `aria-label="Secciones del club"` (además del `role="tablist"` que ya tenía).
 - **util.js**: VERSION 7.63 → **7.64**.
 **Probado:** node --check + captura headless 1280×860 (todos los canales visibles).
+
+## 7.65 · Segunda División REAL: zonas Norte/Sur + liguilla de ascenso
+La Segunda dejó de ser liga corrida de 14 y ahora se juega **como es de verdad**:
+- **Zonas (motor.js):** helpers `zonaSegDe(id)` / `clubesLigaActual()` / `nombreZona()`. La zona de cada club vive en **`E.zonaSeg`** (sembrada de `LIGA_C_2026.z`) para que **sobreviva a ascensos/descensos**: cuando un club sube a la B, su cupo de zona lo hereda el que baja de la B → las zonas quedan **siempre 7 y 7**.
+- **Calendario (data-liga.js):** en `2026c` el fixture se arma **solo contra la propia zona** (7 clubes → **12 fechas** ida y vuelta); se filtran los byes (zona impar) y `part.jornada` queda acotado a la zona (la simulación del resto de la fecha también es zonal). Rótulo "Segunda División · Zona Norte/Sur".
+- **Tabla/posición (motor.js `tablaOrdenada`/`posicionEnTabla`, ui.js):** todo se calcula **dentro de la zona** del jugador (7 clubes). El panel muestra "Tabla de posiciones · Zona X" y explica la liguilla.
+- **Campeón (finDeTemporada):** en Segunda el 1º es **campeón de su zona** → el título dice "Campeón Zona Norte/Sur (Segunda División)", no "campeón nacional".
+- **Ascenso (procesarAscensoDescenso):** el cupo de subida a la B lo define una **liguilla** entre los campeones de Norte y Sur (`_ascensoSegunda`, hoy por fuerza + azar). Balanceado con el que baja de la B → Segunda sigue 14.
+- **Tests:** +8 checks (calendario zonal 12 fechas + misma zona; temporada completa de Segunda con byes y cierre; ascenso por liguilla con `Math.random` fijado; zonas 7/7 tras el recambio). Suite **36/36** (estable ×3).
+- **REGLAS.md** actualizado (Segunda: implementado). **util.js**: VERSION 7.64 → **7.65**.
+**Probado:** node --check + suite 36/36 verde ×3 + captura headless (Zona Sur: 7 clubes, F1–F12 contra la zona, Copa Chile intercalada).
