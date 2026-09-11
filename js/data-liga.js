@@ -196,9 +196,9 @@ function clubMapaTodos(){
   return m;
 }
 function activarLiga(base){
-  let liga = LIGAS[base] || (base==="2026b"&&typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null) || LIGA91;
+  let liga = LIGAS[base] || (base==="2026b"&&typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null) || (base==="2026c"&&typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null) || LIGA91;
   /* override por-save para ascenso/descenso: la división trae a los clubes que corresponden esta temporada */
-  if(typeof E!=="undefined" && E && E.ligaMod && E.ligaMod[base] && (base===2026||base==="2026b")){
+  if(typeof E!=="undefined" && E && E.ligaMod && E.ligaMod[base] && (base===2026||base==="2026b"||base==="2026c")){
     const mapa=clubMapaTodos();
     const custom=E.ligaMod[base].map(id=>mapa[id]).filter(Boolean);
     if(custom.length>=8) liga=custom;

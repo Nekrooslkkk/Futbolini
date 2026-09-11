@@ -988,40 +988,52 @@ function crisisActiva(){
    Si el que cambia es el club del jugador, cambia su eraBase → juega la otra el año que viene. */
 function initLigaMod(){
   if(!E || E.ligaMod) return;
-  if(!(E.eraBase===2026 || E.eraBase==="2026b")) return;
+  if(!(E.eraBase===2026 || E.eraBase==="2026b" || E.eraBase==="2026c")) return;
   if(typeof LIGA_2026==="undefined" || typeof LIGA_B_2026==="undefined") return;
   E.ligaMod={ 2026:LIGA_2026.map(c=>c.id), "2026b":LIGA_B_2026.map(c=>c.id) };
-  const div = E.eraBase===2026 ? 2026 : "2026b";
-  if(E.ligaMod[div].indexOf(E.club)<0) E.ligaMod[div].push(E.club);
+  if(typeof LIGA_C_2026!=="undefined") E.ligaMod["2026c"]=LIGA_C_2026.map(c=>c.id);
+  const div=E.eraBase;
+  if(E.ligaMod[div] && E.ligaMod[div].indexOf(E.club)<0) E.ligaMod[div].push(E.club);
 }
 function _fuerzaClubId(id){ const m=(typeof clubMapaTodos==="function")?clubMapaTodos():{}; const c=m[id]||CLUB_POR_ID[id]; return (c&&c.fuerza)||55; }
 function _ordenRealDiv(ids){ return ids.slice().sort((a,b)=>{ const A=E.tabla[a]||{pts:-1,gf:0,gc:0}, B=E.tabla[b]||{pts:-1,gf:0,gc:0}; return (B.pts-A.pts)||((B.gf-B.gc)-(A.gf-A.gc))||(B.gf-A.gf); }); }
 function _ordenSimDiv(ids){ return ids.slice().map(id=>({id:id,p:_fuerzaClubId(id)+ri(-14,14)})).sort((a,b)=>b.p-a.p).map(x=>x.id); }
 function nombreDeClub(id){ const m=(typeof clubMapaTodos==="function")?clubMapaTodos():{}; const c=m[id]||CLUB_POR_ID[id]; return (c&&(c.n||c.c))||id; }
+function _nombreDiv(t){ return t===2026?"Primera División":(t==="2026b"?"Primera B":(t==="2026c"?"Segunda División":"la liga")); }
 function procesarAscensoDescenso(){
-  if(!E || !(E.eraBase===2026 || E.eraBase==="2026b")) return null;
+  if(!E || !(E.eraBase===2026 || E.eraBase==="2026b" || E.eraBase==="2026c")) return null;
   initLigaMod(); if(!E.ligaMod) return null;
-  const primeraIds=E.ligaMod[2026].slice(), bIds=E.ligaMod["2026b"].slice();
-  const tPrimera = (E.eraBase===2026) ? _ordenRealDiv(primeraIds) : _ordenSimDiv(primeraIds);
-  const tB       = (E.eraBase==="2026b") ? _ordenRealDiv(bIds) : _ordenSimDiv(bIds);
-  const desciende=tPrimera[tPrimera.length-1];   /* último de Primera baja */
-  const asciende=tB[0];                          /* campeón de la B sube */
-  if(!desciende || !asciende || desciende===asciende) return null;
-  E.ligaMod[2026]=primeraIds.filter(id=>id!==desciende).concat([asciende]);
-  E.ligaMod["2026b"]=bIds.filter(id=>id!==asciende).concat([desciende]);
-  let msg;
-  if(E.eraBase==="2026b" && asciende===E.club){ E.eraBase=2026; msg={tipo:"ascenso",baja:desciende,sube:asciende}; }
-  else if(E.eraBase===2026 && desciende===E.club){ E.eraBase="2026b"; msg={tipo:"descenso",baja:desciende,sube:asciende}; }
-  else { msg={tipo:"otros",baja:desciende,sube:asciende}; }
+  /* 7.50 · cadena de divisiones (2 o 3 niveles). Para cada par adyacente:
+     baja el último del de arriba, sube el campeón del de abajo. Solo la división
+     del jugador se ordena por su tabla real; las otras se simulan por fuerza. */
+  const tiers=[2026,"2026b"]; if(E.ligaMod["2026c"]) tiers.push("2026c");
+  const orden={};
+  tiers.forEach(t=>{ const ids=(E.ligaMod[t]||[]).slice(); orden[t]=(E.eraBase===t)?_ordenRealDiv(ids):_ordenSimDiv(ids); });
+  const cambios=[];
+  for(let i=0;i<tiers.length-1;i++){
+    const up=tiers[i], lo=tiers[i+1];
+    const baja=orden[up][orden[up].length-1], sube=orden[lo][0];
+    if(baja && sube && baja!==sube) cambios.push({up:up,lo:lo,baja:baja,sube:sube});
+  }
+  if(!cambios.length) return null;
+  cambios.forEach(c=>{
+    E.ligaMod[c.up]=E.ligaMod[c.up].filter(id=>id!==c.baja).concat([c.sube]);
+    E.ligaMod[c.lo]=E.ligaMod[c.lo].filter(id=>id!==c.sube).concat([c.baja]);
+  });
+  let msg=null;
+  cambios.forEach(c=>{
+    if(c.sube===E.club){ E.eraBase=c.up; msg={tipo:"ascenso",baja:c.baja,sube:c.sube,up:c.up,lo:c.lo}; }
+    else if(c.baja===E.club){ E.eraBase=c.lo; msg={tipo:"descenso",baja:c.baja,sube:c.sube,up:c.up,lo:c.lo}; }
+  });
+  if(!msg) msg={tipo:"otros",baja:cambios[0].baja,sube:cambios[0].sube,up:cambios[0].up,lo:cambios[0].lo};
   E.ascensoMsg=msg;
   if(typeof activarLiga==="function") activarLiga(E.eraBase);
-  /* aviso persistente */
   if(typeof notificar==="function"){
-    if(msg.tipo==="ascenso") notificar({t:"🎉 ¡ASCENSO a Primera División!",tipo:"bueno",bandeja:true,d:E.clubNombre+" sube a Primera. Bajó "+nombreDeClub(desciende)+". El año que viene se juega en la máxima categoría."});
-    else if(msg.tipo==="descenso") notificar({t:"📉 Descenso a la Primera B",tipo:"malo",bandeja:true,d:E.clubNombre+" perdió la categoría. Subió "+nombreDeClub(asciende)+". El año que viene se pelea el ascenso."});
-    else notificar({t:"Ascenso y descenso",tipo:"neutro",bandeja:false,d:"En el ascenso subió "+nombreDeClub(asciende)+" y bajó "+nombreDeClub(desciende)+"."});
+    if(msg.tipo==="ascenso") notificar({t:"🎉 ¡ASCENSO a "+_nombreDiv(msg.up)+"!",tipo:"bueno",bandeja:true,d:E.clubNombre+" sube. Bajó "+nombreDeClub(msg.baja)+". El año que viene se juega en "+_nombreDiv(msg.up)+"."});
+    else if(msg.tipo==="descenso") notificar({t:"📉 Descenso a "+_nombreDiv(msg.lo),tipo:"malo",bandeja:true,d:E.clubNombre+" perdió la categoría. Subió "+nombreDeClub(msg.sube)+". El año que viene se pelea el ascenso en "+_nombreDiv(msg.lo)+"."});
+    else notificar({t:"Ascensos y descensos",tipo:"neutro",bandeja:false,d:"En el ascenso subió "+nombreDeClub(msg.sube)+" y bajó "+nombreDeClub(msg.baja)+"."});
   }
-  if(typeof recordar==="function" && msg.tipo!=="otros") recordar("categoria",(msg.tipo==="ascenso"?"ascendiste a Primera con ":"descendiste a la B con ")+E.clubNombre,{peso:"alto",tono:msg.tipo==="ascenso"?"bueno":"malo"});
+  if(typeof recordar==="function" && msg.tipo!=="otros") recordar("categoria",(msg.tipo==="ascenso"?"ascendiste a "+_nombreDiv(msg.up)+" con ":"descendiste a "+_nombreDiv(msg.lo)+" con ")+E.clubNombre,{peso:"alto",tono:msg.tipo==="ascenso"?"bueno":"malo"});
   return msg;
 }
 function finDeTemporada(){
