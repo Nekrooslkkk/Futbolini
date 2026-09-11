@@ -2175,3 +2175,8 @@ Claude promptó el GROK_SUPERPROMPT. Se hornea, no se deja en un .md:
 - **Tests:** +3 (goles en rango sano, hay remates/atajadas, hartas ocasiones). Suite **136/136**.
 - **util.js:** VERSION 7.76 → **7.77**.
 **Probado:** node --check + suite 136/136 verde ×2.
+
+## 7.77-tools · Descarga automática de fotos (sin bajar estupideces)
+- **scripts/fotos_bajar.py:** lee un manifiesto `FOTOS.json` (`{id,tipo,url,autor,lic}`), baja TODAS las fotos de una, y **valida** cada una por bytes de imagen (rechaza HTML/errores/archivos <12 KB) → nunca sube basura. Guarda en `img/estadios|clubes|periodistas/<ID>.<ext>` e imprime las líneas listas para `data-estadios.js`. Honra un CA de proxy si existe (en la compu del usuario usa los CA normales).
+- **scripts/fotos_contacto.py:** arma `img/_contacto.html`, una hoja de contacto con TODAS las fotos para revisarlas de un vistazo y borrar las 2-3 malas (solo esas se re-buscan). Cero "foto por foto durante años".
+- **FOTOS.example.json** + **GROK_EPOCAS.md (Prompt G reescrito):** Grok entrega el manifiesto con **enlaces DIRECTOS verificados** (no búsquedas de Google, que no se automatizan bien y traen basura). Probado end-to-end: baja un JPEG real, valida, guarda; rechaza HTML.

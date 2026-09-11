@@ -1,0 +1,8 @@
+[
+  { "id":"CC",  "tipo":"estadio", "nombre":"Estadio Monumental David Arellano",
+    "url":"https://ENLACE-DIRECTO-AL-ARCHIVO.jpg", "autor":"Fotógrafo", "lic":"CC BY-SA 4.0" },
+  { "id":"BOC", "tipo":"estadio", "nombre":"La Bombonera",
+    "url":"https://ENLACE-DIRECTO-AL-ARCHIVO.jpg", "autor":"Fotógrafo", "lic":"CC BY 2.0" },
+  { "id":"JUAN","tipo":"periodista","nombre":"Periodista ejemplo",
+    "url":"https://ENLACE-DIRECTO-AL-ARCHIVO.jpg", "autor":"", "lic":"" }
+]

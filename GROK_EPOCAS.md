@@ -87,16 +87,35 @@
 > `[FIX] ID — est/aforo/ciudad: valor_actual → valor_correcto (fuente)`. Ojo con estadios
 > compartidos, mudanzas y remodelaciones (aforo cambia).
 
-## PROMPT G — FOTOS (protocolo seguro — el problema de "baja cualquier cosa")
-> Las fotos automáticas bajaron imágenes que **no son** los estadios/clubes. Nuevo protocolo,
-> **cero adivinar**:
-> 1. **No pongas ninguna foto que no puedas verificar** que es exactamente ese estadio/club/jugador.
-> 2. En vez de bajar, entregá una **lista para que el usuario descargue a mano**, así:
->    `{ id:"CC", tipo:"estadio", nombre:"Estadio Monumental David Arellano", url_fuente:"<link a
->    Wikimedia Commons con licencia libre>", licencia:"CC BY-SA", archivo_sugerido:"img/est_CC.jpg" }`.
-> 3. Priorizá **Wikimedia Commons / licencias libres** (nada con copyright dudoso).
-> 4. Si de un club/estadio no hay foto libre verificable, marcá `sin_foto:true` (el juego usa el
->    escudo emoji, que ya se ve bien). Mejor sin foto que con una foto equivocada.
+## PROMPT G — FOTOS (descarga AUTOMÁTICA, sin bajar estupideces)
+> Ya existe el pipeline automático (`scripts/fotos_bajar.py` + `scripts/fotos_contacto.py`).
+> El problema de antes era que se bajaba **un resultado de búsqueda** (Google/Commons a ciegas)
+> en vez de **el archivo exacto**. Tu tarea es entregar el **manifiesto `FOTOS.json`**: una lista
+> donde cada `url` es el **ENLACE DIRECTO al archivo de imagen** (termina en .jpg/.png/.webp),
+> **verificado** que es exactamente ese estadio/club/persona. Formato (ver `FOTOS.example.json`):
+> ```json
+> { "id":"CC", "tipo":"estadio", "nombre":"Estadio Monumental David Arellano",
+>   "url":"https://.../archivo-exacto.jpg", "autor":"Fotógrafo", "lic":"CC BY-SA 4.0" }
+> ```
+> Reglas:
+> 1. **`url` = archivo directo, no una búsqueda ni una página.** De donde sea (sitio oficial del
+>    club, prensa con permiso, Wikimedia) **mientras sea el archivo exacto y verificado**. Si pegás
+>    un link que no termina en imagen o que es una búsqueda, el script lo **rechaza** (valida que
+>    sean bytes de imagen de verdad, no HTML). Así no entra basura.
+> 2. Preferí **licencia libre** (Commons/CC/dominio público) y anotá `autor` y `lic` para el crédito.
+>    Si es del sitio oficial, decilo en `lic`.
+> 3. Si de un ítem **no hay foto verificable**, ponelo con `"sin_foto":true` y sin `url` (el juego
+>    usa el escudo emoji, que se ve bien). **Mejor sin foto que una foto equivocada.**
+> 4. Entregá `tipo` in {estadio, club, periodista}. `id` = el del club/persona en el juego.
+>
+> **Automatización:** con ese `FOTOS.json`, el usuario (o Claude) corre `python3 scripts/fotos_bajar.py`
+> → baja TODAS de una, valida cada una y descarta las malas → después `fotos_contacto.py` arma una
+> **hoja de contacto** (`img/_contacto.html`) para revisar todas de un vistazo y borrar las 2-3 que
+> hayan salido mal (solo esas se re-buscan). Cero "foto por foto durante años".
+>
+> **Sobre Google:** bajar del buscador NO se puede automatizar bien (va contra sus términos y trae
+> justo la basura de antes). Por eso el manifiesto pide el **archivo exacto**: podés *encontrarlo*
+> googleando, pero lo que pegás es el **link directo verificado**, no el resultado de búsqueda.
 
 ## PROMPT H — Cariño a la sección CALENDARIO (qué mostrar)
 > Proponé el **contenido ideal de la sección Calendario** de Futbolini (Claude la maqueta). Hoy
