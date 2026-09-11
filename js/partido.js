@@ -526,13 +526,30 @@ function tickPartido(P){
     linea(P,min,min>75?("Amarilla para "+j.n+". En este tramo duele más.")
       :("Amarilla para "+j.n+(caliente?", que juega siempre al límite.":".")),min>70?"grave":"");
     return {tipo:"tarjeta",min:min}; }
-  /* chance perdida — con contexto de marcador y minuto */
-  if(Math.random()<0.14){
+  /* 7.77 · MÁS PATEOS: remates al arco y atajadas. No cambian el marcador, pero llenan
+     el partido de acción (y disparan la voz del arquero figura). */
+  if(Math.random()<0.075){
+    const j=elige(P.once.filter(x=>x.pos!=="ARQ"))||{n:"tu delantero"};
+    const remates=[
+      "¡"+j.n+" saca el zurdazo y el arquero de "+P.part.rivalNombre+" manotea al córner! Estuvo cerquísima.",
+      "Remató "+j.n+" de primera y tapó el golero. ¡Qué atajada!",
+      "Cabezazo de "+j.n+" y el arquero rival vuela a sacarla del ángulo. ¡Uf!",
+      j.n+" probó de lejos y obligó a la palomita. Sigue el asedio."
+    ];
+    linea(P,min,elige(remates));
+    return {tipo:"atajada",min:min,aFavor:true};
+  }
+  if(Math.random()<0.055){
+    linea(P,min,"Remate peligroso de "+P.part.rivalNombre+"… ¡y tu arquero la saca de un manotazo! La tribuna lo ovaciona.");
+    return {tipo:"atajada",min:min,aFavor:false};
+  }
+  /* chance perdida — con contexto de marcador y minuto (más seguido: más pateos) */
+  if(Math.random()<0.20){
     linea(P,min,fraseChance(P,min));
     return {tipo:"chance",min:min};
   }
   /* color / relato — más denso, menos “nada” */
-  if(Math.random()<0.18){
+  if(Math.random()<0.20){
     linea(P,min,fraseRelato(P,min));
     return {tipo:"relato",min:min};
   }
@@ -551,6 +568,7 @@ function actualizarStats(P,ev){
     case "penal": case "tiroLibre": s.remMio++; s.arcMio++; break;
     case "penalRival": s.remRiv++; s.arcRiv++; break;
     case "chance": s.remMio++; if(Math.random()<0.5) s.arcMio++; if(Math.random()<0.35) s.corMio++; break;
+    case "atajada": if(ev.aFavor){ s.remMio++; s.arcMio++; if(Math.random()<0.4) s.corMio++; } else { s.remRiv++; s.arcRiv++; } break;   /* 7.77 */
     case "polemica": if(Math.random()<0.5) s.remMio++; break;
   }
   if(Math.random()<0.014) s.corRiv++;

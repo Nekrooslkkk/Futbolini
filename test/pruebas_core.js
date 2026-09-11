@@ -138,6 +138,30 @@
       setIdioma("neutro");
     }, "Chilensis gol");
 
+    /* 7.77 · más pateos: más acción sin inflar los goles */
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var part=proximoPartido();
+      var golesTot=0, atajTot=0, chanceTot=0, matches=0, N=40;
+      for(var i=0;i<N;i++){
+        var p=JSON.parse(JSON.stringify(part)); p.jugado=false;
+        var P=iniciarPartido(p,"simular");
+        var guard=0;
+        while(P.min<90 && !P.terminado && guard++<600){
+          var ev=tickPartido(P);
+          if(ev.tipo==="fin") break;
+          if(ev.tipo==="atajada") atajTot++;
+          if(ev.tipo==="chance") chanceTot++;
+          if(ev.tipo==="penal"||ev.tipo==="penalRival"||ev.tipo==="lesion"||ev.tipo==="tiroLibre") resolverEventoAuto(P,ev);
+        }
+        golesTot+=(P.gl+P.gv); matches++;
+      }
+      var golProm=golesTot/matches;
+      ok(golProm>=1.0 && golProm<=4.5, "goles por partido en rango sano ("+golProm.toFixed(2)+")");
+      ok(atajTot>0, "hay remates al arco / atajadas ("+atajTot+" en "+matches+")");
+      ok(chanceTot>matches, "hay hartas ocasiones (>1 por partido): "+chanceTot);
+    }, "Más pateos");
+
     /* T4a04 · tokens de decisiones: no quedan crudos en pantalla (7.73) */
     grupo("Tokens en decisiones (7.73)");
     safe(function(){

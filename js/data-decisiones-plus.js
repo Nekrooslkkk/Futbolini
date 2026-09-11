@@ -248,7 +248,7 @@
  ]},
 {id:"b_cantera_cancha",tag:"cantera",buzon:"cantera",peso:"bajo",cuando:E=>E.ind.cantera<70,
  t:"Los formadores piden una cancha decente",
- d:"Entrenan en un potrero que se inunda. Te pasan un presupuesto: pasto, luces, camarines chicos. No es el Monumental. Es lo mínimo para no perder pibes.",
+ d:"Entrenan en un potrero que se inunda. Te pasan un presupuesto: pasto, luces, camarines chicos. No es un estadio de lujo. Es lo mínimo para no perder pibes.",
  posturas:{comunidad:10,directorio:-6},
  op:[
   {t:"Invertir en serio",d:"Obra de cantera.",dif:34,req:{plata:110},grupos:{comunidad:10,directorio:-4},

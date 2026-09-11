@@ -2167,3 +2167,11 @@ Claude promptó el GROK_SUPERPROMPT. Se hornea, no se deja en un .md:
 **Probado:** node --check + suite HTTP Playwright **129/129**.
 
 
+
+## 7.77 · Más pateos (partidos más entretenidos) + pack de prompts de épocas
+- **partido.js `tickPartido`:** más acción sin inflar el marcador — nuevos eventos **atajada/remate al arco** (tuyo salvado por el arquero rival, y del rival salvado por tu arquero) y más **ocasiones** (chance 0.14→0.20, relato 0.18→0.20). Medido: ~3.5 remates/atajadas y ~4.3 ocasiones por partido, goles promedio **2.85** (realista, no cambió). `actualizarStats` suma el caso "atajada" a los remates.
+- **data-decisiones-plus.js:** `b_cantera_cancha` decía "No es el Monumental" (estadio de CC) para cualquier club → genérico "No es un estadio de lujo" (deja verde el check de Grok "cantera de Segunda no nombra el Monumental").
+- **GROK_EPOCAS.md (nuevo):** pack maestro de prompts para Grok — menú de inicio con todos los equipos, **Liga Argentina con lógica AFA (no ANFP)**, modo 1991 mejorado + línea de tiempo de cambios de formato, **modo histórico 2006**, **modo histórico 1925** (acotado, qué secciones ocultar), estadios/aforos verificados, **fotos con protocolo seguro** (no bajar cualquier cosa; entregar fuentes libres para bajar a mano), y cariño al calendario. Con el roadmap 8.0/9.0/10.0 y convenciones de orden (una época/liga = un archivo).
+- **Tests:** +3 (goles en rango sano, hay remates/atajadas, hartas ocasiones). Suite **136/136**.
+- **util.js:** VERSION 7.76 → **7.77**.
+**Probado:** node --check + suite 136/136 verde ×2.
