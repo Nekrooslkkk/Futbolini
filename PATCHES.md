@@ -1988,3 +1988,7 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 ## 7.54 · Verificación automática y versión centralizada
 - **util.js / index.html / server/**: `js/util.js` es la única fuente de la versión. La interfaz la toma al cargar y ambos servidores la leen directamente al responder su endpoint de salud; ya no hay números duplicados que editar.
 - **scripts/verificar.js / GitHub Actions**: cada push o pull request a `main` valida la sintaxis completa y que la versión no vuelva a duplicarse. Se puede correr localmente con `npm run check`, sin instalar dependencias.
+
+## 7.55 · Versionado consistente de partidas
+- **motor.js / ui.js**: partidas nuevas, guardados, exportaciones e importaciones usan `SAVE_VER` en vez de un número fijo. Las migraciones futuras ya no pueden quedar desfasadas del archivo de respaldo.
+- **scripts/verificar.js**: la verificación automática impide que la exportación vuelva a escribir una versión de save fija.

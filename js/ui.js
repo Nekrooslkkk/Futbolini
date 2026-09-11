@@ -2015,7 +2015,7 @@ function vistaEstadio(){
 /* ---------------- respaldo de partida (archivo) ---------------- */
 function descargarPartida(){
   if(!E||!E.club){ aviso("No hay partida para descargar"); return; }
-  const paquete={ app:"futbolini", saveVer:1, guardado:Date.now(), E:E };
+  const paquete={ app:"futbolini", saveVer:(typeof SAVE_VER==="number"?SAVE_VER:E.saveVer||1), guardado:Date.now(), E:E };
   const txt=JSON.stringify(paquete);
   const blob=new Blob([txt],{type:"application/json"});
   const url=URL.createObjectURL(blob);
@@ -2031,6 +2031,7 @@ function cargarPartidaArchivo(f){
     try{ dato=JSON.parse(lector.result); }catch(e){ aviso("El archivo no es una partida válida"); return; }
     const nuevo=(dato&&dato.E&&dato.E.club)?dato.E:((dato&&dato.club)?dato:null);
     if(!nuevo){ aviso("El archivo no es una partida de Futbolini"); return; }
+    if(dato&&typeof dato.saveVer==="number"&&(!nuevo.saveVer||dato.saveVer>nuevo.saveVer)) nuevo.saveVer=dato.saveVer;
     if(E&&E.club && !confirm("Esto reemplaza tu partida actual por la del archivo. ¿Seguir?")) return;
     E=nuevo; normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod();
     await guardar(); aviso("Partida cargada"); SEC="escritorio"; render();

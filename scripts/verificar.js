@@ -14,7 +14,9 @@ archivos.forEach(function(archivo){
 const util=fs.readFileSync(path.join(raiz,"js","util.js"),"utf8");
 const version=(util.match(/const VERSION\s*=\s*["']([^"']+)["']/)||[])[1];
 const index=fs.readFileSync(path.join(raiz,"index.html"),"utf8");
+const ui=fs.readFileSync(path.join(raiz,"js","ui.js"),"utf8");
 if(!version){ errores++; process.stderr.write("Falta VERSION en js/util.js\n"); }
 if(/id="verBadge">\s*\d/.test(index)){ errores++; process.stderr.write("El badge duplica la versión; debe llenarse desde util.js.\n"); }
+if(/saveVer\s*:\s*1/.test(ui)){ errores++; process.stderr.write("La exportación duplica la versión de partida; debe usar SAVE_VER.\n"); }
 if(errores){ process.exit(1); }
 console.log("OK: "+archivos.length+" archivos válidos · Futbolini "+version);

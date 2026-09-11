@@ -121,7 +121,7 @@ function nuevaPartida(clubId,anio,modo,extra){
     return false;
   }
   E={
-    v:4, club:clubId, eraBase:base, clubNombre:info.n, dt:info.dt, anio:anio, modo:modo||"historico",
+    v:4, saveVer:SAVE_VER, club:clubId, eraBase:base, clubNombre:info.n, dt:info.dt, anio:anio, modo:modo||"historico",
     ind:Object.assign({},D.ind[clubId]),
     plata:D.caja[clubId].plata, deuda:D.caja[clubId].deuda,
     capital:45,
@@ -1185,6 +1185,7 @@ function capitalAnual(){
 /* ---------------- guardado ---------------- */
 async function guardar(){
   if(!E) return;
+  E.saveVer=SAVE_VER;
   if(!E._slot) E._slot=nuevoSlotId();
   await Store.set(slotKey(E._slot),E);
   await Store.set(LLAVE,E);                 /* compat: el save legacy = la partida activa */
