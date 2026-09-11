@@ -2037,3 +2037,9 @@ pero generé escudos estilizados por código que dan el salto visual ya. Logos r
 - **test/pruebas_core.js**: +2 checks (Primera baja 2 clubes; Primera conserva su tamaño). Suite **28/28**.
 - **util.js**: VERSION 7.62 → **7.63**.
 **Probado:** node --check + suite 28/28 verde.
+
+## 7.64 · Lateral Wii: entran todos los canales + accesibilidad
+- **css/lateral.css**: canales un poco más compactos (padding/gap/ícono) → en un notebook común (~860px de alto) **entran los 13 canales + Cuenta sin scroll** (antes Vida/Avisos/Ajustes/Cuenta quedaban bajo el pliegue).
+- **index.html**: `#menu` con `aria-label="Secciones del club"` (además del `role="tablist"` que ya tenía).
+- **util.js**: VERSION 7.63 → **7.64**.
+**Probado:** node --check + captura headless 1280×860 (todos los canales visibles).
