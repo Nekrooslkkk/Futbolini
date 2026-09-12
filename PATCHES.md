@@ -2200,3 +2200,9 @@ Claude promptó el GROK_SUPERPROMPT. Se hornea, no se deja en un .md:
 - **Respeta el modo liviano** (`body.perf`: sin confeti, corta) y `prefers-reduced-motion` (sobrio). No corre en modo simular. Verificado con dump de geometría (overlay 990×633, z-index 220, texto "⚽ ¡GOOOL!") + captura.
 - **util.js:** VERSION 7.78 → **7.79**.
 **Probado:** node --check + suite 142/142 verde (UI, no toca la simulación).
+
+## 7.80 · Celular más cómodo: botones del partido no se cortan
+- **css/movil.css:** en el partido en vivo, la fila de controles (`⏸ Pausa` + `⏩ Al resultado`) se **cortaba en la derecha** en teléfonos angostos (grid `1fr 1.15fr` con min de contenido). Ahora `minmax(0,1fr)` (columnas que encogen) + `min-width:0` + `text-overflow:ellipsis` de seguridad → los dos botones **entran siempre**, sin scroll horizontal.
+- **Auditoría móvil (390px):** verificado `scrollWidth===clientWidth` (cero overflow horizontal) en Escritorio/Plantel/Calendario/Finanzas/Mercado/Institución/Redes/Carrera/Ajustes, en los **modales** (decisión, avance rápido, amistoso, cuenta, "Más"), y en la **animación de gol** (confeti contenido con `overflow:hidden`).
+- **util.js:** VERSION 7.79 → **7.80**.
+**Probado:** node --check + suite 142/142 verde + auditorías de overflow a 390px.
