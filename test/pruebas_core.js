@@ -126,6 +126,21 @@
       ok(!document.querySelector(".intro-epoca"), "en 2026 NO aparece el panel de época");
     }, "Intro epoca");
 
+    /* 7.86 · la situación del club (Grok TAREA E, SITUACION_CLUB) SE MUESTRA en el escritorio */
+    grupo("Situación del club en el escritorio (7.86)");
+    safe(function(){
+      ok(typeof SITUACION_CLUB==="object" && Object.keys(SITUACION_CLUB).length>=40,
+        "SITUACION_CLUB tiene cobertura ("+Object.keys(SITUACION_CLUB||{}).length+" clubes)");
+      nuevaPartida("CC",2026,"historico"); SEC="escritorio"; render();
+      var txt=(document.getElementById("vista")||{}).textContent||"";
+      ok(txt.indexOf("El club hoy")>=0, "el escritorio muestra el panel 'El club hoy'");
+      ok(SITUACION_CLUB.CC && txt.indexOf(SITUACION_CLUB.CC.slice(0,24))>=0, "muestra la situación real del club elegido");
+      /* un club de Segunda también trae su situación */
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"}); SEC="escritorio"; render();
+      var txt2=(document.getElementById("vista")||{}).textContent||"";
+      ok(SITUACION_CLUB.SMO && txt2.indexOf(SITUACION_CLUB.SMO.slice(0,20))>=0, "Segunda (S. Morning) también muestra su situación");
+    }, "Situación en escritorio");
+
     /* T4a0 · idiomas: T() resuelve por registro con fallback a neutro */
     grupo("Idiomas (neutro/chilensis/pt)");
     safe(function(){

@@ -375,6 +375,9 @@ function elegirEpoca(id){
       c.appendChild(fila("Deportivo","plantel "+ib.plantel+" · cantera "+ib.cantera));
       c.appendChild(fila("Económico",plata(cb.plata)+" en caja · "+plata(cb.deuda)+" de deuda"));
       c.appendChild(fila("Interno","hinchada "+ib.hinchada+" · socios "+ib.socios+" · riesgo "+ib.riesgo));
+      /* E-1 · la situación del club: por qué te metés en esto (Grok TAREA E) */
+      if(typeof SITUACION_CLUB==="object" && SITUACION_CLUB[id])
+        c.appendChild(el("p","mini","<b>La situación:</b> "+SITUACION_CLUB[id]));
       /* corte 18/08 solo en la temporada 2026 actual (no en glorias históricas) */
       if((sel.base===2026) && sel.tipo!=="gloria" && !esB){
         c.appendChild(el("div","resul mitad","<b>Aviso.</b> Los planteles 2026 son <b>aproximados</b> y pueden haber cambiado en el mercado. Stats estimadas."));
@@ -617,6 +620,13 @@ function vistaEscritorio(){
     }
   }
   izq.appendChild(pb);
+
+  /* E-1 · por qué juego a esto: la situación del club (Grok TAREA E). Solo si hay dato. */
+  if(typeof SITUACION_CLUB==="object" && SITUACION_CLUB[E.club]){
+    const psit=panel("El club hoy","🎯","agua");
+    psit.cuerpo.appendChild(el("p",null,SITUACION_CLUB[E.club]));
+    der.appendChild(psit);
+  }
 
   /* estado */
   const pe=panel("Estado del club","📊","agua");

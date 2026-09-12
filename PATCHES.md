@@ -2267,3 +2267,12 @@ Claude ocupó 7.84 (cancha pixel). TAREA E se suma encima, sin pisar cancha.js n
 - Línea de formatos Chile 2009→2026. FOTOS: SCR/SCI/RSJ/BSA/CNA = SIN_FOTO.
 - Tests: T13 Grok + T13b Claude + T14. util.js 7.84 → **7.85**.
 **Probado:** node --check + suite HTTP **230/230**.
+
+## 7.86 · Cableado de SITUACION_CLUB a la UI (Grok la trajo, no la mostraba nadie)
+- Grok horneó `SITUACION_CLUB` (76 clubes: el "por qué juego a esto" de TAREA E-1) pero **ningún código la leía** — era data huérfana. La conecté en dos puntos:
+  1. **Escritorio (`js/ui.js` vistaEscritorio):** tarjeta compacta **"El club hoy" 🎯** arriba de la columna derecha con la situación del club elegido. Solo si hay dato.
+  2. **Briefing de elección (`elegirEpoca`):** línea **"La situación:"** bajo los indicadores, para que sepas en qué te metés antes de arrancar.
+- Ambos guardados con `typeof SITUACION_CLUB==="object"` → si el archivo no está, no rompe.
+- **test/pruebas_core.js:** grupo nuevo (7.86) que renderiza el escritorio y verifica que el panel "El club hoy" aparece con la situación real, para CC (Primera) y S. Morning (Segunda). Cobertura ≥40 clubes.
+- **util.js:** VERSION 7.85 → **7.86**.
+**Probado:** node --check + suite **234/234** verde.
