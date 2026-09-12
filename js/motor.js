@@ -153,7 +153,7 @@ function nuevaPartida(clubId,anio,modo,extra){
     pendientesEncadenadas:[], notifs:[], ofertasPend:[], mercadoLog:{rechazadas:{},vendidos:[]},
     redes:[], promesas:[], historialAnual:[], ultimaFecha:[], prensaAuto:false,
     timeline:[], seguidores:Math.round((D.ind[clubId].hinchada+D.ind[clubId].prestigio)*280),
-    tactica:{form:"4-4-2",estilo:"Equilibrado",presion:"Media"},
+    tactica:{form:"4-4-2",estilo:"Equilibrado",presion:"Media",mentalidad:"Equilibrado",bloque:"Medio",ritmo:"Normal"},
     precioEntrada:1, presupuesto:null, temporada:{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0},
     carrera:{club:clubId,desde:anio,despidos:0,clubes:[],evaluacion:null,fin:false},
     divergencias:[], coincidencias:[], staff:{deportivo:62,tesorero:60,prensa:58,cm:false}
@@ -284,6 +284,8 @@ function normalizarEstado(){
   if(!Array.isArray(E.plopLikes)) E.plopLikes=[];
   /* 6.7 · táctica: mentalidad estilo FM y designados de balón parado */
   if(E.tactica){ if(!E.tactica.mentalidad) E.tactica.mentalidad="Equilibrado";
+    if(!E.tactica.bloque) E.tactica.bloque="Medio";
+    if(!E.tactica.ritmo) E.tactica.ritmo="Normal";
     if(E.tactica.penalista===undefined) E.tactica.penalista=null;
     if(E.tactica.tiroLibre===undefined) E.tactica.tiroLibre=null;
     if(E.tactica.corner===undefined) E.tactica.corner=null;

@@ -4,7 +4,7 @@
    PROMPT D · Modo histórico 2006 (Apertura + Clausura).
    19 clubes reales. Deportes Concepción FUE SUSPENDIDO 2006
    (problemas financieros) — no está. Wikipedia / ANFP.
-   Plantel documentado: solo Colo-Colo (PLANTEL_CC_2006 en data-plantel.js).
+   Plantel documentado: Colo-Colo (data-plantel.js) + UCH/AUD/UC (data-996.js).
    El resto: cantera. No se inventan nombres.
    Cargar DESPUÉS de liga-registrar.js y data-clubes-meta.js.
    ============================================================ */
@@ -43,7 +43,7 @@ const FORMAT_2006={
   descenso:"Tabla anual (Apertura+Clausura). Descendió Santiago Morning. Rangers y Palestino a liguilla de promoción.",
   copas:"Colo-Colo (Apertura) → Libertadores 2007. Huachipato y Colo-Colo → Sudamericana 2006.",
   goleadores:"Apertura: Humberto Suazo (CC) 19. Clausura: Leonardo Monje 17.",
-  juego:"En el juego: una rueda de 18 fechas (bye incluido). El formato real de playoffs queda documentado acá."
+  juego:"En el juego: Apertura 18 fechas (bye) y, al cerrar esa rueda, Clausura de otras 18 con tabla desde 0 y localías invertidas. El Apertura regular NO entrega estrella (en 2006 el título se definía en playoffs estilo México, todavía no jugables). El 1° del Clausura regular cierra el año — simplificación. Descenso: tabla anual. Planteles documentados: Colo-Colo, U. de Chile, Audax Italiano y Católica."
 };
 
 const HECHOS_2006={
@@ -81,10 +81,103 @@ const CAJA_BASE_2006={};
 function ids2006(){ return LIGA_2006.map(function(c){ return c.id; }); }
 function esClub2006(id){ return ids2006().indexOf(id)>=0; }
 
+function _fx2006(){
+  const clubs=LIGA_2006.slice();
+  if(clubs.length%2) clubs.push({id:"_BYE",n:"(libre)",fuerza:0,est:"",ciudad:""});
+  return {clubs:clubs, fx:(typeof fixturesLiga==="function")?fixturesLiga(clubs):[]};
+}
+function _cal2006Rueda(clubId, ruedaFx, torneo, fase, fechas){
+  const cal=[];
+  ruedaFx.forEach(function(fecha,i){
+    const pares=fecha.filter(function(p){ return p[0]!=="_BYE" && p[1]!=="_BYE" && p[0]!=="__BYE__" && p[1]!=="__BYE__"; });
+    const mio=pares.find(function(p){ return p[0]===clubId||p[1]===clubId; });
+    if(!mio) return;
+    const local=mio[0]===clubId, rival=local?mio[1]:mio[0];
+    const riv=LIGA_2006.filter(function(c){ return c.id===rival; })[0]
+      || (typeof clubMundo==="function"?clubMundo(rival):null);
+    if(!riv) return;
+    const yo=LIGA_2006.filter(function(c){ return c.id===clubId; })[0];
+    const f=fechas[i]||{m:Math.min(12, (fase==="clausura"?7:2)+Math.floor(i/4)), d:1+(i%4)*7};
+    cal.push({tipo:"liga", torneo:torneo, fase:fase, fecha:i+1, rivalId:rival,
+      rivalNombre:riv.n, fuerzaRival:riv.fuerza, local:local,
+      sede:local?((yo&&yo.est)||"local"):riv.est,
+      f:f, jugado:false,
+      clima:(typeof climaDeFecha==="function")?climaDeFecha(f.m,"06"+fase+clubId+i):"despejado",
+      jornada:pares});
+  });
+  return cal;
+}
+function tablaAnual2006(){
+  if(typeof E==="undefined"||!E) return [];
+  const a=E.tablaApertura||{}, b=E.tabla||{};
+  const arr=LIGA_2006.map(function(c){
+    const x=a[c.id]||{}, y=b[c.id]||{};
+    return {
+      id:c.id, n:c.n,
+      pj:(x.pj||0)+(y.pj||0), pg:(x.pg||0)+(y.pg||0), pe:(x.pe||0)+(y.pe||0), pp:(x.pp||0)+(y.pp||0),
+      gf:(x.gf||0)+(y.gf||0), gc:(x.gc||0)+(y.gc||0), pts:(x.pts||0)+(y.pts||0)
+    };
+  });
+  arr.sort(function(p,q){ return q.pts-p.pts||((q.gf-q.gc)-(p.gf-p.gc))||q.gf-p.gf; });
+  return arr;
+}
+function _sembrarClausura2006(){
+  if(typeof E==="undefined"||!E||E.eraBase!==2006) return;
+  E.flags=E.flags||{};
+  if(E.flags.fase2006==="clausura") return;
+  E.flags.fase2006="clausura";
+  E.tablaApertura=E.tabla?JSON.parse(JSON.stringify(E.tabla)):{};
+  E.tabla={};
+  LIGA_2006.forEach(function(c){ E.tabla[c.id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}; });
+  E.temporadaApertura=E.temporada?JSON.parse(JSON.stringify(E.temporada)):null;
+  if(E.temporada){
+    E.temporada.pj=0; E.temporada.pg=0; E.temporada.pe=0; E.temporada.pp=0;
+    E.temporada.gf=0; E.temporada.gc=0; E.temporada.pts=0;
+  }
+  const pack=_fx2006();
+  const vuelta=pack.fx.slice(Math.max(0, pack.clubs.length-1));
+  const fechas=(typeof fechasSemanales==="function")?fechasSemanales(9,9,20,12):[];
+  const parts=_cal2006Rueda(E.club, vuelta, "Clausura 2006", "clausura", fechas);
+  if(typeof _insertarYOrdenar==="function") _insertarYOrdenar(parts);
+  else if(E.calendario){
+    parts.forEach(function(p){ E.calendario.push(p); });
+    E.calendario.sort(function(a,b){
+      const oa=(typeof ordenFecha==="function")?ordenFecha(a.f):(a.f.m*100+(a.f.d||1));
+      const ob=(typeof ordenFecha==="function")?ordenFecha(b.f):(b.f.m*100+(b.f.d||1));
+      return oa-ob;
+    });
+    let j;
+    for(j=0;j<E.calendario.length;j++) if(!E.calendario[j].jugado){ E.idx=j; break; }
+  }
+  if(typeof notificar==="function") notificar({t:"Arranca el Clausura 2006",tipo:"neutro",
+    d:"Cerró el Apertura regular. No hay estrella por esa rueda: en 2006 el título se definía en playoffs estilo México (todavía no se juegan). La tabla parte de cero. Otras 18 fechas, localías invertidas. El descenso se mira en la tabla anual."});
+}
+function avanzarFase2006(part){
+  if(typeof E==="undefined"||!E||E.eraBase!==2006||!part||part.tipo!=="liga") return;
+  E.flags=E.flags||{};
+  const fase=part.fase||E.flags.fase2006||"apertura";
+  if(fase==="apertura"||!part.fase){
+    const ape=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"&&(p.fase==="apertura"||!p.fase); });
+    if(ape.filter(function(p){ return p.jugado; }).length<ape.length) return;
+    _sembrarClausura2006();
+  }
+}
+function _hookFase2006(){
+  if(typeof terminarPartido!=="function"||terminarPartido._e06fase) return false;
+  const orig=terminarPartido;
+  terminarPartido=function(P){
+    const res=orig.apply(this, arguments);
+    try{ avanzarFase2006(P&&P.part); }catch(e){}
+    return res;
+  };
+  terminarPartido._e06fase=true;
+  return true;
+}
+
 if(typeof LIGAS==="object") LIGAS[2006]=LIGA_2006;
 if(typeof ERA==="object"){
   ERA[2006]={n:"2006", puntosVictoria:3, inflacion:1.15, cuposInternacional:4,
-    desc:"Apertura y Clausura 2006: 19 clubes (Concepción suspendido), playoffs estilo México. Victoria vale 3. Colo-Colo bicampeón del año."};
+    desc:"Apertura y Clausura 2006: 19 clubes (Concepción suspendido). Se juegan las dos ruedas (18+18). Playoffs estilo México: documentados, no jugables. Victoria vale 3. Colo-Colo bicampeón real del año."};
 }
 
 const PRENSA_2006=[
@@ -103,34 +196,27 @@ const PRENSA_2006=[
     const orig=construirCalendario;
     construirCalendario=function(clubId,anio,conCopa){
       if(typeof E!=="undefined" && E && E.eraBase===2006){
-        const clubs=LIGA_2006.slice();
-        if(clubs.length%2) clubs.push({id:"_BYE",n:"(libre)",fuerza:0,est:"",ciudad:""});
-        const fx=(typeof fixturesLiga==="function")?fixturesLiga(clubs):[];
-        const ida=fx.slice(0, Math.max(0, clubs.length-1)); /* una rueda: 18 fechas con bye */
-        const cal=[];
+        const pack=_fx2006();
+        const ida=pack.fx.slice(0, Math.max(0, pack.clubs.length-1));
         const fechas=(typeof fechasTemporada==="function")?fechasTemporada():[];
-        ida.forEach(function(fecha,i){
-          const pares=fecha.filter(function(p){ return p[0]!=="_BYE" && p[1]!=="_BYE"; });
-          const mio=pares.find(function(p){ return p[0]===clubId||p[1]===clubId; });
-          if(!mio) return; /* bye esa fecha */
-          const local=mio[0]===clubId, rival=local?mio[1]:mio[0];
-          const riv=LIGA_2006.filter(function(c){ return c.id===rival; })[0]
-            || (typeof clubMundo==="function"?clubMundo(rival):null);
-          if(!riv) return;
-          const yo=LIGA_2006.filter(function(c){ return c.id===clubId; })[0];
-          const f=fechas[i]||{m:2,d:1+i};
-          cal.push({tipo:"liga", torneo:"Apertura 2006", fecha:i+1, rivalId:rival,
-            rivalNombre:riv.n, fuerzaRival:riv.fuerza, local:local,
-            sede:local?((yo&&yo.est)||"local"):riv.est,
-            f:f, jugado:false,
-            clima:(typeof climaDeFecha==="function")?climaDeFecha(f.m,"06"+clubId+i):"despejado",
-            jornada:pares});
-        });
-        return cal;
+        return _cal2006Rueda(clubId, ida, "Apertura 2006", "apertura", fechas);
       }
       return orig(clubId,anio,conCopa);
     };
     construirCalendario._e06=true;
   }
+  if(typeof nuevaPartida==="function" && !nuevaPartida._e06){
+    const origN=nuevaPartida;
+    nuevaPartida=function(clubId,anio,modo,extra){
+      const r=origN.apply(this, arguments);
+      if(typeof E!=="undefined"&&E&&E.eraBase===2006){
+        E.flags=E.flags||{};
+        if(!E.flags.fase2006) E.flags.fase2006="apertura";
+      }
+      return r;
+    };
+    nuevaPartida._e06=true;
+  }
+  _hookFase2006();
   try{ if(typeof _mapaTodosCache!=="undefined") _mapaTodosCache=null; }catch(e){}
 })();

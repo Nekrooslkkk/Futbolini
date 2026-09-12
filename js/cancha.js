@@ -76,6 +76,24 @@ function _cvStep(P,dt){
     const gk = st.ballGoal>0.5 ? st.jug[CANCHA_FORM.length] : st.jug[0]; /* der=rival, izq=mío(idx0) */
     if(gk) gk.y += (b.y-gk.y)*Math.min(1,dt*4);
   }
+  /* 7.996 · penal: la pelota al punto y el arquero se lanza */
+  if(P && P._penalSeq && st.penalSeq!==P._penalSeq){
+    st.penalSeq=P._penalSeq;
+    st.penalSeen=P._penalCancha||1;
+    st.penalDive=1.6;
+    st.ballHold=1.8;
+    st.ballGoal=st.penalSeen>0?0.90:0.10;
+  }
+  if(st.penalDive>0){
+    st.penalDive=Math.max(0,st.penalDive-dt);
+    const lado=st.penalSeen>0?1:-1;
+    const gk = lado>0 ? st.jug[CANCHA_FORM.length] : st.jug[0];
+    if(gk){
+      gk.y += (0.50 + Math.sin(st.t*14)*0.08 - gk.y)*Math.min(1,dt*8);
+      gk.x += ((lado>0?0.93:0.07)-gk.x)*Math.min(1,dt*5);
+    }
+    b.tx=st.ballGoal; b.ty=0.50+Math.sin(st.t*6)*0.01;
+  }
 }
 function _cvColores(){
   let mio="#eef3ff", riv="#e5484d";
@@ -127,9 +145,20 @@ function _cvDraw(ctx,w,h){
   const cr=Math.round(bh*0.16), cx=Math.round(bw/2), cy=Math.round(bh/2);
   for(let a=0;a<64;a++){ const an=a/64*Math.PI*2; g.fillRect(cx+Math.round(Math.cos(an)*cr), cy+Math.round(Math.sin(an)*cr),1,1); }
   g.fillRect(cx,cy,1,1);
-  /* áreas */
+  /* áreas + área chica + punto penal */
   const ah=Math.round(bh*0.46), aw=Math.round(bw*0.12);
   rect(m,Math.round((bh-ah)/2),aw,ah); rect(bw-m-aw,Math.round((bh-ah)/2),aw,ah);
+  const sh=Math.round(bh*0.22), sw=Math.round(bw*0.05);
+  rect(m,Math.round((bh-sh)/2),sw,sh); rect(bw-m-sw,Math.round((bh-sh)/2),sw,sh);
+  g.fillStyle=line;
+  g.fillRect(m+Math.round(bw*0.09), cy, 2, 2);
+  g.fillRect(bw-m-Math.round(bw*0.09)-1, cy, 2, 2);
+  /* banderines de córner */
+  const flag=(x,y)=>{
+    g.fillStyle="#e8d44a"; g.fillRect(x,y-4,1,5);
+    g.fillStyle="#d22"; g.fillRect(x+1,y-4,3,2);
+  };
+  flag(m,m); flag(bw-m-1,m); flag(m,bh-m-1); flag(bw-m-1,bh-m-1);
   /* arcos */
   const gh=Math.round(bh*0.16), gy0=Math.round((bh-gh)/2);
   g.fillStyle="#ffffff";
@@ -173,9 +202,14 @@ function _cvDraw(ctx,w,h){
 }
 function _cvSize(canvas){
   const cssW=canvas.clientWidth||canvas.parentNode&&canvas.parentNode.clientWidth||320;
-  const cssH=Math.min(200,Math.round(cssW*0.42));
+  const cssH=Math.min(268,Math.round(cssW*0.58));
   const dpr=Math.min(2,window.devicePixelRatio||1);
-  if(canvas._w!==cssW){ canvas.style.height=cssH+"px"; canvas.width=Math.round(cssW*dpr); canvas.height=Math.round(cssH*dpr); canvas._w=cssW; }
+  if(canvas._w!==cssW || canvas._h!==cssH){
+    canvas.style.height=cssH+"px";
+    canvas.width=Math.round(cssW*dpr);
+    canvas.height=Math.round(cssH*dpr);
+    canvas._w=cssW; canvas._h=cssH;
+  }
   return {w:canvas.width, h:canvas.height};
 }
 function _cvFrame(ts){

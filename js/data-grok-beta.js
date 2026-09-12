@@ -291,7 +291,13 @@ const PREGUNTAS_BETA=[
   {sit:"arbitro",q:"La gente silbó al juez. ¿Compartes el enojo o lo bajarías?"},
   {sit:"arbitro",q:"¿Hay un lance puntual que quieras marcar sin quemarte con el colegio?"},
   {sit:"arbitro",q:"¿El cuarto hombre te dijo algo que no se escuchó?"},
-  {sit:"arbitro",q:"¿Prefieres no hablar del árbitro y quedarte en tu equipo?"}
+  {sit:"arbitro",q:"¿Prefieres no hablar del árbitro y quedarte en tu equipo?"},
+  {sit:"post_empate",q:"¿Punto ganado o dos perdidos?"},
+  {sit:"post_empate",q:"¿El equipo mereció más o el empate es justo?"},
+  {sit:"post_empate",q:"¿Cambia el plan de la semana o se insiste con la misma idea?"},
+  {sit:"post_clasico",q:"En un clásico, ¿el resultado borra todo lo demás?"},
+  {sit:"post_clasico",q:"¿Qué le diría a la gente que se quedó con la bronca?"},
+  {sit:"post_clasico",q:"¿El clásico se juega distinto o es un partido más con más ruido?"}
 ];
 
 /* ---------- TANDA 8 · tuits Plop ---------- */
@@ -472,15 +478,19 @@ const IMG_PEDIDOS=[
         if(RELATO_BETA.length && Math.random()<0.72){
           var momento="equilibrio";
           var cans=P&&P.cansancio||0;
-          if(min<12) momento="inicio";
+          if(P&&P.clasico) momento="clasico";
+          else if(min<12) momento="inicio";
           else if(cans>7) momento="cansancio";
           else if(P&&P.fase==="dominio") momento="dominio";
           else if(P&&P.fase==="ahogo") momento="ahogo";
           else if(P&&P.fase==="aguanta") momento="aguanta";
           else if(min>75) momento="cansancio";
           var pool=RELATO_BETA.filter(function(r){ return r.m===momento; });
+          if(!pool.length) pool=RELATO_BETA.filter(function(r){ return r.m==="equilibrio"||r.m==="inicio"; });
           if(!pool.length) pool=RELATO_BETA;
-          return pool[Math.floor(Math.random()*pool.length)].x;
+          var cand=pool.map(function(r){ return r.x; });
+          if(typeof eligeNuevo==="function") return eligeNuevo(P, cand);
+          return cand[Math.floor(Math.random()*cand.length)];
         }
       }catch(e){}
       return orig(P,min);
@@ -494,10 +504,21 @@ const IMG_PEDIDOS=[
       var L=origP(res,P)||[];
       try{
         var sits=[];
+        var yo=res&&res.yo, otro=res&&res.otro;
         if(typeof E!=="undefined"&&E&&Array.isArray(E.promesas)&&E.promesas.some(function(x){ return x&&x.rota; })) sits.push("promesa_incumplida");
         if(P&&(P.var||P.rojas||(P.lineas||[]).some(function(l){ return /árbitro|VAR|penal/i.test(l.t||""); }))) sits.push("arbitro");
+        if(yo!=null&&otro!=null&&yo<otro) sits.push("post_derrota");
+        if(yo!=null&&otro!=null&&yo>otro&&Math.abs(yo-otro)>=3) sits.push("post_goleada");
+        if(yo!=null&&otro!=null&&yo===otro) sits.push("post_empate");
+        if((typeof E!=="undefined"&&E&&E.temporada&&E.temporada.sinGanar||0)>=3) sits.push("racha_sin_ganar");
+        if(P&&P.part&&typeof esClasico==="function"&&esClasico(P.part)) sits.push("post_clasico");
+        var fig=(typeof figuraPartido==="function")?figuraPartido(P):null;
+        if(fig&&typeof E!=="undefined"&&E&&Array.isArray(E.plantel)){
+          var juv=E.plantel.find(function(x){ return x.n===fig.n; });
+          if(juv&&juv.edad<=21) sits.push("figura_juvenil");
+        }
         sits.forEach(function(sit){
-          PREGUNTAS_BETA.filter(function(p){ return p.sit===sit; }).slice(0,2).forEach(function(p,i){
+          PREGUNTAS_BETA.filter(function(p){ return p.sit===sit; }).slice(0,1).forEach(function(p,i){
             L.unshift({id:"beta_"+sit+"_"+i, prio:7, q:p.q, ops:[
               {t:"Bajar el perfil",k:"humilde"},
               {t:"Bancarlo de frente",k:"bancar"},

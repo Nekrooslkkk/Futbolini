@@ -112,9 +112,11 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   .marcador{gap:8px;padding:12px 8px}
   .marcador .eq{font-size:11.5px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .marcador .go{font-size:32px}
+  .marcador .go-min{font-size:10px;max-width:42vw;overflow:hidden;text-overflow:ellipsis}
   .partido-wrap{flex-direction:column;gap:8px}
   .partido-wrap>*{flex:1 1 auto;min-width:0}
-  .cancha2d{max-height:120px}
+  .cancha2d{max-height:180px}
+  .partido-hud{grid-template-columns:1fr;gap:4px}
   .relato{max-height:220px}
   .op .tecla,.hint-teclado,.ctrl-full{display:none !important}
   .pizarra .celda{min-height:46px}

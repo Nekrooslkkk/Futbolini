@@ -1282,7 +1282,7 @@
     /* T33 · 7.995 scripts 801/802/rigor que 7.994 no subió */
     grupo("Grok 7.995 (planteles glory + decisiones propias)");
     safe(function(){
-      ok(VERSION==="7.995", "VERSION 7.995");
+      ok(typeof VERSION==="string" && /^7\.99/.test(VERSION), "VERSION 7.99x");
       ok(typeof DECISIONES_801!=="undefined" && DECISIONES_801.length>=40, "DECISIONES_801 cargó (≥40 cartas de club)");
       ok(DECISIONES.some(function(d){ return d.id==="cc26_concesionaria" && d.club==="CC"; }), "CC 2026 tiene carta propia (concesionaria)");
       ok(DECISIONES.some(function(d){ return d.id==="smo26_pintana" && d.club==="SMO"; }), "Morning 2026 tiene carta propia (no hereda CC)");
@@ -1293,6 +1293,187 @@
       ok(PLANTELES_REALES.AUD && PLANTELES_REALES.AUD[2007] && PLANTELES_REALES.AUD[2007].length>=18, "Audax 2007 plantel en 801");
       ok(PLANTELES_REALES.RAC && PLANTELES_REALES.RAC[1967] && PLANTELES_REALES.RAC[1967].length>=12, "Racing 1967 plantel en 802");
     }, "7.995 decisiones propias + 801/802");
+
+    /* T34 · 7.996 partido vivo + planteles 2006 */
+    grupo("Grok 7.996 (cancha + relato + 2006 documentado)");
+    safe(function(){
+      ok(typeof VERSION==="string" && /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(typeof PLANTEL_UCH_2006!=="undefined" && PLANTEL_UCH_2006.length>=18, "UCH 2006 plantel ≥18");
+      ok(typeof PLANTEL_AUD_2006!=="undefined" && PLANTEL_AUD_2006.length>=16, "AUD 2006 plantel ≥16");
+      ok(typeof PLANTEL_UC_2006!=="undefined" && PLANTEL_UC_2006.length>=18, "UC 2006 plantel ≥18");
+      ok(PLANTEL_UCH_2006.some(function(a){ return a[0]==="Marcelo Salas"; }), "UCH 2006 tiene a Salas");
+      ok(PLANTEL_AUD_2006.some(function(a){ return a[0]==="Carlos Villanueva"; }), "AUD 2006 tiene a Villanueva");
+      ok(PLANTEL_AUD_2006.some(function(a){ return a[0]==="Franco Di Santo"; }), "AUD 2006 tiene a Di Santo");
+      ok(PLANTEL_UC_2006.some(function(a){ return a[0]==="Jorge Quinteros"; }), "UC 2006 tiene a Quinteros");
+      ok(PLANTEL_UC_2006.some(function(a){ return a[0]==="Darío Conca"; }), "UC 2006 tiene a Conca (Apertura documentado)");
+      ok(PLANTEL_UC_2006.every(function(a){ return a[0]!=="Milovan Mirosevic"; }), "Mirosevic NO está: estaba en Racing/Beitar");
+      ok(PLANTELES_REALES.UCH && PLANTELES_REALES.UCH[2006]===PLANTEL_UCH_2006, "PLANTELES_REALES.UCH[2006] cableado");
+    }, "planteles 2006 UCH/AUD/UC");
+    safe(function(){
+      nuevaPartida("UCH",2006,"historico");
+      ok(E.eraBase===2006 && E.club==="UCH", "la U arranca en 2006");
+      ok(E.plantel.some(function(j){ return j.n==="Marcelo Salas"; }), "partida UCH 2006 alinea a Salas");
+      ok(E.plantel.some(function(j){ return j.n==="Miguel Pinto"; }), "Pinto es el arquero documentado");
+      var rivAud=plantelRival("AUD",76);
+      ok(rivAud.some(function(j){ return j.n==="Carlos Villanueva"; }), "el XI rival de Audax 2006 es el plantel 2006, no el 2026");
+      var rivRan=plantelRival("RAN",62);
+      ok(rivRan.every(function(j){ return !j.real; }), "Rangers 2006 sin plantel: apodos, no hereda 2026 ni 1991");
+      ok(rivRan.some(function(j){ return /Rangers|RAN/.test(j.n); }), "los apodos dicen Rangers");
+    }, "partida 2006 + XI rival sin anacronismo");
+    safe(function(){
+      nuevaPartida("CC",2006,"historico");
+      var P={once:E.plantel.slice(0,11), lineas:[], cansancio:0, clasico:false, part:{rivalNombre:"Universidad de Chile"}, modo:"historico"};
+      var a=fraseRelato(P,8), b=fraseRelato(P,8), c=fraseRelato(P,8), d=fraseRelato(P,8);
+      ok(typeof a==="string" && a.length>8, "fraseRelato devuelve texto");
+      ok(!(a===b && b===c && c===d), "fraseRelato no repite la misma línea 4 veces seguidas");
+      linea(P,10,"Primeros toques, todavía sin profundidad.");
+      linea(P,11,"Primeros toques, todavía sin profundidad.");
+      ok(P.lineas.length===1, "linea() ignora el duplicado consecutivo");
+      ok(typeof eligeNuevo==="function", "eligeNuevo existe (anti-repetición del relato)");
+      ok(typeof montarCancha==="function", "cancha pixel sigue montable");
+    }, "relato anti-repetición + cancha");
+
+    /* T35 · 7.997 repetición + Clausura 2006 + prensa ×2 */
+    grupo("Grok 7.997 (repetición + Clausura 2006 + prensa)");
+    safe(function(){
+      ok(typeof VERSION==="string" && /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(typeof persistirRepeticion==="function", "persistirRepeticion existe");
+      ok(typeof compactarRelato==="function", "compactarRelato existe");
+      ok(typeof elegirPreguntasPrensa==="function", "elegirPreguntasPrensa existe");
+      ok(typeof avanzarFase2006==="function" && typeof _sembrarClausura2006==="function", "Clausura 2006 se puede sembrar");
+      ok(typeof tablaAnual2006==="function", "tabla anual 2006");
+      ok(POST_ARQ.bancar, "POST_ARQ.bancar existe");
+      ok(PREGUNTAS_BETA.some(function(p){ return p.sit==="post_empate"; }), "PREGUNTAS_BETA cubre empate");
+      ok(PREGUNTAS_BETA.some(function(p){ return p.sit==="post_clasico"; }), "PREGUNTAS_BETA cubre clásico post");
+    }, "API 7.997");
+    safe(function(){
+      var part={};
+      persistirRepeticion({
+        lineas:[{m:12,t:"Saque al medio.",c:""},{m:44,t:"¡Gol de Suazo!",c:"gol"},{m:70,t:"Roja para el rival.",c:"grave"}],
+        golesDetalle:[{min:44,quien:"Humberto Suazo",propio:true,tipo:"jugada"}],
+        stats:{pos:0.62,remMio:11,remRiv:4,arcMio:5,arcRiv:1,corMio:6,corRiv:2},
+        arbitro:{n:"Pablo Pozo",estilo:"parejo",desc:"cobra lo justo"},
+        ticker:[{autor:"@cacique",texto:"golazo del Chupete",tono:"bueno",m:44}]
+      }, part);
+      ok(part.lineas && part.lineas.length===3, "relato persistido");
+      ok(part.golesDetalle && part.golesDetalle[0].quien==="Humberto Suazo", "gol con autor");
+      ok(part.stats && part.stats.remMio===11, "stats persistidas");
+      ok(part.arbitro && /Pozo/.test(part.arbitro.n), "árbitro persistido");
+      ok(part.ticker && part.ticker[0].texto.indexOf("Chupete")>=0, "ticker persistido");
+      var largo=[]; for(var i=0;i<40;i++) largo.push({m:i,t:"linea "+i,c:i===20?"gol":""});
+      ok(compactarRelato(largo).length<=24, "relato compactado a 24");
+      ok(compactarRelato(largo).some(function(l){ return l.c==="gol"; }), "compactar conserva el gol");
+    }, "persistir repetición");
+    safe(function(){
+      nuevaPartida("CC",2006,"historico");
+      var liga=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"; });
+      ok(liga.length===18, "kickoff 2006 sigue en 18 fechas");
+      ok(liga.every(function(p){ return p.fase==="apertura"; }), "las 18 son Apertura");
+      ok(E.flags && E.flags.fase2006==="apertura", "flag fase apertura");
+      var titulos0=(E.titulos||[]).slice();
+      liga.forEach(function(p){ p.jugado=true; });
+      avanzarFase2006({tipo:"liga",fase:"apertura"});
+      var ape=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"&&p.fase==="apertura"; });
+      var cla=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"&&p.fase==="clausura"; });
+      ok(ape.length===18, "Apertura sigue siendo 18");
+      ok(cla.length===18, "Clausura siembra 18 más");
+      ok(E.flags.fase2006==="clausura", "flag pasa a clausura");
+      ok(Object.keys(E.tabla).length>=19 && Object.keys(E.tabla).every(function(id){ return !(E.tabla[id]&&E.tabla[id].pj); }), "tabla del Clausura parte en 0");
+      ok(E.tablaApertura && typeof E.tablaApertura==="object", "snapshot del Apertura");
+      ok((E.titulos||[]).length===titulos0.length, "cerrar Apertura NO entrega estrella");
+      ok(!(E.titulos||[]).some(function(t){ return /Apertura/i.test(t); }), "ningún título dice Apertura");
+      var riv="UCH";
+      var aVs=ape.filter(function(p){ return p.rivalId===riv; })[0];
+      var cVs=cla.filter(function(p){ return p.rivalId===riv; })[0];
+      ok(aVs && cVs, "CC cruza a la U en ambas ruedas");
+      ok(aVs.local!==cVs.local, "localía invertida vs la U en el Clausura");
+      var anual=tablaAnual2006();
+      ok(anual.length===19, "tabla anual tiene 19");
+    }, "2006 Apertura → Clausura sin estrella falsa");
+    safe(function(){
+      nuevaPartida("CC",2006,"historico");
+      var part=E.calendario[0];
+      var P=iniciarPartido(part,"simular");
+      correrHasta(P,90);
+      terminarPartido(P);
+      ok(part.jugado, "el partido quedó jugado");
+      ok(Array.isArray(part.lineas) && part.lineas.length>=1, "el partido guardó relato para la repetición");
+      ok(Array.isArray(part.golesDetalle), "golesDetalle en el partido");
+      ok(part.stats && typeof part.stats.pos==="number", "stats de transmisión guardadas");
+      ok(part.arbitro && part.arbitro.n, "árbitro guardado");
+    }, "partido real deja repetición");
+    safe(function(){
+      nuevaPartida("CC",2006,"historico");
+      var P={once:E.plantel.slice(0,11), goleadores:["Humberto Suazo","Humberto Suazo"], part:{rivalNombre:"Audax Italiano",local:true}, lineas:[]};
+      var res={yo:2,otro:0,golesDetalle:[{min:12,quien:"Humberto Suazo",propio:true},{min:70,quien:"Humberto Suazo",propio:true}], lesionados:[]};
+      var L=preguntasPostPartido(res,P);
+      var qs=elegirPreguntasPrensa(L,2);
+      ok(qs.length===2, "la sala pide 2 preguntas");
+      ok(qs[0].id!==qs[1].id, "las 2 preguntas son distintas");
+      ok(qs.every(function(q){ return q.q && q.ops && q.ops.length>=2; }), "cada pregunta trae opciones");
+    }, "prensa post ×2");
+
+    /* T36 · 7.998 5 cambios IFAB + descuento + bloque/ritmo */
+    grupo("Grok 7.998 (cambios IFAB + descuento + palancas)");
+    safe(function(){
+      ok(VERSION==="7.998", "VERSION 7.998");
+      ok(typeof cambiosMaxEra==="function" && cambiosMaxEra(2026)===5, "2026 permite 5 cambios");
+      ok(cambiosMaxEra(2006)===3, "2006 permite 3 cambios");
+      ok(cambiosMaxEra(1991)===2, "1991 permite 2 cambios");
+      ok(typeof ventanasMaxEra==="function" && ventanasMaxEra(2026)===3, "2026 tiene 3 paradas");
+      ok(ventanasMaxEra(1991)>10, "1991 no limita paradas");
+      ok(typeof BLOQUES!=="undefined" && BLOQUES.Alto && BLOQUES.Bajo, "BLOQUES Alto/Medio/Bajo");
+      ok(typeof RITMOS!=="undefined" && RITMOS.Vertiginoso && RITMOS.Pausado, "RITMOS Pausado/Normal/Vertiginoso");
+      ok(typeof calcularDescuento==="function" && typeof topePartido==="function", "descuento + topePartido");
+      ok(typeof textoReloj==="function", "textoReloj");
+    }, "API 7.998");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      ok(E.tactica.bloque==="Medio" && E.tactica.ritmo==="Normal", "save nueva trae bloque/ritmo");
+      var part=E.calendario.filter(function(p){ return p.tipo==="liga"; })[0];
+      var P=iniciarPartido(part,"simular");
+      ok(P.cambiosMax===5, "iniciarPartido 2026: cambiosMax 5");
+      ok(P.ventanasMax===3, "iniciarPartido 2026: 3 paradas");
+      ok(P.descuento2===0 && !P._descDicho, "descuento arranca en 0");
+      var once=P.once.slice();
+      var banca=bancaPartido(P);
+      ok(once.length>=11 && banca.length>=3, "hay banca para cambiar");
+      ok(hacerCambio(P,once[4],banca[0])===true, "primer cambio entra");
+      ok(P.cambios===1 && P.ventanas===1 && P._ventanaAbierta, "el primer cambio abre parada");
+      ok(hacerCambio(P,P.once[5],banca[1])===true, "segundo cambio en la misma parada");
+      ok(P.ventanas===1, "dos cambios en la misma parada = 1 ventana");
+      P._ventanaAbierta=false;
+      P.min=70;
+      ok(hacerCambio(P,P.once[6],banca[2])===true, "tercera ficha en otra parada");
+      ok(P.ventanas===2, "segunda parada gastada");
+    }, "5 cambios + paradas 2026");
+    safe(function(){
+      nuevaPartida("CC",1991,"historico");
+      var part=E.calendario.filter(function(p){ return p.tipo==="liga"; })[0];
+      var P=iniciarPartido(part,"simular");
+      ok(P.cambiosMax===2, "1991: 2 cambios");
+      correrHasta(P,90);
+      ok(P._descDicho, "al llegar a 90 se marca descuento");
+      ok(P.descuento2>=2 && P.descuento2<=7, "descuento entre 2 y 7: "+P.descuento2);
+      ok(P.min>=90 && P.min<=90+P.descuento2, "el reloj entra al 90+");
+      ok((P.lineas||[]).some(function(l){ return /cuarto árbitro|descuento/i.test(l.t); }), "el relato dice el descuento");
+      var txt=textoReloj(P,false);
+      ok(/90\+/.test(txt) || /Final/.test(txt) || P.min===90, "reloj habla de 90+ o final");
+    }, "descuento 90+ en 1991");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      E.tactica.bloque="Alto"; E.tactica.ritmo="Vertiginoso"; E.tactica.presion="Alta"; E.tactica.mentalidad="Ofensivo";
+      var lect=lecturaPlan();
+      ok(/bloque alto/i.test(lect) && /vertiginoso/i.test(lect), "lecturaPlan nombra bloque y ritmo");
+      var fzA=fuerzaEquipo(onceIdeal());
+      E.tactica.bloque="Bajo"; E.tactica.ritmo="Pausado"; E.tactica.presion="Baja"; E.tactica.mentalidad="Defensivo";
+      var fzB=fuerzaEquipo(onceIdeal());
+      ok(fzA.ataque>fzB.ataque, "bloque alto + ritmo vertiginoso ataca más que el bus");
+      ok(fzB.orden>fzA.orden, "bloque bajo + ritmo pausado ordena más");
+      ok(fzA.desgaste>fzB.desgaste, "el ritmo vertiginoso cansa más");
+      ok(FRASES_CUERPO.some(function(f){ return /pega|cabros/i.test(f.x); }), "frases del cuerpo técnico más chilenas");
+      ok(PREGUNTAS_BETA.some(function(p){ return /cinco cambios|bloque/i.test(p.q); }), "prensa pregunta por cambios y bloque");
+    }, "palancas tácticas mueven el partido");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

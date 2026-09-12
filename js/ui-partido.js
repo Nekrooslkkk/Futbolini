@@ -71,8 +71,11 @@ function lecturaPlan(){
   const m=(typeof MENTALIDADES!=="undefined"&&MENTALIDADES[E.tactica.mentalidad])||{ataque:0,orden:0,expo:0,desgaste:0};
   const es=(typeof ESTILOS!=="undefined"&&ESTILOS[E.tactica.estilo])||{ataque:0,orden:0,desgaste:0};
   const pr=(typeof PRESIONES!=="undefined"&&PRESIONES[E.tactica.presion])||{ataque:0,orden:0,expo:0,desgaste:0};
-  const atk=m.ataque+es.ataque+pr.ataque, ord=m.orden+es.orden+pr.orden;
-  const desg=(m.desgaste||0)+(es.desgaste||0)+(pr.desgaste||0);
+  const bl=(typeof BLOQUES!=="undefined"&&BLOQUES[E.tactica.bloque])||{ataque:0,orden:0,desgaste:0};
+  const rt=(typeof RITMOS!=="undefined"&&RITMOS[E.tactica.ritmo])||{ataque:0,orden:0,desgaste:0};
+  const atk=m.ataque+es.ataque+pr.ataque+(bl.ataque||0)+(rt.ataque||0);
+  const ord=m.orden+es.orden+pr.orden+(bl.orden||0)+(rt.orden||0);
+  const desg=(m.desgaste||0)+(es.desgaste||0)+(pr.desgaste||0)+(bl.desgaste||0)+(rt.desgaste||0);
   let cara;
   if(atk>=8 && ord<=-2) cara="Vas con TODO al ataque pero quedas abierto atrás: generas harto y regalas también.";
   else if(atk>=6) cara="Plan ofensivo: buscas el arco rival, con algo de riesgo atrás.";
@@ -80,15 +83,21 @@ function lecturaPlan(){
   else if(ord>=4) cara="Plan cauto y ordenado: lo primero es no comerte goles.";
   else cara="Plan equilibrado: ni muy arriba ni muy atrás.";
   const s=x=>x>1?1:(x<-1?-1:0);
-  const sig=[s(m.ataque-m.orden),s(es.ataque-es.orden),s(pr.ataque-pr.orden)];
+  const sig=[s(m.ataque-m.orden),s(es.ataque-es.orden),s(pr.ataque-pr.orden),s((bl.ataque||0)-(bl.orden||0)),s((rt.ataque||0)-(rt.orden||0))];
   const pos=sig.filter(x=>x>0).length, neg=sig.filter(x=>x<0).length;
   let coh;
-  if(pos>=2&&neg===0) coh="✔ Combinas bien: mentalidad, estilo y presión tiran todos para el ataque.";
-  else if(neg>=2&&pos===0) coh="✔ Combinas bien: todo apunta a defender y salir de contra.";
+  if(pos>=3&&neg===0) coh="✔ Combinas bien: bloque, ritmo, mentalidad y presión tiran todos para el ataque.";
+  else if(neg>=3&&pos===0) coh="✔ Combinas bien: todo apunta a defender y salir de contra.";
   else if(pos&&neg) coh="⚠ Estás mezclando cosas que se pelean (una parte quiere atacar y otra defenderse): el equipo lo siente tibio.";
   else coh="Plan mesurado, sin extremos.";
   const fatiga=desg>=8?" 🥵 Ese ritmo cansa harto: cuida el segundo tiempo.":(desg<=-2?" 🐢 Ritmo tranquilo: llegas entero al final.":"");
-  return cara+" "+coh+fatiga;
+  const extra=[];
+  if(E.tactica.bloque==="Alto") extra.push("bloque alto");
+  if(E.tactica.bloque==="Bajo") extra.push("bloque bajo");
+  if(E.tactica.ritmo==="Vertiginoso") extra.push("ritmo vertiginoso");
+  if(E.tactica.ritmo==="Pausado") extra.push("ritmo pausado");
+  const extraTxt=extra.length?" ("+extra.join(" · ")+")":"";
+  return cara+" "+coh+fatiga+extraTxt;
 }
 /* 7.36 · árbitro con sesgo visible (nombre ficticio + estilo). Determinista. */
 function chipArbitro(part,arb){
@@ -155,13 +164,16 @@ function pantallaPrevia(part){
   /* --- plan --- */
   const p1=panel("Plan de partido","📋");
   [["form","Formación",Object.keys(FORMACIONES)],["mentalidad","Mentalidad",Object.keys(MENTALIDADES)],
-   ["estilo","Estilo",Object.keys(ESTILOS)],["presion","Presión",Object.keys(PRESIONES)]]
+   ["estilo","Estilo",Object.keys(ESTILOS)],["presion","Presión",Object.keys(PRESIONES)],
+   ["bloque","Bloque",Object.keys(BLOQUES||{"Medio":1})],["ritmo","Ritmo",Object.keys(RITMOS||{"Normal":1})]]
    .forEach(([k,lab,ops])=>{
     p1.cuerpo.appendChild(el("label","lb",lab));
     const f=el("div","fichas");
     ops.forEach(o=>{
       const b=el("button","ficha",o);
       b.setAttribute("aria-pressed",E.tactica[k]===o?"true":"false");
+      const tip=(k==="bloque"&&BLOQUES[o]&&BLOQUES[o].d)||(k==="ritmo"&&RITMOS[o]&&RITMOS[o].d);
+      if(tip) b.title=tip;
       b.onclick=()=>{ E.tactica[k]=o; guardar(); pantallaPrevia(part); };
       f.appendChild(b);
     });
@@ -734,20 +746,29 @@ function pintarPartido(){
       P._flashN--;
     }
   })();
-  const marc=el("div","marcador");
+  const marc=el("div","marcador marcador-vivo");
+  const minTxt=(typeof textoReloj==="function")?textoReloj(P,false).replace(/^⏸ /,""):("Minuto "+P.min);
   marc.innerHTML='<div class="eq">'+(P.part.local?E.clubNombre:P.part.rivalNombre)+'</div>'+
-    '<div class="go">'+P.gl+" - "+P.gv+'</div>'+
+    '<div class="go-wrap"><div class="go">'+P.gl+" - "+P.gv+'</div><div class="go-min">'+minTxt+'</div></div>'+
     '<div class="eq">'+(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>';
   p.cuerpo.appendChild(marc);
   celebrarGolSiCorresponde(P, marc);   /* 7.79 · explota la pantalla cuando cae un gol */
   let canchaCv=null;
   const verCancha=!(E.config&&E.config.verCancha===false);
   if(P.modo!=="simular"){
-    if(verCancha){ canchaCv=el("canvas","cancha2d"); canchaCv.setAttribute("aria-hidden","true"); p.cuerpo.appendChild(canchaCv); }
-    p.cuerpo.appendChild(bloqueStats(P));
+    const hud=el("div","partido-hud");
+    if(verCancha){
+      const colC=el("div","partido-cancha");
+      canchaCv=el("canvas","cancha2d"); canchaCv.setAttribute("aria-hidden","true");
+      colC.appendChild(canchaCv); hud.appendChild(colC);
+    }
+    const colS=el("div","partido-stats");
+    colS.appendChild(bloqueStats(P));
+    hud.appendChild(colS);
+    p.cuerpo.appendChild(hud);
   }
-  const tramo=P.min<=45?"1T":(P.min<90?"2T":"FT");
-  p.cuerpo.appendChild(el("div","reloj",P.terminado?"Final del partido":((PAUSADO?"⏸ ":"")+"Minuto "+P.min+" · "+tramo)));
+  const tramoTxt=(typeof textoReloj==="function")?textoReloj(P,PAUSADO):(P.terminado?"Final del partido":((PAUSADO?"⏸ ":"")+"Minuto "+P.min+" · "+(P.min<=45?"1T":(P.min<90?"2T":"FT"))));
+  p.cuerpo.appendChild(el("div","reloj"+(P._descDicho&&!P.terminado?" desc":""),tramoTxt));
   if(P.arbitro){
     const filaA=el("div","fila-meta centro");
     const ca=chipArbitro(P.part,P.arbitro); if(ca) filaA.appendChild(ca);
@@ -774,9 +795,19 @@ function pintarPartido(){
       b.onclick=()=>{ VEL_PARTIDO=vv; if(!MOMENTO_OPS.length&&!PAUSADO) correrEnVivo(); pintarPartido(); };
       sec.appendChild(b);
     });
-    const bcam=el("button","btn-aqua chico",'🔄 <span class="ctrl-full">Cambio (</span>'+(P.cambios||0)+"/"+(P.cambiosMax||3)+'<span class="ctrl-full">)</span>');
-    bcam.setAttribute("aria-label","Cambio de jugadores");
-    bcam.disabled=(P.cambios||0)>=(P.cambiosMax||3) || (MOMENTO_OPS&&MOMENTO_OPS.length>0);
+    const maxC=P.cambiosMax||3;
+    const maxV=P.ventanasMax||99;
+    const quedanC=Math.max(0,maxC-(P.cambios||0));
+    const quedanV=maxV>=99?null:Math.max(0,maxV-(P.ventanas||0));
+    const camLabel=quedanV!=null
+      ?('🔄 <span class="ctrl-full">Cambio </span>'+(P.cambios||0)+"/"+maxC+' <span class="mini">· '+quedanV+' parada'+(quedanV===1?"":"s")+"</span>")
+      :('🔄 <span class="ctrl-full">Cambio (</span>'+(P.cambios||0)+"/"+maxC+'<span class="ctrl-full">)</span>');
+    const bcam=el("button","btn-aqua chico",camLabel);
+    bcam.setAttribute("aria-label","Cambio de jugadores. Quedan "+quedanC);
+    bcam.title=quedanV!=null
+      ?("IFAB: "+maxC+" cambios en "+maxV+" paradas (el entretiempo no cuenta). Quedan "+quedanC+" cambios y "+quedanV+" paradas.")
+      :"Cambio de jugadores ("+(P.cambios||0)+" de "+maxC+").";
+    bcam.disabled=quedanC<=0 || (quedanV===0 && !P._ventanaAbierta) || (MOMENTO_OPS&&MOMENTO_OPS.length>0);
     bcam.onclick=modalCambio;
     sec.appendChild(bcam);
     const bcv=el("button","btn-aqua chico"+(verCancha?"":" gris"),verCancha?'🎥<span class="ctrl-full"> Cancha ON</span>':'🎥<span class="ctrl-full"> Cancha OFF</span>');
@@ -814,9 +845,12 @@ function pintarPartido(){
     if(P.apoyo){
       const ap=el("div","apoyo-live");
       const col=v=>v>=60?"#4fbf3f":(v>=35?"#e0a92a":"#c9392c");
-      [["🎪 Ánimo hinchada",P.apoyo.hinchada],["👥 Confianza plantel",P.apoyo.plantel],["🧠 Criterio DT",P.apoyo.criterio]].forEach(([n,val])=>{
+      [["🎪 Ánimo hinchada",P.apoyo.hinchada,"Cómo está la gente: silba, empuja o se cae según el marcador y lo que haces."],
+       ["👥 Confianza plantel",P.apoyo.plantel,"Si el camarín te cree. Baja con derrota o cambios raros; sube si el plan funciona."],
+       ["🧠 Criterio DT",P.apoyo.criterio,"Tu lectura táctica en vivo. Sube cuando aciertas un momento; baja si improvisas al revés."]].forEach(([n,val,tip])=>{
         const row=el("div","apoyo-row");
-        row.innerHTML="<span class='apoyo-n'>"+n+"</span>"+barrita(val,col(val))+"<span class='apoyo-v'>"+Math.round(val)+"</span>";
+        row.title=tip;
+        row.innerHTML="<span class='apoyo-n' title='"+tip.replace(/'/g,"")+"'>"+n+"</span>"+barrita(val,col(val))+"<span class='apoyo-v'>"+Math.round(val)+"</span>";
         ap.appendChild(row);
       });
       p.cuerpo.appendChild(ap);
@@ -849,7 +883,7 @@ function correrEnVivo(){
 function pasoEnVivo(){
   if(PAUSADO) return;
   const P=P_ACTUAL; if(!P){ clearInterval(TIMER); return; }
-  if(P.terminado||P.min>=90){ clearInterval(TIMER); pintarPartido(); cerrarPartido(); return; }
+  if(P.terminado||(P._descDicho&&P.min>=(typeof topePartido==="function"?topePartido(P):90))){ clearInterval(TIMER); pintarPartido(); cerrarPartido(); return; }
   /* momento táctico programado (solo dirigir) */
   if(P.modo==="dirigir" && P.momentoIdx<P.momentos.length && P.min>=P.momentos[P.momentoIdx]){
     clearInterval(TIMER); pintarPartido(); mostrarMomento(); return;
@@ -869,7 +903,7 @@ function pasoEnVivo(){
 }
 function reanudarPronto(){
   setTimeout(()=>{ if(!P_ACTUAL) return;
-    if(P_ACTUAL.terminado||P_ACTUAL.min>=90){ cerrarPartido(); }
+    if(P_ACTUAL.terminado||(P_ACTUAL._descDicho&&P_ACTUAL.min>=(typeof topePartido==="function"?topePartido(P_ACTUAL):90))){ cerrarPartido(); }
     else correrEnVivo();
   }, 650);
 }
@@ -877,22 +911,32 @@ function reanudarPronto(){
 /* 6.18 · cambio manual con nombre durante el partido */
 function modalCambio(){
   const P=P_ACTUAL; if(!P) return;
-  if((P.cambios||0)>=(P.cambiosMax||3)){ aviso("Ya usaste todos los cambios"); return; }
+  const maxC=P.cambiosMax||3;
+  const maxV=P.ventanasMax||99;
+  if((P.cambios||0)>=maxC){ aviso("Ya usaste todos los cambios"); return; }
+  const enHT=P.min>=45&&P.min<=47;
+  if(maxV<99 && !enHT && !P._ventanaAbierta && (P.ventanas||0)>=maxV){
+    aviso("Ya usaste las "+maxV+" paradas de cambio (el entretiempo no cuenta)"); return;
+  }
   const wasPaused=PAUSADO; PAUSADO=true; clearInterval(TIMER);
   const banca=(typeof bancaPartido==="function")?bancaPartido(P):E.plantel.filter(j=>!j.vendido&&!j.cedido&&!(j.lesion>0)&&P.once.indexOf(j)<0);
   let sale=null;
-  const reanudar=()=>{ cerrarModal(); PAUSADO=wasPaused; pintarPartido(); if(!PAUSADO&&!MOMENTO_OPS.length) correrEnVivo(); };
+  const reanudar=()=>{ P._ventanaAbierta=false; cerrarModal(); PAUSADO=wasPaused; pintarPartido(); if(!PAUSADO&&!MOMENTO_OPS.length) correrEnVivo(); };
   modal(box=>{
     const pintar=()=>{
       box.innerHTML="";
-      box.appendChild(el("div","cab",'<span class="ic">🔄</span><span>Cambio '+((P.cambios||0)+1)+' / '+(P.cambiosMax||3)+'</span>'));
+      const quedanV=maxV>=99?null:Math.max(0,maxV-(P.ventanas||0));
+      const cabTxt="Cambio "+((P.cambios||0)+1)+" / "+maxC+(quedanV!=null?" · parada "+Math.min(maxV,(P.ventanas||0)+(P._ventanaAbierta||enHT?0:1))+" / "+maxV:"");
+      box.appendChild(el("div","cab",'<span class="ic">🔄</span><span>'+cabTxt+'</span>'));
       const c=el("div","cuerpo"); box.appendChild(c);
-      c.appendChild(el("p","mini","Elige quién SALE y quién ENTRA. Al minuto "+P.min+"."));
+      c.appendChild(el("p","mini","Quién SALE y quién ENTRA. Minuto "+P.min+(P.min>=90?" (descuento)":"")+"."+(maxV<99?" Varios cambios en la misma parada cuentan como una sola.":"")));
+      if(maxV<99) c.appendChild(el("p","mini",(P._ventanaAbierta?"Parada abierta: podés meter otro ahora sin gastar otra.":(enHT?"Entretiempo: no gasta parada.":"Te quedan "+quedanV+" parada"+(quedanV===1?"":"s")+"."))));
       c.appendChild(el("h3","sub","Sale de la cancha"));
       const g1=el("div","align-grid");
-      P.once.forEach(j=>{
-        const b=el("button","align-jug"+(sale===j?" on":""));
-        b.innerHTML="<b>"+(sale===j?"✓ ":"")+j.n+"</b><span class='mini'>"+j.pos+" · cansancio "+Math.round(j.cansancio||0)+"</span>";
+      P.once.slice().sort((a,b)=>(b.cansancio||0)-(a.cansancio||0)).forEach(j=>{
+        const cans=Math.round(j.cansancio||0);
+        const b=el("button","align-jug"+(sale===j?" on":"")+(cans>=16?" cans-alto":""));
+        b.innerHTML="<b>"+(sale===j?"✓ ":"")+j.n+"</b><span class='mini'>"+j.pos+" · cansancio "+cans+(cans>=16?" · piernas pesadas":"")+"</span>";
         b.onclick=()=>{ sale=(sale===j?null:j); pintar(); };
         g1.appendChild(b);
       });
@@ -903,13 +947,21 @@ function modalCambio(){
         const g2=el("div","align-grid");
         banca.slice().sort((a,b)=>((b.pos===sale.pos)-(a.pos===sale.pos))||(b.nivel-a.nivel)).forEach(j=>{
           const b=el("button","align-jug");
-          b.innerHTML="<b>"+j.n+"</b><span class='mini'>"+j.pos+" · niv "+j.nivel+" · forma "+Math.round(j.forma)+"</span>";
-          b.onclick=()=>{ if(hacerCambio(P,sale,j)){ reanudar(); aviso(j.n+" entra por "+sale.n); } };
+          const mismo=j.pos===sale.pos;
+          b.innerHTML="<b>"+j.n+"</b><span class='mini'>"+j.pos+(mismo?" · mismo puesto":" · recambio")+" · niv "+j.nivel+" · forma "+Math.round(j.forma)+"</span>";
+          b.onclick=()=>{
+            if(hacerCambio(P,sale,j)){
+              aviso(j.n+" entra por "+sale.n);
+              sale=null;
+              if((P.cambios||0)>=maxC){ reanudar(); return; }
+              pintar();
+            }
+          };
           g2.appendChild(b);
         });
         c.appendChild(g2);
       }
-      const x=el("button","btn-aqua ancho gris","Cerrar sin cambiar"); x.style.marginTop="6px";
+      const x=el("button","btn-aqua ancho gris",P._ventanaAbierta?"Cerrar parada":"Cerrar sin cambiar"); x.style.marginTop="6px";
       x.onclick=reanudar;
       c.appendChild(x);
     };
@@ -1216,6 +1268,7 @@ function mostrarAccion(ev){
   let titulo="", opciones=[];
   if(ev.tipo==="penal"){
     titulo="¡Penal a favor! ¿Quién patea?";
+    if(P){ P._penalCancha=1; P._penalSeq=(P._penalSeq||0)+1; }
     opciones=candidatosPenal(P).map(j=>({t:j.n+" · "+((j.rasgos&&j.rasgos.includes("penales"))?"especialista":"nivel "+j.nivel),
       run:()=> P.modo==="dirigir" ? minijuegoPenal(P,j) : penalEnPartido(P,true,null,j)}));
   } else if(ev.tipo==="tiroLibre"){
@@ -1345,6 +1398,7 @@ const POST_ARQ={
  palo:    {grupos:{hinchada:6,anfp:-6,prensa:-4},rep:{dureza:5},txt:"Tiraste un palo. Unos lo festejan, la ANFP y la prensa toman nota."},
  mea:     {grupos:{prensa:6,camarin:-1},rep:{credibilidad:6},ef:{moral:-1},txt:"Autocrítica pública: duele, pero suma credibilidad."},
  apoyar:  {grupos:{camarin:8,prensa:3},rep:{publica:2},ef:{moral:4},txt:"Pusiste la cara por el grupo. El vestuario lo valora."},
+ bancar:  {grupos:{camarin:8,prensa:2},rep:{publica:2},ef:{moral:3},txt:"Pusiste el pecho. El vestuario lo nota."},
  arbitro: {grupos:{hinchada:6,anfp:-8,prensa:-6},rep:{dureza:5,publica:-3},ef:{hinchada:4},txt:"Apuntaste al árbitro. La hinchada compra el complot; la ANFP y la prensa, no."},
  respaldo:{grupos:{camarin:7},rep:{publica:2},ef:{moral:2},txt:"Lo bancaste en público. Adentro se nota."},
  foco:    {grupos:{camarin:4,prensa:3},txt:"Pusiste el foco en lo que viene. Mensaje sobrio, cero polémica."}
@@ -1412,6 +1466,20 @@ function elegirPreguntaPrensa(L){
   vistas.push(q.id); if(vistas.length>8) vistas.splice(0,vistas.length-8);
   return q;
 }
+function elegirPreguntasPrensa(L,n){
+  n=n||2;
+  const out=[], seen={};
+  const lista=(L||[]).slice();
+  for(let i=0;i<n;i++){
+    const rest=lista.filter(x=>x&&!seen[x.id]);
+    if(!rest.length) break;
+    const q=elegirPreguntaPrensa(rest);
+    if(!q) break;
+    seen[q.id]=true;
+    out.push(q);
+  }
+  return out;
+}
 function climaPrensa(){
   const v=(E.grupos&&E.grupos.prensa)?E.grupos.prensa.aprob:0;
   const pct=Math.round((v+100)/2);
@@ -1435,20 +1503,25 @@ function seccionPrensa(p,res,P){
   bt.onclick=()=>{ E.prensaAuto=!E.prensaAuto; guardar(); tog.innerHTML="Modo: <b>"+(E.prensaAuto?"automático (ayudante)":"manual (tú hablas)")+"</b>"; bt.textContent=E.prensaAuto?"Pasar a manual":"Delegar en el ayudante"; zonaPrensa.innerHTML=""; pintarZonaPrensa(); };
   p.cuerpo.appendChild(bt);
   const zonaPrensa=el("div"); p.cuerpo.appendChild(zonaPrensa);
-  let hecho=false;
+  let hecho=false, qi=0, qs=null, dichos=[];
   function pintarZonaPrensa(){
     zonaPrensa.innerHTML="";
     if(hecho) return;
+    if(!qs) qs=(typeof elegirPreguntasPrensa==="function")
+      ?elegirPreguntasPrensa(preguntasPostPartido(res,P),2)
+      :[elegirPreguntaPrensa(preguntasPostPartido(res,P))].filter(Boolean);
     if(E.prensaAuto){
       const r=res.yo>res.otro?{grupos:{prensa:3,camarin:2}}:res.yo<res.otro?{grupos:{prensa:1,camarin:1}}:{grupos:{prensa:1}};
       aplicarGrupos(r.grupos);
-      notificar({t:"El ayudante habló con la prensa",tipo:"neutro",d:"Se ocupó de la rueda de prensa sin sobresaltos. Declaraciones tibias, cero polémica.",bandeja:false});
+      notificar({t:"El ayudante habló con la prensa",tipo:"neutro",d:"Se ocupó de las "+(qs.length||2)+" preguntas sin sobresaltos. Declaraciones tibias, cero polémica.",bandeja:false});
       guardar(); hecho=true;
-      zonaPrensa.appendChild(el("div","resul mitad","El ayudante se encargó: sin polémica."));
+      zonaPrensa.appendChild(el("div","resul mitad","El ayudante cubrió la sala ("+(qs.length||2)+" preguntas). Sin polémica."));
       return;
     }
+    if(!qs.length){ zonaPrensa.appendChild(el("p","mini","La sala se despobló.")); return; }
+    const q=qs[qi];
     const per=eligePeri();
-    const q=elegirPreguntaPrensa(preguntasPostPartido(res,P));
+    zonaPrensa.appendChild(el("p","mini","Pregunta "+(qi+1)+" de "+qs.length));
     zonaPrensa.appendChild(el("div","resul mitad peri-row", fichaPeriodista(per, q.q)));
     const ops=el("div","ops");
     q.ops.forEach(o=>{
@@ -1459,7 +1532,14 @@ function seccionPrensa(p,res,P){
         if(typeof postProc==="function") postProc("@"+per.m.replace(/\s/g,""),"prensa","«"+o.t+"», respondió el DT ante "+q.q.slice(0,40).replace(/«|»/g,"")+"…","neutro");
         notificar({t:"Declaraciones a "+per.n,tipo:"neutro",d:"«"+o.t+"». "+a.txt,bandeja:false});
         if(typeof recordar==="function"&&o.k==="palo") recordar("prensa","calentaste la sala de prensa después de "+(res.yo>res.otro?"ganarle":"jugar contra")+" a "+P.part.rivalNombre,{peso:"bajo"});
-        guardar(); hecho=true; zonaPrensa.innerHTML=""; zonaPrensa.appendChild(el("div","resul bien","«"+o.t+"» — "+a.txt));
+        dichos.push(o.t);
+        guardar();
+        qi++;
+        if(qi<qs.length) pintarZonaPrensa();
+        else {
+          hecho=true; zonaPrensa.innerHTML="";
+          zonaPrensa.appendChild(el("div","resul bien",dichos.map(t=>"«"+t+"»").join("<br>")+" — "+a.txt));
+        }
       };
       ops.appendChild(b);
     });

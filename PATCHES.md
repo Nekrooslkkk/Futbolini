@@ -2454,6 +2454,42 @@ GitHub 7.994 tenía los tests T30–T32 pero **no** cargaba `data-planteles-801.
 - Sectores con nombre en estadios de B (Figueroa, Zorros, Santa Laura, etc.).
 - VERSION **7.995**. 8.00 sigue reservada.
 
+## 7.996 · El partido se siente + 2006 ya no es solo Colo-Colo
+
+El relato repetía "Primeros toques…" y la cancha era un rectángulo chato. En 2006, la U / Audax / Católica salían con cantera.
+
+- **Cancha:** proporción de campo (105×68), área chica, puntos penales, banderines. En el penal el arquero se lanza y la pelota va al punto. Stats al lado (abajo en celular).
+- **Relato:** `eligeNuevo` no repite las últimas 8; `linea()` ignora el duplicado consecutivo. Cita jugador + rasgo; clásico y época (1925/1991/2006) cambian el tono.
+- **2006 documentado:** UCH (Salas, Alcázar, Iturra, Pinto — finalista Apertura), AUD (Villanueva, Di Santo, Peric — finalista Clausura, NO campeón), UC (Quinteros, Conca, Arrué, Buljubasich, Medel de 18 — Pellicer). Fuentes: solofutbol, EMOL 13 jun 2006, Wikipedia final Clausura, ESPN squad, wiki temporada UC.
+- **XI rival:** un año histórico ya no hereda el plantel 2026 ni el de 1991 (Rangers 2006 sale con apodos, no con la B 2026).
+- **js/data-996.js** (nuevo). Tests T34. **util.js:** 7.995 → **7.996**. 8.00 sigue reservada.
+**Probado:** node --check + suite.
+
+## 7.997 · Repetición de verdad + Clausura 2006 + sala de prensa de 2
+
+La repetición del calendario solo listaba goleadores. 2006 se acababa a las 18 fechas del Apertura y coronaba al 1° de esa rueda. La sala post-partido era una pregunta; la previa ya eran dos.
+
+- **Repetición:** `terminarPartido` guarda relato (tope 24, prioriza goles/rojas/cambios), `golesDetalle`, stats, árbitro y 5 tuits de la grada. El calendario abre cualquier partido jugado, no solo los que tienen goleador. Copa igual.
+- **2006 Clausura:** kickoff sigue en 18 fechas del Apertura (`fase:"apertura"`). Al jugar la última, se siembra el Clausura (otras 18, localías invertidas, tabla desde 0, tabla anual a la vista). **No hay estrella por el Apertura regular** — en 2006 el título iba a playoffs estilo México, todavía no jugables. El 1° del Clausura regular cierra el año (simplificación).
+- **Sala de prensa:** 2 preguntas post-partido, mismas reglas que la previa. `PREGUNTAS_BETA` cubre derrota, goleada, empate, clásico, racha y juvenil.
+- Tests T35. **util.js:** 7.996 → **7.997**. 8.00 sigue reservada.
+
+**Probado:** node --check + suite.
+
+## 7.998 · El partido se dirige: 5 cambios IFAB + descuento + palancas
+
+El reglamento decía 5 cambios (trivia) y el motor seguía en 3. El reloj moría en 90 en punto. Táctica: formación/mentalidad/estilo/presión, sin bloque ni ritmo.
+
+- **Cambios IFAB:** 2 (hasta 1994) / 3 (1995–2019) / **5 desde 2020**. En 2026, 3 paradas (el entretiempo no cuenta); varios en la misma parada = una sola. El botón muestra cambios + paradas. La lesión cuenta.
+- **Descuento:** al 90 el cuarto árbitro marca 2–7' según goles, cambios, tarjetas y lesiones. El reloj dice 90+N. `correrHasta(90)` juega el añadido.
+- **Bloque** (alto/medio/bajo) y **ritmo** (pausado/normal/vertiginoso): palancas reales sobre ataque/orden/desgaste/presión. La lectura del plan las nombra y caza mezclas que se pelean.
+- **Marcador:** el minuto vive adentro del scoreboard. Indicadores de hinchada/plantel/criterio con explicación al pasar el mouse.
+- **Frases del cuerpo técnico** más chilenas (pega, cabros) y prensa que pregunta por bloque/cambios/descuento.
+- **js/data-998.js** (nuevo, último). Tests T36. **util.js:** 7.997 → **7.998**. 8.00 sigue reservada.
+
+**Probado:** node --check + suite.
+
+
 
 
 

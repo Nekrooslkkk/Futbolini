@@ -46,15 +46,15 @@
 - [x] **[MOTOR]** **Química**: fórmula arreglada (amplifica el balance bueno/malo de los lazos → rango
       real 15-97, responde a los cambios, ya no se aplasta en ~56) + explicación (conteo de duplas y qué
       la sube: edad parecida, rasgos comunes, ídolos de la casa, jugar juntos). ✅ (7.26)
-- [~] **[MOTOR]** Formación / mentalidad / estilo / presión: **"Lectura del plan"** en criollo que dice el
-      efecto neto y si combinás bien o mezclás cosas que se pelean. ✅ (7.26). PENDIENTE: **más cosas por
-      cambiar** (nuevas palancas tácticas).
+- [x] **[MOTOR]** Formación / mentalidad / estilo / presión: **"Lectura del plan"** en criollo que dice el
+      efecto neto y si combinás bien o mezclás cosas que se pelean. ✅ (7.26). **Bloque** (alto/medio/bajo) y
+      **ritmo** (pausado/normal/vertiginoso) como palancas extra. ✅ (7.998)
 - [ ] **[MOTOR]** Alineación con **MÁS jugadores** de verdad (banca más profunda).
 - [ ] **[GROK]** **Canteranos, datos, rasgos** (contenido para que haya más plantel/variedad).
 
 ## 4 · "ANTES DE SALIR" + CLIMA + PRENSA
-- [ ] **[GROK]** Frase del cuerpo técnico: más realista, **chilenizada**, una frase, sin pelos en la
-      lengua (menos fome).
+- [x] **[GROK]** Frase del cuerpo técnico: más realista, **chilenizada**, una frase, sin pelos en la
+      lengua (menos fome). ✅ (7.998: pega/cabros + caza de plan que se pelea)
 - [x] **[MOTOR]** **Clima**: mini-pestaña con simulación tipo Windows Vista. ✅ (7.32)
 - [~] **[MOTOR]** Conferencia de prensa **conectada a los indicadores** y que provoque algo real. *(deuda/caja/moral/hinchada disparan preguntas 7.32; falta texto libre)*
 - [ ] **[GROK/TUYO]** Imágenes de cada periodista.
@@ -65,10 +65,10 @@
 ## 5 · DURANTE EL PARTIDO
 - [ ] **[MOTOR]** ⚠️(otro chat en `cancha.js`) La cancha es DEMASIADO rectangular → que parezca cancha.
 - [ ] **[MOTOR]** Datos (remates, al arco, córners) a **otro lado** de la pantalla.
-- [ ] **[MOTOR]** Mejorar marcador + minutaje.
+- [x] **[MOTOR]** Mejorar marcador + minutaje. ✅ (7.998: minuto en el scoreboard + descuento 90+N)
 - [x] **[MOTOR]** Mostrar el **canal que transmite** (atado a la concesión de TV que se va mejorando). ✅ (7.32, previa + vivo)
-- [ ] **[MOTOR]** Botones (sobre todo el de **cambio**: se supone que son más) mejor.
-- [ ] **[MOTOR]** Indicadores que se entiendan (qué apretás y qué pasa).
+- [x] **[MOTOR]** Botones (sobre todo el de **cambio**: se supone que son más) mejor. ✅ (7.998: 5 IFAB + 3 paradas)
+- [x] **[MOTOR]** Indicadores que se entiendan (qué apretás y qué pasa). ✅ (7.998: title en ánimo/confianza/criterio)
 - [ ] **[GROK]** **Relato**: más variado, que no se repita 2 veces "Primeros toques, todavía sin
       profundidad".
 - [ ] **[MOTOR+GROK]** **FutbolGram/Plop**: conectar el "Plop opina" con el otro feed (hoy no aparece

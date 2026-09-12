@@ -38,6 +38,48 @@ const PRESIONES={
  "Media":{desgaste:0, orden:0, ataque:0, recup:0, expo:0},
  "Alta": {desgaste:5, orden:-2,ataque:4, recup:4, expo:4}
 };
+/* 7.998 · palancas extra (ROADMAP §3): dónde se para el bloque y a qué ritmo se corre.
+   Empujan ataque/orden/desgaste/recup/expo igual que mentalidad y presión. */
+const BLOQUES={
+ "Alto": {ataque:3, orden:-3,desgaste:2, expo:3, recup:3, d:"Empujas la línea. Ahogas la salida, pero un pelotazo te deja vendido."},
+ "Medio":{ataque:0, orden:0, desgaste:0, expo:0, recup:0, d:"Línea a mitad de cancha. El estándar."},
+ "Bajo": {ataque:-2,orden:4, desgaste:-1,expo:-4,recup:-2, d:"El bus estacionado. Compactos, esperan el error."}
+};
+const RITMOS={
+ "Pausado":    {ataque:-1,orden:2, desgaste:-3,d:"La calman. Llegan enteros al final, generan menos."},
+ "Normal":     {ataque:0, orden:0, desgaste:0, d:"Ni rápido ni lento."},
+ "Vertiginoso":{ataque:3, orden:-2,desgaste:4, d:"Corren cada pelota. Media hora de infarto, segundo tiempo con plomo en las piernas."}
+};
+/* 7.998 · tope de cambios IFAB: 2 hasta 1994, 3 desde 1995, 5 desde 2020 (COVID, permanente 2022). */
+function cambiosMaxEra(anio){
+  anio=anio||((typeof E!=="undefined"&&E&&E.anio)||2026);
+  if(anio>=2020) return 5;
+  if(anio>=1995) return 3;
+  return 2;
+}
+function ventanasMaxEra(anio){
+  anio=anio||((typeof E!=="undefined"&&E&&E.anio)||2026);
+  return anio>=2020?3:99;
+}
+function calcularDescuento(P){
+  const goles=(P.gl||0)+(P.gv||0);
+  const cambios=P.cambios||0;
+  const tarj=(P.tarjetas||[]).length;
+  const les=(P.lesionados||[]).length;
+  let n=2+Math.min(2,goles)+(cambios>=3?1:0)+(tarj>=3?1:0)+(les?1:0);
+  return (typeof clamp==="function")?clamp(n,2,7):Math.max(2,Math.min(7,n));
+}
+function topePartido(P){ return 90+(P&&P.descuento2||0); }
+function textoReloj(P,pausado){
+  if(!P) return "";
+  const p=pausado?"⏸ ":"";
+  if(P.terminado) return "Final del partido";
+  if(P.min<45) return p+"Minuto "+P.min+" · 1T";
+  if(P.min<90) return p+"Minuto "+P.min+" · 2T";
+  const extra=Math.max(1,P.min-90);
+  const cupo=P.descuento2||0;
+  return p+"90+"+extra+(cupo?" · descuento "+cupo+"'":" · descuento");
+}
 
 /* ---------- pizarra libre ----------
    La cancha es una grilla de 5 columnas (0=izq … 4=der) × 5 filas
@@ -126,6 +168,8 @@ function fuerzaEquipo(once){
   const es=ESTILOS[E.tactica.estilo]||ESTILOS["Equilibrado"];
   const pr=PRESIONES[E.tactica.presion]||PRESIONES["Media"];
   const me=MENTALIDADES[E.tactica.mentalidad]||MENTALIDADES["Equilibrado"];
+  const bl=(typeof BLOQUES!=="undefined"&&BLOQUES[E.tactica.bloque])||{ataque:0,orden:0,desgaste:0};
+  const rt=(typeof RITMOS!=="undefined"&&RITMOS[E.tactica.ritmo])||{ataque:0,orden:0,desgaste:0};
   const libre=(E.tactica.pizarra&&E.tactica.pizarra.length)?formaLibre(E.tactica.pizarra):null;
   const shape=libre||f.ef;
   /* 6.13 · roles/duties por jugador (estilo FM): la suma de duties inclina al equipo */
@@ -136,9 +180,9 @@ function fuerzaEquipo(once){
   }
   return {
     base:base,
-    ataque:base+((shape.ataque||0)+es.ataque+pr.ataque+me.ataque)*1.2+(E.ind.moral-55)*0.08+(shape.ancho||0)*0.6+rolA*1.1,
-    orden:base+((shape.orden||0)+es.orden+pr.orden+me.orden)*1.2+(E.ind.plantel-55)*0.05+rolO*1.1,
-    desgaste:es.desgaste+pr.desgaste+me.desgaste
+    ataque:base+((shape.ataque||0)+es.ataque+pr.ataque+me.ataque+(bl.ataque||0)+(rt.ataque||0))*1.2+(E.ind.moral-55)*0.08+(shape.ancho||0)*0.6+rolA*1.1,
+    orden:base+((shape.orden||0)+es.orden+pr.orden+me.orden+(bl.orden||0)+(rt.orden||0))*1.2+(E.ind.plantel-55)*0.05+rolO*1.1,
+    desgaste:es.desgaste+pr.desgaste+me.desgaste+(bl.desgaste||0)+(rt.desgaste||0)
   };
 }
 /* 6.7 · detecta la formación desde la pizarra (incl. bizarras tipo 2-4-4) */
@@ -246,16 +290,19 @@ function iniciarPartido(part,modo){
   const cl=(typeof CLIMAS!=="undefined"&&CLIMAS[part.clima])||{desgaste:0,precision:1};
   const pr=PRESIONES[E.tactica.presion]||PRESIONES["Media"];
   const me=MENTALIDADES[E.tactica.mentalidad]||MENTALIDADES["Equilibrado"];
+  const bl=(typeof BLOQUES!=="undefined"&&BLOQUES[E.tactica.bloque])||{recup:0,expo:0};
   const P={
     part:part, modo:modo||"simular", min:0, gl:0, gv:0, once:once, rivalPlantel:plantelRival(part.rivalNombre||part.rivalId,part.fuerzaRival),
     ataque:fz.ataque+bonoLocal+bonoTorneo+arb, orden:fz.orden+bonoLocal*0.6+bonoTorneo+arb,
     desgaste:fz.desgaste+(cl.desgaste||0), cansancio:0, rival:rivalBase, empuje:0, riesgoPlan:0,
-    recup:(pr.recup||0)+(me.recup||0), expo:(pr.expo||0)+(me.expo||0),
+    recup:(pr.recup||0)+(me.recup||0)+(bl.recup||0), expo:(pr.expo||0)+(me.expo||0)+(bl.expo||0),
     precClima:cl.precision||1, arb:arb,
     lineas:[], goleadores:[], tarjetas:[], lesionados:[], ticker:[], terminado:false,
     momentos:momentosPartido(part), momentoIdx:0, fase:"equilibrio",
     clasico:esClasico(part), var:((E&&E.anio)||0)>=2016,
-    cambios:0, cambiosMax:((E&&E.anio)||2026)>=2010?3:2   /* 6.18 · tope de cambios por era */
+    cambios:0, cambiosMax:cambiosMaxEra((E&&E.anio)||2026),
+    ventanas:0, ventanasMax:ventanasMaxEra((E&&E.anio)||2026),
+    descuento2:0, _descDicho:false
   };
   P.once.forEach(j=>{ j.estado="once"; });
   P.stats={pos:0.5, remMio:0, remRiv:0, arcMio:0, arcRiv:0, corMio:0, corRiv:0};   /* 7.10 · stats de transmisión */
@@ -285,12 +332,16 @@ function hacerCambio(P,sale,entra){
   if(!sale||!entra) return false;
   if((P.cambios||0)>=(P.cambiosMax||3)) return false;
   if(P.once.indexOf(sale)<0 || P.once.indexOf(entra)>=0) return false;
+  const maxV=P.ventanasMax||99;
+  const enHT=P.min>=45&&P.min<=47;
+  if(maxV<99 && !enHT && !P._ventanaAbierta && (P.ventanas||0)>=maxV) return false;
   P.once=P.once.map(x=>x===sale?entra:x);
   entra.estado="once"; sale.estado="banca";
-  sale.minutosTemporada=(sale.minutosTemporada||0)+(P.min-(sale.minEntrada||0));   /* 6.24 · minutos del que sale */
-  entra.minEntrada=P.min;                                                          /* el que entra arranca su cuenta acá */
+  sale.minutosTemporada=(sale.minutosTemporada||0)+(P.min-(sale.minEntrada||0));
+  entra.minEntrada=P.min;
   entra.cansancio=Math.max(0,(entra.cansancio||0)-3);
   P.cambios=(P.cambios||0)+1;
+  if(maxV<99 && !enHT && !P._ventanaAbierta){ P.ventanas=(P.ventanas||0)+1; P._ventanaAbierta=true; }
   linea(P,P.min,entra.n+" entra por "+sale.n+".","cambio");
   return true;
 }
@@ -302,6 +353,7 @@ function recambioPorLesion(P,sale){
   entra.forma=clamp((entra.forma||70)-8,20,99);
   entra.cansancio=Math.max(entra.cansancio||0,5);
   sale.moral=clamp((sale.moral||70)-4,0,100);
+  if((P.cambios||0)<(P.cambiosMax||3)) P.cambios=(P.cambios||0)+1;
   linea(P,P.min,entra.n+" entra frío por "+sale.n+". El cambio cuesta.","grave");
   return entra;
 }
@@ -386,7 +438,28 @@ function momentosPartido(part){
   if(part.ronda==="FINAL"||part.tipo==="copa") base.push(88);
   return base;
 }
-function linea(P,min,txt,clase){ P.lineas.push({m:min,t:txt,c:clase||""}); }
+function recordarFrase(P,txt){
+  if(!P) return;
+  P._frasesRecientes=P._frasesRecientes||[];
+  P._frasesRecientes.push(txt);
+  if(P._frasesRecientes.length>8) P._frasesRecientes.shift();
+}
+function eligeNuevo(P,arr){
+  if(!arr||!arr.length) return "";
+  const rec=(P&&P._frasesRecientes)||[];
+  const fresh=arr.filter(x=>x&&rec.indexOf(x)<0);
+  const pick=elige(fresh.length?fresh:arr);
+  recordarFrase(P,pick);
+  return pick;
+}
+function linea(P,min,txt,clase){
+  if(!P||!txt) return;
+  P.lineas=P.lineas||[];
+  const last=P.lineas.length?P.lineas[P.lineas.length-1].t:"";
+  if(last===txt) return;
+  P.lineas.push({m:min,t:txt,c:clase||""});
+  recordarFrase(P,txt);
+}
 /* registra un gol con minuto y autor, para la caja de resumen (efemérides) */
 function regGol(P,min,quien,propio,tipo,asist){ P.golesDetalle=P.golesDetalle||[]; P.golesDetalle.push({min:min,quien:quien,propio:!!propio,tipo:tipo||"jugada",asist:asist||null}); }
 function tieneRasgo(j,r){ return j&&j.rasgos&&j.rasgos.indexOf(r)>=0; }
@@ -466,9 +539,19 @@ function peligro(P){
    libre, lesión) se devuelven SIN resolver para que el modo dirigir pueda
    auto-pausar y pedir una decisión. En simular se resuelven en automático. */
 function tickPartido(P){
-  if(P.terminado||P.min>=90){ P.min=Math.min(90,P.min); return {tipo:"fin",min:90}; }
-  const paso=ri(2,4);
-  P.min=Math.min(90,P.min+paso);
+  if(P.terminado) return {tipo:"fin",min:P.min};
+  const tope=topePartido(P);
+  if(P._descDicho && P.min>=tope){ return {tipo:"fin",min:P.min}; }
+  const paso=P.min>=90?ri(1,2):ri(2,4);
+  const next=P.min+paso;
+  if(!P._descDicho && next>=90){
+    P.min=90;
+    P.descuento2=calcularDescuento(P);
+    P._descDicho=true;
+    linea(P,90,"El cuarto árbitro marca "+P.descuento2+" minuto"+(P.descuento2===1?"":"s")+".","grave");
+    return {tipo:"nada",min:90};
+  }
+  P.min=P._descDicho?Math.min(tope,next):Math.min(90,next);
   P.cansancio+=P.desgaste*0.011*paso;
   (P.once||[]).forEach(j=>{ j.cansancio=clamp((j.cansancio||0)+P.desgaste*0.009*paso,0,30); });
   const min=P.min;
@@ -487,6 +570,8 @@ function tickPartido(P){
   if(r<(pl.yo+pl.el)/N){ anotaRival(P,min); return {tipo:"golRival",min:min}; }
   /* acción: penal */
   if(Math.random()<0.006){ const aFavor=Math.random()<clamp(0.5+(P.ataque-P.rival)*0.004,0.2,0.8);
+    P._penalCancha=aFavor?1:-1;
+    P._penalSeq=(P._penalSeq||0)+1;
     return {tipo:aFavor?"penal":"penalRival",min:min,aFavor:aFavor}; }
   /* acción: lesión */
   if(min>20&&Math.random()<0.006){ return {tipo:"lesion",min:min}; }
@@ -600,46 +685,59 @@ function fraseChance(P,min){
   ]);
 }
 /* color del partido según cansancio, minuto y clima */
+/* color del partido según cansancio, minuto, clima, rasgos y época */
 function fraseRelato(P,min){
   const cans=P.cansancio||0;
   const riv=P.part.rivalNombre||"el rival";
-  const j=(elige(P.once)||{}).n;
+  const once=P.once||[];
+  const j=elige(once.filter(x=>x&&x.n))||elige(once)||{};
+  const nom=j.n;
+  const ras=(j.rasgos&&j.rasgos[0])||"";
   const modo=(E&&E.modo)||"historico";
-  if(P.clasico&&min<20) return elige([
-    "Clásico. La platea no perdona un error.",
-    "Cada falta se discute como si fuera la final."
-  ]);
-  if(modo==="caos"&&Math.random()<0.25) return elige([
-    "Pasa algo raro en la banda. Nadie entiende.",
-    "El partido se desordena de un saque."
-  ]);
-  if(j&&min>20) return elige([
-    j+" pide la pelota y no se la dan.",
-    j+" recupera y la juega simple.",
-    j+" se queda corto. El físico ya pesa.",
-    "La tribuna canta el nombre de "+j+"."
-  ]);
-  if(min<15) return elige([
-    "El partido recién arranca. Los dos se estudian.",
-    "Primeros toques, todavía sin profundidad.",
-    "La tribuna empuja desde el primer minuto."
-  ]);
-  if(cans>7) return elige([
-    "Se nota el desgaste. Las piernas ya no responden igual.",
-    "El ritmo bajó. El físico empieza a mandar.",
-    "Hay más errores por cansancio que por falta de ideas."
-  ]);
-  if(min>75) return elige([
-    "Último tramo. Cada pelota parece la definitiva.",
-    "El árbitro mira el reloj. La tensión sube en la platea.",
-    "Se juega con el corazón más que con la cabeza."
-  ]);
-  if(P.precClima&&P.precClima<0.95) return elige([
-    "El clima complica. La pelota no corre limpia.",
-    "Cancha pesada. Cuesta encontrar espacios.",
-    "El viento desvía un centro. El partido se pone trabado."
-  ]);
-  return elige([
+  const era=E&&E.eraBase;
+  const pool=[];
+  if(P.clasico){
+    pool.push("Clásico. La platea no perdona un error.");
+    pool.push("Cada falta se discute como si fuera la final.");
+    pool.push("Esto no es un partido. Es un ajuste de cuentas de barrio.");
+    if(nom) pool.push(nom+" se crece. En el clásico los mediocres no existen.");
+  }
+  if(era===1925) pool.push("No hay cámaras. El grito de la tribuna de madera es todo el relato.");
+  if(era===1991 && min<25) pool.push("Sin VAR. El juez manda y punto. La tribuna discute igual.");
+  if(era===2006 && min<20) pool.push("Televisión nacional, 3 puntos, y el año se juega en dos torneos.");
+  if(modo==="caos") pool.push("Pasa algo raro en la banda. Nadie entiende.","El partido se desordena de un saque.");
+  if(nom&&min>12){
+    pool.push(nom+" pide la pelota y no se la dan.");
+    pool.push(nom+" recupera y la juega simple.");
+    if(cans>5) pool.push(nom+" se queda corto. El físico ya pesa.");
+    pool.push("La tribuna canta el nombre de "+nom+".");
+    if(ras==="capitán") pool.push(nom+" para el partido con un grito. El 5 manda.");
+    if(ras==="ídolo") pool.push("Cuando toca "+nom+" la gente se para. Lo saben de memoria.");
+    if(ras==="goleador"||ras==="definición") pool.push(nom+" se asoma al área. Huele a gol.");
+    if(ras==="joven") pool.push(nom+" se manda. La inexperiencia y las ganas, las dos.");
+  }
+  if(min<15){
+    pool.push("El partido recién arranca. Los dos se estudian.");
+    pool.push("Saque al medio y la pelota se queda en el círculo. Nadie quiere el error temprano.");
+    pool.push("La tribuna empuja desde el primer minuto.");
+    pool.push("Primer pelotazo largo de prueba. Nadie gana la dividida todavía.");
+  }
+  if(cans>7){
+    pool.push("Se nota el desgaste. Las piernas ya no responden igual.");
+    pool.push("El ritmo bajó. El físico empieza a mandar.");
+    pool.push("Hay más errores por cansancio que por falta de ideas.");
+  }
+  if(min>75){
+    pool.push("Último tramo. Cada pelota parece la definitiva.");
+    pool.push("El árbitro mira el reloj. La tensión sube en la platea.");
+    pool.push("Se juega con el corazón más que con la cabeza.");
+  }
+  if(P.precClima&&P.precClima<0.95){
+    pool.push("El clima complica. La pelota no corre limpia.");
+    pool.push("Cancha pesada. Cuesta encontrar espacios.");
+    pool.push("El viento desvía un centro. El partido se pone trabado.");
+  }
+  pool.push(
     "Juego trabado en la mitad de la cancha.",
     "El árbitro cobra falta y la tribuna reclama.",
     "Cambio de ritmo: el partido se abrió.",
@@ -647,7 +745,8 @@ function fraseRelato(P,min){
     "Momento de estudio: nadie quiere equivocarse.",
     riv+" recupera y tira un pelotazo largo. Se diluye la jugada.",
     "Buen intercambio de pases, pero sin llegada clara."
-  ]);
+  );
+  return eligeNuevo(P, pool);
 }
 function lesionEnPartido(P){
   const j=elige(P.once.filter(x=>x.pos!=="ARQ"));
@@ -676,12 +775,13 @@ function resolverEventoAuto(P,ev){
 /* Corrida en bloque (simular y para completar tramos). */
 function correrHasta(P,hasta){
   let guard=0;
-  while(P.min<hasta&&!P.terminado&&guard++<600){
+  while(!P.terminado&&guard++<800){
+    const techo=(hasta>=90)?topePartido(P):hasta;
+    if(P.min>=techo && (hasta<90 || P._descDicho)) break;
     const ev=tickPartido(P);
     if(ev.tipo==="fin") break;
     if(ev.tipo==="penal"||ev.tipo==="penalRival"||ev.tipo==="lesion"||ev.tipo==="tiroLibre") resolverEventoAuto(P,ev);
   }
-  if(P.min>=90&&!P.terminado) P.min=90;
 }
 /* momentos de decisión del modo dirigir */
 /* Pools tácticos grandes por situación. momentoActual elige 4 al azar
@@ -902,6 +1002,26 @@ function aplicarMomento(P,ef){
   P.riesgoPlan+=ef.riesgoPlan||0; P.desgaste+=ef.desgaste||0;
   P.empuje+=(ef.ataque||0)*0.3;
 }
+function compactarRelato(lineas){
+  const L=(lineas||[]).slice();
+  if(L.length<=24) return L;
+  const clave=L.filter(l=>l&&(l.c==="gol"||l.c==="grave"||l.c==="cambio"));
+  const resto=L.filter(l=>clave.indexOf(l)<0);
+  const cupo=Math.max(0,24-clave.length);
+  const out=clave.concat(resto.slice(-cupo));
+  out.sort((a,b)=>(a.m||0)-(b.m||0));
+  return out.slice(0,24);
+}
+function persistirRepeticion(P,part){
+  if(!P||!part) return;
+  part.lineas=compactarRelato(P.lineas||[]);
+  part.golesDetalle=(P.golesDetalle||[]).slice();
+  part.tarjetas=(P.tarjetas||[]).slice();
+  part.lesionados=(P.lesionados||[]).slice();
+  if(P.stats) part.stats={pos:P.stats.pos,remMio:P.stats.remMio,remRiv:P.stats.remRiv,arcMio:P.stats.arcMio,arcRiv:P.stats.arcRiv,corMio:P.stats.corMio,corRiv:P.stats.corRiv};
+  if(P.arbitro) part.arbitro={n:P.arbitro.n,estilo:P.arbitro.estilo,desc:P.arbitro.desc};
+  part.ticker=(P.ticker||[]).filter(t=>t&&t.texto).slice(0,5).map(t=>({autor:t.autor,texto:t.texto,tono:t.tono,m:t.m}));
+}
 /* cierre del partido: tabla, moral, taquilla, historia */
 function terminarPartido(P){
   P.terminado=true;
@@ -912,6 +1032,7 @@ function terminarPartido(P){
   const posAntes=(part.tipo==="liga")?posicionEnTabla():null;
   part.jugado=true; part.gf=yo; part.gc=otro;
   part.goleadores=(P.goleadores||[]).slice();   /* 6.19 · para que los tuits citen al goleador real */
+  persistirRepeticion(P,part);
   P.once.forEach(j=>{
     j.partidos++;
     j.minutosTemporada=(j.minutosTemporada||0)+(90-(j.minEntrada||0));   /* 6.24 · minutos jugados en la temporada */

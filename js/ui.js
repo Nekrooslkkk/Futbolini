@@ -348,8 +348,11 @@ function elegirEpoca(id){
           ?"1925: amateur. Liga Metropolitana de Deportes. No hay redes, ni Libertadores, ni mercado millonario. Victoria vale 2 puntos. Plantel de Colo-Colo documentado (Arellano y los Rebeldes)."
           :"1925: amateur. Liga Metropolitana de Deportes. No hay redes, ni Libertadores, ni mercado millonario. Victoria vale 2 puntos. El plantel documentado de esa temporada es el de Colo-Colo; el de este club se arma con cantera."));
         else if(sel.base===2006) c.appendChild(el("p","mini",id==="CC"
-          ?"2006: Apertura y Clausura, 19 clubes (Concepción suspendido). En el juego, una rueda de 18 fechas. Plantel de Colo-Colo documentado (Borghi, Suazo, Mati, Valdivia)."
-          :"2006: Apertura y Clausura, 19 clubes (Concepción suspendido). En el juego, una rueda de 18 fechas. Esta época no es la Libertadores 1991 de Colo-Colo."));
+          ?"2006: Apertura (18 fechas) y Clausura (otras 18, tabla desde 0). 19 clubes (Concepción suspendido). Plantel de Colo-Colo documentado (Borghi, Suazo, Mati, Valdivia, Alexis). El Apertura regular NO entrega estrella."
+          :id==="UCH"?"2006: Apertura y Clausura (18+18). Plantel de la U documentado (Huerta, Salas, Alcázar, Iturra, Pinto). Finalista del Apertura vs Colo-Colo — los playoffs no se juegan todavía."
+          :id==="AUD"?"2006: Apertura y Clausura (18+18). Plantel de Audax documentado (Raúl Toro, Villanueva, Di Santo, Peric). Finalista del Clausura — NO campeón."
+          :id==="UC"?"2006: Apertura y Clausura (18+18). Plantel de Católica documentado (Pellicer, Quinteros, Conca, Arrué, Buljubasich, Medel de 18)."
+          :"2006: Apertura y Clausura (18+18, tabla del Clausura desde 0). 19 clubes (Concepción suspendido). Planteles documentados: Colo-Colo, la U, Audax y Católica; el resto, cantera."));
         else if(esC) c.appendChild(el("p","mini","Este club juega en la Segunda División Profesional 2026 (3er nivel). Victoria vale 3 puntos. El objetivo es ascender a la Primera B."));
         else if(esB) c.appendChild(el("p","mini","Este club juega en la Primera B 2026 (Liga de Ascenso). Victoria vale 3 puntos. Copa Chile con grupos reales."));
         else if(solo2026) c.appendChild(el("p","mini","Este club juega en la Primera División 2026."));
@@ -1364,11 +1367,12 @@ function fichaJugador(j){
   });
 }
 /* ---------------- calendario ---------------- */
-/* 7.0 · "repetición": abrir un partido jugado y ver los goleadores */
+/* 7.997 · repetición: relato, stats, árbitro, goles con minuto */
 function modalRepeticion(c){
   modal(box=>{
     const gano=c.gf>c.gc, emp=c.gf===c.gc;
-    box.appendChild(el("div","cab",'<span class="ic">🎞️</span><span>Repetición · '+(c.tipo==="copa"?"Copa · "+c.ronda:"Fecha "+(c.fecha||"—"))+'</span>'));
+    const faseEtq=c.fase==="clausura"?"Clausura":(c.fase==="apertura"?"Apertura":(c.tipo==="copa"?"Copa · "+(c.ronda||""):"Fecha "+(c.fecha||"—")));
+    box.appendChild(el("div","cab",'<span class="ic">🎞️</span><span>Repetición · '+faseEtq+'</span>'));
     const cc=el("div","cuerpo"); box.appendChild(cc);
     const marc=el("div","marcador");
     marc.innerHTML='<div class="eq">'+(c.local?E.clubNombre:c.rivalNombre)+'</div>'+
@@ -1376,17 +1380,49 @@ function modalRepeticion(c){
       '<div class="eq">'+(c.local?c.rivalNombre:E.clubNombre)+'</div>';
     cc.appendChild(marc);
     cc.appendChild(el("p","mini",(c.local?"De local":"De visita")+" en "+(c.sede||"—")+" · "+fechaTxt(c.f)+" · "+
-      (gano?"Victoria":(emp?"Empate":"Derrota"))+"."));
-    /* goleadores propios, agrupados por nombre con cantidad */
-    const gs=c.goleadores||[];
-    if(gs.length){
-      const cuenta={}; gs.forEach(n=>{ cuenta[n]=(cuenta[n]||0)+1; });
-      cc.appendChild(el("h3","sub","⚽ Goles de "+E.clubNombre));
-      Object.keys(cuenta).forEach(n=>{
-        cc.appendChild(el("div","fila","<span>"+n+"</span><b>"+(cuenta[n]>1?cuenta[n]+" goles":"1 gol")+"</b>"));
+      (gano?"Victoria":(emp?"Empate":"Derrota"))+
+      (c.torneo?" · "+c.torneo:"")+
+      (c.arbitro&&c.arbitro.n?" · Árbitro: "+c.arbitro.n+(c.arbitro.estilo?" ("+c.arbitro.estilo+")":""):"")+"."));
+    if(c.stats && typeof bloqueStats==="function"){
+      cc.appendChild(bloqueStats({stats:c.stats, part:c}));
+    }
+    const gd=(c.golesDetalle||[]).slice().sort((a,b)=>(a.min||0)-(b.min||0));
+    if(gd.length){
+      cc.appendChild(el("h3","sub","⚽ Goles"));
+      gd.forEach(g=>{
+        cc.appendChild(el("div","fila","<span>"+(g.min||"?")+"' "+(g.propio?"":"("+(c.rivalNombre||"rival")+") ")+(g.quien||"?")+
+          (g.tipo&&g.tipo!=="jugada"?" <span class='mini'>["+g.tipo+"]</span>":"")+
+          (g.asist?" <span class='mini'>(asist. "+g.asist+")</span>":"")+"</span>"));
       });
     } else {
-      cc.appendChild(el("p","mini",c.gf>0?"No quedó registro de los goleadores de este partido.":"Tu equipo no marcó en este partido."));
+      const gs=c.goleadores||[];
+      if(gs.length){
+        const cuenta={}; gs.forEach(n=>{ cuenta[n]=(cuenta[n]||0)+1; });
+        cc.appendChild(el("h3","sub","⚽ Goles de "+E.clubNombre));
+        Object.keys(cuenta).forEach(n=>{
+          cc.appendChild(el("div","fila","<span>"+n+"</span><b>"+(cuenta[n]>1?cuenta[n]+" goles":"1 gol")+"</b>"));
+        });
+      } else {
+        cc.appendChild(el("p","mini",c.gf>0?"No quedó registro de los goleadores de este partido.":"Tu equipo no marcó en este partido."));
+      }
+    }
+    if(c.tarjetas&&c.tarjetas.length) cc.appendChild(el("p","mini","Amarillas: "+c.tarjetas.join(", ")));
+    if(c.lesionados&&c.lesionados.length) cc.appendChild(el("p","mini","Lesionados: "+c.lesionados.join(", ")));
+    const rel=c.lineas||[];
+    if(rel.length){
+      cc.appendChild(el("h3","sub","🎙️ Relato"));
+      const caja=el("div","relato relato-rep");
+      rel.forEach(l=>{
+        caja.appendChild(el("div","rel "+(l.c||""),'<span class="m">'+(l.m||0)+"'</span><span>"+(l.t||"")+"</span>"));
+      });
+      cc.appendChild(caja);
+    }
+    const tw=(c.ticker||[]).filter(t=>t&&t.texto);
+    if(tw.length){
+      cc.appendChild(el("h3","sub","📣 Desde la grada"));
+      tw.forEach(t=>{
+        cc.appendChild(el("div","rep-ticker","<b>"+(t.autor||"@hincha")+"</b> "+t.texto));
+      });
     }
     if(c.real) cc.appendChild(el("div","resul mitad","<b>En la historia real:</b> ese partido terminó "+c.real+"."));
     const b=el("button","btn-aqua ancho gris","Cerrar"); b.onclick=cerrarModal; cc.appendChild(b);
@@ -1427,9 +1463,9 @@ function panelCopas(v){
         const marc=m.jugado?(m.gf+"-"+m.gc):"—";
         const est=m.jugado?(m.gf>m.gc?"ok":(m.gf<m.gc?"mal":"neu")):"neu";
         const _ec=(typeof escudoChip==="function")?escudoChip(m.rivalId):"";
-        const fila=el("div","fila"+(m.jugado&&m.goleadores&&m.goleadores.length?" fila-click":""));
-        fila.innerHTML='<span>'+(m.local?"vs ":"a ")+_ec+(m.rivalNombre||"Rival")+' <span class="mini">'+fechaTxt(m.f)+(m.sede?" · "+m.sede:"")+'</span></span><b class="etq '+est+'">'+marc+'</b>';
-        if(m.jugado&&m.goleadores&&m.goleadores.length){ fila.style.cursor="pointer"; fila.onclick=()=>modalRepeticion(m); }
+        const fila=el("div","fila"+(m.jugado?" fila-click":""));
+        fila.innerHTML='<span>'+(m.local?"vs ":"a ")+_ec+(m.rivalNombre||"Rival")+' <span class="mini">'+fechaTxt(m.f)+(m.sede?" · "+m.sede:"")+(m.jugado?" · ▶ ver repetición":"")+'</span></span><b class="etq '+est+'">'+marc+'</b>';
+        if(m.jugado){ fila.style.cursor="pointer"; fila.onclick=()=>modalRepeticion(m); }
         pc.cuerpo.appendChild(fila);
       });
       if(/^Grupo /.test(r)){
@@ -1507,24 +1543,42 @@ function modalAmistoso(){
     inp.oninput=pinta; pinta();
   });
 }
+function filaCalendario(c,i){
+  const d=el("div","fila"+(c.jugado?" fila-click":""));
+  const marc=c.jugado?(c.gf+"-"+c.gc):"—";
+  const est=c.jugado?(c.gf>c.gc?"ok":(c.gf<c.gc?"mal":"neu")):"neu";
+  const _ecal=(typeof escudoChip==="function")?escudoChip(c.rivalId):"";
+  const faseTxt=c.fase==="clausura"?" · Clausura":(c.fase==="apertura"?" · Apertura":"");
+  d.innerHTML='<span>'+(i===E.idx?"▶ ":"")+(c.tipo==="copa"?"🏆 ":"")+
+    (c.local?"vs ":"a ")+_ecal+c.rivalNombre+' <span class="mini">'+fechaTxt(c.f)+
+    (c.tipo==="copa"?" · "+c.ronda:"")+faseTxt+(c.fecha?" · F"+c.fecha:"")+
+    (c.jugado?" · ▶ ver repetición":"")+
+    (!c.jugado&&c.real&&E.config&&E.config.spoiler?" · hist. "+c.real:"")+'</span></span>'+
+    '<b class="etq '+est+'">'+marc+'</b>';
+  if(c.jugado){ d.style.cursor="pointer"; d.onclick=()=>modalRepeticion(c); }
+  return d;
+}
 function vistaCalendario(){
   const v=$("#vista");
-  const p=panel("Calendario "+E.anio,"📅");
-  E.calendario.forEach((c,i)=>{
-    const d=el("div","fila"+(c.jugado?" fila-click":""));
-    const marc=c.jugado?(c.gf+"-"+c.gc):"—";
-    const est=c.jugado?(c.gf>c.gc?"ok":(c.gf<c.gc?"mal":"neu")):"neu";
-    const _ecal=(typeof escudoChip==="function")?escudoChip(c.rivalId):"";
-    d.innerHTML='<span>'+(i===E.idx?"▶ ":"")+(c.tipo==="copa"?"🏆 ":"")+
-      (c.local?"vs ":"a ")+_ecal+c.rivalNombre+' <span class="mini">'+fechaTxt(c.f)+
-      (c.tipo==="copa"?" · "+c.ronda:"")+(c.fecha?" · F"+c.fecha:"")+
-      (c.jugado&&c.goleadores&&c.goleadores.length?" · ▶ ver repetición":"")+
-      (!c.jugado&&c.real&&E.config&&E.config.spoiler?" · hist. "+c.real:"")+'</span></span>'+
-      '<b class="etq '+est+'">'+marc+'</b>';
-    if(c.jugado){ d.style.cursor="pointer"; d.onclick=()=>modalRepeticion(c); }
-    p.cuerpo.appendChild(d);
-  });
-  v.appendChild(p);
+  if(E.eraBase===2006){
+    const ape=panel("Calendario · Apertura 2006","📅");
+    E.calendario.forEach((c,i)=>{ if(c.tipo==="liga"&&(c.fase==="apertura"||!c.fase)) ape.cuerpo.appendChild(filaCalendario(c,i)); });
+    v.appendChild(ape);
+    if(E.calendario.some(c=>c.tipo==="liga"&&c.fase==="clausura")){
+      const cla=panel("Calendario · Clausura 2006","📅","agua");
+      E.calendario.forEach((c,i)=>{ if(c.tipo==="liga"&&c.fase==="clausura") cla.cuerpo.appendChild(filaCalendario(c,i)); });
+      v.appendChild(cla);
+    }
+    if(E.calendario.some(c=>c.tipo!=="liga")){
+      const po=panel("Otros compromisos "+E.anio,"📅");
+      E.calendario.forEach((c,i)=>{ if(c.tipo!=="liga") po.cuerpo.appendChild(filaCalendario(c,i)); });
+      v.appendChild(po);
+    }
+  } else {
+    const p=panel("Calendario "+E.anio,"📅");
+    E.calendario.forEach((c,i)=>p.cuerpo.appendChild(filaCalendario(c,i)));
+    v.appendChild(p);
+  }
   if(E.ultimaFecha&&E.ultimaFecha.length){
     const pr=panel("Resto de la fecha","⚽");
     E.ultimaFecha.forEach(x=>{
@@ -1547,7 +1601,9 @@ function vistaCalendario(){
   const _clubesTabla=(typeof clubesLigaActual==="function")?clubesLigaActual():LIGA_ACT;
   const _esSeg=(E.eraBase==="2026c");
   const _zTxt=_esSeg&&typeof zonaSegDe==="function"&&typeof nombreZona==="function"?(" · Zona "+nombreZona(zonaSegDe(E.club))):"";
-  const pt=panel("Tabla de posiciones"+_zTxt,"📊","agua");
+  const _fase06=E.eraBase===2006&&E.flags&&E.flags.fase2006;
+  const _titTabla=_fase06==="clausura"?"Tabla · Clausura 2006":(_fase06==="apertura"?"Tabla · Apertura 2006":"Tabla de posiciones"+_zTxt);
+  const pt=panel(_titTabla,"📊","agua");
   const arr=_clubesTabla.map(c=>Object.assign({id:c.id,n:c.n},E.tabla[c.id]||{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}));
   arr.sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc));
   const t=el("table","tabla-liga");
@@ -1563,8 +1619,32 @@ function vistaCalendario(){
   t.appendChild(tb); pt.cuerpo.appendChild(t);
   const _eraObj=((typeof eraDe==="function"?eraDe(E.eraBase):ERA[E.eraBase])||ERA[2026]);
   pt.cuerpo.appendChild(el("p","mini","Época "+_eraObj.n+": la victoria vale "+_eraObj.puntosVictoria+" puntos. "+
-    (_esSeg?("Zona de "+arr.length+" clubes (Norte/Sur, 12 PJ + 2 byes). Top 3 de cada zona van a la liguilla de ascenso de 7 (ida y vuelta, se parte de 0; el 1° sube a la B). Los 4°s se cruzan. Bottom 3, liguilla de permanencia. Volver a cruzar rivales de tu zona en la liguilla es el formato real."):("Campeonato de "+LIGA_ACT.length+" equipos."))));
+    (_esSeg?("Zona de "+arr.length+" clubes (Norte/Sur, 12 PJ + 2 byes). Top 3 de cada zona van a la liguilla de ascenso de 7 (ida y vuelta, se parte de 0; el 1° sube a la B). Los 4°s se cruzan. Bottom 3, liguilla de permanencia. Volver a cruzar rivales de tu zona en la liguilla es el formato real.")
+    :(E.eraBase===2006
+      ?(_fase06==="clausura"
+        ?"Clausura 2006: tabla desde 0 (18 fechas, localías invertidas). El Apertura regular no entrega estrella (playoffs estilo México no se juegan). Descenso: tabla anual."
+        :"Apertura 2006: 18 fechas (bye). Al terminar arranca el Clausura desde cero. Playoffs estilo México: documentados, no jugables.")
+      :("Campeonato de "+LIGA_ACT.length+" equipos.")))));
   v.appendChild(pt);
+  if(E.eraBase===2006 && typeof tablaAnual2006==="function" && E.tablaApertura){
+    const anual=tablaAnual2006();
+    if(anual&&anual.length){
+      const panAnual=panel("Tabla anual 2006 (Apertura + Clausura)","📉");
+      panAnual.cuerpo.appendChild(el("p","mini","Suma de las dos ruedas. En 2006 bajó Santiago Morning por esta tabla; Rangers y Palestino fueron a promoción. Playoffs de título: no se juegan todavía."));
+      const ta=el("table","tabla-liga");
+      ta.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>G</th><th class='n'>E</th><th class='n'>P</th><th class='n'>GF</th><th class='n'>GC</th><th class='n'>Pts</th></tr></thead>";
+      const tba=el("tbody");
+      anual.forEach((c,i)=>{
+        const tr=el("tr",c.id===E.club?"yo":"");
+        const _ec=(typeof escudoChip==="function")?escudoChip(c.id):"";
+        tr.innerHTML="<td class='n'>"+(i+1)+"</td><td>"+_ec+(c.n||c.id)+"</td><td class='n'>"+(c.pj||0)+"</td><td class='n'>"+(c.pg||0)+
+          "</td><td class='n'>"+(c.pe||0)+"</td><td class='n'>"+(c.pp||0)+"</td><td class='n'>"+(c.gf||0)+"</td><td class='n'>"+(c.gc||0)+"</td><td class='n'>"+(c.pts||0)+"</td>";
+        tba.appendChild(tr);
+      });
+      ta.appendChild(tba); panAnual.cuerpo.appendChild(ta);
+      v.appendChild(panAnual);
+    }
+  }
   if(typeof filasTablaActual==="function"){
     const ft=filasTablaActual();
     if(ft&&ft.filas&&ft.filas.length && _esSeg && E.flags && (E.flags.segundaFase==="liguillaAscenso"||E.flags.segundaFase==="liguillaDescenso")){

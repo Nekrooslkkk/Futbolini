@@ -109,6 +109,31 @@ Hechos públicos. Si no está documentado, se marca.
 [OK] Cada club 2026 tiene ≥1 decisión propia. Morning/Limache no heredan Jozić ni el Monumental.
 [OK] Audax 2007 no se apropia del Apertura de Colo-Colo. Limache ≠ Lucio Fariña.
 
+## 7.996 · partido + 2006
+[FIX] Relato: anti-repetición (eligeNuevo + linea ignora duplicado). "Primeros toques" ya no sale dos veces seguidas.
+[FIX] Cancha más cancha (105×68, área chica, penal, banderines). Arquero se lanza en el penal.
+[FIX] XI rival histórico no hereda 2026/1991.
+[FIX] UCH/AUD/UC 2006 con plantel documentado. Mirosevic NO está en la UC 2006 (Racing/Beitar).
+[OK] Audax 2006 es finalista del Clausura, NO campeón (el campeón fue Colo-Colo).
+[INFO] 8.00 sigue reservada. Playoffs 2006 estilo México: dato listo, motor pendiente. 1925 sigue solo Colo-Colo.
+
+## 7.997 · repetición + Clausura 2006 + prensa ×2
+[FIX] Calendario: la repetición guarda relato/stats/árbitro/goles con minuto. Cualquier partido jugado se puede reabrir.
+[FIX] 2006: al cerrar el Apertura (18) se siembra el Clausura (18 más, tabla desde 0). El Apertura regular NO entrega estrella.
+[OK] Kickoff 2006 sigue en 18 fechas (T7.81). Playoffs estilo México: dato listo, motor pendiente.
+[FIX] Sala de prensa post-partido: 2 preguntas (como la previa).
+[INFO] 8.00 sigue reservada.
+
+## 7.998 · 5 cambios IFAB + descuento + bloque/ritmo
+[CRÍTICO] El motor tenía 3 cambios en 2026 (el reglamento, y la trivia del juego, dicen 5).
+[FIX] cambiosMaxEra: 2 / 3 / 5. Ventanas IFAB 2020+: 3 paradas + entretiempo libre.
+[FIX] Descuento 90+N (2–7') anunciado por el cuarto árbitro. El marcador muestra el minuto.
+[FIX] Palancas nuevas: bloque (alto/medio/bajo) y ritmo (pausado/normal/vertiginoso). Mueven ataque/orden/desgaste de verdad.
+[OK] Lectura del plan nombra las palancas y caza combinaciones que se pelean.
+[INFO] 8.00 sigue reservada.
+
+
+
 
 
 

@@ -302,7 +302,7 @@ function plantelRival(idOrNombre,fuerza){
   const id=idClubDe(idOrNombre);
   const anio=(typeof E!=="undefined"&&E&&E.anio)||2026;
   const pack=id&&PLANTELES_REALES[id];
-  const reales=pack&&(pack[anio]||pack[2026]||pack[1991]);
+  const reales=pack&&(pack[anio]||(anio>=2024?pack[2026]:null));
   if(reales&&reales.length>=11){
     const pick=(pos,n)=>reales.filter(a=>a[1]===pos).slice(0,n);
     const filas=pick("ARQ",1).concat(pick("DEF",4),pick("VOL",4),pick("DEL",2));
