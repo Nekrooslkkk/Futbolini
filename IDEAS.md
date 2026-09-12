@@ -13,7 +13,7 @@
 - [x] **Plop! hilos**: las cuentas se responden entre ellas — commit pendiente.
 - [x] **Plop! memoria entre partidos**: callback de racha al cerrar el partido — commit pendiente.
 - [x] **Momentos del partido más potentes**: flash de momentazo (gol/roja/penal) — commit pendiente.
-- [ ] **Cancha pixel v2**: pequeños detalles (arquero que se mueve en el penal, pelota con estela corta, red que vibra en el gol).
+- [x] **Cancha pixel v2**: estela corta de la pelota, red que vibra en el gol, y el arquero del arco atacado se estira hacia la pelota — commit pendiente.
 - [x] **Más contextos generativos**: tiroLibre/atajada_penal/lesion_grave enganchados; debut_juvenil gramática lista — commit pendiente.
 - [x] **Economía**: botón "refinanciar" (baja interés, estira total), explicado paso a paso — commit pendiente.
 - [ ] **Chilenización de docs .md** (no user-facing, baja prioridad).

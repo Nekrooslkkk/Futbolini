@@ -2242,3 +2242,13 @@ Claude avanzó 7.78–7.80 (federación por país, gol en vivo, celular). El 7.7
 - De paso confirmó que Fernández Vial (FV) es **solo rival** del calendario 91 (no manejable), correctamente fuera del set elegible.
 - **Tests:** +4 (helpers, N clubes, glorias resuelven, elegibles resuelven). Suite **183/183**.
 **Probado:** node --check js/*.js + suite 183/183 verde.
+
+## 7.84 · Cancha pixel v2 (estela, red que vibra, arquero que reacciona)
+- **js/cancha.js:** tres detalles pixel-art en la cancha del partido, todos dentro del buffer de baja resolución (siguen viéndose chunky al escalar):
+  1. **Estela corta de la pelota:** guarda las últimas 5 posiciones (`st.trail`) y las dibuja como una cola blanca que se desvanece detrás de la pelota.
+  2. **Red que vibra en el gol:** cada arco tiene una malla tenue (patrón de rombos); cuando entra un gol en ese arco (`st.redVibra`/`st.redLado`), la red de ESE lado se pone blanca y tiembla ±1px por ~0.8s. La del otro arco queda quieta.
+  3. **Arquero que se estira:** en el gol, el arquero del arco atacado se mueve hacia la `y` de la pelota (reacción tardía), y el easing normal lo devuelve a su lugar.
+- Respeta `prefers-reduced-motion` (la cancha ya hacía un solo frame estático en ese caso).
+- Cierra el ítem **Cancha pixel v2** de IDEAS.md.
+- **util.js:** VERSION 7.83 → **7.84**.
+**Probado:** node --check + suite 183/183 verde + captura headless del gol (red derecha vibrando en blanco, malla izquierda tenue, arquero reaccionando).

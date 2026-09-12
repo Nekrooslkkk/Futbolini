@@ -30,7 +30,7 @@ function _cvSeed(P){
   CANCHA_FORM.forEach(f=>{ const x=1-f.x; jug.push({x:x,y:1-f.y,tx:x,ty:1-f.y,mob:f.mob*0.85,rol:f.rol,mio:false}); });
   _cvSt={ jug:jug, lop:0.5, surge:0, ball:{x:0.5,y:0.5,tx:0.5,ty:0.5},
     lastYo:P?_cvMarcador(P).yo:0, lastOtro:P?_cvMarcador(P).otro:0, t:0,
-    ballHold:0, ballGoal:0.5 };
+    ballHold:0, ballGoal:0.5, trail:[], redVibra:0, redLado:0 };
 }
 function _cvStep(P,dt){
   const st=_cvSt; if(!st) return;
@@ -38,12 +38,13 @@ function _cvStep(P,dt){
   /* goles → la pelota vuela al arco correcto y la línea de juego se empuja */
   if(P){
     const mk=_cvMarcador(P);
-    if(mk.yo>st.lastYo){ st.surge=1; st.ballHold=1.4; st.ballGoal=0.95; }    /* mi gol → arco rival (derecha) */
-    if(mk.otro>st.lastOtro){ st.surge=-1; st.ballHold=1.4; st.ballGoal=0.05; } /* gol rival → mi arco (izquierda) */
+    if(mk.yo>st.lastYo){ st.surge=1; st.ballHold=1.4; st.ballGoal=0.95; st.redVibra=1; st.redLado=1; }    /* mi gol → arco rival (derecha) */
+    if(mk.otro>st.lastOtro){ st.surge=-1; st.ballHold=1.4; st.ballGoal=0.05; st.redVibra=1; st.redLado=-1; } /* gol rival → mi arco (izquierda) */
     st.lastYo=mk.yo; st.lastOtro=mk.otro;
   }
   st.surge*=Math.pow(0.5,dt);
   if(st.ballHold>0) st.ballHold-=dt;
+  if(st.redVibra>0) st.redVibra=Math.max(0,st.redVibra-dt*1.2);   /* la red deja de vibrar en ~0.8s */
   /* línea de juego: sesgo suave por empuje + surge + vaivén LENTO (sin ruido por frame) */
   const empuje=(P&&typeof P.empuje==="number")?P.empuje:0;
   const bias=Math.max(-0.24,Math.min(0.24, empuje*0.02));
@@ -67,6 +68,14 @@ function _cvStep(P,dt){
   const kb=st.ballHold>0?6:2.4;
   b.x += (b.tx-b.x)*Math.min(1,dt*kb);
   b.y += (b.ty-b.y)*Math.min(1,dt*kb);
+  /* estela corta: guardo las últimas posiciones para dibujar una cola que se desvanece */
+  st.trail.push({x:b.x,y:b.y});
+  if(st.trail.length>5) st.trail.shift();
+  /* el arquero del arco atacado se estira hacia la pelota en el gol (reacción tardía) */
+  if(st.ballHold>0){
+    const gk = st.ballGoal>0.5 ? st.jug[CANCHA_FORM.length] : st.jug[0]; /* der=rival, izq=mío(idx0) */
+    if(gk) gk.y += (b.y-gk.y)*Math.min(1,dt*4);
+  }
 }
 function _cvColores(){
   let mio="#eef3ff", riv="#e5484d";
@@ -122,13 +131,37 @@ function _cvDraw(ctx,w,h){
   const ah=Math.round(bh*0.46), aw=Math.round(bw*0.12);
   rect(m,Math.round((bh-ah)/2),aw,ah); rect(bw-m-aw,Math.round((bh-ah)/2),aw,ah);
   /* arcos */
-  const gh=Math.round(bh*0.16);
+  const gh=Math.round(bh*0.16), gy0=Math.round((bh-gh)/2);
   g.fillStyle="#ffffff";
-  g.fillRect(m-2,Math.round((bh-gh)/2),2,gh); g.fillRect(bw-m,Math.round((bh-gh)/2),2,gh);
+  g.fillRect(m-2,gy0,2,gh); g.fillRect(bw-m,gy0,2,gh);
+  /* redes: malla tenue detrás de cada línea de gol; TIEMBLA en el gol de ese arco */
+  const red=(side)=>{
+    const vib=(st.redVibra>0 && st.redLado===side);
+    const jit=vib?((Math.floor(st.t*40)%2)?1:-1):0;
+    const x0=side<0?(m-2):(bw-m);
+    for(let gx=1;gx<=3;gx++){
+      const px=side<0?(x0-gx):(x0+1+gx);
+      if(px<0||px>=bw) continue;
+      for(let gyy=gy0;gyy<=gy0+gh;gyy++){
+        if(((gx+gyy)&1)===0) continue;                 /* patrón de rombos de la malla */
+        g.fillStyle=vib?"#ffffff":"rgba(223,240,223,0.4)";
+        g.fillRect(px, gyy+(vib?jit:0), 1,1);
+      }
+    }
+  };
+  red(-1); red(1);
   /* jugadores como sprites */
   const col=_cvColores();
   const shMio=_cvSombra(col.mio,0.45), shRiv=_cvSombra(col.riv,0.45);
   st.jug.forEach(p=>_cvSprite(g, X(p.x), Y(p.y), p.mio?col.mio:col.riv, p.mio?shMio:shRiv));
+  /* estela corta de la pelota: los rastros viejos más tenues (se desvanece) */
+  if(st.trail && st.trail.length>1){
+    for(let i=0;i<st.trail.length-1;i++){
+      const tp=st.trail[i], al=((i+1)/st.trail.length)*0.5;
+      g.fillStyle="rgba(255,255,255,"+al.toFixed(2)+")";
+      g.fillRect(X(tp.x),Y(tp.y),1,1);
+    }
+  }
   /* pelota: cuadradito blanco con un pixel de sombra */
   const b=st.ball, bx=X(b.x), by=Y(b.y);
   g.fillStyle="#12140f"; g.fillRect(bx,by+1,2,1);
