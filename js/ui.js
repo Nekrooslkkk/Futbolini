@@ -207,6 +207,8 @@ function pickerClubes(cont){
     vis.forEach((c,i)=>{
       const esc=(typeof escudoHTML==="function")?escudoHTML(c.id,36,c.esc||"⚪"):(c.esc||"⚪");
       const b=el("button","icono card-in",'<span class="g">'+esc+'</span><span class="n">'+c.n+'</span>'+(c.ciu?'<span class="ciu">'+c.ciu+'</span>':''));
+      const col=(typeof colorDeClub==="function")?colorDeClub(c.id):(c.colores&&c.colores[0]);
+      if(col) b.style.borderLeft="4px solid "+col;
       b.style.animationDelay=Math.min(i*20,340)+"ms";
       b.title=c.n+(c.ciu?" · "+c.ciu:"")+" · "+c.div;
       b.onclick=()=>elegirEpoca(c.id);
@@ -263,15 +265,25 @@ function elegirEpoca(id){
   } else if(esC){
     puntos.push({k:"b2026c",tipo:"base",base:"2026c",anio:2026,etq:"2026 · Segunda División"});
   } else if(esB){
+    if(typeof esClub1925==="function" && esClub1925(id))
+      puntos.push({k:"b1925",tipo:"base",base:1925,anio:1925,etq:"1925 · Amateur"});
     puntos.push({k:"b2026b",tipo:"base",base:"2026b",anio:2026,etq:"2026 · Primera B"});
-  } else if(solo2026){
-    puntos.push({k:"b2026",tipo:"base",base:2026,anio:2026,etq:"2026 · Actual"});
   } else if(id==="CC"){
+    puntos.push({k:"cc25",tipo:"base",base:1925,anio:1925,etq:"1925 · Nacimiento (amateur)"});
     puntos.push({k:"cc89",tipo:"base",base:1991,anio:1989,etq:"1989 · La Reconstrucción"});
     puntos.push({k:"cc91",tipo:"base",base:1991,anio:1991,etq:"1991 · La Gloria (Libertadores)"});
+    puntos.push({k:"cc06",tipo:"base",base:2006,anio:2006,etq:"2006 · Borghi"});
+    puntos.push({k:"b2026",tipo:"base",base:2026,anio:2026,etq:"2026 · Actual"});
+  } else if(solo2026){
+    if(typeof esClub1925==="function" && esClub1925(id))
+      puntos.push({k:"b1925",tipo:"base",base:1925,anio:1925,etq:"1925 · Amateur"});
+    if(typeof esClub2006==="function" && esClub2006(id))
+      puntos.push({k:"b2006",tipo:"base",base:2006,anio:2006,etq:"2006 · Apertura/Clausura"});
     puntos.push({k:"b2026",tipo:"base",base:2026,anio:2026,etq:"2026 · Actual"});
   } else {
     puntos.push({k:"b1991",tipo:"base",base:1991,anio:1991,etq:"1991 · Fase A"});
+    if(typeof esClub2006==="function" && esClub2006(id))
+      puntos.push({k:"b2006",tipo:"base",base:2006,anio:2006,etq:"2006 · Apertura/Clausura"});
     puntos.push({k:"b2026",tipo:"base",base:2026,anio:2026,etq:"2026 · Actual"});
   }
   glorias.forEach((ep,i)=>{
@@ -321,7 +333,9 @@ function elegirEpoca(id){
       if(sel.tipo==="gloria"&&sel.ep){
         c.appendChild(el("div","resul mitad","<b>"+sel.ep.etq+".</b> "+(sel.ep.desc||"")+(sel.ep.dt?" · DT <b>"+sel.ep.dt+"</b>":"")));
       }else{
-        if(esArg) c.appendChild(el("p","mini","Este club juega en la Liga Profesional Argentina 2026 (30 clubes). Victoria vale 3 puntos. Una rueda de 29 fechas. Plantel de cantera (no se inventan nombres)."));
+        if(esArg) c.appendChild(el("p","mini","Este club juega en la Liga Profesional Argentina 2026 (30 clubes). Victoria vale 3 puntos. Una rueda de 29 fechas. Plantel de cantera (no se inventan nombres). La federación es la AFA, no la ANFP."));
+        else if(sel.base===1925) c.appendChild(el("p","mini","1925: amateur. Liga Metropolitana de Deportes. No hay redes, ni Libertadores, ni mercado millonario. Victoria vale 2 puntos. Plantel de Colo-Colo documentado (Arellano y los Rebeldes)."));
+        else if(sel.base===2006) c.appendChild(el("p","mini","2006: Apertura y Clausura, 19 clubes (Concepción suspendido). En el juego, una rueda de 18 fechas. Plantel de Colo-Colo documentado (Borghi, Suazo, Mati, Valdivia)."));
         else if(esC) c.appendChild(el("p","mini","Este club juega en la Segunda División Profesional 2026 (3er nivel). Victoria vale 3 puntos. El objetivo es ascender a la Primera B."));
         else if(esB) c.appendChild(el("p","mini","Este club juega en la Primera B 2026 (Liga de Ascenso). Victoria vale 3 puntos. Copa Chile con grupos reales."));
         else if(solo2026) c.appendChild(el("p","mini","Este club juega en la Primera División 2026."));
@@ -351,9 +365,11 @@ function elegirEpoca(id){
       c.appendChild(el("h3","sub","3 · Briefing"));
       const eraObj2=(typeof eraDe==="function"?eraDe(sel.base):ERA[sel.base])||ERA[2026];
       const ligaN=sel.base==="arg2026"?(typeof LIGA_ARG_2026!=="undefined"?LIGA_ARG_2026.length:30)
+        :(sel.base===2006?(typeof LIGA_2006!=="undefined"?LIGA_2006.length:19)
+        :(sel.base===1925?(typeof LIGA_1925!=="undefined"?LIGA_1925.length:12)
         :(sel.base==="2026c"?(typeof LIGA_C_2026!=="undefined"?LIGA_C_2026.length:14)
         :(sel.base==="2026b"?(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026.length:16)
-        :(sel.base===2026?LIGA_2026.length:LIGA91.length)));
+        :(sel.base===2026?LIGA_2026.length:LIGA91.length)))));
       c.appendChild(fila("Época","Campeonato "+sel.anio+" · "+ligaN+" equipos · victoria vale "+eraObj2.puntosVictoria+" puntos"));
       c.appendChild(fila("Deportivo","plantel "+ib.plantel+" · cantera "+ib.cantera));
       c.appendChild(fila("Económico",plata(cb.plata)+" en caja · "+plata(cb.deuda)+" de deuda"));
@@ -392,6 +408,8 @@ function elegirEpoca(id){
           if(esB||sel.base==="2026b") extra2=Object.assign(extra||{},{categoria:"B"});
           if(esC||sel.base==="2026c") extra2=Object.assign(extra||{},{categoria:"C"});
           if(esArg||sel.base==="arg2026") extra2=Object.assign(extra||{},{categoria:"ARG"});
+          if(sel.base===2006) extra2=Object.assign(extra2||extra||{},{categoria:"2006"});
+          if(sel.base===1925) extra2=Object.assign(extra2||extra||{},{categoria:"1925"});
           nuevaPartida(id, anio, modo, extra2);
           if(!E || !E.club) throw new Error("nuevaPartida no dejó estado E");
           cerrarModal(); SEC="escritorio"; render();

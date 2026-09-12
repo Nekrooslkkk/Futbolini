@@ -23,6 +23,11 @@ var FEDERACIONES = {
     pais: "Argentina", sigla: "AFA",
     nombre: "Asociación del Fútbol Argentino",
     ascenso: "Primera Nacional", copa: "Copa Argentina"
+  },
+  metropolitana: {
+    pais: "Chile", sigla: "LMD",
+    nombre: "Liga Metropolitana de Deportes",
+    ascenso: "(amateur)", copa: "(no hay copa continental)"
   }
 };
 
@@ -34,6 +39,7 @@ function paisDeEra(base) {
     if (typeof ERA === "object" && ERA[base] && ERA[base].pais && FEDERACIONES[ERA[base].pais])
       return ERA[base].pais;
   } catch (e) {}
+  if (base === 1925) return "metropolitana";
   var s = String(base == null ? "" : base).toLowerCase();
   if (s.indexOf("arg") >= 0) return "argentina";
   return "chile";

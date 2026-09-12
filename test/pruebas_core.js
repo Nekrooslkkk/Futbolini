@@ -453,6 +453,57 @@
       ok(TUITS_76.every(function(t){ return !/\bvos tenés\b|\bandá\b|\bmirá\b/i.test(t.txt); }), "tuits sin voseo argentino típico");
     }, "Tuits y voz");
 
+    /* T12 · 7.81 GROK_EPOCAS A–H */
+    grupo("Grok 7.81 (épocas 1925/2006 + meta + AFA + calendario)");
+    safe(function(){
+      ok(typeof CLUB_META==="object" && CLUB_META.CC && CLUB_META.CC.fund===1925, "CC fund 1925");
+      ok(CLUB_META.SW && CLUB_META.SW.fund===1892, "Wanderers fund 1892");
+      ok(CLUB_META.CC.colores && CLUB_META.CC.colores[0]==="#ffffff", "CC colores blanco/negro");
+      ok(typeof colorDeClub==="function" && colorDeClub("UCH"), "colorDeClub UCH");
+      ok(typeof ESTADIO_FIX_78==="object" && ESTADIO_FIX_78.length>=3, "FIX de aforos reportados");
+      if(typeof LIGA_C_2026==="object"){
+        var sinMeta=LIGA_C_2026.filter(function(c){ return !CLUB_META[c.id]||!CLUB_META[c.id].esc; }).map(function(c){ return c.id; });
+        ok(sinMeta.length===0, "Segunda: todos con meta esc ("+(sinMeta.join(",")||"ok")+")");
+      }
+      ok(CLUB_META.COL && CLUB_META.COL.fund===2014, "Colina fund 2014");
+      ok(CLUB_META.GVE && CLUB_META.GVE.fund===1908, "Gral. Velásquez fund 1908");
+      ok(CLUB_META.REN && CLUB_META.REN.fund===1984, "Rengo fund 1984");
+    }, "Meta clubes");
+    safe(function(){
+      ok(typeof FEDERACION_ARG==="object" && FEDERACION_ARG.sigla==="AFA", "federación AFA");
+      ok(!/ANFP/.test(FEDERACION_ARG.nombre||""), "AFA no dice ANFP");
+      ok(typeof FORMAT_CHILE_LINEA==="object" && FORMAT_CHILE_LINEA.length>=6, "línea de formatos 1991-2008");
+      ok(FORMAT_CHILE_LINEA.some(function(x){ return x.anio===1995 && x.pts===3; }), "1995: 3 puntos");
+      ok(FORMAT_CHILE_LINEA.some(function(x){ return x.anio===2002; }), "2002: playoffs");
+    }, "AFA + línea de formatos");
+    safe(function(){
+      ok(typeof LIGA_2006==="object" && LIGA_2006.length===19, "2006: 19 clubes");
+      ok(!LIGA_2006.some(function(c){ return c.id==="DCO"; }), "2006 sin D. Concepción (suspendido)");
+      ok(LIGA_2006.some(function(c){ return c.id==="CBL"; }) && LIGA_2006.some(function(c){ return c.id==="CBS"; }), "Cobreloa=CBL y Cobresal=CBS");
+      var r=nuevaPartida("CC",2006,"historico",{categoria:"2006"});
+      ok(r!==false && E && E.eraBase===2006, "CC 2006 arranca era 2006");
+      ok((E.plantel||[]).some(function(j){ return /Suazo|Fernández|Valdivia/.test(j.n||""); }), "plantel 2006 documentado (Suazo/Mati/Valdivia)");
+      ok((E.calendario||[]).filter(function(p){ return p.tipo==="liga"; }).length===18, "18 fechas (rueda con bye): "+((E.calendario||[]).filter(function(p){ return p.tipo==="liga"; }).length));
+      ok(!(E.calendario||[]).some(function(p){ return p.torneo==="Copa Chile"; }), "2006 no arma Copa Chile");
+    }, "Modo 2006");
+    safe(function(){
+      ok(typeof LIGA_1925==="object" && LIGA_1925.length===12, "1925: 12 clubes (Unión Chilena retirada)");
+      ok(LIGA_1925.length%2===0, "12 es par (fixturesLiga)");
+      var r=nuevaPartida("CC",1925,"historico",{categoria:"1925"});
+      ok(r!==false && E && E.eraBase===1925, "CC 1925 arranca era 1925");
+      ok((E.plantel||[]).some(function(j){ return /Arellano/.test(j.n||""); }), "plantel 1925 tiene a David Arellano");
+      ok((E.calendario||[]).filter(function(p){ return p.tipo==="liga"; }).length===11, "11 fechas (una rueda): "+((E.calendario||[]).filter(function(p){ return p.tipo==="liga"; }).length));
+      ok(!(E.calendario||[]).some(function(p){ return /Libertadores|Copa Chile/.test(p.torneo||""); }), "1925 sin copas modernas");
+      ok(typeof redesDisponibles==="function" && !redesDisponibles(), "sin redes en 1925");
+      ok(typeof seccionOculta==="function" && seccionOculta("mercado") && seccionOculta("redes"), "oculta mercado y redes");
+      ok(typeof ERA==="object" && ERA[1925] && ERA[1925].puntosVictoria===2, "1925: victoria vale 2");
+    }, "Modo 1925");
+    safe(function(){
+      ok(typeof TITULARES_FECHA==="object" && TITULARES_FECHA.length>=6, "titulares de fecha");
+      ok(typeof titularDeFecha==="function" && /fecha|rival|jornada|domingo|tabla/i.test(titularDeFecha("fecha_previa")), "titular de fecha habla de la jornada");
+      ok(typeof COPA91_RESEÑA==="object" && /Olimpia/.test(COPA91_RESEÑA.final||""), "reseña Libertadores 1991");
+    }, "Calendario H + Libertadores 91");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }

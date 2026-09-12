@@ -2206,3 +2206,18 @@ Claude promptó el GROK_SUPERPROMPT. Se hornea, no se deja en un .md:
 - **Auditoría móvil (390px):** verificado `scrollWidth===clientWidth` (cero overflow horizontal) en Escritorio/Plantel/Calendario/Finanzas/Mercado/Institución/Redes/Carrera/Ajustes, en los **modales** (decisión, avance rápido, amistoso, cuenta, "Más"), y en la **animación de gol** (confeti contenido con `overflow:hidden`).
 - **util.js:** VERSION 7.79 → **7.80**.
 **Probado:** node --check + suite 142/142 verde + auditorías de overflow a 390px.
+
+## 7.81 · GROK_EPOCAS horneado (A–H) + merge con 7.80 de Claude
+Claude avanzó 7.78–7.80 (federación por país, gol en vivo, celular). El 7.78 de Grok (GROK_EPOCAS) se suma **encima**, sin pisar gol.css / ui-partido / movil / federacion.js.
+
+- **A · menú épico:** `js/data-clubes-meta.js` — `esc`, `ciudad`, `colores`, `fund` de Primera / B / Segunda **completa** (14/14). El picker pinta una franja del color del club. Santiago City: negro/rosa documentados; año omitido (fuentes 2020 vs 2022).
+- **B · AFA:** `FEDERACION_ARG` + `ERA.arg2026.pais="argentina"` para el `federacion.js` de Claude. Planteles River/Boca/Racing/Independiente: **no se inventan** (cantera).
+- **C · 1991:** `js/data-1991-plus.js` — `FORMAT_CHILE_LINEA` 1991→2008 + reseña Libertadores 91.
+- **D · 2006:** `js/data-2006.js` — 19 clubes (Concepción suspendido), 18 fechas, plantel Borghi/Suazo/Mati/Valdivia.
+- **E · 1925:** `js/data-1925.js` — Liga Metropolitana amateur, 12 clubes, Arellano. Oculta redes y mercado. `ERA[1925].pais="metropolitana"` → LMD en `federacion.js`.
+- **F · estadios:** Monumental 43667, Nacional 46190, Sausalito 21754.
+- **G · fotos:** `FOTOS.json` con enlaces directos Commons. `sin_foto` si no hay archivo verificado.
+- **H · calendario:** titular de jornada + racha + historial vs rival + clima/clásico (`js/data-epocas-78.js`).
+- Se conservan el gol en vivo (7.79) y el arreglo móvil de los botones del partido (7.80).
+- **Tests:** + épocas 1925/2006/meta. **util.js:** 7.80 → **7.81**.
+**Probado:** node --check + suite HTTP.

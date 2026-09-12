@@ -179,10 +179,16 @@ const ERA={
 };
 function eraDe(base){
   if(base==="arg2026") return (ERA.arg2026)||ERA[2026];
+  if(base===2006) return ERA[2006]||ERA[1991];
+  if(base===1925) return ERA[1925]||ERA[1991];
   if(base==="2026b" || base==="2026c" || base===2026) return ERA[2026];
   return ERA[base] || (base>=2010?ERA[2026]:ERA[1991]);
 }
-function baseEra(anio){ return anio>=2010?2026:1991; }
+function baseEra(anio){
+  if(anio===1925) return 1925;
+  if(anio===2006) return 2006;
+  return anio>=2010?2026:1991;
+}
 
 /* liga activa y su índice, según la época del juego actual */
 const LIGAS={1991:LIGA91, 2026:LIGA_2026};
@@ -197,12 +203,12 @@ function clubMapaTodos(){
   /* los clubes modernos (2026 / Primera B) ganan el id ante colisiones con 1991
      (ej: COB = Cobresal en 2026, pero Cobreloa en 1991). El ascenso/descenso es era moderna. */
   const m={};
-  [LIGA_2026,(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null),(typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null),(typeof LIGA_ARG_2026!=="undefined"?LIGA_ARG_2026:null),LIGA91].forEach(L=>{ if(L) L.forEach(c=>{ if(!m[c.id]) m[c.id]=c; }); });
+  [LIGA_2026,(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null),(typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null),(typeof LIGA_ARG_2026!=="undefined"?LIGA_ARG_2026:null),(typeof LIGA_2006!=="undefined"?LIGA_2006:null),(typeof LIGA_1925!=="undefined"?LIGA_1925:null),LIGA91].forEach(L=>{ if(L) L.forEach(c=>{ if(!m[c.id]) m[c.id]=c; }); });
   _mapaTodosCache=m;
   return m;
 }
 function activarLiga(base){
-  let liga = LIGAS[base] || (base==="2026b"&&typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null) || (base==="2026c"&&typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null) || LIGA91;
+  let liga = LIGAS[base] || (base==="2026b"&&typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null) || (base==="2026c"&&typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null) || (base===2006&&typeof LIGA_2006!=="undefined"?LIGA_2006:null) || (base===1925&&typeof LIGA_1925!=="undefined"?LIGA_1925:null) || LIGA91;
   /* override por-save para ascenso/descenso: la división trae a los clubes que corresponden esta temporada */
   if(typeof E!=="undefined" && E && E.ligaMod && E.ligaMod[base] && (base===2026||base==="2026b"||base==="2026c")){
     const mapa=clubMapaTodos();

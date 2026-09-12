@@ -51,6 +51,19 @@ Ascenso/descenso **encadenado** entre niveles (implementado: Primera↔B↔Segun
 - Archivo: `js/data-argentina2026.js` (`registrarLiga`). Planteles: **cantera** (no se inventan nombres).
 - Segunda 2026: DTs de la ficha pública (Paredes, Viale, Ramos…) y estadios cruzados (City = Lo Barnechea, Ovalle = Diaguita). Planteles: cantera.
 
+## Modo 2006 (era `2006`)
+- **19 clubes** (Deportes Concepción **suspendido** por problemas financieros). Wikipedia Apertura/Clausura 2006.
+- **Formato real:** Apertura + Clausura, grupos + playoffs estilo México, 3 pts. Campeones: Colo-Colo (Apertura vs la U por penales; Clausura 3-0 a Audax). Desciende Morning por tabla anual.
+- **En el juego hoy:** una rueda de **18 fechas** (bye, n impar). Cobreloa = `CBL`, Cobresal = `CBS` (no chocar con Cobresal 2026 = `COB`).
+- Plantel documentado: **solo Colo-Colo** (`PLANTEL_CC_2006`). El resto, cantera.
+- Archivo: `js/data-2006.js`.
+
+## Modo 1925 (era `1925`) — amateur, acotado
+- **Liga Metropolitana de Deportes**, División de Honor. 13 inscritos; **Unión Chilena se retiró** → **12 clubes**, una rueda, 11 fechas. Victoria **2 pts**.
+- Campeón invicto: Colo-Colo (fundado el 19 de abril; debut 6-0 al English el 31 de mayo).
+- **Se oculta:** redes, mercado millonario. No hay Libertadores, VAR, ANFP, B/Segunda profesional.
+- Plantel documentado: **solo Colo-Colo** (Arellano y los Rebeldes). Archivo: `js/data-1925.js`.
+
 ---
 
 El motor ya está preparado: una "era"/división es un **array de clubes** registrado en

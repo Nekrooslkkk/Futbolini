@@ -49,6 +49,13 @@ const LIGA_ARG_2026=[
  {id:"BAR",n:"Barracas Central",         c:"Barracas",   fuerza:57, aforo:4400,  est:"Claudio Chiqui Tapia",            ciudad:"Buenos Aires",     z:"B", esc:"🔴"}
 ];
 
+const FEDERACION_ARG={
+  sigla:"AFA",
+  nombre:"Asociación del Fútbol Argentino",
+  ascenso:"Primera Nacional",
+  terminos:["promedios","descenso por tabla anual","Liga Profesional","el clásico","la Bombonera","el Monumental"]
+};
+
 const FORMAT_ARG_2026={
   n:30,
   pts:3,
@@ -68,8 +75,8 @@ if(typeof registrarLiga==="function"){
     clubs:LIGA_ARG_2026,
     baseEra:2026,
     nombre:"Liga Profesional Argentina",
-    era:{n:"2026 · Argentina", puntosVictoria:3, inflacion:1.4, cuposInternacional:6,
-      desc:"Liga Profesional 2026: 30 clubes, Apertura y Clausura en zonas de 15. En el juego, una rueda de 29 fechas."}
+    era:{n:"2026 · Argentina", pais:"argentina", puntosVictoria:3, inflacion:1.4, cuposInternacional:6,
+      desc:"Liga Profesional 2026 (AFA, no ANFP): 30 clubes, Apertura y Clausura en zonas de 15. En el juego, una rueda de 29 fechas. Descienden 2: 1 por promedio + 1 colista de la anual."}
   });
 }
 

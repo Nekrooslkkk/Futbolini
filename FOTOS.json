@@ -1,0 +1,18 @@
+[
+  {"id":"CC","tipo":"estadio","nombre":"Estadio Monumental David Arellano, Macul (fachada)","url":"https://upload.wikimedia.org/wikipedia/commons/5/5c/Fachada_Estadio_Monumental%2C_2016-12-21.jpg","autor":"Carlos Figueroa","lic":"CC BY-SA 4.0"},
+  {"id":"UCH","tipo":"estadio","nombre":"Estadio Nacional Julio Martínez Prádanos, Ñuñoa","url":"https://upload.wikimedia.org/wikipedia/commons/2/2a/Estadio_Nacional_-_A741105.jpg","autor":"Rjcastillo","lic":"CC BY-SA 4.0"},
+  {"id":"EVE","tipo":"estadio","nombre":"Estadio Sausalito, Viña del Mar (Everton vs Colo-Colo 2023)","url":"https://upload.wikimedia.org/wikipedia/commons/4/4e/Estadio_Sausalito_Everton_v_Colo-Colo_20230806_01.jpg","autor":"Carlos yo","lic":"CC BY-SA 4.0"},
+  {"id":"UES","tipo":"estadio","nombre":"Estadio Santa Laura, Independencia, Santiago","url":"https://upload.wikimedia.org/wikipedia/commons/e/e1/Estadio_Santa_Laura%2C_Independencia%2C_Santiago_20230723.jpg","autor":"Carlos yo","lic":"CC BY-SA 4.0"},
+  {"id":"OHI","tipo":"estadio","nombre":"Estadio El Teniente, Rancagua","url":"https://upload.wikimedia.org/wikipedia/commons/5/57/Estadio_Bicentenario_El_Teniente_%E2%80%94_Rancagua%2C_Chile_%2818061368649%29.jpg","autor":"Flickr 7518805@N08","lic":"CC BY 2.0"},
+  {"id":"COQ","tipo":"estadio","nombre":"Estadio Francisco Sánchez Rumoroso, Coquimbo","url":"https://upload.wikimedia.org/wikipedia/commons/f/f9/Estadio_Francisco_S%C3%A1nchez_Rumoroso.jpg","autor":"Wikimedia Commons","lic":"CC BY-SA"},
+  {"id":"HUA","tipo":"estadio","nombre":"Estadio CAP, Talcahuano","url":"https://upload.wikimedia.org/wikipedia/commons/b/b3/Estadio_CAP.jpg","autor":"Wikimedia Commons","lic":"CC BY-SA"},
+  {"id":"COB","tipo":"estadio","nombre":"Estadio El Cobre, El Salvador","url":"https://upload.wikimedia.org/wikipedia/commons/a/ab/Estadio_El_Cobre.jpg","autor":"Wikimedia Commons","lic":"CC BY-SA"},
+  {"id":"NUB","tipo":"estadio","nombre":"Estadio Nelson Oyarzún Arenas, Chillán","url":"https://upload.wikimedia.org/wikipedia/commons/0/00/Estadio_Nelson_Oyarz%C3%BAn_de_Chill%C3%A1n.jpg","autor":"Wikimedia Commons","lic":"CC BY-SA"},
+  {"id":"BOC","tipo":"estadio","nombre":"La Bombonera (Estadio Alberto J. Armando), La Boca","url":"https://upload.wikimedia.org/wikipedia/commons/3/38/La_Bombonera_2.jpg","autor":"Matibro","lic":"CC BY-SA 4.0"},
+  {"id":"RIV","tipo":"estadio","nombre":"Estadio Mâs Monumental, Núñez (River Plate)","url":"https://upload.wikimedia.org/wikipedia/commons/5/54/RiverPlateStadium.jpg","autor":"Fulviusbsas","lic":"CC BY-SA 4.0"},
+  {"id":"SCR","tipo":"estadio","nombre":"Estadio Municipal Joaquín Muñoz García, Santa Cruz","sin_foto":true},
+  {"id":"SCI","tipo":"estadio","nombre":"Estadio Municipal de Lo Barnechea","sin_foto":true},
+  {"id":"RSJ","tipo":"estadio","nombre":"Estadio Municipal de San Joaquín","sin_foto":true},
+  {"id":"BSA","tipo":"estadio","nombre":"Estadio Municipal de Salamanca","sin_foto":true},
+  {"id":"CNA","tipo":"estadio","nombre":"Estadio Atlético Municipal, Concón","sin_foto":true}
+]
