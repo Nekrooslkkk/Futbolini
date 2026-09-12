@@ -138,6 +138,20 @@
       setIdioma("neutro");
     }, "Chilensis gol");
 
+    /* 7.78 · federación por país: AFA ≠ ANFP, sin tocar el contenido chileno */
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      ok(typeof fedSigla==="function" && fedSigla()==="ANFP", "Chile usa ANFP");
+      ok(localizarFed("Presión de la ANFP y la Copa Chile")==="Presión de la ANFP y la Copa Chile", "en Chile el texto NO cambia");
+      E.eraBase="arg2026";
+      ok(paisDeEra()==="argentina" && fedSigla()==="AFA", "arg2026 → AFA");
+      var loc=localizarFed("La ANFP designó árbitro para la Copa Chile");
+      ok(loc.indexOf("AFA")>=0 && loc.indexOf("ANFP")<0 && loc.indexOf("Copa Argentina")>=0, "localiza ANFP→AFA y Copa Chile→Copa Argentina");
+      ok(resolverTokens("Molestó a la ANFP", E).indexOf("AFA")>=0, "resolverTokens localiza en modo Argentina");
+      E.eraBase=2026;
+      ok(resolverTokens("Molestó a la ANFP", E).indexOf("ANFP")>=0, "de vuelta en Chile, ANFP intacto");
+    }, "Federacion pais");
+
     /* 7.77 · más pateos: más acción sin inflar los goles */
     safe(function(){
       nuevaPartida("CC",2026,"historico");

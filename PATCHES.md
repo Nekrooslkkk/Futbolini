@@ -2185,3 +2185,11 @@ Claude promptó el GROK_SUPERPROMPT. Se hornea, no se deja en un .md:
 - **scripts/fotos_bajar.py** `url_valida()`: rechaza URLs que NO son el archivo directo — búsquedas de Google/Bing, páginas de Commons (`/wiki/File:`), categorías, thumbnails de buscador, y links sin extensión de imagen. Ese era el bug: se bajaba un resultado de búsqueda ("estadio") en vez del archivo → foto equivocada. Ahora solo pasa `…/archivo.jpg|png|webp` real.
 - Sidecar `img/_fotos_meta.json` (id→nombre): **scripts/fotos_contacto.py** muestra el **nombre declarado** debajo de cada foto en la hoja de contacto → un estadio equivocado salta al ojo. Soporte `"sin_foto":true` (usa escudo emoji).
 - GROK_EPOCAS.md (Prompt G) con la regla exacta del link directo. Probado: página/búsqueda/sin-extensión rechazadas; archivo directo baja OK.
+
+## 7.78 · Federación por país (AFA ≠ ANFP) — sin romper el contenido chileno
+- **js/federacion.js (nuevo):** `FEDERACIONES` (Chile→ANFP, Argentina→AFA, extensible) + `paisDeEra(base)` (lee `ERA[base].pais` si el data file lo declara; si no, heurística "arg…"→argentina; default Chile) + `federacionActual/fedSigla/fedNombre/fedAscenso/fedCopa`.
+- **localizarFed(txt):** en Chile devuelve el texto **igual** (cero riesgo). Fuera de Chile cambia `ANFP→AFA`, `Copa Chile→Copa Argentina`, `Primera B→Primera Nacional`. Se **envuelve `resolverTokens`** (patrón de `pulido.js`) → todo el texto de decisiones/eventos queda localizado **sin editar cada string** (ni tocar los data files de Grok). Cargado último en `index.html`.
+- Así la Liga Argentina (`arg2026`, de Grok) deja de hablar de la ANFP. Para sumar otro país: una entrada en `FEDERACIONES`.
+- **Tests:** +6 (Chile ANFP y sin cambios; arg2026→AFA; localiza ANFP→AFA y Copa Chile→Copa Argentina; resolverTokens localiza en Argentina; de vuelta en Chile intacto). Suite **142/142**.
+- **util.js:** VERSION 7.77 → **7.78**.
+**Probado:** node --check + suite 142/142 verde.
