@@ -2435,6 +2435,21 @@ Jugar Colo-Colo se siente más real porque tiene **planteles históricos con nom
 - Se conserva el **CAL.svg** de footylogos (7.96 paralelo en GitHub) y el fallback `_escFall` para que un escudo que no carga no desaparezca.
 **Probado:** node --check + suite HTTP 465/465.
 
+## 8.00 · U. de Chile 1994 + Boca 2007 + River 2018 al listón Colo-Colo
+
+Jugar Colo-Colo es el estándar (24 fichas, 3 ARQ, capitán, ídolo, épocas 1989/1991/2002/2006). La U 1994 —el título de los 25 años— tenía **8 nombres** y el resto era cantera. Boca 2007 y River 2018 (las Libertadores equivalentes) decían "Plantel: cantera".
+
+- **UCH 1994:** plantel campeón BDFA + XI vs Cobresal (Wikipedia / ASIFUCH). Vargas, Musrri (capitán), Salas, Mardones, Aredes, Delgado, Guevara, Valencia, Ibáñez, Goldberg. 21 fichas, 3 ARQ. Guarda no entra (dopaje, fecha 7). Época dorada jugable + línea de Historia (faltaba el hito).
+- **Boca 2007:** Libertadores vs Grêmio. Caranta, Riquelme, Palermo (capitán), Palacio, Cata Díaz, Battaglia. Barros Schelotto no (baja 17 abr). 22 fichas.
+- **River 2018:** Libertadores Madrid. Armani, Ponzio (capitán), Pratto, Pity, Quintero, Montiel. Lista de buena fe TyC/ESPN. 24 fichas, 3 ARQ.
+
+Stats estimadas. Nombres reales. Cero copias 2026 (Salas no vive en la U actual).
+
+- **js/data-planteles-800.js** (nuevo, último). **Tests:** T29. **util.js:** 7.99 → **8.00**.
+**Probado:** node --check + suite HTTP.
+
+
+
 
 
 

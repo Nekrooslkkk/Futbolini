@@ -99,6 +99,19 @@ Hechos públicos. Si no está documentado, se marca.
 [INFO] Todavía bajo el listón CC (sin plantel de época real): palestino 1978 sí; LIM/ANT/PMO/COP/TEM/IQQ/CUR/SCR/RAN/SLQ/USF/REC y casi toda Segunda/AFA. No se inventa.
 [OK] Rasgo mínimo por edad si el array venía vacío (veterano/joven/recambio). Capitán no se inventa.
 
+## 8.00 · U 1994 / Boca 2007 / River 2018 = listón Colo-Colo
+[CRÍTICO] UCH 1994 tenía 8 fichas (el resto cantera). Es EL título de la U, el equivalente a CC 1991.
+[FIX] Plantel 21 nombres BDFA/Wikipedia/ASIFUCH. Musrri capitán, Salas goleador, Vargas ídolo. 3 ARQ.
+[FIX] HISTORIA_LINEA.UCH no tenía 1994 — ahora sí (25 años, El Salvador, penal de Mardones).
+[FIX] Época dorada jugable (botón oro) con squad real.
+[CRÍTICO] Boca 2007 y River 2018 (EPOCAS_TAREA_E) decían "Plantel: cantera".
+[FIX] Boca 2007: 22 nombres, Russo, Riquelme, Palermo capitán. Schelotto no (abril).
+[FIX] River 2018: 24 nombres, Gallardo, Ponzio capitán, Pratto, Armani. 3 ARQ.
+[INFO] Siguiente lote (aún cantera, no se inventa): Audax 2007, Cobreloa 1981 ya tiene XI de final en 7.92, Magallanes/Morning 1942, AFA 1967/1984/1994.
+[OK] VERSION 8.00. Tests T29.
+
+
+
 
 
 

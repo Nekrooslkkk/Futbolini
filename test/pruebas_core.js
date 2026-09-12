@@ -564,7 +564,7 @@
     safe(function(){
       ok(typeof FRASES==="object" && FRASES.cl && !/Atendé/.test(FRASES.cl.esc_atiende||""), "chilensis sin Atendé argentino");
       ok(/Atiende/.test(FRASES.cl.esc_atiende||""), "Atiende (tú chilensis)");
-      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+      ok(typeof VERSION==="string" && /^[78]\.\d+$/.test(VERSION), "VERSION 7.x/8.x");
     }, "Voz + versión");
 
     /* T13b · 7.83b Claude · blindaje del selector de época (no pisar) */
@@ -637,7 +637,7 @@
       ok(FORMAT_CHILE_LINEA.some(function(x){ return x.anio===2018 && x.n===16; }), "2018: torneo largo 16");
       ok(FORMAT_CHILE_LINEA.some(function(x){ return x.anio===2026; }), "2026 en la línea de formatos");
       ok(typeof SITUACION_CLUB==="object" && SITUACION_CLUB.CC && SITUACION_CLUB.RIV, "situación CC y River");
-      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+      ok(typeof VERSION==="string" && /^[78]\.\d+$/.test(VERSION), "VERSION 7.x/8.x");
     }, "Formatos + situación + versión");
 
     /* T15 · 7.86 huecos reales TAREA E (economía AFA, estadios, clásicos, oro) */
@@ -817,7 +817,7 @@
       ok(CLUB_META.GLP && CLUB_META.GLP.fund===1887, "Gimnasia fund 1887");
       ok(CLUB_META.BOC && CLUB_META.BOC.fund===1905, "Boca fund 1905");
       ok(AFORO_ARG_87.GLP===30973, "Zerillo aforo Wikipedia 30973");
-      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+      ok(typeof VERSION==="string" && /^[78]\.\d+$/.test(VERSION), "VERSION 7.x/8.x");
     }, "Arranque 92");
 
     /* T22 · 7.93 Primera Chile + B Wikipedia */
@@ -857,7 +857,7 @@
       ok(tieneEp("SMO",1942), "Morning época 1942 (campeón)");
       ok(tieneEp("MAG",1933), "Magallanes época 1933 (primer campeón)");
       ok(tieneEp("LSC",1969), "Lota época 1969 (ascenso)");
-      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+      ok(typeof VERSION==="string" && /^[78]\.\d+$/.test(VERSION), "VERSION 7.x/8.x");
     }, "Arranque 93");
 
     /* T23 · 7.94 resto Primera Chile Wikipedia */
@@ -901,7 +901,7 @@
       ok(CLUB_INFO_2026.COB && /Huerta/.test(CLUB_INFO_2026.COB.dt||""), "Cobresal DT Huerta");
       ok(CLUB_INFO_2026.CAL && /Cicotello/.test(CLUB_INFO_2026.CAL.dt||""), "La Calera DT Cicotello");
       ok(CLUB_INFO_2026.UDC && /Muñoz/.test(CLUB_INFO_2026.UDC.dt||""), "U. Concepción DT Muñoz");
-      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+      ok(typeof VERSION==="string" && /^[78]\.\d+$/.test(VERSION), "VERSION 7.x/8.x");
     }, "Arranque 94");
 
     /* T24 · 7.95 resto Primera B Wikipedia */
@@ -940,7 +940,7 @@
       ok(CLUB_INFO_2026.CUR && /Muñoz/.test(CLUB_INFO_2026.CUR.dt||""), "Curicó DT Muñoz");
       ok(CLUB_INFO_2026.SCR && /Giovagnoli/.test(CLUB_INFO_2026.SCR.dt||""), "Santa Cruz DT Giovagnoli");
       ok(CLUB_INFO_2026.RAN && /Basay/.test(CLUB_INFO_2026.RAN.dt||""), "Rangers DT Basay");
-      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+      ok(typeof VERSION==="string" && /^[78]\.\d+$/.test(VERSION), "VERSION 7.x/8.x");
     }, "Arranque 95");
 
     /* T25 · 7.96 LINKS: Segunda cableada + AFA estilizado + manifiesto */
@@ -959,7 +959,7 @@
       ok(typeof fotoEstadioDe==="function" && fotoEstadioDe("PAL") && fotoEstadioDe("RAN"),
         "Chile Primera+B sigue con foto de estadio");
       ok(!fotoEstadioDe("SCR"), "Santa Cruz sin foto de estadio (a propósito)");
-      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+      ok(typeof VERSION==="string" && /^[78]\.\d+$/.test(VERSION), "VERSION 7.x/8.x");
     }, "Escudos 96");
 
     /* T26 · 7.97 caza: Segunda ≠ Colo-Colo 1991 + copias de plantel */
@@ -1037,7 +1037,7 @@
       ok(tiene("BSA","Valdés") && !tiene("REC","Bastián Valdés"), "Bastián Valdés en Brujas (salió de Recoleta)");
       ok(tiene("GVE","Cerda") && !tiene("COB","Jean Cerda"), "Jean Cerda cedido en Velásquez (no Cobresal)");
       ok(tiene("TUC","Julián Fernández") && !tiene("PAL","Julián Fernández"), "Julián Fernández cedido en Tucumán (no Palestino)");
-      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+      ok(typeof VERSION==="string" && /^[78]\.\d+$/.test(VERSION), "VERSION 7.x/8.x");
     }, "Planteles sin copias");
 
     /* T27 · 7.98 historias ajenas: todos los de Segunda + 1925 + Limache */
@@ -1082,13 +1082,13 @@
       ok(typeof textoPlopAjeno==="function" && textoPlopAjeno("COLO-COLO CAMPEÓN DE AMÉRICA. 3-0 a Olimpia en el Monumental."), "Plop de Segunda filtra titular de CC 1991");
       nuevaPartida("CC",1991,"historico");
       ok(!textoPlopAjeno("COLO-COLO CAMPEÓN DE AMÉRICA. 3-0 a Olimpia en el Monumental."), "Plop de CC 1991 conserva su titular");
-      ok(typeof VERSION==="string" && VERSION==="7.99", "VERSION 7.99");
+      ok(typeof VERSION==="string" && VERSION==="8.00", "VERSION 8.00");
     }, "Plop filtrado + versión");
 
     /* T28 · 7.99 rigor vs Colo-Colo: épocas con plantel real + UC al día */
     grupo("Grok 7.99 (rigor vs Colo-Colo)");
     safe(function(){
-      ok(typeof VERSION==="string" && VERSION==="7.99", "VERSION 7.99");
+      ok(typeof VERSION==="string" && VERSION==="8.00", "VERSION 8.00");
       var cc=PLANTELES_REALES.CC;
       ok(cc && cc[2026] && cc[2026].length>=22, "CC 2026 sigue siendo el listón (≥22)");
       ok(cc[1989] && cc[1991] && cc[2002] && cc[2006], "CC tiene 1989/1991/2002/2006");
@@ -1118,6 +1118,38 @@
       });
       ok(flacos.length===0, "Primera 16/16 plantel 2026 ≥18"+(flacos.length?" ("+flacos.join(",")+")":""));
     }, "Rigor vs Colo-Colo");
+
+    /* T29 · 8.00 UCH 1994 / Boca 2007 / River 2018 al listón CC */
+    grupo("Grok 8.00 (U 1994 + Boca 2007 + River 2018)");
+    safe(function(){
+      ok(typeof VERSION==="string" && VERSION==="8.00", "VERSION 8.00");
+      var u94=PLANTELES_REALES.UCH&&PLANTELES_REALES.UCH[1994];
+      ok(u94 && u94.length>=20, "UCH 1994 plantel real ≥20 (era 8 fichas)");
+      ok(u94.filter(function(j){ return j[1]==="ARQ"; }).length>=2, "UCH 1994 tiene ≥2 ARQ");
+      ok(u94.some(function(j){ return j[0]==="Marcelo Salas"; }), "UCH 1994: Salas");
+      ok(u94.some(function(j){ return j[0]==="Luis Musrri" && (j[7]||[]).indexOf("capitán")>=0; }), "UCH 1994: Musrri capitán");
+      ok(u94.some(function(j){ return j[0]==="Patricio Mardones"; }), "UCH 1994: Mardones");
+      ok(u94.some(function(j){ return j[0]==="Sergio Vargas"; }), "UCH 1994: Vargas");
+      ok(u94.every(function(j){ return (j[7]||[]).length>0; }), "UCH 1994: 0 rasgos vacíos");
+      var hl=(typeof HISTORIA_LINEA==="object"&&HISTORIA_LINEA.UCH)||[];
+      ok(hl.some(function(h){ return h.anio===1994; }), "HISTORIA_LINEA.UCH incluye 1994");
+      var epU=(typeof epocasDe==="function"?epocasDe("UCH"):(EPOCAS_CLUB.UCH||[]));
+      ok(epU.some(function(e){ return e.anio===1994 && e.squad; }), "UCH 1994 es época jugable con squad");
+      var b07=PLANTELES_REALES.BOC&&PLANTELES_REALES.BOC[2007];
+      ok(b07 && b07.length>=20, "Boca 2007 plantel real ≥20 (ya no cantera)");
+      ok(b07.some(function(j){ return j[0]==="Juan Román Riquelme"; }), "Boca 2007: Riquelme");
+      ok(b07.some(function(j){ return j[0]==="Martín Palermo" && (j[7]||[]).indexOf("capitán")>=0; }), "Boca 2007: Palermo capitán");
+      ok(b07.every(function(j){ return j[0]!=="Guillermo Barros Schelotto"; }), "Boca 2007: Schelotto no (se fue en abril)");
+      var r18=PLANTELES_REALES.RIV&&PLANTELES_REALES.RIV[2018];
+      ok(r18 && r18.length>=22, "River 2018 plantel real ≥22 (ya no cantera)");
+      ok(r18.some(function(j){ return j[0]==="Lucas Pratto"; }), "River 2018: Pratto");
+      ok(r18.some(function(j){ return j[0]==="Leonardo Ponzio" && (j[7]||[]).indexOf("capitán")>=0; }), "River 2018: Ponzio capitán");
+      ok(r18.some(function(j){ return j[0]==="Franco Armani"; }), "River 2018: Armani");
+      ok(r18.filter(function(j){ return j[1]==="ARQ"; }).length>=3, "River 2018: 3 ARQ");
+      /* copias 2026: Salas/Riquelme/Pratto no viven en dos clubes del mismo año */
+      var s26=(PLANTELES_REALES.UCH&&PLANTELES_REALES.UCH[2026]||[]).some(function(j){ return j[0]==="Marcelo Salas"; });
+      ok(!s26, "Salas 1994 no se copia al 2026 de la U");
+    }, "U 1994 + Boca 2007 + River 2018");
 
     /* Reporte */
     OUT.push("\n════════════════════════");
