@@ -113,6 +113,19 @@
       ok((E.ligaMod["2026c"]||[]).length===14 && zc.norte===7 && zc.sur===7, "Segunda 14, zonas 7/7 tras perder");
     }, "Pierde liguilla");
 
+    /* 7.82 · intro de época en modos históricos (1925 nacimiento CC, 2006), no en 2026 */
+    grupo("Intro de época (7.82)");
+    safe(function(){
+      nuevaPartida("CC",1925,"historico"); SEC="escritorio"; render();
+      var p25=document.querySelector(".intro-epoca");
+      ok(!!p25, "1925 muestra el panel de época");
+      ok(p25 && /Cacique|Arellano|Magallanes/.test(p25.textContent||""), "el panel de 1925 cuenta la fundación real");
+      nuevaPartida("CC",2006,"historico"); SEC="escritorio"; render();
+      ok(!!document.querySelector(".intro-epoca"), "2006 muestra el panel de época");
+      nuevaPartida("CC",2026,"historico"); SEC="escritorio"; render();
+      ok(!document.querySelector(".intro-epoca"), "en 2026 NO aparece el panel de época");
+    }, "Intro epoca");
+
     /* T4a0 · idiomas: T() resuelve por registro con fallback a neutro */
     grupo("Idiomas (neutro/chilensis/pt)");
     safe(function(){

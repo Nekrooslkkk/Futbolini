@@ -2221,3 +2221,11 @@ Claude avanzó 7.78–7.80 (federación por país, gol en vivo, celular). El 7.7
 - Se conservan el gol en vivo (7.79) y el arreglo móvil de los botones del partido (7.80).
 - **Tests:** + épocas 1925/2006/meta. **util.js:** 7.80 → **7.81**.
 **Probado:** node --check + suite HTTP.
+
+## 7.82 · Inmersión de época en los modos históricos (1925 / 2006)
+- **js/epoca-intro.js (nuevo):** panel arriba del Escritorio, **solo en modos históricos**, que cuenta en qué época estás con hechos **reales verificados** de Grok. En **1925** (nacimiento de Colo-Colo): fundación (19 abr 1925, El Llano), escisión de Magallanes y "Ancha es la puerta", el nombre (cacique mapuche), la camiseta, el lema, la conducción (Parodi / David Arellano), el debut 6-0 al English y el formato (11 fechas, 2 pts). En **2006**: Apertura/Clausura de Borghi, goleadores (Suazo 19), descenso. En 2026/1991 **no aparece** (cero cambio).
+- Aislado: envuelve `vistaEscritorio` (patrón de `data-epocas-78.js`), no toca nada existente. Cargado tras `ui.js`.
+- Complementa lo de Grok (7.81): en 1925 ya se **ocultan Redes y Mercado** (verificado) y el calendario es la Liga Metropolitana. Smoke test: 1925 (12 clubes/11 fechas) y 2006 (19/18) arrancan y juegan sin crash.
+- **Tests:** +4 (1925 muestra panel con la fundación real; 2006 muestra panel; 2026 no). Suite **179/179**.
+- **util.js:** VERSION 7.81 → **7.82**.
+**Probado:** node --check + suite 179/179 verde + captura del Escritorio 1925.
