@@ -122,6 +122,15 @@ function nuevaPartida(clubId,anio,modo,extra){
   /* 7.49 · Segunda División Profesional (3er nivel) */
   if(typeof esClubC==="function" && esClubC(clubId) && (anio>=2010 || base===2026 || base==="2026c")) base="2026c";
   if(typeof esClubArg==="function" && esClubArg(clubId) && anio>=2010) base="arg2026";
+  /* 7.98 · un club que no jugó el Nacional 1991 no arranca en esa liga
+     (Limache 2010, Segunda 2026, etc. no heredan Colo-Colo 1991). */
+  if(base===1991 && typeof clubJugoNacional91==="function" && !clubJugoNacional91(clubId)){
+    if(typeof esClubC==="function" && esClubC(clubId)) base="2026c";
+    else if(typeof esClubB==="function" && esClubB(clubId)) base="2026b";
+    else if(typeof esClubArg==="function" && esClubArg(clubId)) base="arg2026";
+    else base=2026;
+    anio=2026;
+  }
   activarLiga(base);
   const D=datosEra(base);
   const info=D.info[clubId];
@@ -466,7 +475,11 @@ function aprobacionMedia(){
 /* ---------------- decisiones ---------------- */
 function decisionesDisponibles(){
   const propias=DECISIONES.filter(d=>d.club===E.club&&d.anio===E.anio);
-  const bolsa=BOLSA.filter(d=>!d.cuando||d.cuando(E));
+  const bolsa=BOLSA.filter(d=>{
+    if(d.cuando&&!d.cuando(E)) return false;
+    if(typeof decisionCabeEnClub==="function"&&!decisionCabeEnClub(d)) return false;
+    return true;
+  });
   return propias.concat(bolsa);
 }
 function repartirDecisiones(){

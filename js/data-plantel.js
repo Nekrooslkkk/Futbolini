@@ -84,7 +84,6 @@ const PLANTEL_UCH_2026=[
  ["Charles Aránguiz","VOL",37,79,79,200,140,["ídolo","cerebro","experiencia internacional"]],
  ["Marcelo Díaz","VOL",39,72,72,120,40,["ídolo","veterano"]],
  ["Israel Poblete","VOL",31,73,73,100,140,["orden"]],
- ["Lucas Assadi","VOL",22,80,88,140,720,["enganche","proyección","canterano"]],
  ["Agustín Arce","VOL",21,72,80,70,260,["canterano"]],
  ["Eduardo Vargas","DEL",36,78,78,180,160,["ídolo","experiencia internacional"]],
  ["Maximiliano Guerrero","DEL",26,76,80,120,360,["velocidad"]],
@@ -140,7 +139,7 @@ const PLANTEL_LIM_2026=[
  ["Misael Llantén","VOL",27,70,72,60,120,["pulmón"]],
  ["Daniel Castro","DEL",32,75,75,110,220,["goleador"]],
  ["Marcos Arturia","DEL",28,72,74,90,180,["extranjero"]],
- ["Gonzalo Sosa","DEL",21,71,80,70,240,["proyección"]]
+ ["Gonzalo Sosa","DEL",37,75,75,110,180,["goleador","veterano"]]
 ];
 /* ---------- planteles históricos Colo-Colo (datos reales cruzados, stats estimadas) ---------- */
 const PLANTEL_CC_1989=[  /* Campeón Nacional + Copa Chile · DT Arturo Salah */

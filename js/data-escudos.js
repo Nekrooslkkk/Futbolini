@@ -24,7 +24,31 @@ var ESCUDOS_CLUB = {
   SMA:{c1:"#1565c0",c2:"#ffffff",txt:"SMA"},  COP:{c1:"#7b1fa2",c2:"#ffffff",txt:"COP"},
   TEM:{c1:"#1b7a3d",c2:"#ffffff",txt:"TEM"},  IQQ:{c1:"#29b6f6",c2:"#ffffff",txt:"IQQ"},
   USF:{c1:"#b8860b",c2:"#ffffff",txt:"USF"},  CUR:{c1:"#f2c200",c2:"#111111",txt:"CUR"},
-  SCR:{c1:"#d84315",c2:"#ffffff",txt:"SCR"},  RAN:{c1:"#b71c1c",c2:"#111111",txt:"RAN"}
+  SCR:{c1:"#d84315",c2:"#ffffff",txt:"SCR"},  RAN:{c1:"#b71c1c",c2:"#111111",txt:"RAN"},
+  /* Segunda 2026 · colores de CLUB_META (estilizado; archivos SVG ya en disco) */
+  SMO:{c1:"#111111",c2:"#007a33",txt:"SMO"}, LSC:{c1:"#007a33",c2:"#ffffff",txt:"LSC"},
+  OSO:{c1:"#c8102e",c2:"#111111",txt:"OSO"}, LIN:{c1:"#c8102e",c2:"#ffffff",txt:"LIN"},
+  CLC:{c1:"#ffd100",c2:"#007a33",txt:"CLC"}, TRA:{c1:"#007a33",c2:"#ffffff",txt:"TRA"},
+  COL:{c1:"#0055a4",c2:"#ffffff",txt:"COL"}, OVA:{c1:"#f36c21",c2:"#111111",txt:"OVA"},
+  CNA:{c1:"#0055a4",c2:"#ffffff",txt:"CNA"}, BSA:{c1:"#4b2e83",c2:"#ffffff",txt:"BSA"},
+  RSJ:{c1:"#ffffff",c2:"#007a33",txt:"RSJ"}, SCI:{c1:"#111111",c2:"#e89bb8",txt:"SCI"},
+  GVE:{c1:"#007a33",c2:"#ffffff",txt:"GVE"}, REN:{c1:"#ffd100",c2:"#5eb1e8",txt:"REN"},
+  /* AFA 2026 · colores de camiseta (estilizado, no el escudo oficial) */
+  RIV:{c1:"#ffffff",c2:"#e31837",txt:"RIV"}, BOC:{c1:"#003da5",c2:"#ffd100",txt:"BOC"},
+  RAC:{c1:"#8fd3ff",c2:"#ffffff",txt:"RAC"}, IND:{c1:"#c8102e",c2:"#ffffff",txt:"IND"},
+  VEL:{c1:"#ffffff",c2:"#0055a4",txt:"VEL"}, SLO:{c1:"#003da5",c2:"#c8102e",txt:"SLO"},
+  ELP:{c1:"#c8102e",c2:"#ffffff",txt:"ELP"}, ROS:{c1:"#003da5",c2:"#ffd100",txt:"ROS"},
+  TAL:{c1:"#003da5",c2:"#ffffff",txt:"TAL"}, HUR:{c1:"#c8102e",c2:"#ffffff",txt:"HUR"},
+  LAN:{c1:"#6b2332",c2:"#ffffff",txt:"LAN"}, ARG:{c1:"#c8102e",c2:"#ffffff",txt:"ARG"},
+  NEW:{c1:"#c8102e",c2:"#111111",txt:"NEW"}, BEL:{c1:"#6baed6",c2:"#ffffff",txt:"BEL"},
+  DYJ:{c1:"#ffd100",c2:"#007a33",txt:"DYJ"}, INS:{c1:"#c8102e",c2:"#ffffff",txt:"INS"},
+  UNI:{c1:"#c8102e",c2:"#ffffff",txt:"UNI"}, GLP:{c1:"#ffffff",c2:"#003da5",txt:"GLP"},
+  TUC:{c1:"#6baed6",c2:"#ffffff",txt:"TUC"}, TIG:{c1:"#003da5",c2:"#c8102e",txt:"TIG"},
+  BAN:{c1:"#007a33",c2:"#ffffff",txt:"BAN"}, PLA:{c1:"#6b4423",c2:"#ffffff",txt:"PLA"},
+  CCO:{c1:"#111111",c2:"#ffffff",txt:"CCO"}, IRV:{c1:"#003da5",c2:"#ffffff",txt:"IRV"},
+  SAR:{c1:"#007a33",c2:"#ffffff",txt:"SAR"}, ALD:{c1:"#007a33",c2:"#ffd100",txt:"ALD"},
+  GME:{c1:"#ffffff",c2:"#003da5",txt:"GME"}, RIE:{c1:"#111111",c2:"#ffffff",txt:"RIE"},
+  ERC:{c1:"#c8102e",c2:"#ffffff",txt:"ERC"}, BAR:{c1:"#c8102e",c2:"#ffffff",txt:"BAR"}
 };
 /* color de texto legible sobre un fondo hex */
 function _escContraste(hex){
@@ -110,5 +134,20 @@ const ESCUDOS_FOTOS={
   CUR:{src:"img/clubes/CUR.png",tipo:"commons"},
   SCR:{src:"img/clubes/SCR.svg",tipo:"estilizado"},
   RAN:{src:"img/clubes/RAN.png",tipo:"commons"},
+  /* Segunda 2026 · SVG estilizado ya en disco (no estaban cableados) */
+  SMO:{src:"img/clubes/SMO.svg",tipo:"estilizado"},
+  LSC:{src:"img/clubes/LSC.svg",tipo:"estilizado"},
+  OSO:{src:"img/clubes/OSO.svg",tipo:"estilizado"},
+  LIN:{src:"img/clubes/LIN.svg",tipo:"estilizado"},
+  CLC:{src:"img/clubes/CLC.svg",tipo:"estilizado"},
+  TRA:{src:"img/clubes/TRA.svg",tipo:"estilizado"},
+  COL:{src:"img/clubes/COL.svg",tipo:"estilizado"},
+  OVA:{src:"img/clubes/OVA.svg",tipo:"estilizado"},
+  CNA:{src:"img/clubes/CNA.svg",tipo:"estilizado"},
+  BSA:{src:"img/clubes/BSA.svg",tipo:"estilizado"},
+  RSJ:{src:"img/clubes/RSJ.svg",tipo:"estilizado"},
+  SCI:{src:"img/clubes/SCI.svg",tipo:"estilizado"},
+  GVE:{src:"img/clubes/GVE.svg",tipo:"estilizado"},
+  REN:{src:"img/clubes/REN.svg",tipo:"estilizado"}
 };
 function escudoArchivo(id){return (typeof ESCUDOS_FOTOS!=='undefined'&&ESCUDOS_FOTOS[id])||null;}

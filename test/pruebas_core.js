@@ -727,7 +727,7 @@
       ok(seg.every(function(id){ return PLANTELES_REALES[id] && PLANTELES_REALES[id][2026] && PLANTELES_REALES[id][2026].length>=14; }),
         "Segunda 2026: 14 clubes con plantel ≥14");
       ok(tiene("COL","Harding") && tiene("OVA","Cabrera") && tiene("CNA","Ragusa"), "Colina Harding / Ovalle Cabrera / Concón Ragusa");
-      ok(tiene("BSA","Requena") && tiene("SCI","Taiva") && tiene("LIN","Vallejos"), "Brujas Requena / City Taiva / Linares Vallejos");
+      ok(tiene("BSA","Requena") && tiene("PMO","Taiva") && tiene("LIN","Vallejos"), "Brujas Requena / Taiva en Puerto Montt (salió de City) / Linares Vallejos");
       ok(tiene("ELP","Carrillo") && tiene("ELP","Muslera"), "Estudiantes: Carrillo + Muslera");
       ok(tiene("ROS","Di María") && tiene("ROS","Pizarro"), "Central: Di María + Vicente Pizarro");
       ok(tiene("NEW","Arias") && tiene("HUR","Galíndez") && tiene("HUR","Gil"), "Newell's Arias / Huracán Galíndez+Gil");
@@ -942,6 +942,182 @@
       ok(CLUB_INFO_2026.RAN && /Basay/.test(CLUB_INFO_2026.RAN.dt||""), "Rangers DT Basay");
       ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
     }, "Arranque 95");
+
+    /* T25 · 7.96 LINKS: Segunda cableada + AFA estilizado + manifiesto */
+    grupo("Grok 7.96 (escudos Segunda + AFA + VERSION)");
+    safe(function(){
+      var c=["SMO","LSC","OSO","LIN","CLC","TRA","COL","OVA","CNA","BSA","RSJ","SCI","GVE","REN"];
+      ok(c.length===14 && c.every(function(id){ return ESCUDOS_FOTOS[id] && ESCUDOS_FOTOS[id].src; }),
+        "Segunda 14/14 en ESCUDOS_FOTOS");
+      ok(c.every(function(id){ return /img\/clubes\/[A-Z]{3}\.svg$/.test(ESCUDOS_FOTOS[id].src); }),
+        "Segunda usa SVG estilizado en disco");
+      ok(c.every(function(id){ return ESCUDOS_CLUB[id] && ESCUDOS_CLUB[id].c1; }),
+        "Segunda 14/14 en ESCUDOS_CLUB");
+      var afa=["RIV","BOC","RAC","IND","VEL","SLO","ELP","ROS","TAL","HUR","LAN","ARG","NEW","BEL","DYJ","INS","UNI","GLP","TUC","TIG","BAN","PLA","CCO","IRV","SAR","ALD","GME","RIE","ERC","BAR"];
+      ok(afa.length===30 && afa.every(function(id){ return ESCUDOS_CLUB[id] && ESCUDOS_CLUB[id].c1; }),
+        "AFA 30/30 en ESCUDOS_CLUB (estilizado)");
+      ok(typeof fotoEstadioDe==="function" && fotoEstadioDe("PAL") && fotoEstadioDe("RAN"),
+        "Chile Primera+B sigue con foto de estadio");
+      ok(!fotoEstadioDe("SCR"), "Santa Cruz sin foto de estadio (a propósito)");
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+    }, "Escudos 96");
+
+    /* T26 · 7.97 caza: Segunda ≠ Colo-Colo 1991 + copias de plantel */
+    grupo("Grok 7.97 (historia por club + sin copias)");
+    safe(function(){
+      ok(typeof idClubCanon==="function" && idClubCanon("COB",1991)==="CBL", "COB 1991 canónico = CBL (Cobreloa)");
+      ok(idClubCanon("COB",2026)==="COB", "COB 2026 sigue Cobresal");
+      ok(idClubCanon("SMO","2026c")==="SMO", "Morning no se reescribe");
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      ok(E.eraBase==="2026c", "Morning arranca en Segunda");
+      SEC="historia";
+      if(typeof render==="function") render();
+      var txt=(document.getElementById("vista")||{textContent:""}).textContent||"";
+      ok(!/Temporada 1991/.test(txt), "Segunda no titula Temporada 1991");
+      ok(!/Libertadores 1991 la ganó Colo-Colo/.test(txt), "Segunda no muestra la Libertadores de Colo-Colo");
+      ok(!/Tabla final histórica 1991/.test(txt), "Segunda no muestra la tabla 1991");
+      ok(/Segunda División/.test(txt), "Segunda muestra su propia época");
+      ok(/Morning|Pintana|1909|Paredes/.test(txt), "línea del club es Morning");
+    }, "Historia Segunda ≠ CC 1991");
+    safe(function(){
+      nuevaPartida("BOC",2026,"historico",{categoria:"ARG"});
+      SEC="historia";
+      if(typeof render==="function") render();
+      var txt=(document.getElementById("vista")||{textContent:""}).textContent||"";
+      ok(!/Temporada 1991/.test(txt), "Argentina no titula Temporada 1991");
+      ok(!/Libertadores 1991 la ganó Colo-Colo/.test(txt), "Argentina no muestra CC 1991");
+      ok(/AFA|Liga Profesional/.test(txt), "Argentina muestra AFA / Liga Profesional");
+      ok(/Bombonera|1905|Boca/.test(txt), "línea del club es Boca");
+    }, "Historia Argentina ≠ CC 1991");
+    safe(function(){
+      nuevaPartida("CC",1991,"historico");
+      SEC="historia";
+      if(typeof render==="function") render();
+      var txt=(document.getElementById("vista")||{textContent:""}).textContent||"";
+      ok(/Libertadores/.test(txt) && /Olimpia/.test(txt), "Colo-Colo 1991 SÍ muestra su Libertadores");
+      ok(/Tabla final histórica 1991/.test(txt), "Colo-Colo 1991 muestra la tabla nacional");
+    }, "CC 1991 conserva su historia");
+    safe(function(){
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      var dec=(typeof decisionesDisponibles==="function")?decisionesDisponibles():[];
+      ok(dec.every(function(d){ return d.id.indexOf("cc91_")!==0; }), "Segunda no recibe decisiones cc91_");
+      ok(dec.every(function(d){ return typeof decisionCabeEnClub!=="function" || decisionCabeEnClub(d); }), "todas las de Segunda pasan el filtro");
+      var blob=JSON.stringify(dec);
+      ok(!/La Leonera|deuda del Monumental/i.test(blob), "Segunda no habla del Monumental / La Leonera");
+      nuevaPartida("BOC",2026,"historico",{categoria:"ARG"});
+      var decA=(typeof decisionesDisponibles==="function")?decisionesDisponibles():[];
+      ok(!decA.some(function(d){ return /ANFP/.test((d.t||"")+" "+(d.d||"")); }), "Argentina no recibe cartas de la ANFP");
+    }, "Decisiones no se copian de CC/ANFP");
+    safe(function(){
+      var seen={}, dups=[];
+      Object.keys(PLANTELES_REALES||{}).forEach(function(id){
+        var s=PLANTELES_REALES[id]&&PLANTELES_REALES[id][2026];
+        if(!s) return;
+        s.forEach(function(j){
+          var n=j[0], pos=j[1], edad=j[2];
+          if(!n) return;
+          var key=n+"|"+pos+"|"+edad;
+          if(seen[key] && seen[key]!==id) dups.push(n+" "+pos+" "+edad+" en "+seen[key]+" y "+id);
+          else seen[key]=id;
+        });
+      });
+      ok(dups.length===0, "sin copias de ficha 2026 (mismo nombre+posición+edad)"+(dups.length?" ("+dups.slice(0,8).join("; ")+")":""));
+      ok(typeof tiene==="undefined" || true, "keep");
+      function tiene(id, ape){
+        var s=PLANTELES_REALES[id] && PLANTELES_REALES[id][2026];
+        return s && s.some(function(j){ return (j[0]||"").indexOf(ape)>=0; });
+      }
+      ok(tiene("UES","Molina") && tiene("NUB","Molina"), "Lucas Molina: dos personas (UES y Ñublense)");
+      ok(tiene("UCH","Fernández") && tiene("CUR","Fernández"), "Nicolás Fernández: dos personas (U y Curicó)");
+      ok(!tiene("CLC","Fabricio Vera") && tiene("OHI","Vera"), "Fabricio Vera solo en O'Higgins (copia sacada de Colchagua)");
+      ok(!tiene("CLC","Olea") && tiene("USF","Olea"), "Manuel Olea solo en San Felipe (copia sacada de Colchagua)");
+      ok(tiene("PMO","Taiva") && !tiene("SCI","Taiva"), "Bryan Taiva solo Puerto Montt (junio 2026, salió de City)");
+      ok(tiene("OSO","Pacheco") && !tiene("COB","Ignacio Pacheco"), "Ignacio Pacheco cedido en Osorno (no Cobresal)");
+      ok(tiene("UCH","Alburquenque") && !tiene("LSC","Alburquenque"), "Alburquenque volvió a la U (julio 2026)");
+      ok(tiene("BSA","Valdés") && !tiene("REC","Bastián Valdés"), "Bastián Valdés en Brujas (salió de Recoleta)");
+      ok(tiene("GVE","Cerda") && !tiene("COB","Jean Cerda"), "Jean Cerda cedido en Velásquez (no Cobresal)");
+      ok(tiene("TUC","Julián Fernández") && !tiene("PAL","Julián Fernández"), "Julián Fernández cedido en Tucumán (no Palestino)");
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+    }, "Planteles sin copias");
+
+    /* T27 · 7.98 historias ajenas: todos los de Segunda + 1925 + Limache */
+    grupo("Grok 7.98 (Segunda/1925/Limache no heredan Colo-Colo 1991)");
+    safe(function(){
+      ok(typeof textoHistoriaAjeno==="function", "textoHistoriaAjeno existe");
+      ok(textoHistoriaAjeno("Campeón de América: 3-0 a Olimpia en el Monumental","SMO"), "Morning no hereda Olimpia");
+      ok(!textoHistoriaAjeno("Campeón de América: 3-0 a Olimpia en el Monumental","CC"), "Colo-Colo sí puede hablar de Olimpia");
+      var seg=["SMO","LSC","OSO","LIN","CLC","TRA","COL","OVA","CNA","BSA","RSJ","SCI","GVE","REN"];
+      var mal=[];
+      seg.forEach(function(id){
+        nuevaPartida(id,2026,"historico",{categoria:"C"});
+        SEC="historia";
+        if(typeof render==="function") render();
+        var txt=(document.getElementById("vista")||{textContent:""}).textContent||"";
+        if(/Libertadores 1991 la ganó Colo-Colo/.test(txt) || /Tabla final histórica 1991/.test(txt) || /Temporada 1991/.test(txt))
+          mal.push(id);
+      });
+      ok(mal.length===0, "ningún Segunda vuelca CC 1991"+(mal.length?" ("+mal.join(",")+")":""));
+    }, "Segunda 14/14 historia propia");
+    safe(function(){
+      nuevaPartida("LIM",1991,"historico");
+      ok(E && E.eraBase===2026, "Limache 1991 se redirige a 2026 (no existía)");
+      SEC="historia";
+      if(typeof render==="function") render();
+      var txt=(document.getElementById("vista")||{textContent:""}).textContent||"";
+      ok(!/Libertadores 1991 la ganó Colo-Colo/.test(txt), "Limache no muestra la Libertadores de CC");
+      ok(!/Tabla final histórica 1991/.test(txt), "Limache no muestra la tabla 1991");
+    }, "Limache ≠ 1991");
+    safe(function(){
+      var r=nuevaPartida("MAG",1925,"historico",{categoria:"1925"});
+      ok(r!==false && E && E.eraBase===1925, "Magallanes arranca en 1925");
+      SEC="historia";
+      if(typeof render==="function") render();
+      var txt=(document.getElementById("vista")||{textContent:""}).textContent||"";
+      ok(!/Campeón histórico:/.test(txt), "Magallanes 1925 no titula el invicto de Colo-Colo como propio");
+      ok(!/Libertadores 1991 la ganó Colo-Colo/.test(txt), "1925 no muestra CC 1991");
+      ok(!/Arellano y los Rebeldes/.test(txt), "1925 de Magallanes no vende el plantel de Colo-Colo");
+    }, "1925 Magallanes ≠ CC");
+    safe(function(){
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      ok(typeof textoPlopAjeno==="function" && textoPlopAjeno("COLO-COLO CAMPEÓN DE AMÉRICA. 3-0 a Olimpia en el Monumental."), "Plop de Segunda filtra titular de CC 1991");
+      nuevaPartida("CC",1991,"historico");
+      ok(!textoPlopAjeno("COLO-COLO CAMPEÓN DE AMÉRICA. 3-0 a Olimpia en el Monumental."), "Plop de CC 1991 conserva su titular");
+      ok(typeof VERSION==="string" && VERSION==="7.99", "VERSION 7.99");
+    }, "Plop filtrado + versión");
+
+    /* T28 · 7.99 rigor vs Colo-Colo: épocas con plantel real + UC al día */
+    grupo("Grok 7.99 (rigor vs Colo-Colo)");
+    safe(function(){
+      ok(typeof VERSION==="string" && VERSION==="7.99", "VERSION 7.99");
+      var cc=PLANTELES_REALES.CC;
+      ok(cc && cc[2026] && cc[2026].length>=22, "CC 2026 sigue siendo el listón (≥22)");
+      ok(cc[1989] && cc[1991] && cc[2002] && cc[2006], "CC tiene 1989/1991/2002/2006");
+      var vidal=(cc[2026]||[]).filter(function(j){ return j[0]==="Arturo Vidal"; })[0];
+      ok(vidal && (vidal[7]||[]).indexOf("capitán")>=0, "CC: Vidal capitán");
+      var uch=(PLANTELES_REALES.UCH&&PLANTELES_REALES.UCH[2026])||[];
+      ok(uch.every(function(j){ return j[0]!=="Lucas Assadi"; }), "Assadi no está en la U 2026 (AIK)");
+      var uc=(PLANTELES_REALES.UC&&PLANTELES_REALES.UC[2026])||[];
+      var giani=uc.filter(function(j){ return j[0]==="Justo Giani"; })[0];
+      ok(giani && giani[1]==="DEL", "UC: Giani es DEL (wiki season)");
+      ok(uc.some(function(j){ return j[0]==="Martín Gómez"; }), "UC: Martín Gómez (préstamo Pilar)");
+      ok(uc.some(function(j){ return j[0]==="Diego Corral"; }), "UC: Diego Corral");
+      ok(uc.some(function(j){ return j[0]==="Nicolás L'Huillier"; }), "UC: L'Huillier");
+      var ues13=PLANTELES_REALES.UES&&PLANTELES_REALES.UES[2013];
+      ok(ues13 && ues13.length>=18, "UES 2013 plantel real ≥18 (Transición)");
+      ok(ues13.some(function(j){ return j[0]==="Christian Cueva"; }), "UES 2013: Cueva");
+      ok(ues13.some(function(j){ return j[0]==="Jorge Ampuero"; }), "UES 2013: Ampuero");
+      var sw01=PLANTELES_REALES.SW&&PLANTELES_REALES.SW[2001];
+      ok(sw01 && sw01.length>=18, "SW 2001 plantel real ≥18 (tercera estrella)");
+      ok(sw01.some(function(j){ return j[0]==="Silvio Fernández"; }), "SW 2001: Silvio Fernández");
+      ok(sw01.some(function(j){ return j[0]==="Jaime Riveros"; }), "SW 2001: Riveros");
+      var pri=["CC","UCH","UC","PAL","EVE","COQ","AUD","HUA","OHI","NUB","COB","CAL","LSE","DCO","UDC","LIM"];
+      var flacos=[];
+      pri.forEach(function(id){
+        var n=(PLANTELES_REALES[id]&&PLANTELES_REALES[id][2026]||[]).length;
+        if(n<18) flacos.push(id+"="+n);
+      });
+      ok(flacos.length===0, "Primera 16/16 plantel 2026 ≥18"+(flacos.length?" ("+flacos.join(",")+")":""));
+    }, "Rigor vs Colo-Colo");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

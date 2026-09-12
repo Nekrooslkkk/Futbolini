@@ -168,3 +168,98 @@ Retratos **solo** si Wikimedia Commons tenía foto CC/PD de esa persona. El rest
 
 Notas: Ñublense no usó `Ñublense83.jpg` (era el plantel, no el escudo). Luka Tudor no usó `Luka Tudor Bakulić (2026).jpg` (político croata, no el comentarista chileno). Se descartaron escudos de ciudad (Iquique, Coquimbo, La Serena, Temuco) y homónimos (Rocío González Navas, Marcela Ríos ministra, Nicanor Molinare compositor de 1932). El chuncho de la U reemplazó el logo universitario. Rangers se bajó como PNG (el SVG pesaba 424 KB).
 
+## 7.96 · catálogo de LINKS verificados (HEAD 200, sin utm)
+
+Grok **no corre** `fotos_bajar.py`. El manifiesto (`FOTOS.json` + `img/FOTOS.txt`) trae el archivo directo. El usuario/Claude baja después. El script rechaza SVG, páginas de Commons, Google/Bing y archivos <12 KB.
+
+### Estadios Commons (huecos que eran PEGA_LINK)
+
+Chile Primera + B: las File: de la tabla de arriba, resueltas a `upload.wikimedia.org` (ya estaban en disco; el manifiesto queda alineado).
+
+Nuevos (no estaban en disco):
+
+| ID | Estadio | Archivo Commons | Licencia |
+|---|---|---|---|
+| OVA | Estadio Diaguita | [Estadio Diaguita.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Diaguita.jpg) | CC (Commons) |
+| CLC | Estadio Jorge Silva Valenzuela | [Estadio Jorge Silva Valenzuela.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Jorge_Silva_Valenzuela.jpg) | CC (Commons) |
+| GVE | Estadio Municipal Augusto Rodríguez | [Estadio Municipal Augusto Rodríguez.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Municipal_Augusto_Rodríguez.jpg) | CC BY-SA 4.0 · Mauricio Magaña Orellana |
+| RAC | El Cilindro | [Recibimiento Copa Libertadores Racing.jpg](https://commons.wikimedia.org/wiki/File:Recibimiento_Copa_Libertadores_Racing.jpg) | CC |
+| IND | Libertadores de América | [Estadio Libertadores de América - Ricardo Enrique Bochini.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Libertadores_de_América_-_Ricardo_Enrique_Bochini.jpg) | CC |
+| VEL | José Amalfitani | [Estadio José Amalfitani 2024.jpg](https://commons.wikimedia.org/wiki/File:Estadio_José_Amalfitani_2024.jpg) | CC |
+| SLO | Pedro Bidegain | [Estadio Pedro Bidegain.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Pedro_Bidegain.jpg) | CC |
+| ELP | Jorge Luis Hirschi | [Estadio Jorge Luis Hirschi.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Jorge_Luis_Hirschi.jpg) | CC · 35 KB (pasa el mínimo de 12 KB) |
+| ROS | Gigante de Arroyito | [Estadio Gigante de Arroyito.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Gigante_de_Arroyito.jpg) | CC |
+| TAL | Mario Alberto Kempes | [Estadio Kempes luego de finalizar un partido.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Kempes_luego_de_finalizar_un_partido.jpg) | CC BY-SA 4.0 · Alepizarro32 |
+| HUR | Tomás Adolfo Ducó | [Estadio Tomás Adolfo Ducó.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Tomás_Adolfo_Ducó.jpg) | CC |
+| LAN | Ciudad de Lanús | [Estadio Lanus.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Lanus.jpg) | CC BY-SA 4.0 · EstudiantesFotografias |
+| ARG | Diego Armando Maradona | [Estadio argentinos juniors.jpg](https://commons.wikimedia.org/wiki/File:Estadio_argentinos_juniors.jpg) | CC BY 2.5 ar |
+| NEW | Marcelo Bielsa | [Estadio Marcelo Bielsa.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Marcelo_Bielsa.jpg) | CC |
+| BEL | Gigante de Alberdi | [Estadio Club Atletico Belgrano de Còrdoba.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Club_Atletico_Belgrano_de_Còrdoba.jpg) | CC BY-SA 4.0 · JohnManuelOnomah |
+| DYJ | Tito Tomaghello | [Estadio Norberto Tito Tomaghello Panoramica.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Norberto_Tito_Tomaghello_Panoramica.jpg) | CC BY-SA 4.0 · Cayuqueo |
+| UNI | 15 de Abril | [Estadio 15 de Abril.jpg](https://commons.wikimedia.org/wiki/File:Estadio_15_de_Abril.jpg) | CC |
+| SAR | Eva Perón | [Estadio Eva Perón.jpg](https://commons.wikimedia.org/wiki/File:Estadio_Eva_Perón.jpg) | CC |
+
+Sin foto libre clara (se deja `sin_foto` / `SIN_FOTO`): SCR, CNA, BSA, RSJ, SCI.
+
+Todavía PEGA_LINK (Commons 429 al buscar): TRA COL SMO LSC OSO LIN REN · INS GLP TUC TIG BAN PLA CCO IRV ALD GME RIE ERC BAR.
+
+### FootyLogos (el usuario señaló [union-la-calera](https://www.footylogos.com/es/logos/union-la-calera))
+
+Patrón verificado (HEAD 200, `image/webp`):
+
+`https://assets.footylogos.com/previews/{slug}/{slug}-logo-footylogos-1200.webp`
+
+El SVG del mismo CDN **no** entra al manifiesto: `fotos_bajar.py` rechaza `.svg`.
+
+Slugs 200 OK: `union-la-calera`, `colo-colo`, `universidad-de-chile`, `universidad-catolica`, `coquimbo-unido`, `ohiggins`, `cobresal`, `la-serena`, `deportes-limache`, `audax-italiano`, `nublense`, `huachipato`, `palestino`, `everton-de-vina-del-mar`, `deportes-iquique`, `union-espanola`.
+
+404 (no hay carpeta): UDC, DCO, CBL, SW, B restante, Segunda. Ahí se usa football-logos.cc.
+
+**Marca del club, no CC.** No se dumpan al repo como si fueran libres. Van en el manifiesto para que el usuario los baje a conciencia. Los que ya tienen Commons (CC, UCH, UC, PAL, EVE, AUD, HUA, NUB, CAL, DCO, CBL, SW, SLQ, MAG, COP, CUR, RAN) se dejan.
+
+### football-logos.cc 1500 PNG (HEAD 200)
+
+`https://assets.football-logos.cc/logos/chile/1500x1500/{slug}.{hash}.png`
+
+| slug | hash |
+|---|---|
+| union-la-calera | fe68eb78 |
+| colo-colo | 20795596 |
+| universidad-de-chile | bcafa00a |
+| universidad-catolica | 5f82b9c5 |
+| coquimbo-unido | 9d78dd7f |
+| ohiggins | 7371f3b0 |
+| cobresal | b03d9699 |
+| la-serena | 8440882c |
+| universidad-de-concepcion | b1557c75 |
+| deportes-limache | 11a30c0f |
+| audax-italiano | dd048f9e |
+| nublense | 4bf4474c |
+| huachipato | 72231054 |
+| palestino | 66ebd5ae |
+| everton | 6c574e7e |
+| deportes-concepcion | 569d23ad |
+| deportes-iquique | 21cdcd61 |
+| union-espanola | 626a7c72 |
+| cobreloa | bd873fca |
+| santiago-wanderers | f8329cb8 |
+| curico-unido | a889c660 |
+| deportes-antofagasta | f766c5c6 |
+| deportes-copiapo | c180d03a |
+| deportes-puerto-montt | 86eaf610 |
+| deportes-recoleta | cb2c4285 |
+| deportes-santa-cruz | 7d02706b |
+| deportes-temuco | 81e83ac2 |
+| magallanes | b99331d5 |
+| rangers-de-talca | 0990542d |
+| san-luis-de-quillota | 1b9b9aa6 |
+| san-marcos-de-arica | 44e239e2 |
+| union-san-felipe | bb338584 |
+
+Manifiesto `@club` (estilizados que faltan): LIM COQ OHI COB LSE UES IQQ → FootyLogos; UDC ANT REC PMO SMA TEM USF SCR → football-logos.cc. CAL → Commons `Unión_La_Calera.png` (71 KB, PD-textlogo). `Caleraescudo.jpg` pesa 9 KB y el script la rechaza.
+
+Después de bajar un PNG/WEBP al lado del SVG: cambiar `ESCUDOS_FOTOS` de `.svg` a `.webp`/`.png`. El SVG no bloquea la descarga.
+
+**No usar** escudos de ciudad ni de universidad (Iquique, Coquimbo, La Serena, Temuco, Universidad de Concepción, Universidad de La Serena).
+
+

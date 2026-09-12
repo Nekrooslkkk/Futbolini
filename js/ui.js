@@ -176,7 +176,10 @@ function pickerClubes(cont){
   const idsB=(typeof idsPrimeraB==="function")?idsPrimeraB():((typeof LIGA_B_2026!=="undefined")?LIGA_B_2026.map(c=>c.id):[]);
   const idsC=(typeof idsSegunda==="function")?idsSegunda():((typeof LIGA_C_2026!=="undefined")?LIGA_C_2026.map(c=>c.id):[]);
   const idsA=(typeof idsArgentina==="function")?idsArgentina():((typeof LIGA_ARG_2026!=="undefined")?LIGA_ARG_2026.map(c=>c.id):[]);
-  if(typeof CLUB_INFO!=="undefined") Object.keys(CLUB_INFO).forEach(id=>add(id,CLUB_INFO[id],"Primera",true));
+  if(typeof CLUB_INFO!=="undefined") Object.keys(CLUB_INFO).forEach(id=>{
+    const jugo=(typeof clubJugoNacional91==="function")&&clubJugoNacional91(id);
+    add(id,CLUB_INFO[id],"Primera",!!jugo);
+  });
   if(typeof CLUB_INFO_2026!=="undefined") Object.keys(CLUB_INFO_2026)
     .filter(id=>(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]) && idsB.indexOf(id)<0 && idsC.indexOf(id)<0 && idsA.indexOf(id)<0)
     .forEach(id=>add(id,CLUB_INFO_2026[id],"Primera",false));
@@ -250,8 +253,9 @@ function pantallaInicio(){
   }
 }
 function elegirEpoca(id){
-  /* 7.00 · clubes que solo existen en 2026 (no tienen datos 1991) */
-  const solo2026=(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]);
+  /* 7.98 · 1991 solo si el club JUGÓ ese Nacional (Limache 2010 no entra). */
+  const jugo91=(typeof clubJugoNacional91==="function")&&clubJugoNacional91(id);
+  const solo2026=!jugo91 || (typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]);
   const esB=(typeof esClubB==="function")?esClubB(id):false;
   const esC=(typeof esClubC==="function")?esClubC(id):false;
   const esArg=(typeof esClubArg==="function")?esClubArg(id):false;
@@ -289,8 +293,14 @@ function elegirEpoca(id){
   glorias.forEach((ep,i)=>{
     let b=(typeof baseEra==="function"?baseEra(ep.anio):(ep.anio>=2010?2026:1991));
     /* 7.13 · si el club no existe en esa era (ej: Palestino 1978 → liga 91),
-       se juega en 2026 con la identidad histórica encima. No romper. */
-    if(typeof datosEra==="function" && !(datosEra(b).info||{})[id]) b=2026;
+       se juega en 2026 con la identidad histórica encima. No romper.
+       7.98 · Segunda/B/AFA se quedan en SU división, no heredan Primera 1991. */
+    if(typeof datosEra==="function" && !(datosEra(b).info||{})[id]){
+      if(esC) b="2026c";
+      else if(esB) b="2026b";
+      else if(esArg) b="arg2026";
+      else b=2026;
+    }
     puntos.push({k:"g"+i,tipo:"gloria",base:b,anio:ep.anio,etq:"🏆 "+ep.etq,ep:ep});
   });
   let sel=puntos[0];
@@ -334,19 +344,26 @@ function elegirEpoca(id){
         c.appendChild(el("div","resul mitad","<b>"+sel.ep.etq+".</b> "+(sel.ep.desc||"")+(sel.ep.dt?" · DT <b>"+sel.ep.dt+"</b>":"")));
       }else{
         if(esArg) c.appendChild(el("p","mini","Este club juega en la Liga Profesional Argentina 2026 (30 clubes). Victoria vale 3 puntos. Una rueda de 29 fechas. Plantel de cantera (no se inventan nombres). La federación es la AFA, no la ANFP."));
-        else if(sel.base===1925) c.appendChild(el("p","mini","1925: amateur. Liga Metropolitana de Deportes. No hay redes, ni Libertadores, ni mercado millonario. Victoria vale 2 puntos. Plantel de Colo-Colo documentado (Arellano y los Rebeldes)."));
-        else if(sel.base===2006) c.appendChild(el("p","mini","2006: Apertura y Clausura, 19 clubes (Concepción suspendido). En el juego, una rueda de 18 fechas. Plantel de Colo-Colo documentado (Borghi, Suazo, Mati, Valdivia)."));
+        else if(sel.base===1925) c.appendChild(el("p","mini",id==="CC"
+          ?"1925: amateur. Liga Metropolitana de Deportes. No hay redes, ni Libertadores, ni mercado millonario. Victoria vale 2 puntos. Plantel de Colo-Colo documentado (Arellano y los Rebeldes)."
+          :"1925: amateur. Liga Metropolitana de Deportes. No hay redes, ni Libertadores, ni mercado millonario. Victoria vale 2 puntos. El plantel documentado de esa temporada es el de Colo-Colo; el de este club se arma con cantera."));
+        else if(sel.base===2006) c.appendChild(el("p","mini",id==="CC"
+          ?"2006: Apertura y Clausura, 19 clubes (Concepción suspendido). En el juego, una rueda de 18 fechas. Plantel de Colo-Colo documentado (Borghi, Suazo, Mati, Valdivia)."
+          :"2006: Apertura y Clausura, 19 clubes (Concepción suspendido). En el juego, una rueda de 18 fechas. Esta época no es la Libertadores 1991 de Colo-Colo."));
         else if(esC) c.appendChild(el("p","mini","Este club juega en la Segunda División Profesional 2026 (3er nivel). Victoria vale 3 puntos. El objetivo es ascender a la Primera B."));
         else if(esB) c.appendChild(el("p","mini","Este club juega en la Primera B 2026 (Liga de Ascenso). Victoria vale 3 puntos. Copa Chile con grupos reales."));
         else if(solo2026) c.appendChild(el("p","mini","Este club juega en la Primera División 2026."));
         const eraObj=(typeof eraDe==="function"?eraDe(sel.base):ERA[sel.base])||ERA[2026];
         c.appendChild(el("p","mini",(eraObj&&eraObj.desc)||""));
         c.appendChild(el("p",null,info.desc||""));
-        if(typeof HISTORIA_BETA==="object" && HISTORIA_BETA[id]){
-          const hx=HISTORIA_BETA[id];
-          const hk=sel.tipo==="gloria"?String(sel.anio):"actual";
-          const txt=hx[hk]||hx.actual;
-          if(txt) c.appendChild(el("div","resul mitad","<b>Contexto real.</b> "+txt+" <span class='mini'>Hechos públicos; lo que pasa adentro es ficción del juego.</span>"));
+        if(typeof HISTORIA_BETA==="object"){
+          const hid=(typeof idClubCanon==="function")?idClubCanon(id,sel.base):id;
+          const hx=HISTORIA_BETA[hid]||HISTORIA_BETA[id];
+          if(hx){
+            const hk=sel.tipo==="gloria"?String(sel.anio):"actual";
+            const txt=hx[hk]||hx.actual;
+            if(txt) c.appendChild(el("div","resul mitad","<b>Contexto real.</b> "+txt+" <span class='mini'>Hechos públicos; lo que pasa adentro es ficción del juego.</span>"));
+          }
         }
       }
 
@@ -1527,44 +1544,116 @@ function vistaCalendario(){
   v.appendChild(pt);
 }
 /* ---------------- historia ---------------- */
+function _idHistoriaClub(){
+  return (typeof idClubCanon==="function")?idClubCanon(E.club,E.eraBase):E.club;
+}
+function _lineaHistoriaPropia(hid){
+  const arr=(typeof HISTORIA_LINEA==="object" && HISTORIA_LINEA[hid])||[];
+  return arr.filter(function(h){
+    const blob=((h&&h.txt)||"")+" "+((h&&h.hito)||"");
+    if(typeof textoHistoriaAjeno==="function") return !textoHistoriaAjeno(blob, hid);
+    return true;
+  });
+}
 function vistaHistoria(){
   const v=$("#vista");
-  /* 7.44 · línea de tiempo real del club (hechos públicos) */
-  if(typeof HISTORIA_LINEA==="object" && HISTORIA_LINEA[E.club]){
-    const ph=panel("Línea del club","📜","agua");
-    HISTORIA_LINEA[E.club].forEach(h=>{
+  const hid=_idHistoriaClub();
+  /* 7.97/7.98 · línea de ESTE club, nunca la de otro (COB 1991 → CBL; Segunda ≠ CC 1991) */
+  const linea=_lineaHistoriaPropia(hid);
+  if(linea.length){
+    const ph=panel("Línea de "+(E.clubNombre||"club"),"📜","agua");
+    linea.forEach(h=>{
       ph.cuerpo.appendChild(el("div","hito-linea","<b>"+h.anio+" · "+h.hito+"</b><div class='mini'>"+h.txt+"</div>"));
     });
-    ph.cuerpo.appendChild(el("p","mini","Hechos públicos. Lo que pasa adentro de la partida es ficción del juego."));
+    ph.cuerpo.appendChild(el("p","mini","Hechos públicos de este club. Lo que pasa adentro de la partida es ficción del juego."));
     v.appendChild(ph);
   }
-  if(E.eraBase===2026 || E.eraBase==="2026b"){
-    const p2=panel(E.eraBase==="2026b"?"Época 2026 · Primera B":"Época 2026","📚","agua");
-    p2.cuerpo.appendChild(el("p",null,(typeof eraDe==="function"?eraDe(E.eraBase):ERA[2026]).desc));
-    if(typeof HISTORIA_BETA==="object" && HISTORIA_BETA[E.club] && HISTORIA_BETA[E.club].actual){
-      p2.cuerpo.appendChild(el("div","resul mitad","<b>Contexto real.</b> "+HISTORIA_BETA[E.club].actual));
+  const base=E.eraBase;
+  const esC=(typeof esClubC==="function")&&esClubC(E.club);
+  const moderna=(base===2026||base==="2026b"||base==="2026c"||base==="arg2026");
+  if(moderna || (esC && base!==1991)){
+    const tit=base==="2026c"||esC?"Época 2026 · Segunda División"
+      :base==="2026b"?"Época 2026 · Primera B"
+      :base==="arg2026"?"Época 2026 · Liga Profesional (AFA)"
+      :"Época 2026 · Primera División";
+    const p2=panel(tit,"📚","agua");
+    const eraObj=(typeof eraDe==="function"?eraDe(base==="2026c"||esC?2026:base):ERA[2026])||ERA[2026];
+    if(eraObj&&eraObj.desc && base!==1991) p2.cuerpo.appendChild(el("p",null,eraObj.desc));
+    if(typeof HISTORIA_BETA==="object" && HISTORIA_BETA[hid] && HISTORIA_BETA[hid].actual){
+      const ctx=HISTORIA_BETA[hid].actual;
+      if(!(typeof textoHistoriaAjeno==="function" && textoHistoriaAjeno(ctx, hid)))
+        p2.cuerpo.appendChild(el("div","resul mitad","<b>Contexto real.</b> "+ctx));
     }
-    if(E.eraBase==="2026b"){
-      p2.cuerpo.appendChild(el("p","mini","Liga de Ascenso 2026: 16 clubes, 3 puntos por victoria. Copa Chile con los 8 grupos reales (ida y vuelta). No se inventan octavos: hay que clasificar."));
+    if(base==="2026c" || esC){
+      p2.cuerpo.appendChild(el("p","mini","Segunda División Profesional 2026: 14 clubes, zonas Norte/Sur, liguilla por el ascenso a la B. Copa Chile 2026 no incluye Segunda. No hay Libertadores por liga. Esta pantalla no es la de Colo-Colo 1991."));
+    } else if(base==="2026b"){
+      p2.cuerpo.appendChild(el("p","mini","Liga de Ascenso 2026: 16 clubes, 3 puntos por victoria. Copa Chile con los 8 grupos reales (ida y vuelta). No se inventan octavos: hay que clasificar. La B no clasifica a Libertadores por liga."));
+    } else if(base==="arg2026"){
+      p2.cuerpo.appendChild(el("p","mini","Liga Profesional Argentina 2026 (AFA, no ANFP). 30 clubes, una rueda de 29 fechas. No se juega Copa Chile ni el Campeonato Nacional chileno de 1991."));
+    } else {
+      p2.cuerpo.appendChild(el("p","mini","Primera División de Chile 2026. Victoria vale 3 puntos. Copa Chile y Copa de la Liga, según clasifiques."));
     }
     p2.cuerpo.appendChild(el("div","resul mitad","<b>Aviso.</b> El plantel y los clubes de 2026 usan nombres reales de referencia, pero los datos son <b>aproximados</b> y pueden haber cambiado. Todo lo dramatizado (conversaciones, conflictos, frases) es ficción del juego."));
     p2.cuerpo.appendChild(el("p","mini","No hay una \"tabla histórica\" fija para 2026: la estás escribiendo tú temporada a temporada."));
     v.appendChild(p2);
-  } else {
-    const p=panel("Temporada 1991 · lo que pasó de verdad","📚");
+  } else if(base===1991){
+    const p=panel("Temporada 1991 · Campeonato Nacional","📚");
     Object.keys(HECHOS_91).forEach(k=>{
       const n={campeon:"Campeón",goleador:"Goleador",descendidos:"Descendieron",publico:"Público",cierre:"Cierre"}[k];
       p.cuerpo.appendChild(fila(n,HECHOS_91[k]));
     });
-    p.cuerpo.appendChild(el("p","mini","La Copa Libertadores 1991 la ganó Colo-Colo: primero del Grupo 2, eliminó a Universitario de Lima, a Nacional de Montevideo y a Boca Juniors, y venció a Olimpia en la final (0-0 en Asunción y 3-0 en el Monumental el 5 de junio)."));
+    if(E.club==="CC"){
+      p.cuerpo.appendChild(el("p","mini","La Copa Libertadores 1991 la ganó Colo-Colo: primero del Grupo 2, eliminó a Universitario de Lima, a Nacional de Montevideo y a Boca Juniors, y venció a Olimpia en la final (0-0 en Asunción y 3-0 en el Monumental el 5 de junio)."));
+    } else {
+      p.cuerpo.appendChild(el("p","mini","Hechos del Campeonato Nacional 1991 (16 clubes, 2 puntos por victoria). La Copa Libertadores de ese año es de Colo-Colo; acá está la tabla local de tu club."));
+    }
     v.appendChild(p);
-
-    const pt=panel("Tabla final histórica 1991","📋","agua");
-    const t=el("table"); t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>Pts</th></tr></thead>";
-    const tb=el("tbody");
-    TABLA_REAL_91.forEach((r,i)=>tb.appendChild(el("tr",r[0]===E.clubNombre?"yo":"", "<td class='n'>"+(i+1)+"</td><td>"+r[0]+"</td><td class='n'>"+r[1]+"</td>")));
-    t.appendChild(tb); pt.cuerpo.appendChild(t);
-    v.appendChild(pt);
+    if(typeof clubJugoNacional91!=="function" || clubJugoNacional91(E.club)){
+      const pt=panel("Tabla final histórica 1991","📋","agua");
+      const t=el("table"); t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>Pts</th></tr></thead>";
+      const tb=el("tbody");
+      TABLA_REAL_91.forEach((r,i)=>tb.appendChild(el("tr",r[0]===E.clubNombre?"yo":"", "<td class='n'>"+(i+1)+"</td><td>"+r[0]+"</td><td class='n'>"+r[1]+"</td>")));
+      t.appendChild(tb); pt.cuerpo.appendChild(t);
+      v.appendChild(pt);
+    }
+  } else if(base===1925){
+    const p=panel("Temporada 1925 · Liga Metropolitana","📚","agua");
+    if(typeof FORMAT_1925==="object"){
+      if(FORMAT_1925.juego) p.cuerpo.appendChild(el("p",null,FORMAT_1925.juego));
+      if(E.club==="CC"){
+        if(FORMAT_1925.campeon) p.cuerpo.appendChild(el("p","mini","<b>Campeón histórico:</b> "+FORMAT_1925.campeon));
+        if(FORMAT_1925.debut) p.cuerpo.appendChild(el("p","mini","<b>Debut:</b> "+FORMAT_1925.debut));
+      } else {
+        p.cuerpo.appendChild(el("p","mini","Esta época es de "+(E.clubNombre||"este club")+" en la Liga Metropolitana amateur. El campeón de 1925 fue Colo-Colo; eso no es la historia de tu club."));
+      }
+    } else {
+      p.cuerpo.appendChild(el("p",null,"Fútbol amateur de 1925. Victoria vale 2 puntos. Sin redes, mercado millonario ni Libertadores."));
+    }
+    if(E.club!=="CC") p.cuerpo.appendChild(el("p","mini","Esta época no es la Libertadores 1991 de Colo-Colo. Es la Liga Metropolitana amateur."));
+    v.appendChild(p);
+  } else if(base===2006){
+    const p=panel("Temporada 2006 · Apertura/Clausura","📚","agua");
+    if(typeof FORMAT_2006==="object"){
+      if(FORMAT_2006.apertura) p.cuerpo.appendChild(el("p","mini","<b>Apertura:</b> "+FORMAT_2006.apertura));
+      if(FORMAT_2006.clausura) p.cuerpo.appendChild(el("p","mini","<b>Clausura:</b> "+FORMAT_2006.clausura));
+      if(FORMAT_2006.juego) p.cuerpo.appendChild(el("p",null,FORMAT_2006.juego));
+    } else {
+      p.cuerpo.appendChild(el("p",null,"Apertura y Clausura 2006. 19 clubes. No es el Nacional 1991."));
+    }
+    v.appendChild(p);
+  } else {
+    /* gloria u otra época: NUNCA volcar Colo-Colo 1991 */
+    const p=panel("Época "+(E.anio||base)+" · "+(E.clubNombre||""),"📚","agua");
+    const eps=(typeof epocasDe==="function"?epocasDe(E.club):[])||[];
+    const ep=eps.find(x=>x.anio===E.anio)||eps[0];
+    if(ep) p.cuerpo.appendChild(el("div","resul mitad","<b>"+(ep.etq||ep.anio)+".</b> "+(ep.desc||"")));
+    if(typeof HISTORIA_BETA==="object" && HISTORIA_BETA[hid]){
+      const txt=HISTORIA_BETA[hid][String(E.anio)]||HISTORIA_BETA[hid].actual;
+      if(txt && !(typeof textoHistoriaAjeno==="function" && textoHistoriaAjeno(txt, hid)))
+        p.cuerpo.appendChild(el("div","resul mitad","<b>Contexto real.</b> "+txt));
+    }
+    p.cuerpo.appendChild(el("p","mini","Esta época es de "+(E.clubNombre||"este club")+". No se mezcla con la historia de otro."));
+    v.appendChild(p);
   }
 
   const pd=panel("Tu línea","🧭");

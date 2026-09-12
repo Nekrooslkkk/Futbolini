@@ -65,7 +65,9 @@ function textoAjenoClub74(d){
   if(!E||!d) return false;
   const txt=((d.t||"")+" "+(d.d||"")).toLowerCase();
   const club=E.club;
-  if(/monumental|macul/.test(txt) && club!=="CC") return true;
+  if(/macul/.test(txt) && club!=="CC") return true;
+  if(/monumental/.test(txt) && club!=="CC" && club!=="RIV" && club!=="TUC" && club!=="BOC") return true;
+  if(/\banfp\b|quilín|quilin/.test(txt) && (typeof esClubArg==="function" && esClubArg(club))) return true;
   if(/santa laura/.test(txt) && club!=="UES") return true;
   if(/san carlos de apoquindo/.test(txt) && club!=="UC") return true;
   if(/estadio nacional/.test(txt) && club!=="UCH") return true;

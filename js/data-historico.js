@@ -10,7 +10,7 @@
 /* ---------- A.2 · línea de tiempo (hechos públicos) ---------- */
 var HISTORIA_LINEA={
   CC:[
-    {anio:1925,hito:"Fundación",txt:"Nace en Macul, de una fusión de clubes escolares. El Cacique se vuelve el club más popular del país."},
+    {anio:1925,hito:"Fundación",txt:"19 de abril de 1925, Estadio El Llano (San Miguel). Escisión de Magallanes: «Ancha es la puerta». David Arellano capitán."},
     {anio:1973,hito:"El Monumental",txt:"Se inaugura el estadio en Macul. La casa propia marca la escala del club."},
     {anio:1989,hito:"Reconstrucción",txt:"Tras años duros, arranca el ciclo que termina en la Libertadores."},
     {anio:1991,hito:"Libertadores",txt:"Campeón de América: 3-0 a Olimpia en el Monumental el 5 de junio. Tricampeón local."},

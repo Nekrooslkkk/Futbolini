@@ -1,18 +1,568 @@
 [
-  {"id":"CC","tipo":"estadio","nombre":"Estadio Monumental David Arellano, Macul (fachada)","url":"https://upload.wikimedia.org/wikipedia/commons/5/5c/Fachada_Estadio_Monumental%2C_2016-12-21.jpg","autor":"Carlos Figueroa","lic":"CC BY-SA 4.0"},
-  {"id":"UCH","tipo":"estadio","nombre":"Estadio Nacional Julio Martínez Prádanos, Ñuñoa","url":"https://upload.wikimedia.org/wikipedia/commons/2/2a/Estadio_Nacional_-_A741105.jpg","autor":"Rjcastillo","lic":"CC BY-SA 4.0"},
-  {"id":"EVE","tipo":"estadio","nombre":"Estadio Sausalito, Viña del Mar (Everton vs Colo-Colo 2023)","url":"https://upload.wikimedia.org/wikipedia/commons/4/4e/Estadio_Sausalito_Everton_v_Colo-Colo_20230806_01.jpg","autor":"Carlos yo","lic":"CC BY-SA 4.0"},
-  {"id":"UES","tipo":"estadio","nombre":"Estadio Santa Laura, Independencia, Santiago","url":"https://upload.wikimedia.org/wikipedia/commons/e/e1/Estadio_Santa_Laura%2C_Independencia%2C_Santiago_20230723.jpg","autor":"Carlos yo","lic":"CC BY-SA 4.0"},
-  {"id":"OHI","tipo":"estadio","nombre":"Estadio El Teniente, Rancagua","url":"https://upload.wikimedia.org/wikipedia/commons/5/57/Estadio_Bicentenario_El_Teniente_%E2%80%94_Rancagua%2C_Chile_%2818061368649%29.jpg","autor":"Flickr 7518805@N08","lic":"CC BY 2.0"},
-  {"id":"COQ","tipo":"estadio","nombre":"Estadio Francisco Sánchez Rumoroso, Coquimbo","url":"https://upload.wikimedia.org/wikipedia/commons/f/f9/Estadio_Francisco_S%C3%A1nchez_Rumoroso.jpg","autor":"Wikimedia Commons","lic":"CC BY-SA"},
-  {"id":"HUA","tipo":"estadio","nombre":"Estadio CAP, Talcahuano","url":"https://upload.wikimedia.org/wikipedia/commons/b/b3/Estadio_CAP.jpg","autor":"Wikimedia Commons","lic":"CC BY-SA"},
-  {"id":"COB","tipo":"estadio","nombre":"Estadio El Cobre, El Salvador","url":"https://upload.wikimedia.org/wikipedia/commons/a/ab/Estadio_El_Cobre.jpg","autor":"Wikimedia Commons","lic":"CC BY-SA"},
-  {"id":"NUB","tipo":"estadio","nombre":"Estadio Nelson Oyarzún Arenas, Chillán","url":"https://upload.wikimedia.org/wikipedia/commons/0/00/Estadio_Nelson_Oyarz%C3%BAn_de_Chill%C3%A1n.jpg","autor":"Wikimedia Commons","lic":"CC BY-SA"},
-  {"id":"BOC","tipo":"estadio","nombre":"La Bombonera (Estadio Alberto J. Armando), La Boca","url":"https://upload.wikimedia.org/wikipedia/commons/3/38/La_Bombonera_2.jpg","autor":"Matibro","lic":"CC BY-SA 4.0"},
-  {"id":"RIV","tipo":"estadio","nombre":"Estadio Mâs Monumental, Núñez (River Plate)","url":"https://upload.wikimedia.org/wikipedia/commons/5/54/RiverPlateStadium.jpg","autor":"Fulviusbsas","lic":"CC BY-SA 4.0"},
-  {"id":"SCR","tipo":"estadio","nombre":"Estadio Municipal Joaquín Muñoz García, Santa Cruz","sin_foto":true},
-  {"id":"SCI","tipo":"estadio","nombre":"Estadio Municipal de Lo Barnechea","sin_foto":true},
-  {"id":"RSJ","tipo":"estadio","nombre":"Estadio Municipal de San Joaquín","sin_foto":true},
-  {"id":"BSA","tipo":"estadio","nombre":"Estadio Municipal de Salamanca","sin_foto":true},
-  {"id":"CNA","tipo":"estadio","nombre":"Estadio Atlético Municipal, Concón","sin_foto":true}
+  {
+    "id": "CC",
+    "tipo": "estadio",
+    "nombre": "Estadio Monumental David Arellano, Macul (fachada)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Fachada_Estadio_Monumental%2C_2016-12-21.jpg",
+    "autor": "Carlos Figueroa",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "UCH",
+    "tipo": "estadio",
+    "nombre": "Estadio Nacional Julio Martínez Prádanos, Ñuñoa",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Estadio_Nacional_-_A741105.jpg",
+    "autor": "Rjcastillo",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "UC",
+    "tipo": "estadio",
+    "nombre": "Estadio San Carlos de Apoquindo 2024 (remodelación hacia Claro Arena)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Estadio_San_Carlos_de_Apoquindo_2024_%284%29.jpg",
+    "autor": "JeanxcPalmer",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "EVE",
+    "tipo": "estadio",
+    "nombre": "Estadio Sausalito, Viña del Mar (Everton vs Colo-Colo 2023)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Estadio_Sausalito_Everton_v_Colo-Colo_20230806_01.jpg",
+    "autor": "Carlos yo",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "PAL",
+    "tipo": "estadio",
+    "nombre": "Estadio Municipal de La Cisterna (Palestino vs Copiapó 2023)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/25/Estadio_Municipal_de_La_Cisterna_Palestino_v_Deportes_Copiap%C3%B3_20230730_01.jpg",
+    "autor": "Carlos yo",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "COQ",
+    "tipo": "estadio",
+    "nombre": "Estadio Francisco Sánchez Rumoroso, Coquimbo",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Estadio_Francisco_S%C3%A1nchez_Rumoroso.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "AUD",
+    "tipo": "estadio",
+    "nombre": "Estadio Bicentenario de La Florida (Audax vs Morning)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/1/18/Audax-Morning.jpg",
+    "autor": "Ariel Cruz Pizarro",
+    "lic": "CC BY-SA 2.0"
+  },
+  {
+    "id": "HUA",
+    "tipo": "estadio",
+    "nombre": "Estadio CAP, Talcahuano",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b3/Estadio_CAP.jpg",
+    "autor": "Municipalidad de Talcahuano",
+    "lic": "CC BY-SA 2.0"
+  },
+  {
+    "id": "OHI",
+    "tipo": "estadio",
+    "nombre": "Estadio El Teniente, Rancagua",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/57/Estadio_Bicentenario_El_Teniente_%E2%80%94_Rancagua%2C_Chile_%2818061368649%29.jpg",
+    "autor": "Benjamín Mejías Valencia",
+    "lic": "CC BY 2.0"
+  },
+  {
+    "id": "NUB",
+    "tipo": "estadio",
+    "nombre": "Estadio Nelson Oyarzún Arenas, Chillán",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/00/Estadio_Nelson_Oyarz%C3%BAn_de_Chill%C3%A1n.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "COB",
+    "tipo": "estadio",
+    "nombre": "Estadio El Cobre, El Salvador",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Estadio_El_Cobre.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "CAL",
+    "tipo": "estadio",
+    "nombre": "Estadio Municipal Nicolás Chahuán Nazar, La Calera",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Estadio_Municipal_Nicol%C3%A1s_Chahu%C3%A1n_Nazar%2C_La_Calera_20220319_01.jpg",
+    "autor": "Carlos Figueroa Rojas",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "LSE",
+    "tipo": "estadio",
+    "nombre": "Estadio La Portada, La Serena",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Estadio_La_Portada_La_Serena.jpg",
+    "autor": "Petakito",
+    "lic": "CC BY-SA 3.0"
+  },
+  {
+    "id": "DCO",
+    "tipo": "estadio",
+    "nombre": "Estadio Ester Roa Rebolledo, Concepción",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Estadio_Ester_Roa_Rebolledo.JPG",
+    "autor": "Daniblue21",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "UDC",
+    "tipo": "estadio",
+    "nombre": "Estadio Ester Roa Rebolledo, Concepción (U. de Concepción)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Estadio_Ester_Roa_Rebolledo.JPG",
+    "autor": "Daniblue21",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "LIM",
+    "tipo": "estadio",
+    "nombre": "Estadio Municipal Ángel Navarrete Candia, Limache (no es Lucio Fariña)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Estadio_Municipal_%C3%81ngel_Navarrete_Candia%2C_Limache_20230322_01.jpg",
+    "autor": "Carlos Figueroa Rojas",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "SW",
+    "tipo": "estadio",
+    "nombre": "Estadio Elías Figueroa Brander, Valparaíso (frontis)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Chile%2C_Valpara%C3%ADso%2C_Frontis_del_Estadio_El%C3%ADas_Figueroa_Brander.jpg",
+    "autor": "Açipni-Lovrij",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "CBL",
+    "tipo": "estadio",
+    "nombre": "Estadio Municipal Zorros del Desierto, Calama",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Estadio_Municipal_Zorros_del_Desierto.jpg",
+    "autor": "Andre el gigante",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "SLQ",
+    "tipo": "estadio",
+    "nombre": "Estadio Lucio Fariña Fernández, Quillota",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Estadio_Lucio_Fari%C3%B1a_Fern%C3%A1ndez.jpg",
+    "autor": "Carlos yo",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "ANT",
+    "tipo": "estadio",
+    "nombre": "Estadio Regional Calvo y Bascuñán, Antofagasta (2014)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Estadio_Regional_Calvo_y_Bascu%C3%B1%C3%A1n%2C_2014.jpg",
+    "autor": "Juan Araya Contador",
+    "lic": "CC BY 2.0"
+  },
+  {
+    "id": "MAG",
+    "tipo": "estadio",
+    "nombre": "Estadio Luis Navarro Avilés (Municipal de San Bernardo)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Estadio_San_Bernardo_1.JPG",
+    "autor": "Ahmedd",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "UES",
+    "tipo": "estadio",
+    "nombre": "Estadio Santa Laura, Independencia, Santiago",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/e1/Estadio_Santa_Laura%2C_Independencia%2C_Santiago_20230723.jpg",
+    "autor": "Carlos yo",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "REC",
+    "tipo": "estadio",
+    "nombre": "Estadio Municipal Leonel Sánchez Lineros, Recoleta",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Estadio_Municipal_Leonel_S%C3%A1nchez_Lineros%2C_Recoleta%2C_Santiago_20230325_01.jpg",
+    "autor": "Carlos Figueroa Rojas",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "PMO",
+    "tipo": "estadio",
+    "nombre": "Estadio Regional de Chinquihue, Puerto Montt",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/26/Estadiochinquihue.jpg",
+    "autor": "Jonathan92",
+    "lic": "dominio público"
+  },
+  {
+    "id": "SMA",
+    "tipo": "estadio",
+    "nombre": "Estadio Carlos Dittborn, Arica (foto Comité Estadio Seguro)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/71/Comit%C3%A9_%E2%80%9CEstadio_Seguro%E2%80%9D_informa_medidas_de_seguridad_para_encuentro_de_San_Marcos_de_Arica_y_Deportes_Copiap%C3%B3.jpg",
+    "autor": "Gobernación Provincial de Arica",
+    "lic": "CC BY 3.0 cl"
+  },
+  {
+    "id": "COP",
+    "tipo": "estadio",
+    "nombre": "Estadio Luis Valenzuela Hermosilla, Copiapó (gradas)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/09/Chile%2C_Copiap%C3%B3%2C_Gradas_del_Estadio_Luis_Valenzuela_Hermosilla.jpg",
+    "autor": "Açipni-Lovrij",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "TEM",
+    "tipo": "estadio",
+    "nombre": "Estadio Germán Becker, Temuco",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b5/Estadio_Germ%C3%A1n_Becker.jpg",
+    "autor": "Claude Cobar",
+    "lic": "CC BY-SA 2.0"
+  },
+  {
+    "id": "IQQ",
+    "tipo": "estadio",
+    "nombre": "Estadio Tierra de Campeones, Iquique",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/58/Estadio_Tierra_de_Campeones.jpg",
+    "autor": "PipeNacho1985",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "USF",
+    "tipo": "estadio",
+    "nombre": "Estadio Municipal de San Felipe",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Estadio_Municipal_de_San_Felipe.JPG",
+    "autor": "Manxuc",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "CUR",
+    "tipo": "estadio",
+    "nombre": "Estadio La Granja, Curicó (2009)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/7a/Estadio_La_Granja_-_Curic%C3%B3_-_2009_-_01.jpg",
+    "autor": "José Joaquín Cortes",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "SCR",
+    "tipo": "estadio",
+    "nombre": "Estadio Municipal Joaquín Muñoz García, Santa Cruz",
+    "sin_foto": true
+  },
+  {
+    "id": "RAN",
+    "tipo": "estadio",
+    "nombre": "Estadio Fiscal de Talca (Rangers vs Cobreloa 2006)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Rangers-Cobreloa2006.jpg",
+    "autor": "Tomás Jorquera",
+    "lic": "CC BY 2.0"
+  },
+  {
+    "id": "OVA",
+    "tipo": "estadio",
+    "nombre": "Estadio Diaguita, Ovalle",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Estadio_Diaguita.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "CLC",
+    "tipo": "estadio",
+    "nombre": "Estadio Jorge Silva Valenzuela, San Fernando",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Estadio_Jorge_Silva_Valenzuela.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "GVE",
+    "tipo": "estadio",
+    "nombre": "Estadio Municipal Augusto Rodríguez, San Vicente de Tagua Tagua",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/ff/Estadio_Municipal_Augusto_Rodr%C3%ADguez.jpg",
+    "autor": "Mauricio Magaña Orellana",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "CNA",
+    "tipo": "estadio",
+    "nombre": "Estadio Atlético Municipal, Concón",
+    "sin_foto": true
+  },
+  {
+    "id": "BSA",
+    "tipo": "estadio",
+    "nombre": "Estadio Municipal de Salamanca",
+    "sin_foto": true
+  },
+  {
+    "id": "RSJ",
+    "tipo": "estadio",
+    "nombre": "Estadio Municipal de San Joaquín",
+    "sin_foto": true
+  },
+  {
+    "id": "SCI",
+    "tipo": "estadio",
+    "nombre": "Estadio Municipal de Lo Barnechea",
+    "sin_foto": true
+  },
+  {
+    "id": "BOC",
+    "tipo": "estadio",
+    "nombre": "La Bombonera (Estadio Alberto J. Armando), La Boca",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/38/La_Bombonera_2.jpg",
+    "autor": "Matibro",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "RIV",
+    "tipo": "estadio",
+    "nombre": "Estadio Mâs Monumental, Núñez (River Plate)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/54/RiverPlateStadium.jpg",
+    "autor": "Fulviusbsas",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "RAC",
+    "tipo": "estadio",
+    "nombre": "El Cilindro (Estadio Presidente Perón), Avellaneda — recibimiento Copa Libertadores",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Recibimiento_Copa_Libertadores_Racing.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "IND",
+    "tipo": "estadio",
+    "nombre": "Estadio Libertadores de América – Ricardo Enrique Bochini, Avellaneda",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/03/Estadio_Libertadores_de_Am%C3%A9rica_-_Ricardo_Enrique_Bochini.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "VEL",
+    "tipo": "estadio",
+    "nombre": "Estadio José Amalfitani, Liniers (2024)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Estadio_Jos%C3%A9_Amalfitani_2024.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "SLO",
+    "tipo": "estadio",
+    "nombre": "Estadio Pedro Bidegain (El Nuevo Gasómetro), Bajo Flores",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/01/Estadio_Pedro_Bidegain.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "ELP",
+    "tipo": "estadio",
+    "nombre": "Estadio Jorge Luis Hirschi, La Plata",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/65/Estadio_Jorge_Luis_Hirschi.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "ROS",
+    "tipo": "estadio",
+    "nombre": "Estadio Gigante de Arroyito, Rosario",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/66/Estadio_Gigante_de_Arroyito.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "TAL",
+    "tipo": "estadio",
+    "nombre": "Estadio Mario Alberto Kempes, Córdoba (luego de un partido)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Estadio_Kempes_luego_de_finalizar_un_partido.jpg",
+    "autor": "Alepizarro32",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "HUR",
+    "tipo": "estadio",
+    "nombre": "Estadio Tomás Adolfo Ducó, Parque Patricios",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Estadio_Tom%C3%A1s_Adolfo_Duc%C3%B3.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "LAN",
+    "tipo": "estadio",
+    "nombre": "Estadio Ciudad de Lanús – Néstor Díaz Pérez",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/64/Estadio_Lanus.jpg",
+    "autor": "EstudiantesFotografias",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "ARG",
+    "tipo": "estadio",
+    "nombre": "Estadio Diego Armando Maradona, La Paternal",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/75/Estadio_argentinos_juniors.jpg",
+    "autor": "autor desconocido",
+    "lic": "CC BY 2.5 ar"
+  },
+  {
+    "id": "NEW",
+    "tipo": "estadio",
+    "nombre": "Estadio Marcelo Bielsa, Rosario",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/23/Estadio_Marcelo_Bielsa.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "BEL",
+    "tipo": "estadio",
+    "nombre": "Estadio Julio César Villagra (Gigante de Alberdi), Córdoba",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/79/Estadio_Club_Atletico_Belgrano_de_C%C3%B2rdoba.jpg",
+    "autor": "JohnManuelOnomah",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "DYJ",
+    "tipo": "estadio",
+    "nombre": "Estadio Norberto Tito Tomaghello, Florencio Varela (panorámica)",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Estadio_Norberto_Tito_Tomaghello_Panoramica.jpg",
+    "autor": "Cayuqueo",
+    "lic": "CC BY-SA 4.0"
+  },
+  {
+    "id": "UNI",
+    "tipo": "estadio",
+    "nombre": "Estadio 15 de Abril, Santa Fe",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Estadio_15_de_Abril.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "SAR",
+    "tipo": "estadio",
+    "nombre": "Estadio Eva Perón, Junín",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/99/Estadio_Eva_Per%C3%B3n.jpg",
+    "autor": "Wikimedia Commons",
+    "lic": "CC BY-SA"
+  },
+  {
+    "id": "LIM",
+    "tipo": "club",
+    "nombre": "Deportes Limache — logo FootyLogos 1200",
+    "url": "https://assets.footylogos.com/previews/deportes-limache/deportes-limache-logo-footylogos-1200.webp",
+    "autor": "FootyLogos",
+    "lic": "marca del club (FootyLogos, no CC)"
+  },
+  {
+    "id": "COQ",
+    "tipo": "club",
+    "nombre": "Coquimbo Unido — logo FootyLogos 1200",
+    "url": "https://assets.footylogos.com/previews/coquimbo-unido/coquimbo-unido-logo-footylogos-1200.webp",
+    "autor": "FootyLogos",
+    "lic": "marca del club (FootyLogos, no CC)"
+  },
+  {
+    "id": "OHI",
+    "tipo": "club",
+    "nombre": "O'Higgins — logo FootyLogos 1200",
+    "url": "https://assets.footylogos.com/previews/ohiggins/ohiggins-logo-footylogos-1200.webp",
+    "autor": "FootyLogos",
+    "lic": "marca del club (FootyLogos, no CC)"
+  },
+  {
+    "id": "COB",
+    "tipo": "club",
+    "nombre": "Cobresal — logo FootyLogos 1200",
+    "url": "https://assets.footylogos.com/previews/cobresal/cobresal-logo-footylogos-1200.webp",
+    "autor": "FootyLogos",
+    "lic": "marca del club (FootyLogos, no CC)"
+  },
+  {
+    "id": "LSE",
+    "tipo": "club",
+    "nombre": "Deportes La Serena — logo FootyLogos 1200",
+    "url": "https://assets.footylogos.com/previews/la-serena/la-serena-logo-footylogos-1200.webp",
+    "autor": "FootyLogos",
+    "lic": "marca del club (FootyLogos, no CC)"
+  },
+  {
+    "id": "UES",
+    "tipo": "club",
+    "nombre": "Unión Española — logo FootyLogos 1200",
+    "url": "https://assets.footylogos.com/previews/union-espanola/union-espanola-logo-footylogos-1200.webp",
+    "autor": "FootyLogos",
+    "lic": "marca del club (FootyLogos, no CC)"
+  },
+  {
+    "id": "IQQ",
+    "tipo": "club",
+    "nombre": "Deportes Iquique — logo FootyLogos 1200",
+    "url": "https://assets.footylogos.com/previews/deportes-iquique/deportes-iquique-logo-footylogos-1200.webp",
+    "autor": "FootyLogos",
+    "lic": "marca del club (FootyLogos, no CC)"
+  },
+  {
+    "id": "UDC",
+    "tipo": "club",
+    "nombre": "Universidad de Concepción — logo football-logos.cc 1500 (no hay carpeta FootyLogos)",
+    "url": "https://assets.football-logos.cc/logos/chile/1500x1500/universidad-de-concepcion.b1557c75.png",
+    "autor": "football-logos.cc",
+    "lic": "marca del club (football-logos.cc, no CC)"
+  },
+  {
+    "id": "ANT",
+    "tipo": "club",
+    "nombre": "Deportes Antofagasta — logo football-logos.cc 1500",
+    "url": "https://assets.football-logos.cc/logos/chile/1500x1500/deportes-antofagasta.f766c5c6.png",
+    "autor": "football-logos.cc",
+    "lic": "marca del club (football-logos.cc, no CC)"
+  },
+  {
+    "id": "REC",
+    "tipo": "club",
+    "nombre": "Deportes Recoleta — logo football-logos.cc 1500",
+    "url": "https://assets.football-logos.cc/logos/chile/1500x1500/deportes-recoleta.cb2c4285.png",
+    "autor": "football-logos.cc",
+    "lic": "marca del club (football-logos.cc, no CC)"
+  },
+  {
+    "id": "PMO",
+    "tipo": "club",
+    "nombre": "Deportes Puerto Montt — logo football-logos.cc 1500",
+    "url": "https://assets.football-logos.cc/logos/chile/1500x1500/deportes-puerto-montt.86eaf610.png",
+    "autor": "football-logos.cc",
+    "lic": "marca del club (football-logos.cc, no CC)"
+  },
+  {
+    "id": "SMA",
+    "tipo": "club",
+    "nombre": "San Marcos de Arica — logo football-logos.cc 1500",
+    "url": "https://assets.football-logos.cc/logos/chile/1500x1500/san-marcos-de-arica.44e239e2.png",
+    "autor": "football-logos.cc",
+    "lic": "marca del club (football-logos.cc, no CC)"
+  },
+  {
+    "id": "TEM",
+    "tipo": "club",
+    "nombre": "Deportes Temuco — logo football-logos.cc 1500",
+    "url": "https://assets.football-logos.cc/logos/chile/1500x1500/deportes-temuco.81e83ac2.png",
+    "autor": "football-logos.cc",
+    "lic": "marca del club (football-logos.cc, no CC)"
+  },
+  {
+    "id": "USF",
+    "tipo": "club",
+    "nombre": "Unión San Felipe — logo football-logos.cc 1500",
+    "url": "https://assets.football-logos.cc/logos/chile/1500x1500/union-san-felipe.bb338584.png",
+    "autor": "football-logos.cc",
+    "lic": "marca del club (football-logos.cc, no CC)"
+  },
+  {
+    "id": "SCR",
+    "tipo": "club",
+    "nombre": "Deportes Santa Cruz — logo football-logos.cc 1500",
+    "url": "https://assets.football-logos.cc/logos/chile/1500x1500/deportes-santa-cruz.7d02706b.png",
+    "autor": "football-logos.cc",
+    "lic": "marca del club (football-logos.cc, no CC)"
+  },
+  {
+    "id": "CAL",
+    "tipo": "club",
+    "nombre": "Unión La Calera — escudo Commons PD-textlogo",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Uni%C3%B3n_La_Calera.png",
+    "autor": "Wikimedia Commons",
+    "lic": "PD-textlogo"
+  }
 ]

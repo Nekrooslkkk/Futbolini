@@ -70,6 +70,38 @@ Hechos públicos. Si no está documentado, se marca.
 [OK] Subido a GitHub (7.86-datos → 7.95 + Claude 7.86 UI).
 [INFO] Sin 8.0: bugs de motor / copas AFA / formato Segunda liguilla (dato listo, motor pendiente).
 
+## 7.96 · escudos Segunda + AFA
+[OK] Segunda 14/14 en ESCUDOS_FOTOS (SVG en disco). AFA 30/30 en ESCUDOS_CLUB.
+[INFO] Manifiesto de fotos Commons/FootyLogos. Grok no corre fotos_bajar.py.
+
+## 7.97 · Segunda ≠ Colo-Colo 1991 + copias
+[CRÍTICO] vistaHistoria else volcaba HECHOS_91 / Libertadores CC / tabla 1991 a Segunda, AFA, 1925, 2006.
+[FIX] idClubCanon: COB 1991 = CBL (Cobreloa), no Cobresal.
+[FIX] Copias 2026: Palavecino/Escobar/Villagrán/Malanca/Gutiérrez/Malcorra/Fuenzalida/Munder/Cerezo/Assadi/Pizarro/Nadruz/Sarrafiore/Vera/Olea.
+[OK] Homónimos (Lucas Molina, Nicolás Fernández, etc.) se quedan: son dos personas.
+
+## 7.98 · historias ajenas (TAREA E-9 / E-12)
+[CRÍTICO] Limache en CLUB_INFO 1991 → picker lo ofrecía como clásico '91. Fix: clásico solo si `clubJugoNacional91`; `nuevaPartida` redirige.
+[CRÍTICO] 1925: `FORMAT_1925.campeon` (Colo-Colo invicto) salía en Historia de Magallanes/Audax. Ahora solo si el club es CC.
+[FIX] Glorias de Segunda ya no caen a Primera 2026: `base="2026c"`.
+[FIX] Plop: PRENSA_1991/1925/2006 entra con `club`+`era`; `textoPlopAjeno` corta Libertadores 91 en Segunda.
+[FIX] 1925: arcos genéricos de tele/sponsor/Europa no salen (`arcoCabeEnClub`).
+[OK] Homónimos Molina/Fernández se quedan. Vera/Olea siguen solo en OHI/USF.
+
+## 7.99 · rigor vs Colo-Colo (uno por uno)
+[INFO] Listón CC: 24 jugadores 2026, 3 ARQ, capitán Vidal, ídolo, 0 rasgos vacíos, épocas 1989/1991/2002/2006.
+[OK] Primera 16/16 y B 16/16 ya tenían plantel Wiki ≥18. Segunda 14/14 FULL (89 pisa los stubs de 87).
+[FIX] UC 2026: Giani es DEL (no VOL). Entran Martín Gómez, Diego Corral, Nicolás L'Huillier (wiki 14 ago).
+[FIX] Assadi sale del stub de data-plantel.js (AIK, 21 ago). Sosa Limache 37, no 21.
+[FIX] UES 2013: plantel real Transición (Sierra, Ampuero, Villagra, Canales, Cueva) — la época ya no es cantera.
+[FIX] SW 2001: plantel real tercera estrella (Garcés, Silvio Fernández, Riveros, Villarroel) — ASIFUCH.
+[FIX] HISTORIA_LINEA.CC 1925 en fuente: El Llano, no Macul.
+[INFO] Todavía bajo el listón CC (sin plantel de época real): palestino 1978 sí; LIM/ANT/PMO/COP/TEM/IQQ/CUR/SCR/RAN/SLQ/USF/REC y casi toda Segunda/AFA. No se inventa.
+[OK] Rasgo mínimo por edad si el array venía vacío (veterano/joven/recambio). Capitán no se inventa.
+
+
+
+
 
 
 

@@ -12,9 +12,12 @@ function normalizarStorylines(){
   if(!E.storyline.hechos) E.storyline.hechos={};
 }
 function arcosDe(club){
-  const propios=(typeof ARCOS_EQUIPO!=="undefined"&&ARCOS_EQUIPO[club])?ARCOS_EQUIPO[club]:[];
+  const id=(typeof idClubCanon==="function")?idClubCanon(club):club;
+  const propios=(typeof ARCOS_EQUIPO!=="undefined"&&ARCOS_EQUIPO[id])?ARCOS_EQUIPO[id]:[];
   const gen=(typeof ARCOS_GENERICOS!=="undefined")?ARCOS_GENERICOS:[];
-  return propios.concat(gen);
+  return propios.concat(gen).filter(function(a){
+    return typeof arcoCabeEnClub!=="function" || arcoCabeEnClub(a, id);
+  });
 }
 function arcoPorId(id){ return arcosDe(E.club).find(a=>a.id===id)||null; }
 /* ¿hay un arco elegible para arrancar? (respeta era y condición) */

@@ -207,6 +207,20 @@ function clubMapaTodos(){
   _mapaTodosCache=m;
   return m;
 }
+/* 7.97 · id canónico para HISTORIA / arcos.
+   En 1991 COB es Cobreloa; en 2026 COB es Cobresal (Cobreloa = CBL).
+   Sin esto, Cobreloa 1991 hereda la línea de El Salvador. */
+function idClubCanon(club, era){
+  if(!club) return club;
+  era=(era!=null)?era:(typeof E!=="undefined"&&E?E.eraBase:null);
+  if((era===1991||era===1989)&&club==="COB") return "CBL";
+  return club;
+}
+function clubJugoNacional91(club){
+  if(!club||typeof LIGA91==="undefined") return false;
+  const id=club;
+  return LIGA91.some(c=>c.id===id);
+}
 function activarLiga(base){
   let liga = LIGAS[base] || (base==="2026b"&&typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null) || (base==="2026c"&&typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null) || (base===2006&&typeof LIGA_2006!=="undefined"?LIGA_2006:null) || (base===1925&&typeof LIGA_1925!=="undefined"?LIGA_1925:null) || LIGA91;
   /* override por-save para ascenso/descenso: la división trae a los clubes que corresponden esta temporada */

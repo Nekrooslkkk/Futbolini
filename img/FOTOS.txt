@@ -5,150 +5,118 @@
 #        python3 scripts/fotos_contacto.py             (abri img/_contacto.html y revisa)
 # Lo que dejes en PEGA_LINK se ignora (lo llenas cuando quieras, de a poco).
 # Las lineas con # son comentarios. @estadio / @club cambian el tipo.
+# 7.96 · URLs Commons / FootyLogos / football-logos.cc VERIFICADAS (HEAD 200).
+#        Grok NO corre fotos_bajar.py — el usuario/Claude baja después.
+#        URLs sin utm. SVG rechazado por el script: logos van en .webp/.png.
 
 @estadio
 
 # --- Primera 2026 ---
-CC    https://upload.wikimedia.org/wikipedia/commons/5/5c/Fachada_Estadio_Monumental%2C_2016-12-21.jpg   # Colo-Colo · Estadio Monumental
-UCH   https://upload.wikimedia.org/wikipedia/commons/2/2a/Estadio_Nacional_-_A741105.jpg   # Universidad de Chile · Estadio Nacional
-UC    PEGA_LINK   # Universidad Católica · Claro Arena
-EVE   https://upload.wikimedia.org/wikipedia/commons/4/4e/Estadio_Sausalito_Everton_v_Colo-Colo_20230806_01.jpg   # Everton · Estadio Sausalito
-PAL   PEGA_LINK   # Palestino · Municipal de La Cisterna
-COQ   https://upload.wikimedia.org/wikipedia/commons/f/f9/Estadio_Francisco_S%C3%A1nchez_Rumoroso.jpg   # Coquimbo Unido · Estadio Francisco Sánchez R.
-AUD   PEGA_LINK   # Audax Italiano · Estadio La Florida
-HUA   https://upload.wikimedia.org/wikipedia/commons/b/b3/Estadio_CAP.jpg   # Huachipato · Estadio CAP
-OHI   https://upload.wikimedia.org/wikipedia/commons/5/57/Estadio_Bicentenario_El_Teniente_%E2%80%94_Rancagua%2C_Chile_%2818061368649%29.jpg   # O'Higgins · Estadio El Teniente
-NUB   https://upload.wikimedia.org/wikipedia/commons/0/00/Estadio_Nelson_Oyarz%C3%BAn_de_Chill%C3%A1n.jpg   # Ñublense · Estadio Nelson Oyarzún
-COB   https://upload.wikimedia.org/wikipedia/commons/a/ab/Estadio_El_Cobre.jpg   # Cobresal · Estadio El Cobre
-CAL   PEGA_LINK   # Unión La Calera · Estadio Nicolás Chahuán
-LSE   PEGA_LINK   # Deportes La Serena · Estadio La Portada
-DCO   PEGA_LINK   # Deportes Concepción · Estadio Ester Roa
-UDC   PEGA_LINK   # Universidad de Concepción · Estadio Ester Roa
-LIM   PEGA_LINK   # Deportes Limache · Estadio Lucio Fariña
+CC   https://upload.wikimedia.org/wikipedia/commons/5/5c/Fachada_Estadio_Monumental%2C_2016-12-21.jpg   # Colo-Colo · Estadio Monumental (fachada)
+UCH  https://upload.wikimedia.org/wikipedia/commons/2/2a/Estadio_Nacional_-_A741105.jpg   # Universidad de Chile · Estadio Nacional
+UC   https://upload.wikimedia.org/wikipedia/commons/d/d2/Estadio_San_Carlos_de_Apoquindo_2024_%284%29.jpg   # Universidad Católica · San Carlos 2024 / Claro Arena
+EVE  https://upload.wikimedia.org/wikipedia/commons/4/4e/Estadio_Sausalito_Everton_v_Colo-Colo_20230806_01.jpg   # Everton · Estadio Sausalito
+PAL  https://upload.wikimedia.org/wikipedia/commons/2/25/Estadio_Municipal_de_La_Cisterna_Palestino_v_Deportes_Copiap%C3%B3_20230730_01.jpg   # Palestino · Municipal de La Cisterna
+COQ  https://upload.wikimedia.org/wikipedia/commons/f/f9/Estadio_Francisco_S%C3%A1nchez_Rumoroso.jpg   # Coquimbo Unido · Estadio Francisco Sánchez R.
+AUD  https://upload.wikimedia.org/wikipedia/commons/1/18/Audax-Morning.jpg   # Audax Italiano · Estadio La Florida
+HUA  https://upload.wikimedia.org/wikipedia/commons/b/b3/Estadio_CAP.jpg   # Huachipato · Estadio CAP
+OHI  https://upload.wikimedia.org/wikipedia/commons/5/57/Estadio_Bicentenario_El_Teniente_%E2%80%94_Rancagua%2C_Chile_%2818061368649%29.jpg   # O'Higgins · Estadio El Teniente
+NUB  https://upload.wikimedia.org/wikipedia/commons/0/00/Estadio_Nelson_Oyarz%C3%BAn_de_Chill%C3%A1n.jpg   # Ñublense · Estadio Nelson Oyarzún
+COB  https://upload.wikimedia.org/wikipedia/commons/a/ab/Estadio_El_Cobre.jpg   # Cobresal · Estadio El Cobre
+CAL  https://upload.wikimedia.org/wikipedia/commons/c/c5/Estadio_Municipal_Nicol%C3%A1s_Chahu%C3%A1n_Nazar%2C_La_Calera_20220319_01.jpg   # Unión La Calera · Estadio Nicolás Chahuán
+LSE  https://upload.wikimedia.org/wikipedia/commons/a/a2/Estadio_La_Portada_La_Serena.jpg   # Deportes La Serena · Estadio La Portada
+DCO  https://upload.wikimedia.org/wikipedia/commons/f/f2/Estadio_Ester_Roa_Rebolledo.JPG   # Deportes Concepción · Estadio Ester Roa
+UDC  https://upload.wikimedia.org/wikipedia/commons/f/f2/Estadio_Ester_Roa_Rebolledo.JPG   # Universidad de Concepción · Estadio Ester Roa
+LIM  https://upload.wikimedia.org/wikipedia/commons/4/4a/Estadio_Municipal_%C3%81ngel_Navarrete_Candia%2C_Limache_20230322_01.jpg   # Deportes Limache · Ángel Navarrete Candia (no Lucio Fariña)
 
 # --- Primera B 2026 ---
-SW    PEGA_LINK   # Santiago Wanderers · Estadio Elías Figueroa Brander
-CBL   PEGA_LINK   # Cobreloa · Estadio Zorros del Desierto
-SLQ   PEGA_LINK   # San Luis de Quillota · Estadio Lucio Fariña Fernández
-ANT   PEGA_LINK   # Deportes Antofagasta · Estadio Regional Calvo y Bascuñán
-MAG   PEGA_LINK   # Deportes Magallanes · Estadio Luis Navarro Avilés
-UES   https://upload.wikimedia.org/wikipedia/commons/e/e1/Estadio_Santa_Laura%2C_Independencia%2C_Santiago_20230723.jpg   # Unión Española · Estadio Santa Laura
-REC   PEGA_LINK   # Deportes Recoleta · Estadio Municipal de Recoleta
-PMO   PEGA_LINK   # Deportes Puerto Montt · Estadio Regional de Chinquihue
-SMA   PEGA_LINK   # San Marcos de Arica · Estadio Carlos Dittborn
-COP   PEGA_LINK   # Deportes Copiapó · Estadio Luis Valenzuela Hermosilla
-TEM   PEGA_LINK   # Deportes Temuco · Estadio Germán Becker
-IQQ   PEGA_LINK   # Deportes Iquique · Estadio Tierra de Campeones
-USF   PEGA_LINK   # Unión San Felipe · Estadio Municipal de San Felipe
-CUR   PEGA_LINK   # Curicó Unido · Estadio La Granja
-SCR   SIN_FOTO   # Deportes Santa Cruz · Estadio Municipal Joaquín Muñoz
-RAN   PEGA_LINK   # Rangers de Talca · Estadio Fiscal de Talca
+SW   https://upload.wikimedia.org/wikipedia/commons/2/2e/Chile%2C_Valpara%C3%ADso%2C_Frontis_del_Estadio_El%C3%ADas_Figueroa_Brander.jpg   # Santiago Wanderers · Estadio Elías Figueroa Brander
+CBL  https://upload.wikimedia.org/wikipedia/commons/e/e9/Estadio_Municipal_Zorros_del_Desierto.jpg   # Cobreloa · Estadio Zorros del Desierto
+SLQ  https://upload.wikimedia.org/wikipedia/commons/a/a2/Estadio_Lucio_Fari%C3%B1a_Fern%C3%A1ndez.jpg   # San Luis de Quillota · Estadio Lucio Fariña Fernández
+ANT  https://upload.wikimedia.org/wikipedia/commons/a/a2/Estadio_Regional_Calvo_y_Bascu%C3%B1%C3%A1n%2C_2014.jpg   # Deportes Antofagasta · Estadio Regional Calvo y Bascuñán
+MAG  https://upload.wikimedia.org/wikipedia/commons/b/b7/Estadio_San_Bernardo_1.JPG   # Deportes Magallanes · Estadio Luis Navarro Avilés
+UES  https://upload.wikimedia.org/wikipedia/commons/e/e1/Estadio_Santa_Laura%2C_Independencia%2C_Santiago_20230723.jpg   # Unión Española · Estadio Santa Laura
+REC  https://upload.wikimedia.org/wikipedia/commons/d/d8/Estadio_Municipal_Leonel_S%C3%A1nchez_Lineros%2C_Recoleta%2C_Santiago_20230325_01.jpg   # Deportes Recoleta · Estadio Municipal de Recoleta
+PMO  https://upload.wikimedia.org/wikipedia/commons/2/26/Estadiochinquihue.jpg   # Deportes Puerto Montt · Estadio Regional de Chinquihue
+SMA  https://upload.wikimedia.org/wikipedia/commons/7/71/Comit%C3%A9_%E2%80%9CEstadio_Seguro%E2%80%9D_informa_medidas_de_seguridad_para_encuentro_de_San_Marcos_de_Arica_y_Deportes_Copiap%C3%B3.jpg   # San Marcos de Arica · Estadio Carlos Dittborn
+COP  https://upload.wikimedia.org/wikipedia/commons/0/09/Chile%2C_Copiap%C3%B3%2C_Gradas_del_Estadio_Luis_Valenzuela_Hermosilla.jpg   # Deportes Copiapó · Estadio Luis Valenzuela Hermosilla
+TEM  https://upload.wikimedia.org/wikipedia/commons/b/b5/Estadio_Germ%C3%A1n_Becker.jpg   # Deportes Temuco · Estadio Germán Becker
+IQQ  https://upload.wikimedia.org/wikipedia/commons/5/58/Estadio_Tierra_de_Campeones.jpg   # Deportes Iquique · Estadio Tierra de Campeones
+USF  https://upload.wikimedia.org/wikipedia/commons/4/4d/Estadio_Municipal_de_San_Felipe.JPG   # Unión San Felipe · Estadio Municipal de San Felipe
+CUR  https://upload.wikimedia.org/wikipedia/commons/7/7a/Estadio_La_Granja_-_Curic%C3%B3_-_2009_-_01.jpg   # Curicó Unido · Estadio La Granja
+SCR  SIN_FOTO   # Deportes Santa Cruz · Estadio Municipal Joaquín Muñoz
+RAN  https://upload.wikimedia.org/wikipedia/commons/f/f8/Rangers-Cobreloa2006.jpg   # Rangers de Talca · Estadio Fiscal de Talca
 
 # --- Segunda 2026 ---
-TRA   PEGA_LINK   # Trasandino · Estadio Regional de Los Andes
-COL   PEGA_LINK   # Atlético Colina · Estadio Municipal Manuel Rojas
-OVA   PEGA_LINK   # Provincial Ovalle · Estadio Diaguita
-CNA   SIN_FOTO   # Concón National · Estadio Atlético Municipal
-BSA   SIN_FOTO   # Brujas de Salamanca · Estadio Municipal de Salamanca
-RSJ   SIN_FOTO   # Real San Joaquín · Estadio Municipal de San Joaquín
-SCI   SIN_FOTO   # Santiago City · Estadio Municipal de Lo Barnechea
-SMO   PEGA_LINK   # Santiago Morning · Estadio Municipal de La Pintana
-LSC   PEGA_LINK   # Lota Schwager · Estadio Federico Schwager
-OSO   PEGA_LINK   # Provincial Osorno · Estadio Rubén Marcos Peralta
-LIN   PEGA_LINK   # Deportes Linares · Estadio Fiscal Tucapel Bustamante
-CLC   PEGA_LINK   # Colchagua · Estadio Jorge Silva Valenzuela
-GVE   PEGA_LINK   # General Velásquez · Estadio Municipal Augusto Rodríguez
-REN   PEGA_LINK   # Deportes Rengo · Estadio Municipal Guillermo Guzmán Díaz
+TRA  PEGA_LINK   # Trasandino · Estadio Regional de Los Andes
+COL  PEGA_LINK   # Atlético Colina · Estadio Municipal Manuel Rojas
+OVA  https://upload.wikimedia.org/wikipedia/commons/0/0a/Estadio_Diaguita.jpg   # Provincial Ovalle · Estadio Diaguita
+CNA  SIN_FOTO   # Concón National · Estadio Atlético Municipal
+BSA  SIN_FOTO   # Brujas de Salamanca · Estadio Municipal de Salamanca
+RSJ  SIN_FOTO   # Real San Joaquín · Estadio Municipal de San Joaquín
+SCI  SIN_FOTO   # Santiago City · Estadio Municipal de Lo Barnechea
+SMO  PEGA_LINK   # Santiago Morning · Estadio Municipal de La Pintana
+LSC  PEGA_LINK   # Lota Schwager · Estadio Federico Schwager
+OSO  PEGA_LINK   # Provincial Osorno · Estadio Rubén Marcos Peralta
+LIN  PEGA_LINK   # Deportes Linares · Estadio Fiscal Tucapel Bustamante
+CLC  https://upload.wikimedia.org/wikipedia/commons/c/c4/Estadio_Jorge_Silva_Valenzuela.jpg   # Colchagua · Estadio Jorge Silva Valenzuela
+GVE  https://upload.wikimedia.org/wikipedia/commons/f/ff/Estadio_Municipal_Augusto_Rodr%C3%ADguez.jpg   # General Velásquez · Estadio Municipal Augusto Rodríguez
+REN  PEGA_LINK   # Deportes Rengo · Estadio Municipal Guillermo Guzmán Díaz
 
 # --- Argentina 2026 ---
-RIV   https://upload.wikimedia.org/wikipedia/commons/5/54/RiverPlateStadium.jpg   # River Plate · Estadio Mâs Monumental
-BOC   https://upload.wikimedia.org/wikipedia/commons/3/38/La_Bombonera_2.jpg   # Boca Juniors · La Bombonera
-RAC   PEGA_LINK   # Racing Club · El Cilindro
-IND   PEGA_LINK   # Independiente · Libertadores de América
-VEL   PEGA_LINK   # Vélez Sarsfield · José Amalfitani
-SLO   PEGA_LINK   # San Lorenzo · Pedro Bidegain
-ELP   PEGA_LINK   # Estudiantes (LP) · Jorge Luis Hirschi
-ROS   PEGA_LINK   # Rosario Central · Gigante de Arroyito
-TAL   PEGA_LINK   # Talleres (C) · Mario Alberto Kempes
-HUR   PEGA_LINK   # Huracán · Tomás Adolfo Ducó
-LAN   PEGA_LINK   # Lanús · Ciudad de Lanús
-ARG   PEGA_LINK   # Argentinos Juniors · Diego Armando Maradona
-NEW   PEGA_LINK   # Newell's Old Boys · Marcelo Bielsa
-BEL   PEGA_LINK   # Belgrano · Julio César Villagra
-DYJ   PEGA_LINK   # Defensa y Justicia · Norberto Tito Tomaghello
-INS   PEGA_LINK   # Instituto · Juan Domingo Perón
-UNI   PEGA_LINK   # Unión · 15 de Abril
-GLP   PEGA_LINK   # Gimnasia (LP) · Juan Carmelo Zerillo
-TUC   PEGA_LINK   # Atlético Tucumán · Monumental José Fierro
-TIG   PEGA_LINK   # Tigre · José Dellagiovanna
-BAN   PEGA_LINK   # Banfield · Florencio Sola
-PLA   PEGA_LINK   # Platense · Ciudad de Vicente López
-CCO   PEGA_LINK   # Central Córdoba (SdE) · Único Madre de Ciudades
-IRV   PEGA_LINK   # Independiente Rivadavia · Bautista Gargantini
-SAR   PEGA_LINK   # Sarmiento (J) · Eva Perón
-ALD   PEGA_LINK   # Aldosivi · José María Minella
-GME   PEGA_LINK   # Gimnasia (Mza) · Víctor Antonio Legrotaglie
-RIE   PEGA_LINK   # Deportivo Riestra · Guillermo Laza
-ERC   PEGA_LINK   # Estudiantes (RC) · Antonio Candini
-BAR   PEGA_LINK   # Barracas Central · Claudio Chiqui Tapia
+RIV  https://upload.wikimedia.org/wikipedia/commons/5/54/RiverPlateStadium.jpg   # River Plate · Estadio Mâs Monumental
+BOC  https://upload.wikimedia.org/wikipedia/commons/3/38/La_Bombonera_2.jpg   # Boca Juniors · La Bombonera
+RAC  https://upload.wikimedia.org/wikipedia/commons/a/a9/Recibimiento_Copa_Libertadores_Racing.jpg   # Racing Club · El Cilindro (recibimiento Libertadores)
+IND  https://upload.wikimedia.org/wikipedia/commons/0/03/Estadio_Libertadores_de_Am%C3%A9rica_-_Ricardo_Enrique_Bochini.jpg   # Independiente · Libertadores de América
+VEL  https://upload.wikimedia.org/wikipedia/commons/e/e4/Estadio_Jos%C3%A9_Amalfitani_2024.jpg   # Vélez Sarsfield · José Amalfitani 2024
+SLO  https://upload.wikimedia.org/wikipedia/commons/0/01/Estadio_Pedro_Bidegain.jpg   # San Lorenzo · Pedro Bidegain
+ELP  https://upload.wikimedia.org/wikipedia/commons/6/65/Estadio_Jorge_Luis_Hirschi.jpg   # Estudiantes (LP) · Jorge Luis Hirschi
+ROS  https://upload.wikimedia.org/wikipedia/commons/6/66/Estadio_Gigante_de_Arroyito.jpg   # Rosario Central · Gigante de Arroyito
+TAL  https://upload.wikimedia.org/wikipedia/commons/d/d9/Estadio_Kempes_luego_de_finalizar_un_partido.jpg   # Talleres (C) · Mario Alberto Kempes
+HUR  https://upload.wikimedia.org/wikipedia/commons/a/a4/Estadio_Tom%C3%A1s_Adolfo_Duc%C3%B3.jpg   # Huracán · Tomás Adolfo Ducó
+LAN  https://upload.wikimedia.org/wikipedia/commons/6/64/Estadio_Lanus.jpg   # Lanús · Ciudad de Lanús
+ARG  https://upload.wikimedia.org/wikipedia/commons/7/75/Estadio_argentinos_juniors.jpg   # Argentinos Juniors · Diego Armando Maradona
+NEW  https://upload.wikimedia.org/wikipedia/commons/2/23/Estadio_Marcelo_Bielsa.jpg   # Newell's Old Boys · Marcelo Bielsa
+BEL  https://upload.wikimedia.org/wikipedia/commons/7/79/Estadio_Club_Atletico_Belgrano_de_C%C3%B2rdoba.jpg   # Belgrano · Julio César Villagra
+DYJ  https://upload.wikimedia.org/wikipedia/commons/4/4b/Estadio_Norberto_Tito_Tomaghello_Panoramica.jpg   # Defensa y Justicia · Norberto Tito Tomaghello
+INS  PEGA_LINK   # Instituto · Juan Domingo Perón
+UNI  https://upload.wikimedia.org/wikipedia/commons/e/ee/Estadio_15_de_Abril.jpg   # Unión · 15 de Abril
+GLP  PEGA_LINK   # Gimnasia (LP) · Juan Carmelo Zerillo
+TUC  PEGA_LINK   # Atlético Tucumán · Monumental José Fierro
+TIG  PEGA_LINK   # Tigre · José Dellagiovanna
+BAN  PEGA_LINK   # Banfield · Florencio Sola
+PLA  PEGA_LINK   # Platense · Ciudad de Vicente López
+CCO  PEGA_LINK   # Central Córdoba (SdE) · Único Madre de Ciudades
+IRV  PEGA_LINK   # Independiente Rivadavia · Bautista Gargantini
+SAR  https://upload.wikimedia.org/wikipedia/commons/9/99/Estadio_Eva_Per%C3%B3n.jpg   # Sarmiento (J) · Eva Perón
+ALD  PEGA_LINK   # Aldosivi · José María Minella
+GME  PEGA_LINK   # Gimnasia (Mza) · Víctor Antonio Legrotaglie
+RIE  PEGA_LINK   # Deportivo Riestra · Guillermo Laza
+ERC  PEGA_LINK   # Estudiantes (RC) · Antonio Candini
+BAR  PEGA_LINK   # Barracas Central · Claudio Chiqui Tapia
 
-# ============================================================
-# @club = ESCUDOS de club → van a img/clubes/<ID>.svg|png
-# ------------------------------------------------------------
-# FUENTE FÁCIL: footylogos.com. El link DIRECTO al archivo sigue este patrón:
-#   pagina:  https://www.footylogos.com/es/logos/<slug>
-#   archivo: https://assets.footylogos.com/logos/<slug>/<slug>-logo-footylogos.svg
-#   ej. Unión La Calera (slug "union-la-calera") → ...union-la-calera/union-la-calera-logo-footylogos.svg
-# Pegá el link de ARCHIVO (termina en .svg). El SVG es liviano y nítido. VERIFICÁ
-# en img/_contacto.html que sea el club correcto antes de dar por bueno.
-# (Primera y Primera B YA tienen escudo; acá están los que faltan: Segunda y Argentina.)
-# ============================================================
+# --- Escudos que hoy son SVG estilizado (no Commons libre) ---
+# FootyLogos 1200.webp (el usuario señaló https://www.footylogos.com/es/logos/union-la-calera).
+# football-logos.cc 1500 PNG cuando FootyLogos no tiene carpeta (UDC, DCO, B, etc.).
+# MARCA DEL CLUB, no CC: no se suben al repo como si fueran libres.
+# fotos_bajar.py salta si ya hay jpg/png/webp/gif; el SVG no bloquea, el PNG queda al lado.
+# Después de bajar: cambiar ESCUDOS_FOTOS de .svg a .webp/.png.
+# NO usar escudos de ciudad/universidad (Iquique, Coquimbo, La Serena, Temuco, UdeC).
+
 @club
-
-# --- Segunda División 2026 ---
-SMO   PEGA_LINK   # Santiago Morning
-LSC   PEGA_LINK   # Lota Schwager
-OSO   PEGA_LINK   # Provincial Osorno
-LIN   PEGA_LINK   # Deportes Linares
-CLC   PEGA_LINK   # Colchagua
-TRA   PEGA_LINK   # Trasandino
-COL   PEGA_LINK   # Atlético Colina
-OVA   PEGA_LINK   # Provincial Ovalle
-CNA   PEGA_LINK   # Concón National
-BSA   PEGA_LINK   # Brujas de Salamanca
-RSJ   PEGA_LINK   # Real San Joaquín
-SCI   PEGA_LINK   # Santiago City
-GVE   PEGA_LINK   # General Velásquez
-REN   PEGA_LINK   # Deportes Rengo
-
-# --- Liga Profesional Argentina 2026 ---
-RIV   PEGA_LINK   # River Plate
-BOC   PEGA_LINK   # Boca Juniors
-RAC   PEGA_LINK   # Racing Club
-IND   PEGA_LINK   # Independiente
-VEL   PEGA_LINK   # Vélez Sarsfield
-SLO   PEGA_LINK   # San Lorenzo
-ELP   PEGA_LINK   # Estudiantes (LP)
-ROS   PEGA_LINK   # Rosario Central
-TAL   PEGA_LINK   # Talleres (C)
-HUR   PEGA_LINK   # Huracán
-LAN   PEGA_LINK   # Lanús
-ARG   PEGA_LINK   # Argentinos Juniors
-NEW   PEGA_LINK   # Newell's Old Boys
-BEL   PEGA_LINK   # Belgrano
-DYJ   PEGA_LINK   # Defensa y Justicia
-INS   PEGA_LINK   # Instituto
-UNI   PEGA_LINK   # Unión
-GLP   PEGA_LINK   # Gimnasia (LP)
-TUC   PEGA_LINK   # Atlético Tucumán
-TIG   PEGA_LINK   # Tigre
-BAN   PEGA_LINK   # Banfield
-PLA   PEGA_LINK   # Platense
-CCO   PEGA_LINK   # Central Córdoba (SdE)
-IRV   PEGA_LINK   # Independiente Rivadavia
-SAR   PEGA_LINK   # Sarmiento (J)
-ALD   PEGA_LINK   # Aldosivi
-GME   PEGA_LINK   # Gimnasia (Mza)
-RIE   PEGA_LINK   # Deportivo Riestra
-ERC   PEGA_LINK   # Estudiantes (RC)
-BAR   PEGA_LINK   # Barracas Central
+LIM  https://assets.footylogos.com/previews/deportes-limache/deportes-limache-logo-footylogos-1200.webp   # Deportes Limache · FootyLogos 1200.webp
+COQ  https://assets.footylogos.com/previews/coquimbo-unido/coquimbo-unido-logo-footylogos-1200.webp   # Coquimbo Unido · FootyLogos 1200.webp
+OHI  https://assets.footylogos.com/previews/ohiggins/ohiggins-logo-footylogos-1200.webp   # O'Higgins · FootyLogos 1200.webp
+COB  https://assets.footylogos.com/previews/cobresal/cobresal-logo-footylogos-1200.webp   # Cobresal · FootyLogos 1200.webp
+LSE  https://assets.footylogos.com/previews/la-serena/la-serena-logo-footylogos-1200.webp   # Deportes La Serena · FootyLogos 1200.webp
+UES  https://assets.footylogos.com/previews/union-espanola/union-espanola-logo-footylogos-1200.webp   # Unión Española · FootyLogos 1200.webp
+IQQ  https://assets.footylogos.com/previews/deportes-iquique/deportes-iquique-logo-footylogos-1200.webp   # Deportes Iquique · FootyLogos 1200.webp
+UDC  https://assets.football-logos.cc/logos/chile/1500x1500/universidad-de-concepcion.b1557c75.png   # U. de Concepción · football-logos.cc 1500 PNG
+ANT  https://assets.football-logos.cc/logos/chile/1500x1500/deportes-antofagasta.f766c5c6.png   # Deportes Antofagasta · football-logos.cc 1500 PNG
+REC  https://assets.football-logos.cc/logos/chile/1500x1500/deportes-recoleta.cb2c4285.png   # Deportes Recoleta · football-logos.cc 1500 PNG
+PMO  https://assets.football-logos.cc/logos/chile/1500x1500/deportes-puerto-montt.86eaf610.png   # Deportes Puerto Montt · football-logos.cc 1500 PNG
+SMA  https://assets.football-logos.cc/logos/chile/1500x1500/san-marcos-de-arica.44e239e2.png   # San Marcos de Arica · football-logos.cc 1500 PNG
+TEM  https://assets.football-logos.cc/logos/chile/1500x1500/deportes-temuco.81e83ac2.png   # Deportes Temuco · football-logos.cc 1500 PNG
+USF  https://assets.football-logos.cc/logos/chile/1500x1500/union-san-felipe.bb338584.png   # Unión San Felipe · football-logos.cc 1500 PNG
+SCR  https://assets.football-logos.cc/logos/chile/1500x1500/deportes-santa-cruz.7d02706b.png   # Deportes Santa Cruz · football-logos.cc 1500 PNG
+CAL  https://upload.wikimedia.org/wikipedia/commons/d/d9/Uni%C3%B3n_La_Calera.png   # Unión La Calera · Commons PD-textlogo (71 KB; Caleraescudo.jpg tiene 9 KB y el script la rechaza)

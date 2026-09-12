@@ -2385,6 +2385,55 @@ También sube a GitHub el paquete 7.86-datos → 7.94 que no había llegado (pla
 - **js/data-planteles-95.js** (nuevo). **Tests:** T24 + T7.86 UI. **util.js:** 7.94 → **7.95**.
 **Probado:** node --check + suite HTTP.
 
+## 7.96 · LINKS Commons + FootyLogos + escudos Segunda
+
+Manifiesto de fotos (Prompt G): cada `url` es el archivo directo (termina en .jpg/.png/.webp), HEAD 200, sin utm, sin páginas de Commons. Chile Primera+B de estadio queda alineado con `img/FUENTES.md`. Nuevos Commons: Ovalle, Colchagua, Gral. Velásquez + Racing, Independiente, Vélez, San Lorenzo, Estudiantes, Central, Talleres, Huracán, Lanús, Argentinos, Newell's, Belgrano, Defensa, Unión, Sarmiento.
+
+Escudos que hoy son SVG estilizado: FootyLogos `assets.footylogos.com/previews/{slug}/{slug}-logo-footylogos-1200.webp` (el script rechaza SVG). UDC y B que FootyLogos no tiene: `assets.football-logos.cc/logos/chile/1500x1500/{slug}.{hash}.png`. Calera: Commons `Unión_La_Calera.png`. Marca del club, no se dumpa al repo.
+
+Segunda: los 14 SVG que ya estaban en `img/clubes/` ahora viven en `ESCUDOS_FOTOS`. AFA 30/30 en `ESCUDOS_CLUB` (colores de camiseta, no el oficial).
+
+- **Tests:** T25. T23/T24 VERSION → regex 7.x. **util.js:** 7.95 → **7.96**.
+**Probado:** node --check + suite HTTP.
+
+## 7.97 · caza: Segunda no es Colo-Colo 1991 + copias
+
+La sección Historia volcaba **Temporada 1991 / Libertadores de Colo-Colo / tabla 1991** a cualquier época que no fuera 2026 o 2026b: Segunda (`2026c`), Argentina, 1925, 2006 y glorias. Un Morning de La Pintana leía al Cacique campeón de América.
+
+- **Historia por club:** `vistaHistoria` arma panel según `eraBase` (Segunda / B / AFA / 1991 / 1925 / 2006 / gloria). La Libertadores 1991 solo si el club es CC. Tabla 1991 solo si el club jugó ese Nacional.
+- **`idClubCanon`:** en 1991 `COB` es Cobreloa → línea/arcos de `CBL`, no los de Cobresal (El Salvador).
+- **Decisiones:** `decisionCabeEnClub` corta Monumental/Macul/La Leonera/ANFP/Libertadores en Segunda y AFA. Bolsa ANFP no sale en Argentina. `textoAjenoClub74` ya no trata el Monumental argentino como el de Macul.
+- **Copias de plantel:** un nombre 2026 no vive en dos clubes; pases Wiki (Palavecino, Fuenzalida, Malcorra…) se quedan en el club documentado.
+- **Tests:** T26. **util.js:** 7.96 → **7.97**. `js/data-caza-97.js` (nuevo, último).
+**Probado:** node --check + suite HTTP.
+
+## 7.98 · Segunda/1925/Limache no heredan Colo-Colo 1991
+
+La caza 7.97 tapó el else de `vistaHistoria`, pero seguían fugas:
+
+- **Limache** vive en `CLUB_INFO` 1991 (el club se fundó en 2010) y el picker lo marcaba clásico '91.
+- **Glorias de Segunda** (Morning 1942, Osorno 1991, etc.) caían a `base=2026` Primera, no a `2026c`.
+- **1925** volcaba `FORMAT_1925.campeon` (Colo-Colo invicto) y el briefing del plantel albo a Magallanes/Audax.
+- **Plop:** la prensa 1991/1925/2006 no estaba etiquetada por club/era.
+- **1925 arcos** genéricos de tele/sponsor/Europa.
+
+Fix: `textoHistoriaAjeno` + filtro de línea; `nuevaPartida` redirige a 2026 si el club no jugó el Nacional 91; picker clásico solo si `clubJugoNacional91`; briefing 1925/2006 según club; `tuitDeCtx` filtra titulares ajenos; arcos 1925 sin anacronismos.
+
+- **js/data-caza-98.js** (nuevo). **Tests:** T27. **util.js:** 7.97 → **7.98**.
+**Probado:** node --check + suite HTTP.
+
+## 7.99 · rigor vs Colo-Colo (planteles de época + UC al día)
+
+Jugar Colo-Colo se siente más real porque tiene **planteles históricos con nombres**, no solo el 2026. Auditoría uno por uno: Primera/B ya estaban en Wiki ≥18; el hueco era **épocas sin squad** y **detalles del 2026**.
+
+- **UC 2026:** Giani pasa a DEL; entran Gómez / Corral / L'Huillier (Wikipedia 14 ago 2026).
+- **UES 2013:** plantel campeón Transición (Sierra) — deja de ser cantera.
+- **SW 2001:** plantel campeón (Garcés / Silvio Fernández / Riveros) — ASIFUCH.
+- Assadi fuera del stub de `data-plantel.js`. Sosa Limache 37. Fundación CC 1925: El Llano.
+- Rasgo mínimo por edad si el array venía `[]`. Capitán/ídolo **no** se inventan.
+- **js/data-planteles-99.js** (nuevo, último). **Tests:** T28. **util.js:** 7.98 → **7.99**.
+- Se conserva el **CAL.svg** de footylogos (7.96 paralelo en GitHub) y el fallback `_escFall` para que un escudo que no carga no desaparezca.
+**Probado:** node --check + suite HTTP 465/465.
 
 
 
@@ -2395,10 +2444,6 @@ También sube a GitHub el paquete 7.86-datos → 7.94 que no había llegado (pla
 
 
 
-## 7.96 · Escudos reales desde footylogos (SVG) + fallback robusto
-- **Fuente footylogos:** verificado el patrón de link DIRECTO (`assets.footylogos.com/logos/<slug>/<slug>-logo-footylogos.svg`). Unión La Calera bajado y puesto como **`img/clubes/CAL.svg`** (escudo rojo actual, vectorial), reemplaza el `CAL.png` azul viejo/dudoso. `ESCUDOS_FOTOS.CAL` → `.svg`.
-- **js/data-escudos.js (fallback robusto):** antes, si un archivo de escudo no cargaba, el `onerror` lo ESCONDÍA (escudo desaparecía). Ahora `_escFall` reemplaza el `<img>` por el escudo **estilizado inline** (o el emoji), nunca hueco. Clave para clubes que aún no tienen archivo.
-- **scripts/fotos_bajar.py:** acepta **SVG** (escudos vectoriales): `url_valida` permite `.svg`, `magia` detecta `<svg`/`<?xml`, y el piso de tamaño baja a 400 bytes para vectores. Al bajar `@club`, emite la línea lista para pegar en `ESCUDOS_FOTOS` (igual que ya hacía con estadios).
-- **img/FOTOS.txt:** nueva sección `@club` con el patrón de footylogos documentado y slots (PEGA_LINK) para los 44 clubes sin escudo (Segunda + Argentina). Pegás links y bajás todo de una.
-- **util.js:** VERSION 7.95 → **7.96**.
-**Probado:** node --check js/*.js + python ast + suite verde + descarga real de La Calera por el pipeline.
+
+
+
