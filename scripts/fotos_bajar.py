@@ -77,12 +77,43 @@ def bajar(url):
         data = r.read()
     return data, ct
 
+def parse_txt(path):
+    """Formato copia-y-pega. Líneas '@estadio' / '@club' / '@periodista' cambian el tipo.
+    Cada otra línea: 'ID  https://...archivo.jpg   # nombre opcional'. Se toma el primer
+    token http como url. Líneas sin http (o con placeholder) se ignoran (aún sin llenar)."""
+    items, tipo = [], "estadio"
+    for raw in open(path, encoding="utf-8"):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("@"):
+            t = line[1:].strip().lower().rstrip("s")   # @estadios -> estadio
+            if t in PLURAL: tipo = t
+            continue
+        # separar el comentario (# nombre) del resto
+        nombre = ""
+        if "#" in line:
+            line, nombre = line.split("#", 1); line = line.strip(); nombre = nombre.strip()
+        toks = line.split()
+        if not toks: continue
+        cid = toks[0]
+        url = next((t for t in toks[1:] if t.lower().startswith("http")), None)
+        if not url:
+            continue   # todavía sin link → se salta
+        items.append({"id": cid, "tipo": tipo, "url": url, "nombre": nombre})
+    return items
+
 def main():
-    man = sys.argv[1] if len(sys.argv) > 1 else os.path.join(RAIZ, "FOTOS.json")
+    man = sys.argv[1] if len(sys.argv) > 1 else os.path.join(RAIZ, "FOTOS.txt")
     if not os.path.exists(man):
-        print("No encontré el manifiesto:", man); print("Creá FOTOS.json (ver FOTOS.example.json).")
+        alt = os.path.join(RAIZ, "img", "FOTOS.txt")
+        if os.path.exists(alt): man = alt
+    if not os.path.exists(man):
+        print("No encontré la lista:", man); print("Usá img/FOTOS.txt (pegá los links) o un FOTOS.json.")
         sys.exit(1)
-    items = json.load(open(man, encoding="utf-8"))
+    items = parse_txt(man) if man.lower().endswith(".txt") else json.load(open(man, encoding="utf-8"))
+    if not items:
+        print("La lista no tiene ningún link todavía. Pegá los links en", man); sys.exit(0)
     ok, mal, saltados, lineas = 0, 0, 0, []
     meta = {}
     for it in items:

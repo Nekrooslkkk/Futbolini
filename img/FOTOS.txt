@@ -1,0 +1,93 @@
+# ================= FOTOS DE ESTADIOS — pega el link y baja todo de una =================
+# COMO: al lado de cada ID, borra 'PEGA_LINK' y pega el LINK DIRECTO a la imagen
+#       (tiene que terminar en .jpg/.png/.webp; el archivo mismo, NO una busqueda).
+# LUEGO: python3 scripts/fotos_bajar.py img/FOTOS.txt   (baja y valida todo)
+#        python3 scripts/fotos_contacto.py             (abri img/_contacto.html y revisa)
+# Lo que dejes en PEGA_LINK se ignora (lo llenas cuando quieras, de a poco).
+# Las lineas con # son comentarios. @estadio / @club cambian el tipo.
+
+@estadio
+
+# --- Primera 2026 ---
+CC    PEGA_LINK   # Colo-Colo · Estadio Monumental
+UCH   PEGA_LINK   # Universidad de Chile · Estadio Nacional
+UC    PEGA_LINK   # Universidad Católica · Claro Arena
+EVE   PEGA_LINK   # Everton · Estadio Sausalito
+PAL   PEGA_LINK   # Palestino · Municipal de La Cisterna
+COQ   PEGA_LINK   # Coquimbo Unido · Estadio Francisco Sánchez R.
+AUD   PEGA_LINK   # Audax Italiano · Estadio La Florida
+HUA   PEGA_LINK   # Huachipato · Estadio CAP
+OHI   PEGA_LINK   # O'Higgins · Estadio El Teniente
+NUB   PEGA_LINK   # Ñublense · Estadio Nelson Oyarzún
+COB   PEGA_LINK   # Cobresal · Estadio El Cobre
+CAL   PEGA_LINK   # Unión La Calera · Estadio Nicolás Chahuán
+LSE   PEGA_LINK   # Deportes La Serena · Estadio La Portada
+DCO   PEGA_LINK   # Deportes Concepción · Estadio Ester Roa
+UDC   PEGA_LINK   # Universidad de Concepción · Estadio Ester Roa
+LIM   PEGA_LINK   # Deportes Limache · Estadio Lucio Fariña
+
+# --- Primera B 2026 ---
+SW    PEGA_LINK   # Santiago Wanderers · Estadio Elías Figueroa Brander
+CBL   PEGA_LINK   # Cobreloa · Estadio Zorros del Desierto
+SLQ   PEGA_LINK   # San Luis de Quillota · Estadio Lucio Fariña Fernández
+ANT   PEGA_LINK   # Deportes Antofagasta · Estadio Regional Calvo y Bascuñán
+MAG   PEGA_LINK   # Deportes Magallanes · Estadio Luis Navarro Avilés
+UES   PEGA_LINK   # Unión Española · Estadio Santa Laura
+REC   PEGA_LINK   # Deportes Recoleta · Estadio Municipal de Recoleta
+PMO   PEGA_LINK   # Deportes Puerto Montt · Estadio Regional de Chinquihue
+SMA   PEGA_LINK   # San Marcos de Arica · Estadio Carlos Dittborn
+COP   PEGA_LINK   # Deportes Copiapó · Estadio Luis Valenzuela Hermosilla
+TEM   PEGA_LINK   # Deportes Temuco · Estadio Germán Becker
+IQQ   PEGA_LINK   # Deportes Iquique · Estadio Tierra de Campeones
+USF   PEGA_LINK   # Unión San Felipe · Estadio Municipal de San Felipe
+CUR   PEGA_LINK   # Curicó Unido · Estadio La Granja
+SCR   PEGA_LINK   # Deportes Santa Cruz · Estadio Municipal Joaquín Muñoz
+RAN   PEGA_LINK   # Rangers de Talca · Estadio Fiscal de Talca
+
+# --- Segunda 2026 ---
+TRA   PEGA_LINK   # Trasandino · Estadio Regional de Los Andes
+COL   PEGA_LINK   # Atlético Colina · Estadio Municipal Manuel Rojas
+OVA   PEGA_LINK   # Provincial Ovalle · Estadio Diaguita
+CNA   PEGA_LINK   # Concón National · Estadio Atlético Municipal
+BSA   PEGA_LINK   # Brujas de Salamanca · Estadio Municipal de Salamanca
+RSJ   PEGA_LINK   # Real San Joaquín · Estadio Municipal de San Joaquín
+SCI   PEGA_LINK   # Santiago City · Estadio Municipal de Lo Barnechea
+SMO   PEGA_LINK   # Santiago Morning · Estadio Municipal de La Pintana
+LSC   PEGA_LINK   # Lota Schwager · Estadio Federico Schwager
+OSO   PEGA_LINK   # Provincial Osorno · Estadio Rubén Marcos Peralta
+LIN   PEGA_LINK   # Deportes Linares · Estadio Fiscal Tucapel Bustamante
+CLC   PEGA_LINK   # Colchagua · Estadio Jorge Silva Valenzuela
+GVE   PEGA_LINK   # General Velásquez · Estadio Municipal Augusto Rodríguez
+REN   PEGA_LINK   # Deportes Rengo · Estadio Municipal Guillermo Guzmán Díaz
+
+# --- Argentina 2026 ---
+RIV   PEGA_LINK   # River Plate · Estadio Mâs Monumental
+BOC   PEGA_LINK   # Boca Juniors · La Bombonera
+RAC   PEGA_LINK   # Racing Club · El Cilindro
+IND   PEGA_LINK   # Independiente · Libertadores de América
+VEL   PEGA_LINK   # Vélez Sarsfield · José Amalfitani
+SLO   PEGA_LINK   # San Lorenzo · Pedro Bidegain
+ELP   PEGA_LINK   # Estudiantes (LP) · Jorge Luis Hirschi
+ROS   PEGA_LINK   # Rosario Central · Gigante de Arroyito
+TAL   PEGA_LINK   # Talleres (C) · Mario Alberto Kempes
+HUR   PEGA_LINK   # Huracán · Tomás Adolfo Ducó
+LAN   PEGA_LINK   # Lanús · Ciudad de Lanús
+ARG   PEGA_LINK   # Argentinos Juniors · Diego Armando Maradona
+NEW   PEGA_LINK   # Newell's Old Boys · Marcelo Bielsa
+BEL   PEGA_LINK   # Belgrano · Julio César Villagra
+DYJ   PEGA_LINK   # Defensa y Justicia · Norberto Tito Tomaghello
+INS   PEGA_LINK   # Instituto · Juan Domingo Perón
+UNI   PEGA_LINK   # Unión · 15 de Abril
+GLP   PEGA_LINK   # Gimnasia (LP) · Juan Carmelo Zerillo
+TUC   PEGA_LINK   # Atlético Tucumán · Monumental José Fierro
+TIG   PEGA_LINK   # Tigre · José Dellagiovanna
+BAN   PEGA_LINK   # Banfield · Florencio Sola
+PLA   PEGA_LINK   # Platense · Ciudad de Vicente López
+CCO   PEGA_LINK   # Central Córdoba (SdE) · Único Madre de Ciudades
+IRV   PEGA_LINK   # Independiente Rivadavia · Bautista Gargantini
+SAR   PEGA_LINK   # Sarmiento (J) · Eva Perón
+ALD   PEGA_LINK   # Aldosivi · José María Minella
+GME   PEGA_LINK   # Gimnasia (Mza) · Víctor Antonio Legrotaglie
+RIE   PEGA_LINK   # Deportivo Riestra · Guillermo Laza
+ERC   PEGA_LINK   # Estudiantes (RC) · Antonio Candini
+BAR   PEGA_LINK   # Barracas Central · Claudio Chiqui Tapia
