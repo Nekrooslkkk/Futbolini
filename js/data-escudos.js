@@ -51,11 +51,25 @@ function escudoHTML(id, px, fallbackEmoji){
   px=px||28;
   var f=typeof ESCUDOS_FOTOS!=="undefined" && ESCUDOS_FOTOS[id];
   if(f&&f.src){
-    return '<img class="esc-img" src="'+f.src+'" width="'+px+'" height="'+px+'" alt="" style="width:'+px+'px;height:'+px+'px;object-fit:contain;display:block" onerror="this.style.display=\'none\'">';
+    /* si el archivo no carga, NO desaparece: cae al escudo estilizado (o emoji). */
+    return '<img class="esc-img" src="'+f.src+'" width="'+px+'" height="'+px+'" alt="" '+
+      'style="width:'+px+'px;height:'+px+'px;object-fit:contain;display:block" '+
+      'onerror="if(window._escFall)_escFall(this,\''+id+'\','+px+',\''+(fallbackEmoji||"").replace(/\x27/g,"")+'\')">';
   }
   var s=escudoSVG(id, px);
   return s || (fallbackEmoji||"");
 }
+/* fallback cuando el archivo de escudo (Commons/footylogos) no carga: reemplaza el <img>
+   por el escudo estilizado inline; si el club no tiene estilizado, deja el emoji o lo esconde. */
+function _escFall(img, id, px, emoji){
+  try{
+    var s=(typeof escudoSVG==="function")?escudoSVG(id, px):"";
+    if(s){ var w=document.createElement("span"); w.innerHTML=s; if(w.firstChild) img.parentNode.replaceChild(w.firstChild, img); else img.style.display="none"; }
+    else if(emoji){ var e=document.createElement("span"); e.textContent=emoji; img.parentNode.replaceChild(e, img); }
+    else img.style.display="none";
+  }catch(e){ try{ img.style.display="none"; }catch(_){ } }
+}
+if(typeof window!=="undefined") window._escFall=_escFall;
 /* escudo chico inline para tablas/calendario (alineado al texto); "" si no hay */
 function escudoChip(id, px){
   px=px||18;
@@ -76,7 +90,7 @@ const ESCUDOS_FOTOS={
   OHI:{src:"img/clubes/OHI.svg",tipo:"estilizado"},
   NUB:{src:"img/clubes/NUB.png",tipo:"commons"},
   COB:{src:"img/clubes/COB.svg",tipo:"estilizado"},
-  CAL:{src:"img/clubes/CAL.png",tipo:"commons"},
+  CAL:{src:"img/clubes/CAL.svg",tipo:"commons"},   /* escudo actual (footylogos), reemplaza el png azul viejo */
   LSE:{src:"img/clubes/LSE.svg",tipo:"estilizado"},
   DCO:{src:"img/clubes/DCO.svg",tipo:"commons"},
   UDC:{src:"img/clubes/UDC.svg",tipo:"estilizado"},

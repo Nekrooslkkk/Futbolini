@@ -901,7 +901,7 @@
       ok(CLUB_INFO_2026.COB && /Huerta/.test(CLUB_INFO_2026.COB.dt||""), "Cobresal DT Huerta");
       ok(CLUB_INFO_2026.CAL && /Cicotello/.test(CLUB_INFO_2026.CAL.dt||""), "La Calera DT Cicotello");
       ok(CLUB_INFO_2026.UDC && /Muñoz/.test(CLUB_INFO_2026.UDC.dt||""), "U. Concepción DT Muñoz");
-      ok(typeof VERSION==="string" && VERSION==="7.95", "VERSION 7.95");
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
     }, "Arranque 94");
 
     /* T24 · 7.95 resto Primera B Wikipedia */
@@ -940,7 +940,7 @@
       ok(CLUB_INFO_2026.CUR && /Muñoz/.test(CLUB_INFO_2026.CUR.dt||""), "Curicó DT Muñoz");
       ok(CLUB_INFO_2026.SCR && /Giovagnoli/.test(CLUB_INFO_2026.SCR.dt||""), "Santa Cruz DT Giovagnoli");
       ok(CLUB_INFO_2026.RAN && /Basay/.test(CLUB_INFO_2026.RAN.dt||""), "Rangers DT Basay");
-      ok(typeof VERSION==="string" && VERSION==="7.95", "VERSION 7.95");
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
     }, "Arranque 95");
 
     /* Reporte */

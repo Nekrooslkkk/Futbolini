@@ -91,3 +91,64 @@ GME   PEGA_LINK   # Gimnasia (Mza) · Víctor Antonio Legrotaglie
 RIE   PEGA_LINK   # Deportivo Riestra · Guillermo Laza
 ERC   PEGA_LINK   # Estudiantes (RC) · Antonio Candini
 BAR   PEGA_LINK   # Barracas Central · Claudio Chiqui Tapia
+
+# ============================================================
+# @club = ESCUDOS de club → van a img/clubes/<ID>.svg|png
+# ------------------------------------------------------------
+# FUENTE FÁCIL: footylogos.com. El link DIRECTO al archivo sigue este patrón:
+#   pagina:  https://www.footylogos.com/es/logos/<slug>
+#   archivo: https://assets.footylogos.com/logos/<slug>/<slug>-logo-footylogos.svg
+#   ej. Unión La Calera (slug "union-la-calera") → ...union-la-calera/union-la-calera-logo-footylogos.svg
+# Pegá el link de ARCHIVO (termina en .svg). El SVG es liviano y nítido. VERIFICÁ
+# en img/_contacto.html que sea el club correcto antes de dar por bueno.
+# (Primera y Primera B YA tienen escudo; acá están los que faltan: Segunda y Argentina.)
+# ============================================================
+@club
+
+# --- Segunda División 2026 ---
+SMO   PEGA_LINK   # Santiago Morning
+LSC   PEGA_LINK   # Lota Schwager
+OSO   PEGA_LINK   # Provincial Osorno
+LIN   PEGA_LINK   # Deportes Linares
+CLC   PEGA_LINK   # Colchagua
+TRA   PEGA_LINK   # Trasandino
+COL   PEGA_LINK   # Atlético Colina
+OVA   PEGA_LINK   # Provincial Ovalle
+CNA   PEGA_LINK   # Concón National
+BSA   PEGA_LINK   # Brujas de Salamanca
+RSJ   PEGA_LINK   # Real San Joaquín
+SCI   PEGA_LINK   # Santiago City
+GVE   PEGA_LINK   # General Velásquez
+REN   PEGA_LINK   # Deportes Rengo
+
+# --- Liga Profesional Argentina 2026 ---
+RIV   PEGA_LINK   # River Plate
+BOC   PEGA_LINK   # Boca Juniors
+RAC   PEGA_LINK   # Racing Club
+IND   PEGA_LINK   # Independiente
+VEL   PEGA_LINK   # Vélez Sarsfield
+SLO   PEGA_LINK   # San Lorenzo
+ELP   PEGA_LINK   # Estudiantes (LP)
+ROS   PEGA_LINK   # Rosario Central
+TAL   PEGA_LINK   # Talleres (C)
+HUR   PEGA_LINK   # Huracán
+LAN   PEGA_LINK   # Lanús
+ARG   PEGA_LINK   # Argentinos Juniors
+NEW   PEGA_LINK   # Newell's Old Boys
+BEL   PEGA_LINK   # Belgrano
+DYJ   PEGA_LINK   # Defensa y Justicia
+INS   PEGA_LINK   # Instituto
+UNI   PEGA_LINK   # Unión
+GLP   PEGA_LINK   # Gimnasia (LP)
+TUC   PEGA_LINK   # Atlético Tucumán
+TIG   PEGA_LINK   # Tigre
+BAN   PEGA_LINK   # Banfield
+PLA   PEGA_LINK   # Platense
+CCO   PEGA_LINK   # Central Córdoba (SdE)
+IRV   PEGA_LINK   # Independiente Rivadavia
+SAR   PEGA_LINK   # Sarmiento (J)
+ALD   PEGA_LINK   # Aldosivi
+GME   PEGA_LINK   # Gimnasia (Mza)
+RIE   PEGA_LINK   # Deportivo Riestra
+ERC   PEGA_LINK   # Estudiantes (RC)
+BAR   PEGA_LINK   # Barracas Central

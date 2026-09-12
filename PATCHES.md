@@ -2395,3 +2395,10 @@ También sube a GitHub el paquete 7.86-datos → 7.94 que no había llegado (pla
 
 
 
+## 7.96 · Escudos reales desde footylogos (SVG) + fallback robusto
+- **Fuente footylogos:** verificado el patrón de link DIRECTO (`assets.footylogos.com/logos/<slug>/<slug>-logo-footylogos.svg`). Unión La Calera bajado y puesto como **`img/clubes/CAL.svg`** (escudo rojo actual, vectorial), reemplaza el `CAL.png` azul viejo/dudoso. `ESCUDOS_FOTOS.CAL` → `.svg`.
+- **js/data-escudos.js (fallback robusto):** antes, si un archivo de escudo no cargaba, el `onerror` lo ESCONDÍA (escudo desaparecía). Ahora `_escFall` reemplaza el `<img>` por el escudo **estilizado inline** (o el emoji), nunca hueco. Clave para clubes que aún no tienen archivo.
+- **scripts/fotos_bajar.py:** acepta **SVG** (escudos vectoriales): `url_valida` permite `.svg`, `magia` detecta `<svg`/`<?xml`, y el piso de tamaño baja a 400 bytes para vectores. Al bajar `@club`, emite la línea lista para pegar en `ESCUDOS_FOTOS` (igual que ya hacía con estadios).
+- **img/FOTOS.txt:** nueva sección `@club` con el patrón de footylogos documentado y slots (PEGA_LINK) para los 44 clubes sin escudo (Segunda + Argentina). Pegás links y bajás todo de una.
+- **util.js:** VERSION 7.95 → **7.96**.
+**Probado:** node --check js/*.js + python ast + suite verde + descarga real de La Calera por el pipeline.

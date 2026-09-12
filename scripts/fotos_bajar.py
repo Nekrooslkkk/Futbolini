@@ -36,7 +36,7 @@ def url_valida(url):
         return False, "no es http(s)"
     # Un archivo real termina en imagen (permitimos ?query después).
     base = low.split("?", 1)[0]
-    if not base.endswith((".jpg", ".jpeg", ".png", ".webp", ".gif")):
+    if not base.endswith((".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg")):
         return False, "la URL no termina en un archivo de imagen (¿es una búsqueda/página?)"
     # Páginas/búsquedas típicas que traen basura: NO son el archivo.
     malos = ["/search", "special:", "/wiki/file:", "/wiki/category:", "google.", "bing.",
@@ -55,6 +55,10 @@ def magia(b):
     if b[:8] == b"\x89PNG\r\n\x1a\n": return "png"
     if b[:4] == b"RIFF" and b[8:12] == b"WEBP": return "webp"
     if b[:4] in (b"GIF8",): return "gif"
+    # SVG = texto; suele venir para ESCUDOS de club (footylogos, Commons). Chequeo simple.
+    head = b[:512].lstrip()
+    if head[:5] == b"<?xml" or head[:4] == b"<svg" or b"<svg" in b[:512].lower():
+        return "svg"
     return None
 
 def _ctx():
@@ -114,7 +118,7 @@ def main():
     items = parse_txt(man) if man.lower().endswith(".txt") else json.load(open(man, encoding="utf-8"))
     if not items:
         print("La lista no tiene ningún link todavía. Pegá los links en", man); sys.exit(0)
-    ok, mal, saltados, lineas = 0, 0, 0, []
+    ok, mal, saltados, lineas, escudos = 0, 0, 0, [], []
     meta = {}
     for it in items:
         cid = it.get("id"); tipo = it.get("tipo"); url = it.get("url")
@@ -139,7 +143,9 @@ def main():
         ext = magia(data)
         if not ext:
             print("  ✗ NO es imagen (¿HTML/redirección?):", cid, "ct=", ct[:40]); mal += 1; continue
-        if len(data) < MIN_BYTES:
+        # los SVG (escudos vectoriales) pesan poco: piso más bajo. Los raster, el de siempre.
+        piso = 400 if ext == "svg" else MIN_BYTES
+        if len(data) < piso:
             print("  ✗ demasiado chica ("+str(len(data))+" bytes), sospechosa:", cid); mal += 1; continue
         path = os.path.join(dest_dir, cid+"."+ext)
         open(path, "wb").write(data)
@@ -149,6 +155,8 @@ def main():
         if tipo == "estadio":
             lineas.append('  %s:{src:"img/estadios/%s.%s",autor:%s,lic:%s},'
                           % (cid, cid, ext, json.dumps(it.get("autor","")), json.dumps(it.get("lic",""))))
+        elif tipo == "club":
+            escudos.append('  %s:{src:"img/clubes/%s.%s",tipo:"commons"},' % (cid, cid, ext))
     # sidecar para que la hoja de contacto muestre el NOMBRE al lado (verificás el sujeto)
     if meta:
         try: json.dump(meta, open(os.path.join(RAIZ, "img", "_fotos_meta.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
@@ -157,6 +165,9 @@ def main():
     if lineas:
         print("\nLíneas listas para data-estadios.js (FOTOS_EST):")
         print("\n".join(lineas))
+    if escudos:
+        print("\nLíneas listas para data-escudos.js (ESCUDOS_FOTOS):")
+        print("\n".join(escudos))
     print("\nAhora: python3 scripts/fotos_contacto.py  → abrí img/_contacto.html y revisá.")
 
 if __name__ == "__main__":
