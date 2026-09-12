@@ -655,6 +655,47 @@ function bloqueStats(P){
     "</div>";
   return cont;
 }
+/* 7.79 · CELEBRACIÓN DE GOL. Detecta un cambio de marcador entre renders (así atrapa
+   TODO gol: jugada, penal, tiro libre) y explota la pantalla una sola vez por gol. */
+function celebrarGolSiCorresponde(P, marcEl){
+  if(!P || P.modo==="simular") return;
+  const tot=P.gl+P.gv;
+  if(P._golPrev===undefined){ P._golPrev=tot; P._glPrev=P.gl; P._gvPrev=P.gv; return; }
+  if(tot>P._golPrev){
+    const propio = P.part.local ? (P.gl>P._glPrev) : (P.gv>P._gvPrev);
+    const quien=(P.goleadores&&P.goleadores.length)?P.goleadores[P.goleadores.length-1]:null;
+    try{ celebrarGol(P, propio, quien, marcEl); }catch(e){}
+  }
+  P._golPrev=tot; P._glPrev=P.gl; P._gvPrev=P.gv;
+}
+function celebrarGol(P, propio, quien, marcEl){
+  /* el marcador late */
+  if(marcEl){ const go=marcEl.querySelector(".go"); if(go){ go.classList.remove("pulso"); void go.offsetWidth; go.classList.add("pulso"); } }
+  const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const perf=document.body.classList.contains("perf");
+  const ov=el("div","gol-cel"+(propio?"":" rival"));
+  const grito=propio?"¡GOOOOL!":"Gol de "+(P.part.rivalNombre||"el rival");
+  const wrap=el("div","wrap",
+    '<div class="big">'+(propio?"⚽ ¡GOOOL!":"GOL "+ (P.part.rivalNombre||"rival"))+'</div>'+
+    (propio&&quien?'<div class="quien">de '+quien+'</div>':(!propio?'<div class="quien">nos empataron la alegría…</div>':''))+
+    '<div class="marc-mini">'+(P.part.local?E.clubNombre:P.part.rivalNombre)+" "+P.gl+" - "+P.gv+" "+(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>');
+  ov.appendChild(wrap);
+  /* confeti (no en modo liviano ni reduce) */
+  if(!perf && !reduce){
+    const cols=propio?["#38d66a","#eaffef","#ffd23f","#4fb0ff"]:["#e8563f","#ffd0c8","#ffffff"];
+    for(let i=0;i<16;i++){
+      const c=el("i");
+      c.style.left=(Math.random()*100)+"vw";
+      c.style.background=cols[i%cols.length];
+      c.style.animationDelay=(Math.random()*0.35)+"s";
+      c.style.transform="translateY(0) rotate("+(Math.random()*180)+"deg)";
+      ov.appendChild(c);
+    }
+  }
+  document.body.appendChild(ov);
+  const dur=(perf||reduce)?1000:1750;
+  setTimeout(()=>{ if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); }, dur);
+}
 function pintarPartido(){
   const P=P_ACTUAL; if(!P) return;
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
@@ -698,6 +739,7 @@ function pintarPartido(){
     '<div class="go">'+P.gl+" - "+P.gv+'</div>'+
     '<div class="eq">'+(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>';
   p.cuerpo.appendChild(marc);
+  celebrarGolSiCorresponde(P, marc);   /* 7.79 · explota la pantalla cuando cae un gol */
   let canchaCv=null;
   const verCancha=!(E.config&&E.config.verCancha===false);
   if(P.modo!=="simular"){

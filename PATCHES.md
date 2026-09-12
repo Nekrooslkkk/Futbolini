@@ -2193,3 +2193,10 @@ Claude promptó el GROK_SUPERPROMPT. Se hornea, no se deja en un .md:
 - **Tests:** +6 (Chile ANFP y sin cambios; arg2026→AFA; localiza ANFP→AFA y Copa Chile→Copa Argentina; resolverTokens localiza en Argentina; de vuelta en Chile intacto). Suite **142/142**.
 - **util.js:** VERSION 7.77 → **7.78**.
 **Probado:** node --check + suite 142/142 verde.
+
+## 7.79 · Animación de GOL en vivo (bakán)
+- **css/gol.css (nuevo) + ui-partido.js:** cuando cae un gol, **explota la pantalla** — overlay a pantalla completa con "⚽ ¡GOOOL!", el **nombre del goleador**, el marcador, **confeti** y el marcador que **late**. Verde para el tuyo, rojo para el del rival.
+- **Detección robusta:** `celebrarGolSiCorresponde` compara el marcador entre renders → atrapa **todo** gol (jugada, penal, tiro libre), una sola vez por gol. El overlay se va solo (~1.75s).
+- **Respeta el modo liviano** (`body.perf`: sin confeti, corta) y `prefers-reduced-motion` (sobrio). No corre en modo simular. Verificado con dump de geometría (overlay 990×633, z-index 220, texto "⚽ ¡GOOOL!") + captura.
+- **util.js:** VERSION 7.78 → **7.79**.
+**Probado:** node --check + suite 142/142 verde (UI, no toca la simulación).

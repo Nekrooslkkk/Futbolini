@@ -1,0 +1,53 @@
+/* ============================================================
+   FUTBOLINI · gol.css  (7.79)
+   Animación de GOL en vivo: cuando la mandás adentro, explota la pantalla.
+   Respeta modo liviano (body.perf) y prefers-reduced-motion (más sobrio).
+   ============================================================ */
+.gol-cel{
+  position:fixed; inset:0; z-index:220; display:grid; place-items:center;
+  pointer-events:none; overflow:hidden;
+  background:radial-gradient(circle at 50% 42%, rgba(30,140,70,.42), rgba(0,0,0,.32));
+  animation:golFade 1.8s ease forwards;
+}
+.gol-cel.rival{ background:radial-gradient(circle at 50% 42%, rgba(140,35,35,.42), rgba(0,0,0,.36)); }
+.gol-cel .wrap{ text-align:center; z-index:2; }
+.gol-cel .big{
+  font-family:var(--f-titulo,system-ui); font-weight:900; letter-spacing:2px; line-height:.95;
+  font-size:clamp(52px,14vw,150px); color:#fff;
+  text-shadow:0 5px 0 rgba(0,0,0,.22), 0 0 34px rgba(120,255,170,.75);
+  animation:golPop .55s cubic-bezier(.2,1.5,.3,1) both;
+}
+.gol-cel.rival .big{ text-shadow:0 5px 0 rgba(0,0,0,.22), 0 0 34px rgba(255,150,150,.75); }
+.gol-cel .quien{
+  margin-top:8px; font-family:var(--f-titulo,system-ui); font-weight:800;
+  font-size:clamp(17px,4.6vw,32px); color:#eafff0; text-shadow:0 2px 8px rgba(0,0,0,.55);
+  animation:golSub .5s .12s ease both;
+}
+.gol-cel.rival .quien{ color:#ffe9e9; }
+.gol-cel .marc-mini{
+  margin-top:4px; font-family:var(--f-dato,monospace); font-weight:700;
+  font-size:clamp(14px,3.4vw,22px); color:rgba(255,255,255,.9);
+  animation:golSub .5s .18s ease both;
+}
+.gol-cel i{
+  position:absolute; top:-16px; width:9px; height:14px; border-radius:2px; opacity:.95;
+  animation:golConf 1.7s linear forwards;
+}
+@keyframes golPop{ 0%{transform:scale(.3) rotate(-7deg);opacity:0} 58%{transform:scale(1.1) rotate(2deg);opacity:1} 100%{transform:scale(1) rotate(0)} }
+@keyframes golSub{ from{transform:translateY(16px);opacity:0} to{transform:none;opacity:1} }
+@keyframes golFade{ 0%{opacity:0} 7%{opacity:1} 78%{opacity:1} 100%{opacity:0} }
+@keyframes golConf{ to{ transform:translateY(112vh) rotate(760deg); } }
+
+/* el marcador late cuando cae un gol */
+.marcador .go.pulso{ animation:goPulso .6s ease; }
+@keyframes goPulso{ 0%{transform:scale(1)} 30%{transform:scale(1.28)} 100%{transform:scale(1)} }
+
+/* modo liviano / reduce: sin confeti, animación corta y sobria */
+body.perf .gol-cel i{ display:none; }
+body.perf .gol-cel{ animation-duration:1s; }
+body.perf .gol-cel .big{ animation:none; }
+@media (prefers-reduced-motion:reduce){
+  .gol-cel i{ display:none; }
+  .gol-cel .big,.gol-cel .quien,.gol-cel .marc-mini{ animation:none; }
+  .marcador .go.pulso{ animation:none; }
+}
