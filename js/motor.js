@@ -43,13 +43,13 @@ const CLUB_INFO={
 
 /* ---------- época 2026 (datos APROXIMADOS, verificar) ---------- */
 const CLUB_INFO_2026={
- CC:{n:"Colo-Colo",esc:"⚪",est:"Estadio Monumental",dt:"el cuerpo técnico",
+ CC:{n:"Colo-Colo",esc:"⚪",est:"Estadio Monumental",dt:"Fernando Ortiz",
   desc:"El club más popular de Chile en la era de las sociedades anónimas. Plantel caro, hinchada enorme y una deuda que siempre ronda."},
  UCH:{n:"Universidad de Chile",esc:"🔵",est:"Estadio Nacional (arrendado)",dt:"Fernando Gago",
   desc:"Volvió a pelear arriba tras años irregulares. Masa social gigante y todavía sin estadio propio."},
  UC:{n:"Universidad Católica",esc:"🔷",est:"Claro Arena",dt:"Daniel Garnero",
   desc:"Estrena estadio propio y arrastra una camada ganadora. Administración ordenada y cantera fuerte."},
- PAL:{n:"Palestino",esc:"🟩",est:"Municipal de La Cisterna",dt:"el cuerpo técnico",
+ PAL:{n:"Palestino",esc:"🟩",est:"Municipal de La Cisterna",dt:"Guillermo Farré",
   desc:"Club de colonia, competitivo y con buena formación, siempre peleando con presupuesto acotado."},
  LIM:{n:"Deportes Limache",esc:"🟨",est:"Estadio Lucio Fariña",dt:"Víctor Rivero",
   desc:"Recién ascendido a Primera. El objetivo es claro: aguantar la categoría y no morir en el intento."}

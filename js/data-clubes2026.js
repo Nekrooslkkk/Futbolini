@@ -14,7 +14,7 @@
   if(typeof CLUB_INFO_2026!=="undefined") Object.assign(CLUB_INFO_2026,{
     EVE:{n:"Everton de Viña del Mar",esc:"🟡",est:"Sausalito",dt:"Walter Ribonetto",desc:"Club de Viña, de Sausalito y de temporada larga. Cuando el verano se va, el estadio se vacía y el trabajo se pone serio."},
     COQ:{n:"Coquimbo Unido",esc:"🟡",est:"Francisco Sánchez Rumoroso",dt:"Hernán Caputto",desc:"Puerto, pecho y un título reciente que todavía pesa. El norte no perdona si se aflojan."},
-    AUD:{n:"Audax Italiano",esc:"🟢",est:"Bicentenario de La Florida",dt:"el cuerpo técnico",desc:"La Florida, colonia italiana y tabla del medio. Club de barrio que a veces se ilusiona de más."},
+    AUD:{n:"Audax Italiano",esc:"🟢",est:"Bicentenario de La Florida",dt:"Patricio Graff",desc:"La Florida, colonia italiana y tabla del medio. Club de barrio que a veces se ilusiona de más."},
     HUA:{n:"Huachipato",esc:"⚫",est:"Huachipato-CAP Acero",dt:"Jaime García",desc:"Acero de Talcahuano. Forma, vende y pelea con lo que tiene. El CAP no es adorno."},
     OHI:{n:"O'Higgins",esc:"🟢",est:"El Teniente",dt:"Lucas Bovaglio",desc:"Rancagua, cobre y ganas de no ser sucursal de Santiago. Cuando se ordena, incomoda."},
     NUB:{n:"Ñublense",esc:"🔴",est:"Nelson Oyarzún Arenas",dt:"Juan José Ribera",desc:"El rojo de Chillán. Frío, región y poca vitrina. Si se llena el Oyarzún, duele jugar ahí."},
@@ -22,7 +22,7 @@
     CAL:{n:"Unión La Calera",esc:"🔴",est:"Nicolás Chahuán Nazar",dt:"Martín Cicotello",desc:"Pueblo chico, estadio chico. Saca puntos feos o se hunde sin hacer ruido."},
     LSE:{n:"Deportes La Serena",esc:"🔴",est:"La Portada",dt:"Felipe Gutiérrez",desc:"Postal de playa y yo-yo de categoría. La gente pide que deje de ser solo veraneo."},
     DCO:{n:"Deportes Concepción",esc:"🟣",est:"Ester Roa Rebolledo",dt:"Fernando Díaz",desc:"El León de Collao volvió a Primera. Historia, gente y el miedo a volver a caer."},
-    UDC:{n:"Universidad de Concepción",esc:"🟡",est:"Ester Roa Rebolledo",dt:"el cuerpo técnico",desc:"El Campanil. Universidad, cantera y un regreso que todavía se está acomodando."}
+    UDC:{n:"Universidad de Concepción",esc:"🟡",est:"Ester Roa Rebolledo",dt:"Cristián Muñoz",desc:"El Campanil. Universidad, cantera y un regreso que todavía se está acomodando."}
   });
   /* 2 · indicadores base */
   if(typeof IND_BASE_2026!=="undefined") Object.assign(IND_BASE_2026,{

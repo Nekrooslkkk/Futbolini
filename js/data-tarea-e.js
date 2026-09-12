@@ -688,3 +688,206 @@ const PRENSA_TAREA_E=[
   };
   vistaEscritorio._sit84=true;
 })();
+
+/* ============================================================
+   7.86 · lo que TAREA E todavía tenía hueco (auditoría en vivo)
+   · E-3 River/Boca con caja de Segunda (registrarLiga _cajaDeFuerza)
+   · E-8 ESTADIOS_DATA solo cubría Primera
+   · E-2 clásicos que seguían huérfanos (OHI, NUB, clásico mendocino…)
+   · E-11/13 9 argentinos sin botón dorado
+   · E-7 FORMAT_CHILE_LINEA no se aplicaba al pasar de año
+   · E-12 trivia con VAR en 1925
+   Planteles Segunda/Argentina: SIGUEN sin inventarse.
+   ============================================================ */
+
+const CAJA_ARG_86={
+  RIV:{plata:1800,deuda:900}, BOC:{plata:1700,deuda:880},
+  RAC:{plata:950,deuda:420}, IND:{plata:900,deuda:450},
+  VEL:{plata:850,deuda:380}, SLO:{plata:800,deuda:400},
+  ELP:{plata:720,deuda:320}, ROS:{plata:680,deuda:300},
+  NEW:{plata:650,deuda:290}, TAL:{plata:720,deuda:340},
+  HUR:{plata:600,deuda:280}, LAN:{plata:620,deuda:270},
+  ARG:{plata:580,deuda:250}, GLP:{plata:500,deuda:240},
+  BEL:{plata:520,deuda:230}, DYJ:{plata:480,deuda:200},
+  INS:{plata:420,deuda:180}, UNI:{plata:400,deuda:170},
+  TUC:{plata:380,deuda:160}, TIG:{plata:360,deuda:170},
+  BAN:{plata:450,deuda:190}, PLA:{plata:340,deuda:150},
+  CCO:{plata:320,deuda:140}, IRV:{plata:300,deuda:130},
+  SAR:{plata:280,deuda:120}, ALD:{plata:300,deuda:140},
+  GME:{plata:260,deuda:110}, RIE:{plata:180,deuda:80},
+  ERC:{plata:240,deuda:100}, BAR:{plata:220,deuda:90}
+};
+const IND_ARG_86={
+  RIV:{hinchada:95,socios:88,estadio:95,prestigio:94,plantel:86,moral:70,cantera:78,riesgo:22},
+  BOC:{hinchada:96,socios:86,estadio:90,prestigio:93,plantel:84,moral:68,cantera:72,riesgo:24},
+  RAC:{hinchada:82,socios:70,estadio:84,prestigio:82,plantel:80},
+  IND:{hinchada:84,socios:68,estadio:82,prestigio:84,plantel:78},
+  VEL:{hinchada:76,socios:62,estadio:80,prestigio:80,plantel:77},
+  SLO:{hinchada:80,socios:64,estadio:76,prestigio:80,plantel:76}
+};
+(function economiaArg86(){
+  if(typeof CAJA_BASE_2026==="object"){
+    Object.keys(CAJA_ARG_86).forEach(function(id){
+      CAJA_BASE_2026[id]=Object.assign({}, CAJA_BASE_2026[id]||{}, CAJA_ARG_86[id]);
+    });
+  }
+  if(typeof IND_BASE_2026==="object"){
+    Object.keys(IND_ARG_86).forEach(function(id){
+      IND_BASE_2026[id]=Object.assign({}, IND_BASE_2026[id]||{}, IND_ARG_86[id]);
+    });
+  }
+})();
+
+const RIVALIDADES_86=[
+  ["DCO","FV"],   /* clásico penquista tradicional (Vial es 1991) */
+  ["OHI","RAN"],  /* O'Higgins–Rangers, región */
+  ["NUB","TEM"],  /* Ñuble–Araucanía */
+  ["GME","IRV"],  /* clásico mendocino */
+  ["ARG","PLA"],  /* Paternal–Vicente López */
+  ["TIG","PLA"],  /* zona norte GBA */
+  ["INS","TAL"]   /* Córdoba: Instituto–Talleres */
+];
+(function rivales86(){
+  if(typeof RIVALIDADES_2026==="undefined") return;
+  RIVALIDADES_86.forEach(function(par){
+    var hay=RIVALIDADES_2026.some(function(p){
+      return (p[0]===par[0]&&p[1]===par[1])||(p[0]===par[1]&&p[1]===par[0]);
+    });
+    if(!hay) RIVALIDADES_2026.push(par);
+  });
+})();
+
+const EPOCAS_86={
+  INS:[{anio:2022,etq:"2022 · La Gloria vuelve",
+    desc:"Instituto asciende a Primera 2022. Córdoba, cantera. (Plantel: cantera.)",
+    dt:"el cuerpo técnico",
+    ind:{plantel:66,moral:80,hinchada:74,socios:44,cantera:58,estadio:60,prestigio:56,riesgo:30},
+    caja:{plata:200,deuda:90}}],
+  UNI:[{anio:2019,etq:"2019 · Sudamericana",
+    desc:"Unión de Santa Fe en copa. El Tatengue incomoda. (Plantel: cantera.)",
+    dt:"el cuerpo técnico",
+    ind:{plantel:70,moral:76,hinchada:72,socios:46,cantera:50,estadio:58,prestigio:60,riesgo:28},
+    caja:{plata:220,deuda:100}}],
+  TIG:[{anio:2019,etq:"2019 · Copa de la Superliga",
+    desc:"Tigre campeón de la Copa de la Superliga 2019. (Plantel: cantera.)",
+    dt:"Néstor Gorosito",
+    ind:{plantel:74,moral:84,hinchada:76,socios:48,cantera:50,estadio:62,prestigio:68,riesgo:24},
+    caja:{plata:260,deuda:110}}],
+  PLA:[{anio:2021,etq:"2021 · El Calamar vuelve",
+    desc:"Platense asciende a Primera 2021, 22 años después. (Plantel: cantera.)",
+    dt:"el cuerpo técnico",
+    ind:{plantel:64,moral:80,hinchada:70,socios:40,cantera:46,estadio:54,prestigio:52,riesgo:32},
+    caja:{plata:180,deuda:80}}],
+  CCO:[{anio:2019,etq:"2019 · Primera vez",
+    desc:"Central Córdoba (SdE) llega a Primera. (Plantel: cantera.)",
+    dt:"el cuerpo técnico",
+    ind:{plantel:62,moral:78,hinchada:68,socios:36,cantera:42,estadio:70,prestigio:50,riesgo:32},
+    caja:{plata:160,deuda:70}}],
+  IRV:[{anio:2023,etq:"2023 · La Lepra en Primera",
+    desc:"Independiente Rivadavia asciende a Primera 2023. Mendoza. (Plantel: cantera.)",
+    dt:"el cuerpo técnico",
+    ind:{plantel:64,moral:80,hinchada:72,socios:40,cantera:44,estadio:56,prestigio:52,riesgo:30},
+    caja:{plata:170,deuda:75}}],
+  SAR:[{anio:2021,etq:"2021 · El Verde en Primera",
+    desc:"Sarmiento de Junín se afirma en Primera. (Plantel: cantera.)",
+    dt:"el cuerpo técnico",
+    ind:{plantel:62,moral:76,hinchada:66,socios:36,cantera:42,estadio:50,prestigio:48,riesgo:32},
+    caja:{plata:150,deuda:70}}],
+  ALD:[{anio:2015,etq:"2015 · El Tiburón en honor",
+    desc:"Aldosivi en Primera. Mar del Plata, verano y distancia. (Plantel: cantera.)",
+    dt:"el cuerpo técnico",
+    ind:{plantel:64,moral:74,hinchada:68,socios:38,cantera:42,estadio:66,prestigio:50,riesgo:32},
+    caja:{plata:170,deuda:80}}],
+  BAR:[{anio:2022,etq:"2022 · El Guapo en Primera",
+    desc:"Barracas Central llega a Primera 2022. La Ribera. (Plantel: cantera.)",
+    dt:"el cuerpo técnico",
+    ind:{plantel:60,moral:76,hinchada:58,socios:32,cantera:40,estadio:36,prestigio:46,riesgo:34},
+    caja:{plata:140,deuda:60}}]
+};
+(function epocas86(){
+  if(typeof EPOCAS_CLUB!=="object") return;
+  Object.keys(EPOCAS_86).forEach(function(id){
+    var add=EPOCAS_86[id]||[];
+    var cur=EPOCAS_CLUB[id]||[];
+    add.forEach(function(ep){
+      if(!cur.some(function(x){ return x.anio===ep.anio; })) cur.push(ep);
+    });
+    EPOCAS_CLUB[id]=cur;
+  });
+})();
+
+/* E-8 · ESTADIOS_DATA para B / Segunda / Argentina (nombre+aforo del array de liga).
+   Sectores genéricos marcados como aproximación. No se inventa el estadio. */
+(function estadios86(){
+  if(typeof ESTADIOS_DATA!=="object") return;
+  function gen(aforo){
+    var p=Math.max(4000, Math.round((aforo||10000)/15)*100);
+    return [
+      {n:"Popular", tipo:"popular", cuota:0.40, precio:p},
+      {n:"Tribuna", tipo:"tribuna", cuota:0.40, precio:p*2},
+      {n:"Preferencial", tipo:"premium", cuota:0.20, precio:p*4}
+    ];
+  }
+  function carga(arr){
+    if(!arr) return;
+    arr.forEach(function(c){
+      if(!c||!c.id) return;
+      if(ESTADIOS_DATA[c.id]){
+        if(c.aforo && !ESTADIOS_DATA[c.id].aforo) ESTADIOS_DATA[c.id].aforo=c.aforo;
+        return;
+      }
+      ESTADIOS_DATA[c.id]={
+        nombre:c.est||("Estadio de "+(c.ciudad||c.n)),
+        aforo:c.aforo||8000,
+        aproximado:true,
+        sectores:gen(c.aforo)
+      };
+    });
+  }
+  if(typeof LIGA_B_2026!=="undefined") carga(LIGA_B_2026);
+  if(typeof LIGA_C_2026!=="undefined") carga(LIGA_C_2026);
+  if(typeof LIGA_ARG_2026!=="undefined") carga(LIGA_ARG_2026);
+})();
+
+/* E-7 · al pasar de año, los pts de la línea real (1995=3, 1991=2). El n de clubes
+   lo arma Claude: cambiar el tamaño de la liga rompe tablas. */
+(function wrapFormato86(){
+  if(typeof nuevoAnio!=="function" || nuevoAnio._e86) return;
+  var orig=nuevoAnio;
+  nuevoAnio=function(){
+    orig();
+    try{
+      if(!E || typeof FORMAT_CHILE_LINEA==="undefined") return;
+      if(!(E.eraBase===2026||E.eraBase===1991||E.eraBase===2006)) return;
+      var f=null;
+      FORMAT_CHILE_LINEA.forEach(function(x){ if(x.anio<=E.anio) f=x; });
+      if(f && typeof ERA==="object" && ERA[E.eraBase] && f.pts)
+        ERA[E.eraBase].puntosVictoria=f.pts;
+    }catch(e){}
+  };
+  nuevoAnio._e86=true;
+})();
+
+/* E-12 · en 1925 el VAR no existe: se saca de la trivia. */
+(function trivia1925(){
+  if(typeof TRIVIA_FUT==="undefined" || !Array.isArray(TRIVIA_FUT)) return;
+  if(typeof nuevaPartida!=="function" || nuevaPartida._e86triv) return;
+  var ORIG=TRIVIA_FUT.slice();
+  var orig=nuevaPartida;
+  nuevaPartida=function(club, year, modo, extra){
+    var r=orig(club, year, modo, extra);
+    try{
+      var src=ORIG;
+      if(E && E.eraBase===1925){
+        src=ORIG.filter(function(t){
+          var q=(t.q||"")+" "+(t.op||[]).join(" ");
+          return !/VAR|Cinco|Libertadores/i.test(q);
+        });
+      }
+      TRIVIA_FUT.length=0;
+      src.forEach(function(t){ TRIVIA_FUT.push(t); });
+    }catch(e){}
+    return r;
+  };
+  nuevaPartida._e86triv=true;
+})();

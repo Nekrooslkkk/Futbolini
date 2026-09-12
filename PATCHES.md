@@ -2230,49 +2230,168 @@ Claude avanzó 7.78–7.80 (federación por país, gol en vivo, celular). El 7.7
 - **util.js:** VERSION 7.81 → **7.82**.
 **Probado:** node --check + suite 179/179 verde + captura del Escritorio 1925.
 
-## 7.83 · UI de época dorada (oro) consistente para todos + super prompt de verificación
-- **Bug reportado:** el 2011 de la U salía en **oro** (época de gloria) pero el 1991 de Colo-Colo (Libertadores) no, aunque es su mayor gloria. Causa: el estilo dorado (`.ficha-gloria`) solo se aplicaba a épocas `tipo:"gloria"` (las de `EPOCAS_CLUB`); las épocas **base** nunca eran doradas, aunque fueran el hito máximo del club.
-- **js/ui.js:** un punto base ahora puede marcarse `gloria:true` y recibir el mismo tratamiento oro. Se marcó el `cc91` de Colo-Colo (`1991 · La Gloria (Libertadores)`). El botón usa `esOro=(pt.tipo==="gloria"||pt.gloria)`. UI idéntica para todos: la gloria de cada club sale en oro sin importar si es era base o época sumada.
-- **GROK_SUPERPROMPT.md:** nueva **TAREA E — verificación integral por equipo** (el barrido pre-8.0): problema/situación por club, clásico correcto y variado, economías realistas, planteles/canteranos/sponsors, calendarios **por cada copa**, fixtures de los equipos IA, simulación posterior con cambios de regla "que aprueba la ANFP" (línea de tiempo real), estadios (aforo/arriendo/nombre/precios), historia para todos **incl. Argentina**, más realismo en el Plop!, **modos históricos para todos incl. Segunda**, 1925 sin nada moderno, y las épocas doradas faltantes por club (dato que Grok debe completar).
-- **util.js:** VERSION 7.82 → **7.83**.
-**Probado:** node --check js/*.js + suite 179/179 verde.
+## 7.83 · GROK_SUPERPROMPT huecos (caza + formato + DTs + fotos)
+Claude sigue en otras cosas (epoca-intro / gol / móvil / federación). El SUPERPROMPT
+de GitHub no cambió de bytes; los huecos que quedaban de A/B y GROK_TAREAS 2/3 sí.
 
-## 7.83b · Blindaje del selector de época (test de regresión para lo que traiga Grok)
-- **test/pruebas_core.js:** grupo T13. Antes de abrir ningún modal, recorre TODOS los clubes y (1) replica la resolución de era de `elegirEpoca`/`datosPunto` para cada **época de gloria** (`EPOCAS_CLUB` + lo que sume Grok con `EPOCAS_CLUB_ADD`), verificando que ninguna caiga en "Club sin datos"; (2) verifica que todo club **elegible** (el mismo set que arma el picker de inicio: core 1991 + Primera 2026 + B + C + Argentina) resuelva en alguna era. Así, cuando Grok agregue glorias/modos históricos o clubes nuevos, un olvido de `CLUB_INFO_2026` salta en el test y no en la cara del jugador.
-- De paso confirmó que Fernández Vial (FV) es **solo rival** del calendario 91 (no manejable), correctamente fuera del set elegible.
-- **Tests:** +4 (helpers, N clubes, glorias resuelven, elegibles resuelven). Suite **183/183**.
-**Probado:** node --check js/*.js + suite 183/183 verde.
+- **`js/data-superprompt-83.js` (nuevo):** `FORMAT_SEGUNDA_2026` (3+3+4°s → liguillas de 7),
+  `FORMAT_SUPERCOPA_2026` (Final Four, Coquimbo campeón 8-7p), `FORMAT_COPA_LIGA_2026`
+  (confirma que **sí existe**, grupos iguales a `COPA_LIGA_GRUPOS_2026`), DTs de Primera
+  vigentes, caza de HISTORIA_LINEA.
+- **Caza:** CC 1925 ya no dice «fusión de clubes escolares» (El Llano / Magallanes /
+  Arellano). Monumental 1975+1989, no 1973. San Carlos 1988, no 1997. «Atendé» → «Atiende».
+- **DTs 2026** que eran «el cuerpo técnico»: Ortiz (CC), Farré (PAL), Graff (AUD),
+  Muñoz (UDC). IIFE + fuente en `motor.js` / `data-clubes2026.js`.
+- **`img/FOTOS.txt`:** URLs Commons directas (de `FOTOS.json`) en CC, UCH, EVE, UES,
+  OHI, COQ, HUA, COB, NUB, BOC, RIV. El resto sigue PEGA_LINK. No se inventan fotos.
+- **`REGLAS.md`:** Segunda 3+3+4°s, Copa de la Liga 2026 (1ª edición), Supercopa Final Four.
+- **No se inventan** planteles de Segunda ni de Argentina.
+- **Tests:** T13. **util.js:** 7.82 → **7.83**.
+**Probado:** node --check + suite HTTP **202/202**.
 
-## 7.84 · Cancha pixel v2 (estela, red que vibra, arquero que reacciona)
-- **js/cancha.js:** tres detalles pixel-art en la cancha del partido, todos dentro del buffer de baja resolución (siguen viéndose chunky al escalar):
-  1. **Estela corta de la pelota:** guarda las últimas 5 posiciones (`st.trail`) y las dibuja como una cola blanca que se desvanece detrás de la pelota.
-  2. **Red que vibra en el gol:** cada arco tiene una malla tenue (patrón de rombos); cuando entra un gol en ese arco (`st.redVibra`/`st.redLado`), la red de ESE lado se pone blanca y tiembla ±1px por ~0.8s. La del otro arco queda quieta.
-  3. **Arquero que se estira:** en el gol, el arquero del arco atacado se mueve hacia la `y` de la pelota (reacción tardía), y el easing normal lo devuelve a su lugar.
-- Respeta `prefers-reduced-motion` (la cancha ya hacía un solo frame estático en ese caso).
-- Cierra el ítem **Cancha pixel v2** de IDEAS.md.
-- **util.js:** VERSION 7.83 → **7.84**.
-**Probado:** node --check + suite 183/183 verde + captura headless del gol (red derecha vibrando en blanco, malla izquierda tenue, arquero reaccionando).
+## 7.84 · GROK_SUPERPROMPT TAREA E horneada (barrido pre-8.0)
 
-## 7.83 · GROK_SUPERPROMPT huecos (caza + formato + DTs) — llega ahora
-Archivo `js/data-superprompt-83.js` (no estaba en GitHub). DTs Primera 2026 (Ortiz, Farré, Graff, Muñoz),
-FORMAT Segunda 3+3+4°s, Supercopa Final Four (Coquimbo campeón), Copa de la Liga SÍ existe.
-Caza HISTORIA: CC 1925 El Llano (no fusión escolar), Monumental 1975, San Carlos 1988. Atiende (no Atendé).
+Claude escribió la TAREA E en `GROK_SUPERPROMPT.md`. Se hornea, no se deja de prompt.
 
-## 7.85 · TAREA E llena (clásicos, oro, historia AFA) + merge 7.84 Claude
-Claude ocupó 7.84 (cancha pixel). TAREA E se suma encima, sin pisar cancha.js ni el T13b.
+- **E-2 clásicos variados:** `RIVALIDADES_TAREA_E` — Porteño (SW–EVE), Norte (CBL–ANT), Iquique–San Marcos, Magallanes–Morning, Rangers–Curicó, colonias (UES–PAL/AUD), minero (CBL–COB), Superclásico (BOC–RIV), Avellaneda (RAC–IND), Rosario, La Plata, Córdoba. **No todos vs Colo-Colo.**
+- **E-13 / E-11 oro:** épocas que faltaban, hito **real**, plantel = cantera (no se inventan nombres). Everton 2008, Audax 2007, Morning 1942, Lota 1969, Velásquez 2017, City 2024, Colina 2025, River 2018, Boca 2007, Racing 1967, Independiente 1984, etc. Colo-Colo 1991 ya sale en **oro** (`gloria:true` en el picker).
+- **E-9 historia:** `HISTORIA_LINEA` de los 30 argentinos + Segunda que estaba solo en «Hoy» (Ovalle 1942, Concón 1914, Velásquez 1908, Rengo 1984, Colina 2014…).
+- **E-1 situación:** `SITUACION_CLUB` en el Escritorio 2026 (qué estás haciendo con ese club). En 1925/2006 no pisa el intro de época.
+- **E-7 formatos:** línea 2009→2026 (18 clubes, transición 2013, anual 2018, COVID 2020, Liga 2023/2026).
+- **E-3 caja Segunda:** tope para que no parezcan un grande. Aproximado.
+- **E-8:** Osorno 12.000→11.000 (Rubén Marcos Peralta).
+- **E-12:** 1925 sigue sin redes/mercado; se marcan bolsa/casino y `var:false`.
+- **E-4 planteles 2026 Segunda/Argentina:** **no se inventan.**
+- **Tests:** T14. **util.js:** 7.83 → **7.84**.
+**Probado:** node --check + suite HTTP.
 
-- Clásicos variados (Porteño, Norte, Superclásico, Avellaneda…). No todos vs Colo-Colo.
-- Épocas doradas que faltaban (Everton 2008, Audax 2007, Morning 1942, River 2018, Boca 2007, Defensa 2020…). Plantel = cantera.
-- HISTORIA de los 30 argentinos + Segunda. SITUACION_CLUB de todos los jugables.
-- Línea de formatos Chile 2009→2026. FOTOS: SCR/SCI/RSJ/BSA/CNA = SIN_FOTO.
-- Tests: T13 Grok + T13b Claude + T14. util.js 7.84 → **7.85**.
-**Probado:** node --check + suite HTTP **230/230**.
+## 7.85 · TAREA E llena + merge con 7.84 de Claude (cancha pixel)
 
-## 7.86 · Cableado de SITUACION_CLUB a la UI (Grok la trajo, no la mostraba nadie)
-- Grok horneó `SITUACION_CLUB` (76 clubes: el "por qué juego a esto" de TAREA E-1) pero **ningún código la leía** — era data huérfana. La conecté en dos puntos:
-  1. **Escritorio (`js/ui.js` vistaEscritorio):** tarjeta compacta **"El club hoy" 🎯** arriba de la columna derecha con la situación del club elegido. Solo si hay dato.
-  2. **Briefing de elección (`elegirEpoca`):** línea **"La situación:"** bajo los indicadores, para que sepas en qué te metés antes de arrancar.
-- Ambos guardados con `typeof SITUACION_CLUB==="object"` → si el archivo no está, no rompe.
-- **test/pruebas_core.js:** grupo nuevo (7.86) que renderiza el escritorio y verifica que el panel "El club hoy" aparece con la situación real, para CC (Primera) y S. Morning (Segunda). Cobertura ≥40 clubes.
-- **util.js:** VERSION 7.85 → **7.86**.
-**Probado:** node --check + suite **234/234** verde.
+Claude ocupó **7.84** en GitHub (cancha: estela, red que vibra, arquero). El barrido TAREA E local que era 7.84 pasa a **7.85**, sin pisar `cancha.js`.
+
+- Se conserva **cancha pixel v2** y el **T13b** del selector de época (7.83b): ninguna gloria cae en «Club sin datos».
+- **TAREA E llena:** `SITUACION_CLUB` de todos los clubes jugables (Primera, B, Segunda, 30 AFA). Épocas doradas argentinas que faltaban (Defensa 2020, Argentinos 1985, Lanús 2013, Newell's 1974, Central 1987, Huracán 1973, Banfield 2009, Belgrano 2022, etc.). Plantel = cantera.
+- **7.83 Grok** que no había llegado a GitHub: `data-superprompt-83.js` (DTs, formatos, caza 1925/Monumental/San Carlos, Atiende).
+- **FOTOS.txt:** SCR/SCI/RSJ/BSA/CNA = `SIN_FOTO`. No se inventan URLs.
+- **No se inventan** planteles de Segunda ni de Argentina.
+- **Tests:** T13 Grok + T13b Claude + T14. **util.js:** 7.84 → **7.85**.
+**Probado:** node --check + suite HTTP.
+
+## 7.86 · Cableado de SITUACION_CLUB a la UI (Claude, 12 sep)
+
+Grok horneó `SITUACION_CLUB` (76 clubes: el "por qué juego a esto" de TAREA E-1) pero **ningún código la leía**. Claude la conectó:
+1. **Escritorio (`vistaEscritorio`):** tarjeta **"El club hoy" 🎯** arriba de la columna derecha.
+2. **Briefing (`elegirEpoca`):** línea **"La situación:"** bajo los indicadores.
+Ambos con `typeof SITUACION_CLUB==="object"`. Suite 234/234 en GitHub (154e38d). Se mergea acá para no perderlo al subir 7.86-datos → 7.95.
+
+## 7.86 · TAREA E no estaba llena (economía AFA + estadios + oro)
+
+Auditoría en vivo de los 76 clubes. Huecos reales, no el markdown:
+
+- **E-3:** River/Boca tenían `plata:224` (fórmula de `registrarLiga`). Ahora caja de grande (River 1800/900, escala por club). Aproximado.
+- **E-8:** `ESTADIOS_DATA` solo cubría Primera. B / Segunda / Argentina se rellenan con nombre+aforo del array de liga (sectores genéricos, `aproximado:true`).
+- **E-2:** clásico penquista DCO–Vial, O'Higgins–Rangers, Ñublense–Temuco, mendocino Gimnasia–Rivadavia, Argentinos–Platense.
+- **E-13:** 9 argentinos sin oro (Tigre 2019 Superliga, Platense 2021, Barracas 2022, etc.).
+- **E-7:** al pasar de año se aplican los **pts** de `FORMAT_CHILE_LINEA`. El n de clubes no se toca.
+- **E-12:** trivia 1925 sin VAR / cinco cambios.
+- **Sigue sin inventarse:** planteles Segunda y Argentina.
+- **Tests:** T15. **util.js:** 7.85 → **7.86**.
+**Probado:** node --check + suite HTTP.
+
+## 7.87 · huecos TAREA E con datos (planteles, sponsors, zonas AFA)
+
+Búsqueda Wikipedia / AFA / ANFP, sep 2026. Nombres reales; stats estimadas.
+
+- **Planteles:** River 2026 (Driussi, Almada, Otamendi, Ponzio interino), Boca 2026 (Paredes, Merentiel, Arruabarrena), Santiago Morning 2026 (Manríquez, Muñoz, Bolado). Goleadores de Segunda documentados (Quiñones/Trasandino, etc.). El resto de Segunda y AFA: cantera.
+- **Sponsors Segunda:** Wikipedia (Flesan, Los Pelambres, Miami Outlet…).
+- **Aforos AFA:** página 2026 (Monumental 85.018, Laza 8.000, etc.).
+- **Zonas AFA 2026:** A/B de 15 + interzonales reales (Superclásico, Avellaneda…). El motor sigue en 29 fechas: dato listo para Claude.
+- **Copa Chile octavos:** 8 llaves ANFP 3 sep (Audax–Colo-Colo, etc.). Grupos A–H ya coincidían.
+- **Arcos AFA:** River, Boca, Gimnasia Mza, Estudiantes RC, Riestra. Hechos 2026.
+- **Tests:** T16. **util.js:** 7.86 → **7.87**.
+**Probado:** node --check + suite HTTP.
+
+## 7.88 · más planteles 2026 (Wikipedia verificada)
+
+River 2026 contrastado con el anexo (27 ago): Driussi/Almada/Otamendi OK; Armani y Freitas **no** están (salidas reales). Boca y Morning siguen.
+
+Nuevos planteles completos (nombres Wiki; stats estimadas):
+- Osorno (Bielkiewicz capitán) · Lota (Povea) · Trasandino (Quiñones + Cabello) · Colchagua
+- Racing (Cambeses, Zaracho, Rojo) act. 3 sep · Independiente (Rey, Montiel) 11 sep
+- Vélez (Lanzini, Barros Schelotto) 4 ago · San Lorenzo (Cerutti, Insúa) 26 ago
+
+- **Tests:** T17. **util.js:** 7.87 → **7.88**.
+**Probado:** node --check + suite HTTP.
+
+## 7.89 · Segunda 2026 completa + 4 AFA
+
+Planteles Wikipedia (nombres reales, stats estimadas):
+- Segunda que faltaba: Colina, Ovalle, Concón, Brujas, San Joaquín, Santiago City, Linares, Rengo, Gral. Velásquez.
+- AFA: Estudiantes (Carrillo, Muslera), Rosario Central (Di María, Pizarro), Newell's (Arias, Kudelka), Huracán (Galíndez, Gil).
+
+DTs plantilla Wiki. Titulares 87 ya no rompen el test de jornada.
+
+- **Tests:** T18. **util.js:** 7.88 → **7.89**.
+**Probado:** node --check + suite HTTP.
+
+## 7.90 · más AFA Wikipedia
+
+Talleres (Catalán, Schott), Lanús (Moreno, Pellegrino), Argentinos (Cortés préstamo Colo-Colo), Belgrano (Zelarayán), Defensa (César Pérez), Instituto (Guerra), Unión (Fragapane, Madelón), Gimnasia Mza (Rigamonti), Estudiantes RC (Ábila).
+
+Malcorra no se duplica (Independiente 11 sep gana a Unión 3 sep).
+
+- **Tests:** T19. **util.js:** 7.89 → **7.90**.
+**Probado:** node --check + suite HTTP.
+
+## 7.91 · AFA 30/30
+
+Cierra Primera Argentina: Tigre (Soto, Pity Martínez, Dabove), Banfield (Troglio), Platense (Vázquez, Nasif), Central Córdoba (Aguerre, Domínguez), Independiente Rivadavia (Riep, Berti), Sarmiento (Insaurralde, Sava), Aldosivi (Vombergar), Riestra (Quintana, Duró), Barracas (web oficial), Atlético Tucumán (Canelo), Gimnasia LP (Janson; TM/La Nación, sin plantilla Wiki).
+
+Chile 2026 ya estaba completo (Primera + B + Segunda 14/14).
+
+- **Tests:** T20. **util.js:** 7.90 → **7.91**.
+**Probado:** node --check + suite HTTP.
+
+## 7.92 · huecos Wikipedia + Cobreloa 1981
+
+Gimnasia LP tenía ~10 nombres (TM/La Nación): ahora plantilla Wiki 2 ago 2026 (Janson, Nacho Fernández, Giampaoli, DT Pereyra). Central Córdoba y Tucumán se expanden (Wiki 29 jul / 26 jul). Barracas suma Demartini/Tapia. Independiente suelta a Malcorra (baja Wiki 8 sep) → Unión. Limache y UC se completan. Cobreloa 1981: plantel de la final de América (Wirth, Soto, Merello, Siviero; Wikipedia Historia + EN wiki finals). Meta AFA (fundaciones) + Zerillo 30 973.
+
+- **js/data-planteles-92.js** (nuevo). **Tests:** T21. **util.js:** 7.91 → **7.92**.
+**Probado:** node --check + suite HTTP.
+
+## 7.93 · Primera Chile + B Wikipedia (links)
+
+Anexos temporada 2026 (11 sep): Colo-Colo (Vidal, Romero, Correa, Ortiz; Pizarro fuera → Central), U. de Chile (Vargas, Lucero, Gago; Assadi fuera → AIK 21 ago), Palestino (Roco, Abrigo, Munder, Tapia, Farré), Everton (Opazo, Villalpando, Palacios). B: San Luis por fin con delanteros (Parada goleador, DT Suazo), Recoleta, San Felipe, Magallanes, Cobreloa (Gotti), Wanderers (Camarda), U. Española, Concepción (Sandoval). Épocas: Morning 1942, Magallanes 1933, Lota 1969, Wanderers 2001, U. Española 2013.
+
+- **js/data-planteles-93.js** (nuevo). **Tests:** T22. **util.js:** 7.92 → **7.93**.
+**Probado:** node --check + suite HTTP.
+
+## 7.94 · resto Primera Chile Wikipedia (9 clubes)
+
+Los 9 de Primera que seguían con el plantel de agosto (data-grok.js) se rehacen contra Wikipedia sep 2026: Coquimbo (Galani, Pratto, Glaby, Johansen; Palavecino fuera → UC), Audax (Ahumada, Pizarro, Pinares, Graff), Huachipato (Sepúlveda, Altamirano, Malanca; Maxi Gutiérrez → Independiente), O'Higgins (Robledo, Vecino, Castillo, Avilés; Sarrafiore fuera → Atlante), Ñublense (Plaza, Céspedes; Cerezo fuera → UC), Cobresal (Tiznado, Brea, Villagrán de Everton; Nadruz/Munder fuera), La Calera (Sáez, Cicotello), La Serena (Henríquez, Vargas, Rubio), U. Concepción (Waterman, Broun, Funes Mori). Parches: Escobar solo en Coquimbo, Malanca solo en Huachipato.
+
+- **js/data-planteles-94.js** (nuevo). **Tests:** T23. **util.js:** 7.93 → **7.94**.
+**Probado:** node --check + suite HTTP.
+
+## 7.95 · resto Primera B Wikipedia (9 clubes) + push
+
+Los 9 de B que seguían con el plantel de agosto (`data-b2026.js`) se rehacen contra Wikipedia sep 2026:
+Antofagasta (Marcoleta; Monreal, Bandez, Campillay), Puerto Montt (Mancilla; Paredes, Collao, Nieto), San Marcos (Sandrock; Melivilú, Saracho, Barboza), Copiapó (Durán; Palacios, Temperini, Fuenzalida 2º sem), Temuco (Astorga; Huanca, Buonanotte, Urra), Iquique (Peña; Ramos, Puch, López), Curicó (D. Muñoz; Benegas, Colombo, Tello), Santa Cruz (Giovagnoli; Zeineddin, Pinto, Camisassa), Rangers (Basay; Arias, Campestrini, Méndez).
+
+Parches: Fuenzalida sale de Recoleta (préstamo Copiapó). Primera B 2026: **16/16** con plantel Wikipedia ≥18.
+
+También sube a GitHub el paquete 7.86-datos → 7.94 que no había llegado (planteles 88–94, huecos 87) + el cableado UI de Claude 7.86.
+
+- **js/data-planteles-95.js** (nuevo). **Tests:** T24 + T7.86 UI. **util.js:** 7.94 → **7.95**.
+**Probado:** node --check + suite HTTP.
+
+
+
+
+
+
+
+
+
+
+

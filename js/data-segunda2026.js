@@ -6,9 +6,10 @@
    data-b2026.js y ANTES de partido.js.
 
    La 2ª Profesional 2026 se juega en dos zonas (Norte/Sur) con liguilla
-   por el ascenso a Primera B. En el juego, por ahora, se juega como liga
-   corrida (round-robin); el formato exacto grupos+liguilla queda como
-   refinamiento de reglas. La zona real queda guardada en `z` para eso.
+   por el ascenso a Primera B. El motor (7.65) ya juega la fase ZONAL
+   (12 fechas, 7+7). El formato completo (3+3 a liguilla de 7 + playoff
+   de 4°s) queda en FORMAT_SEGUNDA_2026 (data-superprompt-83.js).
+   La zona real está en `z`.
 
    Nombres de clubes/ciudades/estadios: reales documentados (Wikipedia /
    ANFP, sep 2026). DTs 2026: los de la ficha pública de la Liga de Segunda

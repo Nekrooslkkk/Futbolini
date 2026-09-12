@@ -135,7 +135,6 @@
       var txt=(document.getElementById("vista")||{}).textContent||"";
       ok(txt.indexOf("El club hoy")>=0, "el escritorio muestra el panel 'El club hoy'");
       ok(SITUACION_CLUB.CC && txt.indexOf(SITUACION_CLUB.CC.slice(0,24))>=0, "muestra la situación real del club elegido");
-      /* un club de Segunda también trae su situación */
       nuevaPartida("SMO",2026,"historico",{categoria:"C"}); SEC="escritorio"; render();
       var txt2=(document.getElementById("vista")||{}).textContent||"";
       ok(SITUACION_CLUB.SMO && txt2.indexOf(SITUACION_CLUB.SMO.slice(0,20))>=0, "Segunda (S. Morning) también muestra su situación");
@@ -638,8 +637,311 @@
       ok(FORMAT_CHILE_LINEA.some(function(x){ return x.anio===2018 && x.n===16; }), "2018: torneo largo 16");
       ok(FORMAT_CHILE_LINEA.some(function(x){ return x.anio===2026; }), "2026 en la línea de formatos");
       ok(typeof SITUACION_CLUB==="object" && SITUACION_CLUB.CC && SITUACION_CLUB.RIV, "situación CC y River");
-      ok(typeof VERSION==="string" && VERSION==="7.85", "VERSION 7.85");
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
     }, "Formatos + situación + versión");
+
+    /* T15 · 7.86 huecos reales TAREA E (economía AFA, estadios, clásicos, oro) */
+    grupo("Grok 7.86 (River no es club chico + estadios + oro AFA)");
+    safe(function(){
+      ok(CAJA_BASE_2026.RIV && CAJA_BASE_2026.RIV.plata>=1000, "River caja de grande (no 224): "+(CAJA_BASE_2026.RIV&&CAJA_BASE_2026.RIV.plata));
+      ok(CAJA_BASE_2026.BOC && CAJA_BASE_2026.BOC.plata>=1000, "Boca caja de grande");
+      ok(CAJA_BASE_2026.RIV.plata>CAJA_BASE_2026.SMO.plata, "River tiene más plata que Morning");
+      ok(IND_BASE_2026.RIV && IND_BASE_2026.RIV.hinchada>=90, "River hinchada de grande");
+    }, "Economía AFA");
+    safe(function(){
+      ok(ESTADIOS_DATA.BOC && /Bombonera/i.test(ESTADIOS_DATA.BOC.nombre||""), "ESTADIOS_DATA Boca");
+      ok(ESTADIOS_DATA.SW && ESTADIOS_DATA.SW.aforo>10000, "ESTADIOS_DATA Wanderers");
+      ok(ESTADIOS_DATA.SMO && ESTADIOS_DATA.SMO.aforo>0, "ESTADIOS_DATA Morning");
+      ok(esRivalidadRegional("GME","IRV"), "clásico mendocino");
+      ok(esRivalidadRegional("DCO","FV"), "clásico penquista DCO–Vial");
+      ok(esRivalidadRegional("OHI","RAN"), "O'Higgins–Rangers");
+    }, "Estadios + clásicos 86");
+    safe(function(){
+      ok((epocasDe("TIG")||[]).some(function(e){ return e.anio===2019; }), "Tigre 2019 Superliga (oro)");
+      ok((epocasDe("PLA")||[]).some(function(e){ return e.anio===2021; }), "Platense 2021 (oro)");
+      ok((epocasDe("BAR")||[]).some(function(e){ return e.anio===2022; }), "Barracas 2022 (oro)");
+      var idsA=(typeof idsArgentina==="function")?idsArgentina():[];
+      var sin=idsA.filter(function(id){ return !(epocasDe(id)||[]).length; });
+      ok(sin.length===0, "Argentina: todos con época dorada"+(sin.length?" ("+sin.join(",")+")":""));
+    }, "Oro AFA completo");
+
+    /* T16 · 7.87 planteles documentados + sponsors + zonas AFA */
+    grupo("Grok 7.87 (planteles River/Boca/Morning + datos ANFP/AFA)");
+    safe(function(){
+      ok(PLANTELES_REALES.RIV && PLANTELES_REALES.RIV[2026] && PLANTELES_REALES.RIV[2026].some(function(j){ return /Driussi/.test(j[0]); }), "River 2026: Driussi documentado");
+      ok(PLANTELES_REALES.BOC && PLANTELES_REALES.BOC[2026] && PLANTELES_REALES.BOC[2026].some(function(j){ return /Paredes/.test(j[0]); }), "Boca 2026: Paredes documentado");
+      ok(PLANTELES_REALES.SMO && PLANTELES_REALES.SMO[2026] && PLANTELES_REALES.SMO[2026].some(function(j){ return /Manríquez/.test(j[0]); }), "Morning 2026: Manríquez documentado");
+      ok(PLANTELES_REALES.TRA && PLANTELES_REALES.TRA[2026].some(function(j){ return /Quiñones/.test(j[0]); }), "Trasandino: Quiñones (goleador Wikipedia)");
+      ok(CLUB_INFO_2026.RIV && /Ponzio/.test(CLUB_INFO_2026.RIV.dt||""), "River DT Ponzio");
+      ok(CLUB_INFO_2026.BOC && /Arruabarrena/.test(CLUB_INFO_2026.BOC.dt||""), "Boca DT Arruabarrena");
+    }, "Planteles documentados");
+    safe(function(){
+      ok(SPONSORS_CLUB_2026.SMO && /Miami/.test(SPONSORS_CLUB_2026.SMO.ausp||""), "Morning sponsor Wikipedia");
+      ok(SPONSORS_CLUB_2026.BSA && /Pelambres/.test(SPONSORS_CLUB_2026.BSA.ausp||""), "Brujas sponsor Los Pelambres");
+      ok(ZONA_A_ARG_2026.indexOf("BOC")>=0 && ZONA_B_ARG_2026.indexOf("RIV")>=0, "zonas AFA 2026: Boca A, River B");
+      ok(INTERZONAL_ARG_2026.BOC==="RIV" && INTERZONAL_ARG_2026.IND==="RAC", "interzonales Superclásico y Avellaneda");
+      ok(COPA_CHILE_OCTAVOS_2026.AUD && COPA_CHILE_OCTAVOS_2026.AUD.rival==="CC", "Audax–Colo-Colo en octavos");
+      ok(Object.keys(COPA_CHILE_OCTAVOS_2026).length>=16, "cuadro de octavos (ida y vuelta)");
+      ok(AFORO_ARG_87.RIV>=80000, "Monumental aforo Wikipedia");
+      ok(ARCOS_EQUIPO.RIV && ARCOS_EQUIPO.BOC, "arcos River y Boca");
+    }, "Sponsors + zonas + octavos");
+    safe(function(){
+      nuevaPartida("RIV",2026,"historico",{categoria:"ARG"});
+      ok(E.plantel.some(function(j){ return /Driussi|Almada|Otamendi/.test(j.n); }), "River arranca con plantel real");
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      ok(E.plantel.some(function(j){ return /Manríquez|Muñoz|Bolado/.test(j.n); }), "Morning arranca con plantel real");
+    }, "Arranque con plantel real");
+
+    /* T17 · 7.88 más planteles Wikipedia */
+    grupo("Grok 7.88 (Osorno Lota Trasandino Racing Independiente Vélez San Lorenzo)");
+    safe(function(){
+      function tiene(id, ape){
+        var s=PLANTELES_REALES[id] && PLANTELES_REALES[id][2026];
+        return s && s.some(function(j){ return (j[0]||"").indexOf(ape)>=0; });
+      }
+      ok(tiene("OSO","Bielkiewicz"), "Osorno: Bielkiewicz (Wiki)");
+      ok(tiene("LSC","Povea"), "Lota: Povea capitán (Wiki)");
+      ok(tiene("TRA","Cabello") && tiene("TRA","Quiñones"), "Trasandino plantel completo + Quiñones");
+      ok(tiene("CLC","Cancino") && tiene("CLC","Pérez"), "Colchagua plantel completo");
+      ok(tiene("RAC","Cambeses") && tiene("RAC","Zaracho"), "Racing 2026 Wikipedia 3 sep");
+      ok(tiene("IND","Rey") && tiene("IND","Montiel"), "Independiente 11 sep");
+      ok(tiene("VEL","Lanzini"), "Vélez: Lanzini");
+      ok(tiene("SLO","Cerutti"), "San Lorenzo: Cerutti");
+    }, "Planteles 88");
+    safe(function(){
+      nuevaPartida("OSO",2026,"historico",{categoria:"C"});
+      ok(E.plantel.filter(function(j){ return j.real; }).length>=16, "Osorno arranca con plantel real");
+      nuevaPartida("RAC",2026,"historico",{categoria:"ARG"});
+      ok(E.plantel.some(function(j){ return /Zaracho|Cambeses|Rojo/.test(j.n); }), "Racing arranca con plantel real");
+      ok(CLUB_INFO_2026.VEL && /Schelotto/.test(CLUB_INFO_2026.VEL.dt||""), "Vélez DT Barros Schelotto");
+    }, "Arranque 88");
+
+    /* T18 · 7.89 Segunda completa + AFA */
+    grupo("Grok 7.89 (Segunda completa + Estudiantes Central Newell's Huracán)");
+    safe(function(){
+      function tiene(id, ape){
+        var s=PLANTELES_REALES[id] && PLANTELES_REALES[id][2026];
+        return s && s.some(function(j){ return (j[0]||"").indexOf(ape)>=0; });
+      }
+      var seg=["COL","OVA","CNA","BSA","RSJ","SCI","LIN","REN","GVE","SMO","OSO","LSC","TRA","CLC"];
+      ok(seg.every(function(id){ return PLANTELES_REALES[id] && PLANTELES_REALES[id][2026] && PLANTELES_REALES[id][2026].length>=14; }),
+        "Segunda 2026: 14 clubes con plantel ≥14");
+      ok(tiene("COL","Harding") && tiene("OVA","Cabrera") && tiene("CNA","Ragusa"), "Colina Harding / Ovalle Cabrera / Concón Ragusa");
+      ok(tiene("BSA","Requena") && tiene("SCI","Taiva") && tiene("LIN","Vallejos"), "Brujas Requena / City Taiva / Linares Vallejos");
+      ok(tiene("ELP","Carrillo") && tiene("ELP","Muslera"), "Estudiantes: Carrillo + Muslera");
+      ok(tiene("ROS","Di María") && tiene("ROS","Pizarro"), "Central: Di María + Vicente Pizarro");
+      ok(tiene("NEW","Arias") && tiene("HUR","Galíndez") && tiene("HUR","Gil"), "Newell's Arias / Huracán Galíndez+Gil");
+    }, "Planteles 89");
+    safe(function(){
+      nuevaPartida("CNA",2026,"historico",{categoria:"C"});
+      ok(E.plantel.some(function(j){ return /Cerda|Ragusa/.test(j.n); }), "Concón arranca con plantel real");
+      nuevaPartida("ROS",2026,"historico",{categoria:"ARG"});
+      ok(E.plantel.some(function(j){ return /Di María|Campaz/.test(j.n); }), "Central arranca con Di María");
+      ok(CLUB_INFO_2026.NEW && /Kudelka/.test(CLUB_INFO_2026.NEW.dt||""), "Newell's DT Kudelka");
+      ok(CLUB_INFO_2026.LIN && /Meléndez/.test(CLUB_INFO_2026.LIN.dt||""), "Linares DT Meléndez");
+    }, "Arranque 89");
+
+    /* T19 · 7.90 más AFA */
+    grupo("Grok 7.90 (Talleres Lanús Argentinos Belgrano Defensa Instituto Unión)");
+    safe(function(){
+      function tiene(id, ape){
+        var s=PLANTELES_REALES[id] && PLANTELES_REALES[id][2026];
+        return s && s.some(function(j){ return (j[0]||"").indexOf(ape)>=0; });
+      }
+      ok(tiene("TAL","Catalán") && tiene("TAL","Schott"), "Talleres: Catalán + Schott");
+      ok(tiene("LAN","Moreno") && tiene("LAN","Izquierdoz"), "Lanús: Moreno + Izquierdoz");
+      ok(tiene("ARG","Cortés") && tiene("ARG","Verón"), "Argentinos: Cortés (Colo-Colo) + Verón");
+      ok(tiene("BEL","Zelarayán") && tiene("DYJ","Pérez"), "Belgrano Zelarayán / Defensa César Pérez");
+      ok(tiene("INS","Guerra") && tiene("UNI","Fragapane"), "Instituto Guerra / Unión Fragapane");
+      ok(tiene("GME","Rigamonti") && tiene("ERC","Ábila"), "Gimnasia Mza Rigamonti / Estudiantes RC Ábila");
+      ok(tiene("UNI","Fragapane"), "Unión Fragapane");
+    }, "Planteles 90");
+    safe(function(){
+      nuevaPartida("ARG",2026,"historico",{categoria:"ARG"});
+      ok(E.plantel.some(function(j){ return /Cortés|Verón|Lescano/.test(j.n); }), "Argentinos arranca con plantel real");
+      ok(CLUB_INFO_2026.LAN && /Pellegrino/.test(CLUB_INFO_2026.LAN.dt||""), "Lanús DT Pellegrino");
+      ok(CLUB_INFO_2026.UNI && /Madelón/.test(CLUB_INFO_2026.UNI.dt||""), "Unión DT Madelón");
+    }, "Arranque 90");
+
+    /* T20 · 7.91 AFA 30/30 */
+    grupo("Grok 7.91 (AFA completa: Tigre Banfield Platense Riestra Tucumán)");
+    safe(function(){
+      function tiene(id, ape){
+        var s=PLANTELES_REALES[id] && PLANTELES_REALES[id][2026];
+        return s && s.some(function(j){ return (j[0]||"").indexOf(ape)>=0; });
+      }
+      var afa=["RIV","BOC","RAC","IND","VEL","SLO","ELP","ROS","NEW","HUR","TAL","LAN","ARG","BEL","DYJ","INS","UNI","GLP","TUC","TIG","BAN","PLA","CCO","IRV","SAR","ALD","GME","RIE","ERC","BAR"];
+      ok(afa.length===30 && afa.every(function(id){ return PLANTELES_REALES[id] && PLANTELES_REALES[id][2026] && PLANTELES_REALES[id][2026].length>=8; }),
+        "AFA 2026: 30/30 con plantel documentado ≥8");
+      ok(tiene("TIG","Soto") && tiene("TIG","Martínez"), "Tigre: Soto + Pity Martínez");
+      ok(tiene("PLA","Vázquez") && tiene("PLA","Nasif"), "Platense: Vázquez + Nasif");
+      ok(tiene("IRV","Riep") && tiene("RIE","Quintana"), "Rivadavia Riep / Riestra Quintana");
+      ok(tiene("TUC","Canelo") && tiene("SAR","Insaurralde") && tiene("ALD","Vombergar"), "Tucumán Canelo / Sarmiento Insaurralde / Aldosivi Vombergar");
+      ok(tiene("BAR","Espínola") && tiene("GLP","Janson") && tiene("BAN","Balboa"), "Barracas / Gimnasia Janson / Banfield Balboa");
+    }, "Planteles 91");
+    safe(function(){
+      nuevaPartida("TIG",2026,"historico",{categoria:"ARG"});
+      ok(E.plantel.some(function(j){ return /Soto|Saralegui|Martínez/.test(j.n); }), "Tigre arranca con plantel real");
+      ok(CLUB_INFO_2026.BAN && /Troglio/.test(CLUB_INFO_2026.BAN.dt||""), "Banfield DT Troglio");
+      ok(CLUB_INFO_2026.SAR && /Sava/.test(CLUB_INFO_2026.SAR.dt||""), "Sarmiento DT Sava");
+      ok(CLUB_INFO_2026.RIE && /Duró/.test(CLUB_INFO_2026.RIE.dt||""), "Riestra DT Duró");
+    }, "Arranque 91");
+
+    /* T21 · 7.92 huecos Wikipedia + Cobreloa 1981 */
+    grupo("Grok 7.92 (Gimnasia Wiki, Malcorra a Unión, Cobreloa 1981)");
+    safe(function(){
+      function tiene(id, ape){
+        var s=PLANTELES_REALES[id] && PLANTELES_REALES[id][2026];
+        return s && s.some(function(j){ return (j[0]||"").indexOf(ape)>=0; });
+      }
+      ok(PLANTELES_REALES.GLP[2026].length>=22, "Gimnasia LP plantel Wiki ≥22");
+      ok(tiene("GLP","Janson") && tiene("GLP","Fernández") && tiene("GLP","Giampaoli"), "Gimnasia: Janson + Nacho Fernández + Giampaoli");
+      ok(tiene("CCO","Marchi") && tiene("CCO","Tijanovich"), "Central Córdoba: Marchi + Tijanovich");
+      ok(tiene("TUC","Ferreira") && tiene("TUC","Laméndola"), "Tucumán: Ferreira + Laméndola");
+      ok(tiene("BAR","Demartini") && tiene("BAR","Tapia"), "Barracas: Demartini + Tapia");
+      ok(!tiene("IND","Malcorra") && tiene("UNI","Malcorra"), "Malcorra solo en Unión (Wiki 8 sep)");
+      ok(tiene("IND","Morales"), "Independiente: Iván Morales");
+      ok(tiene("LIM","Sosa") && PLANTELES_REALES.LIM[2026].length>=20, "Limache plantel Wiki ≥20");
+      ok(tiene("UC","Palavecino") && tiene("UC","Farías"), "UC: Palavecino + Farías");
+      var cbl=PLANTELES_REALES.CBL && PLANTELES_REALES.CBL[1981];
+      ok(cbl && cbl.some(function(j){ return /Wirth/.test(j[0]); }) && cbl.some(function(j){ return /Soto/.test(j[0]); }) && cbl.some(function(j){ return /Merello/.test(j[0]); }),
+        "Cobreloa 1981: Wirth + Soto + Merello (final Libertadores)");
+    }, "Planteles 92");
+    safe(function(){
+      nuevaPartida("GLP",2026,"historico",{categoria:"ARG"});
+      ok(E.plantel.some(function(j){ return /Janson|Fernández|Giampaoli/.test(j.n); }), "Gimnasia arranca con plantel Wiki");
+      nuevaPartida("LIM",2026,"historico");
+      ok(E.plantel.some(function(j){ return /Sosa|Parot|Meneses/.test(j.n); }), "Limache arranca con plantel Wiki");
+      ok(CLUB_INFO_2026.GLP && /Pereyra/.test(CLUB_INFO_2026.GLP.dt||""), "Gimnasia DT Ariel Pereyra");
+      ok(CLUB_INFO_2026.TUC && /Falcioni/.test(CLUB_INFO_2026.TUC.dt||""), "Tucumán DT Falcioni");
+      ok(CLUB_META.GLP && CLUB_META.GLP.fund===1887, "Gimnasia fund 1887");
+      ok(CLUB_META.BOC && CLUB_META.BOC.fund===1905, "Boca fund 1905");
+      ok(AFORO_ARG_87.GLP===30973, "Zerillo aforo Wikipedia 30973");
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+    }, "Arranque 92");
+
+    /* T22 · 7.93 Primera Chile + B Wikipedia */
+    grupo("Grok 7.93 (Colo-Colo U. de Chile Palestino Everton San Luis)");
+    safe(function(){
+      function tiene(id, ape){
+        var s=PLANTELES_REALES[id] && PLANTELES_REALES[id][2026];
+        return s && s.some(function(j){ return (j[0]||"").indexOf(ape)>=0; });
+      }
+      ok(PLANTELES_REALES.CC[2026].length>=20, "Colo-Colo plantel Wiki ≥20");
+      ok(tiene("CC","Vidal") && tiene("CC","Romero") && tiene("CC","Correa") && tiene("CC","de Paul"), "CC: Vidal + Romero + Correa + de Paul");
+      ok(!tiene("CC","Pizarro"), "CC: Pizarro no (fue a Central)");
+      ok(tiene("UCH","Vargas") && tiene("UCH","Lucero") && tiene("UCH","Aránguiz") && tiene("UCH","Altamirano"), "UCH: Vargas + Lucero + Aránguiz + Altamirano");
+      ok(!tiene("UCH","Assadi"), "UCH: Assadi no (AIK 21 ago)");
+      ok(tiene("PAL","Roco") && tiene("PAL","Abrigo") && tiene("PAL","Munder") && tiene("PAL","Tapia"), "PAL: Roco + Abrigo + Munder + Tapia");
+      ok(tiene("EVE","Opazo") && tiene("EVE","Villalpando") && tiene("EVE","Palacios"), "EVE: Opazo + Villalpando + Palacios");
+      ok(tiene("SLQ","Parada") && tiene("SLQ","Vergara") && PLANTELES_REALES.SLQ[2026].length>=18, "San Luis: Parada + delanteros Wiki");
+      ok(tiene("UES","Rubio") && tiene("UES","Vilches") && tiene("CBL","Gotti") && tiene("CBL","Duma"), "UES Rubio/Vilches · Cobreloa Gotti/Duma");
+      ok(tiene("USF","Fontana") && tiene("REC","Estigarribia") && tiene("MAG","Jorquera") && tiene("DCO","Sandoval"), "USF Fontana / Recoleta Estigarribia / MAG Jorquera / DCO Sandoval");
+      ok(tiene("SW","Camarda") && tiene("SW","Luna"), "Wanderers: Camarda + Luna");
+    }, "Planteles 93");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      ok(E.plantel.some(function(j){ return /Vidal|Romero|Correa/.test(j.n); }), "Colo-Colo arranca con plantel Wiki");
+      nuevaPartida("UCH",2026,"historico");
+      ok(E.plantel.some(function(j){ return /Vargas|Lucero|Aránguiz/.test(j.n); }), "La U arranca con plantel Wiki");
+      ok(!E.plantel.some(function(j){ return /Assadi/.test(j.n); }), "La U no arranca con Assadi");
+      nuevaPartida("SLQ",2026,"historico",{categoria:"B"});
+      ok(E.plantel.some(function(j){ return /Parada|Vergara|Madrigal/.test(j.n); }), "San Luis arranca con delanteros Wiki");
+      ok(CLUB_INFO_2026.CC && /Ortiz/.test(CLUB_INFO_2026.CC.dt||""), "Colo-Colo DT Ortiz");
+      ok(CLUB_INFO_2026.UCH && /Gago/.test(CLUB_INFO_2026.UCH.dt||""), "U. de Chile DT Gago");
+      ok(CLUB_INFO_2026.SLQ && /Suazo/.test(CLUB_INFO_2026.SLQ.dt||""), "San Luis DT Suazo");
+      function tieneEp(id, anio){
+        var arr=(typeof epocasDe==="function"?epocasDe(id):(EPOCAS_CLUB[id]||[]));
+        return arr.some(function(e){ return e.anio===anio; });
+      }
+      ok(tieneEp("SMO",1942), "Morning época 1942 (campeón)");
+      ok(tieneEp("MAG",1933), "Magallanes época 1933 (primer campeón)");
+      ok(tieneEp("LSC",1969), "Lota época 1969 (ascenso)");
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+    }, "Arranque 93");
+
+    /* T23 · 7.94 resto Primera Chile Wikipedia */
+    grupo("Grok 7.94 (Coquimbo Audax Huachipato O'Higgins Ñublense Cobresal)");
+    safe(function(){
+      function tiene(id, ape){
+        var s=PLANTELES_REALES[id] && PLANTELES_REALES[id][2026];
+        return s && s.some(function(j){ return (j[0]||"").indexOf(ape)>=0; });
+      }
+      var pri=["CC","UCH","UC","EVE","PAL","COQ","AUD","HUA","OHI","NUB","COB","CAL","LSE","DCO","UDC","LIM"];
+      ok(pri.length===16 && pri.every(function(id){ return PLANTELES_REALES[id] && PLANTELES_REALES[id][2026] && PLANTELES_REALES[id][2026].length>=18; }),
+        "Primera 2026: 16/16 con plantel Wiki ≥18");
+      ok(tiene("COQ","Galani") && tiene("COQ","Pratto") && tiene("COQ","Glaby") && tiene("COQ","Johansen"), "Coquimbo: Galani + Pratto + Glaby + Johansen");
+      ok(!tiene("COQ","Palavecino") && tiene("UC","Palavecino"), "Palavecino solo en UC (baja Coquimbo)");
+      ok(tiene("COQ","Escobar") && !tiene("LIM","Escobar"), "Dylan Escobar solo en Coquimbo (retorno)");
+      ok(tiene("AUD","Ahumada") && tiene("AUD","Pizarro") && tiene("AUD","Pinares") && tiene("AUD","Collao"), "Audax: Ahumada + Pizarro + Pinares + Collao");
+      ok(tiene("HUA","Sepúlveda") && tiene("HUA","Altamirano") && tiene("HUA","Cañete") && tiene("HUA","Malanca"), "Huachipato: Sepúlveda + Altamirano + Cañete + Malanca");
+      ok(!tiene("HUA","Gutiérrez") && tiene("IND","Gutiérrez"), "Maxi Gutiérrez: Independiente (traspaso HUA)");
+      ok(!tiene("BAN","Malanca"), "Malanca no está en Banfield");
+      ok(tiene("OHI","Robledo") && tiene("OHI","Vecino") && tiene("OHI","Castillo") && tiene("OHI","Avilés"), "O'Higgins: Robledo + Vecino + Castillo + Avilés");
+      ok(!tiene("OHI","Sarrafiore"), "Sarrafiore no (baja Atlante 2º sem)");
+      ok(tiene("NUB","Plaza") && tiene("NUB","Pérez") && tiene("NUB","Céspedes") && !tiene("NUB","Cerezo"), "Ñublense: Plaza + Pérez + Céspedes, Cerezo no (UC)");
+      ok(tiene("COB","Tiznado") && tiene("COB","Brea") && tiene("COB","Villagrán") && !tiene("EVE","Villagrán"), "Cobresal Tiznado/Brea/Villagrán · Everton ya no");
+      ok(!tiene("COB","Nadruz") && !tiene("COB","Munder"), "Cobresal: Nadruz y Munder no (bajas documentadas)");
+      ok(tiene("CAL","Sáez") && tiene("CAL","Avellaneda") && tiene("LSE","Henríquez") && tiene("LSE","Vargas") && tiene("LSE","Rubio"), "Calera Sáez + Serena Henríquez/Vargas/Rubio");
+      ok(tiene("UDC","Waterman") && tiene("UDC","Broun") && tiene("UDC","Funes Mori") && tiene("UDC","González"), "U. Concepción: Waterman + Broun + Funes Mori");
+    }, "Planteles 94");
+    safe(function(){
+      nuevaPartida("COQ",2026,"historico");
+      ok(E.plantel.some(function(j){ return /Galani|Pratto|Johansen/.test(j.n); }), "Coquimbo arranca con plantel Wiki");
+      ok(!E.plantel.some(function(j){ return /Palavecino/.test(j.n); }), "Coquimbo no arranca con Palavecino");
+      nuevaPartida("AUD",2026,"historico");
+      ok(E.plantel.some(function(j){ return /Ahumada|Pizarro|Pinares/.test(j.n); }), "Audax arranca con plantel Wiki");
+      nuevaPartida("HUA",2026,"historico");
+      ok(E.plantel.some(function(j){ return /Sepúlveda|Altamirano|Malanca/.test(j.n); }), "Huachipato arranca con plantel Wiki");
+      ok(CLUB_INFO_2026.COQ && /Caputto/.test(CLUB_INFO_2026.COQ.dt||""), "Coquimbo DT Caputto");
+      ok(CLUB_INFO_2026.AUD && /Graff/.test(CLUB_INFO_2026.AUD.dt||""), "Audax DT Graff");
+      ok(CLUB_INFO_2026.HUA && /García/.test(CLUB_INFO_2026.HUA.dt||""), "Huachipato DT García");
+      ok(CLUB_INFO_2026.OHI && /Bovaglio/.test(CLUB_INFO_2026.OHI.dt||""), "O'Higgins DT Bovaglio");
+      ok(CLUB_INFO_2026.NUB && /Ribera/.test(CLUB_INFO_2026.NUB.dt||""), "Ñublense DT Ribera");
+      ok(CLUB_INFO_2026.COB && /Huerta/.test(CLUB_INFO_2026.COB.dt||""), "Cobresal DT Huerta");
+      ok(CLUB_INFO_2026.CAL && /Cicotello/.test(CLUB_INFO_2026.CAL.dt||""), "La Calera DT Cicotello");
+      ok(CLUB_INFO_2026.UDC && /Muñoz/.test(CLUB_INFO_2026.UDC.dt||""), "U. Concepción DT Muñoz");
+      ok(typeof VERSION==="string" && VERSION==="7.95", "VERSION 7.95");
+    }, "Arranque 94");
+
+    /* T24 · 7.95 resto Primera B Wikipedia */
+    grupo("Grok 7.95 (Antofagasta Puerto Montt San Marcos Copiapó Temuco Iquique Curicó Santa Cruz Rangers)");
+    safe(function(){
+      function tiene(id, ape){
+        var s=PLANTELES_REALES[id] && PLANTELES_REALES[id][2026];
+        return s && s.some(function(j){ return (j[0]||"").indexOf(ape)>=0; });
+      }
+      var b=["SW","CBL","SLQ","ANT","MAG","UES","REC","PMO","SMA","COP","TEM","IQQ","USF","CUR","SCR","RAN"];
+      ok(b.length===16 && b.every(function(id){ return PLANTELES_REALES[id] && PLANTELES_REALES[id][2026] && PLANTELES_REALES[id][2026].length>=18; }),
+        "Primera B 2026: 16/16 con plantel Wiki ≥18");
+      ok(tiene("ANT","Monreal") && tiene("ANT","Bandez") && tiene("ANT","Campillay") && tiene("ANT","Ibacache"), "Antofagasta: Monreal + Bandez + Campillay + Ibacache");
+      ok(tiene("PMO","Paredes") && tiene("PMO","Collao") && tiene("PMO","Nieto") && tiene("PMO","Castro"), "Puerto Montt: Paredes + Collao + Nieto + Castro");
+      ok(tiene("SMA","Melivil") && tiene("SMA","Saracho") && tiene("SMA","Barboza") && tiene("SMA","Monroy"), "San Marcos: Melivilú + Saracho + Barboza + Monroy");
+      ok(tiene("COP","Palacios") && tiene("COP","Temperini") && tiene("COP","Fuenzalida") && !tiene("REC","Fuenzalida"), "Copiapó Palacios/Temperini/Fuenzalida · Recoleta ya no");
+      ok(tiene("TEM","Huanca") && tiene("TEM","Buonanotte") && tiene("TEM","Urra") && tiene("TEM","Acevedo"), "Temuco: Huanca + Buonanotte + Urra + Acevedo");
+      ok(tiene("IQQ","Ramos") && tiene("IQQ","Puch") && tiene("IQQ","López") && tiene("IQQ","Garrido"), "Iquique: Ramos + Puch + López + Garrido");
+      ok(tiene("CUR","Benegas") && tiene("CUR","Colombo") && tiene("CUR","Tello") && tiene("CUR","Romo"), "Curicó: Benegas + Colombo + Tello + Romo");
+      ok(tiene("SCR","Zeineddin") && tiene("SCR","Pinto") && tiene("SCR","Camisassa") && tiene("SCR","Islame"), "Santa Cruz: Zeineddin + Pinto + Camisassa + Islame");
+      ok(tiene("RAN","Arias") && tiene("RAN","Campestrini") && tiene("RAN","Méndez") && tiene("RAN","Mesías"), "Rangers: Arias + Campestrini + Méndez + Mesías");
+    }, "Planteles 95");
+    safe(function(){
+      nuevaPartida("ANT",2026,"historico",{categoria:"B"});
+      ok(E.plantel.some(function(j){ return /Monreal|Bandez|Campillay/.test(j.n); }), "Antofagasta arranca con plantel Wiki");
+      nuevaPartida("IQQ",2026,"historico",{categoria:"B"});
+      ok(E.plantel.some(function(j){ return /Ramos|Puch/.test(j.n); }), "Iquique arranca con Ramos/Puch");
+      nuevaPartida("RAN",2026,"historico",{categoria:"B"});
+      ok(E.plantel.some(function(j){ return /Arias|Campestrini|Méndez/.test(j.n); }), "Rangers arranca con plantel Wiki");
+      ok(CLUB_INFO_2026.ANT && /Marcoleta/.test(CLUB_INFO_2026.ANT.dt||""), "Antofagasta DT Marcoleta");
+      ok(CLUB_INFO_2026.PMO && /Mancilla/.test(CLUB_INFO_2026.PMO.dt||""), "Puerto Montt DT Mancilla");
+      ok(CLUB_INFO_2026.SMA && /Sandrock/.test(CLUB_INFO_2026.SMA.dt||""), "San Marcos DT Sandrock");
+      ok(CLUB_INFO_2026.COP && /Durán/.test(CLUB_INFO_2026.COP.dt||""), "Copiapó DT Durán");
+      ok(CLUB_INFO_2026.TEM && /Astorga/.test(CLUB_INFO_2026.TEM.dt||""), "Temuco DT Astorga");
+      ok(CLUB_INFO_2026.IQQ && /Peña/.test(CLUB_INFO_2026.IQQ.dt||""), "Iquique DT Peña");
+      ok(CLUB_INFO_2026.CUR && /Muñoz/.test(CLUB_INFO_2026.CUR.dt||""), "Curicó DT Muñoz");
+      ok(CLUB_INFO_2026.SCR && /Giovagnoli/.test(CLUB_INFO_2026.SCR.dt||""), "Santa Cruz DT Giovagnoli");
+      ok(CLUB_INFO_2026.RAN && /Basay/.test(CLUB_INFO_2026.RAN.dt||""), "Rangers DT Basay");
+      ok(typeof VERSION==="string" && VERSION==="7.95", "VERSION 7.95");
+    }, "Arranque 95");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

@@ -324,8 +324,7 @@ function elegirEpoca(id){
       c.appendChild(el("h3","sub","1 · Elige cuándo empezar"));
       const fe=el("div","fichas");
       puntos.forEach(pt=>{
-        const esOro=(pt.tipo==="gloria"||pt.gloria);
-        const btn=el("button","ficha"+(esOro?" ficha-gloria":""),pt.etq);
+        const btn=el("button","ficha"+(pt.tipo==="gloria"||pt.gloria?" ficha-gloria":""),pt.etq);
         btn.setAttribute("aria-pressed",sel.k===pt.k?"true":"false");
         btn.onclick=()=>{ sel=pt; corte=false; pintar(); };
         fe.appendChild(btn);
@@ -375,7 +374,7 @@ function elegirEpoca(id){
       c.appendChild(fila("Deportivo","plantel "+ib.plantel+" · cantera "+ib.cantera));
       c.appendChild(fila("Económico",plata(cb.plata)+" en caja · "+plata(cb.deuda)+" de deuda"));
       c.appendChild(fila("Interno","hinchada "+ib.hinchada+" · socios "+ib.socios+" · riesgo "+ib.riesgo));
-      /* E-1 · la situación del club: por qué te metés en esto (Grok TAREA E) */
+      /* E-1 · la situación del club: por qué te metés en esto (Grok TAREA E / Claude 7.86) */
       if(typeof SITUACION_CLUB==="object" && SITUACION_CLUB[id])
         c.appendChild(el("p","mini","<b>La situación:</b> "+SITUACION_CLUB[id]));
       /* corte 18/08 solo en la temporada 2026 actual (no en glorias históricas) */
@@ -621,7 +620,7 @@ function vistaEscritorio(){
   }
   izq.appendChild(pb);
 
-  /* E-1 · por qué juego a esto: la situación del club (Grok TAREA E). Solo si hay dato. */
+  /* E-1 · por qué juego a esto: la situación del club (Grok TAREA E / Claude 7.86). Solo si hay dato. */
   if(typeof SITUACION_CLUB==="object" && SITUACION_CLUB[E.club]){
     const psit=panel("El club hoy","🎯","agua");
     psit.cuerpo.appendChild(el("p",null,SITUACION_CLUB[E.club]));
