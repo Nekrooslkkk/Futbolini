@@ -2229,3 +2229,10 @@ Claude avanzó 7.78–7.80 (federación por país, gol en vivo, celular). El 7.7
 - **Tests:** +4 (1925 muestra panel con la fundación real; 2006 muestra panel; 2026 no). Suite **179/179**.
 - **util.js:** VERSION 7.81 → **7.82**.
 **Probado:** node --check + suite 179/179 verde + captura del Escritorio 1925.
+
+## 7.83 · UI de época dorada (oro) consistente para todos + super prompt de verificación
+- **Bug reportado:** el 2011 de la U salía en **oro** (época de gloria) pero el 1991 de Colo-Colo (Libertadores) no, aunque es su mayor gloria. Causa: el estilo dorado (`.ficha-gloria`) solo se aplicaba a épocas `tipo:"gloria"` (las de `EPOCAS_CLUB`); las épocas **base** nunca eran doradas, aunque fueran el hito máximo del club.
+- **js/ui.js:** un punto base ahora puede marcarse `gloria:true` y recibir el mismo tratamiento oro. Se marcó el `cc91` de Colo-Colo (`1991 · La Gloria (Libertadores)`). El botón usa `esOro=(pt.tipo==="gloria"||pt.gloria)`. UI idéntica para todos: la gloria de cada club sale en oro sin importar si es era base o época sumada.
+- **GROK_SUPERPROMPT.md:** nueva **TAREA E — verificación integral por equipo** (el barrido pre-8.0): problema/situación por club, clásico correcto y variado, economías realistas, planteles/canteranos/sponsors, calendarios **por cada copa**, fixtures de los equipos IA, simulación posterior con cambios de regla "que aprueba la ANFP" (línea de tiempo real), estadios (aforo/arriendo/nombre/precios), historia para todos **incl. Argentina**, más realismo en el Plop!, **modos históricos para todos incl. Segunda**, 1925 sin nada moderno, y las épocas doradas faltantes por club (dato que Grok debe completar).
+- **util.js:** VERSION 7.82 → **7.83**.
+**Probado:** node --check js/*.js + suite 179/179 verde.

@@ -152,6 +152,91 @@ Campos:
 
 ---
 
+## TAREA E — VERIFICACIÓN INTEGRAL POR EQUIPO (el gran barrido pre-8.0)
+
+> Esto es lo grande. La idea es que **cada** equipo (Primera, B, Segunda, Argentina)
+> quede coherente y jugable, para que después Claude solo tenga que **agregar** encima
+> de esta pulición. Sin 8.0 sólido, no hay Futbolini 8.0. Andá club por club y devolvé
+> una **tabla por división** con una fila por club y una columna por cada punto de abajo,
+> marcando ✅ OK / ⚠️ dudoso / ❌ falta, con el **dato correcto + fuente** en cada ❌/⚠️.
+> Formato de hallazgo idéntico a la TAREA A (`[CRÍTICO] archivo — problema / fix / fuente`).
+
+Revisá para **TODOS** los equipos:
+
+1. **Problema / situación definida.** Que cada club tenga su "por qué juego a esto":
+   deuda, dirigencia, meta de la temporada, conflicto (baja de socios, cantera vendida,
+   barra, arriendo del estadio). Que el hincha entienda **qué está haciendo** con ese club.
+   Marcá los clubes que hoy no tienen situación propia (rellenan genérico). Archivos:
+   `data-clubes-meta.js`, `data-storylines.js`, `data-decisiones*.js`.
+
+2. **Clásico correcto y VARIADO.** Verificá que el rival de cada club sea el **real** y
+   **no siempre el mismo**. Nada de que todos tengan de clásico a Colo-Colo o a la U.
+   Traé el par correcto (ej. Wanderers–Everton, Concepción–Fernández Vial, Antofagasta–Cobreloa,
+   Iquique–regional, etc.). Archivo: `RIVALIDADES_2026` en `data-clubes2026.js` (+ equivalentes
+   B/Segunda/Argentina). Devolvé la lista completa de pares corregida.
+
+3. **Economía realista por club.** `caja:{plata,deuda}` e indicadores (`socios`, `hinchada`,
+   `estadio`, `prestigio`) coherentes con la categoría y el tamaño real. Un grande no puede
+   tener caja de club chico ni al revés; un club de Segunda no maneja los millones de un grande.
+   Traé rangos/valores estimados con criterio y aviso "aproximado".
+
+4. **Planteles, canteranos, situación de jugadores, sponsors.** Que los planteles reales
+   (`PLANTEL_<ID>_2026`) existan y sean documentados; que los canteranos/jóvenes tengan sentido
+   por club; que las "situaciones con jugadores" (renovación, lesión, oferta) no repitan el mismo
+   nombre para todos; sponsors reales por club si están documentados (si no, dejar genérico).
+
+5. **Calendarios y fixtures DE CADA COPA.** Verificá que a cada club le toquen los partidos
+   correctos **por torneo**: Liga (rueda), **Copa Chile** (grupos/llaves reales), Supercopa,
+   y CONMEBOL (Libertadores/Sudamericana) **solo** para quien clasifica. Nada de Copa Chile en
+   Segunda ni Libertadores por liga en B. Archivos: `data-copas2026.js`, `data-formato2026.js`,
+   `motor.js` (construcción de calendario).
+
+6. **Equipos IA (los que NO elijo pero salen en mi calendario).** Verificá que esos rivales
+   simulados también tengan **su** fixture correcto y su temporada propia coherente (no que
+   jueguen partidos fantasma o resultados imposibles). Que el mundo alrededor del club elegido
+   sea consistente.
+
+7. **Simulación posterior NO idéntica — cambios "que aprueba la ANFP".** La liga no debería
+   repetirse igual cada año: sujetala a **cambios leves reales** de reglamento que de verdad
+   pasaron (traé los cambios históricos documentados: cantidad de clubes, descensos, formato
+   Apertura/Clausura→anual, cupos internacionales, etc.) para escalonarlos año a año, y dejá
+   propuesta de **cambios mayores a futuro** (hipotéticos, marcados como ficción). Entregá una
+   **línea de tiempo de reglas** para que Claude la implemente.
+
+8. **Estadios correctos.** Nombre real, **aforo/butacas** real, si el club **arrienda** o es
+   dueño, ciudad, y (si aplica) **precios de entrada** por categoría. Marcá los estadios mal
+   asignados o con aforo irreal. Archivos: `data-estadios.js`, campo `est`/`aforo` de cada club.
+
+9. **Sección HISTORIA para todos, INCLUIDA la liga argentina.** Verificá que la historia
+   funcione y tenga contenido para cada club chileno **y** argentino (`HISTORIA_BETA`,
+   `data-historia.js`, `data-historico.js`). Marcá los que quedan vacíos o con texto de otro club.
+
+10. **Más realismo en el Plop!** Titulares/tuits más creíbles y variados por contexto
+    (ver TAREA C): que reaccionen al club, la categoría y el momento real, no genéricos.
+
+11. **Modos históricos para TODOS los equipos, incluida Segunda.** Hoy hay 1925/2006 centrados
+    en Colo-Colo. Proponé, con **hechos verificados**, la época dorada/histórica de cada club
+    (año, título/hito, DT, plantel documentado) para que tenga su propio modo. Formato exacto de
+    `EPOCAS_CLUB_ADD` (ver `data-historia.js`) + `PLANTEL_<ID>_<AÑO>`. Incluí clubes de Segunda.
+
+12. **Modo 1925: sacar lo actual.** En 1925 no debe haber nada moderno (redes, mercado
+    millonario, Libertadores, sponsors, VAR). Mantener el **formato Plop** de la época (prensa
+    de 1925) y, si corresponde, **mismas reglas de fútbol** de entonces (verificá qué reglas
+    regían: offside, puntos por victoria, cantidad de jugadores). Marcá cualquier anacronismo.
+
+13. **UI dorada (oro) consistente — dato que falta.** Claude ya arregló el **lado del código**:
+    ahora un club marca su época de gloria en dorado igual para todos (Colo-Colo 1991 Libertadores
+    ya sale en oro, como el 2011 de la U). Lo que falta es **dato**: varios clubes todavía no
+    tienen ninguna época de gloria definida en `EPOCAS_CLUB`/`EPOCAS_CLUB_ADD`, así que su menú
+    no muestra botón dorado. En la TAREA E-11 entregá esas épocas para que **todos** tengan su
+    hito dorado. No inventes glorias: si un club no ganó nada grande, su "gloria" puede ser un
+    subcampeonato/ascenso real (como ya se hizo con Everton 2012 o Audax 2018).
+
+**Prioridad:** primero lo que rompe coherencia (clásicos, calendarios, estadios, economías),
+después contenido nuevo (historias, modos, épocas doradas), al final el pulido de texto (Plop!).
+
+---
+
 ### División de trabajo
 - **Grok:** datos verificados + detección de inconsistencias + pools de texto + voz.
 - **Claude / Build:** código (registro de ligas, formatos, UI, integración del pool).

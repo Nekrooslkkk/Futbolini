@@ -271,7 +271,7 @@ function elegirEpoca(id){
   } else if(id==="CC"){
     puntos.push({k:"cc25",tipo:"base",base:1925,anio:1925,etq:"1925 · Nacimiento (amateur)"});
     puntos.push({k:"cc89",tipo:"base",base:1991,anio:1989,etq:"1989 · La Reconstrucción"});
-    puntos.push({k:"cc91",tipo:"base",base:1991,anio:1991,etq:"1991 · La Gloria (Libertadores)"});
+    puntos.push({k:"cc91",tipo:"base",base:1991,anio:1991,etq:"1991 · La Gloria (Libertadores)",gloria:true});
     puntos.push({k:"cc06",tipo:"base",base:2006,anio:2006,etq:"2006 · Borghi"});
     puntos.push({k:"b2026",tipo:"base",base:2026,anio:2026,etq:"2026 · Actual"});
   } else if(solo2026){
@@ -324,7 +324,8 @@ function elegirEpoca(id){
       c.appendChild(el("h3","sub","1 · Elige cuándo empezar"));
       const fe=el("div","fichas");
       puntos.forEach(pt=>{
-        const btn=el("button","ficha"+(pt.tipo==="gloria"?" ficha-gloria":""),pt.etq);
+        const esOro=(pt.tipo==="gloria"||pt.gloria);
+        const btn=el("button","ficha"+(esOro?" ficha-gloria":""),pt.etq);
         btn.setAttribute("aria-pressed",sel.k===pt.k?"true":"false");
         btn.onclick=()=>{ sel=pt; corte=false; pintar(); };
         fe.appendChild(btn);
