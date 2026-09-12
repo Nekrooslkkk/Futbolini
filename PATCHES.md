@@ -2612,3 +2612,25 @@ Todavía no 8.00. Se tapan huecos. Donar: Bitcoin, sin pasarela, sin perks.
 
 
 
+
+## 8.0-dev · MOTOR DE EDICIÓN (rigor + editor tipo WordPress) — rama `claude/motor-dev-editor`, SIN subir
+Preparado aparte para no pisar a Grok. Tres archivos nuevos + doc, nada de los existentes tocado
+(salvo `index.html`, que solo suma 4 líneas de carga).
+- **js/dev-esquema.js** — el CONTRATO DE RIGOR: 17 campos que definen un club "completo",
+  medidos contra Colo-Colo, cada uno con `get`/`set` y dónde vive (`CLUB_INFO_2026[id].n`, etc.).
+  Incluye `DEV_SIN_DATO`: ausencias **justificadas** (dato sin fuente) que NO castigan el rigor,
+  para no empujar a inventar. Y `aplicarParcheClubes()`.
+- **js/dev-auditor.js** — `auditarClub(id)`, `auditarLiga(era)`, `auditarTodo()`, `devInforme()`.
+  Calibrado: CC/UCH/UC dan 100%. Foto real hoy: Primera/B/Segunda **100%**, Argentina 96%,
+  2006 96%, 1991 90%, **1925 25%** (9 de 12 clubes son cascarón) ← ahí está el hueco grande.
+- **js/dev-editor.js + css/dev.css** — el "WordPress": Ajustes → Modo dev (clave `peomojon`) →
+  **Editor de contenido**. Pestañas: **Rigor** (mapa de completitud por liga/club, clic para
+  editar), **Club** (todos los campos por grupo, lo que falta en rojo), **Liga** (formato),
+  **Exportar**. Lo editado se aplica en vivo y queda como parche en localStorage; "Exportar"
+  genera `data-parche-dev.js` para dejarlo permanente en git. **No modifica archivos de datos**,
+  así nunca pisa lo de Grok.
+- **PLANTILLA_LIGA.md** — receta mecánica para clonar una liga ("hacé la danesa"): array de clubes,
+  `registrarLiga`, federación, y la tabla de los 17 campos que exige el auditor.
+- **test/pruebas_dev.js + test/correr_dev.sh** — suite propia (24/24), aparte de `pruebas_core.js`
+  para no chocar con Grok.
+**Probado:** node --check + `correr_dev.sh` 24/24 + `correr.sh` 485/485 (sin regresiones) + capturas del panel.
