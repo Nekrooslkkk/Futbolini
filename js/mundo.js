@@ -50,7 +50,12 @@ function _ordTabla(tab, ids){
 
 function _ligaKeyJugador(){
   if(!E) return null;
-  if(E.eraBase==="arg2026") return "arg2026";
+  if(E.eraBase==="arg2026"){
+    const z=(typeof zonaArgDe==="function")?zonaArgDe(E.club):null;
+    if(z==="A") return "arg2026A";
+    if(z==="B") return "arg2026B";
+    return "arg2026A";
+  }
   if(E.eraBase==="2026c"){
     const z=(typeof zonaSegDe==="function")?zonaSegDe(E.club):(typeof clubZona==="function"?clubZona(E.club):"sur");
     return z==="norte"?"2026cN":"2026cS";
@@ -61,6 +66,10 @@ function _ligaKeyJugador(){
 }
 function _clubsDeLiga(key){
   if(key==="arg2026" && typeof LIGA_ARG_2026!=="undefined") return LIGA_ARG_2026.slice();
+  if((key==="arg2026A"||key==="arg2026B") && typeof LIGA_ARG_2026!=="undefined"){
+    const z=key==="arg2026A"?"A":"B";
+    return LIGA_ARG_2026.filter(c=>c.z===z);
+  }
   if(key==="2026" && typeof LIGA_2026!=="undefined") return LIGA_2026.slice();
   if(key==="2026b" && typeof LIGA_B_2026!=="undefined") return LIGA_B_2026.slice();
   if((key==="2026cN"||key==="2026cS") && typeof LIGA_C_2026!=="undefined"){
@@ -78,7 +87,7 @@ function mundoInit(){
   if(!E) return;
   const anio=E.anio||2026;
   const M={ anio:anio, ligas:{}, copas:{chile:{}, copaLiga:{}, lib:{}, sud:{}}, noticias:[], pais:[], tick:-1 };
-  ["2026","2026b","2026cN","2026cS","arg2026"].forEach(k=>{
+  ["2026","2026b","2026cN","2026cS","arg2026A","arg2026B"].forEach(k=>{
     const clubs=_clubsDeLiga(k);
     if(!clubs.length) return;
     const tab={}; clubs.forEach(c=>tab[c.id]=_fila0());
@@ -100,13 +109,26 @@ function mundoInit(){
       M.copas.copaLiga.grupos[letra]={ids:ids, tab:tab};
     });
   }
-  M.copas.lib.clubs={}; M.copas.lib.partidos=[];
-  M.copas.sud.clubs={}; M.copas.sud.partidos=[];
-  if(typeof LIB_GRUPOS_2026_CHILE==="object"){
-    Object.keys(LIB_GRUPOS_2026_CHILE).forEach(id=>{ M.copas.lib.clubs[id]=_fila0(); M.copas.lib.clubs[id].grupo=LIB_GRUPOS_2026_CHILE[id]; });
-  }
-  if(typeof SUD_FASE1_2026==="object"){
-    Object.keys(SUD_FASE1_2026).forEach(id=>{ M.copas.sud.clubs[id]=_fila0(); });
+  M.copas.lib.clubs={}; M.copas.lib.partidos=[]; M.copas.lib.grupos={};
+  M.copas.sud.clubs={}; M.copas.sud.partidos=[]; M.copas.sud.grupos={};
+  if(typeof CONMEBOL_GRUPOS_2026==="object"){
+    ["lib","sud"].forEach(tor=>{
+      (CONMEBOL_GRUPOS_2026[tor]||[]).forEach(g=>{
+        const tab={}; g.ids.forEach(id=>tab[id]=_fila0());
+        M.copas[tor].grupos[g.letra]={ids:g.ids.slice(), tab:tab, nom:g.nom||{}, fue:g.fue||{}, chile:g.chile||[], arg:g.arg||[]};
+        g.ids.forEach(id=>{
+          M.copas[tor].clubs[id]=_fila0();
+          M.copas[tor].clubs[id].grupo=g.letra;
+        });
+      });
+    });
+  } else {
+    if(typeof LIB_GRUPOS_2026_CHILE==="object"){
+      Object.keys(LIB_GRUPOS_2026_CHILE).forEach(id=>{ M.copas.lib.clubs[id]=_fila0(); M.copas.lib.clubs[id].grupo=LIB_GRUPOS_2026_CHILE[id]; });
+    }
+    if(typeof SUD_FASE1_2026==="object"){
+      Object.keys(SUD_FASE1_2026).forEach(id=>{ M.copas.sud.clubs[id]=_fila0(); });
+    }
   }
   E.mundo=M;
 }
@@ -114,6 +136,7 @@ function mundoInit(){
 function _nomLiga(k){
   return { "2026":"Liga de Primera", "2026b":"Liga de Ascenso (B)",
     "2026cN":"Segunda · Zona Norte", "2026cS":"Segunda · Zona Sur",
+    "arg2026A":"Apertura · Zona A", "arg2026B":"Apertura · Zona B",
     "arg2026":"Liga Profesional Argentina" }[k]||k;
 }
 
@@ -121,22 +144,36 @@ function mundoTick(part){
   if(!E) return;
   if(!E.mundo||E.mundo.anio!==E.anio) mundoInit();
   const n=(part&&part.fecha)?part.fecha:((E.idx||0)+1);
-  if(E.mundo.tick===n) return;
+  const target=(part&&part.fxRonda!=null)?(part.fxRonda+1):n;
+  if(E.mundo.tick===n && !(part&&part.fxRonda!=null)) return;
   E.mundo.tick=n;
   const propia=_ligaKeyJugador();
   Object.keys(E.mundo.ligas).forEach(k=>{
     if(k===propia) return;
-    mundoSimRondaLiga(k, n-1);
+    mundoAlcanzarRondaLiga(k, target);
   });
   if(propia && E.tabla && E.mundo.ligas[propia]){
     Object.keys(E.tabla).forEach(id=>{
       const t=E.tabla[id];
       if(t) E.mundo.ligas[propia].tab[id]={pj:t.pj,pg:t.pg,pe:t.pe,pp:t.pp,gf:t.gf,gc:t.gc,pts:t.pts};
     });
-    E.mundo.ligas[propia].ronda=n;
+    E.mundo.ligas[propia].ronda=Math.max(E.mundo.ligas[propia].ronda||0, target);
   }
   mundoSimCopas(part&&part.f, n);
   mundoArmarNoticias(part);
+}
+function mundoAlcanzarRonda(target){
+  if(!E||!E.mundo) return;
+  const propia=_ligaKeyJugador();
+  Object.keys(E.mundo.ligas||{}).forEach(k=>{
+    if(k===propia) return;
+    mundoAlcanzarRondaLiga(k, target);
+  });
+}
+function mundoAlcanzarRondaLiga(key, target){
+  const L=E.mundo.ligas[key]; if(!L||!L.fx) return;
+  const tope=Math.min(target, L.fx.length);
+  while((L.ronda||0)<tope) mundoSimRondaLiga(key, L.ronda||0);
 }
 
 function mundoSimRondaLiga(key, rondaIdx){
@@ -225,16 +262,50 @@ function mundoSimCopas(f, n){
       cl.ronda=(cl.ronda||0)+1;
     }
   }
-  if(n>0 && n%5===0){
-    Object.keys((E.mundo.copas.lib&&E.mundo.copas.lib.clubs)||{}).forEach(id=>{
-      if(id===E.club) return;
-      const yo=clubMundo(id); if(!yo) return;
-      const riv={id:"riv"+id, n:"rival CONMEBOL", fuerza:74+((yo.fuerza||60)%10)};
-      const [ga,gb]=_golesM(yo, riv);
-      _aplicarTabla(E.mundo.copas.lib.clubs, id, "RIV", ga, gb);
-      E.mundo.copas.lib.partidos.push({a:_nomClub(id), b:"rival grupo", ga:ga, gb:gb});
+  if(n>0){
+    ["lib","sud"].forEach(tor=>{
+      const pack=E.mundo.copas[tor];
+      if(!pack||!pack.grupos) return;
+      pack.ronda=pack.ronda||0;
+      const want=Math.min(6, Math.max(0, Math.floor((n-1)/2))); /* 6 fechas de grupo a lo largo del año */
+      while((pack.ronda||0)<want){
+        const r=pack.ronda||0;
+        Object.keys(pack.grupos).forEach(letra=>{
+          const g=pack.grupos[letra];
+          const fx=_rrGrupo(g.ids);
+          (fx[r]||[]).forEach(par=>{
+            if(E.club && (par[0]===E.club||par[1]===E.club)){
+              const mio=(E.calendario||[]).find(p=>p.tipo==="copa"&&p.jugado&&p.ronda==="Grupo "+letra&&p.rivalId&&(p.rivalId===par[0]||p.rivalId===par[1]));
+              if(mio){
+                const yo=mio.local?E.club:mio.rivalId, otro=mio.local?mio.rivalId:E.club;
+                const ga=mio.local?mio.gf:mio.gc, gb=mio.local?mio.gc:mio.gf;
+                if(yo&&otro){
+                  _aplicarTabla(g.tab, yo, otro, ga||0, gb||0);
+                  if(pack.clubs[yo]) _aplicarTabla(pack.clubs, yo, otro, ga||0, gb||0);
+                }
+              }
+              return;
+            }
+            const a=_clubConmebol(par[0], g), b=_clubConmebol(par[1], g);
+            if(!a||!b) return;
+            const [ga,gb]=_golesM(a,b);
+            _aplicarTabla(g.tab, par[0], par[1], ga, gb);
+            if(pack.clubs[par[0]]) _aplicarTabla(pack.clubs, par[0], par[1], ga, gb);
+            pack.partidos.push({a:a.n, b:b.n, ga:ga, gb:gb, grupo:letra, tor:tor});
+            E.mundo.pais.push({a:a.n,b:b.n,ga:ga,gb:gb,liga:(tor==="lib"?"Libertadores":"Sudamericana")+" · Grupo "+letra,idA:par[0],idB:par[1]});
+          });
+        });
+        pack.ronda=(pack.ronda||0)+1;
+      }
     });
   }
+}
+function _clubConmebol(id, g){
+  const c=clubMundo(id);
+  if(c) return c;
+  const nom=(g&&g.nom&&g.nom[id])||id;
+  const fue=(g&&g.fue&&g.fue[id])||70;
+  return {id:id, n:nom, c:nom, fuerza:fue};
 }
 
 function mundoArmarNoticias(part){
@@ -297,6 +368,17 @@ function mundoFilasCopa(torneo, letra){
   const g=pack.grupos[letra];
   return _ordTabla(g.tab, g.ids);
 }
+function mundoFilasConmebol(tor, letra){
+  const pack=E&&E.mundo&&E.mundo.copas&&E.mundo.copas[tor];
+  if(!pack||!pack.grupos||!pack.grupos[letra]) return [];
+  const g=pack.grupos[letra];
+  return (g.ids||[]).map(id=>{
+    const t=g.tab[id]||_fila0();
+    const c=clubMundo(id);
+    const n=(c&&(c.c||c.n))||(g.nom&&g.nom[id])||id;
+    return Object.assign({id:id, n:n}, t);
+  }).sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc)||b.gf-a.gf);
+}
 
 function mundoPintarTabla(filas, opts){
   opts=opts||{};
@@ -334,7 +416,7 @@ function panelMundoCalendario(v){
   const cont=el("div","mundo-cont");
   if(!E.uiMundoTab) E.uiMundoTab="tablas";
   const ops=esArg
-    ?[["tablas","Tablas"],["arg2026","Liga Profesional"],["pais","Resultados"]]
+    ?[["tablas","Tablas"],["arg2026A","Zona A"],["arg2026B","Zona B"],["conmebol","CONMEBOL"],["copaArg","Copa Argentina"],["pais","Resultados"]]
     :[["tablas","Tablas"],["2026","Primera"],["2026b","Primera B"],["2026cN","2ª Norte"],["2026cS","2ª Sur"],["chile","Copa Chile"],["copaLiga","Copa de la Liga"],["conmebol","CONMEBOL"],["pais","Resultados"]];
   function cabTabla(titulo, ic, filas, nota, compact){
     const p=panel(titulo, ic||"📊","agua");
@@ -349,14 +431,20 @@ function panelMundoCalendario(v){
     if(t==="tablas"){
       const intro=el("p","mini");
       if(esArg){
-        const p=mundoPuntero("arg2026");
-        intro.innerHTML=p&&p.pj>0
-          ?("Puntero ahora · <b>"+_nomClub(p.id)+"</b> "+p.pts+" pts. Liga Profesional, 30 clubes. Una rueda de 29 fechas.")
-          :"Liga Profesional Argentina. 30 clubes, una rueda. Las zonas A/B (15 y 15) están en cada club; el formato real es Apertura/Clausura.";
+        const pa=mundoPuntero("arg2026A"), pb=mundoPuntero("arg2026B");
+        const bits=[];
+        if(pa&&pa.pj>0) bits.push("Zona A: <b>"+_nomClub(pa.id)+"</b> "+pa.pts+" pts");
+        if(pb&&pb.pj>0) bits.push("Zona B: <b>"+_nomClub(pb.id)+"</b> "+pb.pts+" pts");
+        intro.innerHTML=bits.length
+          ?("Punteros ahora · "+bits.join(" · ")+". Apertura 2026: 2 zonas de 15, 14 PJ. Copa Argentina a partido único.")
+          :"Liga Profesional 2026: Apertura en 2 zonas de 15 (sorteo AFA). 14 partidos de zona. Tabla viva, ronda a ronda.";
         cont.appendChild(intro);
-        const grid=el("div","tablas-pais tablas-pais-1");
-        grid.appendChild(cabTabla("Liga Profesional Argentina · la tuya","📊", mundoFilasLiga("arg2026"),
-          "Tus puntos + el resto de la fecha, misma física. 30 clubes, 3 pts.", false));
+        const grid=el("div","tablas-pais");
+        [["arg2026A","Apertura · Zona A"],["arg2026B","Apertura · Zona B"]].forEach(([k,nom])=>{
+          const propia=_ligaKeyJugador()===k;
+          grid.appendChild(cabTabla(nom+(propia?" · la tuya":""),"📊", mundoFilasLiga(k),
+            propia?"Tus puntos + el resto de la fecha, misma física Poisson.":"No la jugás: se simula igual, ronda a ronda. Nadie empieza con 14 PJ.", false));
+        });
         cont.appendChild(grid);
         return;
       }
@@ -411,13 +499,19 @@ function panelMundoCalendario(v){
         cont.appendChild(pc);
       }
       const lib=E.mundo.copas.lib||{};
-      const idsLib=Object.keys(lib.clubs||{}).filter(id=>id!=="RIV");
-      if(idsLib.length){
-        const p=panel("Chilenos en CONMEBOL","🌎","agua");
-        p.cuerpo.appendChild(el("p","mini","Libertadores 2026: grupos reales Coquimbo (B) y Católica (D). Sudamericana: primera fase UCH-PAL y COB-AUD."));
-        idsLib.forEach(id=>{
-          const t2=lib.clubs[id];
-          p.cuerpo.appendChild(el("div","fila","<span>"+((typeof escudoChip==="function")?escudoChip(id):"")+_nomClub(id)+" · Lib grupo "+(t2.grupo||"?")+"</span><b>PJ "+t2.pj+" · "+t2.pts+" pts · "+t2.gf+":"+t2.gc+"</b>"));
+      const sud=E.mundo.copas.sud||{};
+      if((lib.grupos&&Object.keys(lib.grupos).length)||(sud.grupos&&Object.keys(sud.grupos).length)){
+        const p=panel("CONMEBOL · grupos 2026","🌎","agua");
+        p.cuerpo.appendChild(el("p","mini","Grupos reales 2026. Se simulan con la misma física Poisson. Si lo jugás vos, vale tu marcador. Sudamericana también tiene tabla."));
+        [["lib","Libertadores"],["sud","Sudamericana"]].forEach(([k,nom])=>{
+          const pack=E.mundo.copas[k];
+          if(!pack||!pack.grupos) return;
+          Object.keys(pack.grupos).forEach(letra=>{
+            const box=el("div","tabla-grupo");
+            box.appendChild(el("h3","sub",nom+" · Grupo "+letra));
+            box.appendChild(mundoPintarTabla(mundoFilasConmebol(k,letra),{compact:true}));
+            p.cuerpo.appendChild(box);
+          });
         });
         cont.appendChild(p);
       }
@@ -452,19 +546,39 @@ function panelMundoCalendario(v){
       return;
     }
     if(t==="conmebol"){
-      const p=panel("Chilenos en CONMEBOL","🌎","agua");
-      p.cuerpo.appendChild(el("p","mini","2026: a grupos de Libertadores solo Coquimbo (B) y Católica (D). Sudamericana: primera fase real (UCH-PAL, COB-AUD)."));
-      const lib=E.mundo.copas.lib||{};
-      Object.keys(lib.clubs||{}).forEach(id=>{
-        if(id==="RIV") return;
-        const t2=lib.clubs[id];
-        p.cuerpo.appendChild(el("div","fila","<span>"+((typeof escudoChip==="function")?escudoChip(id):"")+_nomClub(id)+" · Lib grupo "+(t2.grupo||"?")+"</span><b>PJ "+t2.pj+" · "+t2.pts+" pts · "+t2.gf+":"+t2.gc+"</b>"));
-      });
-      (lib.partidos||[]).slice(-8).forEach(x=>{
-        p.cuerpo.appendChild(el("div","fila mini","<span>"+x.a+" vs "+x.b+"</span><b>"+x.ga+"-"+x.gb+"</b>"));
+      const p=panel("CONMEBOL 2026 · Libertadores y Sudamericana","🌎","agua");
+      p.cuerpo.appendChild(el("p","mini","Grupos documentados (CONMEBOL / TyC 2026). Chile: Coquimbo B, Católica D; Sudamericana PAL F, AUD G, OHI C (tras Fase 3). Argentina: Estudiantes A, Independiente Rivadavia C, Boca D, Platense E. Se simulan; tus partidos valen."));
+      [["lib","Copa Libertadores"],["sud","Copa Sudamericana"]].forEach(([k,nom])=>{
+        const pack=E.mundo.copas[k];
+        if(!pack||!pack.grupos||!Object.keys(pack.grupos).length){
+          p.cuerpo.appendChild(el("p","mini",nom+": todavía no hay grupos sembrados en esta época."));
+          return;
+        }
+        p.cuerpo.appendChild(el("h3","sub",nom));
+        Object.keys(pack.grupos).forEach(letra=>{
+          p.cuerpo.appendChild(el("h3","sub","Grupo "+letra));
+          p.cuerpo.appendChild(mundoPintarTabla(mundoFilasConmebol(k, letra),{compact:false}));
+        });
+        (pack.partidos||[]).slice(-8).forEach(x=>{
+          p.cuerpo.appendChild(el("div","fila mini","<span>"+x.a+" vs "+x.b+(x.grupo?" · G"+x.grupo:"")+"</span><b>"+x.ga+"-"+x.gb+"</b>"));
+        });
       });
       if(typeof FORMAT_COPAS==="object" && FORMAT_COPAS.cupos2026)
         p.cuerpo.appendChild(el("p","mini",FORMAT_COPAS.cupos2026));
+      if(typeof FORMAT_COPAS==="object" && FORMAT_COPAS.sudamericana2026)
+        p.cuerpo.appendChild(el("p","mini",FORMAT_COPAS.sudamericana2026));
+      cont.appendChild(p);
+      return;
+    }
+    if(t==="copaArg"){
+      const p=panel("Copa Argentina 2026","🏆","agua");
+      p.cuerpo.appendChild(el("p","mini","64 equipos, partido único en cancha neutral. Empate: penales, sin alargue. El campeón entra a Libertadores 2027. Cruces de 32avos documentados (sorteo 10 dic 2025). El marcador lo jugás vos; no se copia el resultado histórico."));
+      const ms=(E.calendario||[]).filter(x=>x.tipo==="copa"&&/Copa Argentina/i.test(x.torneo||""));
+      if(!ms.length) p.cuerpo.appendChild(el("p","mini","Este club todavía no tiene Copa Argentina en el calendario (o no es un club AFA)."));
+      else ms.forEach(m=>{
+        const marc=m.jugado?(m.gf+"-"+m.gc):"—";
+        p.cuerpo.appendChild(el("div","fila","<span>"+(m.ronda||"32avos")+" vs "+(m.rivalNombre||"?")+(m.sede?" · "+m.sede:"")+"</span><b>"+marc+"</b>"));
+      });
       cont.appendChild(p);
       return;
     }
@@ -483,8 +597,8 @@ function panelMundoCalendario(v){
   const wrap=el("div","mundo-wrap");
   wrap.appendChild(el("h2","tit mundo-tit",esArg?"Tablas de la Liga Profesional":"Tablas del país"));
   wrap.appendChild(el("p","mini",esArg
-    ?"30 clubes, una rueda de 29 fechas. Tus puntos + el resto de la fecha. Formato real AFA: Apertura/Clausura en zonas de 15."
-    :"Primera, B, Segunda Norte y Sur, Copa Chile, Copa de la Liga y CONMEBOL. Aunque no las juegues, se simulan. La tuya va marcada."));
+    ?"Apertura 2026: 2 zonas de 15 (sorteo AFA). 14 PJ de zona. Copa Argentina: 32avos a partido único en cancha neutral, empate a penales. CONMEBOL 2026 de Boca D, Estudiantes A, Platense E, Independiente Rivadavia C."
+    :"Primera, B, Segunda Norte y Sur, Copa Chile, Copa de la Liga, Libertadores y Sudamericana. Aunque no las juegues, se simulan. La tuya va marcada."));
   wrap.appendChild(tabs); wrap.appendChild(cont);
   v.appendChild(wrap);
   pintar();

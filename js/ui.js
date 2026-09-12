@@ -1432,6 +1432,29 @@ function panelCopas(v){
         if(m.jugado&&m.goleadores&&m.goleadores.length){ fila.style.cursor="pointer"; fila.onclick=()=>modalRepeticion(m); }
         pc.cuerpo.appendChild(fila);
       });
+      if(/^Grupo /.test(r)){
+        const letra=r.replace(/^Grupo\s+/i,"");
+        let tabG=null;
+        if(/Libertadores|Sudamericana/i.test(t) && typeof tablaGrupoContinental==="function")
+          tabG=tablaGrupoContinental(t, r, E.club);
+        else if(/Copa Chile/i.test(t) && typeof tablaGrupoCopaChile==="function")
+          tabG=tablaGrupoCopaChile(letra, E.club);
+        else if(/Copa de la Liga/i.test(t) && typeof tablaGrupoCopaLiga==="function")
+          tabG=tablaGrupoCopaLiga(letra, E.club);
+        if(tabG&&tabG.length){
+          const tg=el("table","tabla-liga tabla-mini");
+          tg.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>Pts</th><th class='n'>DG</th></tr></thead>";
+          const tgb=el("tbody");
+          tabG.forEach((c,i)=>{
+            const tr=el("tr",c.id===E.club?"yo":"");
+            tr.innerHTML="<td class='n'>"+(i+1)+"</td><td>"+(c.n||c.id)+"</td><td class='n'>"+(c.pj||0)+"</td><td class='n'>"+(c.pts||0)+"</td><td class='n'>"+((c.gf||0)-(c.gc||0))+"</td>";
+            tgb.appendChild(tr);
+          });
+          tg.appendChild(tgb);
+          pc.cuerpo.appendChild(tg);
+          pc.cuerpo.appendChild(el("p","mini","Tabla viva: solo lo jugado. El resto del grupo se llena ronda a ronda con la misma física Poisson. Nadie aparece con 6 PJ cuando vos tenés 1."));
+        }
+      }
     });
     /* resumen abajo */
     const gTot=jugados.reduce((s,m)=>s+(m.gf||0),0), gcTot=jugados.reduce((s,m)=>s+(m.gc||0),0);
@@ -1540,8 +1563,29 @@ function vistaCalendario(){
   t.appendChild(tb); pt.cuerpo.appendChild(t);
   const _eraObj=((typeof eraDe==="function"?eraDe(E.eraBase):ERA[E.eraBase])||ERA[2026]);
   pt.cuerpo.appendChild(el("p","mini","Época "+_eraObj.n+": la victoria vale "+_eraObj.puntosVictoria+" puntos. "+
-    (_esSeg?("Zona de "+arr.length+" equipos (Norte/Sur). El 1º de cada zona juega la liguilla; el ganador sube a la B."):("Campeonato de "+LIGA_ACT.length+" equipos."))));
+    (_esSeg?("Zona de "+arr.length+" clubes (Norte/Sur, 12 PJ + 2 byes). Top 3 de cada zona van a la liguilla de ascenso de 7 (ida y vuelta, se parte de 0; el 1° sube a la B). Los 4°s se cruzan. Bottom 3, liguilla de permanencia. Volver a cruzar rivales de tu zona en la liguilla es el formato real."):("Campeonato de "+LIGA_ACT.length+" equipos."))));
   v.appendChild(pt);
+  if(typeof filasTablaActual==="function"){
+    const ft=filasTablaActual();
+    if(ft&&ft.filas&&ft.filas.length && _esSeg && E.flags && (E.flags.segundaFase==="liguillaAscenso"||E.flags.segundaFase==="liguillaDescenso")){
+      const pl=panel(ft.titulo||"Liguilla","🏆","agua");
+      pl.classList.add("tabla-liguilla-c");
+      if(ft.nota) pl.cuerpo.appendChild(el("p","mini",ft.nota));
+      const tl=el("table","tabla-liga");
+      tl.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>G</th><th class='n'>E</th><th class='n'>P</th><th class='n'>GF</th><th class='n'>GC</th><th class='n'>Pts</th></tr></thead>";
+      const tbl=el("tbody");
+      ft.filas.forEach((c,i)=>{
+        const nom=(typeof clubLookup==="function"&&clubLookup(c.id))||{};
+        const tr=el("tr",c.id===E.club?"yo":"");
+        const _ec=(typeof escudoChip==="function")?escudoChip(c.id):"";
+        tr.innerHTML="<td class='n'>"+(i+1)+"</td><td>"+_ec+(nom.n||c.n||c.id)+"</td><td class='n'>"+(c.pj||0)+"</td><td class='n'>"+(c.pg||0)+
+          "</td><td class='n'>"+(c.pe||0)+"</td><td class='n'>"+(c.pp||0)+"</td><td class='n'>"+(c.gf||0)+"</td><td class='n'>"+(c.gc||0)+"</td><td class='n'>"+(c.pts||0)+"</td>";
+        tbl.appendChild(tr);
+      });
+      tl.appendChild(tbl); pl.cuerpo.appendChild(tl);
+      v.appendChild(pl);
+    }
+  }
 }
 /* ---------------- historia ---------------- */
 function _idHistoriaClub(){
@@ -1569,29 +1613,30 @@ function vistaHistoria(){
     v.appendChild(ph);
   }
   const base=E.eraBase;
-  const esC=(typeof esClubC==="function")&&esClubC(E.club);
+  const esC=base==="2026c";
+  const esB=base==="2026b";
   const moderna=(base===2026||base==="2026b"||base==="2026c"||base==="arg2026");
-  if(moderna || (esC && base!==1991)){
-    const tit=base==="2026c"||esC?"Época 2026 · Segunda División"
-      :base==="2026b"?"Época 2026 · Primera B"
+  if(moderna){
+    const tit=esC?"Época 2026 · Segunda División"
+      :esB?"Época 2026 · Primera B"
       :base==="arg2026"?"Época 2026 · Liga Profesional (AFA)"
       :"Época 2026 · Primera División";
     const p2=panel(tit,"📚","agua");
-    const eraObj=(typeof eraDe==="function"?eraDe(base==="2026c"||esC?2026:base):ERA[2026])||ERA[2026];
+    const eraObj=(typeof eraDe==="function"?eraDe(esC?2026:base):ERA[2026])||ERA[2026];
     if(eraObj&&eraObj.desc && base!==1991) p2.cuerpo.appendChild(el("p",null,eraObj.desc));
     if(typeof HISTORIA_BETA==="object" && HISTORIA_BETA[hid] && HISTORIA_BETA[hid].actual){
       const ctx=HISTORIA_BETA[hid].actual;
       if(!(typeof textoHistoriaAjeno==="function" && textoHistoriaAjeno(ctx, hid)))
         p2.cuerpo.appendChild(el("div","resul mitad","<b>Contexto real.</b> "+ctx));
     }
-    if(base==="2026c" || esC){
-      p2.cuerpo.appendChild(el("p","mini","Segunda División Profesional 2026: 14 clubes, zonas Norte/Sur, liguilla por el ascenso a la B. Copa Chile 2026 no incluye Segunda. No hay Libertadores por liga. Esta pantalla no es la de Colo-Colo 1991."));
-    } else if(base==="2026b"){
-      p2.cuerpo.appendChild(el("p","mini","Liga de Ascenso 2026: 16 clubes, 3 puntos por victoria. Copa Chile con los 8 grupos reales (ida y vuelta). No se inventan octavos: hay que clasificar. La B no clasifica a Libertadores por liga."));
+    if(esC){
+      p2.cuerpo.appendChild(el("p","mini","Segunda División Profesional: 14 clubes, zonas Norte/Sur (12 PJ + 2 byes). Top 3 de cada zona a liguilla de ascenso de 7 (ida y vuelta, se parte de 0; volver a cruzar rivales de tu zona es el formato real). El 1° de esa liguilla sube a la B. No hay una final de 3 botones. Copa Chile no incluye Segunda (bases ANFP: 32 = Primera + B). Si subís, el año que viene jugás Copa Chile. No hay Libertadores por liga. Esta pantalla no es la de Colo-Colo 1991."));
+    } else if(esB){
+      p2.cuerpo.appendChild(el("p","mini","Liga de Ascenso: 16 clubes, 3 puntos por victoria. Copa Chile (Primera + B). No se inventan octavos: hay que clasificar. La B no clasifica a Libertadores por liga. Si subís a Primera, el año que viene entra Copa de la Liga."));
     } else if(base==="arg2026"){
       p2.cuerpo.appendChild(el("p","mini","Liga Profesional Argentina 2026 (AFA, no ANFP). 30 clubes, una rueda de 29 fechas. No se juega Copa Chile ni el Campeonato Nacional chileno de 1991."));
     } else {
-      p2.cuerpo.appendChild(el("p","mini","Primera División de Chile 2026. Victoria vale 3 puntos. Copa Chile y Copa de la Liga, según clasifiques."));
+      p2.cuerpo.appendChild(el("p","mini","Primera División de Chile. Victoria vale 3 puntos. Copa Chile y Copa de la Liga. El descenso te saca de Copa de la Liga; Copa Chile se sigue jugando en la B."));
     }
     p2.cuerpo.appendChild(el("div","resul mitad","<b>Aviso.</b> El plantel y los clubes de 2026 usan nombres reales de referencia, pero los datos son <b>aproximados</b> y pueden haber cambiado. Todo lo dramatizado (conversaciones, conflictos, frases) es ficción del juego."));
     p2.cuerpo.appendChild(el("p","mini","No hay una \"tabla histórica\" fija para 2026: la estás escribiendo tú temporada a temporada."));
@@ -2927,11 +2972,13 @@ function cerrarTemporada(){
       const nd=(typeof _nombreDiv==="function")?_nombreDiv:(t=>String(t));
       const nl=(typeof _nombresLista==="function")?_nombresLista:(a=>(a||[]).join(", "));
       const otrosB=(r.asc.bajan||[]).filter(id=>id!==E.club), otrosS=(r.asc.suben||[]).filter(id=>id!==E.club);
-      if(r.asc.tipo==="liguilla") p.cuerpo.appendChild(el("div","resul bien","<b>🏆 ¡CAMPEÓN DE TU ZONA!</b> "+E.clubNombre+" jugará la <b>liguilla de ascenso</b> contra "+(r.asc.pend&&r.asc.pend.rival?nombreDeClub(r.asc.pend.rival):"el campeón de la otra zona")+". Ganás, subís a Primera B."));
+      if(r.asc.tipo==="liguilla") p.cuerpo.appendChild(el("div","resul bien","<b>🏆 Clasificaste a la liguilla de 7.</b> Esa liguilla ya se jugó partido a partido. El 1° de esa tabla sube a Primera B — no hay una final de 3 botones."));
       else if(r.asc.tipo==="ascenso") p.cuerpo.appendChild(el("div","resul bien","<b>🎉 ¡ASCENSO!</b> "+E.clubNombre+" sube a "+nd(r.asc.up)+(otrosS.length?" junto a "+nl(otrosS):"")+". Baja "+nl(r.asc.bajan)+". El año que viene, arriba."));
       else if(r.asc.tipo==="descenso") p.cuerpo.appendChild(el("div","resul mal","<b>📉 DESCENSO.</b> "+E.clubNombre+" pierde la categoría y baja a "+nd(r.asc.lo)+(otrosB.length?" junto a "+nl(otrosB):"")+". Sube "+nl(r.asc.suben)+". El año que viene, a pelear el ascenso."));
       else if(r.asc.tipo==="otros") p.cuerpo.appendChild(el("p","mini","🔁 En "+nd(r.asc.lo)+": subió <b>"+nl(r.asc.suben)+"</b> y bajó <b>"+nl(r.asc.bajan)+"</b>."));
     }
+    if(E.flags&&E.flags.cupoSud) p.cuerpo.appendChild(el("div","resul bien","<b>🥈 Sudamericana "+(E.anio+1)+".</b> Clasificaste por la tabla (4°–6° o el repechaje Chile 4). El grupo lo sortea el juego."));
+    else if(E.flags&&E.flags.cupoLib) p.cuerpo.appendChild(el("div","resul bien","<b>🏆 Libertadores "+(E.anio+1)+".</b> El grupo lo sortea el juego (no es el sorteo CONMEBOL)."));
     const tot=E.coincidencias.length+E.divergencias.length;
     if(tot) p.cuerpo.appendChild(el("p","mini","Fidelidad histórica del año: "+Math.round(E.coincidencias.length*100/tot)+"%."));
     /* 6.11 · lo que quedó del año: los momentos que dejaron huella (memoria) */
@@ -2945,8 +2992,8 @@ function cerrarTemporada(){
       }
     }
     const _seguir=()=>{ nuevoAnio(); SEC="escritorio"; render(); aviso("Temporada "+E.anio); };
-    if(r.asc && r.asc.tipo==="liguilla" && r.asc.pend){
-      /* ganaste tu zona: la liguilla de ascenso se JUEGA antes de pasar de año */
+    if(r.asc && r.asc.tipo==="liguilla" && r.asc.pend && E.eraBase!=="2026c"){
+      /* legado: 1-vs-1 solo si NO es Segunda 2026 (ahí la liguilla de 7 ya se jugó) */
       const b=el("button","btn-aqua ancho verde","🏆 Jugar la liguilla de ascenso");
       b.onclick=()=>{ cerrarModal(); liguillaJugable(r.asc.pend, _seguir); };
       p.cuerpo.appendChild(b);

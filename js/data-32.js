@@ -139,22 +139,26 @@ function ordenarTablaCC(t,ids){
 }
 function tablaGrupoCopaChile(letra, clubId){
   var ids=(typeof COPA_CHILE_GRUPOS_2026!=="undefined"&&COPA_CHILE_GRUPOS_2026[letra])||[];
-  var t={}, i, j;
+  /* 7.994 · tabla VIVA: mundo (misma física, ronda a ronda). Nunca rellena lo que falta. */
+  if(typeof mundoFilasCopa==="function" && typeof E!=="undefined" && E && E.mundo){
+    var fil=mundoFilasCopa("chile", letra);
+    if(fil && fil.length) return fil;
+  }
+  if(typeof tablaViva==="function"){
+    var tab={};
+    ids.forEach(function(id){ tab[id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}; });
+    (E.calendario||[]).forEach(function(p){
+      if(p.tipo!=="copa"||p.torneo!=="Copa Chile"||p.ronda!=="Grupo "+letra||!p.jugado) return;
+      aplicarResultadoTablaCC(tab, clubId, p.rivalId, p.gf||0, p.gc||0);
+    });
+    return tablaViva(ids, tab);
+  }
+  var t={}, i;
   ids.forEach(function(id){ t[id]={id:id,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}; });
   (E.calendario||[]).forEach(function(p){
     if(p.tipo!=="copa"||p.torneo!=="Copa Chile"||p.ronda!=="Grupo "+letra||!p.jugado) return;
     aplicarResultadoTablaCC(t, clubId, p.rivalId, p.gf||0, p.gc||0);
   });
-  for(i=0;i<ids.length;i++) for(j=i+1;j<ids.length;j++){
-    var a=ids[i], b=ids[j];
-    if(a===clubId||b===clubId) continue;
-    var ca=(typeof clubLookup==="function")?clubLookup(a):null;
-    var cb=(typeof clubLookup==="function")?clubLookup(b):null;
-    var m1=simularMarcadorFuerza(ca&&ca.fuerza, cb&&cb.fuerza, true);
-    aplicarResultadoTablaCC(t,a,b,m1[0],m1[1]);
-    var m2=simularMarcadorFuerza(cb&&cb.fuerza, ca&&ca.fuerza, true);
-    aplicarResultadoTablaCC(t,b,a,m2[0],m2[1]);
-  }
   return ordenarTablaCC(t, ids);
 }
 function tablaGrupoCopaChileEstimada(letra){

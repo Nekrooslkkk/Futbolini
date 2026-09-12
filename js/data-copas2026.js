@@ -14,8 +14,57 @@ var LIB_GRUPOS_2026_CHILE={COQ:"B",UC:"D"};
 var LIB_FASE2_2026={HUA:1,OHI:1};
 var SUD_FASE1_2026={UCH:1,PAL:1,COB:1,AUD:1};
 
-function clubEnLibertadores2026(id){ return !!(LIB_GRUPOS_2026_CHILE[id]||LIB_FASE2_2026[id]); }
-function clubEnSudamericana2026(id){ return !!SUD_FASE1_2026[id]||id==="OHI"; }
+/* Grupos CONMEBOL 2026 documentados (CONMEBOL / TyC / Sporting News, sep 2026).
+   Solo grupos con fuente. El juego simula los marcadores; no copia el fixture ajeno
+   como si fuera el resultado oficial, salvo el partido del jugador. */
+var CONMEBOL_GRUPOS_2026={
+  lib:[
+    {letra:"A", chile:[], arg:["ELP"],
+      ids:["FLA_BR","ELP","DIM_CO","CUS_PE"],
+      nom:{FLA_BR:"Flamengo",ELP:"Estudiantes (LP)",DIM_CO:"Independiente Medellín",CUS_PE:"Cusco FC"},
+      fue:{FLA_BR:90,ELP:75,DIM_CO:76,CUS_PE:68}},
+    {letra:"B", chile:["COQ"], arg:[],
+      ids:["COQ","TOL_CO","NAC_UY","UNI_PE"],
+      nom:{COQ:"Coquimbo Unido",TOL_CO:"Deportes Tolima",NAC_UY:"Nacional",UNI_PE:"Universitario"},
+      fue:{COQ:72,TOL_CO:76,NAC_UY:80,UNI_PE:74}},
+    {letra:"C", chile:[], arg:["IRV"],
+      ids:["IRV","FLU_BR","BOL_BO","DLG_VE"],
+      nom:{IRV:"Independiente Rivadavia",FLU_BR:"Fluminense",BOL_BO:"Bolívar",DLG_VE:"Deportivo La Guaira"},
+      fue:{IRV:61,FLU_BR:84,BOL_BO:76,DLG_VE:64}},
+    {letra:"D", chile:["UC"], arg:["BOC"],
+      ids:["UC","CRU_BR","BOC","BAR_EC"],
+      nom:{UC:"Universidad Católica",CRU_BR:"Cruzeiro",BOC:"Boca Juniors",BAR_EC:"Barcelona SC"},
+      fue:{UC:78,CRU_BR:84,BOC:86,BAR_EC:76}},
+    {letra:"E", chile:[], arg:["PLA"],
+      ids:["COR_BR","PLA","SFE_CO","PEN_UY"],
+      nom:{COR_BR:"Corinthians",PLA:"Platense",SFE_CO:"Independiente Santa Fe",PEN_UY:"Peñarol"},
+      fue:{COR_BR:82,PLA:63,SFE_CO:74,PEN_UY:78}}
+  ],
+  sud:[
+    {letra:"C", chile:["OHI"], arg:[],
+      ids:["OHI","MIL_CO","SAO_BR","BOS_UY"],
+      nom:{OHI:"O'Higgins",MIL_CO:"Millonarios",SAO_BR:"São Paulo",BOS_UY:"Boston River"},
+      fue:{OHI:70,MIL_CO:76,SAO_BR:84,BOS_UY:68}},
+    {letra:"F", chile:["PAL"], arg:["RIE"],
+      ids:["PAL","RIE","MCT_UY","GRE_BR"],
+      nom:{PAL:"Palestino",RIE:"Deportivo Riestra",MCT_UY:"Montevideo City Torque",GRE_BR:"Grêmio"},
+      fue:{PAL:68,RIE:58,MCT_UY:70,GRE_BR:82}},
+    {letra:"G", chile:["AUD"], arg:["BAR"],
+      ids:["AUD","OLI_PY","VAS_BR","BAR"],
+      nom:{AUD:"Audax Italiano",OLI_PY:"Olimpia",VAS_BR:"Vasco da Gama",BAR:"Barracas Central"},
+      fue:{AUD:68,OLI_PY:80,VAS_BR:82,BAR:57}}
+  ]
+};
+function conmebolGrupoDe(clubId, torneo){
+  var pack=CONMEBOL_GRUPOS_2026[torneo==="lib"||torneo==="Copa Libertadores"?"lib":"sud"];
+  if(!pack) return null;
+  var i;
+  for(i=0;i<pack.length;i++) if(pack[i].ids.indexOf(clubId)>=0) return pack[i];
+  return null;
+}
+
+function clubEnLibertadores2026(id){ return !!(LIB_GRUPOS_2026_CHILE[id]||LIB_FASE2_2026[id]||(typeof conmebolGrupoDe==="function"&&conmebolGrupoDe(id,"lib"))); }
+function clubEnSudamericana2026(id){ return !!SUD_FASE1_2026[id]||id==="OHI"||(typeof conmebolGrupoDe==="function"&&conmebolGrupoDe(id,"sud")); }
 
 function etqCompromiso(part){
   if(!part) return "";
@@ -80,6 +129,38 @@ var COPA_2026_INICIAL={
   AUD:[
     {torneo:"Copa Sudamericana",ronda:"Primera fase",rivalId:"COB",local:false,sede:"Estadio Zorros del Desierto",f:{m:3,d:3},real:"1-1",
       nota:"Primera fase 2026, partido único en Calama. Histórico 1-1; Audax pasó 3-2 en penales. El juego, si empatas, define al azar quién pasa."}
+  ],
+  BOC:[
+    {torneo:"Copa Libertadores",ronda:"Grupo D",rival:"Universidad Católica",fuerza:78,local:false,sede:"Claro Arena",f:{m:4,d:7},real:"2-1"},
+    {torneo:"Copa Libertadores",ronda:"Grupo D",rival:"Barcelona SC",fuerza:76,local:true, sede:"La Bombonera",f:{m:4,d:15},real:"3-0"},
+    {torneo:"Copa Libertadores",ronda:"Grupo D",rival:"Cruzeiro",fuerza:84,local:false,sede:"Mineirão",f:{m:4,d:29},real:"0-1"},
+    {torneo:"Copa Libertadores",ronda:"Grupo D",rival:"Barcelona SC",fuerza:76,local:false,sede:"Monumental (Guayaquil)",f:{m:5,d:6},real:"0-1"},
+    {torneo:"Copa Libertadores",ronda:"Grupo D",rival:"Cruzeiro",fuerza:84,local:true, sede:"La Bombonera",f:{m:5,d:21},real:"1-1"},
+    {torneo:"Copa Libertadores",ronda:"Grupo D",rival:"Universidad Católica",fuerza:78,local:true, sede:"La Bombonera",f:{m:5,d:28},real:"0-1"}
+  ],
+  ELP:[
+    {torneo:"Copa Libertadores",ronda:"Grupo A",rival:"Flamengo",fuerza:90,local:false,sede:"Maracaná",f:{m:4,d:8}},
+    {torneo:"Copa Libertadores",ronda:"Grupo A",rival:"Independiente Medellín",fuerza:76,local:true, sede:"Jorge Luis Hirschi",f:{m:4,d:15}},
+    {torneo:"Copa Libertadores",ronda:"Grupo A",rival:"Cusco FC",fuerza:68,local:false,sede:"Garcilaso",f:{m:4,d:29}},
+    {torneo:"Copa Libertadores",ronda:"Grupo A",rival:"Independiente Medellín",fuerza:76,local:false,sede:"Atanasio Girardot",f:{m:5,d:6}},
+    {torneo:"Copa Libertadores",ronda:"Grupo A",rival:"Cusco FC",fuerza:68,local:true, sede:"Jorge Luis Hirschi",f:{m:5,d:21}},
+    {torneo:"Copa Libertadores",ronda:"Grupo A",rival:"Flamengo",fuerza:90,local:true, sede:"Jorge Luis Hirschi",f:{m:5,d:27}}
+  ],
+  IRV:[
+    {torneo:"Copa Libertadores",ronda:"Grupo C",rival:"Bolívar",fuerza:76,local:true, sede:"Malvinas Argentinas",f:{m:4,d:8},real:"1-0"},
+    {torneo:"Copa Libertadores",ronda:"Grupo C",rival:"Fluminense",fuerza:84,local:false,sede:"Maracaná",f:{m:4,d:15}},
+    {torneo:"Copa Libertadores",ronda:"Grupo C",rival:"Deportivo La Guaira",fuerza:64,local:true, sede:"Malvinas Argentinas",f:{m:4,d:29}},
+    {torneo:"Copa Libertadores",ronda:"Grupo C",rival:"Fluminense",fuerza:84,local:true, sede:"Malvinas Argentinas",f:{m:5,d:6}},
+    {torneo:"Copa Libertadores",ronda:"Grupo C",rival:"Deportivo La Guaira",fuerza:64,local:false,sede:"Olímpico de la UCV",f:{m:5,d:21}},
+    {torneo:"Copa Libertadores",ronda:"Grupo C",rival:"Bolívar",fuerza:76,local:false,sede:"Hernando Siles",f:{m:5,d:27}}
+  ],
+  PLA:[
+    {torneo:"Copa Libertadores",ronda:"Grupo E",rival:"Corinthians",fuerza:82,local:false,sede:"Neo Química Arena",f:{m:4,d:8}},
+    {torneo:"Copa Libertadores",ronda:"Grupo E",rival:"Independiente Santa Fe",fuerza:74,local:true, sede:"Ciudad de Vicente López",f:{m:4,d:15}},
+    {torneo:"Copa Libertadores",ronda:"Grupo E",rival:"Peñarol",fuerza:78,local:false,sede:"Campeón del Siglo",f:{m:4,d:29}},
+    {torneo:"Copa Libertadores",ronda:"Grupo E",rival:"Independiente Santa Fe",fuerza:74,local:false,sede:"El Campín",f:{m:5,d:6}},
+    {torneo:"Copa Libertadores",ronda:"Grupo E",rival:"Peñarol",fuerza:78,local:true, sede:"Ciudad de Vicente López",f:{m:5,d:21}},
+    {torneo:"Copa Libertadores",ronda:"Grupo E",rival:"Corinthians",fuerza:82,local:true, sede:"Ciudad de Vicente López",f:{m:5,d:27}}
   ]
 };
 
@@ -231,6 +312,12 @@ function sacarCopaPendienteTorneo(torneo){
 }
 
 function tablaGrupoContinental(torneo, ronda, clubId){
+  var letra=(ronda||"").replace(/^Grupo\s+/i,"");
+  var tor= /Sudamericana/i.test(torneo||"") ? "sud" : "lib";
+  if(typeof mundoFilasConmebol==="function" && typeof E!=="undefined" && E && E.mundo){
+    var filM=mundoFilasConmebol(tor, letra);
+    if(filM && filM.length) return filM;
+  }
   var mios=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"&&p.torneo===torneo&&p.ronda===ronda; });
   var keys=[clubId], nombres={}; nombres[clubId]=(typeof clubLookup==="function"&&clubLookup(clubId)||{}).c||clubId;
   var fuerzas={}; fuerzas[clubId]=(typeof clubLookup==="function"&&clubLookup(clubId)||{}).fuerza||60;
@@ -251,15 +338,6 @@ function tablaGrupoContinental(torneo, ronda, clubId){
     if(!p.jugado) return;
     app(clubId, p.rivalId||p.rivalNombre, p.gf||0, p.gc||0);
   });
-  var i,j,a,b,m1,m2,sim=(typeof simularMarcadorFuerza==="function")?simularMarcadorFuerza:function(fa,fb){ return [1,1]; };
-  for(i=0;i<keys.length;i++) for(j=i+1;j<keys.length;j++){
-    a=keys[i]; b=keys[j];
-    if(a===clubId||b===clubId) continue;
-    m1=sim(fuerzas[a], fuerzas[b], true);
-    app(a,b,m1[0],m1[1]);
-    m2=sim(fuerzas[b], fuerzas[a], true);
-    app(b,a,m2[0],m2[1]);
-  }
   var arr=keys.map(function(id){ return t[id]; });
   arr.sort(function(x,y){
     if(y.pts!==x.pts) return y.pts-x.pts;
@@ -426,9 +504,9 @@ function ajustarObjetivos33(objs){
   var b=E&&E.eraBase==="2026b";
   var dep=null, i;
   for(i=0;i<objs.length;i++) if(objs[i].id==="dep") dep=objs[i];
-  var enLibG=anio===2026&&!!LIB_GRUPOS_2026_CHILE[E.club];
+  var enLibG=anio===2026&&(!!LIB_GRUPOS_2026_CHILE[E.club]||!!(typeof conmebolGrupoDe==="function"&&conmebolGrupoDe(E.club,"lib")));
   var enLibF=anio===2026&&!!LIB_FASE2_2026[E.club];
-  var enSud=anio===2026&&!!SUD_FASE1_2026[E.club];
+  var enSud=anio===2026&&(!!SUD_FASE1_2026[E.club]||E.club==="OHI"||!!(typeof conmebolGrupoDe==="function"&&conmebolGrupoDe(E.club,"sud")));
   if(b && dep){
     if(p>=60){ dep.t="Pelear el ascenso"; dep.meta=2; dep.detalle="Terminar entre los primeros 2 de la B.";
       dep.porque="La B no clasifica a Libertadores. El premio es subir a Primera."; }
@@ -466,6 +544,12 @@ function ajustarObjetivos33(objs){
       t:"Avanzar en Sudamericana",
       detalle:"Pasar la primera fase (partido único, rival chileno real) y pelear el grupo si clasificas.",
       porque:"El 2026 de Sudamericana también ya se jugó: no es un cupo genérico de Libertadores."});
+  }
+  if(!enLibG && !enLibF && !enSud && !b && anio===2026 && !hay("sud27") && dep){
+    objs.push({id:"sud27",cat:"deportivo",tipo:"posicion",meta:6,
+      t:"Clasificar a Sudamericana 2027",
+      detalle:"4° a 6° de Liga (o el que pierde el repechaje Chile 4) entra a Sudamericana. Un club no va a las dos copas CONMEBOL.",
+      porque:"No todos van a Libertadores. Sudamericana se ofrece por la tabla, no se inventa un cupo."});
   }
   if(anio>=2027 && E.flags && E.flags.cupoLib && !hay("lib")){
     objs.unshift({id:"lib",cat:"deportivo",tipo:"copaAvance",torneo:"Copa Libertadores",meta:"octavos",

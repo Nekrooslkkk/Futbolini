@@ -139,15 +139,91 @@ function _marcadorEstable(idA, idB, localA, clave){
   return [ga,gb];
 }
 function _jornadaZonaC(clubId, rivalId){
-  var z=(typeof clubZona==="function")?clubZona(clubId):null;
-  if(!z||typeof LIGA_C_2026==="undefined") return [[clubId,rivalId]];
-  var ids=LIGA_C_2026.filter(function(c){ return c.z===z; }).map(function(c){ return c.id; });
-  var pares=[[clubId,rivalId]], used={};
-  used[clubId]=1; used[rivalId]=1;
-  var rest=ids.filter(function(id){ return !used[id]; });
-  var i;
-  for(i=0;i+1<rest.length;i+=2) pares.push([rest[i], rest[i+1]]);
-  return pares;
+  var z=(typeof zonaSegDe==="function")?zonaSegDe(clubId):((typeof clubZona==="function")?clubZona(clubId):null);
+  var fx=fixturesZonaC(z);
+  var i,j,fecha,a,b;
+  for(i=0;i<fx.length;i++){
+    fecha=fx[i]||[];
+    for(j=0;j<fecha.length;j++){
+      a=fecha[j][0]; b=fecha[j][1];
+      if((a===clubId&&b===rivalId)||(a===rivalId&&b===clubId)) return fecha.slice();
+    }
+  }
+  return [[clubId,rivalId]];
+}
+function fixturesZonaC(z){
+  var ids=idsZonaCDe(z);
+  if(!ids.length) return [];
+  if(typeof fixturesLiga==="function") return fixturesLiga(ids.map(function(id){ return {id:id}; }));
+  return [];
+}
+function _aplicarFilaTabla(tab, idA, idB, ga, gb){
+  if(!tab[idA]) tab[idA]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
+  if(!tab[idB]) tab[idB]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
+  var ta=tab[idA], tb=tab[idB], pv=(typeof puntosVictoria==="function")?puntosVictoria():3;
+  ta.pj++; tb.pj++; ta.gf+=ga; ta.gc+=gb; tb.gf+=gb; tb.gc+=ga;
+  if(ga>gb){ ta.pg++; ta.pts+=pv; tb.pp++; }
+  else if(ga<gb){ tb.pg++; tb.pts+=pv; ta.pp++; }
+  else { ta.pe++; tb.pe++; ta.pts++; tb.pts++; }
+}
+/* Rondas de bye (el jugador no juega): se simulan con Poisson para que
+   todos cierren con 12 PJ, no con tablas raras de 11 vs 12. */
+function _simularRondasZonaHasta(hastaRonda){
+  if(typeof E==="undefined"||!E||E.eraBase!=="2026c") return;
+  var z=(typeof zonaSegDe==="function")?zonaSegDe(E.club):((typeof clubZona==="function")?clubZona(E.club):null);
+  var fx=fixturesZonaC(z);
+  if(!fx.length) return;
+  E.flags=E.flags||{};
+  E.flags.zonaCSim=E.flags.zonaCSim||{};
+  if(!E.tabla) E.tabla={};
+  var r, fecha, i, par, a, b, goles, clubId=E.club;
+  var tope=(hastaRonda==null)?(fx.length-1):hastaRonda;
+  for(r=0;r<=tope&&r<fx.length;r++){
+    if(E.flags.zonaCSim[r]) continue;
+    fecha=fx[r]||[];
+    var playerIn=fecha.some(function(p){ return p[0]===clubId||p[1]===clubId; });
+    if(playerIn){ E.flags.zonaCSim[r]=1; continue; }
+    for(i=0;i<fecha.length;i++){
+      par=fecha[i];
+      if(par[0]===clubId||par[1]===clubId) continue;
+      a=(typeof clubLookup==="function")?clubLookup(par[0]):null;
+      b=(typeof clubLookup==="function")?clubLookup(par[1]):null;
+      if(!a||!b) continue;
+      goles=(typeof _golesSimulados==="function")?_golesSimulados(a,b,"zC|"+r+"|"+a.id+"|"+b.id):[1,1];
+      _aplicarFilaTabla(E.tabla, a.id, b.id, goles[0], goles[1]);
+    }
+    E.flags.zonaCSim[r]=1;
+  }
+  try{ if(typeof mundoAlcanzarRonda==="function") mundoAlcanzarRonda(tope+1); }catch(e){}
+}
+function _simularRondasLiguillaHasta(hastaRonda){
+  if(typeof E==="undefined"||!E||!E.flags||!E.flags.liguillaCIds) return;
+  var ids=E.flags.liguillaCIds;
+  var fx=(typeof fixturesLiga==="function")?fixturesLiga(ids.map(function(id){ return {id:id}; })):[];
+  if(!fx.length) return;
+  if(!E.tablaLiguilla){
+    E.tablaLiguilla={};
+    ids.forEach(function(id){ E.tablaLiguilla[id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}; });
+  }
+  E.flags.liguillaCSim=E.flags.liguillaCSim||{};
+  var r, fecha, i, par, a, b, goles, clubId=E.club;
+  var tope=(hastaRonda==null)?(fx.length-1):hastaRonda;
+  for(r=0;r<=tope&&r<fx.length;r++){
+    if(E.flags.liguillaCSim[r]) continue;
+    fecha=fx[r]||[];
+    var playerIn=fecha.some(function(p){ return p[0]===clubId||p[1]===clubId; });
+    if(playerIn){ E.flags.liguillaCSim[r]=1; continue; }
+    for(i=0;i<fecha.length;i++){
+      par=fecha[i];
+      if(par[0]===clubId||par[1]===clubId) continue;
+      a=(typeof clubLookup==="function")?clubLookup(par[0]):null;
+      b=(typeof clubLookup==="function")?clubLookup(par[1]):null;
+      if(!a||!b) continue;
+      goles=(typeof _golesSimulados==="function")?_golesSimulados(a,b):[1,1];
+      _aplicarFilaTabla(E.tablaLiguilla, a.id, b.id, goles[0], goles[1]);
+    }
+    E.flags.liguillaCSim[r]=1;
+  }
 }
 
 /* ---------- Copa de la Liga ---------- */
@@ -199,7 +275,11 @@ function tablaGrupoCopaLiga(letra, clubId){
       if(p.tipo==="copa"&&p.torneo==="Copa de la Liga"&&p.ronda==="Grupo "+letra&&p.rivalId&&ids.indexOf(p.rivalId)<0) ids.push(p.rivalId);
     });
   }
-  var t={}, i, j;
+  if(typeof mundoFilasCopa==="function" && typeof E!=="undefined" && E && E.mundo){
+    var fil=mundoFilasCopa("copaLiga", letra);
+    if(fil && fil.length) return fil;
+  }
+  var t={};
   ids.forEach(function(id){ t[id]={id:id,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}; });
   function app(a,b,ga,gb){
     if(!t[a]||!t[b]) return;
@@ -212,24 +292,13 @@ function tablaGrupoCopaLiga(letra, clubId){
     if(p.tipo!=="copa"||p.torneo!=="Copa de la Liga"||p.ronda!=="Grupo "+letra||!p.jugado) return;
     app(clubId, p.rivalId, p.gf||0, p.gc||0);
   });
-  var sim=_marcadorEstable;
-  for(i=0;i<ids.length;i++) for(j=i+1;j<ids.length;j++){
-    var a=ids[i], b=ids[j];
-    if(a===clubId||b===clubId) continue;
-    var m1=sim(a,b,true,"cl"+letra);
-    app(a,b,m1[0],m1[1]);
-    var m2=sim(b,a,true,"cl"+letra);
-    app(b,a,m2[0],m2[1]);
-  }
-  var arr=ids.map(function(id){ return t[id]; });
+  if(typeof tablaViva==="function") return tablaViva(ids, t);
+  var arr=ids.map(function(id){ return Object.assign({id:id}, t[id]); });
   arr.sort(function(x,y){
     if(y.pts!==x.pts) return y.pts-x.pts;
     var dx=x.gf-x.gc, dy=y.gf-y.gc;
     if(dy!==dx) return dy-dx;
-    if(y.gf!==x.gf) return y.gf-x.gf;
-    var fx=(typeof clubLookup==="function"&&clubLookup(x.id)||{}).fuerza||0;
-    var fy=(typeof clubLookup==="function"&&clubLookup(y.id)||{}).fuerza||0;
-    return fy-fx;
+    return (y.gf||0)-(x.gf||0);
   });
   return arr;
 }
@@ -411,7 +480,7 @@ function _ligaCPart(clubId, rivalId, local, f, fase, fechaN, ronda){
     fecha:fechaN||null, rivalId:rivalId, rivalNombre:riv.n, fuerzaRival:riv.fuerza,
     local:!!local, sede:local?yo.est:riv.est, f:f, jugado:false,
     clima:(typeof climaDeFecha==="function")?climaDeFecha(f.m,"seg"+clubId+fase+(f.d||0)):"despejado",
-    fase:fase, zona:(typeof clubZona==="function")?clubZona(clubId):null
+    fase:fase, zona:(typeof zonaSegDe==="function")?zonaSegDe(clubId):((typeof clubZona==="function")?clubZona(clubId):null)
   };
   /* playoff/liguilla no son una fecha de zona: no simular el resto de la rueda.
      zonal: solo pares de la misma zona (7 equipos, 1 fecha libre) */
@@ -419,58 +488,88 @@ function _ligaCPart(clubId, rivalId, local, f, fase, fechaN, ronda){
   else if(fase==="zonal") p.jornada=_jornadaZonaC(clubId, rivalId);
   return p;
 }
+function idsZonaCDe(z){
+  var ids, zonaDe;
+  if(!z) return [];
+  if(typeof E!=="undefined" && E && E.ligaMod && E.ligaMod["2026c"]) ids=E.ligaMod["2026c"].slice();
+  else if(typeof LIGA_C_2026!=="undefined") ids=LIGA_C_2026.map(function(c){ return c.id; });
+  else return [];
+  zonaDe=(typeof zonaSegDe==="function")?zonaSegDe:(typeof clubZona==="function"?clubZona:function(){ return null; });
+  return ids.filter(function(id){ return zonaDe(id)===z; });
+}
 function partidosZonalesC(clubId){
-  if(typeof clubZona!=="function"||typeof LIGA_C_2026==="undefined") return [];
-  var z=clubZona(clubId);
-  var rivales=LIGA_C_2026.filter(function(c){ return c.z===z&&c.id!==clubId; }).map(function(c){ return c.id; });
-  var out=[], i, p;
-  for(i=0;i<rivales.length;i++){
-    p=_ligaCPart(clubId, rivales[i], true, ZONAL_C_FECHAS[i]||{m:4,d:1+i}, "zonal", i+1, "Zona "+(z==="norte"?"Norte":"Sur"));
-    if(p) out.push(p);
-  }
-  for(i=0;i<rivales.length;i++){
-    p=_ligaCPart(clubId, rivales[i], false, ZONAL_C_FECHAS[i+rivales.length]||{m:5,d:1+i}, "zonal", rivales.length+i+1, "Zona "+(z==="norte"?"Norte":"Sur"));
-    if(p) out.push(p);
+  var z=(typeof zonaSegDe==="function")?zonaSegDe(clubId):((typeof clubZona==="function")?clubZona(clubId):null);
+  if(!z) return [];
+  var fx=fixturesZonaC(z);
+  var out=[], r, fecha, i, mio, local, riv, p, n=0;
+  var fechasCal=ZONAL_C_FECHAS.concat([
+    {m:6,d:14},{m:6,d:21}
+  ]);
+  for(r=0;r<fx.length;r++){
+    fecha=fx[r]||[];
+    mio=null;
+    for(i=0;i<fecha.length;i++){
+      if(fecha[i][0]===clubId||fecha[i][1]===clubId) mio=fecha[i];
+    }
+    if(!mio) continue;
+    local=mio[0]===clubId;
+    riv=local?mio[1]:mio[0];
+    p=_ligaCPart(clubId, riv, local, fechasCal[n]||{m:4,d:1+n}, "zonal", n+1, "Zona "+(z==="norte"?"Norte":"Sur"));
+    if(p){ p.jornada=fecha.slice(); p.fxRonda=r; out.push(p); n++; }
   }
   return out;
 }
 function tablaZonaC(z, clubId){
-  var ids=LIGA_C_2026.filter(function(c){ return c.z===z; }).map(function(c){ return c.id; });
-  var t={}, i, j;
-  ids.forEach(function(id){ t[id]={id:id,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}; });
-  function app(a,b,ga,gb){
-    if(!t[a]||!t[b]) return;
-    t[a].pj++; t[b].pj++; t[a].gf+=ga; t[a].gc+=gb; t[b].gf+=gb; t[b].gc+=ga;
-    if(ga>gb){ t[a].pg++; t[a].pts+=3; t[b].pp++; }
-    else if(ga<gb){ t[b].pg++; t[b].pts+=3; t[a].pp++; }
-    else { t[a].pe++; t[b].pe++; t[a].pts++; t[b].pts++; }
+  var ids=idsZonaCDe(z);
+  var zMia=(typeof zonaSegDe==="function")?zonaSegDe(clubId|| (typeof E!=="undefined"&&E&&E.club) ):null;
+  var arr, key;
+  /* la zona del jugador: E.tabla (Poisson de cada fecha, no un estimado aparte) */
+  if(z===zMia && typeof E!=="undefined"&&E&&E.tabla){
+    arr=ids.map(function(id){
+      var t=E.tabla[id]||{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
+      return Object.assign({id:id}, t);
+    });
+    arr.sort(function(x,y){
+      if(y.pts!==x.pts) return y.pts-x.pts;
+      var dx=x.gf-x.gc, dy=y.gf-y.gc;
+      if(dy!==dx) return dy-dx;
+      return (y.gf||0)-(x.gf||0);
+    });
+    return arr;
   }
-  (E.calendario||[]).forEach(function(p){
-    if(p.tipo!=="liga"||p.fase!=="zonal"||!p.jugado) return;
-    app(clubId, p.rivalId, p.gf||0, p.gc||0);
-  });
-  var sim=_marcadorEstable;
-  for(i=0;i<ids.length;i++) for(j=i+1;j<ids.length;j++){
-    var a=ids[i], b=ids[j];
-    if(a===clubId||b===clubId) continue;
-    var m1=sim(a,b,true,"zona"+z);
-    app(a,b,m1[0],m1[1]);
-    var m2=sim(b,a,true,"zona"+z);
-    app(b,a,m2[0],m2[1]);
+  /* la otra zona: el país (mundo.js), misma física, ronda a ronda — no un RR inventado de 12 PJ */
+  key=z==="norte"?"2026cN":"2026cS";
+  if(typeof E!=="undefined"&&E&&E.mundo&&E.mundo.ligas&&E.mundo.ligas[key]&&typeof mundoFilasLiga==="function"){
+    arr=mundoFilasLiga(key);
+    if(arr&&arr.length) return arr;
   }
-  var arr=ids.map(function(id){ return t[id]; });
-  arr.sort(function(x,y){
-    if(y.pts!==x.pts) return y.pts-x.pts;
-    var dx=x.gf-x.gc, dy=y.gf-y.gc;
-    if(dy!==dx) return dy-dx;
-    return (y.gf||0)-(x.gf||0);
-  });
-  return arr;
+  if(typeof tablaViva==="function") return tablaViva(ids, {});
+  var t0={};
+  ids.forEach(function(id){ t0[id]={id:id,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}; });
+  return ids.map(function(id){ return t0[id]; });
 }
 function tablaLiguillaC(fase, clubId){
   var lig=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"&&p.fase===fase; });
-  var ids=[clubId];
-  lig.forEach(function(p){ if(p.rivalId&&ids.indexOf(p.rivalId)<0) ids.push(p.rivalId); });
+  var ids=(E.flags&&E.flags.liguillaCIds)||[];
+  if(!ids.length){
+    ids=[clubId];
+    lig.forEach(function(p){ if(p.rivalId&&ids.indexOf(p.rivalId)<0) ids.push(p.rivalId); });
+  }
+  /* tabla viva: Poisson de cada fecha (wrapTerminar54 la cosecha a E.tablaLiguilla) */
+  if(E.tablaLiguilla && ids.some(function(id){ return E.tablaLiguilla[id]; })){
+    if(typeof tablaViva==="function") return tablaViva(ids, E.tablaLiguilla);
+    var live=ids.map(function(id){
+      var t=E.tablaLiguilla[id]||{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
+      return Object.assign({id:id}, t);
+    });
+    live.sort(function(x,y){
+      if(y.pts!==x.pts) return y.pts-x.pts;
+      var dx=x.gf-x.gc, dy=y.gf-y.gc;
+      if(dy!==dx) return dy-dx;
+      return (y.gf||0)-(x.gf||0);
+    });
+    return live;
+  }
   var t={};
   ids.forEach(function(id){ t[id]={id:id,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}; });
   function app(a,b,ga,gb){
@@ -484,16 +583,7 @@ function tablaLiguillaC(fase, clubId){
     if(!p.jugado) return;
     app(clubId, p.rivalId, p.gf||0, p.gc||0);
   });
-  var sim=_marcadorEstable;
-  var i,j;
-  for(i=0;i<ids.length;i++) for(j=i+1;j<ids.length;j++){
-    var a=ids[i], b=ids[j];
-    if(a===clubId||b===clubId) continue;
-    var m1=sim(a,b,true,fase);
-    app(a,b,m1[0],m1[1]);
-    var m2=sim(b,a,true,fase);
-    app(b,a,m2[0],m2[1]);
-  }
+  if(typeof tablaViva==="function") return tablaViva(ids, t);
   var arr=ids.map(function(id){ return t[id]; });
   arr.sort(function(x,y){
     if(y.pts!==x.pts) return y.pts-x.pts;
@@ -507,6 +597,12 @@ function _estimarLiguillaC(tipo, clubId, zona, posZonal, ganoPlayoff){
   var zMia=zona, zOtra=zMia==="norte"?"sur":"norte";
   var tabMia=tablaZonaC(zMia, clubId);
   var tabOtra=tablaZonaC(zOtra, clubId);
+  /* si la otra zona todavía no tiene PJ (mundo no tickeó), ordená por fuerza SOLO para armar el cupo — la tabla que se pinta sigue viva */
+  if(tabOtra.length && tabOtra.every(function(x){ return !x.pj; })){
+    tabOtra=tabOtra.slice().sort(function(a,b){
+      return ((typeof clubLookup==="function"&&clubLookup(b.id)||{}).fuerza||0)-((typeof clubLookup==="function"&&clubLookup(a.id)||{}).fuerza||0);
+    });
+  }
   var ids=[];
   function top(tab, n){ return tab.slice(0,n).map(function(x){ return x.id; }); }
   if(tipo==="ascenso"){
@@ -530,16 +626,29 @@ function _estimarLiguillaC(tipo, clubId, zona, posZonal, ganoPlayoff){
   return uniq;
 }
 function _sembrarLiguillaC(tipo, rivales){
-  var out=[], i, p;
+  var pool=[E.club].concat(rivales||[]);
+  var ids=[], seen={};
+  pool.forEach(function(id){ if(id&&!seen[id]){ seen[id]=1; ids.push(id); } });
+  ids=ids.slice(0,7);
+  E.flags=E.flags||{};
+  E.flags.liguillaCIds=ids;
+  E.tablaLiguilla={};
+  ids.forEach(function(id){ E.tablaLiguilla[id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}; });
+  var fx=(typeof fixturesLiga==="function")?fixturesLiga(ids.map(function(id){ return {id:id}; })):[];
+  var out=[], r, fecha, i, mio, local, riv, p, n=0;
   var ronda=tipo==="ascenso"?"Liguilla de ascenso":"Liguilla de permanencia";
   var fase=tipo==="ascenso"?"liguillaAscenso":"liguillaDescenso";
-  for(i=0;i<rivales.length;i++){
-    p=_ligaCPart(E.club, rivales[i], true, LIGUILLA_C_FECHAS[i]||{m:7,d:12+i*7}, fase, 20+i, ronda);
-    if(p) out.push(p);
-  }
-  for(i=0;i<rivales.length;i++){
-    p=_ligaCPart(E.club, rivales[i], false, LIGUILLA_C_FECHAS[i+rivales.length]||{m:8,d:12+i*7}, fase, 20+rivales.length+i, ronda);
-    if(p) out.push(p);
+  for(r=0;r<fx.length;r++){
+    fecha=fx[r]||[];
+    mio=null;
+    for(i=0;i<fecha.length;i++){
+      if(fecha[i][0]===E.club||fecha[i][1]===E.club) mio=fecha[i];
+    }
+    if(!mio) continue;
+    local=mio[0]===E.club;
+    riv=local?mio[1]:mio[0];
+    p=_ligaCPart(E.club, riv, local, LIGUILLA_C_FECHAS[n]||{m:7,d:12+n*7}, fase, 20+n, ronda);
+    if(p){ p.jornada=fecha.slice(); p.fxRonda=r; out.push(p); n++; }
   }
   _insertarYOrdenar(out);
 }
@@ -549,7 +658,11 @@ function avanzarFaseSegunda(part){
   var fase=part.fase||E.flags.segundaFase||"zonal";
   if(fase==="zonal"||!part.fase){
     var zon=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"&&(p.fase==="zonal"||!p.fase); });
-    if(zon.filter(function(p){ return p.jugado; }).length<zon.length) return;
+    if(zon.filter(function(p){ return p.jugado; }).length<zon.length){
+      if(part&&part.fxRonda!=null) try{ _simularRondasZonaHasta(part.fxRonda); }catch(e){}
+      return;
+    }
+    try{ _simularRondasZonaHasta(null); }catch(e){}
     var z=(typeof clubZona==="function")?clubZona(E.club):"sur";
     var tab=tablaZonaC(z, E.club);
     var pos=0, i;
@@ -603,6 +716,7 @@ function avanzarFaseSegunda(part){
     return;
   }
   if(fase==="liguillaAscenso"||fase==="liguillaDescenso"){
+    try{ _simularRondasLiguillaHasta(part&&part.fxRonda); }catch(e){}
     var lig=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"&&p.fase===fase; });
     if(lig.filter(function(p){ return p.jugado; }).length<lig.length) return;
     var tabL=tablaLiguillaC(fase, E.club);
@@ -616,7 +730,7 @@ function avanzarFaseSegunda(part){
       if(posL===1){
         E.flags.ligaCCampeon=true;
         notificar({t:"Campeón de Segunda · ASCENSO",tipo:"bueno",
-          d:"1° de la liguilla de ascenso. "+etqL+". Subís a Primera B. (Tus partidos son los que jugaste; el resto se estima por fuerza, no es la tabla real 2026.)"});
+          d:"1° de la liguilla de ascenso. "+etqL+". Subís a Primera B. La liguilla se jugó partido a partido (12 PJ, se partió de 0)."});
         if(typeof aplicarEfectos==="function") aplicarEfectos({moral:8,prestigio:5,plata:120});
       } else {
         notificar({t:"Se acabó la liguilla de ascenso",tipo:"neutro",
@@ -812,6 +926,18 @@ function filasTablaActual(){
     if(E.flags&&E.flags.liguillaBFase) nota+=" La liguilla es otro cuadro: estos puntos son de la fase regular.";
     return {ids:ids, nota:nota, titulo:"Tabla · Liga de Ascenso", filas:null};
   }
+  if(E.eraBase==="arg2026"){
+    var zA=(typeof zonaArgDe==="function")?zonaArgDe(E.club):"A";
+    var clubsA=(typeof clubsZonaArg==="function")?clubsZonaArg(zA):[];
+    ids=clubsA.map(function(c){ return c.id; });
+    if(!ids.length && typeof LIGA_ACT!=="undefined") ids=LIGA_ACT.map(function(c){ return c.id; });
+    var faseA=E.flags&&E.flags.argFase;
+    computed=(typeof tablaViva==="function")?tablaViva(ids, E.tabla||{}):null;
+    nota=faseA==="clausura"
+      ?"Clausura · Zona "+zA+" (15 clubes, 14 PJ, tabla desde 0). El Apertura ya cerró. Copa Argentina a partido único."
+      :"Apertura 2026 · Zona "+zA+" (sorteo AFA: 15 clubes, 14 PJ + 1 bye). Top de zona pelea el título. Copa Argentina en paralelo.";
+    return {ids:ids, nota:nota, titulo:(faseA==="clausura"?"Clausura":"Apertura")+" · Zona "+zA, filas:computed};
+  }
   if(E.eraBase!=="2026c"){
     ids=(typeof LIGA_ACT!=="undefined")?LIGA_ACT.map(function(c){ return c.id; }):[];
     nota=(E.eraBase===2026||E.eraBase==="2026")?"Liga de Primera 2026: 30 fechas. Bajan los 2 últimos. Libertadores: 1° y 2° + Copa de la Liga (Chile 3) + repechaje 3° vs Copa Chile (Chile 4). Si un club ya está en Libertadores, el cupo lo hereda el siguiente. Si el campeón de Liga también gana Libertadores, el 2° hereda Chile 1. Sudamericana: 4°–6° y el que pierde el repechaje. Un club no va a las dos.":null;
@@ -822,7 +948,7 @@ function filasTablaActual(){
   if(!fase||fase==="zonal"||fase==="playoff4"){
     computed=tablaZonaC(z, E.club);
     ids=computed.map(function(x){ return x.id; });
-    nota="Zona "+(z==="norte"?"Norte":"Sur")+" (formato real 2026). Tus partidos son los que jugaste; el resto de la zona se estima por fuerza, no es la tabla oficial.";
+    nota="Zona "+(z==="norte"?"Norte":"Sur")+" (formato real 2026: 7 clubes, 12 PJ + 2 byes). Tus partidos + el resto de cada fecha, misma física Poisson. Top 3 → liguilla de ascenso (7, se parte de cero). 4°s se cruzan. Bottom 3 → permanencia.";
     return {ids:ids, nota:nota, titulo:"Tabla · Zona "+(z==="norte"?"Norte":"Sur"), filas:computed};
   }
   var lig=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"&&(p.fase==="liguillaAscenso"||p.fase==="liguillaDescenso"); });
@@ -832,8 +958,10 @@ function filasTablaActual(){
     ids=[E.club];
     lig.forEach(function(p){ if(p.rivalId&&ids.indexOf(p.rivalId)<0) ids.push(p.rivalId); });
   }
-  nota=fase==="liguillaAscenso"?"Liguilla de ascenso (se parte de cero; no arrastra la zonal). El 1° sube a Primera B. Tus puntos son los que jugaste; el resto se estima.":"Liguilla de permanencia (tabla nueva, no arrastra la zonal). Los últimos pierden la categoría.";
-  return {ids:ids, nota:nota, titulo:fase==="liguillaAscenso"?"Liguilla de ascenso":"Liguilla de permanencia", filas:computed};
+  nota=fase==="liguillaAscenso"
+    ?"Liguilla de ascenso: 7 clubes, ida y vuelta, puntaje desde 0 (no arrastra la zonal). Volvés a cruzar rivales de tu zona: es el formato real, no un bug. El 1° sube a Primera B. Esta tabla se juega partido a partido."
+    :"Liguilla de permanencia: 7 clubes, tabla nueva. Los últimos pierden la categoría.";
+  return {ids:ids, nota:nota, titulo:fase==="liguillaAscenso"?"Liguilla de ascenso · 7 clubes":"Liguilla de permanencia · 7 clubes", filas:computed};
 }
 
 /* ---------- wraps ---------- */
@@ -845,12 +973,16 @@ function filasTablaActual(){
     var esC=(typeof E!=="undefined"&&E&&E.eraBase==="2026c");
     var esB=(typeof E!=="undefined"&&E&&E.eraBase==="2026b");
     var esP=(typeof E!=="undefined"&&E&&(E.eraBase===2026||E.eraBase==="2026"));
+    /* 8.00 · copas según la categoría VIGENTE, no la de 2026 original */
+    if(!esP){
+      cal=cal.filter(function(p){ return !(p.tipo==="copa"&&p.torneo==="Copa de la Liga"); });
+    }
     if(esC){
       cal=cal.filter(function(p){ return !(p.tipo==="copa"&&p.torneo==="Copa Chile"); });
       cal=cal.filter(function(p){ return p.tipo!=="liga"; });
       partidosZonalesC(clubId).forEach(function(p){ cal.push(p); });
     }
-    if(!esC && !esB && esP && anio>=2026){
+    if(esP && anio>=2026 && (typeof juegaCopaDeLaLiga!=="function" || juegaCopaDeLaLiga(clubId, anio))){
       partidosCopaLigaGrupo(clubId, anio).forEach(function(p){ cal.push(p); });
       partidosSupercopaDe(clubId, anio).forEach(function(p){ cal.push(p); });
     }
@@ -895,7 +1027,36 @@ function filasTablaActual(){
       try{ snap=JSON.parse(JSON.stringify(E.tabla)); }catch(e){ snap=null; }
     }
     var res=orig(P);
-    if(snap) E.tabla=snap;
+    if(skip&&snap){
+      /* cosecha Poisson de ESTA fecha a la tabla de liguilla, sin ensuciar la zonal */
+      try{
+        if(!E.tablaLiguilla) E.tablaLiguilla={};
+        var ids={};
+        Object.keys(E.tabla||{}).forEach(function(id){ ids[id]=1; });
+        Object.keys(snap).forEach(function(id){ ids[id]=1; });
+        Object.keys(ids).forEach(function(id){
+          var now=E.tabla[id]||{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
+          var old=snap[id]||{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
+          var dPj=(now.pj||0)-(old.pj||0);
+          if(dPj<=0) return;
+          if(!E.tablaLiguilla[id]) E.tablaLiguilla[id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
+          var t=E.tablaLiguilla[id];
+          t.pj+=dPj;
+          t.pg+=(now.pg||0)-(old.pg||0);
+          t.pe+=(now.pe||0)-(old.pe||0);
+          t.pp+=(now.pp||0)-(old.pp||0);
+          t.gf+=(now.gf||0)-(old.gf||0);
+          t.gc+=(now.gc||0)-(old.gc||0);
+          t.pts+=(now.pts||0)-(old.pts||0);
+        });
+        if(part&&part.fxRonda!=null){
+          E.flags=E.flags||{};
+          E.flags.liguillaCSim=E.flags.liguillaCSim||{};
+          E.flags.liguillaCSim[part.fxRonda]=1;
+        }
+      }catch(e){}
+      E.tabla=snap;
+    }
     try{ avanzarFaseSegunda(P&&P.part); }catch(e){}
     try{ avanzarLiguillaB(P&&P.part); }catch(e){}
     return res;
@@ -953,23 +1114,20 @@ function filasTablaActual(){
     pushCambio(2026,"2026b",baja1,sube1);
     if(baja2&&baja2!==baja1&&sube2&&sube2!==sube1) pushCambio(2026,"2026b",baja2,sube2);
     if(c.length){
-      var cn=(typeof _campeonZonaSeg==="function")?_campeonZonaSeg("norte"):null;
-      var cs=(typeof _campeonZonaSeg==="function")?_campeonZonaSeg("sur"):null;
-      /* 7.74 · si el jugador es campeón de zona, la liguilla se JUEGA (7.66), no se resuelve sola */
-      if(E.eraBase==="2026c" && (E.club===cn || E.club===cs)){
-        var rivalC=E.club===cn?cs:cn;
-        var bajaBpend=b[b.length-1];
-        if(bajaBpend===sube1||bajaBpend===sube2) bajaBpend=b.filter(function(id){ return id!==sube1&&id!==sube2; }).pop();
-        E.liguillaPend={rival:rivalC||null, baja:bajaBpend||null, norte:cn, sur:cs};
-      } else {
-        var bajaB=b[b.length-1];
-        if(E.eraBase==="2026b"&&E.flags&&E.flags.ligaBBaja) bajaB=E.club;
-        if(bajaB===sube1||bajaB===sube2) bajaB=b.filter(function(id){ return id!==sube1&&id!==sube2; }).pop();
-        var subeC=c[0];
-        if(E.eraBase==="2026c"&&E.flags&&E.flags.ligaCCampeon) subeC=E.club;
-        pushCambio("2026b","2026c",bajaB,subeC);
+      var bajaB=b[b.length-1];
+      if(E.eraBase==="2026b"&&E.flags&&E.flags.ligaBBaja) bajaB=E.club;
+      if(bajaB===sube1||bajaB===sube2) bajaB=b.filter(function(id){ return id!==sube1&&id!==sube2; }).pop();
+      var subeC=null;
+      /* 7.993 · la liguilla de 7 ES el torneo. El 1° de esa tabla sube.
+         Ya no hay final de 3 botones contra el campeón de la otra zona. */
+      if(E.eraBase==="2026c"&&E.flags&&E.flags.ligaCCampeon) subeC=E.club;
+      else {
+        var poolC=(c||[]).filter(function(id){ return id!==E.club; });
+        subeC=(typeof _ordenSimDiv==="function")?_ordenSimDiv(poolC)[0]:poolC[0];
       }
+      if(subeC) pushCambio("2026b","2026c",bajaB,subeC);
     }
+    E.liguillaPend=null;
     if(!cambios.length){
       if(E.liguillaPend){ var lm0={tipo:"liguilla",pend:E.liguillaPend}; E.ascensoMsg=lm0; return lm0; }
       return orig();
@@ -977,6 +1135,12 @@ function filasTablaActual(){
     cambios.forEach(function(ch){
       E.ligaMod[ch.up]=E.ligaMod[ch.up].filter(function(id){ return id!==ch.baja; }).concat([ch.sube]);
       E.ligaMod[ch.lo]=E.ligaMod[ch.lo].filter(function(id){ return id!==ch.sube; }).concat([ch.baja]);
+      if(ch.lo==="2026c" && typeof _zonaSegInit==="function"){
+        var zs=_zonaSegInit();
+        var zLibre=zs[ch.sube]||"norte";
+        delete zs[ch.sube];
+        if(ch.baja) zs[ch.baja]=zLibre;
+      }
     });
     var msg=null;
     cambios.forEach(function(ch){
@@ -1181,6 +1345,7 @@ function cuposChileDesde(pos, copaChile, b){
     [
       "ligaBCampeon","ligaBLiguilla","ligaBBaja","liguillaBListo","liguillaBFase","ligaBPos","liguillaBTabla",
       "ligaCCampeon","ligaCBaja","segundaFase","segundaZona","segundaPosZonal","segundaGanoPlayoff",
+      "liguillaCIds","zonaCSim","liguillaCSim",
       "copaLigaCampeon","copaLigaGrupo","copaLigaRivales","copaLigaCampeonClub",
       "superCopaCampeon","copaAcum","copaChileSubcampeon","copaChileCampeonClub",
       "copaCampeonClub","copaSudCampeonClub","cupoVia"
@@ -1188,6 +1353,8 @@ function cuposChileDesde(pos, copaChile, b){
     E.flags.superCopaCupo=keepSC;
     if(keepLib) E.flags.cupoLib=keepLib;
     if(keepSud) E.flags.cupoSud=keepSud;
+    E.tablaLiguilla=null;
+    E.liguillaPend=null;
   };
   nuevoAnio._fmt56=true;
   if(orig._hist) nuevoAnio._hist=orig._hist;

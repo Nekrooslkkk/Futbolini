@@ -41,13 +41,16 @@ function idsPrimeraB(){ return LIGA_B_2026.map(function(c){ return c.id; }); }
 function esClubB(id){ return idsPrimeraB().indexOf(id)>=0; }
 function clubLookup(id){
   if(typeof CLUB_POR_ID!=="undefined" && CLUB_POR_ID[id]) return CLUB_POR_ID[id];
-  var i, x;
-  for(i=0;i<LIGA_B_2026.length;i++){ if(LIGA_B_2026[i].id===id) return LIGA_B_2026[i]; }
-  if(typeof LIGA_2026!=="undefined"){
-    for(i=0;i<LIGA_2026.length;i++){ if(LIGA_2026[i].id===id) return LIGA_2026[i]; }
-  }
-  if(typeof LIGA91!=="undefined"){
-    for(i=0;i<LIGA91.length;i++){ if(LIGA91[i].id===id) return LIGA91[i]; }
+  var i, listas=[];
+  if(typeof LIGA_B_2026!=="undefined") listas.push(LIGA_B_2026);
+  if(typeof LIGA_2026!=="undefined") listas.push(LIGA_2026);
+  if(typeof LIGA_C_2026!=="undefined") listas.push(LIGA_C_2026);
+  if(typeof LIGA_ARG_2026!=="undefined") listas.push(LIGA_ARG_2026);
+  if(typeof LIGA91!=="undefined") listas.push(LIGA91);
+  var L, j;
+  for(i=0;i<listas.length;i++){
+    L=listas[i];
+    for(j=0;j<L.length;j++) if(L[j].id===id) return L[j];
   }
   return null;
 }
@@ -608,8 +611,8 @@ function partidosCopaChileGrupo(clubId, anio){
   var orig=construirCalendario;
   construirCalendario=function(clubId, anio, conCopa){
     var cal=orig(clubId, anio, conCopa)||[];
-    /* Copa Chile en toda la era moderna (2026 en adelante): 2026 real, 2027+ sorteado */
-    if(anio>=2026){
+    /* Copa Chile: Primera y B. Segunda NO (bases ANFP). Tras un ascenso, eraBase manda. */
+    if(anio>=2026 && typeof juegaCopaChile==="function" && juegaCopaChile(clubId, anio)){
       var extra=partidosCopaChileGrupo(clubId, anio);
       extra.forEach(function(p){ cal.push(p); });
       cal.sort(function(a,b){

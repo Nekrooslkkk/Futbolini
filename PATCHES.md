@@ -2422,31 +2422,25 @@ Fix: `textoHistoriaAjeno` + filtro de línea; `nuevaPartida` redirige a 2026 si 
 - **js/data-caza-98.js** (nuevo). **Tests:** T27. **util.js:** 7.97 → **7.98**.
 **Probado:** node --check + suite HTTP.
 
-## 7.99 · rigor vs Colo-Colo (planteles de época + UC al día)
+## 7.99 / 7.991 / 7.992 · rigor vs Colo-Colo (8.00 reservada)
 
-Jugar Colo-Colo se siente más real porque tiene **planteles históricos con nombres**, no solo el 2026. Auditoría uno por uno: Primera/B ya estaban en Wiki ≥18; el hueco era **épocas sin squad** y **detalles del 2026**.
+8.00 es cuando TODO esté al listón Colo-Colo. Mientras tanto 7.99x.
 
-- **UC 2026:** Giani pasa a DEL; entran Gómez / Corral / L'Huillier (Wikipedia 14 ago 2026).
-- **UES 2013:** plantel campeón Transición (Sierra) — deja de ser cantera.
-- **SW 2001:** plantel campeón (Garcés / Silvio Fernández / Riveros) — ASIFUCH.
-- Assadi fuera del stub de `data-plantel.js`. Sosa Limache 37. Fundación CC 1925: El Llano.
-- Rasgo mínimo por edad si el array venía `[]`. Capitán/ídolo **no** se inventan.
-- **js/data-planteles-99.js** (nuevo, último). **Tests:** T28. **util.js:** 7.98 → **7.99**.
-- Se conserva el **CAL.svg** de footylogos (7.96 paralelo en GitHub) y el fallback `_escFall` para que un escudo que no carga no desaparezca.
-**Probado:** node --check + suite HTTP 465/465.
+- UCH 1994, Boca 2007, River 2018, Audax 2007 (NO campeón del Apertura — fue Colo-Colo), Vélez 1994, San Lorenzo 2014, Racing 1967, Independiente 1984, Estudiantes 2009.
+- Limache: estadio Ángel Navarrete Candia 3.000. El Lucio Fariña es de San Luis de Quillota.
+- **js/data-planteles-800.js + 801.js + 802.js**. Tests T28–T31.
 
-## 8.00 · U. de Chile 1994 + Boca 2007 + River 2018 al listón Colo-Colo
+## 7.994 · Tablas vivas + AFA al rigor Chile + Copa Argentina
 
-Jugar Colo-Colo es el estándar (24 fichas, 3 ARQ, capitán, ídolo, épocas 1989/1991/2002/2006). La U 1994 —el título de los 25 años— tenía **8 nombres** y el resto era cantera. Boca 2007 y River 2018 (las Libertadores equivalentes) decían "Plantel: cantera".
+El hueco de las tablas: Copa Chile / Copa de la Liga / Libertadores / Sudamericana / la otra zona de Segunda **rellenaban todos los partidos que faltaban**. Después de 1 fecha el jugador tenía 1 PJ y el resto 6 o 12. Eso era lo "extraño".
 
-- **UCH 1994:** plantel campeón BDFA + XI vs Cobresal (Wikipedia / ASIFUCH). Vargas, Musrri (capitán), Salas, Mardones, Aredes, Delgado, Guevara, Valencia, Ibáñez, Goldberg. 21 fichas, 3 ARQ. Guarda no entra (dopaje, fecha 7). Época dorada jugable + línea de Historia (faltaba el hito).
-- **Boca 2007:** Libertadores vs Grêmio. Caranta, Riquelme, Palermo (capitán), Palacio, Cata Díaz, Battaglia. Barros Schelotto no (baja 17 abr). 22 fichas.
-- **River 2018:** Libertadores Madrid. Armani, Ponzio (capitán), Pratto, Pity, Quintero, Montiel. Lista de buena fe TyC/ESPN. 24 fichas, 3 ARQ.
-
-Stats estimadas. Nombres reales. Cero copias 2026 (Salas no vive en la U actual).
-
-- **js/data-planteles-800.js** (nuevo, último). **Tests:** T29. **util.js:** 7.99 → **8.00**.
-**Probado:** node --check + suite HTTP.
+- `tablaViva` + `calendarioZonal` en `liga-registrar.js`: crear una liga zonal es clubs + z + una llamada.
+- Tablas de grupo y liguilla: solo lo jugado. Poisson ronda a ronda. `mundoAlcanzarRonda` para que la otra zona no se atrase en los byes.
+- Trasandino: cruzar otra vez rivales de zona en la liguilla de 7 **es el formato real**. No hay final de 3 botones.
+- Sudamericana: PAL/AUD 2026; 4°–6° → 2027 (se muestra en el cierre). Tablas CONMEBOL en Calendario.
+- AFA 2026: Apertura en zonas de 15 (sorteo AFA, 14 PJ). Clausura parte de 0. Copa Argentina 32avos documentados (Boca vs Gimnasia Chivilcoy, etc.).
+- Poisson: techo 5, localía un poco más clara. No se rearma la jornada con `emparejarFecha` en liguilla/zona.
+- VERSION **7.994**. 8.00 sigue reservada.
 
 
 

@@ -79,39 +79,38 @@
       ok(fin && typeof fin.pos==="number", "cierre de temporada de Segunda sin excepción (pos "+(fin&&fin.pos)+")");
     }, "Temporada Segunda");
 
-    /* T4 · ascenso/descenso de 3 niveles */
+    /* T4 · ascenso/descenso de 3 niveles — liguilla de 7, SIN final de 3 botones */
     grupo("Ascenso/descenso 3 niveles");
     safe(function(){
       nuevaPartida("SMO",2026,"historico",{categoria:"C"});
       initLigaMod();
-      E.tabla={}; (E.ligaMod["2026c"]||[]).forEach(function(id,i){ E.tabla[id]={pts:(id==="SMO"?90:70-i),gf:40,gc:20}; });
-      /* 7.66 · el jugador campeón de su zona NO asciende solo: se difiere para jugar la liguilla */
+      E.tabla={}; (E.ligaMod["2026c"]||[]).forEach(function(id,i){ E.tabla[id]={pts:(id==="SMO"?90:70-i),gf:40,gc:20,pj:12,pg:0,pe:0,pp:0}; });
+      E.flags=E.flags||{};
+      E.flags.ligaCCampeon=true;
+      E.flags.segundaFase="liguillaAscenso";
       var m=procesarAscensoDescenso();
-      ok(m && m.tipo==="liguilla" && E.liguillaPend, "campeón de zona: la liguilla queda PENDIENTE (jugable)");
-      ok(E.eraBase==="2026c", "sigue en Segunda hasta jugar la liguilla");
-      ok(E.liguillaPend && E.liguillaPend.rival && zonaSegDe(E.liguillaPend.rival)==="norte", "el rival es el campeón de la otra zona (Norte)");
-      /* gana la liguilla → sube a la B; zonas quedan 7 y 7, Segunda 14 */
-      var r=liguillaResolverAscenso(true);
-      ok(r && r.tipo==="ascenso" && E.eraBase==="2026b", "gana la liguilla y sube a Primera B");
+      ok(!E.liguillaPend, "campeón de la liguilla de 7: NO hay final de 3 botones (liguillaPend vacío)");
+      ok(m && m.tipo!=="liguilla", "no se ofrece la carta de 3 posturas");
+      ok(m && m.tipo==="ascenso" && E.eraBase==="2026b", "1° de la liguilla de 7 sube a Primera B");
       ok((E.ligaMod["2026b"]||[]).indexOf("SMO")>=0, "SMO queda registrado en la B");
       var zc={norte:0,sur:0}; (E.ligaMod["2026c"]||[]).forEach(function(id){ var z=zonaSegDe(id); if(z) zc[z]++; });
       ok((E.ligaMod["2026c"]||[]).length===14, "Segunda mantiene 14 clubes ("+(E.ligaMod["2026c"]||[]).length+")");
       ok(zc.norte===7 && zc.sur===7, "zonas quedan 7 y 7 (N:"+zc.norte+" S:"+zc.sur+")");
-    }, "Ascenso Segunda→B (liguilla)");
+    }, "Ascenso Segunda→B (liguilla de 7)");
     safe(function(){
-      /* perder la liguilla: el rival sube, el jugador se queda en Segunda (14, zonas 7/7) */
       nuevaPartida("SMO",2026,"historico",{categoria:"C"});
       initLigaMod();
-      E.tabla={}; (E.ligaMod["2026c"]||[]).forEach(function(id,i){ E.tabla[id]={pts:(id==="SMO"?90:70-i),gf:40,gc:20}; });
-      procesarAscensoDescenso();
-      var rival=E.liguillaPend&&E.liguillaPend.rival;
-      var r=liguillaResolverAscenso(false);
-      ok(r && r.tipo==="descenso_liguilla" && E.eraBase==="2026c", "pierde la liguilla y se queda en Segunda");
-      ok((E.ligaMod["2026b"]||[]).indexOf(rival)>=0, "el rival ascendió a la B");
+      E.tabla={}; (E.ligaMod["2026c"]||[]).forEach(function(id,i){ E.tabla[id]={pts:(id==="SMO"?90:70-i),gf:40,gc:20,pj:12,pg:0,pe:0,pp:0}; });
+      E.flags=E.flags||{};
+      E.flags.ligaCCampeon=false;
+      E.flags.segundaFase="liguillaAscenso";
+      var m=procesarAscensoDescenso();
+      ok(!E.liguillaPend, "sin ganar la liguilla de 7: tampoco hay final de 3 botones");
+      ok(E.eraBase==="2026c", "sigue en Segunda (no ganó la liguilla de 7)");
       ok((E.ligaMod["2026c"]||[]).indexOf("SMO")>=0, "SMO sigue en Segunda");
       var zc={norte:0,sur:0}; (E.ligaMod["2026c"]||[]).forEach(function(id){ var z=zonaSegDe(id); if(z) zc[z]++; });
-      ok((E.ligaMod["2026c"]||[]).length===14 && zc.norte===7 && zc.sur===7, "Segunda 14, zonas 7/7 tras perder");
-    }, "Pierde liguilla");
+      ok((E.ligaMod["2026c"]||[]).length===14 && zc.norte===7 && zc.sur===7, "Segunda 14, zonas 7/7 si no subís");
+    }, "No gana liguilla de 7");
 
     /* 7.82 · intro de época en modos históricos (1925 nacimiento CC, 2006), no en 2026 */
     grupo("Intro de época (7.82)");
@@ -450,14 +449,16 @@
     safe(function(){
       nuevaPartida("BOC",2026,"historico",{categoria:"ARG"});
       ok(E && E.eraBase==="arg2026", "Boca arranca en era arg2026");
-      ok((E.calendario||[]).filter(function(p){ return p.tipo==="liga"; }).length===29, "29 fechas (una rueda): "+((E.calendario||[]).filter(function(p){ return p.tipo==="liga"; }).length));
+      ok((E.calendario||[]).filter(function(p){ return p.tipo==="liga"; }).length===14, "Apertura zona 15: 14 PJ (1 bye): "+((E.calendario||[]).filter(function(p){ return p.tipo==="liga"; }).length));
+      ok((E.calendario||[]).some(function(p){ return p.tipo==="copa"&&/Copa Argentina/i.test(p.torneo||""); }), "Boca tiene Copa Argentina (32avos documentados)");
       ok(!(E.calendario||[]).some(function(p){ return p.torneo==="Copa Chile"; }), "Argentina no juega Copa Chile");
       ok(E.clubNombre==="Boca Juniors", "nombre Boca");
-      ok(E.mundo && E.mundo.ligas && E.mundo.ligas.arg2026 && E.mundo.ligas.arg2026.ids.length===30, "mundo tiene liga Argentina 30");
+      ok(E.mundo && E.mundo.ligas && E.mundo.ligas.arg2026A && E.mundo.ligas.arg2026A.ids.length===15, "mundo Zona A = 15");
+      ok(E.mundo.ligas.arg2026B && E.mundo.ligas.arg2026B.ids.length===15, "mundo Zona B = 15");
       SEC="calendario";
       if(typeof render==="function") render();
       ok(document.querySelector(".tablas-pais"), "grid tablas-pais en Calendario Argentina");
-      ok(/Liga Profesional/i.test((document.querySelector(".tablas-pais")||{textContent:""}).textContent||""), "tabla dice Liga Profesional");
+      ok(/Zona A|Apertura|Liga Profesional/i.test((document.querySelector(".tablas-pais")||{textContent:""}).textContent||""), "tabla dice Apertura / Zona A");
       ok(!document.querySelector(".tablas-copa"), "Argentina no muestra grupos de Copa Chile");
     }, "Partida Boca");
     safe(function(){
@@ -1082,13 +1083,13 @@
       ok(typeof textoPlopAjeno==="function" && textoPlopAjeno("COLO-COLO CAMPEÓN DE AMÉRICA. 3-0 a Olimpia en el Monumental."), "Plop de Segunda filtra titular de CC 1991");
       nuevaPartida("CC",1991,"historico");
       ok(!textoPlopAjeno("COLO-COLO CAMPEÓN DE AMÉRICA. 3-0 a Olimpia en el Monumental."), "Plop de CC 1991 conserva su titular");
-      ok(typeof VERSION==="string" && VERSION==="8.00", "VERSION 8.00");
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
     }, "Plop filtrado + versión");
 
     /* T28 · 7.99 rigor vs Colo-Colo: épocas con plantel real + UC al día */
     grupo("Grok 7.99 (rigor vs Colo-Colo)");
     safe(function(){
-      ok(typeof VERSION==="string" && VERSION==="8.00", "VERSION 8.00");
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
       var cc=PLANTELES_REALES.CC;
       ok(cc && cc[2026] && cc[2026].length>=22, "CC 2026 sigue siendo el listón (≥22)");
       ok(cc[1989] && cc[1991] && cc[2002] && cc[2006], "CC tiene 1989/1991/2002/2006");
@@ -1122,7 +1123,7 @@
     /* T29 · 8.00 UCH 1994 / Boca 2007 / River 2018 al listón CC */
     grupo("Grok 8.00 (U 1994 + Boca 2007 + River 2018)");
     safe(function(){
-      ok(typeof VERSION==="string" && VERSION==="8.00", "VERSION 8.00");
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
       var u94=PLANTELES_REALES.UCH&&PLANTELES_REALES.UCH[1994];
       ok(u94 && u94.length>=20, "UCH 1994 plantel real ≥20 (era 8 fichas)");
       ok(u94.filter(function(j){ return j[1]==="ARQ"; }).length>=2, "UCH 1994 tiene ≥2 ARQ");
@@ -1150,6 +1151,133 @@
       var s26=(PLANTELES_REALES.UCH&&PLANTELES_REALES.UCH[2026]||[]).some(function(j){ return j[0]==="Marcelo Salas"; });
       ok(!s26, "Salas 1994 no se copia al 2026 de la U");
     }, "U 1994 + Boca 2007 + River 2018");
+
+    /* T30 · 8.01 Audax 2007 no hereda el título de Colo-Colo + Vélez/San Lorenzo */
+    grupo("Grok 7.991 (Audax ≠ CC 2007 + Vélez 1994 + San Lorenzo 2014)");
+    safe(function(){
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+      var aud07=PLANTELES_REALES.AUD&&PLANTELES_REALES.AUD[2007];
+      ok(aud07 && aud07.length>=18, "Audax 2007 plantel real ≥18 (ya no cantera)");
+      ok(aud07.some(function(j){ return j[0]==="Carlos Villanueva"; }), "Audax 2007: Villanueva");
+      ok(aud07.some(function(j){ return j[0]==="Fabián Orellana"; }), "Audax 2007: Orellana");
+      ok(aud07.some(function(j){ return j[0]==="Franco Di Santo"; }), "Audax 2007: Di Santo");
+      ok(aud07.every(function(j){ return (j[7]||[]).length>0; }), "Audax 2007: 0 rasgos vacíos");
+      var epA=(typeof epocasDe==="function"?epocasDe("AUD"):(EPOCAS_CLUB.AUD||[]));
+      var e07=epA.filter(function(e){ return e.anio===2007; })[0];
+      ok(e07 && e07.squad, "Audax 2007 es época jugable con squad");
+      ok(e07 && !/Campeón del Apertura 2007/.test(e07.desc||""), "Audax 2007 NO se declara campeón del Apertura (fue Colo-Colo)");
+      ok(e07 && /Colo-Colo/.test(e07.desc||""), "Audax 2007 aclara que el Apertura lo ganó Colo-Colo");
+      var hlA=(typeof HISTORIA_LINEA==="object"&&HISTORIA_LINEA.AUD)||[];
+      ok(hlA.some(function(h){ return h.anio===2007 && !/campeón del Apertura 2007/i.test(h.txt||""); }), "Historia Audax 2007 no se apropia del título albo");
+      var vel94=PLANTELES_REALES.VEL&&PLANTELES_REALES.VEL[1994];
+      ok(vel94 && vel94.length>=18, "Vélez 1994 plantel real ≥18");
+      ok(vel94.some(function(j){ return j[0]==="José Luis Chilavert"; }), "Vélez 1994: Chilavert");
+      ok(vel94.some(function(j){ return j[0]==="Roberto Trotta" && (j[7]||[]).indexOf("capitán")>=0; }), "Vélez 1994: Trotta capitán");
+      ok(vel94.filter(function(j){ return j[1]==="ARQ"; }).length>=3, "Vélez 1994: 3 ARQ");
+      var slo14=PLANTELES_REALES.SLO&&PLANTELES_REALES.SLO[2014];
+      ok(slo14 && slo14.length>=20, "San Lorenzo 2014 plantel real ≥20");
+      ok(slo14.some(function(j){ return j[0]==="Leandro Romagnoli"; }), "San Lorenzo 2014: Romagnoli");
+      ok(slo14.some(function(j){ return j[0]==="Néstor Ortigoza"; }), "San Lorenzo 2014: Ortigoza");
+      ok(slo14.some(function(j){ return j[0]==="Sebastián Torrico"; }), "San Lorenzo 2014: Torrico");
+      /* copias 2026 */
+      ok(!(PLANTELES_REALES.AUD&&PLANTELES_REALES.AUD[2026]||[]).some(function(j){ return j[0]==="Carlos Villanueva"; }), "Villanueva 2007 no se copia al Audax 2026");
+      /* regresión: Segunda no es Colo-Colo 1991 */
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      SEC="historia";
+      if(typeof render==="function") render();
+      var txtS=(document.getElementById("vista")||{textContent:""}).textContent||"";
+      ok(!/Libertadores 1991 la ganó Colo-Colo/.test(txtS), "Segunda (Morning) sigue sin la Libertadores de CC 1991");
+      ok(!/Temporada 1991/.test(txtS), "Segunda sigue sin titular Temporada 1991");
+    }, "Audax 2007 + Vélez + San Lorenzo + Segunda ≠ CC");
+
+    /* T31 · 7.991 Racing/Independiente/Estudiantes + Limache ≠ Quillota */
+    grupo("Grok 7.991 (AFA glory + Limache no es Quillota)");
+    safe(function(){
+      var rac=PLANTELES_REALES.RAC&&PLANTELES_REALES.RAC[1967];
+      ok(rac && rac.length>=12, "Racing 1967 plantel real (Intercontinental, no cantera)");
+      ok(rac.some(function(j){ return j[0]==="Roberto Perfumo"; }), "Racing 1967: Perfumo");
+      ok(rac.some(function(j){ return j[0]==="Juan Carlos Cárdenas"; }), "Racing 1967: Cárdenas");
+      ok(rac.some(function(j){ return j[0]==="Oscar Martín" && (j[7]||[]).indexOf("capitán")>=0; }), "Racing 1967: Martín capitán");
+      var ind=PLANTELES_REALES.IND&&PLANTELES_REALES.IND[1984];
+      ok(ind && ind.length>=16, "Independiente 1984 plantel Tokio ≥16");
+      ok(ind.some(function(j){ return j[0]==="Ricardo Bochini"; }), "Independiente 1984: Bochini");
+      ok(ind.some(function(j){ return j[0]==="José Percudani"; }), "Independiente 1984: Percudani");
+      ok(ind.some(function(j){ return j[0]==="Enzo Trossero" && (j[7]||[]).indexOf("capitán")>=0; }), "Independiente 1984: Trossero capitán");
+      var elp=PLANTELES_REALES.ELP&&PLANTELES_REALES.ELP[2009];
+      ok(elp && elp.length>=20, "Estudiantes 2009 plantel real ≥20");
+      ok(elp.filter(function(j){ return j[1]==="ARQ"; }).length>=3, "Estudiantes 2009: 3 ARQ");
+      ok(elp.some(function(j){ return j[0]==="Juan Sebastián Verón" && (j[7]||[]).indexOf("capitán")>=0; }), "Estudiantes 2009: Verón capitán");
+      ok(elp.some(function(j){ return j[0]==="Mauro Boselli"; }), "Estudiantes 2009: Boselli");
+      ok(!(PLANTELES_REALES.ELP&&PLANTELES_REALES.ELP[2026]||[]).some(function(j){ return j[0]==="Juan Sebastián Verón"; }), "Verón 2009 no se copia al Pincha 2026");
+      var hlH=(typeof HISTORIA_LINEA==="object"&&HISTORIA_LINEA.HUR)||[];
+      ok(hlH.some(function(h){ return h.anio===1973; }), "Huracán ya no es solo Fundación+Hoy: 1973 Menotti");
+      var hlN=(typeof HISTORIA_LINEA==="object"&&HISTORIA_LINEA.NEW)||[];
+      ok(hlN.some(function(h){ return h.anio===1974; }), "Newell's línea incluye Nacional 1974");
+      var estLIM=(typeof ESTADIOS_DATA==="object"&&ESTADIOS_DATA.LIM)||{};
+      ok(/Navarrete/.test(estLIM.nombre||""), "Limache: estadio propio Ángel Navarrete Candia");
+      ok(!/Fariña/.test(estLIM.nombre||""), "Limache NO lista el Lucio Fariña como propio (es de San Luis)");
+      ok((estLIM.aforo||0)===3000, "Limache aforo 3.000 (municipal)");
+      var estSLQ=(typeof ESTADIOS_DATA==="object"&&ESTADIOS_DATA.SLQ)||{};
+      ok(/Fariña/.test(estSLQ.nombre||""), "San Luis conserva el Lucio Fariña");
+      nuevaPartida("LIM",2026,"historico");
+      SEC="historia";
+      if(typeof render==="function") render();
+      var txtL=(document.getElementById("vista")||{textContent:""}).textContent||"";
+      ok(/Navarrete/.test(txtL), "Historia de Limache nombra el Navarrete");
+      ok(!/Libertadores 1991 la ganó Colo-Colo/.test(txtL), "Limache no hereda CC 1991");
+    }, "Racing 1967 + Independiente 1984 + Estudiantes 2009 + Limache ≠ Quillota");
+
+    /* T32 · 7.994 tablas vivas + AFA zonal + Sudamericana */
+    grupo("Grok 7.994 (tablas vivas + AFA + Sudamericana)");
+    safe(function(){
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+      ok(VERSION==="7.994", "VERSION 7.994");
+      nuevaPartida("TRA",2026,"historico",{categoria:"C"});
+      var liga=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"; });
+      ok(liga.length===12, "Trasandino: 12 PJ zonales (6 rivales ida/vuelta + 2 byes fuera del calendario)");
+      ok(liga.every(function(p){ return zonaSegDe(p.rivalId)==="norte"; }), "rivales zonales son de la Zona Norte");
+      ok(typeof fixturesLiga==="function", "fixturesLiga existe");
+      var fx7=fixturesLiga(["a","b","c","d","e","f","g"].map(function(id){ return {id:id}; }));
+      ok(fx7.length===14, "7 clubes → 14 fechas de fixture (ida+vuelta con bye)");
+      ok(fx7.every(function(f){ return f.length===3; }), "cada fecha zonal tiene 3 partidos (1 bye)");
+      var tab0=(typeof tablaZonaC==="function")?tablaZonaC("norte","TRA"):[];
+      ok(tab0.length===7, "tabla zonal Norte tiene 7");
+      ok(tab0.every(function(x){ return !x.pj; }), "al kickoff nadie tiene PJ (tabla viva, no un RR rellenado)");
+      E.flags=E.flags||{};
+      E.flags.segundaFase="liguillaAscenso";
+      var ft=(typeof filasTablaActual==="function")?filasTablaActual():null;
+      ok(ft && /liguilla/i.test(ft.titulo||""), "en liguilla, filasTablaActual devuelve la tabla de 7");
+      ok(/parte de cero|se parte de 0|puntaje desde 0/i.test(ft.nota||FORMAT_SEGUNDA_2026.liguillaAscenso||""), "la liguilla no arrastra la zonal");
+      ok(/3 botones|no hay final/i.test(FORMAT_SEGUNDA_2026.juego||"") || /No hay final de 3 botones/.test(FORMAT_SEGUNDA_2026.juego||""), "formato documenta: no hay final de 3 botones");
+    }, "Trasandino fixture + liguilla de 7 + tabla viva");
+    safe(function(){
+      nuevaPartida("PAL",2026,"historico");
+      var sud=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"&&/Sudamericana/i.test(p.torneo||""); });
+      ok(sud.length>=1, "Palestino 2026 tiene Sudamericana en el calendario ("+sud.length+")");
+      nuevaPartida("AUD",2026,"historico");
+      var sudA=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"&&/Sudamericana/i.test(p.torneo||""); });
+      ok(sudA.length>=1, "Audax 2026 tiene Sudamericana");
+      nuevaPartida("CC",2026,"historico");
+      var objs=(typeof generarObjetivos==="function")?generarObjetivos():[];
+      ok(objs.some(function(o){ return /Sudamericana/i.test(o.t||o.detalle||""); }), "Colo-Colo 2026 ofrece el camino a Sudamericana 2027 (4°–6°)");
+      ok(typeof CONMEBOL_GRUPOS_2026==="object" && CONMEBOL_GRUPOS_2026.sud && CONMEBOL_GRUPOS_2026.sud.length>=3, "hay tablas de grupo de Sudamericana 2026");
+      ok(CONMEBOL_GRUPOS_2026.lib.some(function(g){ return g.letra==="D"&&g.ids.indexOf("BOC")>=0&&g.ids.indexOf("UC")>=0; }), "Grupo D Lib: Católica y Boca (real 2026)");
+      nuevaPartida("BOC",2026,"historico");
+      var libB=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"&&/Libertadores/i.test(p.torneo||""); });
+      ok(libB.length>=6, "Boca 2026 tiene su Grupo D de Libertadores (mismo rigor que Católica)");
+      var ca=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"&&/Copa Argentina/i.test(p.torneo||""); });
+      ok(ca.length>=1 && /Gimnasia/i.test(ca[0].rivalNombre||""), "Boca 32avos Copa Argentina vs Gimnasia (Chivilcoy) — cruce real");
+      ok(typeof zonaArgDe==="function" && zonaArgDe("BOC")==="A" && zonaArgDe("RIV")==="B", "Boca Zona A, River Zona B (sorteo AFA 2026)");
+      ok(typeof mundoFilasConmebol==="function", "mundo pinta tablas CONMEBOL");
+      if(typeof mundoInit==="function") mundoInit();
+      var filD=mundoFilasConmebol("lib","D");
+      ok(filD && filD.length===4, "tabla Grupo D Libertadores tiene 4 clubes");
+      var filF=mundoFilasConmebol("sud","F");
+      ok(filF && filF.length===4, "tabla Grupo F Sudamericana (Palestino) tiene 4 clubes");
+      ok(typeof tablaViva==="function" && tablaViva(["A","B"], {A:{pj:1,pts:3,gf:1,gc:0,pg:1,pe:0,pp:0}}).length===2, "tablaViva no rellena partidos");
+      ok(typeof calendarioZonal==="function", "crear una liga zonal es clubs + calendarioZonal");
+      ok(typeof copasDeLiga==="function" && copasDeLiga("arg2026").some(function(c){ return c.id==="copaArg"; }), "registrarLiga copas incluye Copa Argentina");
+    }, "Sudamericana + Copa Argentina + tablaViva + CONMEBOL");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

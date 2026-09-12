@@ -51,8 +51,8 @@ const CLUB_INFO_2026={
   desc:"Estrena estadio propio y arrastra una camada ganadora. Administración ordenada y cantera fuerte."},
  PAL:{n:"Palestino",esc:"🟩",est:"Municipal de La Cisterna",dt:"Guillermo Farré",
   desc:"Club de colonia, competitivo y con buena formación, siempre peleando con presupuesto acotado."},
- LIM:{n:"Deportes Limache",esc:"🟨",est:"Estadio Lucio Fariña",dt:"Víctor Rivero",
-  desc:"Recién ascendido a Primera. El objetivo es claro: aguantar la categoría y no morir en el intento."}
+ LIM:{n:"Deportes Limache",esc:"🟨",est:"Estadio Municipal Ángel Navarrete Candia",dt:"Víctor Rivero",
+  desc:"Recién ascendido a Primera. Localía propia en el Navarrete Candia (3.000). El Fariña es de San Luis."}
 };
 const IND_BASE_2026={
  CC:{plantel:80,moral:66,hinchada:88,socios:62,cantera:66,estadio:74,prestigio:84,riesgo:22},
@@ -474,7 +474,8 @@ function aprobacionMedia(){
 }
 /* ---------------- decisiones ---------------- */
 function decisionesDisponibles(){
-  const propias=DECISIONES.filter(d=>d.club===E.club&&d.anio===E.anio);
+  const propias=DECISIONES.filter(d=>d.club===E.club&&d.anio===E.anio)
+    .filter(d=>typeof decisionCabeEnClub!=="function"||decisionCabeEnClub(d));
   const bolsa=BOLSA.filter(d=>{
     if(d.cuando&&!d.cuando(E)) return false;
     if(typeof decisionCabeEnClub==="function"&&!decisionCabeEnClub(d)) return false;
@@ -1048,6 +1049,40 @@ function initLigaMod(){
   const div=E.eraBase;
   if(E.ligaMod[div] && E.ligaMod[div].indexOf(E.club)<0) E.ligaMod[div].push(E.club);
 }
+/* 8.00 · división VIGENTE (tras ascenso/descenso), no la lista original de 2026.
+   El club del jugador mira eraBase; el resto, ligaMod. Copas y zonas cuelgan de esto. */
+function divisionVigenteDe(id){
+  if(typeof E!=="undefined" && E){
+    if(id===E.club){
+      if(E.eraBase==="2026c") return "C";
+      if(E.eraBase==="2026b") return "B";
+      if(E.eraBase===2026 || E.eraBase==="2026") return "P";
+      if(E.eraBase==="arg2026") return "ARG";
+    }
+    if(E.ligaMod){
+      if((E.ligaMod[2026]||[]).indexOf(id)>=0) return "P";
+      if((E.ligaMod["2026b"]||[]).indexOf(id)>=0) return "B";
+      if((E.ligaMod["2026c"]||[]).indexOf(id)>=0) return "C";
+    }
+  }
+  if(typeof esClubC==="function" && esClubC(id)) return "C";
+  if(typeof esClubB==="function" && esClubB(id)) return "B";
+  if(typeof esClubArg==="function" && esClubArg(id)) return "ARG";
+  return "P";
+}
+function juegaCopaChile(clubId, anio){
+  if((anio||0)<2026) return false;
+  if(typeof E!=="undefined" && E){
+    if(E.eraBase==="arg2026" || E.eraBase===1991 || E.eraBase===2006 || E.eraBase===1925) return false;
+  }
+  const d=divisionVigenteDe(clubId);
+  return d==="P" || d==="B";
+}
+function juegaCopaDeLaLiga(clubId, anio){
+  if((anio||0)<2026) return false;
+  if(typeof E!=="undefined" && E && (E.eraBase==="arg2026" || E.eraBase===1991 || E.eraBase===2006 || E.eraBase===1925)) return false;
+  return divisionVigenteDe(clubId)==="P";
+}
 function _fuerzaClubId(id){ const m=(typeof clubMapaTodos==="function")?clubMapaTodos():{}; const c=m[id]||CLUB_POR_ID[id]; return (c&&c.fuerza)||55; }
 function _ordenRealDiv(ids){ return ids.slice().sort((a,b)=>{ const A=E.tabla[a]||{pts:-1,gf:0,gc:0}, B=E.tabla[b]||{pts:-1,gf:0,gc:0}; return (B.pts-A.pts)||((B.gf-B.gc)-(A.gf-A.gc))||(B.gf-A.gf); }); }
 function _ordenSimDiv(ids){ return ids.slice().map(id=>({id:id,p:_fuerzaClubId(id)+ri(-14,14)})).sort((a,b)=>b.p-a.p).map(x=>x.id); }
@@ -1071,6 +1106,10 @@ function clubesLigaActual(){
   if(typeof E!=="undefined" && E && E.eraBase==="2026c"){
     const z=zonaSegDe(E.club);
     if(z){ const zn=LIGA_ACT.filter(c=>zonaSegDe(c.id)===z); if(zn.length) return zn; }
+  }
+  if(typeof E!=="undefined" && E && E.eraBase==="arg2026" && typeof zonaArgDe==="function"){
+    const z=zonaArgDe(E.club);
+    if(z){ const zn=LIGA_ACT.filter(c=>zonaArgDe(c.id)===z); if(zn.length) return zn; }
   }
   return LIGA_ACT.slice();
 }
@@ -1114,16 +1153,15 @@ function procesarAscensoDescenso(){
     const n=_cuposDiv(up,lo);
     const bajan=orden[up].slice(-n).filter(Boolean);
     if(lo==="2026c"){
-      /* Segunda sube por LIGUILLA de campeones de zona (1 cupo). Si el JUGADOR es uno de los
-         finalistas, se DIFIERE para que la juegue (E.liguillaPend); si no, se resuelve solo. */
-      const cn=_campeonZonaSeg("norte"), cs=_campeonZonaSeg("sur");
-      const finalistas=[cn,cs].filter(Boolean);
-      if(E.eraBase==="2026c" && finalistas.indexOf(E.club)>=0){
-        const rival=(E.club===cn)?cs:cn;
-        E.liguillaPend={rival:rival||null, baja:(bajan[0]||null), norte:cn, sur:cs};
-        continue;   /* no aplicamos este par ahora: lo cierra la liguilla jugada */
+      /* 7.993 · Segunda sube por la liguilla de 7 (1 cupo). El 1° de esa tabla
+         (ligaCCampeon) sube; ya no hay final de 3 botones vs el otro campeón de zona. */
+      var subeC=null;
+      if(E.eraBase==="2026c" && E.flags && E.flags.ligaCCampeon) subeC=E.club;
+      else {
+        const pool=(E.ligaMod["2026c"]||[]).filter(id=>id!==E.club);
+        subeC=_ordenSimDiv(pool)[0]||_ascensoSegunda();
       }
-      const suben=[_ascensoSegunda()].filter(Boolean);
+      const suben=[subeC].filter(Boolean);
       if(bajan.length && suben.length) cambios.push({up:up,lo:lo,bajan:bajan,suben:suben});
     } else {
       const suben=orden[lo].slice(0,n).filter(Boolean);
@@ -1337,6 +1375,9 @@ function nuevoAnio(){
   ["medianoche_","conf_","entreno_","changa_","pasillo_","prometido_","tinderMentira","puertaBarra","feeTesoreroUlt"].forEach(pref=>{
     Object.keys(E.flags).forEach(k=>{ if(k.indexOf(pref)===0) delete E.flags[k]; });
   });
+  /* 8.00 · calendario de la DIVISIÓN VIGENTE: si subiste, Copa Chile; si llegaste a Primera, también Copa de la Liga. */
+  if(typeof initLigaMod==="function") initLigaMod();
+  if(typeof activarLiga==="function") activarLiga(E.eraBase);
   E.calendario=construirCalendario(E.club,E.anio,E.anio===1992);
   reiniciarTabla();
   repartirDecisiones();

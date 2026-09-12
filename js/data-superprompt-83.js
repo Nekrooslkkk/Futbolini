@@ -23,7 +23,7 @@ const FORMAT_SEGUNDA_2026={
   liguillaAscenso:"Liguilla de ascenso: 7 clubes, todos contra todos ida y vuelta (14 fechas de calendario, 12 PJ, puntaje desde 0). El 1° es campeón y sube a Primera B 2027.",
   liguillaPermanencia:"Liguilla de permanencia: 7 clubes, ida y vuelta, puntaje desde 0. Los 2 últimos descienden a Tercera A.",
   inicio:"21–22 de marzo 2026. Termina fin de noviembre.",
-  juego:"En el juego HOY: fase zonal (12 fechas). La liguilla de ascenso Norte vs Sur ya existe como resolución; la liguilla de 7 y el playoff de 4°s quedan documentados acá (Claude arma el motor).",
+  juego:"Fase zonal (12 PJ + 2 byes, fixture round-robin). Top 3 de cada zona → liguilla de ascenso de 7, ida y vuelta, puntaje desde 0 (volver a cruzar rivales de tu zona es el formato real). 4°s se cruzan a partido. Bottom 3 → liguilla de permanencia. El 1° de la liguilla de 7 sube a la B. No hay final de 3 botones. Tablas vivas: nadie aparece con 12 PJ cuando vos tenés 1.",
   fuente:"Wikipedia «Liga de Segunda 2026» / Anexo Fase 1 / Pauta 23 ene 2026 / bases ANFP art. 78"
 };
 

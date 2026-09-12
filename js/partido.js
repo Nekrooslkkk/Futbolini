@@ -1057,13 +1057,21 @@ function terminarPartido(P){
 function simularResto(part){
   E.ultimaFecha=[];
   if(!part.jornada||!part.jornada.length){
-    if(typeof emparejarFecha==="function") part.jornada=emparejarFecha(E.anio,part.fecha,E.club,part.rivalId);
+    if(part.fase==="liguillaAscenso"||part.fase==="liguillaDescenso"||part.fase==="apertura"||part.fase==="clausura"||part.fase==="zonal"){
+      /* no rearmar con emparejarFecha (mezclaba toda la liga y rompía la tabla) */
+    } else if(typeof emparejarFecha==="function"){
+      part.jornada=emparejarFecha(E.anio,part.fecha,E.club,part.rivalId);
+    }
   }
   if(!part.jornada) return;
   part.jornada.forEach(par=>{
+    if(!par||par[0]==="__BYE__"||par[1]==="__BYE__") return;
     if(par[0]===E.club||par[1]===E.club) return;
-    const a=CLUB_POR_ID[par[0]],b=CLUB_POR_ID[par[1]];
-    const [ga,gb]=_golesSimulados(a,b);   /* 7.72 · fuerza + forma + localía */
+    const a=(typeof CLUB_POR_ID!=="undefined"&&CLUB_POR_ID[par[0]])||(typeof clubLookup==="function"&&clubLookup(par[0]));
+    const b=(typeof CLUB_POR_ID!=="undefined"&&CLUB_POR_ID[par[1]])||(typeof clubLookup==="function"&&clubLookup(par[1]));
+    if(!a||!b||!a.id||!b.id) return;
+    const clave=(part.torneo||"liga")+"|"+(part.fecha||part.fxRonda||0)+"|"+a.id+"|"+b.id;
+    const [ga,gb]=_golesSimulados(a,b,clave);
     if(!E.tabla[a.id]) E.tabla[a.id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
     if(!E.tabla[b.id]) E.tabla[b.id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
     const ta=E.tabla[a.id], tb=E.tabla[b.id];
@@ -1085,23 +1093,30 @@ function _formaClub(id){
 }
 /* 7.72 · goles Poisson: da la varianza natural del fútbol (el favorito rinde, pero
    igual hay sorpresas), en vez de redondear una media (que salía determinista). */
-function _poissonGoles(lam){
+function _poissonGoles(lam, rndFn){
   lam=Math.max(0.05, lam);
+  rndFn=rndFn||Math.random;
   let L=Math.exp(-lam), k=0, p=1;
-  do{ k++; p*=Math.random(); }while(p>L);
-  return Math.min(k-1, 6);
+  do{ k++; p*=rndFn(); }while(p>L);
+  return Math.min(k-1, 5);
 }
 /* Goles de un partido simulado (a=local, b=visita). Manda fuerza + forma + localía,
    traducidas a la media de goles de cada lado (lambda) y muestreadas Poisson.
-   Calibrado: equipos parejos ≈ 45% local / 27% empate / 28% visita. Reutilizable/testeable. */
-function _golesSimulados(a,b){
-  const HOME=2.4;                                   /* ventaja de localía moderada */
+   Calibrado: equipos parejos ≈ 46% local / 27% empate / 27% visita. Techo 5-5 (no 6-6). */
+function _golesSimulados(a,b,clave){
+  if(!a) a={fuerza:55,id:"x"};
+  if(!b) b={fuerza:55,id:"y"};
+  const HOME=3.2;
   const fa=(a.fuerza||55)+HOME+_formaClub(a.id);
   const fb=(b.fuerza||55)+_formaClub(b.id);
-  const d=(fa-fb)/22;                               /* el gap inclina, sin aplastar */
-  const lamH=clamp(1.45+d*0.9, 0.2, 4.2);
-  const lamA=clamp(1.15-d*0.9, 0.2, 4.2);
-  return [_poissonGoles(lamH), _poissonGoles(lamA)];
+  const d=(fa-fb)/24;
+  const lamH=clamp(1.38+d*0.72, 0.35, 2.9);
+  const lamA=clamp(1.08-d*0.72, 0.35, 2.9);
+  let rndFn=Math.random;
+  if(clave && typeof azarFijo==="function" && typeof semilla==="function"){
+    rndFn=azarFijo(semilla(String(clave)+"|"+((typeof E!=="undefined"&&E&&E.anio)||0)));
+  }
+  return [_poissonGoles(lamH, rndFn), _poissonGoles(lamA, rndFn)];
 }
 /* copa: al terminar una llave se decide si sigue o se acaba */
 function resolverCopa(part,yo,otro){
