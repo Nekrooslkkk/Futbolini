@@ -148,10 +148,6 @@ Campos:
 5. El ayudante **no suena a tutorial**. Nada de "¿Hay Libertadores?" en Segunda. Suena a
    mano derecha: "¿El domingo?", "¿Vendemos a alguien?", "¿Hablo con el capitán?".
 
-**No hagas en D:** ligas extranjeras, planteles, caza de ids (eso es A/B).
-
----
-
 ## TAREA E — VERIFICACIÓN INTEGRAL POR EQUIPO (el gran barrido pre-8.0)
 
 > Esto es lo grande. La idea es que **cada** equipo (Primera, B, Segunda, Argentina)

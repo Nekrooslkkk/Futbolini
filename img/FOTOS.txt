@@ -9,17 +9,17 @@
 @estadio
 
 # --- Primera 2026 ---
-CC    PEGA_LINK   # Colo-Colo · Estadio Monumental
-UCH   PEGA_LINK   # Universidad de Chile · Estadio Nacional
+CC    https://upload.wikimedia.org/wikipedia/commons/5/5c/Fachada_Estadio_Monumental%2C_2016-12-21.jpg   # Colo-Colo · Estadio Monumental
+UCH   https://upload.wikimedia.org/wikipedia/commons/2/2a/Estadio_Nacional_-_A741105.jpg   # Universidad de Chile · Estadio Nacional
 UC    PEGA_LINK   # Universidad Católica · Claro Arena
-EVE   PEGA_LINK   # Everton · Estadio Sausalito
+EVE   https://upload.wikimedia.org/wikipedia/commons/4/4e/Estadio_Sausalito_Everton_v_Colo-Colo_20230806_01.jpg   # Everton · Estadio Sausalito
 PAL   PEGA_LINK   # Palestino · Municipal de La Cisterna
-COQ   PEGA_LINK   # Coquimbo Unido · Estadio Francisco Sánchez R.
+COQ   https://upload.wikimedia.org/wikipedia/commons/f/f9/Estadio_Francisco_S%C3%A1nchez_Rumoroso.jpg   # Coquimbo Unido · Estadio Francisco Sánchez R.
 AUD   PEGA_LINK   # Audax Italiano · Estadio La Florida
-HUA   PEGA_LINK   # Huachipato · Estadio CAP
-OHI   PEGA_LINK   # O'Higgins · Estadio El Teniente
-NUB   PEGA_LINK   # Ñublense · Estadio Nelson Oyarzún
-COB   PEGA_LINK   # Cobresal · Estadio El Cobre
+HUA   https://upload.wikimedia.org/wikipedia/commons/b/b3/Estadio_CAP.jpg   # Huachipato · Estadio CAP
+OHI   https://upload.wikimedia.org/wikipedia/commons/5/57/Estadio_Bicentenario_El_Teniente_%E2%80%94_Rancagua%2C_Chile_%2818061368649%29.jpg   # O'Higgins · Estadio El Teniente
+NUB   https://upload.wikimedia.org/wikipedia/commons/0/00/Estadio_Nelson_Oyarz%C3%BAn_de_Chill%C3%A1n.jpg   # Ñublense · Estadio Nelson Oyarzún
+COB   https://upload.wikimedia.org/wikipedia/commons/a/ab/Estadio_El_Cobre.jpg   # Cobresal · Estadio El Cobre
 CAL   PEGA_LINK   # Unión La Calera · Estadio Nicolás Chahuán
 LSE   PEGA_LINK   # Deportes La Serena · Estadio La Portada
 DCO   PEGA_LINK   # Deportes Concepción · Estadio Ester Roa
@@ -32,7 +32,7 @@ CBL   PEGA_LINK   # Cobreloa · Estadio Zorros del Desierto
 SLQ   PEGA_LINK   # San Luis de Quillota · Estadio Lucio Fariña Fernández
 ANT   PEGA_LINK   # Deportes Antofagasta · Estadio Regional Calvo y Bascuñán
 MAG   PEGA_LINK   # Deportes Magallanes · Estadio Luis Navarro Avilés
-UES   PEGA_LINK   # Unión Española · Estadio Santa Laura
+UES   https://upload.wikimedia.org/wikipedia/commons/e/e1/Estadio_Santa_Laura%2C_Independencia%2C_Santiago_20230723.jpg   # Unión Española · Estadio Santa Laura
 REC   PEGA_LINK   # Deportes Recoleta · Estadio Municipal de Recoleta
 PMO   PEGA_LINK   # Deportes Puerto Montt · Estadio Regional de Chinquihue
 SMA   PEGA_LINK   # San Marcos de Arica · Estadio Carlos Dittborn
@@ -41,17 +41,17 @@ TEM   PEGA_LINK   # Deportes Temuco · Estadio Germán Becker
 IQQ   PEGA_LINK   # Deportes Iquique · Estadio Tierra de Campeones
 USF   PEGA_LINK   # Unión San Felipe · Estadio Municipal de San Felipe
 CUR   PEGA_LINK   # Curicó Unido · Estadio La Granja
-SCR   PEGA_LINK   # Deportes Santa Cruz · Estadio Municipal Joaquín Muñoz
+SCR   SIN_FOTO   # Deportes Santa Cruz · Estadio Municipal Joaquín Muñoz
 RAN   PEGA_LINK   # Rangers de Talca · Estadio Fiscal de Talca
 
 # --- Segunda 2026 ---
 TRA   PEGA_LINK   # Trasandino · Estadio Regional de Los Andes
 COL   PEGA_LINK   # Atlético Colina · Estadio Municipal Manuel Rojas
 OVA   PEGA_LINK   # Provincial Ovalle · Estadio Diaguita
-CNA   PEGA_LINK   # Concón National · Estadio Atlético Municipal
-BSA   PEGA_LINK   # Brujas de Salamanca · Estadio Municipal de Salamanca
-RSJ   PEGA_LINK   # Real San Joaquín · Estadio Municipal de San Joaquín
-SCI   PEGA_LINK   # Santiago City · Estadio Municipal de Lo Barnechea
+CNA   SIN_FOTO   # Concón National · Estadio Atlético Municipal
+BSA   SIN_FOTO   # Brujas de Salamanca · Estadio Municipal de Salamanca
+RSJ   SIN_FOTO   # Real San Joaquín · Estadio Municipal de San Joaquín
+SCI   SIN_FOTO   # Santiago City · Estadio Municipal de Lo Barnechea
 SMO   PEGA_LINK   # Santiago Morning · Estadio Municipal de La Pintana
 LSC   PEGA_LINK   # Lota Schwager · Estadio Federico Schwager
 OSO   PEGA_LINK   # Provincial Osorno · Estadio Rubén Marcos Peralta
@@ -61,8 +61,8 @@ GVE   PEGA_LINK   # General Velásquez · Estadio Municipal Augusto Rodríguez
 REN   PEGA_LINK   # Deportes Rengo · Estadio Municipal Guillermo Guzmán Díaz
 
 # --- Argentina 2026 ---
-RIV   PEGA_LINK   # River Plate · Estadio Mâs Monumental
-BOC   PEGA_LINK   # Boca Juniors · La Bombonera
+RIV   https://upload.wikimedia.org/wikipedia/commons/5/54/RiverPlateStadium.jpg   # River Plate · Estadio Mâs Monumental
+BOC   https://upload.wikimedia.org/wikipedia/commons/3/38/La_Bombonera_2.jpg   # Boca Juniors · La Bombonera
 RAC   PEGA_LINK   # Racing Club · El Cilindro
 IND   PEGA_LINK   # Independiente · Libertadores de América
 VEL   PEGA_LINK   # Vélez Sarsfield · José Amalfitani

@@ -2252,3 +2252,18 @@ Claude avanzó 7.78–7.80 (federación por país, gol en vivo, celular). El 7.7
 - Cierra el ítem **Cancha pixel v2** de IDEAS.md.
 - **util.js:** VERSION 7.83 → **7.84**.
 **Probado:** node --check + suite 183/183 verde + captura headless del gol (red derecha vibrando en blanco, malla izquierda tenue, arquero reaccionando).
+
+## 7.83 · GROK_SUPERPROMPT huecos (caza + formato + DTs) — llega ahora
+Archivo `js/data-superprompt-83.js` (no estaba en GitHub). DTs Primera 2026 (Ortiz, Farré, Graff, Muñoz),
+FORMAT Segunda 3+3+4°s, Supercopa Final Four (Coquimbo campeón), Copa de la Liga SÍ existe.
+Caza HISTORIA: CC 1925 El Llano (no fusión escolar), Monumental 1975, San Carlos 1988. Atiende (no Atendé).
+
+## 7.85 · TAREA E llena (clásicos, oro, historia AFA) + merge 7.84 Claude
+Claude ocupó 7.84 (cancha pixel). TAREA E se suma encima, sin pisar cancha.js ni el T13b.
+
+- Clásicos variados (Porteño, Norte, Superclásico, Avellaneda…). No todos vs Colo-Colo.
+- Épocas doradas que faltaban (Everton 2008, Audax 2007, Morning 1942, River 2018, Boca 2007, Defensa 2020…). Plantel = cantera.
+- HISTORIA de los 30 argentinos + Segunda. SITUACION_CLUB de todos los jugables.
+- Línea de formatos Chile 2009→2026. FOTOS: SCR/SCI/RSJ/BSA/CNA = SIN_FOTO.
+- Tests: T13 Grok + T13b Claude + T14. util.js 7.84 → **7.85**.
+**Probado:** node --check + suite HTTP **230/230**.

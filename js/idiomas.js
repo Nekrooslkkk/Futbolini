@@ -73,7 +73,7 @@ var FRASES={
     ini_amigo_btn:"🎮 Pícate con un amigo",
     aj_idioma:"Idioma",
     aj_idioma_txt:"Cambia cómo habla el juego. El chilensis se va afinando de a poco; lo que falte sale en neutro por mientras.",
-    esc_atiende:"Atendé esto antes de avanzar, po",
+    esc_atiende:"Atiende esto antes de avanzar, po",
     esc_atiende_txt:"Hay weás que conviene resolver antes de apretar Avanzar. Toca una y te digo qué hacer:",
     esc_metas:"Lo que se espera de ti",
     esc_metas_txt:"Las metas de la dirigencia pa este año. Al cierre te las cobran, no te dormái.",

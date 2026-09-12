@@ -1,9 +1,42 @@
-# GROK · caza de bugs de datos (7.76)
+# GROK · caza de bugs de datos (7.76 + 7.83)
 
 Lista priorizada. Hechos públicos; si no está documentado, se marca.
 
 ## Crítico
 (ninguno nuevo que rompa una partida chilena)
+
+## 7.83 · hallazgos horneados
+[FIX] `js/data-historico.js` HISTORIA_LINEA.CC 1925.
+  Era: «Nace en Macul, de una fusión de clubes escolares».
+  Falso. 19 abr 1925, Estadio El Llano (San Miguel). Escisión de Magallanes
+  («Ancha es la puerta»), David Arellano capitán. Macul es el Monumental, 1975/89.
+
+[FIX] HISTORIA_LINEA.CC «1973 El Monumental».
+  Inauguración **20 abr 1975** (1-0 a Aviación, Orellana). Reinauguración
+  **30 sep 1989** (2-1 a Peñarol). 1973 no es la fecha.
+
+[FIX] HISTORIA_LINEA.UC «1997 San Carlos».
+  San Carlos de Apoquindo se inauguró el **4 sep 1988** (0-1 vs River).
+  1997 no es la fecha. Claro Arena 2025 se queda.
+
+[FIX] DTs Primera 2026 que seguían en «el cuerpo técnico»:
+  CC Fernando Ortiz · PAL Guillermo Farré · AUD Patricio Graff ·
+  UDC Cristián Muñoz. El resto ya estaba (Gago, Garnero, Caputto, etc.).
+  Fuente: Wikipedia Liga de Primera 2026 / Transfermarkt, sep 2026.
+
+[FIX] `idiomas.js` FRASES.cl.esc_atiende: «Atendé» es voseo argentino.
+  Chilensis: «Atiende esto antes de avanzar, po».
+
+[OK] Copa de la Liga 2026 **SÍ existe** (1ª edición, ANFP). GROK_TAREAS Tarea 3
+  quedó vieja. Grupos de `COPA_LIGA_GRUPOS_2026` cruzan con Wikipedia 8 ene 2026.
+  No la juegan B ni Segunda.
+
+[OK] Supercopa 2026: Final Four en Sausalito. Coquimbo campeón 0-0 (8-7p) vs UC.
+  Semis reales: HUA 2-4 UC, COQ 3-2 LIM. Ya en `SUPERCOPA_2026`.
+
+[INFO] Segunda 2026 formato real (TAREA 2): 3+3 a liguillas de 7 + playoff de 4°s.
+  En 2026 el de 4°s fue ida y vuelta (Trasandino 1-0 G. Velásquez).
+  Motor hoy: zona 12 fechas. Liguilla de 7 **pendiente**. Ver FORMAT_SEGUNDA_2026.
 
 ## Medio
 [INFO] `COB` 1991 = Cobreloa · `COB` 2026 = Cobresal.
@@ -21,7 +54,7 @@ Lista priorizada. Hechos públicos; si no está documentado, se marca.
 
 [OK] IDs Argentina (30) no chocan con Primera / B / Segunda / 1991.
 
-## Menor (corregido en este pase)
+## Menor (corregido en 7.76)
 [FIX] `js/data-segunda2026.js` — Santiago City, estadio.
   Era: Municipal de Las Condes (sin cruzar).
   Ahora: **Municipal de Lo Barnechea** (lista de clubes / Liga de Segunda 2026).
@@ -48,4 +81,6 @@ Lista priorizada. Hechos públicos; si no está documentado, se marca.
 - Formato Argentina: zonas de 15 + 2 interzonales + playoffs. Hoy: 29 fechas ida
   (fixturesLiga no banca n impar: zona de 15 rompería el círculo).
 - Fixtures reales Argentina 2026 (Apertura).
-- DTs de Primera / B 2026: varios siguen en "el cuerpo técnico" a propósito.
+- Liguilla de 7 de Segunda + playoff de 4°s: documentados, no jugables aún.
+- Fotos: FOTOS.txt tiene URLs Commons verificadas (CC, UCH, EVE, UES, OHI, COQ,
+  HUA, COB, NUB, BOC, RIV). El resto sigue PEGA_LINK / sin_foto.

@@ -517,12 +517,45 @@
       ok(typeof COPA91_RESEÑA==="object" && /Olimpia/.test(COPA91_RESEÑA.final||""), "reseña Libertadores 1991");
     }, "Calendario H + Libertadores 91");
 
-    /* T13 · 7.83 · blindaje del selector de época: ninguna gloria de club (las de
-       EPOCAS_CLUB, presentes o que Grok agregue con EPOCAS_CLUB_ADD) debe caer en
-       "Club sin datos" al armar el briefing. Replica la resolución de base de
-       elegirEpoca/datosPunto sin abrir el modal, para todos los clubes de una. */
+    /* T13 · 7.83 GROK_SUPERPROMPT huecos (caza + DTs + formato) */
+    grupo("Grok 7.83 (caza 1925/Monumental/San Carlos + DTs + formatos 2026)");
     safe(function(){
-      grupo("Selector de época sólido para todos (7.83)");
+      ok(typeof FORMAT_SEGUNDA_2026==="object" && FORMAT_SEGUNDA_2026.n===14, "FORMAT_SEGUNDA_2026 n=14");
+      ok(FORMAT_SEGUNDA_2026.porZona===7 && /liguilla/i.test(FORMAT_SEGUNDA_2026.liguillaAscenso||""), "Segunda: zonas 7 + liguilla de 7");
+      ok(/4°/.test(FORMAT_SEGUNDA_2026.cuartos||""), "Segunda documenta playoff de 4°s");
+      ok(typeof FORMAT_SUPERCOPA_2026==="object" && FORMAT_SUPERCOPA_2026.campeon==="Coquimbo Unido", "Supercopa 2026: Coquimbo campeón");
+      ok(FORMAT_SUPERCOPA_2026.n===4 && /Sausalito/.test(FORMAT_SUPERCOPA_2026.sede||""), "Supercopa Final Four en Sausalito");
+      ok(typeof FORMAT_COPA_LIGA_2026==="object" && FORMAT_COPA_LIGA_2026.edicion===1, "Copa de la Liga 2026 existe (1ª edición)");
+      ok(FORMAT_COPA_LIGA_2026.grupos && FORMAT_COPA_LIGA_2026.grupos.A[0]==="COQ", "Copa de la Liga grupo A arranca con Coquimbo");
+      ok(typeof COPA_LIGA_GRUPOS_2026==="object" && COPA_LIGA_GRUPOS_2026.A[0]==="COQ" && COPA_LIGA_GRUPOS_2026.B[0]==="UC", "grupos formato = Wikipedia");
+    }, "Formatos 2026");
+    safe(function(){
+      ok(CLUB_INFO_2026.CC && CLUB_INFO_2026.CC.dt==="Fernando Ortiz", "DT CC: Ortiz");
+      ok(CLUB_INFO_2026.AUD && CLUB_INFO_2026.AUD.dt==="Patricio Graff", "DT AUD: Graff");
+      ok(CLUB_INFO_2026.UDC && CLUB_INFO_2026.UDC.dt==="Cristián Muñoz", "DT UDC: Muñoz");
+      ok(CLUB_INFO_2026.PAL && CLUB_INFO_2026.PAL.dt==="Guillermo Farré", "DT PAL: Farré");
+      var r=nuevaPartida("CC",2026,"historico");
+      ok(r!==false && E && E.dt==="Fernando Ortiz", "partida CC 2026 arranca con Ortiz");
+    }, "DTs Primera 2026");
+    safe(function(){
+      var cc0=(HISTORIA_LINEA.CC&&HISTORIA_LINEA.CC[0])||{};
+      ok(cc0.anio===1925 && !/escolares/i.test(cc0.txt||""), "CC 1925 ya no dice fusión escolar");
+      ok(/Llano|Magallanes|Arellano/.test(cc0.txt||""), "CC 1925: El Llano / Magallanes / Arellano");
+      ok(HISTORIA_LINEA.CC.some(function(h){ return h.anio===1975 && /Monumental|Aviación/.test(h.txt||""); }), "Monumental inaugurado 1975");
+      ok(!HISTORIA_LINEA.CC.some(function(h){ return h.anio===1973; }), "CC ya no tiene hito 1973");
+      ok(HISTORIA_LINEA.UC.some(function(h){ return h.anio===1988 && /San Carlos/.test(h.hito||h.txt||""); }), "San Carlos 1988");
+      ok(!HISTORIA_LINEA.UC.some(function(h){ return h.anio===1997; }), "UC ya no tiene hito 1997");
+      ok(HISTORIA_LINEA.COQ.some(function(h){ return h.hito==="Supercopa" && /penales/.test(h.txt||""); }), "COQ: hecho Supercopa 2026");
+    }, "Caza HISTORIA_LINEA");
+    safe(function(){
+      ok(typeof FRASES==="object" && FRASES.cl && !/Atendé/.test(FRASES.cl.esc_atiende||""), "chilensis sin Atendé argentino");
+      ok(/Atiende/.test(FRASES.cl.esc_atiende||""), "Atiende (tú chilensis)");
+      ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
+    }, "Voz + versión");
+
+    /* T13b · 7.83b Claude · blindaje del selector de época (no pisar) */
+    safe(function(){
+      grupo("Selector de época sólido para todos (7.83b)");
       ok(typeof epocasDe==="function" && typeof datosEra==="function" && typeof baseEra==="function",
         "helpers de época disponibles");
       var mapa=(typeof clubMapaTodos==="function")?clubMapaTodos():{};
@@ -533,18 +566,13 @@
         var gl=epocasDe(id)||[];
         gl.forEach(function(ep){
           var b=baseEra(ep.anio);
-          if(!(datosEra(b).info||{})[id]) b=2026;   /* mismo fallback que ui.js */
+          if(!(datosEra(b).info||{})[id]) b=2026;
           var D=datosEra(b);
           var info=D.info[id], ind=D.ind[id], caja=D.caja[id];
-          /* la gloria puede traer ind/caja propios (Object.assign en datosPunto) */
           if(!info || !(ind||ep.ind) || !(caja||ep.caja)) rotas.push(id+"@"+ep.anio);
         });
       });
       ok(rotas.length===0, "toda gloria de club resuelve datos"+(rotas.length?": ROTAS "+rotas.join(", "):""));
-      /* todo club ELEGIBLE (el mismo conjunto que arma el picker de inicio: core 1991 +
-         Primera 2026 + B + C + Argentina) debe resolver en alguna era. Los clubes que
-         solo son RIVALES del calendario 91 (ej. FV) no se manejan y quedan fuera. Así,
-         si Grok suma un club a una liga y olvida su CLUB_INFO_2026, esto lo caza. */
       var elegibles={};
       if(typeof CLUB_INFO==="object") Object.keys(CLUB_INFO).forEach(function(id){ elegibles[id]=1; });
       if(typeof CLUB_INFO_2026==="object") Object.keys(CLUB_INFO_2026).forEach(function(id){ elegibles[id]=1; });
@@ -558,6 +586,45 @@
       });
       ok(huerfanos.length===0, "todo club elegible resuelve en alguna era"+(huerfanos.length?": HUÉRFANOS "+huerfanos.join(", "):""));
     }, "Selector de época sólido");
+
+    /* T14 · 7.85 GROK_SUPERPROMPT TAREA E (clásicos, épocas, historia AR, formatos) */
+    grupo("Grok 7.84 (TAREA E: clásicos variados + épocas doradas + AFA historia)");
+    safe(function(){
+      ok(typeof esRivalidadRegional==="function" && esRivalidadRegional("SW","EVE"), "Clásico Porteño SW–EVE");
+      ok(esRivalidadRegional("CBL","ANT"), "Clásico del Norte CBL–ANT");
+      ok(esRivalidadRegional("BOC","RIV"), "Superclásico BOC–RIV");
+      ok(esRivalidadRegional("RAC","IND"), "Clásico de Avellaneda RAC–IND");
+      ok(esRivalidadRegional("IQQ","SMA"), "norte extremo IQQ–SMA");
+      ok(!esRivalidadRegional("SMO","CC"), "Morning no tiene de clásico a Colo-Colo");
+    }, "Clásicos variados");
+    safe(function(){
+      ok(typeof epocasDe==="function", "epocasDe existe");
+      ok((epocasDe("EVE")||[]).some(function(e){ return e.anio===2008; }), "Everton 2008 Apertura (oro)");
+      ok((epocasDe("AUD")||[]).some(function(e){ return e.anio===2007; }), "Audax 2007 Apertura (oro)");
+      ok((epocasDe("SMO")||[]).some(function(e){ return e.anio===1942; }), "Morning 1942 campeón (oro)");
+      ok((epocasDe("RIV")||[]).some(function(e){ return e.anio===2018; }), "River 2018 Libertadores (oro)");
+      ok((epocasDe("BOC")||[]).some(function(e){ return e.anio===2007; }), "Boca 2007 Libertadores (oro)");
+      ok((epocasDe("GVE")||[]).some(function(e){ return e.anio===2017; }), "Velásquez 2017 Tercera A (oro)");
+      ok((epocasDe("CBL")||[]).some(function(e){ return e.anio===1981; }), "Cobreloa 1981 final América");
+    }, "Épocas doradas");
+    safe(function(){
+      ok(HISTORIA_LINEA.RIV && HISTORIA_LINEA.RIV.some(function(h){ return h.anio===1901; }), "River historia 1901");
+      ok(HISTORIA_LINEA.BOC && /Bombonera|1905/.test((HISTORIA_LINEA.BOC[0]||{}).txt||""), "Boca historia 1905");
+      ok(HISTORIA_LINEA.GVE && HISTORIA_LINEA.GVE.some(function(h){ return h.anio===1908; }), "Velásquez fund 1908");
+      ok(HISTORIA_LINEA.OVA && HISTORIA_LINEA.OVA.some(function(h){ return h.anio===1942; }), "Ovalle fund 1942");
+      var idsC=(typeof idsSegunda==="function")?idsSegunda():[];
+      var faltaC=idsC.filter(function(id){ return !HISTORIA_LINEA[id] || !HISTORIA_LINEA[id].length; });
+      ok(faltaC.length===0, "Segunda: todos con HISTORIA_LINEA"+(faltaC.length?" ("+faltaC.join(",")+")":""));
+      var idsA=(typeof idsArgentina==="function")?idsArgentina():[];
+      var faltaA=idsA.filter(function(id){ return !HISTORIA_LINEA[id] || !HISTORIA_LINEA[id].length; });
+      ok(faltaA.length===0, "Argentina: todos con HISTORIA_LINEA"+(faltaA.length?" ("+faltaA.join(",")+")":""));
+    }, "Historia todos");
+    safe(function(){
+      ok(FORMAT_CHILE_LINEA.some(function(x){ return x.anio===2018 && x.n===16; }), "2018: torneo largo 16");
+      ok(FORMAT_CHILE_LINEA.some(function(x){ return x.anio===2026; }), "2026 en la línea de formatos");
+      ok(typeof SITUACION_CLUB==="object" && SITUACION_CLUB.CC && SITUACION_CLUB.RIV, "situación CC y River");
+      ok(typeof VERSION==="string" && VERSION==="7.85", "VERSION 7.85");
+    }, "Formatos + situación + versión");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

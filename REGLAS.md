@@ -28,19 +28,32 @@ Ascenso/descenso **encadenado** entre niveles (implementado: Primera↔B↔Segun
 
 ## Segunda División Profesional 2026 (era 2026c)
 - **14 clubes**, en **dos zonas: Norte y Sur (7 y 7)**. Victoria **3 pts**.
-- **Ascenso:** los mejores de cada zona disputan una **liguilla**; el ganador **asciende a Primera B**.
-- **Descenso:** los peores de cada zona definen el descenso a **Tercera A**.
-- La zona real de cada club está en el campo `z` de `LIGA_C_2026` (`data-segunda2026.js`).
-- **Implementado (7.65):** se juega por **zona** (Norte/Sur, 7 clubes → **12 fechas** ida y vuelta contra la propia zona); la tabla, la posición y el "campeón" son **por zona**. El **ascenso** lo define una **liguilla** entre el 1º de Norte y el 1º de Sur (hoy se resuelve por fuerza + azar; **pendiente**: hacerla jugable). Las zonas se mantienen **7 y 7** aunque haya ascensos/descensos: el que baja de la B hereda el cupo de zona del que sube (`E.zonaSeg`, `zonaSegDe()` en `motor.js`).
-- **Pendiente:** descenso a Tercera A (no modelada) y liguilla jugable por el usuario.
+- **Fase zonal:** todos contra todos ida y vuelta DENTRO de la zona. 7 clubes (impar) → **14 fechas de calendario, 12 partidos por club, 2 byes**.
+- **Clasificación:** 3 primeros de cada zona → liguilla de ascenso. 3 últimos → liguilla de permanencia. Los **4°** de Norte y Sur se cruzan (bases: cancha neutral; en 2026 se jugó ida y vuelta: Trasandino 1-0 General Velásquez) — ganador a liguilla de título, perdedor a permanencia.
+- **Liguilla de ascenso:** 7 clubes, ida y vuelta, puntaje desde 0. El **1° es campeón y sube a Primera B**.
+- **Liguilla de permanencia:** 7 clubes, ida y vuelta. Los **2 últimos bajan a Tercera A**.
+- La zona real de cada club está en el campo `z` de `LIGA_C_2026` (`data-segunda2026.js`). Resumen estructurado: `FORMAT_SEGUNDA_2026`.
+- **Implementado (7.65):** se juega por **zona** (Norte/Sur, 7 clubes → **12 fechas**); la tabla y el "campeón" son **por zona**. El **ascenso** lo define una **liguilla** entre el 1º de Norte y el 1º de Sur (hoy se resuelve por fuerza + azar; **pendiente**: liguilla de 7 jugable + playoff de 4°s). Las zonas se mantienen **7 y 7** aunque haya ascensos/descensos: el que baja de la B hereda el cupo de zona del que sube (`E.zonaSeg`, `zonaSegDe()` en `motor.js`).
+- **Pendiente:** descenso a Tercera A (no modelada) y liguilla de 7 jugable. Planteles: **cantera** (no se inventan).
+- **Copa Chile 2026 NO incluye Segunda.**
 
 ## Copa Chile
-- Copa nacional con **clubes de todas las divisiones**. Fase de grupos zonales → eliminación directa.
-- El **campeón** clasifica a torneo internacional y a la **Supercopa**.
+- Copa nacional con **clubes de Primera y Primera B** (32 = 16+16). Fase de grupos zonales → eliminación directa.
+- El **campeón** clasifica a repechaje Libertadores (Chile 4) y a la **Supercopa**.
 - En el juego: `data-copas2026.js` (grupos + KO). ⚠️ formato exacto cambia por año.
+- **2026: Segunda NO juega Copa Chile** (bases ANFP).
+
+## Copa de la Liga de Chile 2026
+- **SÍ existe** (1ª edición). No es un invento ni un alias de la Supercopa. Consejo de Presidentes 13 oct 2025 / grupos 8 ene 2026.
+- **Solo los 16 de Primera.** 4 grupos de 4, ida y vuelta. Clasifica **únicamente el 1°** a semifinales (A↔D, B↔C, ida/vuelta). Final a partido único en el **Elías Figueroa** (Valparaíso).
+- El **campeón obtiene el cupo Chile 3 a Libertadores** del año siguiente.
+- Grupos 2026 (reales): A COQ/CC/HUA/DCO · B UC/NUB/UDC/COB · C OHI/EVE/LIM/PAL · D CAL/AUD/UCH/LSE.
+- **No la juegan B ni Segunda.** Implementada en `data-formato2026.js`.
 
 ## Supercopa de Chile
-- Partido único: **campeón de Primera vs campeón de Copa Chile**. (No modelada aún; candidata para la "Copa de la Liga" que pidió el usuario si no se refería a otra cosa.)
+- **2026: Final Four** (ya no es partido único). Campeón y subcampeón de Liga 2025 + finalistas de Copa Chile 2025. Sede: **Sausalito**, 20–25 ene 2026.
+- Semis: Huachipato 2-4 Católica (20 ene); Coquimbo 3-2 Limache (21 ene). Final: Católica 0-0 Coquimbo (**7-8 penales**). Campeón: **Coquimbo Unido**.
+- En una partida 2026 es **HECHO** (ya se jugó en enero), no un fixture a simular. El formato de 4 equipos vale para 2027. `SUPERCOPA_2026` / `FORMAT_SUPERCOPA_2026`.
 
 ---
 
