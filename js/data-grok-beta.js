@@ -30,7 +30,7 @@ const HISTORIA_BETA={
     "1978":"Campeón nacional. Elías Figueroa de eje y Fabbiani goleador. Racha larga de invicto 1977-78. Dirigía Caupolicán Peña."
   },
   LIM:{
-    actual:"Recién llegado a Primera (ascenso 2025). Objetivo: no volver a bajar. Estadio Lucio Fariña, plantel corto, caja de provincial."
+    actual:"Recién llegado a Primera (ascenso 2025). Objetivo: no volver a bajar. Estadio Ángel Navarrete Candia (municipal, 3.000). El Lucio Fariña es de San Luis."
   },
   EVE:{
     actual:"Sausalito, Viña y temporada larga. Cuando se acaba el verano el estadio se vacía. 2026 pelea en Primera con plantel mixto.",

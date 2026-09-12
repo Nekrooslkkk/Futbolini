@@ -1231,7 +1231,7 @@
     grupo("Grok 7.994 (tablas vivas + AFA + Sudamericana)");
     safe(function(){
       ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
-      ok(VERSION==="7.994", "VERSION 7.994");
+      ok(typeof VERSION==="string" && /^7\.99/.test(VERSION), "VERSION 7.99x");
       nuevaPartida("TRA",2026,"historico",{categoria:"C"});
       var liga=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"; });
       ok(liga.length===12, "Trasandino: 12 PJ zonales (6 rivales ida/vuelta + 2 byes fuera del calendario)");
@@ -1278,6 +1278,21 @@
       ok(typeof calendarioZonal==="function", "crear una liga zonal es clubs + calendarioZonal");
       ok(typeof copasDeLiga==="function" && copasDeLiga("arg2026").some(function(c){ return c.id==="copaArg"; }), "registrarLiga copas incluye Copa Argentina");
     }, "Sudamericana + Copa Argentina + tablaViva + CONMEBOL");
+
+    /* T33 · 7.995 scripts 801/802/rigor que 7.994 no subió */
+    grupo("Grok 7.995 (planteles glory + decisiones propias)");
+    safe(function(){
+      ok(VERSION==="7.995", "VERSION 7.995");
+      ok(typeof DECISIONES_801!=="undefined" && DECISIONES_801.length>=40, "DECISIONES_801 cargó (≥40 cartas de club)");
+      ok(DECISIONES.some(function(d){ return d.id==="cc26_concesionaria" && d.club==="CC"; }), "CC 2026 tiene carta propia (concesionaria)");
+      ok(DECISIONES.some(function(d){ return d.id==="smo26_pintana" && d.club==="SMO"; }), "Morning 2026 tiene carta propia (no hereda CC)");
+      ok(DECISIONES.some(function(d){ return d.id==="lim26_pueblo" && d.club==="LIM"; }), "Limache 2026 tiene carta propia");
+      ok(DECISIONES.some(function(d){ return d.id==="riv26_monumental" && d.club==="RIV"; }), "River 2026 tiene carta propia");
+      var smoDec=DECISIONES.filter(function(d){ return d.club==="SMO"; });
+      ok(smoDec.length>=1 && smoDec.every(function(d){ return !/Libertadores 1991|Jozić|Cacique/.test((d.t||"")+(d.d||"")); }), "cartas de Morning no hablan de Colo-Colo 1991");
+      ok(PLANTELES_REALES.AUD && PLANTELES_REALES.AUD[2007] && PLANTELES_REALES.AUD[2007].length>=18, "Audax 2007 plantel en 801");
+      ok(PLANTELES_REALES.RAC && PLANTELES_REALES.RAC[1967] && PLANTELES_REALES.RAC[1967].length>=12, "Racing 1967 plantel en 802");
+    }, "7.995 decisiones propias + 801/802");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

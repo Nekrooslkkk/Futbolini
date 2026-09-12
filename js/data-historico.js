@@ -40,7 +40,7 @@ var HISTORIA_LINEA={
   LIM:[
     {anio:2010,hito:"Fundación",txt:"Club joven de Limache. Pueblo, no marca de capital."},
     {anio:2025,hito:"Ascenso",txt:"Sube a Primera. El objetivo del 2026 es no volver a bajar."},
-    {anio:2026,hito:"Hoy",txt:"Estadio Lucio Fariña, plantel corto, caja de provincial. Sobrevivir ya es título."}
+    {anio:2026,hito:"Hoy",txt:"Localía en el Ángel Navarrete Candia (3.000, municipal). El Lucio Fariña es de San Luis de Quillota."}
   ],
   EVE:[
     {anio:1909,hito:"Fundación",txt:"Everton de Viña del Mar. Nombre inglés, club de puerto y veraneo."},

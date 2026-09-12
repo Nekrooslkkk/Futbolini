@@ -88,29 +88,26 @@ Hechos públicos. Si no está documentado, se marca.
 [FIX] 1925: arcos genéricos de tele/sponsor/Europa no salen (`arcoCabeEnClub`).
 [OK] Homónimos Molina/Fernández se quedan. Vera/Olea siguen solo en OHI/USF.
 
-## 7.99 · rigor vs Colo-Colo (uno por uno)
-[INFO] Listón CC: 24 jugadores 2026, 3 ARQ, capitán Vidal, ídolo, 0 rasgos vacíos, épocas 1989/1991/2002/2006.
-[OK] Primera 16/16 y B 16/16 ya tenían plantel Wiki ≥18. Segunda 14/14 FULL (89 pisa los stubs de 87).
-[FIX] UC 2026: Giani es DEL (no VOL). Entran Martín Gómez, Diego Corral, Nicolás L'Huillier (wiki 14 ago).
-[FIX] Assadi sale del stub de data-plantel.js (AIK, 21 ago). Sosa Limache 37, no 21.
-[FIX] UES 2013: plantel real Transición (Sierra, Ampuero, Villagra, Canales, Cueva) — la época ya no es cantera.
-[FIX] SW 2001: plantel real tercera estrella (Garcés, Silvio Fernández, Riveros, Villarroel) — ASIFUCH.
-[FIX] HISTORIA_LINEA.CC 1925 en fuente: El Llano, no Macul.
-[INFO] Todavía bajo el listón CC (sin plantel de época real): palestino 1978 sí; LIM/ANT/PMO/COP/TEM/IQQ/CUR/SCR/RAN/SLQ/USF/REC y casi toda Segunda/AFA. No se inventa.
-[OK] Rasgo mínimo por edad si el array venía vacío (veterano/joven/recambio). Capitán no se inventa.
+## 7.991 · 8.00 RESERVADA. Audax ≠ CC + AFA glory + Limache ≠ Quillota
+[INFO] 8.00 = cuando TODOS los clubes estén al listón Colo-Colo.
+[FIX] AUD 2007 no se declara campeón del Apertura (fue Colo-Colo).
+[FIX] Limache: Navarrete Candia 3.000. Fariña es de San Luis.
+[FIX] Vélez 1994, San Lorenzo 2014, Racing 1967, Independiente 1984, Estudiantes 2009.
 
-## 8.00 · U 1994 / Boca 2007 / River 2018 = listón Colo-Colo
-[CRÍTICO] UCH 1994 tenía 8 fichas (el resto cantera). Es EL título de la U, el equivalente a CC 1991.
-[FIX] Plantel 21 nombres BDFA/Wikipedia/ASIFUCH. Musrri capitán, Salas goleador, Vargas ídolo. 3 ARQ.
-[FIX] HISTORIA_LINEA.UCH no tenía 1994 — ahora sí (25 años, El Salvador, penal de Mardones).
-[FIX] Época dorada jugable (botón oro) con squad real.
-[CRÍTICO] Boca 2007 y River 2018 (EPOCAS_TAREA_E) decían "Plantel: cantera".
-[FIX] Boca 2007: 22 nombres, Russo, Riquelme, Palermo capitán. Schelotto no (abril).
-[FIX] River 2018: 24 nombres, Gallardo, Ponzio capitán, Pratto, Armani. 3 ARQ.
-[INFO] Siguiente lote (aún cantera, no se inventa): Audax 2007, Cobreloa 1981 ya tiene XI de final en 7.92, Magallanes/Morning 1942, AFA 1967/1984/1994.
-[OK] VERSION 8.00. Tests T29.
+## 7.993 · Tablas + liguilla de 7 + Sudamericana
+[CRÍTICO] Trasandino: la liguilla de 7 (cruzar otra vez rivales de zona) es el formato real. La carta de 3 botones al cierre NO.
+[FIX] wrapAscenso54 / procesarAscensoDescenso: el 1° de la liguilla de 7 sube. No hay liguillaPend 1-vs-1.
+[CRÍTICO] Tablas raras: fixture de 7 emparejaba siempre los mismos 4.
+[FIX] fixturesLiga con bye. Poisson por fecha. Tabla de liguilla viva (se parte de 0).
+[FIX] Sudamericana ofrecida (4°–6° → 2027; 2026 PAL/AUD/UCH/COB/OHI). Tablas de grupo Lib+Sud.
+[FIX] AFA 2026: Boca D, Estudiantes A, Platense E, Independiente Rivadavia C.
+[OK] T4 reescrito. T32. VERSION 7.993. 8.00 reservada.
 
-
+## 7.995 · 801/802/rigor subidos (faltaban en GitHub 7.994)
+[CRÍTICO] 7.994 en GitHub tenía T30–T32 pero index NO cargaba planteles-801/802 ni rigor-801.
+[FIX] Index carga 801 + 802 + rigor-801. VERSION 7.995.
+[OK] Cada club 2026 tiene ≥1 decisión propia. Morning/Limache no heredan Jozić ni el Monumental.
+[OK] Audax 2007 no se apropia del Apertura de Colo-Colo. Limache ≠ Lucio Fariña.
 
 
 

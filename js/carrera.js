@@ -214,11 +214,13 @@ function ofertasDeTrabajo(){
 }
 function aceptarClub(id, anioForz){
   const prev=E.rep, carrera=E.carrera, titulos=E.titulos, cronica=E.cronica;
+  const histo=E.historialAnual;
   const anio=anioForz||E.anio, modo=E.modo;
   nuevaPartida(id,anio,modo);
   E.rep=prev; E.carrera=carrera; E.carrera.club=id; E.carrera.desde=E.anio;
   E.carrera.enParo=false; E.carrera.malos=0;
   E.titulos=titulos; E.cronica=cronica;
+  if(Array.isArray(histo)) E.historialAnual=histo;
   aplicarGrupos({directorio:10,prensa:5});
   guardar();
 }

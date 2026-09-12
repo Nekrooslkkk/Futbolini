@@ -44,7 +44,7 @@ const LIGA_2026=[
  {id:"LSE",n:"Deportes La Serena",    c:"La Serena",   fuerza:66, aforo:17134, est:"Estadio La Portada",            ciudad:"La Serena"},
  {id:"DCO",n:"Deportes Concepción",   c:"D. Concep.",  fuerza:64, aforo:30448, est:"Estadio Ester Roa",             ciudad:"Concepción"},
  {id:"UDC",n:"Universidad de Concepción",c:"U. Concepción",fuerza:62,aforo:30448,est:"Estadio Ester Roa",           ciudad:"Concepción"},
- {id:"LIM",n:"Deportes Limache",      c:"Limache",     fuerza:63, aforo:7680,  est:"Estadio Lucio Fariña",          ciudad:"Limache"}
+ {id:"LIM",n:"Deportes Limache",      c:"Limache",     fuerza:63, aforo:3000,  est:"Estadio Municipal Ángel Navarrete Candia", ciudad:"Limache"}
 ];
 /* Fixture oficial Colo-Colo 2026 (Wikipedia, congelado 18/08/2026). real=null si no se jugó. */
 const LIGA_CC_2026=[
@@ -335,14 +335,19 @@ function climaDeFecha(mes,seed){
   return "despejado";
 }
 /* ---------- generación de calendario ---------- */
-/* Round robin de 16 equipos → 15 fechas por rueda, 30 en total. */
+/* Round robin. n par → n-1 fechas por rueda. n impar (Segunda zonal de 7) → bye:
+   se agrega un dummy, cada club juega n-1 partidos por rueda y tiene 1 fecha libre.
+   7 clubes → 7 fechas de ida + 7 de vuelta, 12 PJ + 2 byes. Misma física en todas. */
 function fixturesLiga(equipos){
-  const ids=equipos.map(e=>e.id), n=ids.length;
+  const ids0=equipos.map(e=>e.id), impar=ids0.length%2===1;
+  const ids=impar?ids0.concat(["__BYE__"]):ids0.slice();
+  const n=ids.length;
   const rot=ids.slice(1), fijo=ids[0], ruedas=[];
   for(let r=0;r<n-1;r++){
     const fecha=[]; const orden=[fijo].concat(rot);
     for(let i=0;i<n/2;i++){
       const a=orden[i], b=orden[n-1-i];
+      if(a==="__BYE__"||b==="__BYE__") continue;
       fecha.push(r%2===0?[a,b]:[b,a]);
     }
     ruedas.push(fecha);

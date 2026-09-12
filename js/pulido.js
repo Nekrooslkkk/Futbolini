@@ -263,8 +263,8 @@ function irMeta74(o){
       if(o) return "El directorio mira «"+o.t+"». "+comoHacerObjetivo(o);
     }
     if(t("libertadores","sudamericana","conmebol","copa libertadores")){
-      if(_div74()==="C") return "En Segunda 2026 no hay Libertadores ni Copa Chile. El premio es subir a la B. Si querís ver quién manda en Primera, Calendario: pestaña Tablas.";
-      if(_div74()==="B") return "La B no clasifica a Libertadores, salvo que ganes Copa Chile y subas. El 1° de la regular sube directo; 2°–8° van a liguilla.";
+      if(_div74()==="C") return "En Segunda no hay Libertadores ni Copa Chile (bases ANFP: 32 = Primera + B). El premio es subir a la B: el año que viene sí jugás Copa Chile. Si querís ver quién manda en Primera, Calendario: pestaña Tablas.";
+      if(_div74()==="B") return "La B no clasifica a Libertadores, salvo que ganes Copa Chile y subas. Copa Chile sí se juega. El 1° de la regular sube directo; 2°–8° van a liguilla. Si llegás a Primera, entra Copa de la Liga.";
       if(_div74()==="ARG") return "Campeón de Apertura y de Clausura van a Libertadores. En el juego es una rueda de 29: terminá arriba. Copa Chile no se juega acá.";
       const enLib=typeof LIB_GRUPOS_2026_CHILE==="object"&&E&&LIB_GRUPOS_2026_CHILE[E.club];
       if(enLib) return "Este año ya tenís grupo de Libertadores (lo ganaste en 2025). El mandato ahora es pelear el nacional y no hacer el ridículo en el grupo. Calendario → CONMEBOL.";
@@ -682,11 +682,27 @@ function pulirCalendario75(){
     if(/^Tabla de posiciones/.test(tit||"")) p.remove();
   });
   if(!E.mundo && typeof mundoInit==="function") mundoInit();
-  if(typeof panelMundoCalendario!=="function") return;
-  if(!v.querySelector(".mundo-wrap")) panelMundoCalendario(v);
+  if(typeof panelMundoCalendario==="function" && !v.querySelector(".mundo-wrap")) panelMundoCalendario(v);
   const wrap=v.querySelector(".mundo-wrap");
-  if(!wrap) return;
-  if(v.firstChild!==wrap) v.insertBefore(wrap, v.firstChild);
+  if(wrap && v.firstChild!==wrap) v.insertBefore(wrap, v.firstChild);
+  /* 7.993 · durante la liguilla de 7, esa tabla manda (no la zonal congelada) */
+  if(E.eraBase==="2026c" && E.flags && (E.flags.segundaFase==="liguillaAscenso"||E.flags.segundaFase==="liguillaDescenso") && typeof filasTablaActual==="function"){
+    const ft=filasTablaActual();
+    if(ft&&ft.filas&&ft.filas.length && !v.querySelector(".tabla-liguilla-c")){
+      const p=panel(ft.titulo||"Liguilla","🏆","agua");
+      p.classList.add("tabla-liguilla-c");
+      if(ft.nota) p.cuerpo.appendChild(el("p","mini",ft.nota));
+      if(typeof mundoPintarTabla==="function"){
+        const filas=ft.filas.map(c=>{
+          const nom=(typeof clubLookup==="function"&&clubLookup(c.id))||{};
+          return Object.assign({n:nom.n||c.n||c.id}, c);
+        });
+        p.cuerpo.appendChild(mundoPintarTabla(filas,{compact:false}));
+      }
+      if(wrap&&wrap.nextSibling) v.insertBefore(p, wrap.nextSibling);
+      else v.appendChild(p);
+    }
+  }
 }
 
 (function wrapUI74(){

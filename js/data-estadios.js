@@ -86,7 +86,9 @@ const ESTADIOS_DATA = {
     { n:"Galería Sur", tipo:"popular", cuota:0.24, precio:8000 },
     { n:"Tribuna Andes", tipo:"tribuna", cuota:0.26, precio:16000 },
     { n:"Tribuna Pacífico", tipo:"premium", cuota:0.22, precio:30000 } ]},
-  LIM:{ nombre:"Estadio Lucio Fariña Fernández", aforo:5500, sectores:[
+  LIM:{ nombre:"Estadio Municipal Ángel Navarrete Candia", aforo:3000, propietario:"Municipalidad de Limache",
+    nota:"El Lucio Fariña es de San Luis de Quillota. Limache a veces lo usó de localía por aforo de Primera.",
+    sectores:[
     { n:"Galería", tipo:"popular", cuota:0.40, precio:5000 },
     { n:"Tribuna", tipo:"tribuna", cuota:0.40, precio:10000 },
     { n:"Preferencial", tipo:"premium", cuota:0.20, precio:20000 } ]}

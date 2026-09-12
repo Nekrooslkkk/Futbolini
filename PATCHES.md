@@ -2442,6 +2442,19 @@ El hueco de las tablas: Copa Chile / Copa de la Liga / Libertadores / Sudamerica
 - Poisson: techo 5, localía un poco más clara. No se rearma la jornada con `emparejarFecha` en liguilla/zona.
 - VERSION **7.994**. 8.00 sigue reservada.
 
+## 7.995 · scripts 801/802/rigor que 7.994 no subió
+
+GitHub 7.994 tenía los tests T30–T32 pero **no** cargaba `data-planteles-801.js`, `802.js` ni `data-rigor-801.js`. Index los incluye ahora.
+
+- Audax 2007 (NO campeón del Apertura — fue Colo-Colo), Vélez 1994, San Lorenzo 2014.
+- Racing 1967, Independiente 1984, Estudiantes 2009. Planteles con nombres públicos, no cantera.
+- Limache: Ángel Navarrete Candia 3.000. El Lucio Fariña queda en San Luis.
+- `fixturesLiga` con bye para n impar (Segunda zonal de 7).
+- `DECISIONES_801`: cada club 2026 (Primera + B + Segunda + AFA grandes) tiene al menos una carta **suya**. Morning/Limache no heredan Jozić ni el Monumental.
+- Sectores con nombre en estadios de B (Figueroa, Zorros, Santa Laura, etc.).
+- VERSION **7.995**. 8.00 sigue reservada.
+
+
 
 
 
