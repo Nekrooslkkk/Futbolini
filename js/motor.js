@@ -153,7 +153,7 @@ function nuevaPartida(clubId,anio,modo,extra){
     pendientesEncadenadas:[], notifs:[], ofertasPend:[], mercadoLog:{rechazadas:{},vendidos:[]},
     redes:[], promesas:[], historialAnual:[], ultimaFecha:[], prensaAuto:false,
     timeline:[], seguidores:Math.round((D.ind[clubId].hinchada+D.ind[clubId].prestigio)*280),
-    tactica:{form:"4-4-2",estilo:"Equilibrado",presion:"Media",mentalidad:"Equilibrado",bloque:"Medio",ritmo:"Normal"},
+    tactica:{form:"4-4-2",estilo:"Equilibrado",presion:"Media",mentalidad:"Equilibrado",bloque:"Medio",ritmo:"Normal",bancaManual:null},
     precioEntrada:1, presupuesto:null, temporada:{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0,sinGanar:0},
     carrera:{club:clubId,desde:anio,despidos:0,clubes:[],evaluacion:null,fin:false},
     divergencias:[], coincidencias:[], staff:{deportivo:62,tesorero:60,prensa:58,cm:false}
@@ -180,6 +180,7 @@ function nuevaPartida(clubId,anio,modo,extra){
   repartirDecisiones();
   normalizarEstado();
   if(extra&&extra.corte&&anio===2026) aplicarCorte2026();
+  if(typeof rellenarPlantelLista==="function") rellenarPlantelLista();
   if(typeof sembrarRedes==="function") sembrarRedes();
   guardar();
 }
@@ -290,7 +291,9 @@ function normalizarEstado(){
     if(E.tactica.tiroLibre===undefined) E.tactica.tiroLibre=null;
     if(E.tactica.corner===undefined) E.tactica.corner=null;
     if(E.tactica.xiManual===undefined) E.tactica.xiManual=null;
+    if(E.tactica.bancaManual===undefined) E.tactica.bancaManual=null;
     if(!E.tactica.roles) E.tactica.roles={}; }
+  if(typeof rellenarPlantelLista==="function") rellenarPlantelLista();
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){
@@ -1139,6 +1142,25 @@ function _nombresLista(ids){
   if(ns.length===1) return ns[0];
   return ns.slice(0,-1).join(", ")+" y "+ns[ns.length-1];
 }
+/* 7.999 · el plantel tiene que alcanzar para cortar gente de la lista (nomina 16/18/23). */
+function rellenarPlantelLista(){
+  if(!E || !Array.isArray(E.plantel) || typeof generarJugador!=="function") return;
+  const minN=(typeof listaMaxEra==="function"?listaMaxEra(E.anio):18)+5;
+  const posCiclo=["ARQ","DEF","DEF","VOL","VOL","DEL","DEF","VOL"];
+  let guard=0;
+  while(E.plantel.filter(j=>j&&!j.vendido&&!j.cedido).length<minN && guard++<16){
+    const rr=(typeof azarFijo==="function"&&typeof semilla==="function")
+      ?azarFijo(semilla("lista"+E.anio+E.plantel.length+(E.club||"")))
+      :Math.random;
+    const pos=posCiclo[E.plantel.length%posCiclo.length];
+    const j=generarJugador(rr,(E.ind&&E.ind.plantel||60)-8, pos, 17+(E.plantel.length%6));
+    j.rasgos=j.rasgos||[];
+    if(j.rasgos.indexOf("cantera")<0) j.rasgos.push("cantera");
+    j.contrato=j.contrato||{};
+    if(!j.contrato.hasta) j.contrato.hasta=(E.anio||2026)+3;
+    E.plantel.push(j);
+  }
+}
 function procesarAscensoDescenso(){
   if(!E || !(E.eraBase===2026 || E.eraBase==="2026b" || E.eraBase==="2026c")) return null;
   initLigaMod(); if(!E.ligaMod) return null;
@@ -1356,6 +1378,7 @@ function nuevoAnio(){
     const rr=azarFijo(semilla("relleno"+E.anio+E.plantel.length));
     E.plantel.push(generarJugador(rr,E.ind.plantel-6,elige(["DEF","VOL","DEL","ARQ"])));
   }
+  if(typeof rellenarPlantelLista==="function") rellenarPlantelLista();
   E.ind.plantel=clamp(Math.round(mediaPlantel()),0,100);
   E.ind.moral=clamp(Math.round(E.ind.moral+(55-E.ind.moral)*0.25),0,100);
   E.capital=Math.max(0,Math.round(E.capital+capitalAnual()));

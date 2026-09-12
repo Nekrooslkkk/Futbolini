@@ -2489,6 +2489,18 @@ El reglamento decía 5 cambios (trivia) y el motor seguía en 3. El reloj moría
 
 **Probado:** node --check + suite.
 
+## 7.999 · Lista de concentrados: 16 / 18 / 23
+
+El banco era todo el plantel: en 2026 podías meter al 28° si querías. El que salía podía volver a entrar. La previa no mostraba quién se vestía.
+
+- **Nómina de época:** 16 (hasta 1994, 11+5) / 18 (1995–2019, 11+7) / **23 desde 2020 (11+12)**. Solo los concentrados pueden entrar. El que sale **no reingresa** (IFAB).
+- **Previa:** tabla de banca + «Lista de concentrados» para armarla a mano. El que queda fuera se lista; si es figura, baja la moral.
+- **Plantel:** se rellena con cantera hasta nómina+5, para que cortar duela de verdad.
+- **Relato / prensa:** descuento, recambio y corte de lista. El ayudante nombra al que se quedó afuera.
+- **js/data-999.js** (nuevo, último). Tests T37. **util.js:** 7.998 → **7.999**. 8.00 sigue reservada.
+
+**Probado:** node --check + suite.
+
 
 
 

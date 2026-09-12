@@ -461,6 +461,11 @@ details.rival-prev table{font-size:11.5px}
 .align-jug b{font-size:12.5px;font-weight:700}
 .align-jug.on{border-color:#2fa84f;background:rgba(60,190,90,.16);box-shadow:inset 0 0 0 1px rgba(60,190,90,.3)}
 body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,220,120,.28),rgba(60,190,90,.14))}
+.align-jug.fuera{opacity:.78}
+.fuera-lista{font-size:11.5px;line-height:1.45;margin:6px 0 8px;padding:7px 9px;border-radius:6px;
+  border:1px solid rgba(180,90,20,.35);background:rgba(240,170,50,.08);color:var(--tinta)}
+.tabla-xi.banca{margin-top:2px;opacity:.96}
+.tabla-xi.banca th{font-size:11px}
 
 /* 6.13 · roles/duties por jugador */
 .rol-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid var(--linea)}

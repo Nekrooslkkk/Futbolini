@@ -49,7 +49,7 @@
 - [x] **[MOTOR]** Formación / mentalidad / estilo / presión: **"Lectura del plan"** en criollo que dice el
       efecto neto y si combinás bien o mezclás cosas que se pelean. ✅ (7.26). **Bloque** (alto/medio/bajo) y
       **ritmo** (pausado/normal/vertiginoso) como palancas extra. ✅ (7.998)
-- [ ] **[MOTOR]** Alineación con **MÁS jugadores** de verdad (banca más profunda).
+- [x] **[MOTOR]** Alineación con **MÁS jugadores** de verdad (banca más profunda). ✅ (7.999: nómina 16/18/23, el resto ni se viste)
 - [ ] **[GROK]** **Canteranos, datos, rasgos** (contenido para que haya más plantel/variedad).
 
 ## 4 · "ANTES DE SALIR" + CLIMA + PRENSA
@@ -60,7 +60,7 @@
 - [ ] **[GROK/TUYO]** Imágenes de cada periodista.
 - [x] **[MOTOR]** Respuesta **de texto libre** en la conferencia: escribís lo tuyo y `analizarOffline`
       lo interpreta (tono → hinchada/prensa/moral), sin gastar plata. ✅ (7.39)
-- [ ] **[GROK]** Más preguntas/variantes (hoy "siempre sale lo mismo").
+- [~] **[GROK]** Más preguntas/variantes (hoy "siempre sale lo mismo"). *(7.998/7.999 ampliaron pools; falta texto libre más rico)*
 
 ## 5 · DURANTE EL PARTIDO
 - [ ] **[MOTOR]** ⚠️(otro chat en `cancha.js`) La cancha es DEMASIADO rectangular → que parezca cancha.
@@ -69,8 +69,7 @@
 - [x] **[MOTOR]** Mostrar el **canal que transmite** (atado a la concesión de TV que se va mejorando). ✅ (7.32, previa + vivo)
 - [x] **[MOTOR]** Botones (sobre todo el de **cambio**: se supone que son más) mejor. ✅ (7.998: 5 IFAB + 3 paradas)
 - [x] **[MOTOR]** Indicadores que se entiendan (qué apretás y qué pasa). ✅ (7.998: title en ánimo/confianza/criterio)
-- [ ] **[GROK]** **Relato**: más variado, que no se repita 2 veces "Primeros toques, todavía sin
-      profundidad".
+- [x] **[GROK]** **Relato**: más variado, que no se repita 2 veces "Primeros toques, todavía sin profundidad". ✅ (7.996 anti-repe; 7.999 descuento/banca/corte, ventana 14)
 - [ ] **[MOTOR+GROK]** **FutbolGram/Plop**: conectar el "Plop opina" con el otro feed (hoy no aparece
       en el otro chat) + más variedad (siempre sale lo mismo).
 

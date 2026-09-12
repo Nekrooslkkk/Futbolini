@@ -61,6 +61,49 @@ function ventanasMaxEra(anio){
   anio=anio||((typeof E!=="undefined"&&E&&E.anio)||2026);
   return anio>=2020?3:99;
 }
+/* 7.999 · lista de concentrados (nomina): 16 hasta 1994 (11+5), 18 hasta 2019 (11+7), 23 desde 2020 (11+12). */
+function listaMaxEra(anio){
+  anio=anio||((typeof E!=="undefined"&&E&&E.anio)||2026);
+  if(anio>=2020) return 23;
+  if(anio>=1995) return 18;
+  return 16;
+}
+function bancaMaxEra(anio){ return Math.max(1, listaMaxEra(anio)-11); }
+function dispPlantel(){
+  return (E&&E.plantel||[]).filter(j=>!j.vendido&&!j.cedido&&!(j.lesion>0));
+}
+function bancaIdeal(once){
+  once=once||[];
+  const disp=dispPlantel().filter(j=>once.indexOf(j)<0);
+  const n=bancaMaxEra();
+  const arqs=disp.filter(j=>j.pos==="ARQ").sort((a,b)=>scoreOnce(b)-scoreOnce(a));
+  const resto=disp.filter(j=>j.pos!=="ARQ").sort((a,b)=>scoreOnce(b)-scoreOnce(a));
+  const out=[];
+  if(arqs[0]) out.push(arqs[0]);
+  resto.forEach(j=>{ if(out.length<n) out.push(j); });
+  arqs.slice(1).forEach(j=>{ if(out.length<n && out.indexOf(j)<0) out.push(j); });
+  return out.slice(0,n);
+}
+function listaIdeal(once){
+  once=once||onceIdeal();
+  const cupo=bancaMaxEra();
+  if(E.tactica && Array.isArray(E.tactica.bancaManual) && E.tactica.bancaManual.length){
+    const disp=dispPlantel().filter(j=>once.indexOf(j)<0);
+    let banca=E.tactica.bancaManual.map(n=>disp.find(j=>j.n===n)).filter(Boolean);
+    if(banca.length<cupo){
+      const extra=bancaIdeal(once).filter(j=>banca.indexOf(j)<0);
+      banca=banca.concat(extra).slice(0,cupo);
+    }
+    return once.concat(banca.slice(0,cupo));
+  }
+  return once.concat(bancaIdeal(once));
+}
+function estrellasCortadas(once){
+  once=once||onceIdeal();
+  const lista=listaIdeal(once);
+  const names=lista.map(j=>j&&j.n);
+  return dispPlantel().filter(j=>names.indexOf(j.n)<0 && ((j.nivel||0)>=74 || (j.rasgos&&(j.rasgos.indexOf("ídolo")>=0||j.rasgos.indexOf("capitán")>=0))));
+}
 function calcularDescuento(P){
   const goles=(P.gl||0)+(P.gv||0);
   const cambios=P.cambios||0;
@@ -281,6 +324,7 @@ function aplicarBonoRasgos(P){
 }
 function iniciarPartido(part,modo){
   const once=onceIdeal();
+  const lista=listaIdeal(once);
   const fz=fuerzaEquipo(once);
   const qui=quimicaEquipo(once);   /* 6.30 · la química suma nivel real */
   let bonoLocal=part.local?4.5+modSuma("local"):-2;
@@ -292,7 +336,7 @@ function iniciarPartido(part,modo){
   const me=MENTALIDADES[E.tactica.mentalidad]||MENTALIDADES["Equilibrado"];
   const bl=(typeof BLOQUES!=="undefined"&&BLOQUES[E.tactica.bloque])||{recup:0,expo:0};
   const P={
-    part:part, modo:modo||"simular", min:0, gl:0, gv:0, once:once, rivalPlantel:plantelRival(part.rivalNombre||part.rivalId,part.fuerzaRival),
+    part:part, modo:modo||"simular", min:0, gl:0, gv:0, once:once, lista:lista, rivalPlantel:plantelRival(part.rivalNombre||part.rivalId,part.fuerzaRival),
     ataque:fz.ataque+bonoLocal+bonoTorneo+arb, orden:fz.orden+bonoLocal*0.6+bonoTorneo+arb,
     desgaste:fz.desgaste+(cl.desgaste||0), cansancio:0, rival:rivalBase, empuje:0, riesgoPlan:0,
     recup:(pr.recup||0)+(me.recup||0)+(bl.recup||0), expo:(pr.expo||0)+(me.expo||0)+(bl.expo||0),
@@ -302,9 +346,18 @@ function iniciarPartido(part,modo){
     clasico:esClasico(part), var:((E&&E.anio)||0)>=2016,
     cambios:0, cambiosMax:cambiosMaxEra((E&&E.anio)||2026),
     ventanas:0, ventanasMax:ventanasMaxEra((E&&E.anio)||2026),
-    descuento2:0, _descDicho:false
+    descuento2:0, _descDicho:false, _salieron:[]
   };
   P.once.forEach(j=>{ j.estado="once"; });
+  lista.forEach(j=>{ if(P.once.indexOf(j)<0) j.estado="banca"; });
+  const namesLista=lista.map(j=>j&&j.n);
+  P.cortados=dispPlantel().filter(j=>namesLista.indexOf(j.n)<0);
+  P.cortados.forEach(j=>{
+    if((j.nivel||0)>=74 || (j.rasgos&&(j.rasgos.indexOf("ídolo")>=0||j.rasgos.indexOf("capitán")>=0))){
+      j.moral=clamp((j.moral||70)-3,0,100);
+    }
+    j.estado="corte";
+  });
   P.stats={pos:0.5, remMio:0, remRiv:0, arcMio:0, arcRiv:0, corMio:0, corRiv:0};   /* 7.10 · stats de transmisión */
   P.arbitro=arbitroDe(part);   /* 7.10 · árbitro con sesgo visible */
   if(P.arbitro.casero){ if(part.local){ P.ataque+=2.5; P.orden+=1.5; } else { P.rival+=2.5; } }
@@ -325,18 +378,29 @@ function iniciarPartido(part,modo){
   if(E.flags && E.flags.diosGana){ P.ataque+=40; P.empuje+=20; P.orden+=20; P.rival=Math.max(0,P.rival-30); P.diosForzar=true; E.flags.diosGana=false; }
   return P;
 }
-/* 6.18 · banca disponible (los que no están en el once, sanos) */
-function bancaPartido(P){ return E.plantel.filter(j=>!j.vendido&&!j.cedido&&!(j.lesion>0)&&P.once.indexOf(j)<0); }
+/* 6.18 / 7.999 · banca = concentrados que no están en el once. El que sale no reingresa (IFAB). */
+function bancaPartido(P){
+  const used=P._salieron||[];
+  const disp=E.plantel.filter(j=>!j.vendido&&!j.cedido&&!(j.lesion>0)&&P.once.indexOf(j)<0&&used.indexOf(j)<0);
+  if(P.lista&&P.lista.length){
+    const names=P.lista.map(x=>x&&x.n);
+    return disp.filter(j=>P.lista.indexOf(j)>=0 || names.indexOf(j.n)>=0);
+  }
+  return disp;
+}
 /* 6.18 · cambio manual con nombre: sale X, entra Y. El relato deja de citar a X (sale del once) */
 function hacerCambio(P,sale,entra){
   if(!sale||!entra) return false;
   if((P.cambios||0)>=(P.cambiosMax||3)) return false;
   if(P.once.indexOf(sale)<0 || P.once.indexOf(entra)>=0) return false;
+  const banca=bancaPartido(P);
+  if(banca.indexOf(entra)<0) return false;
   const maxV=P.ventanasMax||99;
   const enHT=P.min>=45&&P.min<=47;
   if(maxV<99 && !enHT && !P._ventanaAbierta && (P.ventanas||0)>=maxV) return false;
   P.once=P.once.map(x=>x===sale?entra:x);
   entra.estado="once"; sale.estado="banca";
+  P._salieron=P._salieron||[]; P._salieron.push(sale);
   sale.minutosTemporada=(sale.minutosTemporada||0)+(P.min-(sale.minEntrada||0));
   entra.minEntrada=P.min;
   entra.cansancio=Math.max(0,(entra.cansancio||0)-3);
@@ -346,13 +410,15 @@ function hacerCambio(P,sale,entra){
   return true;
 }
 function recambioPorLesion(P,sale){
-  const banca=E.plantel.filter(j=>!j.vendido&&!j.cedido&&!(j.lesion>0)&&P.once.indexOf(j)<0);
+  const banca=bancaPartido(P).slice();
   const entra=banca.filter(j=>j.pos===sale.pos)[0]||banca.sort((a,b)=>(b.nivel||0)-(a.nivel||0))[0];
   if(!entra) return null;
   P.once=P.once.map(x=>x===sale?entra:x);
   entra.forma=clamp((entra.forma||70)-8,20,99);
   entra.cansancio=Math.max(entra.cansancio||0,5);
   sale.moral=clamp((sale.moral||70)-4,0,100);
+  sale.estado="banca"; entra.estado="once";
+  P._salieron=P._salieron||[]; P._salieron.push(sale);
   if((P.cambios||0)<(P.cambiosMax||3)) P.cambios=(P.cambios||0)+1;
   linea(P,P.min,entra.n+" entra frío por "+sale.n+". El cambio cuesta.","grave");
   return entra;
@@ -442,7 +508,7 @@ function recordarFrase(P,txt){
   if(!P) return;
   P._frasesRecientes=P._frasesRecientes||[];
   P._frasesRecientes.push(txt);
-  if(P._frasesRecientes.length>8) P._frasesRecientes.shift();
+  if(P._frasesRecientes.length>14) P._frasesRecientes.shift();
 }
 function eligeNuevo(P,arr){
   if(!arr||!arr.length) return "";
@@ -715,6 +781,19 @@ function fraseRelato(P,min){
     if(ras==="ídolo") pool.push("Cuando toca "+nom+" la gente se para. Lo saben de memoria.");
     if(ras==="goleador"||ras==="definición") pool.push(nom+" se asoma al área. Huele a gol.");
     if(ras==="joven") pool.push(nom+" se manda. La inexperiencia y las ganas, las dos.");
+  }
+  if(min>=90){
+    pool.push("El cuarto árbitro mira el reloj. Cada pelota es la última.");
+    pool.push("Descuento. Las piernas pesan y la platea no se sienta.");
+    pool.push("90 y tantos. Acá ya no se juega, se pelea el aire.");
+    if(nom) pool.push(nom+" pide un último esfuerzo. La voz se le quiebra.");
+  }
+  if(P.cambios){
+    pool.push("El recambio se nota: piernas nuevas contra piernas pesadas.");
+    pool.push("El que acaba de entrar pide la pelota. Quiere justificar la ficha.");
+  }
+  if((P.cortados||[]).length && min<20){
+    pool.push("En la tribuna se discute la lista. Hay un nombre que no salió.");
   }
   if(min<15){
     pool.push("El partido recién arranca. Los dos se estudian.");

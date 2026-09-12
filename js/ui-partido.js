@@ -32,7 +32,7 @@ function checklistPrevia(part,once){
   }
   /* decisiones urgentes sin resolver */
   const urgentes=(E.decPend||[]).filter(x=>x.peso==="alto").length;
-  if(urgentes) items.push({warn:true,t:urgentes+" decisión"+(urgentes>1?"es":"")+" urgente"+(urgentes>1?"s":"")+" sin resolver",
+  if(urgentes) items.push({warn:true,t:urgentes+(urgentes>1?" decisiones":" decisión")+" urgente"+(urgentes>1?"s":"")+" sin resolver",
     d:"El buzón tiene temas que hay que cerrar antes del partido.",accion:()=>irA("escritorio")});
   /* conferencia de prensa */
   const confHecha=E.flags["conf_"+E.idx];
@@ -60,6 +60,17 @@ function checklistPrevia(part,once){
   const les=E.plantel.filter(j=>j.lesion>0&&!j.vendido);
   if(les.length) items.push({warn:false,t:les.length+" jugador"+(les.length>1?"es":"")+" lesionado"+(les.length>1?"s":""),
     d:"No disponibles: "+les.slice(0,4).map(j=>j.n).join(", ")+(les.length>4?"…":"")+"."});
+  /* 7.999 · lista de concentrados */
+  if(typeof listaMaxEra==="function"){
+    const cupo=listaMaxEra();
+    const bancaN=typeof bancaMaxEra==="function"?bancaMaxEra():cupo-11;
+    const manualB=E.tactica.bancaManual&&E.tactica.bancaManual.length;
+    const cort=(typeof estrellasCortadas==="function")?estrellasCortadas(once):[];
+    items.push({ok:!!manualB,warn:cort.length>0,t:manualB?"Lista de "+cupo+" armada a mano":"Lista de "+cupo+" automática ("+bancaN+" en la banca)",
+      d:cort.length?("Quedó afuera: "+cort.slice(0,3).map(j=>j.n).join(", ")+(cort.length>3?"…":"")+". Se enoja. Tócalo en «Lista de concentrados»."):
+        ("Concentrados: 11 titulares + "+bancaN+" suplentes. El resto ni se viste. ANFP/IFAB de la época."),
+      accion:()=>modalLista(part)});
+  }
   /* barra caliente */
   if(part.local && E.barra && E.barra.roto) items.push({warn:true,t:"La barra está caliente contigo",
     d:"Rompiste un pacto: espera silbidos de local y algún lío en la puerta."});
@@ -197,6 +208,24 @@ function pantallaPrevia(part){
   t.appendChild(tb); p1.cuerpo.appendChild(t);
   const les=E.plantel.filter(j=>j.lesion>0&&!j.vendido);
   if(les.length) p1.cuerpo.appendChild(el("p","mini","No disponibles: "+les.map(j=>j.n).join(", ")));
+  /* 7.999 · banca de la lista (no todo el plantel) */
+  const bancaPrev=(typeof bancaIdeal==="function")?bancaIdeal(once):[];
+  const cupoL=typeof listaMaxEra==="function"?listaMaxEra():18;
+  const cupoB=typeof bancaMaxEra==="function"?bancaMaxEra():7;
+  p1.cuerpo.appendChild(el("h3","sub","Banca · "+bancaPrev.length+"/"+cupoB+"  <span class='mini'>lista de "+cupoL+"</span>"));
+  if(bancaPrev.length){
+    const tbanca=el("table","tabla-xi banca");
+    tbanca.innerHTML="<thead><tr><th>Suplente</th><th>Pos</th><th class='n'>Niv</th><th class='n'>For</th></tr></thead>";
+    const tbb=el("tbody");
+    bancaPrev.forEach(j=>{
+      tbb.appendChild(el("tr",null,"<td>"+j.n+(j.real?" ●":"")+"</td><td>"+j.pos+"</td><td class='n'>"+j.nivel+"</td><td class='n'>"+Math.round(j.forma)+"</td>"));
+    });
+    tbanca.appendChild(tbb); p1.cuerpo.appendChild(tbanca);
+  }
+  const cortPrev=(typeof estrellasCortadas==="function")?estrellasCortadas(once):[];
+  const namesLista=once.concat(bancaPrev).map(j=>j.n);
+  const fuera=dispPlantel().filter(j=>namesLista.indexOf(j.n)<0);
+  if(fuera.length) p1.cuerpo.appendChild(el("p","fuera-lista",(cortPrev.length?"⚠️ ":"")+"Quedan fuera de la lista ("+fuera.length+"): "+fuera.map(j=>j.n+(cortPrev.some(c=>c.n===j.n)?" · se enoja":"")).join(", ")+"."));
   /* 6.7 · designados de balón parado (penal / tiro libre / córner) */
   p1.cuerpo.appendChild(el("h3","sub","Balón parado"));
   [["penalista","🎯 Penales"],["tiroLibre","🎯 Tiros libres"],["corner","🚩 Córners"]].forEach(([k,lab])=>{
@@ -242,6 +271,11 @@ function pantallaPrevia(part){
     "👥 Alinear el equipo · "+(manualOn?"manual":"automático"));
   bali.onclick=()=>modalAlineacion(part);
   p1.cuerpo.appendChild(bali);
+  const blista=el("button","btn-aqua ancho"+(E.tactica.bancaManual&&E.tactica.bancaManual.length?" verde":""),
+    "📋 Lista de concentrados · "+cupoL+(E.tactica.bancaManual&&E.tactica.bancaManual.length?" · manual":" · auto"));
+  blista.style.marginTop="6px";
+  blista.onclick=()=>modalLista(part);
+  p1.cuerpo.appendChild(blista);
   const bpiz=el("button","btn-aqua ancho"+(E.tactica.pizarra&&E.tactica.pizarra.length?" verde":""),
     "🎯 Pizarra libre"+(E.tactica.pizarra&&E.tactica.pizarra.length?" · activa":""));
   bpiz.style.marginTop="6px";
@@ -304,7 +338,7 @@ function modalAlineacion(part){
         (sel.length>11?" · saca "+(sel.length-11):"")+
         (sel.length<11?" · elige "+(11-sel.length)+" más":"");
       c.appendChild(info);
-      c.appendChild(el("p","mini","Toca un jugador para meterlo o sacarlo del once. Los que no elijas van a la banca. 🩹 = lesionado (no disponible)."));
+      c.appendChild(el("p","mini","Toca un jugador para meterlo o sacarlo del once. Los que no elijas quedan para la lista de concentrados (la banca). 🩹 = lesionado (no disponible)."));
       POS.forEach(([p,lab])=>{
         const grupo=disp.filter(j=>j.pos===p);
         if(!grupo.length) return;
@@ -321,10 +355,65 @@ function modalAlineacion(part){
         c.appendChild(cont);
       });
       const g=el("button","btn-aqua ancho verde","Guardar mi alineación"); g.disabled=!ok;
-      g.onclick=()=>{ E.tactica.xiManual=sel.slice(); guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Alineación guardada"); };
+      g.onclick=()=>{ E.tactica.xiManual=sel.slice();
+        if(Array.isArray(E.tactica.bancaManual)) E.tactica.bancaManual=E.tactica.bancaManual.filter(n=>sel.indexOf(n)<0);
+        guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Alineación guardada"); };
       c.appendChild(g);
       const a=el("button","btn-aqua ancho gris","Volver a automático (el juego elige)"); a.style.marginTop="6px";
       a.onclick=()=>{ E.tactica.xiManual=null; guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Alineación automática"); };
+      c.appendChild(a);
+    };
+    pintar();
+  },{cerrarFuera:false});
+}
+/* 7.999 · lista de concentrados: 11 del XI + N suplentes. El resto ni se viste. */
+function modalLista(part){
+  const once=onceIdeal();
+  const onceN=once.map(j=>j.n);
+  const disp=dispPlantel().filter(j=>onceN.indexOf(j.n)<0)
+    .sort((a,b)=>scoreOnce(b)-scoreOnce(a));
+  const cupo=typeof bancaMaxEra==="function"?bancaMaxEra():7;
+  const listaN=typeof listaMaxEra==="function"?listaMaxEra():18;
+  let sel=(E.tactica.bancaManual&&E.tactica.bancaManual.length)
+    ? E.tactica.bancaManual.filter(n=>disp.find(j=>j.n===n))
+    : bancaIdeal(once).map(j=>j.n);
+  const POS=[["ARQ","Arqueros"],["DEF","Defensas"],["VOL","Volantes"],["DEL","Delanteros"]];
+  modal(box=>{
+    const pintar=()=>{
+      box.innerHTML="";
+      box.appendChild(el("div","cab",'<span class="ic">📋</span><span>Lista de concentrados · '+listaN+'</span>'));
+      const c=el("div","cuerpo"); box.appendChild(c);
+      const arqsB=sel.filter(n=>{const j=disp.find(x=>x.n===n);return j&&j.pos==="ARQ";}).length;
+      const ok=sel.length===cupo;
+      const info=el("div","resul "+(ok&&arqsB>=1?"bien":"mitad"));
+      info.innerHTML="<b>"+sel.length+" / "+cupo+"</b> suplentes · lista "+(11+sel.length)+"/"+listaN+
+        (arqsB<1?" · <b style='color:#c0392b'>falta un arquero en la banca</b>":"")+
+        (sel.length>cupo?" · saca "+(sel.length-cupo):"")+
+        (sel.length<cupo?" · elige "+(cupo-sel.length)+" más":"");
+      c.appendChild(info);
+      c.appendChild(el("p","mini","El once ya está. Acá armas la banca. El que no entra a la lista <b>ni se viste</b> y, si es figura, se enoja. "+
+        (E.anio>=2020?"Desde 2020 la nómina es de 23 (11+12).":(E.anio>=1995?"En esta época la nómina es de 18 (11+7).":"Hasta 1994 la nómina es de 16 (11+5)."))));
+      c.appendChild(el("p","mini","Titulares (fijos): "+once.map(j=>j.n.split(" ").pop()).join(", ")+"."));
+      POS.forEach(([p,lab])=>{
+        const grupo=disp.filter(j=>j.pos===p);
+        if(!grupo.length) return;
+        const enPos=grupo.filter(j=>sel.indexOf(j.n)>=0).length;
+        c.appendChild(el("h3","sub",lab+" · <span class='mini'>"+enPos+" en la banca</span>"));
+        const cont=el("div","align-grid");
+        grupo.forEach(j=>{
+          const on=sel.indexOf(j.n)>=0;
+          const b=el("button","align-jug"+(on?" on":" fuera"));
+          b.innerHTML="<b>"+(on?"✓ ":"")+j.n+(j.real?" ●":"")+"</b><span class='mini'>niv "+j.nivel+" · forma "+Math.round(j.forma)+((j.nivel>=74||(j.rasgos&&j.rasgos.indexOf("ídolo")>=0))?" · figura":"")+"</span>";
+          b.onclick=()=>{ const i=sel.indexOf(j.n); if(i>=0) sel.splice(i,1); else { if(sel.length>=cupo){ aviso("La banca ya está llena ("+cupo+"). Saca a alguien primero."); return; } sel.push(j.n); } pintar(); };
+          cont.appendChild(b);
+        });
+        c.appendChild(cont);
+      });
+      const g=el("button","btn-aqua ancho verde","Guardar la lista"); g.disabled=sel.length!==cupo;
+      g.onclick=()=>{ E.tactica.bancaManual=sel.slice(); guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Lista de "+listaN+" guardada"); };
+      c.appendChild(g);
+      const a=el("button","btn-aqua ancho gris","Volver a automática (los siguientes mejores)"); a.style.marginTop="6px";
+      a.onclick=()=>{ E.tactica.bancaManual=null; guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Lista automática"); };
       c.appendChild(a);
     };
     pintar();
@@ -528,6 +617,11 @@ function preguntasConferencia(part){
      {t:"Que nos banque, lo vamos a dejar todo",k:"confianza"},{t:"Humildad y a alentar los 90",k:"calma"},{t:"Que vayan a ver una goleada",k:"palo"}]});
   L.push({q:"Previa ante "+part.rivalNombre+". ¿Con qué se queda de cara al partido?",ops:[
      {t:"Bajar el perfil y pedir humildad",k:"calma"},{t:"Salir con confianza total",k:"confianza"},{t:"Un palo al rival y a los árbitros",k:"palo"}]});
+  if(typeof estrellasCortadas==="function"){
+    const cort=estrellasCortadas(onceIdeal());
+    if(cort.length) L.unshift({q:cort[0].n+" se queda fuera de la lista. ¿Se lo explicó o se va a enterar por el diario?",ops:[
+      {t:"Se lo dije en la cara, es una decisión táctica",k:"calma"},{t:"Confío en los que están. Punto",k:"confianza"},{t:"El que no rinde, mira de afuera",k:"palo"}]});
+  }
   return L;
 }
 /* elige N preguntas distintas, priorizando las contextuales y sin repetir las de la última vez */
@@ -800,13 +894,13 @@ function pintarPartido(){
     const quedanC=Math.max(0,maxC-(P.cambios||0));
     const quedanV=maxV>=99?null:Math.max(0,maxV-(P.ventanas||0));
     const camLabel=quedanV!=null
-      ?('🔄 <span class="ctrl-full">Cambio </span>'+(P.cambios||0)+"/"+maxC+' <span class="mini">· '+quedanV+' parada'+(quedanV===1?"":"s")+"</span>")
+      ?('🔄 <span class="ctrl-full">Cambio </span>'+(P.cambios||0)+"/"+maxC+' <span class="mini">· '+(typeof bancaPartido==="function"?bancaPartido(P).length:0)+' banca</span>')
       :('🔄 <span class="ctrl-full">Cambio (</span>'+(P.cambios||0)+"/"+maxC+'<span class="ctrl-full">)</span>');
     const bcam=el("button","btn-aqua chico",camLabel);
     bcam.setAttribute("aria-label","Cambio de jugadores. Quedan "+quedanC);
     bcam.title=quedanV!=null
-      ?("IFAB: "+maxC+" cambios en "+maxV+" paradas (el entretiempo no cuenta). Quedan "+quedanC+" cambios y "+quedanV+" paradas.")
-      :"Cambio de jugadores ("+(P.cambios||0)+" de "+maxC+").";
+      ?("IFAB: "+maxC+" cambios en "+maxV+" paradas (el entretiempo no cuenta). Banca de la lista: "+((typeof bancaPartido==="function")?bancaPartido(P).length:0)+". Quedan "+quedanC+" cambios y "+quedanV+" paradas.")
+      :"Cambio de jugadores ("+(P.cambios||0)+" de "+maxC+"). Banca: "+((typeof bancaPartido==="function")?bancaPartido(P).length:0)+".";
     bcam.disabled=quedanC<=0 || (quedanV===0 && !P._ventanaAbierta) || (MOMENTO_OPS&&MOMENTO_OPS.length>0);
     bcam.onclick=modalCambio;
     sec.appendChild(bcam);

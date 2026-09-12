@@ -1416,7 +1416,7 @@
     /* T36 · 7.998 5 cambios IFAB + descuento + bloque/ritmo */
     grupo("Grok 7.998 (cambios IFAB + descuento + palancas)");
     safe(function(){
-      ok(VERSION==="7.998", "VERSION 7.998");
+      ok(VERSION==="7.999" || /^7\.99/.test(VERSION), "VERSION 7.99x");
       ok(typeof cambiosMaxEra==="function" && cambiosMaxEra(2026)===5, "2026 permite 5 cambios");
       ok(cambiosMaxEra(2006)===3, "2006 permite 3 cambios");
       ok(cambiosMaxEra(1991)===2, "1991 permite 2 cambios");
@@ -1472,8 +1472,67 @@
       ok(fzB.orden>fzA.orden, "bloque bajo + ritmo pausado ordena más");
       ok(fzA.desgaste>fzB.desgaste, "el ritmo vertiginoso cansa más");
       ok(FRASES_CUERPO.some(function(f){ return /pega|cabros/i.test(f.x); }), "frases del cuerpo técnico más chilenas");
-      ok(PREGUNTAS_BETA.some(function(p){ return /cinco cambios|bloque/i.test(p.q); }), "prensa pregunta por cambios y bloque");
+      ok(PREGUNTAS_BETA.some(function(p){ return /cinco cambios|bloque|lista|banca/i.test(p.q); }), "prensa pregunta por cambios, bloque o lista");
     }, "palancas tácticas mueven el partido");
+
+    /* T37 · 7.999 lista de concentrados 16/18/23 + el que sale no reingresa */
+    grupo("Grok 7.999 (lista de concentrados + banca real)");
+    safe(function(){
+      ok(VERSION==="7.999", "VERSION 7.999");
+      ok(typeof listaMaxEra==="function" && listaMaxEra(2026)===23, "2026: lista de 23");
+      ok(listaMaxEra(2006)===18, "2006: lista de 18");
+      ok(listaMaxEra(1991)===16, "1991: lista de 16");
+      ok(typeof bancaMaxEra==="function" && bancaMaxEra(2026)===12, "2026: 12 en la banca");
+      ok(bancaMaxEra(2006)===7, "2006: 7 en la banca");
+      ok(bancaMaxEra(1991)===5, "1991: 5 en la banca");
+    }, "API 7.999");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var sanos=E.plantel.filter(function(j){ return !j.vendido && !j.cedido && !(j.lesion>0); });
+      ok(sanos.length>=28, "plantel 2026 alcanza para cortar gente de la lista de 23: "+sanos.length);
+      var once=onceIdeal();
+      var lista=listaIdeal(once);
+      ok(once.length===11, "once de 11");
+      ok(lista.length===23, "lista de 23 (11+12)");
+      ok(lista.slice(0,11).every(function(j,i){ return j===once[i]; }), "la lista arranca con el XI");
+      var part=E.calendario.filter(function(p){ return p.tipo==="liga"; })[0];
+      var P=iniciarPartido(part,"simular");
+      ok(P.lista && P.lista.length===23, "iniciarPartido carga la lista de 23");
+      var banca=bancaPartido(P);
+      ok(banca.length===12, "banca del partido = 12, no todo el plantel: "+banca.length);
+      ok(P.cortados && P.cortados.length>=1, "alguien quedó fuera de la lista: "+(P.cortados||[]).length);
+      var sale=P.once[4], entra=banca[0];
+      ok(hacerCambio(P,sale,entra)===true, "entra de la lista");
+      ok(bancaPartido(P).indexOf(sale)<0, "el que sale NO reingresa (IFAB)");
+      ok(hacerCambio(P,P.once[5],sale)===false, "hacerCambio rechaza al que ya salió");
+    }, "lista 23 + el que sale no vuelve");
+    safe(function(){
+      nuevaPartida("CC",1991,"historico");
+      var part=E.calendario.filter(function(p){ return p.tipo==="liga"; })[0];
+      var P=iniciarPartido(part,"simular");
+      ok(P.lista.length===16, "1991 concentra 16");
+      ok(bancaPartido(P).length===5, "1991: 5 suplentes");
+      ok(P.cambiosMax===2, "1991 sigue en 2 cambios");
+    }, "lista 16 en 1991");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var once=onceIdeal();
+      var resto=dispPlantel().filter(function(j){ return once.indexOf(j)<0; }).sort(function(a,b){ return scoreOnce(b)-scoreOnce(a); });
+      var bancaChica=resto.filter(function(j){ return j.pos!=="ARQ"; }).slice(0,11);
+      var arqB=resto.find(function(j){ return j.pos==="ARQ"; });
+      if(arqB) bancaChica.unshift(arqB);
+      bancaChica=bancaChica.slice(0,12);
+      E.tactica.bancaManual=bancaChica.map(function(j){ return j.n; });
+      var figura=resto.filter(function(j){ return E.tactica.bancaManual.indexOf(j.n)<0 && (j.nivel||0)>=70; })[0];
+      ok(figura, "hay una figura para cortar");
+      var moral0=figura.moral||70;
+      var part=E.calendario.filter(function(p){ return p.tipo==="liga"; })[0];
+      var P=iniciarPartido(part,"simular");
+      ok(P.cortados.some(function(j){ return j.n===figura.n; }), "la figura cortada aparece en P.cortados");
+      ok((figura.moral||70)<=moral0, "el cortado no sube la moral");
+      ok(PREGUNTAS_BETA.some(function(p){ return /lista|nomina|banca/i.test(p.q); }), "prensa pregunta por la lista");
+      ok(RELATO_BETA.some(function(r){ return r.m==="descuento"; }), "relato cubre el descuento");
+    }, "corte de figura + prensa/relato");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

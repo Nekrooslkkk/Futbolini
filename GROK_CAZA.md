@@ -132,6 +132,12 @@ Hechos públicos. Si no está documentado, se marca.
 [OK] Lectura del plan nombra las palancas y caza combinaciones que se pelean.
 [INFO] 8.00 sigue reservada.
 
+## 7.999 · lista de concentrados 16/18/23
+[FIX] El banco ya no es todo el plantel. Nómina de época: 16 / 18 / 23. El que sale no reingresa.
+[FIX] Previa muestra banca + cortados. Figura fuera de lista baja moral.
+[OK] 5 cambios IFAB de 7.998 ahora tienen 12 suplentes de verdad en 2026.
+[INFO] 8.00 sigue reservada. Playoffs 2006 estilo México: dato listo, motor pendiente.
+
 
 
 
