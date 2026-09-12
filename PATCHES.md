@@ -2236,3 +2236,9 @@ Claude avanzó 7.78–7.80 (federación por país, gol en vivo, celular). El 7.7
 - **GROK_SUPERPROMPT.md:** nueva **TAREA E — verificación integral por equipo** (el barrido pre-8.0): problema/situación por club, clásico correcto y variado, economías realistas, planteles/canteranos/sponsors, calendarios **por cada copa**, fixtures de los equipos IA, simulación posterior con cambios de regla "que aprueba la ANFP" (línea de tiempo real), estadios (aforo/arriendo/nombre/precios), historia para todos **incl. Argentina**, más realismo en el Plop!, **modos históricos para todos incl. Segunda**, 1925 sin nada moderno, y las épocas doradas faltantes por club (dato que Grok debe completar).
 - **util.js:** VERSION 7.82 → **7.83**.
 **Probado:** node --check js/*.js + suite 179/179 verde.
+
+## 7.83b · Blindaje del selector de época (test de regresión para lo que traiga Grok)
+- **test/pruebas_core.js:** grupo T13. Antes de abrir ningún modal, recorre TODOS los clubes y (1) replica la resolución de era de `elegirEpoca`/`datosPunto` para cada **época de gloria** (`EPOCAS_CLUB` + lo que sume Grok con `EPOCAS_CLUB_ADD`), verificando que ninguna caiga en "Club sin datos"; (2) verifica que todo club **elegible** (el mismo set que arma el picker de inicio: core 1991 + Primera 2026 + B + C + Argentina) resuelva en alguna era. Así, cuando Grok agregue glorias/modos históricos o clubes nuevos, un olvido de `CLUB_INFO_2026` salta en el test y no en la cara del jugador.
+- De paso confirmó que Fernández Vial (FV) es **solo rival** del calendario 91 (no manejable), correctamente fuera del set elegible.
+- **Tests:** +4 (helpers, N clubes, glorias resuelven, elegibles resuelven). Suite **183/183**.
+**Probado:** node --check js/*.js + suite 183/183 verde.

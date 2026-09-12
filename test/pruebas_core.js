@@ -517,6 +517,48 @@
       ok(typeof COPA91_RESEÑA==="object" && /Olimpia/.test(COPA91_RESEÑA.final||""), "reseña Libertadores 1991");
     }, "Calendario H + Libertadores 91");
 
+    /* T13 · 7.83 · blindaje del selector de época: ninguna gloria de club (las de
+       EPOCAS_CLUB, presentes o que Grok agregue con EPOCAS_CLUB_ADD) debe caer en
+       "Club sin datos" al armar el briefing. Replica la resolución de base de
+       elegirEpoca/datosPunto sin abrir el modal, para todos los clubes de una. */
+    safe(function(){
+      grupo("Selector de época sólido para todos (7.83)");
+      ok(typeof epocasDe==="function" && typeof datosEra==="function" && typeof baseEra==="function",
+        "helpers de época disponibles");
+      var mapa=(typeof clubMapaTodos==="function")?clubMapaTodos():{};
+      var ids=Object.keys(mapa);
+      ok(ids.length>=40, "hay clubes que revisar: "+ids.length);
+      var rotas=[];
+      ids.forEach(function(id){
+        var gl=epocasDe(id)||[];
+        gl.forEach(function(ep){
+          var b=baseEra(ep.anio);
+          if(!(datosEra(b).info||{})[id]) b=2026;   /* mismo fallback que ui.js */
+          var D=datosEra(b);
+          var info=D.info[id], ind=D.ind[id], caja=D.caja[id];
+          /* la gloria puede traer ind/caja propios (Object.assign en datosPunto) */
+          if(!info || !(ind||ep.ind) || !(caja||ep.caja)) rotas.push(id+"@"+ep.anio);
+        });
+      });
+      ok(rotas.length===0, "toda gloria de club resuelve datos"+(rotas.length?": ROTAS "+rotas.join(", "):""));
+      /* todo club ELEGIBLE (el mismo conjunto que arma el picker de inicio: core 1991 +
+         Primera 2026 + B + C + Argentina) debe resolver en alguna era. Los clubes que
+         solo son RIVALES del calendario 91 (ej. FV) no se manejan y quedan fuera. Así,
+         si Grok suma un club a una liga y olvida su CLUB_INFO_2026, esto lo caza. */
+      var elegibles={};
+      if(typeof CLUB_INFO==="object") Object.keys(CLUB_INFO).forEach(function(id){ elegibles[id]=1; });
+      if(typeof CLUB_INFO_2026==="object") Object.keys(CLUB_INFO_2026).forEach(function(id){ elegibles[id]=1; });
+      [typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null,
+       typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null,
+       typeof LIGA_ARG_2026!=="undefined"?LIGA_ARG_2026:null].forEach(function(L){
+        if(L) L.forEach(function(c){ elegibles[c.id]=1; });
+      });
+      var huerfanos=Object.keys(elegibles).filter(function(id){
+        return ![1991,2026,2006,1925].some(function(b){ return (datosEra(b).info||{})[id]; });
+      });
+      ok(huerfanos.length===0, "todo club elegible resuelve en alguna era"+(huerfanos.length?": HUÉRFANOS "+huerfanos.join(", "):""));
+    }, "Selector de época sólido");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }
