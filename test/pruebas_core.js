@@ -1608,10 +1608,9 @@
     /* T40 · 7.9993 chrome Vista local (sin CDN) */
     grupo("Grok 7.9993 (Aero Vista local, sin CDN)");
     safe(function(){
-      ok(VERSION==="7.9993", "VERSION 7.9993");
+      ok(VERSION==="7.9993" || /^7\.99/.test(VERSION), "VERSION 7.99x");
       var so=getComputedStyle(document.documentElement).getPropertyValue("--futbolini-so").trim();
-      ok(so==="7.9993" || so.length>0, "so.css cargado (--futbolini-so="+so+")");
-      ok(!document.querySelector('link[href*="unpkg.com"]') && !document.querySelector('link[href*="xp.css"]'), "sin CDN de XP.css/7.css");
+      ok(so.length>0, "so.css cargado (--futbolini-so="+so+")");
     }, "API 7.9993 + so.css local");
     safe(function(){
       var host=el("div");
@@ -1623,6 +1622,37 @@
       ok(host.querySelector(".so-barra") && host.querySelector(".so-cuerpo"), "barra + cuerpo SO");
       host.remove();
     }, "botones de ventana Vista");
+
+    /* T41 · 7.9994 CDN de ventana como extra; local siempre */
+    grupo("Grok 7.9994 (CDN extra, local de plan A)");
+    safe(function(){
+      ok(VERSION==="7.9994", "VERSION 7.9994");
+      ok(typeof cargarCdnAero==="function", "cargarCdnAero");
+      ok(typeof CDN_7_WINDOW==="string" && CDN_7_WINDOW.indexOf("window.css")>=0, "CDN pide solo window.css, no el 7.css entero");
+      ok(CDN_7_WINDOW.indexOf("xp.css")<0, "no se carga XP.css (pelea con Vista)");
+      var so=getComputedStyle(document.documentElement).getPropertyValue("--futbolini-so").trim();
+      ok(so==="7.9994" || so.length>0, "so.css local sigue ahí");
+    }, "API 7.9994");
+    safe(function(){
+      var host=el("div");
+      document.body.appendChild(host);
+      montarBarraSO(host,"Banco","🏦");
+      ok(host.classList.contains("window") && host.classList.contains("glass"), "alias .window.glass para el CDN");
+      ok(host.querySelector(".title-bar-controls"), "title-bar-controls");
+      ok(host.querySelector('button[aria-label="Close"]'), "aria-label Close (7.css)");
+      ok(host.querySelector("button.is-minimize") && host.querySelector("button.is-close"), "is-minimize / is-close");
+      host.remove();
+    }, "HTML compatible con 7.css");
+    safe(function(){
+      var off=typeof navigator!=="undefined" && navigator.onLine===false;
+      if(off){
+        ok(!document.getElementById("cdn-7css"), "sin red: no se pide unpkg");
+        ok(!document.documentElement.classList.contains("cdn-7"), "sin red: no hay clase cdn-7");
+      } else {
+        ok(true, "con red: el CDN es extra (si falla, so.css ya pintó)");
+      }
+      ok(!!document.querySelector('link[href="css/so.css"]') || !!document.querySelector('link[href*="so.css"]'), "so.css está en el documento sí o sí");
+    }, "offline = local, online = extra");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

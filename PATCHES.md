@@ -2538,6 +2538,17 @@ Pediste CDNs de XP.css / 7.css. El problema no es que se paguen: el juego tiene 
 
 **Probado:** node --check + suite.
 
+## 7.9994 · CDN de ventana como extra (local siempre)
+
+Sin internet no se queda en blanco: `css/so.css` se carga siempre. Si hay red, se pide **solo** `7.css/window.css` (el 7.css entero pinta todos los `button` y rompe el juego). Si unpkg falla, `onerror` lo saca y sigue el Aero local. XP.css no se carga: pelea con Vista.
+
+- `cargarCdnAero()`: skip si `navigator.onLine===false`.
+- Ventanas con clases `.window.glass` / `.title-bar` / `aria-label="Close"` para cuando el CDN llega.
+- Tests T41. **util.js:** 7.9993 → **7.9994**. 8.00 sigue reservada.
+
+**Probado:** node --check + suite.
+
+
 
 
 

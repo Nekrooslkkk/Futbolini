@@ -161,6 +161,13 @@ Hechos públicos. Si no está documentado, se marca.
 [OK] El escudo de la barra vuelve al Escritorio.
 [INFO] 8.00 sigue reservada.
 
+## 7.9994 · CDN extra / local plan A
+[OK] so.css se carga siempre (offline no se queda en blanco).
+[OK] Si hay red: unpkg 7.css@0.21.1/window.css (NO el paquete entero: pinta button global).
+[OK] onerror saca el link; XP.css no se carga (pelea con Vista).
+[INFO] 8.00 sigue reservada.
+
+
 
 
 
