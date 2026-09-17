@@ -2513,6 +2513,21 @@ El informe de bugs mezcló cosas reales con inventos (`pactar()` ya validaba la 
 
 **Probado:** node --check + suite.
 
+## 7.9992 · NaN del casino + flags + ventanas Aero (sin CDN)
+
+El informe mezcló bugs reales con pedidos de XP.css/7.css (quedan fuera: el juego corre offline) y de envolver Finanzas/Vida en un modal que rompería las pestañas.
+
+- **B1/B2/B3/B4:** `girarTragamonedas`, `modalBlackjack`, `desviarFondos` y `girarRuleta` normalizan `E.personal.bolsillo` a número. Sin eso, `Math.min(x, undefined)` era NaN y la apuesta se pudría.
+- **B5:** `normalizarBolsa` / `invertirBolsa` / `liquidarBolsa` dejan el bolsillo numérico. Ya no restás `undefined`.
+- **B6:** `romperPacto` crea `E.flags` si el save venía sin él.
+- **B7/B8:** una sola fuente de verdad para `.panel > .cab`, `.btn-aqua`, `.aero-window` y `.tinder-card` (Vista azul, radio 7/6). Sin duplicar.
+- **Ventanas SO:** `js/ventanas.js` — `abrirSeccion` (modal con barra min/max/cerrar) y `envolverVistaSO` (Finanzas y Vida se ven como ventana, las pestañas del menú siguen). CSS propio, cero CDN.
+- **Banco:** gráfico pixel de la acción (`canvasBolsa`, mismo truco de la cancha) + movimientos ↑/↓. **Match:** stack 1+1 con swipe. Tragamonedas ahora tiene botón en Vida. Cancha inicializa `penalSeq`.
+- Tests T39. **util.js:** 7.9991 → **7.9992**. 8.00 sigue reservada.
+
+**Probado:** node --check + suite.
+
+
 
 
 

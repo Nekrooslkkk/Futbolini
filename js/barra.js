@@ -66,6 +66,7 @@ function romperPacto(motivo,quien){
   E.barra.humor=clamp((E.barra.humor||60)-28,0,100);
   E.barra.lienzos.push({t:"«Dirigencia mentirosa: "+p.resumen+"»", anio:E.anio, idx:E.idx});
   aplicarGrupos({hinchada:-14,directorio:-4});
+  if(!E.flags) E.flags={};
   E.flags.puertaBarra=E.idx;   /* semilla: evento de puerta pronto */
   if(typeof notificar==="function") notificar({t:"La barra se sintió traicionada",tipo:"malo",bandeja:false,
     d:(motivo||"Rompiste un pacto con la barra.")+" Colgaron un lienzo en contra y el clima se puso hostil. En el próximo partido vas a escuchar silbidos, y algo se va a mover en la puerta."});

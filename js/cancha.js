@@ -30,7 +30,8 @@ function _cvSeed(P){
   CANCHA_FORM.forEach(f=>{ const x=1-f.x; jug.push({x:x,y:1-f.y,tx:x,ty:1-f.y,mob:f.mob*0.85,rol:f.rol,mio:false}); });
   _cvSt={ jug:jug, lop:0.5, surge:0, ball:{x:0.5,y:0.5,tx:0.5,ty:0.5},
     lastYo:P?_cvMarcador(P).yo:0, lastOtro:P?_cvMarcador(P).otro:0, t:0,
-    ballHold:0, ballGoal:0.5, trail:[], redVibra:0, redLado:0 };
+    ballHold:0, ballGoal:0.5, trail:[], redVibra:0, redLado:0,
+    penalSeq:0, penalDive:0, penalSeen:0 };
 }
 function _cvStep(P,dt){
   const st=_cvSt; if(!st) return;

@@ -1009,7 +1009,11 @@ function sparkNode(hist){
   return cont;
 }
 function vistaFinanzas(){
-  const v=$("#vista");
+  const v=(typeof envolverVistaSO==="function")
+    ? envolverVistaSO("Banco · "+((typeof nombreSociedad==="function")?nombreSociedad():"Sociedad"),"🏦")
+    : $("#vista");
+  if(typeof bolsilloDT==="function") bolsilloDT();
+  if(typeof normalizarBolsa==="function") normalizarBolsa();
   /* 7.9991 · "banco": las cuentas de un vistazo, como ventanilla Aero */
   const banco=el("div","banco-cuentas");
   const accs=[
@@ -1027,7 +1031,7 @@ function vistaFinanzas(){
   });
   v.appendChild(banco);
 
-  const p=panel("Caja","💰");
+  const p=panel("Banco · "+((typeof nombreSociedad==="function")?nombreSociedad():"Sociedad Anónima"),"💰","agua");
   p.cuerpo.appendChild(fila("Disponible",plata(E.plata)));
   p.cuerpo.appendChild(fila("Deuda total",plata(E.deuda)));
   p.cuerpo.appendChild(fila("Planilla anual",plata(planillaAnual())));
@@ -1109,7 +1113,18 @@ function vistaFinanzas(){
     const cot=el("div","cotiza");
     cot.innerHTML="<span class='precio'>"+plata(E.bolsa.precio)+"</span> <span class='var "+(vr>=0?"sube":"baja")+"'>"+(vr>=0?"▲ +":"▼ ")+vr+"%</span>";
     pb.cuerpo.appendChild(cot);
-    pb.cuerpo.appendChild(sparkNode(E.bolsa.historia));
+    if(typeof canvasBolsa==="function") pb.cuerpo.appendChild(canvasBolsa(E.bolsa.historia));
+    else pb.cuerpo.appendChild(sparkNode(E.bolsa.historia));
+    const h=E.bolsa.historia||[];
+    if(h.length>1){
+      const ult=h.slice(-6);
+      const mov=el("p","mini");
+      mov.innerHTML="Movimientos: "+ult.slice(1).map(function(p,i){
+        const a=ult[i]; const d=a?((p-a)/a*100):0;
+        return (d>=0?"↑ +":"↓ ")+d.toFixed(1)+"%";
+      }).join(" · ");
+      pb.cuerpo.appendChild(mov);
+    }
     pb.cuerpo.appendChild(el("p","mini","Tú sabes los resultados antes que el mercado. Ganar hace subir la acción; perder la hunde. Especulas con tu bolsillo personal."));
     pb.cuerpo.appendChild(fila("Bolsillo personal",plata(E.personal.bolsillo)));
     if(E.bolsa.acciones>0){

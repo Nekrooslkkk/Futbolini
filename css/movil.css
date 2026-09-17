@@ -116,6 +116,9 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   .banco-cuentas{grid-template-columns:1fr 1fr;gap:6px}
   .banco-cta{min-height:52px;padding:9px 10px}
   .tinder-acc .tinder-round{min-height:48px}
+  .ventana-so .so-cuerpo{padding:8px}
+  .ventana-so .so-titulo{font-size:13px}
+  .bolsa-canvas canvas{height:64px}
   .fuera-lista{font-size:11px;overflow-wrap:anywhere}
   .partido-wrap{flex-direction:column;gap:8px}
   .partido-wrap>*{flex:1 1 auto;min-width:0}

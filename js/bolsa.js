@@ -48,6 +48,8 @@ function normalizarBolsa(){
   if(!E.finanzas) E.finanzas={ delegado:false };
   if(E.finanzas.delegado===undefined) E.finanzas.delegado=false;
   if(typeof bolsilloDT==="function") bolsilloDT();
+  if(!E.personal) E.personal={bolsillo:0,propiedades:[],autos:[]};
+  if(typeof E.personal.bolsillo!=="number" || isNaN(E.personal.bolsillo)) E.personal.bolsillo=0;
 }
 
 /* el precio persigue el fundamento con inercia + ruido especulativo (semanal) */
@@ -79,8 +81,10 @@ function variacionBolsa(){ const h=E.bolsa.historia; if(!h||h.length<2) return 0
 function invertirBolsa(monto){
   if(!E.bolsa) normalizarBolsa();
   if(typeof bolsilloDT==="function") bolsilloDT();
+  if(!E.personal) E.personal={};
+  if(typeof E.personal.bolsillo!=="number" || isNaN(E.personal.bolsillo)) E.personal.bolsillo=0;
   monto=Math.round(monto);
-  if(monto<=0||!E.personal||E.personal.bolsillo<monto) return false;
+  if(monto<=0||E.personal.bolsillo<monto) return false;
   E.personal.bolsillo-=monto;
   E.bolsa.acciones+=monto/Math.max(0.01,E.bolsa.precio);
   E.bolsa.invertido+=monto;
@@ -90,6 +94,8 @@ function invertirBolsa(monto){
 function liquidarBolsa(frac){
   if(!E.bolsa||E.bolsa.acciones<=0) return 0;
   if(typeof bolsilloDT==="function") bolsilloDT();
+  if(!E.personal) E.personal={};
+  if(typeof E.personal.bolsillo!=="number" || isNaN(E.personal.bolsillo)) E.personal.bolsillo=0;
   frac=clamp(frac,0,1);
   const acc=E.bolsa.acciones*frac;
   const ingreso=Math.round(acc*E.bolsa.precio);
@@ -109,6 +115,43 @@ function dividendoBolsa(pos){
     if(typeof notificar==="function") notificar({t:"Dividendo de "+E.bolsa.sociedad,tipo:"bueno",
       d:"Como accionista cobraste "+plata(div)+" en dividendos por la campaña. La plata llama a la plata.",bandeja:false}); }
   return div;
+}
+
+/* 7.9992 · gráfico pixel de la acción (buffer chico + nearest-neighbor, como la cancha) */
+function canvasBolsa(hist){
+  const wrap=el("div","bolsa-canvas");
+  const arr=(hist&&hist.length?hist:[1]).slice(-40);
+  const min=Math.min.apply(null,arr), max=Math.max.apply(null,arr), rng=(max-min)||1;
+  const bw=80, bh=28;
+  const buf=document.createElement("canvas"); buf.width=bw; buf.height=bh;
+  const g=buf.getContext("2d");
+  g.fillStyle="#d8e6f4"; g.fillRect(0,0,bw,bh);
+  const sube=arr[arr.length-1]>=arr[0];
+  g.fillStyle=sube?"#1e9e4622":"#c0392b22";
+  g.beginPath();
+  arr.forEach(function(v,i){
+    const x=i*((bw-1)/Math.max(1,arr.length-1));
+    const y=(bh-2)-((v-min)/rng)*(bh-4);
+    if(i) g.lineTo(x,y); else g.moveTo(x,y);
+  });
+  g.lineTo(bw-1,bh-1); g.lineTo(0,bh-1); g.closePath(); g.fill();
+  g.strokeStyle=sube?"#1e9e46":"#c0392b";
+  g.lineWidth=1; g.beginPath();
+  arr.forEach(function(v,i){
+    const x=i*((bw-1)/Math.max(1,arr.length-1));
+    const y=(bh-2)-((v-min)/rng)*(bh-4);
+    if(i) g.lineTo(x,y); else g.moveTo(x,y);
+  });
+  g.stroke();
+  const c=document.createElement("canvas");
+  c.width=240; c.height=80;
+  c.setAttribute("aria-hidden","true");
+  const ctx=c.getContext("2d");
+  ctx.imageSmoothingEnabled=false;
+  if(ctx.webkitImageSmoothingEnabled!==undefined) ctx.webkitImageSmoothingEnabled=false;
+  ctx.drawImage(buf,0,0,c.width,c.height);
+  wrap.appendChild(c);
+  return wrap;
 }
 
 /* ---------------- FINANZAS AVANZADAS ---------------- */

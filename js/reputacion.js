@@ -189,11 +189,13 @@ function engancharSwipeTinder(card, onPass, onLike){
 function modalTinder(){
   const cartas=generarTinder(); let i=0;
   const era=typeof eraMatch==="function"?eraMatch():{ic:"💘",cab:"Match · buscar pareja",paso:"✕ Paso",like:"❤ Me gusta",fin:"No hay más perfiles por hoy."};
-  modal(box=>{
+  const cuerpo=(typeof abrirSeccion==="function")?abrirSeccion(era.cab, era.ic||"💘"):null;
+  const pintarEn=function(box){
     const pintar=()=>{
       box.innerHTML="";
-      box.appendChild(el("div","cab",'<span class="ic">'+(era.ic||"💘")+'</span><span>'+era.cab+'</span>'));
-      const c=el("div","cuerpo"); box.appendChild(c);
+      if(!cuerpo) box.appendChild(el("div","cab",'<span class="ic">'+(era.ic||"💘")+'</span><span>'+era.cab+'</span>'));
+      const c=cuerpo?box:el("div","cuerpo");
+      if(!cuerpo) box.appendChild(c);
       if(E.perfil.pareja) c.appendChild(el("div","resul mitad","Estás en pareja con <b>"+E.perfil.pareja.n+"</b>. Coquetear por acá es jugar con fuego 🔥"));
       if(i>=cartas.length){
         c.appendChild(el("p","mini",era.fin));
@@ -201,12 +203,19 @@ function modalTinder(){
         return;
       }
       const cand=cartas[i];
+      const stack=el("div","tinder-stack");
+      if(cartas[i+1]){
+        const back=el("div","tinder-card tinder-back");
+        back.innerHTML='<span class="aero-orb '+cartas[i+1].orb+' orb-grande"></span>';
+        stack.appendChild(back);
+      }
       const card=el("div","tinder-card");
       card.innerHTML='<span class="aero-orb '+cand.orb+' orb-grande"></span>'+
         '<h3 class="tit centro" style="margin:6px 0 0">'+cand.n+", "+cand.edad+"</h3>"+
         (cand.id?'<div class="mini centro">'+cand.id+'</div>':'')+
         '<p style="margin-top:6px">'+cand.bio+'</p>';
-      c.appendChild(card);
+      stack.appendChild(card);
+      c.appendChild(stack);
       c.appendChild(el("p","mini centro tinder-hint","Desliza a la derecha si te late · a la izquierda si pasas"));
       const pasar=()=>{ i++; pintar(); };
       const late=()=>{ likeCandidato(cand); i++; pintar(); };
@@ -218,7 +227,9 @@ function modalTinder(){
       const x=el("button","btn-aqua ancho","Cerrar"); x.style.marginTop="6px"; x.onclick=()=>{ cerrarModal(); render(); }; c.appendChild(x);
     };
     pintar();
-  });
+  };
+  if(cuerpo) pintarEn(cuerpo);
+  else modal(pintarEn);
 }
 function likeCandidato(cand){
   const prob=clamp(0.4+E.rep.publica/220+(cand.afin||0),0.15,0.92);
@@ -354,7 +365,10 @@ function pantallaSucesion(){
    UI · Vida (Perfil, Social, Tinder, Lujos, Casino, Dinastía)
    ============================================================ */
 function vistaVida(){
-  const v=$("#vista");
+  const v=(typeof envolverVistaSO==="function")
+    ? envolverVistaSO("Vida","💚")
+    : $("#vista");
+  if(typeof bolsilloDT==="function") bolsilloDT();
   /* --- Perfil (aero-window) --- */
   const p=panel("Perfil del DT","🪪","agua");
   const win=el("div","aero-window");
@@ -485,6 +499,39 @@ function vistaVida(){
     const br=el("button","btn-aqua chico rojo","Terminar"); br.style.marginLeft="6px"; br.onclick=romperPareja; pt.cuerpo.appendChild(br);
   } else {
     pt.cuerpo.appendChild(el("p","mini","Soltero y a la búsqueda. "+(typeof eraMatch==="function"?eraMatch().mini:"Si hay química, lo invitas a salir.")));
+    /* 7.9992 · stack inline: 1 carta visible + 1 detrás, swipe y botones redondos */
+    const stack=el("div","tinder-stack");
+    const cartas=(typeof generarTinder==="function")?generarTinder():[];
+    let i=0;
+    const pintarStack=()=>{
+      stack.innerHTML="";
+      if(!cartas.length || i>=cartas.length){
+        stack.appendChild(el("p","mini centro","No hay más perfiles por hoy."));
+        return;
+      }
+      if(cartas[i+1]){
+        const back=el("div","tinder-card tinder-back");
+        back.innerHTML='<span class="aero-orb '+cartas[i+1].orb+' orb-grande"></span>';
+        stack.appendChild(back);
+      }
+      const cand=cartas[i];
+      const card=el("div","tinder-card");
+      card.innerHTML='<span class="aero-orb '+cand.orb+' orb-grande"></span>'+
+        '<h3 class="tit centro" style="margin:6px 0 0">'+cand.n+", "+cand.edad+"</h3>"+
+        (cand.id?'<div class="mini centro">'+cand.id+'</div>':'')+
+        '<p style="margin-top:6px">'+cand.bio+'</p>';
+      stack.appendChild(card);
+      const pasar=()=>{ i++; pintarStack(); };
+      const late=()=>{ likeCandidato(cand); i++; pintarStack(); };
+      if(typeof engancharSwipeTinder==="function") engancharSwipeTinder(card, pasar, late);
+      const row=el("div","tinder-acc");
+      const eraS=typeof eraMatch==="function"?eraMatch():{paso:"✕ Paso",like:"❤ Me gusta"};
+      const bp=el("button","btn-aqua tinder-round gris",eraS.paso); bp.onclick=pasar;
+      const bl=el("button","btn-aqua tinder-round verde",eraS.like); bl.onclick=late;
+      row.appendChild(bp); row.appendChild(bl); stack.appendChild(row);
+    };
+    pintarStack();
+    pt.cuerpo.appendChild(stack);
   }
   /* hijos (futura dinastía) */
   if(E.perfil.hijos && E.perfil.hijos.length){

@@ -84,19 +84,7 @@ body[data-tema="aero"] .bd{
 body[data-tema="aero"] .bd .v{text-shadow:0 1px 1px rgba(0,0,0,.35)}
 body[data-tema="aero"] .bd.alerta{background:linear-gradient(180deg,rgba(255,180,160,.4),rgba(255,120,90,.18));border-color:rgba(255,160,140,.6)}
 body[data-tema="aero"] .marca .glifo{box-shadow:inset 0 -5px 9px rgba(0,0,0,.2),0 2px 6px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.4)}
-body[data-tema="aero"] .btn-aqua{
-  color:#05341f;
-  background:linear-gradient(180deg,#eafff8 0%,#a8f2e2 45%,#5fd9c3 52%,#2fbfa8 100%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -7px 12px rgba(0,60,55,.22),0 2px 6px rgba(0,50,30,.3);
-}
-body[data-tema="aero"] .btn-aqua.verde{
-  color:#fff;background:linear-gradient(180deg,#a6e756 0%,#5fbc22 46%,#3f9d16 54%,#22750f 100%);
-  text-shadow:0 1px 1px rgba(0,0,0,.35)}
-body[data-tema="aero"] .btn-aqua.rojo{
-  color:#fff;background:linear-gradient(180deg,#ffb0a2 0%,#e2604c 46%,#c8402c 54%,#98240f 100%);
-  text-shadow:0 1px 1px rgba(0,0,0,.35)}
-body[data-tema="aero"] .btn-aqua.gris{
-  color:#20402c;background:linear-gradient(180deg,#ffffff,#dfe9e2 48%,#c4d2c8 52%,#a9bbaf)}
+/* botones: la fuente de verdad es el bloque Vista más abajo (glossy azul) */
 /* --- menú tipo pestañas de Vista --- */
 body[data-tema="aero"] #menu{
   background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(214,242,196,.6));
@@ -122,17 +110,7 @@ body[data-tema="aero"] .panel::after{
   content:"";position:absolute;left:0;right:0;top:0;height:46%;pointer-events:none;border-radius:6px 6px 0 0;
   background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0));z-index:0}
 body[data-tema="aero"] .panel > .cab,body[data-tema="aero"] .panel > .cuerpo{position:relative;z-index:1}
-body[data-tema="aero"] .panel > .cab{
-  color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.35);
-  background:linear-gradient(180deg,#79cf28 0%,#3f9f17 46%,#348f13 54%,#1e700d 100%);
-  border-bottom:1px solid #14590f;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
-body[data-tema="aero"] .panel.agua > .cab{
-  background:linear-gradient(180deg,#8fe9f5 0%,#31b7cf 46%,#2aa2bd 54%,#137d96 100%);border-bottom-color:#0d5f74}
-body[data-tema="aero"] .panel.alerta > .cab{
-  background:linear-gradient(180deg,#ffc46a 0%,#e2892a 46%,#d0761c 54%,#a05310 100%);border-bottom-color:#8a460c}
-body[data-tema="aero"] .panel.grave > .cab{
-  background:linear-gradient(180deg,#ff9d8c 0%,#df503a 46%,#cc3f2b 54%,#9b2717 100%);border-bottom-color:#87200f}
+/* barra de título: fuente de verdad = bloque Vista (azul metálico) más abajo */
 /* --- detalles --- */
 body[data-tema="aero"] .op{background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(232,248,226,.7));
   box-shadow:inset 0 1px 0 #fff,0 1px 4px rgba(10,70,25,.12)}
@@ -180,24 +158,13 @@ body[data-tema="aero"] .panel{
     0 -1px 0 rgba(0,40,10,.12) inset,
     0 6px 16px rgba(8,50,15,.28);
 }
-body[data-tema="aero"] .panel > .cab{
-  border-bottom:1px solid rgba(20,90,30,.35);
-  text-shadow:0 1px 0 rgba(255,255,255,.35);
-}
-body[data-tema="aero"] .btn-aqua{
-  border:1px solid #1a6a4a;
-  border-radius:4px;
-}
-body[data-tema="aero"] .btn-aqua:active{
-  box-shadow:inset 0 2px 6px rgba(0,40,20,.35);
-}
 body[data-tema="aero"] .op{
   border:1px solid rgba(30,100,40,.28);
   box-shadow:0 1px 0 rgba(255,255,255,.5) inset;
 }
 
 /* 5.0 · Perfil del DT (ventana Frutiger Aero / Vista) */
-.aero-window{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;
+.aero-window{display:flex;gap:12px;align-items:center;padding:12px;border-radius:7px;
   background:linear-gradient(160deg,rgba(255,255,255,.35),rgba(180,220,255,.18));
   border:1px solid rgba(255,255,255,.55);box-shadow:0 6px 20px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.7);
   backdrop-filter:blur(6px);margin-bottom:8px}
@@ -226,7 +193,7 @@ body[data-tema="aero"] .op{
 .aero-orb.orb-grande{width:64px;height:64px;display:block;margin:0 auto}
 .aero-orb.orb-chico{width:20px;height:20px;vertical-align:middle;margin-right:4px}
 /* tarjeta de Tinder */
-.tinder-card{border:1px solid var(--linea);border-radius:14px;padding:12px;
+.tinder-card{border:1px solid var(--linea);border-radius:6px;padding:12px;
   background:linear-gradient(160deg,rgba(255,255,255,.28),rgba(180,220,255,.14));
   box-shadow:0 4px 14px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.6);margin-bottom:8px;
   touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
@@ -299,7 +266,6 @@ body[data-tema="aero"] .op:hover:not(:disabled){ box-shadow:inset 0 1px 0 #fff, 
 body[data-tema="aero"] .modal{ border-radius:7px; border:1px solid rgba(120,150,180,.6);
   background:linear-gradient(180deg,rgba(248,252,255,.92),rgba(224,238,252,.86));
   box-shadow:0 18px 50px rgba(0,20,60,.5); backdrop-filter:blur(12px); }
-.aero-window{ border-radius:7px; } .tinder-card{ border-radius:6px; }
 
 /* --- Menú tipo pestañas Vista (rectangular) --- */
 body[data-tema="aero"] .mi{ border-radius:4px 4px 0 0;
@@ -369,3 +335,48 @@ body[data-tema="aero"] .btn-aqua:hover:not(:disabled)::before{ animation:sheenAe
 /* selección y foco con el verde-agua del tema */
 body[data-tema="aero"] ::selection{background:rgba(60,200,150,.38)}
 @media (prefers-reduced-motion:reduce){ body[data-tema="aero"] .btn-aqua:hover::before{animation:none} }
+
+/* ============================================================
+   7.9992 · ventanas SO (Aero existente, sin CDN)
+   Una sola definición. Azul Vista en la barra; el resto del club
+   sigue el bloque "ESTÉTICA ESTRICTA WINDOWS VISTA" de más arriba.
+   ============================================================ */
+body[data-tema="aero"] .ventana-so{
+  padding:0; border-radius:7px 7px 4px 4px; overflow:hidden;
+  border:1px solid rgba(60,90,130,.65);
+  background:linear-gradient(180deg,rgba(248,252,255,.96),rgba(224,238,252,.92));
+  box-shadow:0 20px 60px rgba(0,20,60,.55), inset 0 1px 0 rgba(255,255,255,.9);
+  backdrop-filter:blur(14px) saturate(1.4); -webkit-backdrop-filter:blur(14px) saturate(1.4);
+}
+body[data-tema="aero"] .ventana-so.panel::after{display:none}
+body[data-tema="aero"] .ventana-so.in-vista{
+  margin:0 0 12px; box-shadow:0 8px 22px rgba(0,20,60,.28), inset 0 1px 0 rgba(255,255,255,.9);
+}
+body[data-tema="aero"] .ventana-so .so-barra{
+  display:flex; align-items:center; gap:8px; padding:6px 8px;
+  background:linear-gradient(to bottom,#5b9be6 0%,#2461a3 50%,#00317a 51%,#1e5b9e 100%);
+  color:#fff; text-shadow:0 -1px 1px rgba(0,0,0,.45); font-weight:700;
+  border-bottom:1px solid #06264f; user-select:none;
+}
+body[data-tema="aero"] .ventana-so .so-ic{flex:0 0 auto}
+body[data-tema="aero"] .ventana-so .so-titulo{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+body[data-tema="aero"] .ventana-so .so-ctrl{display:flex;gap:3px}
+body[data-tema="aero"] .ventana-so .so-btn{
+  width:22px; height:18px; border-radius:3px; font-size:11px; line-height:1;
+  border:1px solid rgba(255,255,255,.55); color:#fff; padding:0; cursor:pointer;
+  background:linear-gradient(to bottom,rgba(255,255,255,.35),rgba(255,255,255,.08));
+}
+body[data-tema="aero"] .ventana-so .so-btn.cerrar{
+  background:linear-gradient(to bottom,#ff7a5c,#c8402c 52%,#9b2717);
+}
+body[data-tema="aero"] .ventana-so .so-cuerpo{padding:12px}
+body[data-tema="aero"] .ventana-so.so-min .so-cuerpo{display:none}
+body[data-tema="aero"] .ventana-so.so-maxi{box-shadow:0 0 0 2px rgba(0,180,255,.35), 0 20px 60px rgba(0,20,60,.55)}
+
+.tinder-stack{position:relative;min-height:168px;margin:8px 0 4px}
+.tinder-stack .tinder-back{position:absolute;left:10px;right:10px;top:12px;opacity:.42;transform:scale(.94);
+  pointer-events:none;z-index:0;margin:0}
+.tinder-stack > .tinder-card:not(.tinder-back){position:relative;z-index:1}
+.bolsa-canvas{margin:6px 0;border:1px solid rgba(30,90,160,.22);border-radius:4px;overflow:hidden;
+  background:rgba(255,255,255,.45)}
+.bolsa-canvas canvas{display:block;width:100%;height:80px;image-rendering:pixelated;image-rendering:crisp-edges}

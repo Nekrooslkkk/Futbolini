@@ -20,7 +20,8 @@ function colorRuleta(n){ return n===0?"verde":(RULETA_ROJOS.indexOf(n)>=0?"rojo"
 function girarRuleta(apId, monto, plenoNum){
   const ap=APUESTAS_CASINO.find(a=>a.id===apId); if(!ap) return null;
   if(typeof bolsilloDT==="function") bolsilloDT();
-  else { if(!E.personal) E.personal={}; if(typeof E.personal.bolsillo!=="number") E.personal.bolsillo=0; }
+  if(!E.personal) E.personal={};
+  if(typeof E.personal.bolsillo!=="number" || isNaN(E.personal.bolsillo)) E.personal.bolsillo=0;
   const n=ri(0,36);
   const gano=ap.gana(n, plenoNum);
   const pago=gano?monto*ap.pago:0;
@@ -34,9 +35,12 @@ function girarRuleta(apId, monto, plenoNum){
 
 /* ---------- corrupción: desviar fondos del club ---------- */
 function desviarFondos(monto){
-  monto=Math.round(Math.min(monto, E.plata*0.6));
-  if(monto<=0){ if(typeof aviso==="function") aviso("No hay caja del club para desviar."); return; }
   if(typeof bolsilloDT==="function") bolsilloDT();
+  if(!E.personal) E.personal={};
+  if(typeof E.personal.bolsillo!=="number" || isNaN(E.personal.bolsillo)) E.personal.bolsillo=0;
+  if(!E.flags) E.flags={};
+  monto=Math.round(Math.min(monto, (E.plata||0)*0.6));
+  if(monto<=0){ if(typeof aviso==="function") aviso("No hay caja del club para desviar."); return; }
   E.plata=Math.max(0, E.plata-monto);
   E.personal.bolsillo=(E.personal.bolsillo||0)+monto;
   E.flags.desfalco=(E.flags.desfalco||0)+monto;
@@ -50,7 +54,7 @@ function desviarFondos(monto){
 }
 /* chequeo semanal: cuanto más desviaste y menos credibilidad, más chance de auditoría */
 function chequearDesfalco(){
-  if(!E.flags.desfalco || E.flags.desfalco<=0) return;
+  if(!E || !E.flags || !E.flags.desfalco || E.flags.desfalco<=0) return;
   if(E.flags.investigacionAbierta) return;
   const p=clamp(E.flags.desfalco/1400 + (60-E.rep.credibilidad)/320, 0.015, 0.5);
   if(Math.random()<p){
@@ -113,6 +117,9 @@ function tragaGirarUno(){
   return TRAGA_SIMBOLOS[0];
 }
 function girarTragamonedas(monto){
+  if(typeof bolsilloDT==="function") bolsilloDT();
+  if(!E.personal) E.personal={};
+  if(typeof E.personal.bolsillo!=="number" || isNaN(E.personal.bolsillo)) E.personal.bolsillo=0;
   monto=Math.max(1,Math.min(Math.round(monto)||1,E.personal.bolsillo));
   const r=[tragaGirarUno(),tragaGirarUno(),tragaGirarUno()];
   let mult=0, linea="";
@@ -274,11 +281,17 @@ function modalDesviar(){
 }
 /* panel para la sección Vida (casino personal) */
 function panelCasino(){
+  if(typeof bolsilloDT==="function") bolsilloDT();
+  if(!E.personal) E.personal={};
+  if(typeof E.personal.bolsillo!=="number" || isNaN(E.personal.bolsillo)) E.personal.bolsillo=0;
   const p=panel("Casino","🎰");
   p.cuerpo.appendChild(el("p","mini","Plata personal. Ruleta, tragamonedas y blackjack — apostá el monto que quieras (la casa gana a la larga). Bolsillo: <b>"+plata(E.personal.bolsillo)+"</b>."));
   const b=el("button","btn-aqua ancho verde","Ruleta");
   b.onclick=modalCasino;
   p.cuerpo.appendChild(b);
+  const bt=el("button","btn-aqua ancho"); bt.textContent="Tragamonedas"; bt.style.marginTop="6px";
+  bt.onclick=modalTragamonedas;
+  p.cuerpo.appendChild(bt);
   const bb=el("button","btn-aqua ancho"); bb.textContent="Blackjack"; bb.style.marginTop="6px";
   bb.onclick=modalBlackjack;
   p.cuerpo.appendChild(bb);
@@ -291,7 +304,7 @@ function panelCasino(){
 }
 /* panel para Finanzas (desfalco + redención), null si no hay desfalco */
 function panelDesfalco(){
-  if(!E.flags.desfalco || E.flags.desfalco<=0) return null;
+  if(!E || !E.flags || !E.flags.desfalco || E.flags.desfalco<=0) return null;
   const p=panel("Fondos desviados","🕳️","grave");
   p.cuerpo.appendChild(el("div","resul mal","Tienes <b>"+plata(E.flags.desfalco)+"</b> desviados de la tesorería."+
     (E.flags.investigacionAbierta?" <b>Hay una investigación abierta.</b>":" Todavía nadie te auditó, pero el riesgo corre.")));
@@ -321,6 +334,9 @@ function txtMano(mano,ocultar){
   return mano.map((c,i)=> (ocultar&&i===0?"??":c.v+c.p)).join("  ");
 }
 function modalBlackjack(){
+  if(typeof bolsilloDT==="function") bolsilloDT();
+  if(!E.personal) E.personal={};
+  if(typeof E.personal.bolsillo!=="number" || isNaN(E.personal.bolsillo)) E.personal.bolsillo=0;
   let monto=Math.max(5,Math.min(15,E.personal.bolsillo));
   let mazo=[], yo=[], dealer=[], fase="apuesta", msg="";
   function deal(){

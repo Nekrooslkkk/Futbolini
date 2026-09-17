@@ -1537,7 +1537,7 @@
     /* T38 · 7.9991 banco Aero + bolsillo/bolsa a prueba de save roto + swipe */
     grupo("Grok 7.9991 (banco + bolsillo + swipe)");
     safe(function(){
-      ok(VERSION==="7.9991", "VERSION 7.9991");
+      ok(VERSION==="7.9991" || /^7\.99/.test(VERSION), "VERSION 7.99x");
       ok(typeof bolsilloDT==="function", "bolsilloDT");
       ok(typeof engancharSwipeTinder==="function", "swipe del Match");
       ok(typeof detenerCancha==="function", "detenerCancha sigue existiendo");
@@ -1555,6 +1555,55 @@
       ok(r && typeof r.n==="number", "ruleta no crashea sin E.personal");
       ok(E.personal && typeof E.personal.bolsillo==="number", "girarRuleta deja bolsillo numérico");
     }, "saves rotos no tumban bolsa ni casino");
+
+    /* T39 · 7.9992 NaN del casino, flags de barra, ventanas SO, cancha/penal */
+    grupo("Grok 7.9992 (bolsillo NaN + flags + ventanas SO)");
+    safe(function(){
+      ok(VERSION==="7.9992", "VERSION 7.9992");
+      ok(typeof abrirSeccion==="function" && typeof envolverVistaSO==="function", "ventanas SO");
+      ok(typeof canvasBolsa==="function", "canvasBolsa");
+      ok(typeof montarBarraSO==="function", "montarBarraSO");
+    }, "API 7.9992");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      delete E.personal;
+      var slot=girarTragamonedas(5);
+      ok(slot && typeof slot.monto==="number" && !isNaN(slot.monto), "tragamonedas no entrega NaN: "+slot.monto);
+      ok(E.personal && typeof E.personal.bolsillo==="number" && !isNaN(E.personal.bolsillo), "tragamonedas deja bolsillo numérico");
+      delete E.personal;
+      E.plata=400;
+      delete E.flags;
+      desviarFondos(40);
+      ok(E.flags && E.flags.desfalco>0, "desviarFondos crea flags.desfalco");
+      ok(E.personal && typeof E.personal.bolsillo==="number", "desviarFondos crea bolsillo");
+    }, "casino NaN y desfalco sin flags");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var pactos=pactosBarra();
+      var pacto=pactos.filter(function(x){ return x.tipo==="no_vender"||x.tipo==="no_bajar"; })[0]||pactos[pactos.length-1];
+      ok(pacto && pactar(pacto)===true, "pacto de barra");
+      delete E.flags;
+      var r=romperPacto("test de flags");
+      ok(r===true, "romperPacto funciona sin flags previos");
+      ok(E.flags && E.flags.puertaBarra===E.idx, "rompe y siembra puertaBarra");
+    }, "romperPacto no crashea sin E.flags");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      delete E.personal;
+      normalizarBolsa();
+      ok(E.personal && typeof E.personal.bolsillo==="number", "normalizarBolsa crea bolsillo");
+      E.personal.bolsillo=200;
+      ok(invertirBolsa(50)===true, "invertirBolsa con bolsillo sano");
+      delete E.personal;
+      ok(invertirBolsa(10)===false || (E.personal && typeof E.personal.bolsillo==="number"), "invertirBolsa no NaN sin personal");
+      var nodo=canvasBolsa([10,12,9,14,13]);
+      ok(nodo && nodo.querySelector("canvas"), "canvasBolsa pinta un canvas");
+    }, "bolsa + gráfico pixel");
+    safe(function(){
+      ok(typeof _cvSeed==="function", "_cvSeed existe");
+      _cvSeed(null);
+      ok(_cvSt && _cvSt.penalSeq===0 && _cvSt.penalDive===0 && _cvSt.penalSeen===0, "penalSeq/Dive/Seen arrancan en 0");
+    }, "cancha inicializa el penal");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

@@ -146,6 +146,16 @@ Hechos públicos. Si no está documentado, se marca.
 [FIX] Finanzas = ventanilla de 4 cuentas. Match se desliza.
 [INFO] 8.00 sigue reservada.
 
+## 7.9992 · NaN del casino + ventanas Aero
+[FIX] Tragamonedas/blackjack: bolsillo undefined ya no arma apuesta NaN.
+[FIX] desviarFondos / romperPacto crean E.flags si el save no lo traía.
+[FIX] Bolsa: invertir/liquidar no restan undefined.
+[FIX] aero.css: una sola regla por .cab / .btn-aqua / .aero-window / .tinder-card (Vista).
+[OK] Finanzas y Vida se ven como ventana SO, pero las pestañas siguen (no hay segundo menú).
+[NO] XP.css / 7.css de internet: el juego tiene que correr sin red.
+[INFO] 8.00 sigue reservada.
+
+
 
 
 
