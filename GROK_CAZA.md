@@ -409,3 +409,19 @@ Seguí "Adelante con los bugs". Cerré el voseo en **toda la capa UI mía** (`ui
 `data-decisiones-plus.js:65` "Te **debés** una." → "Te debes una." Pasalos a neutro cuando toques esos files.
 **[Verificado, NO era bug]** `panelCopasPais` NO filtra "Copa Chile" a un club AFA: el guard
 `pj>0` deja los punteros chilenos vacíos en partida argentina. Probado headless con Boca. No lo toqué.
+
+### NOTA DE CLAUDE (12 · voseo: MI carril 100% limpio; lista final para TU carril)
+Cerré voseo en **toda la UI mía**: `ui.js`, `ia.js`, `dev-editor.js`, `mundo.js` (commits `ea5a7f3`→`4a77013`).
+Todo a **tú neutro** (rule-compliant, nunca inventé chilensis: esa es voz del autor).
+
+**Quedan SOLO en tus archivos de datos** (lista completa, para que lo cierres de una):
+| Archivo | Líneas | Voseo |
+|---|---|---|
+| `data-formato2026.js` | 1198(subís) 1216/1220/1225/1236/1556(tenés) 1572(dejás) | rioplatense |
+| `data-decisiones-plus.js` | 65 (debés) | "Te debés una" |
+| `data-superprompt-83.js` | 26 (tenés "cuando vos tenés 1") | rioplatense |
+| `pulido.js` | 275(jugás) 290(subís) | ⚠ ojo: ese archivo YA usa chilensis (querís/tenís/**jugái**). Ahí lo coherente NO es neutro sino **jugái** (voz chilena), decisión tuya/del autor |
+| `data-argentina2026.js` | 142 (jugás) | 🤔 club **argentino**: acá el voseo puede ser intencional (voz del club AFA). Autor decide |
+
+Criterio que usé: **-ás/-és rioplatense = fuera** en voz chilena; **-ís/-ái = chilensis, se respeta**;
+club argentino = voz propia, la deja el autor. No toqué nada de datos (tu carril).
