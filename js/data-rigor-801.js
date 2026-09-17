@@ -10,7 +10,7 @@
 
    Hechos públicos. Cero citas inventadas. Cero Monumental si el
    club no es Colo-Colo (o River/Tucumán). Stats de efecto = juego.
-   Cargar ÚLTIMO (después de data-planteles-800.js).
+   Cargar ÚLTIMO (después de data-planteles-epoca.js).
    ============================================================ */
 
 function _o801(t,d,dif,g,b,m,w,x){
@@ -1108,9 +1108,8 @@ _d801("elp09_copa","ELP",2009,"institucional","alto",6,
   decisionCabeEnClub=function(d){
     if(!orig(d)) return false;
     if(!d||typeof E==="undefined"||!E) return true;
-    /* FIX (Claude): una carta con `club` explícito ya está gateada por su tag;
-       no re-aplicar marcas de estadio (bloqueaban p.ej. Gimnasia LP porque "El
-       Bosque" estaba marcado como de Estudiantes). Las marcas son para la bolsa. */
+    /* FIX (Claude): carta con `club` explícito ya está gateada por su tag.
+       Las marcas extra son para la bolsa (bloqueaban p.ej. Gimnasia LP / El Bosque). */
     if(d.club) return true;
     var club=E.club;
     var blob="";

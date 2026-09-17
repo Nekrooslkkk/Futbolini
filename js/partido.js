@@ -228,6 +228,35 @@ function fuerzaEquipo(once){
     desgaste:es.desgaste+pr.desgaste+me.desgaste+(bl.desgaste||0)+(rt.desgaste||0)
   };
 }
+/* 7.99952 · snapshot del plan táctico (mentalidad/estilo/presión/bloque/ritmo).
+   Sirve para reaplicar en vivo sin resetear goles, empuje ni momentos. */
+function snapshotPlan(once){
+  once=once||[];
+  const fz=fuerzaEquipo(once);
+  if(!fz||typeof fz!=="object") return {ataque:40,orden:40,desgaste:0,recup:0,expo:0};
+  const pr=(typeof PRESIONES!=="undefined"&&PRESIONES[E.tactica.presion])||{recup:0,expo:0};
+  const me=(typeof MENTALIDADES!=="undefined"&&MENTALIDADES[E.tactica.mentalidad])||{recup:0,expo:0};
+  const bl=(typeof BLOQUES!=="undefined"&&BLOQUES[E.tactica.bloque])||{recup:0,expo:0};
+  return {
+    ataque:fz.ataque, orden:fz.orden, desgaste:fz.desgaste,
+    recup:(pr.recup||0)+(me.recup||0)+(bl.recup||0),
+    expo:(pr.expo||0)+(me.expo||0)+(bl.expo||0)
+  };
+}
+function reaplicarPlan(P){
+  if(!P||!E||!E.tactica) return null;
+  const prev=P._planSnap||snapshotPlan(P.once||[]);
+  const now=snapshotPlan(P.once||[]);
+  P.ataque+=(now.ataque-prev.ataque);
+  P.orden+=(now.orden-prev.orden);
+  P.desgaste+=(now.desgaste-prev.desgaste);
+  P.recup=(P.recup||0)+(now.recup-prev.recup);
+  P.expo=(P.expo||0)+(now.expo-prev.expo);
+  P._planSnap=now;
+  P._ajustes=(P._ajustes||0)+1;
+  if(P._ajustes>=3){ P.orden-=1.1; } /* demasiado retoque: el equipo se mareá */
+  return now;
+}
 /* 6.7 · detecta la formación desde la pizarra (incl. bizarras tipo 2-4-4) */
 function formacionDetectada(piz){
   if(!piz||!piz.length) return null;
@@ -360,6 +389,8 @@ function iniciarPartido(part,modo){
   });
   P.stats={pos:0.5, remMio:0, remRiv:0, arcMio:0, arcRiv:0, corMio:0, corRiv:0};   /* 7.10 · stats de transmisión */
   P.arbitro=arbitroDe(part);   /* 7.10 · árbitro con sesgo visible */
+  P._planSnap=snapshotPlan(P.once);
+  P._ajustes=0;
   if(P.arbitro.casero){ if(part.local){ P.ataque+=2.5; P.orden+=1.5; } else { P.rival+=2.5; } }
   P.quimica=qui; P.empuje+=qui.bono; P.orden+=qui.bono*0.5;   /* 6.30 · química al ruedo */
   if(typeof aplicarBonoRasgos==="function") aplicarBonoRasgos(P);
@@ -528,7 +559,6 @@ function linea(P,min,txt,clase){
 }
 /* registra un gol con minuto y autor, para la caja de resumen (efemérides) */
 function regGol(P,min,quien,propio,tipo,asist){ P.golesDetalle=P.golesDetalle||[]; P.golesDetalle.push({min:min,quien:quien,propio:!!propio,tipo:tipo||"jugada",asist:asist||null}); }
-function tieneRasgo(j,r){ return j&&j.rasgos&&j.rasgos.indexOf(r)>=0; }
 function anotaPropio(P,min){
   const cand=P.once.filter(j=>j.pos==="DEL").concat(P.once.filter(j=>j.pos==="VOL"))
     .concat(P.once.filter(j=>j.pos==="DEF"&&tieneRasgo(j,"juego aéreo")));
@@ -561,6 +591,16 @@ function marcadorTxt(P){
   return "("+E.clubNombre+" "+yo+" - "+otro+" "+P.part.rivalNombre+")";
 }
 function miMarcador(P){ return P.part.local?[P.gl,P.gv]:[P.gv,P.gl]; }
+function diffMarcador(P){ const m=miMarcador(P); return (m[0]||0)-(m[1]||0); }
+/* 7.99954 · el plan pesa MÁS cuando vas perdiendo: atacar abre, defender se cierra. */
+function planCuandoVasPerdiendo(P){
+  const ment=(E&&E.tactica&&E.tactica.mentalidad)||"";
+  if(/Ultraofensivo/.test(ment)) return {yo:1.18, el:1.12, empuje:1.1};
+  if(/Ofensivo/.test(ment)) return {yo:1.10, el:1.05, empuje:0.5};
+  if(/Ultradefensivo/.test(ment)) return {yo:0.86, el:0.84, empuje:-0.2};
+  if(/Defensivo/.test(ment)) return {yo:0.92, el:0.90, empuje:0};
+  return {yo:1, el:1, empuje:0};
+}
 /* 5.0 · barras de apoyo en vivo: Ánimo Hinchada / Confianza Plantel / Criterio DT.
    Se recalculan cada minuto persiguiendo un objetivo según marcador, físico y decisiones. */
 function actualizarApoyo(P){
@@ -595,10 +635,14 @@ function peligro(P){
      exponer la defensa (peor cansado) sube el del rival. */
   const recup=(P.recup||0)*Math.max(0,1-P.cansancio*0.09);
   const expo=(P.expo||0)*(0.3+P.cansancio*0.06);
-  return {
-    yo:Math.max(0.20,1.30+d*0.42+recup*0.06),
-    el:Math.max(0.20,1.30-d*0.42+expo*0.06)
-  };
+  let yo=Math.max(0.20,1.30+d*0.42+recup*0.06);
+  let el=Math.max(0.20,1.30-d*0.42+expo*0.06);
+  /* 7.99954 · si vas perdiendo, la pizarra se siente: atacar abre el partido. */
+  if(diffMarcador(P)<0){
+    const k=planCuandoVasPerdiendo(P);
+    yo*=k.yo; el*=k.el;
+  }
+  return { yo:yo, el:el };
 }
 /* Un tick avanza el reloj un poco y devuelve UN evento. Los eventos simples
    (gol, chance, tarjeta, color) se aplican acá; los de acción (penal, tiro
@@ -621,6 +665,28 @@ function tickPartido(P){
   P.cansancio+=P.desgaste*0.011*paso;
   (P.once||[]).forEach(j=>{ j.cansancio=clamp((j.cansancio||0)+P.desgaste*0.009*paso,0,30); });
   const min=P.min;
+  /* 7.99952 · descanso: el DT habla. En dirigir se abre la charla. */
+  if(!P._htDicho && min>=45 && min<48){
+    P._htDicho=true;
+    linea(P,45,"Descanso. Van "+marcadorTxt(P)+". Quince minutos para hablar.","grave");
+    return {tipo:"entretiempo",min:45};
+  }
+  /* 7.99954 · vas perdiendo: la tribuna y el capitán hablan. El plan ofensivo empuja. */
+  if(diffMarcador(P)<0 && min>=55 && !P._tensionDicha){
+    P._tensionDicha=true;
+    const cap=(P.once||[]).find(function(j){ return tieneRasgo(j,"capitán"); })||(P.once||[])[0];
+    const ment=(E&&E.tactica&&E.tactica.mentalidad)||"";
+    const k=planCuandoVasPerdiendo(P);
+    P.empuje+=(k.empuje||0);
+    if(/Ultraofensivo|Ofensivo/.test(ment)){
+      linea(P,min,(cap&&cap.n?cap.n+" arrastra a los de adelante. ":"")+"Van perdiendo "+marcadorTxt(P)+". Pediste ir a buscarlo: se abre el partido.","grave");
+    } else if(/Defensivo|Ultradefensivo/.test(ment)){
+      linea(P,min,"Vas perdiendo "+marcadorTxt(P)+". El plan es no abrir: la tribuna no entiende, el banco espera un cambio.","grave");
+    } else {
+      linea(P,min,(cap&&cap.n?cap.n+" junta al círculo. ":"")+"Vas perdiendo "+marcadorTxt(P)+". Hay que decidir: ir a buscarlo o aguantar.","grave");
+    }
+    return {tipo:"tension",min:min};
+  }
   /* 6.21 · silbidos de la barra por un pacto roto */
   if(P.barraSilba && min>=15 && !P.silbidoDicho){ P.silbidoDicho=true;
     linea(P,min,"Silbidos desde la tribuna: la barra no le perdona el pacto roto a la dirigencia.","grave");
@@ -762,6 +828,14 @@ function fraseRelato(P,min){
   const modo=(E&&E.modo)||"historico";
   const era=E&&E.eraBase;
   const pool=[];
+  const dif=diffMarcador(P);
+  if(dif<0){
+    pool.push("Vas perdiendo. Cada pelota atrás se discute en la tribuna.");
+    pool.push("El marcador duele. El banco mira el reloj y el plan.");
+    if(min>60) pool.push("La hinchada pide cambios. El partido se está yendo.");
+    if(/Ultraofensivo|Ofensivo/.test((E.tactica&&E.tactica.mentalidad)||""))
+      pool.push("Pediste ir a buscarlo: hay espacios atrás y espacios adelante.");
+  }
   if(P.clasico){
     pool.push("Clásico. La platea no perdona un error.");
     pool.push("Cada falta se discute como si fuera la final.");

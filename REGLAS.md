@@ -67,9 +67,9 @@ Ascenso/descenso **encadenado** entre niveles (implementado: Primera↔B↔Segun
 ## Modo 2006 (era `2006`)
 - **19 clubes** (Deportes Concepción **suspendido** por problemas financieros). Wikipedia Apertura/Clausura 2006.
 - **Formato real:** Apertura + Clausura, grupos + playoffs estilo México, 3 pts. Campeones: Colo-Colo (Apertura vs la U por penales; Clausura 3-0 a Audax). Desciende Morning por tabla anual.
-- **En el juego hoy:** una rueda de **18 fechas** (bye, n impar). Cobreloa = `CBL`, Cobresal = `CBS` (no chocar con Cobresal 2026 = `COB`).
-- Plantel documentado: **solo Colo-Colo** (`PLANTEL_CC_2006`). El resto, cantera.
-- Archivo: `js/data-2006.js`.
+- **En el juego hoy:** Apertura **18 fechas** (bye) y, al cerrar esa rueda, Clausura de **otras 18** con tabla desde 0 y localías invertidas. El Apertura regular **no entrega estrella** (en 2006 el título iba a playoffs estilo México, todavía no jugables). Cobreloa = `CBL`, Cobresal = `CBS` (no chocar con Cobresal 2026 = `COB`). Descenso: tabla anual.
+- Planteles documentados: **Colo-Colo, U. de Chile, Audax Italiano y Católica** (2006). El resto, cantera. Playoffs estilo México: documentados, no jugables todavía.
+- Archivo: `js/data-2006.js` + `js/data-996.js`.
 
 ## Modo 1925 (era `1925`) — amateur, acotado
 - **Liga Metropolitana de Deportes**, División de Honor. 13 inscritos; **Unión Chilena se retiró** → **12 clubes**, una rueda, 11 fechas. Victoria **2 pts**.

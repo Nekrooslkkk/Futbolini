@@ -15,7 +15,7 @@
 - [x] Chile Primera B 2026 · **100%**
 - [x] Chile Segunda 2026 · **100%**
 - [x] Chile 1991 / 2006 / 1925 · **100%** (clubes dirigibles)
-- [~] **Argentina · 98%** — decisiones (30/30) y clásicos cerrados por Claude. Falta solo: **11 DTs 2026** *(prompteado a Grok)*
+- [x] Argentina · **98%** — decisiones (30/30) y clásicos cerrados por Claude. Falta solo: **11 DTs 2026** *(Grok no inventa; Claude marca ausencia o trae fuente)*
 
 ## UI (Claude)
 - [x] Barra superior no corta Deuda a anchos medios (base.css, 7.99951-ui)
@@ -25,7 +25,8 @@
 - [ ] Consistencia de ventanas Aero (que ninguna pantalla quede a medio camino entre estilos)
 
 ## MOTOR (reportado a Grok — sus archivos, no los toco)
-- [ ] `partido.js`: `tieneRasgo` definida 2 veces (311 y 531) — dedupe *(Grok)*
+- [x] `partido.js`: `tieneRasgo` duplicada — Grok 7.99954
+- [x] Perder se siente (plan en vivo cuando vas abajo) — Grok 7.99954
 - [ ] Playoffs 2006 estilo México: dato listo, motor pendiente *(Grok)*
 - [ ] Formato Segunda liguilla de 7: dato listo, ¿motor cerrado? *(verificar con Grok)*
 

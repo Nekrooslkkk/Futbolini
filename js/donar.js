@@ -10,7 +10,8 @@
      DONAR.lnurl    = ""                 // opcional Lightning
      DONAR.explorer = ""                 // si vacío: mempool.space/address/<btc>
      DONAR.libro    = [                  // lo publicás vos cuando hay movimiento
-       {fecha:"2026-09", btc:"0.001", para:"hosting", nota:"Railway"}
+       {fecha:"2026-09", btc:"0.001", para:"hosting", alias:"El Pibe", nota:"Railway"}
+       // alias es OPCIONAL. Si no va, el libro dice «anónimo».
      ]
    ============================================================ */
 
@@ -38,6 +39,10 @@ function donarExplorer(){
   if(DONAR&&DONAR.explorer&&/^https?:\/\//i.test(DONAR.explorer)) return DONAR.explorer;
   if(donarTieneBtc()) return "https://mempool.space/address/"+String(DONAR.btc).trim();
   return "";
+}
+function donarAlias(m){
+  const a=m&&m.alias&&String(m.alias).trim();
+  return a||"anónimo";
 }
 function donarTexto(){
   const f=(DONAR&&DONAR.frase)||"Apoyar Futbolini";
@@ -105,10 +110,11 @@ function abrirDonar(){
     cuerpo.appendChild(el("h3","sub","Libro de aportes"));
     const libro=(DONAR.libro||[]).slice();
     if(!libro.length){
-      cuerpo.appendChild(el("p","mini","Todavía no hay movimientos publicados. Cuando entre un aporte, se anota acá (fecha, monto, para qué). La chain es la fuente; este libro es el criollo."));
+      cuerpo.appendChild(el("p","mini","Todavía no hay movimientos publicados. Cuando entre un aporte, se anota acá (fecha, monto, para qué, alias si la persona quiere). La chain es la fuente; este libro es el criollo. El alias es opcional: si no va, figura anónimo."));
     } else {
       libro.forEach(function(m){
-        cuerpo.appendChild(el("div","fila","<span>"+(m.fecha||"—")+" · "+(m.para||"juego")+"</span><b>"+(m.btc||"—")+" BTC</b>"));
+        const quien=(typeof donarAlias==="function")?donarAlias(m):((m.alias&&String(m.alias).trim())||"anónimo");
+        cuerpo.appendChild(el("div","fila","<span>"+(m.fecha||"—")+" · "+quien+" · "+(m.para||"juego")+"</span><b>"+(m.btc||"—")+" BTC</b>"));
         if(m.nota) cuerpo.appendChild(el("p","mini",m.nota));
       });
     }

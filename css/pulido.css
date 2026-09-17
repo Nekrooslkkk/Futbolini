@@ -156,6 +156,21 @@ body.perf .barrita i::after{ display:none; }
 body.anim-off .panel, body.anim-off .panel.dec, body.anim-off .dec .ops .op{ animation:none !important; }
 body.anim-off .barrita i::after{ display:none; }
 
+/* 7.99952 · voces del mercado (jugador / representante / prensa / hinchada) */
+.voces-merc{ margin:8px 0; display:flex; flex-direction:column; gap:6px; }
+.voz{
+  padding:8px 10px; border-radius:8px;
+  background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(226,240,252,.32));
+  border:1px solid rgba(20,60,120,.16);
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset;
+}
+.voz b{ display:block; font-size:12px; }
+.voz .mini{ display:block; margin-top:2px; }
+.voz.jugador{ border-left:3px solid #2a6db8; }
+.voz.manager{ border-left:3px solid #c9a227; }
+.voz.prensa{ border-left:3px solid #5a7a9a; }
+.voz.hincha{ border-left:3px solid #2a8f4a; }
+
 @media (max-width:720px){
   .op.dec-card{ padding:12px; }
   .barrita{ height:12px; }

@@ -1,5 +1,31 @@
 # FUTBOLINI 3.0 — Bitácora de parches
 
+## 7.99954 · Merge Claude + perder se siente
+**Archivos:** `partido.js`, `data-caza-97.js`, `data-rigor-801.js`, `pulido.js`, `ventanas.js`, `ui.js`, `index.html`, `css/aero.css`, `css/base.css`, `css/vendor/7-window.css`, `js/data-afa-rigor.js`, `js/dev-*.js`
+- Traje a Claude (Opus 4.8): 7.css local, editor de rigor, AFA 98%, barra/mobile, **bug Macul** (River/Boca/Independiente no veían su carta).
+- `tieneRasgo` ya no está dos veces.
+- **Perder se siente:** `planCuandoVasPerdiendo`. Ultraofensivo abajo abre el partido; defensivo se cierra. Al 55' hablan capitán y tribuna.
+- Planteles siguen en 2 archivos. Tests T47. **No 8.00.**
+
+## 7.99953 · Menos archivos huevo (planteles)
+**Archivos:** `data-planteles.js` (nuevo, ex 88–95), `data-planteles-epoca.js` (nuevo, ex 99+800–802), `index.html`
+- 12 scripts → **2**. Mismo contenido, mismo orden interno, mismos IIFE.
+- Se borraron `data-planteles-88.js` … `95.js`, `99.js`, `800.js`–`802.js`.
+- PEGAR: 2026 en `data-planteles.js`; otras épocas en `data-planteles-epoca.js`.
+- Tests T46. **No 8.00.**
+
+## 7.99952 · Dirigir de verdad + copas del país + mercado con voces
+**Archivos:** `partido.js`, `ui-partido.js`, `mercado.js`, `ui.js`, `donar.js`, `data-segunda2026.js`, `css/pulido.css`, `test/pruebas_core.js`
+- **Plan en vivo:** `snapshotPlan` / `reaplicarPlan`. En partido (seguir/dirigir) hay botón 📋 Plan: mentalidad, estilo, presión, bloque, ritmo se sienten YA. Más de 2 retoques marean (orden −1.1).
+- **Entretiempo:** `tickPartido` dispara `{tipo:"entretiempo"}` al cruzar 45'. Siempre (Dirigir y Ver en vivo). Charla + pizarra.
+- **Copas del país:** `panelCopasPais` — aunque no clasificaste, ves últimos partidos de copa + punteros. Segunda 2026 sigue fuera de Copa Chile, pero mira el cuadro.
+- **Mercado:** ya no es un botón. `jugadorQuiereSalir` (moral, ídolo, cláusula, edad). Hablan jugador, representante si tiene (`tieneManager`), prensa (nombres reales, frases ficción) e hinchada. Puede plantarse; hay que convencerlo.
+- **Libro BTC:** `alias` opcional (`donarAlias`). Si no va, «anónimo».
+- **PEGAR Segunda:** molde comentado al final de `data-segunda2026.js`. Planteles siguen cantera.
+- Tests T45.
+
+---
+
 Registro de todo lo que se fue construyendo sobre la Fase A, para tenerlo a mano
 en futuras actualizaciones. Cada bloque dice **qué se hizo**, **qué archivos toca**
 y **funciones/datos clave**. Al final: cómo **editar planteles** y cómo **encender la IA**.
@@ -2612,37 +2638,3 @@ Todavía no 8.00. Se tapan huecos. Donar: Bitcoin, sin pasarela, sin perks.
 
 
 
-
-## 8.0-dev · MOTOR DE EDICIÓN (rigor + editor tipo WordPress) — rama `claude/motor-dev-editor`, SIN subir
-Preparado aparte para no pisar a Grok. Tres archivos nuevos + doc, nada de los existentes tocado
-(salvo `index.html`, que solo suma 4 líneas de carga).
-- **js/dev-esquema.js** — el CONTRATO DE RIGOR: 17 campos que definen un club "completo",
-  medidos contra Colo-Colo, cada uno con `get`/`set` y dónde vive (`CLUB_INFO_2026[id].n`, etc.).
-  Incluye `DEV_SIN_DATO`: ausencias **justificadas** (dato sin fuente) que NO castigan el rigor,
-  para no empujar a inventar. Y `aplicarParcheClubes()`.
-- **js/dev-auditor.js** — `auditarClub(id)`, `auditarLiga(era)`, `auditarTodo()`, `devInforme()`.
-  Calibrado: CC/UCH/UC dan 100%. Foto real hoy: Primera/B/Segunda **100%**, Argentina 96%,
-  2006 96%, 1991 90%, **1925 25%** (9 de 12 clubes son cascarón) ← ahí está el hueco grande.
-- **js/dev-editor.js + css/dev.css** — el "WordPress": Ajustes → Modo dev (clave `peomojon`) →
-  **Editor de contenido**. Pestañas: **Rigor** (mapa de completitud por liga/club, clic para
-  editar), **Club** (todos los campos por grupo, lo que falta en rojo), **Liga** (formato),
-  **Exportar**. Lo editado se aplica en vivo y queda como parche en localStorage; "Exportar"
-  genera `data-parche-dev.js` para dejarlo permanente en git. **No modifica archivos de datos**,
-  así nunca pisa lo de Grok.
-- **PLANTILLA_LIGA.md** — receta mecánica para clonar una liga ("hacé la danesa"): array de clubes,
-  `registrarLiga`, federación, y la tabla de los 17 campos que exige el auditor.
-- **test/pruebas_dev.js + test/correr_dev.sh** — suite propia (24/24), aparte de `pruebas_core.js`
-  para no chocar con Grok.
-**Probado:** node --check + `correr_dev.sh` 24/24 + `correr.sh` 485/485 (sin regresiones) + capturas del panel.
-
-### 8.0-dev (actualizado sobre 7.99940)
-- Rebase del motor sobre el main de Grok. Sin conflictos; ambas suites verdes (736/736 y 29/29).
-- **Quitado panel duplicado:** mi "El club hoy" (7.86) mostraba el MISMO texto que el
-  "🎯 Tu situación" que Grok agregó después en `data-tarea-e.js` (y el de él además lista
-  los clásicos). Se queda el de Grok; saqué el mío de `ui.js`. Test actualizado.
-- **Esquema +1 dimensión:** `decisiones` — la vara que puso Grok en `data-rigor-801.js`
-  ("que cada semana te llegue una carta que solo existe en ese club"). Ahora el auditor la mide.
-- **Auditor más honesto:** los clubes que solo son RIVALES del calendario (CBS, FV, y 9 de 1925)
-  no se pueden dirigir, así que ya no arrastran el promedio; se listan aparte.
-- Foto real del rigor hoy: **Chile 2026/B/Segunda/1991/2006/1925 = 100%** (dirigibles),
-  **Argentina 91%** ← único hueco: 23 de 30 clubes sin decisión propia, 11 sin DT, 10 sin clásico.

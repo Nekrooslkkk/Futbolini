@@ -668,8 +668,12 @@ function vistaEscritorio(){
   }
   izq.appendChild(pb);
 
-  /* La situación del club NO se pinta acá: la pinta "🎯 Tu situación" (data-tarea-e.js),
-     que además lista los clásicos. Tener las dos mostraba el MISMO texto dos veces. */
+  /* E-1 · por qué juego a esto: la situación del club (Grok TAREA E / Claude 7.86). Solo si hay dato. */
+  if(typeof SITUACION_CLUB==="object" && SITUACION_CLUB[E.club]){
+    const psit=panel("El club hoy","🎯","agua");
+    psit.cuerpo.appendChild(el("p",null,SITUACION_CLUB[E.club]));
+    der.appendChild(psit);
+  }
 
   /* estado */
   const pe=panel("Estado del club","📊","agua");
@@ -1493,15 +1497,14 @@ function panelCopas(v){
   const copaMatches=(E.calendario||[]).filter(p=>p.tipo==="copa");
   if(!copaMatches.length){
     const why=(E.eraBase==="2026c")
-      ?"En 2026 la Segunda no juega Copa Chile (bases ANFP). Tampoco hay cupo CONMEBOL por esta categoría."
+      ?"En 2026 la Segunda no juega Copa Chile (bases ANFP). Tampoco hay cupo CONMEBOL por esta categoría. Igual el resto del país las juega: las ves abajo."
       :(E.eraBase===1925)
         ?"1925 es amateur: no hay Copa Chile ni Libertadores."
-        :"Este año no hay copas en tu calendario (todavía no clasificás, o el formato de la época no las arma).";
+        :"Este año no hay copas en TU calendario (todavía no clasificás, o el formato de la época no las arma). El resto del país sí las juega: abajo está el cuadro.";
     const pc=panel("Copas del año","🏆");
     pc.cuerpo.appendChild(el("p","mini",why));
     v.appendChild(pc);
-    return;
-  }
+  } else {
   /* agrupar por torneo, preservando el orden de aparición */
   const torneos=[], porTorneo={};
   copaMatches.forEach(m=>{ const t=m.torneo||"Copa"; if(!porTorneo[t]){ porTorneo[t]=[]; torneos.push(t); } porTorneo[t].push(m); });
@@ -1568,6 +1571,51 @@ function panelCopas(v){
       (esCampeon?" · <b>Campeón</b> 🏆":(jugados.length&&!copaMatches.some(x=>x.torneo===t&&!x.jugado)?" · eliminado":" · en carrera"))));
     v.appendChild(pc);
   });
+  }
+  if(typeof panelCopasPais==="function") panelCopasPais(v);
+}
+/* 7.99952 · Copas del país aunque no las juegues: resultados + punteros. */
+function panelCopasPais(v){
+  if(!E || E.eraBase===1925) return;
+  if(!E.mundo && typeof mundoInit==="function"){ try{ mundoInit(); }catch(e){} }
+  const pc=panel("Copas del país · se juegan igual","🌎","agua");
+  pc.cuerpo.appendChild(el("p","mini","Aunque no clasificaste, las copas corren. Tablas vivas arriba (Mundo). Acá, los últimos partidos y quién manda en cada cuadro."));
+  if(E.eraBase==="2026c") pc.cuerpo.appendChild(el("p","mini","Segunda 2026 no entra a Copa Chile (bases ANFP). El cuadro de Primera y B igual se ve."));
+  const pais=((E.mundo&&E.mundo.pais)||[]).filter(function(x){
+    return x&&x.liga&&/copa|libertadores|sudamericana|conmebol/i.test(x.liga);
+  }).slice(-14).reverse();
+  if(pais.length){
+    pc.cuerpo.appendChild(el("h3","sub","Últimos partidos de copa"));
+    pais.forEach(function(x){
+      pc.cuerpo.appendChild(el("div","fila","<span><span class='mini'>"+x.liga+" · </span>"+x.a+" vs "+x.b+"</span><b>"+x.ga+"-"+x.gb+"</b>"));
+    });
+  } else {
+    pc.cuerpo.appendChild(el("p","mini","Todavía no se jugó una fecha de copa en el país. Avanzá o jugá la tuya y acá se llena."));
+  }
+  if(E.mundo&&E.mundo.copas){
+    const bits=[];
+    const ch=E.mundo.copas.chile;
+    if(ch&&ch.grupos&&typeof mundoFilasCopa==="function"){
+      const letras=Object.keys(ch.grupos);
+      const lead=[];
+      letras.forEach(function(L){
+        const fil=mundoFilasCopa("chile",L);
+        if(fil&&fil[0]&&fil[0].pj>0) lead.push("G"+L+" "+(fil[0].n||fil[0].id));
+      });
+      if(lead.length) bits.push("Copa Chile · punteros: "+lead.slice(0,4).join(" · ")+(lead.length>4?"…":""));
+    }
+    const cl=E.mundo.copas.copaLiga;
+    if(cl&&cl.grupos&&typeof mundoFilasCopa==="function"){
+      const lead=[];
+      Object.keys(cl.grupos).forEach(function(L){
+        const fil=mundoFilasCopa("copaLiga",L);
+        if(fil&&fil[0]&&fil[0].pj>0) lead.push("G"+L+" "+(fil[0].n||fil[0].id));
+      });
+      if(lead.length) bits.push("Copa de la Liga · 1° de grupo: "+lead.join(" · "));
+    }
+    bits.forEach(function(t){ pc.cuerpo.appendChild(el("p","mini",t)); });
+  }
+  v.appendChild(pc);
 }
 /* 7.74 · AMISTOSOS jugables (pretemporada / cuando quieras). No cuentan para la
    tabla ni gastan la semana: rueda minutos, sube forma y deja taquilla si eres local. */
@@ -2885,7 +2933,7 @@ function modalAvancePartido(part){
 function pendientesAtender(){
   const p=[]; if(!E) return p;
   const urg=(E.decPend||[]).filter(x=>x.peso==="alto");
-  if(urg.length) p.push({ic:"📥",fuerte:true,t:urg.length+(urg.length>1?" decisiones urgentes":" decisión urgente")+" sin resolver",d:"En Decisiones sobre la mesa.",ir:"escritorio"});
+  if(urg.length) p.push({ic:"📥",fuerte:true,t:urg.length===1?"1 decisión urgente sin resolver":(urg.length+" decisiones urgentes sin resolver"),d:"En Decisiones sobre la mesa.",ir:"escritorio"});
   if(typeof notifsAccionables==="function"){ const a=notifsAccionables(); if(a.length) p.push({ic:"📨",fuerte:true,t:a.length+" aviso"+(a.length>1?"s":"")+" que requiere"+(a.length>1?"n":"")+" tu respuesta",d:"Ofertas o pedidos esperando.",ir:"avisos"}); }
   if(Array.isArray(E.objetivos) && typeof progresoObjetivo==="function"){ const r=E.objetivos.filter(o=>progresoObjetivo(o).estado==="riesgo"); if(r.length) p.push({ic:"🎯",t:"Meta en riesgo: "+r[0].t,d:"El directorio lo evalúa al cierre.",ir:"escritorio"}); }
   if(typeof quimicaEquipo==="function" && typeof onceIdeal==="function"){ const q=quimicaEquipo(onceIdeal()); if(q.prom<48) p.push({ic:"🔗",t:"Química floja ("+q.prom+"/100)",d:"Acomoda la pizarra antes del partido.",ir:"escritorio"}); }

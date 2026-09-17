@@ -132,7 +132,7 @@
         "SITUACION_CLUB tiene cobertura ("+Object.keys(SITUACION_CLUB||{}).length+" clubes)");
       nuevaPartida("CC",2026,"historico"); SEC="escritorio"; render();
       var txt=(document.getElementById("vista")||{}).textContent||"";
-      ok(txt.indexOf("Tu situación")>=0, "el escritorio muestra el panel de situación");
+      ok(txt.indexOf("El club hoy")>=0, "el escritorio muestra el panel 'El club hoy'");
       ok(SITUACION_CLUB.CC && txt.indexOf(SITUACION_CLUB.CC.slice(0,24))>=0, "muestra la situación real del club elegido");
       nuevaPartida("SMO",2026,"historico",{categoria:"C"}); SEC="escritorio"; render();
       var txt2=(document.getElementById("vista")||{}).textContent||"";
@@ -1628,9 +1628,9 @@
     safe(function(){
       ok(VERSION==="7.9994" || /^7\.99/.test(VERSION), "VERSION 7.99x");
       ok(typeof cargarCdnAero==="function", "cargarCdnAero");
-      /* Claude: el 7.css ahora es LOCAL (css/vendor/7-window.css), ya no unpkg → offline real. */
+      /* Claude: 7.css LOCAL (css/vendor/7-window.css), ya no unpkg. */
       ok(typeof AERO_7_WINDOW==="string" && AERO_7_WINDOW.indexOf("window")>=0, "carga solo window.css, no el 7.css entero");
-      ok(AERO_7_WINDOW.indexOf("http")<0 && AERO_7_WINDOW.indexOf("xp.css")<0, "el 7.css es LOCAL (sin CDN, sin XP.css) → offline");
+      ok(AERO_7_WINDOW.indexOf("http")<0 && AERO_7_WINDOW.indexOf("xp.css")<0, "el 7.css es LOCAL (sin CDN, sin XP.css)");
       var so=getComputedStyle(document.documentElement).getPropertyValue("--futbolini-so").trim();
       ok(so==="7.9994" || so.length>0, "so.css local sigue ahí");
     }, "API 7.9994");
@@ -1734,6 +1734,78 @@
       var src=String(_cvSize);
       ok(/68\s*\/\s*105/.test(src), "cancha usa 105×68 (no 0.58 aplastado)");
     }, "cancha FIFA");
+
+    /* T45 · 7.99952 dirigir en vivo + copas del país + mercado con voces + alias */
+    grupo("Grok 7.99952 (dirigir + copas + voces)");
+    safe(function(){
+      ok(VERSION==="7.99952" || /^7\.9995/.test(VERSION), "VERSION 7.99952");
+      ok(typeof snapshotPlan==="function" && typeof reaplicarPlan==="function", "plan en vivo API");
+      ok(typeof modalPlanVivo==="function" && typeof modalEntretiempo==="function", "pizarra + entretiempo");
+      ok(typeof panelCopasPais==="function", "copas del país aunque no clasifiques");
+      ok(typeof donarAlias==="function" && donarAlias({})==="anónimo" && donarAlias({alias:"El Pibe"})==="El Pibe", "alias opcional del libro");
+    }, "API 7.99952");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var part=(E.calendario||[]).find(function(p){ return !p.jugado; })||E.calendario[0];
+      var P=iniciarPartido(part,"dirigir");
+      var atk0=P.ataque;
+      E.tactica.mentalidad="Ultraofensivo";
+      reaplicarPlan(P);
+      ok(P.ataque>atk0, "cambiar mentalidad mueve el ataque en vivo");
+    }, "dirigir: el plan se siente");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var j=E.plantel.find(function(x){ return !x.vendido; });
+      ok(!!j, "hay plantel");
+      var qClau=jugadorQuiereSalir(j,{monto:(j.valor||80)*4,pagaClausula:true});
+      ok(qClau.obligatorio===true, "cláusula: se va sí o sí");
+      var vs=vocesMercado(j,{monto:j.valor||80,comprador:"Boca"},"venta");
+      ok(vs.length>=3, "hablan jugador + prensa + hinchada");
+      ok(vs.some(function(v){ return v.rol==="jugador"; }), "el jugador habla");
+      ok(vs.some(function(v){ return v.rol==="prensa"; }), "la prensa habla");
+      ok(vs.some(function(v){ return v.rol==="hincha"; }), "la hinchada habla");
+    }, "mercado: no es un botón");
+
+    /* T46 · 7.99953 planteles en 2 archivos, no 12 huevos */
+    grupo("Grok 7.99953 (menos huevo)");
+    safe(function(){
+      ok(VERSION==="7.99953" || /^7\.9995/.test(VERSION), "VERSION 7.99953");
+      var scripts=[].map.call(document.querySelectorAll("script[src]"), function(s){ return s.getAttribute("src")||""; });
+      ok(scripts.some(function(s){ return /js\/data-planteles\.js$/.test(s); }), "data-planteles.js cargado");
+      ok(scripts.some(function(s){ return /js\/data-planteles-epoca\.js$/.test(s); }), "data-planteles-epoca.js cargado");
+      ok(!scripts.some(function(s){ return /data-planteles-8[89]|data-planteles-9[0-5]|data-planteles-99|data-planteles-80[012]/.test(s); }), "sin scripts huevo 88–802");
+      ok(typeof PLANTEL_OSO_2026!=="undefined" && PLANTEL_OSO_2026.length>=18, "Osorno 2026 sigue pegado");
+      ok(typeof PLANTEL_UCH_1994_FULL!=="undefined" && PLANTEL_UCH_1994_FULL.length>=18, "U 1994 sigue pegada");
+    }, "2 archivos, mismos planteles");
+
+    /* T47 · 7.99954 merge Claude + perder se siente */
+    grupo("Grok 7.99954 (Claude + perder)");
+    safe(function(){
+      ok(VERSION==="7.99954" || /^7\.9995/.test(VERSION), "VERSION 7.99954");
+      ok(typeof AERO_7_WINDOW==="string" && AERO_7_WINDOW.indexOf("http")<0, "7.css local (Claude)");
+      ok(typeof planCuandoVasPerdiendo==="function" && typeof diffMarcador==="function", "perder API");
+      ok(typeof decisionCabeEnClub==="function", "decisionCabeEnClub");
+    }, "API merge");
+    safe(function(){
+      nuevaPartida("RIV",2026,"historico");
+      var carta={club:"RIV",t:"Monumental de Núñez",d:"esto no es el Monumental de Macul ni la ANFP"};
+      ok(decisionCabeEnClub(carta)===true, "River ve su carta aunque diga Macul");
+      nuevaPartida("BOC",2026,"historico");
+      ok(decisionCabeEnClub({club:"BOC",t:"La Bombonera",d:"esto no es el Monumental de Macul"})===true, "Boca ve la suya");
+    }, "cartas propias no se auto-bloquean");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var part=(E.calendario||[]).find(function(p){ return !p.jugado; })||E.calendario[0];
+      var P=iniciarPartido(part,"simular");
+      if(P.part.local){ P.gv=1; P.gl=0; } else { P.gl=1; P.gv=0; }
+      ok(diffMarcador(P)<0, "marcador en contra");
+      E.tactica.mentalidad="Ultraofensivo";
+      var a=planCuandoVasPerdiendo(P);
+      E.tactica.mentalidad="Defensivo";
+      var b=planCuandoVasPerdiendo(P);
+      ok(a.yo>b.yo, "ir a buscarlo abre más que defender cuando vas perdiendo");
+      ok(a.el>b.el, "atacar también te abre atrás");
+    }, "el plan se siente cuando vas perdiendo");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

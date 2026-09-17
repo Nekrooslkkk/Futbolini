@@ -177,6 +177,19 @@ function responderOferta(notif, modo){
   if(notif.acc) notif.acc.resuelta=true;
   E.ofertasPend=E.ofertasPend.filter(o=>o.id!==of.id);
   if(aceptar && j){
+    const q=(typeof jugadorQuiereSalir==="function")?jugadorQuiereSalir(j,of):{quiere:true,obligatorio:true};
+    if(!q.obligatorio && !q.quiere && !of._forzado){
+      /* el jugador se niega: la oferta sigue viva, hay que hablar */
+      of._jugadorDijoNo=true;
+      E.ofertasPend.push(of);
+      if(notif.acc) notif.acc.resuelta=false;
+      j.moral=clamp((j.moral||70)+4,0,100);
+      notificar({t:j.n+" no se quiere ir",tipo:"neutro",bandeja:false,
+        d:j.n+" escuchó a "+of.comprador+" ("+plata(of.monto)+") y dijo que no. "+(q.razon||"")+" Moral +4: se sintió escuchado. Para moverlo hay que convencerlo o pagar la cláusula."});
+      if(typeof redesReaccion==="function") redesReaccion("venta",{n:j.n,ref:esReferente(j),edad:j.edad,nivel:j.nivel,rechazoJugador:true});
+      guardar();
+      return;
+    }
     j.vendido=true; E.plata+=of.monto;
     const ref=j.rasgos&&(j.rasgos.includes("ídolo")||j.rasgos.includes("capitán"));
     E.ind.plantel=clamp(E.ind.plantel-Math.round(j.nivel/14),0,100);
@@ -249,6 +262,120 @@ function posturaVendedor(j,oferta){ return Math.round((oferta.precio-j.precio)/M
 function jugadorAcepta(j,oferta){ return interesJugador(j,oferta)>=0; }
 function clubAcepta(j,oferta){ return oferta.precio>=Math.round(j.precio*0.9); }
 
+/* 7.99952 · el jugador DECIDE. No es un botón. Moral, ídolo, cláusula, edad. */
+function esReferente(j){
+  return !!(j&&j.rasgos&&(j.rasgos.indexOf("ídolo")>=0||j.rasgos.indexOf("capitán")>=0||j.rasgos.indexOf("de la casa")>=0));
+}
+function tieneManager(j){
+  if(!j) return false;
+  if(j.rasgos&&j.rasgos.indexOf("mercenario")>=0) return true;
+  if((j.nivel||0)>=70) return true;
+  if((j.valor||0)>=180) return true;
+  if((j.edad||25)<=23 && (j.proy||0)>=(j.nivel||50)+6) return true;
+  return false;
+}
+function jugadorQuiereSalir(j,of){
+  if(!j) return {quiere:false,peso:0,razon:"nadie",obligatorio:false};
+  const ofe=of||{};
+  const monto=ofe.monto||ofe.precio||0;
+  const valor=Math.max(1,j.valor||80);
+  const ratio=monto/valor;
+  const moral=j.moral||70;
+  const ref=esReferente(j);
+  const claus=(typeof clausulaDe==="function")?clausulaDe(j):0;
+  const pagaClau=!!(ofe.pagaClausula||(claus>0&&monto>=claus));
+  if(pagaClau) return {quiere:true,peso:100,razon:"Pagan la cláusula: el contrato se cae.",obligatorio:true};
+  let peso=0;
+  if(moral<42) peso+=38;
+  else if(moral<55) peso+=16;
+  else if(moral>82) peso-=22;
+  if(ref) peso-=28;
+  if(j.rasgos&&j.rasgos.indexOf("de la casa")>=0) peso-=12;
+  if(j.rasgos&&j.rasgos.indexOf("mercenario")>=0) peso+=24;
+  if((j.edad||25)<=23) peso+=10;
+  if((j.edad||25)>=33) peso-=10;
+  if(ratio>=1.35) peso+=20;
+  else if(ratio<0.75) peso-=14;
+  if((E.ind.prestigio||50)<38) peso+=12;
+  if((E.ind.hinchada||50)<32 && ref) peso+=8;
+  let razon;
+  if(peso>=18) razon=moral<50?"Está descontento y se quiere ir.":"La oferta lo tienta.";
+  else if(ref) razon="Es referente: no se va porque el DT aprete un botón.";
+  else if(moral>80) razon="Está bien acá. Hay que convencerlo.";
+  else razon="No está decidido. Habla, mira la plata, mira al DT.";
+  return {quiere:peso>=18,peso:peso,razon:razon,obligatorio:false};
+}
+function convencerSalida(j,of){
+  const q=jugadorQuiereSalir(j,of);
+  if(q.obligatorio) return true;
+  const moral=j.moral||70;
+  const ratio=(of.monto||0)/Math.max(1,j.valor||80);
+  let p=0.22+(70-moral)*0.007+(ratio-1)*0.18;
+  if(tieneManager(j)) p+=0.14;
+  if(esReferente(j)) p-=0.22;
+  p=clamp(p,0.08,0.72);
+  return Math.random()<p;
+}
+function _periodistaMercado(){
+  if(typeof bucketPeriodistas==="function"){
+    const b=bucketPeriodistas((E&&E.anio)||2026)||[];
+    if(b.length) return b[Math.floor(Math.random()*b.length)];
+  }
+  return {n:"la prensa",m:"radio local",r:"periodista"};
+}
+function vocesMercado(j,of,ctx){
+  const voces=[];
+  if(!j) return voces;
+  const q=jugadorQuiereSalir(j,of);
+  const moral=j.moral||70;
+  const ref=esReferente(j);
+  const monto=of&&(of.monto||of.precio)||0;
+  const club=(of&&of.comprador)||(j.club)||"el otro club";
+  /* jugador */
+  let yo;
+  if(q.obligatorio) yo="Si pagan la cláusula, me voy. El contrato es el contrato.";
+  else if(q.quiere&&moral<50) yo="Quiero irme. Acá ya no estoy cómodo.";
+  else if(q.quiere) yo="La oferta es seria. Quiero escucharlo.";
+  else if(ref) yo="Yo me puse esta camiseta. No me voy porque llegue un sobre.";
+  else if(moral>80) yo="Estoy bien. Si el club necesita la plata, hablamos. Si no, me quedo.";
+  else yo="Depende. Que me expliquen el proyecto y el sueldo.";
+  voces.push({quien:j.n,rol:"jugador",txt:yo});
+  /* representante */
+  if(tieneManager(j)){
+    let mgr;
+    if(q.obligatorio) mgr="Cláusula pagada. Firmamos y cobramos. No hay novela.";
+    else if(q.quiere) mgr="Mi representado está abierto. Suban un poco y cerramos.";
+    else mgr="Hoy no está para irse. Si insisten, la comisión también sube.";
+    voces.push({quien:"el representante de "+j.n,rol:"manager",txt:mgr});
+  }
+  /* prensa — nombres reales, lo que dicen es ficción del juego */
+  const per=_periodistaMercado();
+  let pr;
+  if(ctx==="compra") pr=j.n+" al "+(E.clubNombre||"club")+". "+(q.quiere?"El entorno no lo descarta.":"El entorno frena.");
+  else if(ref) pr="Vender a "+j.n+" no es una operación: es una declaración. La hinchada ya está hablando.";
+  else pr=club+" pone "+(typeof plata==="function"?plata(monto):monto)+" por "+j.n+". El DT tiene que decidir con el camarín, no con el Excel.";
+  voces.push({quien:per.n,rol:"prensa",medio:per.m,txt:pr});
+  /* hinchada */
+  const hin=E.ind&&E.ind.hinchada||50;
+  let ht;
+  if(ref&&hin>=55) ht="Si se va, que se vaya el DT también. A "+j.n+" no se lo toca.";
+  else if(ref) ht="Duele. Pero si entra plata para armar equipo, se aguanta. A regañadientes.";
+  else if(q.quiere) ht="Si el tipo se quiere ir, que se vaya. Acá se queda el que pelea.";
+  else ht="Que no malvendan. Y que avisen, no nos enteremos por un filtrado.";
+  voces.push({quien:"la hinchada",rol:"hincha",txt:ht});
+  return voces;
+}
+function pintarVoces(donde,voces){
+  if(!donde||!voces||!voces.length) return;
+  const box=el("div","voces-merc");
+  voces.forEach(function(v){
+    const d=el("div","voz "+(v.rol||""));
+    d.innerHTML="<b>"+v.quien+(v.medio?" <span class='mini'>· "+v.medio+"</span>":"")+"</b><span class='mini'>«"+v.txt+"»</span>";
+    box.appendChild(d);
+  });
+  donde.appendChild(box);
+}
+
 function cerrarFichaje(j,oferta){
   const comision=oferta.comision||0;
   E.plata-=(oferta.precio+comision);
@@ -305,7 +432,8 @@ function vistaMercado(){
   const cab=panel("Mercado de fichajes","🧳","agua");
   cab.cuerpo.appendChild(el("p","mini","Ventana "+(abierto?"<b>abierta</b>":"<b>cerrada</b>")+
     ". Comprás solo en pretemporada (enero-febrero) y a mitad de año (junio-julio)."+
-    (abierto?"":" Próxima apertura: "+proximaVentana()+". Las ofertas por tus jugadores igual las puedes responder.")));
+    (abierto?"":" Próxima apertura: "+proximaVentana()+". Las ofertas por tus jugadores igual las puedes responder.")+
+    " Vender no es un botón: habla el jugador, el representante si tiene, la prensa y la hinchada. El ídolo puede plantarse."));
   cab.cuerpo.appendChild(fila("Caja disponible",plata(E.plata)));
   if(inflacionEra()!==1) cab.cuerpo.appendChild(fila("Inflación de la era","×"+inflacionEra().toFixed(2)));
   v.appendChild(cab);
@@ -320,8 +448,8 @@ function vistaMercado(){
       j.pos+" · nivel "+j.nivel+" · ofrecen <b>"+plata(of.monto)+"</b> (valor "+plata(j.valor)+")";
     const cont=el("div"); cont.style.marginTop="6px";
     const nOf=()=>(E.notifs||[]).find(x=>x.acc&&x.acc.ofertaId===of.id&&!x.acc.resuelta);
-    const ba=el("button","btn-aqua chico verde","Vender por "+plata(of.monto));
-    ba.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"aceptar"); render(); };
+    const ba=el("button","btn-aqua chico verde","Hablar / negociar");
+    ba.onclick=()=>modalVender(of,j,abierto);
     const bc=el("button","btn-aqua chico","Pedir más"); bc.style.marginLeft="6px";
     bc.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"contra"); render(); };
     const br=el("button","btn-aqua chico gris","Rechazar"); br.style.marginLeft="6px";
@@ -500,6 +628,7 @@ function modalComprar(j,abierto){
         b.onclick=evaluar; c.appendChild(b);
       } else if(paso===2){
         c.appendChild(el("div","resul mitad","<b>Respuesta (ronda "+ronda+"):</b><br>"+contra.msg));
+        if(typeof vocesMercado==="function") pintarVoces(c, vocesMercado(j,oferta,"compra"));
         if(contra.precio||contra.sueldo){
           const ba=el("button","btn-aqua ancho verde","Aceptar la contraoferta"); ba.onclick=aceptarContra; c.appendChild(ba);
           const bi=el("button","btn-aqua ancho"); bi.textContent="Insistir con mi oferta"; bi.style.marginTop="6px"; bi.onclick=insistir; c.appendChild(bi);
@@ -516,21 +645,56 @@ function modalComprar(j,abierto){
   });
 }
 
-/* Modal de venta directa (cuando abres una oferta puntual). */
+/* Mesa de venta: hablan el jugador, el representante, la prensa y la hinchada.
+   El jugador puede negarse aunque el DT acepte. */
 function modalVender(of,j,abierto){
   modal(box=>{
-    box.appendChild(el("div","cab",'<span class="ic">📥</span><span>Oferta por '+j.n+'</span>'));
-    const c=el("div","cuerpo"); box.appendChild(c);
-    c.appendChild(el("p",null,of.comprador+" ofrece <b>"+plata(of.monto)+"</b> por "+j.n+"."));
-    const nOf=()=>(E.notifs||[]).find(x=>x.acc&&x.acc.ofertaId===of.id&&!x.acc.resuelta);
-    const b=el("button","btn-aqua ancho verde","Vender por "+plata(of.monto));
-    b.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"aceptar"); cerrarModal(); render(); };
-    c.appendChild(b);
-    const bc=el("button","btn-aqua ancho","Pedir más plata"); bc.style.marginTop="6px";
-    bc.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"contra"); cerrarModal(); render(); };
-    c.appendChild(bc);
-    const x=el("button","btn-aqua ancho gris","Rechazar"); x.style.marginTop="6px";
-    x.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"rechazar"); cerrarModal(); render(); };
-    c.appendChild(x);
-  });
+    const pintar=()=>{
+      box.innerHTML="";
+      const cuerpo=(typeof montarBarraSO==="function")
+        ? montarBarraSO(box,"Oferta por "+j.n,"📥",function(){ cerrarModal(); })
+        : (function(){ box.appendChild(el("div","cab",'<span class="ic">📥</span><span>Oferta por '+j.n+'</span>')); const c=el("div","cuerpo"); box.appendChild(c); return c; })();
+      const q=jugadorQuiereSalir(j,of);
+      cuerpo.appendChild(el("p",null,of.comprador+" ofrece <b>"+plata(of.monto)+"</b> por "+j.n+" (valor "+plata(j.valor)+", moral "+Math.round(j.moral||70)+")."));
+      cuerpo.appendChild(el("p","mini",q.razon+(q.obligatorio?" · cláusula: se va sí o sí.":"")));
+      pintarVoces(cuerpo, vocesMercado(j,of,"venta"));
+      const nOf=()=>(E.notifs||[]).find(x=>x.acc&&x.acc.ofertaId===of.id&&!x.acc.resuelta);
+      if(q.obligatorio || q.quiere){
+        const b=el("button","btn-aqua ancho verde",(q.obligatorio?"Pagar / aceptar cláusula":"Aceptar: el jugador quiere irse")+" · "+plata(of.monto));
+        b.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"aceptar"); cerrarModal(); render(); };
+        cuerpo.appendChild(b);
+      } else if(of._jugadorDijoNo){
+        cuerpo.appendChild(el("div","resul mitad","Ya dijo que no. Podés convencerlo (a veces afloja) o dejarlo."));
+        const cv=el("button","btn-aqua ancho verde","Convencerlo");
+        cv.onclick=()=>{
+          const ok=convencerSalida(j,of);
+          if(ok){
+            of._forzado=true;
+            const n=nOf(); if(n) responderOferta(n,"aceptar");
+            aviso(j.n+" aceptó irse, a regañadientes");
+          } else {
+            j.moral=clamp((j.moral||70)-6,0,100);
+            if(typeof aplicarGrupos==="function") aplicarGrupos({camarin:-4,hinchada:esReferente(j)?-6:-2});
+            notificar({t:j.n+" se plantó",tipo:"malo",
+              d:"Lo apretaste y se plantó. Moral −6. El camarín lo leyó. "+of.comprador+" sigue esperando, pero el tipo no se mueve."});
+            aviso(j.n+" se plantó");
+          }
+          cerrarModal(); render();
+        };
+        cuerpo.appendChild(cv);
+      } else {
+        const b=el("button","btn-aqua ancho","Proponerle la salida");
+        b.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"aceptar"); cerrarModal(); render(); };
+        cuerpo.appendChild(b);
+        cuerpo.appendChild(el("p","mini","Si no quiere, la oferta no se cierra. Habla. El ídolo pesa, la moral pesa, la cláusula pesa."));
+      }
+      const bc=el("button","btn-aqua ancho","Pedir más plata"); bc.style.marginTop="6px";
+      bc.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"contra"); cerrarModal(); render(); };
+      cuerpo.appendChild(bc);
+      const x=el("button","btn-aqua ancho gris","Rechazar la oferta"); x.style.marginTop="6px";
+      x.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"rechazar"); cerrarModal(); render(); };
+      cuerpo.appendChild(x);
+    };
+    pintar();
+  },{clase:"ventana-so"});
 }

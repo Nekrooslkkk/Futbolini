@@ -4,7 +4,7 @@
    1) Historia/arcos: un club no hereda la de otro (COB 1991 ≠ Cobresal).
    2) Decisiones: no sale el Monumental / ANFP / Libertadores en Segunda o AFA.
    3) Planteles 2026: un jugador no vive en dos clubes a la vez (pases Wiki).
-   Cargar ÚLTIMO (después de data-planteles-95.js).
+   Cargar DESPUÉS de data-planteles.js (ex 88–95).
    ============================================================ */
 
 function _blobDec97(d){
@@ -22,11 +22,9 @@ function _esSeg97(){
 function decisionCabeEnClub(d){
   if(!d||typeof E==="undefined"||!E) return true;
   if(d.club && d.club!==E.club) return false;
-  /* FIX (Claude): una decisión con `club` EXPLÍCITO ya está bien gateada arriba
-     (d.club===E.club). Las heurísticas anti-fuga de abajo (marcas de estadio,
-     ANFP/Copa Chile en AFA, etc.) son para la BOLSA genérica. Aplicarlas a una
-     carta propia bloqueaba a River/Boca/Independiente por su PROPIA frase
-     desambiguadora ("esto no es el Monumental de Macul ni la ANFP"). */
+  /* FIX (Claude): carta con `club` explícito ya está gateada. Las heurísticas
+     anti-fuga son para la bolsa genérica. Sin esto, River/Boca/Independiente
+     perdían su propia carta por decir "no es el Monumental de Macul". */
   if(d.club) return true;
   var club=E.club;
   var blob=_blobDec97(d);

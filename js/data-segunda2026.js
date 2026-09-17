@@ -120,3 +120,15 @@ if(typeof ERA==="object" && ERA[2026]) ERA["2026c"]=ERA[2026];
     Object.assign(PODER_CLUB,pod);
   }
 })();
+
+/* ============================================================
+   PEGAR plantel Segunda (cuando haya lista documentada).
+   NO inventar nombres. Si no llega a 18, el juego rellena cantera.
+   Un club = un array. Después, registrar en PLANTELES_REALES
+   igual que data-b2026.js (IIFE al final).
+
+   const PLANTEL_SMO_2026=[
+     ["Nombre Apellido","ARQ",32, 58, 58, 28, 90, ["ídolo"]],
+     ["Nombre Apellido","DEF",24, 52, 56, 18, 45, []],
+   ];
+   ============================================================ */

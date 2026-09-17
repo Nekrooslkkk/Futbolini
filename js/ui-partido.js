@@ -146,8 +146,8 @@ function pantallaPrevia(part){
   const bar=el("div","barra-jugar");
   bar.setAttribute("role","group");
   bar.setAttribute("aria-label","Cómo vives el partido");
-  [["📺 Ver en vivo","seguir","Lo ves minuto a minuto. Adentro puedes saltar al resultado."],
-   ["🎯 Dirigir","dirigir","Intervienes en los momentos clave."]].forEach(([n,m,d])=>{
+  [["📺 Ver en vivo","seguir","Lo ves minuto a minuto. Adentro podés saltar al resultado."],
+   ["🎯 Dirigir","dirigir","Vos mandás: plan en vivo, entretiempo, penales, cambios."]].forEach(([n,m,d])=>{
     const b=el("button","btn-aqua ancho cta-jugar"+(m==="dirigir"?" verde":""),
       n+" · <span class='cta-d'>"+d+"</span>");
     b.onclick=()=>arrancarPartido(part,m);
@@ -191,6 +191,7 @@ function pantallaPrevia(part){
     p1.cuerpo.appendChild(f);
   });
   p1.cuerpo.appendChild(el("div","resul mitad","<b>Lectura del plan:</b> "+lecturaPlan()));
+  p1.cuerpo.appendChild(el("p","mini","Este plan se siente en el ruedo. En <b>Dirigir</b> lo podés cambiar en vivo y al descanso."));
   if(typeof fraseCuerpoTecnico==="function"){
     p1.cuerpo.appendChild(el("p","mini","<b>Ayudante:</b> «"+fraseCuerpoTecnico(part)+"»"));
   }
@@ -904,6 +905,12 @@ function pintarPartido(){
     bcam.disabled=quedanC<=0 || (quedanV===0 && !P._ventanaAbierta) || (MOMENTO_OPS&&MOMENTO_OPS.length>0);
     bcam.onclick=modalCambio;
     sec.appendChild(bcam);
+    const bplan=el("button","btn-aqua chico",'📋<span class="ctrl-full"> Plan</span>');
+    bplan.setAttribute("aria-label","Cambiar el plan táctico");
+    bplan.title="Mentalidad, presión, bloque y ritmo. Se siente en el ruedo.";
+    bplan.disabled=!!(MOMENTO_OPS&&MOMENTO_OPS.length);
+    bplan.onclick=modalPlanVivo;
+    sec.appendChild(bplan);
     const bcv=el("button","btn-aqua chico"+(verCancha?"":" gris"),verCancha?'🎥<span class="ctrl-full"> Cancha ON</span>':'🎥<span class="ctrl-full"> Cancha OFF</span>');
     bcv.setAttribute("aria-label",verCancha?"Ocultar cancha":"Mostrar cancha");
     bcv.title=verCancha?"Cancha ON":"Cancha OFF";
@@ -988,6 +995,12 @@ function pasoEnVivo(){
   if(typeof tickerPost==="function") tickerPost(P,ev);
   if(typeof tickerAmbiente==="function" && (!ev||ev.tipo==="nada") && Math.random()<0.14) tickerAmbiente(P);   /* 6.36 · tuits del momento */
   if(ev.tipo==="penalRival"){ resolverEventoAuto(P,ev); pintarPartido(); return; }
+  if(ev.tipo==="entretiempo"){
+    pintarPartido();
+    if(P.modo!=="simular" && typeof modalEntretiempo==="function"){
+      clearInterval(TIMER); modalEntretiempo(); return;
+    }
+  }
   if(ev.tipo==="penal"||ev.tipo==="lesion"||ev.tipo==="tiroLibre"){
     const autoP=!E.config||E.config.autoPausa!==false;
     if(P.modo==="dirigir"&&autoP){ clearInterval(TIMER); pintarPartido(); mostrarAccion(ev); return; }
@@ -1002,6 +1015,99 @@ function reanudarPronto(){
   }, 650);
 }
 /* momento táctico (charla/cambio de plan) */
+/* 7.99952 · pizarra en vivo: el DT cambia mentalidad / presión / bloque / ritmo ahora. */
+function modalPlanVivo(){
+  const P=P_ACTUAL; if(!P||P.terminado) return;
+  const wasPaused=PAUSADO; PAUSADO=true; clearInterval(TIMER);
+  const keys=[
+    ["mentalidad","Mentalidad",typeof MENTALIDADES!=="undefined"?Object.keys(MENTALIDADES):["Equilibrado"]],
+    ["estilo","Estilo",typeof ESTILOS!=="undefined"?Object.keys(ESTILOS):["Equilibrado"]],
+    ["presion","Presión",typeof PRESIONES!=="undefined"?Object.keys(PRESIONES):["Media"]],
+    ["bloque","Bloque",typeof BLOQUES!=="undefined"?Object.keys(BLOQUES):["Medio"]],
+    ["ritmo","Ritmo",typeof RITMOS!=="undefined"?Object.keys(RITMOS):["Normal"]]
+  ];
+  modal(box=>{
+    const pintar=()=>{
+      box.innerHTML="";
+      const cuerpo=(typeof montarBarraSO==="function")
+        ? montarBarraSO(box,"Plan en el "+P.min+"'","📋",function(){ reanudar(); })
+        : (function(){ box.appendChild(el("div","cab",'<span class="ic">📋</span><span>Plan en vivo</span>')); const c=el("div","cuerpo"); box.appendChild(c); return c; })();
+      cuerpo.appendChild(el("p","mini","Cambiás ahora y se siente YA. Más de dos retoques marean al equipo (baja el orden)."));
+      if(typeof lecturaPlan==="function") cuerpo.appendChild(el("div","resul mitad","<b>Lectura:</b> "+lecturaPlan()));
+      keys.forEach(function(row){
+        const k=row[0], lab=row[1], ops=row[2];
+        cuerpo.appendChild(el("label","lb",lab+" · <b>"+(E.tactica[k]||"—")+"</b>"));
+        const f=el("div","fichas");
+        ops.forEach(function(o){
+          const b=el("button","ficha",o);
+          b.setAttribute("aria-pressed",E.tactica[k]===o?"true":"false");
+          const tip=(k==="bloque"&&BLOQUES[o]&&BLOQUES[o].d)||(k==="ritmo"&&RITMOS[o]&&RITMOS[o].d);
+          if(tip) b.title=tip;
+          b.onclick=function(){
+            if(E.tactica[k]===o) return;
+            E.tactica[k]=o;
+            if(typeof reaplicarPlan==="function") reaplicarPlan(P);
+            if(typeof linea==="function") linea(P,P.min,"El DT cambia: "+lab.toLowerCase()+" → "+o+".","cambio");
+            if(typeof guardar==="function") guardar();
+            pintar();
+          };
+          f.appendChild(b);
+        });
+        cuerpo.appendChild(f);
+      });
+      const n=P._ajustes||0;
+      if(n>=2) cuerpo.appendChild(el("p","mini","⚠ Ya retocaste "+n+" veces. El camarín empieza a no entender."));
+      const x=el("button","btn-aqua ancho verde","Seguir con este plan");
+      x.style.marginTop="8px";
+      x.onclick=reanudar;
+      cuerpo.appendChild(x);
+    };
+    const reanudar=()=>{ cerrarModal(); PAUSADO=wasPaused; pintarPartido(); if(!PAUSADO&&!MOMENTO_OPS.length) correrEnVivo(); };
+    pintar();
+  },{cerrarFuera:false,clase:"ventana-so"});
+}
+/* 7.99952 · charla de entretiempo: pep talk + opción de cambiar el plan. */
+function modalEntretiempo(){
+  const P=P_ACTUAL; if(!P) return;
+  PAUSADO=true; clearInterval(TIMER);
+  const [yo,otro]=typeof miMarcador==="function"?miMarcador(P):[P.gl,P.gv];
+  const diff=yo-otro;
+  const clima=diff>0?"Vas ganando. No se duerman.":(diff<0?"Van abajo. Hay que hablar claro.":"Empate. El segundo tiempo decide.");
+  modal(box=>{
+    const cuerpo=(typeof montarBarraSO==="function")
+      ? montarBarraSO(box,"Entretiempo · "+P.gl+"-"+P.gv,"☕",function(){ salir(); })
+      : (function(){ box.appendChild(el("div","cab",'<span class="ic">☕</span><span>Entretiempo</span>')); const c=el("div","cuerpo"); box.appendChild(c); return c; })();
+    cuerpo.appendChild(el("p",null,clima));
+    cuerpo.appendChild(el("p","mini","Quince minutos. Lo que digas acá mueve empuje y orden. Después podés retocar el plan."));
+    const ops=[
+      {t:"Los reto: esto no se aguanta",d:"Orden y bronca. Sube el orden, cansa un poco.",ef:{orden:2.4,empuje:0.6,desgaste:0.8}},
+      {t:"Tranquilos, el plan está",d:"No tocar nada. Confianza.",ef:{orden:1.2,empuje:0.4}},
+      {t:"Segundo tiempo de infarto",d:"Todos arriba. Generás, te abrís.",ef:{ataque:2.6,riesgoPlan:2,orden:-1.6,desgaste:1.4}},
+      {t:"Aguanten atrás y salgan de contra",d:"Bus estacionado. Esperan el error.",ef:{orden:2.8,ataque:-0.6,riesgoPlan:-1}}
+    ];
+    ops.forEach(function(o){
+      const b=el("button","btn-aqua ancho");
+      b.innerHTML="<b>"+o.t+"</b><div class='mini'>"+o.d+"</div>";
+      b.style.marginTop="6px";
+      b.onclick=function(){
+        if(typeof aplicarMomento==="function") aplicarMomento(P,o.ef);
+        else { P.ataque+=(o.ef.ataque||0); P.orden+=(o.ef.orden||0); P.desgaste+=(o.ef.desgaste||0); }
+        if(o.ef.empuje) P.empuje=(P.empuje||0)+o.ef.empuje;
+        if(typeof linea==="function") linea(P,45,"Charla: «"+o.t+"».","cambio");
+        aviso("El camarín escuchó");
+        cerrarModal();
+        PAUSADO=false;
+        modalPlanVivo();
+      };
+      cuerpo.appendChild(b);
+    });
+    const skip=el("button","btn-aqua ancho gris","Sin charla · a la cancha");
+    skip.style.marginTop="10px";
+    skip.onclick=salir;
+    cuerpo.appendChild(skip);
+    function salir(){ cerrarModal(); PAUSADO=false; pintarPartido(); if(!MOMENTO_OPS.length) correrEnVivo(); }
+  },{cerrarFuera:false,clase:"ventana-so"});
+}
 /* 6.18 · cambio manual con nombre durante el partido */
 function modalCambio(){
   const P=P_ACTUAL; if(!P) return;
