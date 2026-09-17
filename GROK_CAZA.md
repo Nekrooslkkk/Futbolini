@@ -155,6 +155,13 @@ Hechos públicos. Si no está documentado, se marca.
 [NO] XP.css / 7.css de internet: el juego tiene que correr sin red.
 [INFO] 8.00 sigue reservada.
 
+## 7.9993 · Aero Vista local
+[NO] No se cargan XP.css/7.css de unpkg (offline + clases distintas).
+[FIX] css/so.css: taskbar de vidrio, orb de inicio, marco Vista en cada panel, caption buttons reales.
+[OK] El escudo de la barra vuelve al Escritorio.
+[INFO] 8.00 sigue reservada.
+
+
 
 
 

@@ -1,0 +1,243 @@
+/* ============================================================
+   FUTBOLINI 7.9993 · so.css
+   Chrome Windows Vista / 7, EN EL JUEGO. No se carga de internet.
+   (XP.css y 7.css de unpkg piden red y usan otras clases: .window,
+   .title-bar. Acá se pinta lo mismo sobre .panel / #barra / .ventana-so.)
+   ============================================================ */
+:root{ --futbolini-so: 7.9993; }
+
+/* ---------- taskbar de vidrio (barra superior) ---------- */
+body[data-tema="aero"] #barra{
+  background:
+    linear-gradient(180deg, rgba(220,236,255,.55) 0%, rgba(90,130,180,.42) 38%,
+      rgba(18,42,78,.82) 62%, rgba(8,22,48,.92) 100%);
+  border-bottom:1px solid rgba(0,10,30,.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    inset 0 -1px 0 rgba(0,30,70,.35),
+    0 8px 22px rgba(0,16,40,.38);
+  backdrop-filter:blur(18px) saturate(1.45);
+  -webkit-backdrop-filter:blur(18px) saturate(1.45);
+}
+body[data-tema="aero"] .barra-brillo{
+  height:48%;
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0));
+}
+
+/* orb de inicio: esfera verde 3D (el escudo del club vive adentro) */
+body[data-tema="aero"] .marca .glifo{
+  width:36px; height:36px; border-radius:50%;
+  background:
+    radial-gradient(circle at 32% 28%, #ffffff 0%, #b8ff7a 22%, #3dc022 52%, #0d5a10 78%, #042806 100%);
+  box-shadow:
+    0 0 14px rgba(90,255,130,.55),
+    inset 0 3px 6px rgba(255,255,255,.85),
+    inset 0 -6px 10px rgba(0,40,10,.45),
+    0 3px 8px rgba(0,0,0,.45);
+  border:1px solid rgba(255,255,255,.65);
+  cursor:pointer;
+}
+body[data-tema="aero"] .marca .glifo:hover{
+  box-shadow:
+    0 0 18px rgba(120,255,180,.8),
+    inset 0 3px 6px rgba(255,255,255,.9),
+    0 3px 8px rgba(0,0,0,.45);
+}
+body[data-tema="aero"] .marca .glifo:active{ transform:scale(.96); }
+body[data-tema="aero"] .marca .nombre{
+  text-shadow:0 1px 2px rgba(0,0,0,.65), 0 0 12px rgba(120,200,255,.35);
+}
+body[data-tema="aero"] .marca .ver{
+  background:rgba(0,20,50,.35); border:1px solid rgba(255,255,255,.28);
+  border-radius:3px; color:#e8f4ff;
+}
+body[data-tema="aero"] .bd{
+  border-radius:4px;
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.08));
+  border:1px solid rgba(255,255,255,.4);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 1px 3px rgba(0,10,30,.3);
+}
+
+/* ---------- pestañas tipo cinta Vista, pegadas a la taskbar ---------- */
+body[data-tema="aero"] #menu{
+  background:linear-gradient(180deg, rgba(255,255,255,.38), rgba(186,214,240,.22));
+  border-bottom:1px solid rgba(40,80,130,.35);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  padding-top:4px;
+}
+body[data-tema="aero"] .mi{
+  border-radius:4px 4px 0 0;
+  background:linear-gradient(to bottom,#ffffff,#e2edf7 48%,#cbdcee 52%,#dce8f6);
+  color:#123a5e;
+  border:1px solid rgba(90,120,155,.5);
+  border-bottom-color:transparent;
+}
+body[data-tema="aero"] .mi[aria-selected="true"]{
+  color:#fff; text-shadow:0 -1px 1px rgba(0,0,0,.4);
+  background:linear-gradient(to bottom,#7eb6f0,#2d6db8 48%,#0a3a86 52%,#1e5b9e);
+  border-color:#06264f;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 0 10px rgba(0,180,255,.28);
+}
+
+/* ---------- cada panel = ventana Vista (marco de vidrio + cliente) ---------- */
+body[data-tema="aero"] .panel{
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,.45);
+  background:
+    linear-gradient(180deg, #8ec4f0 0%, #3a7ec8 38%, #163a78 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.65),
+    inset 0 -1px 0 rgba(0,20,50,.25),
+    0 10px 26px rgba(0,18,48,.38);
+  padding:0;
+  overflow:hidden;
+}
+body[data-tema="aero"] .panel::after{ display:none; } /* el brillo ahora vive en .cab */
+body[data-tema="aero"] .panel > .cab{
+  position:relative;
+  color:#fff; font-weight:700;
+  text-shadow:0 -1px 1px rgba(0,20,50,.55);
+  background:linear-gradient(to bottom,#6eb0ee 0%,#2a6db8 48%,#0a3a80 51%,#1c5aa0 100%);
+  border-bottom:1px solid #06244c;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55);
+  padding:7px 10px;
+}
+body[data-tema="aero"] .panel > .cab::after{
+  content:""; position:absolute; left:0; right:0; top:0; height:50%; pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,0));
+}
+body[data-tema="aero"] .panel.agua > .cab{
+  background:linear-gradient(to bottom,#8fe9f5 0%,#31b7cf 48%,#0d7d96 51%,#137d96 100%);
+  border-bottom-color:#0a5064;
+}
+body[data-tema="aero"] .panel.alerta > .cab{
+  background:linear-gradient(to bottom,#ffc46a 0%,#e2892a 48%,#a55310 51%,#c8761c 100%);
+  border-bottom-color:#7a3e08;
+}
+body[data-tema="aero"] .panel.grave > .cab{
+  background:linear-gradient(to bottom,#ff9d8c 0%,#df503a 48%,#9b2717 51%,#cc3f2b 100%);
+  border-bottom-color:#6f1a0d;
+}
+body[data-tema="aero"] .panel > .cuerpo{
+  margin:0 6px 6px;
+  padding:12px;
+  border-radius:2px;
+  background:linear-gradient(180deg, rgba(252,254,255,.92), rgba(226,238,250,.84));
+  border:1px solid rgba(255,255,255,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+}
+
+/* ---------- ventana-so: marco Aero + botones de caption Vista ---------- */
+body[data-tema="aero"] .ventana-so,
+.ventana-so{
+  padding:0 6px 6px;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,.5);
+  background:linear-gradient(180deg, #8ec4f0 0%, #3a7ec8 40%, #163a78 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.7),
+    0 18px 50px rgba(0,16,48,.5);
+  overflow:hidden;
+}
+body[data-tema="aero"] .ventana-so .so-barra,
+.ventana-so .so-barra{
+  display:flex; align-items:center; gap:8px;
+  margin:0 -6px; padding:4px 8px 6px 10px;
+  background:linear-gradient(to bottom,#6eb0ee 0%,#2a6db8 48%,#0a3a80 51%,#1c5aa0 100%);
+  color:#fff; text-shadow:0 -1px 1px rgba(0,20,50,.55); font-weight:700;
+  border-bottom:1px solid #06244c;
+  position:relative;
+}
+body[data-tema="aero"] .ventana-so .so-barra::after,
+.ventana-so .so-barra::after{
+  content:""; position:absolute; left:0; right:0; top:0; height:50%; pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0));
+}
+.ventana-so .so-ic, .ventana-so .so-titulo, .ventana-so .so-ctrl{ position:relative; z-index:1; }
+.ventana-so .so-ic{flex:0 0 auto}
+.ventana-so .so-titulo{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.ventana-so .so-ctrl{
+  display:flex; margin-top:-4px; margin-right:-2px;
+  border:1px solid rgba(8,24,56,.55);
+  border-radius:0 0 5px 5px;
+  overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.25);
+}
+.ventana-so .so-btn{
+  width:28px; height:20px; padding:0; cursor:pointer; position:relative;
+  border:none; border-right:1px solid rgba(8,24,56,.35);
+  color:transparent; font-size:0; line-height:0;
+  background:linear-gradient(180deg,
+    rgba(255,255,255,.55) 0%, rgba(190,220,250,.35) 46%,
+    rgba(50,100,170,.7) 50%, rgba(24,60,120,.85) 100%);
+}
+.ventana-so .so-btn:last-child{ border-right:none; }
+.ventana-so .so-btn:hover{
+  filter:brightness(1.12);
+  box-shadow:inset 0 0 8px rgba(120,220,255,.45);
+}
+.ventana-so .so-btn:active{ filter:brightness(.92); }
+/* minimizar: raya */
+.ventana-so .so-btn.min::before{
+  content:""; position:absolute; left:8px; right:8px; bottom:5px; height:2px; background:#fff;
+  box-shadow:0 1px 0 rgba(0,0,0,.35);
+}
+/* maximizar: cuadro */
+.ventana-so .so-btn.max::before{
+  content:""; position:absolute; left:8px; right:8px; top:4px; bottom:4px;
+  border:2px solid #fff; box-shadow:0 1px 0 rgba(0,0,0,.25);
+}
+/* cerrar: más ancho, rojo, X */
+.ventana-so .so-btn.cerrar{
+  width:48px;
+  background:linear-gradient(180deg, #ffb09c 0%, #e05640 46%, #b01e12 50%, #8a140c 100%);
+}
+.ventana-so .so-btn.cerrar:hover{
+  box-shadow:inset 0 0 10px rgba(255,220,180,.45);
+}
+.ventana-so .so-btn.cerrar::before,
+.ventana-so .so-btn.cerrar::after{
+  content:""; position:absolute; left:50%; top:4px; width:2px; height:12px; background:#fff;
+  box-shadow:0 1px 0 rgba(0,0,0,.35);
+}
+.ventana-so .so-btn.cerrar::before{ transform:translateX(-50%) rotate(45deg); }
+.ventana-so .so-btn.cerrar::after{ transform:translateX(-50%) rotate(-45deg); }
+
+body[data-tema="aero"] .ventana-so .so-cuerpo,
+.ventana-so .so-cuerpo{
+  padding:10px;
+  border-radius:2px;
+  background:linear-gradient(180deg, rgba(252,254,255,.94), rgba(226,238,250,.88));
+  border:1px solid rgba(255,255,255,.55);
+  min-height:40px;
+}
+body[data-tema="aero"] .ventana-so.in-vista{
+  margin:0 0 12px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65), 0 10px 28px rgba(0,18,48,.32);
+}
+
+/* banco: tarjetas de cuenta más Vista */
+body[data-tema="aero"] .banco-cta{
+  border-radius:4px;
+  background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(214,232,250,.4));
+  border:1px solid rgba(255,255,255,.75);
+  box-shadow:inset 0 1px 0 #fff, 0 3px 8px rgba(0,30,70,.14);
+}
+body[data-tema="aero"] .banco-cta:hover{
+  box-shadow:inset 0 1px 0 #fff, 0 0 10px rgba(0,180,255,.35);
+}
+
+/* tinder: gadget de vidrio */
+body[data-tema="aero"] .tinder-card{
+  border-radius:6px;
+  background:linear-gradient(160deg, rgba(255,255,255,.55), rgba(180,220,255,.22));
+  border:1px solid rgba(255,255,255,.7);
+  box-shadow:inset 0 1px 0 #fff, 0 8px 20px rgba(0,20,50,.22);
+}
+
+/* pie como status bar */
+body[data-tema="aero"] #pie{
+  color:rgba(255,255,255,.85);
+  text-shadow:0 1px 2px rgba(0,0,0,.45);
+}

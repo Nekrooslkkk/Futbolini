@@ -1559,7 +1559,7 @@
     /* T39 · 7.9992 NaN del casino, flags de barra, ventanas SO, cancha/penal */
     grupo("Grok 7.9992 (bolsillo NaN + flags + ventanas SO)");
     safe(function(){
-      ok(VERSION==="7.9992", "VERSION 7.9992");
+      ok(VERSION==="7.9992" || /^7\.99/.test(VERSION), "VERSION 7.99x");
       ok(typeof abrirSeccion==="function" && typeof envolverVistaSO==="function", "ventanas SO");
       ok(typeof canvasBolsa==="function", "canvasBolsa");
       ok(typeof montarBarraSO==="function", "montarBarraSO");
@@ -1604,6 +1604,25 @@
       _cvSeed(null);
       ok(_cvSt && _cvSt.penalSeq===0 && _cvSt.penalDive===0 && _cvSt.penalSeen===0, "penalSeq/Dive/Seen arrancan en 0");
     }, "cancha inicializa el penal");
+
+    /* T40 · 7.9993 chrome Vista local (sin CDN) */
+    grupo("Grok 7.9993 (Aero Vista local, sin CDN)");
+    safe(function(){
+      ok(VERSION==="7.9993", "VERSION 7.9993");
+      var so=getComputedStyle(document.documentElement).getPropertyValue("--futbolini-so").trim();
+      ok(so==="7.9993" || so.length>0, "so.css cargado (--futbolini-so="+so+")");
+      ok(!document.querySelector('link[href*="unpkg.com"]') && !document.querySelector('link[href*="xp.css"]'), "sin CDN de XP.css/7.css");
+    }, "API 7.9993 + so.css local");
+    safe(function(){
+      var host=el("div");
+      document.body.appendChild(host);
+      montarBarraSO(host,"Banco","🏦");
+      ok(host.querySelector(".so-btn.min"), "caption minimizar");
+      ok(host.querySelector(".so-btn.max"), "caption maximizar");
+      ok(host.querySelector(".so-btn.cerrar"), "caption cerrar");
+      ok(host.querySelector(".so-barra") && host.querySelector(".so-cuerpo"), "barra + cuerpo SO");
+      host.remove();
+    }, "botones de ventana Vista");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

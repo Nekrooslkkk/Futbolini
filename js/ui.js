@@ -102,6 +102,13 @@ function pintarBarra(){
   const ic=(typeof infoClub==="function"&&infoClub(E.club))||(CLUB_INFO&&CLUB_INFO[E.club])||{esc:"⚽"};
   const _es=(typeof escudoHTML==="function")?escudoHTML(E.club,24,""):"";
   if(_es) $("#escudo").innerHTML=_es; else $("#escudo").textContent=(ic&&ic.esc)||"⚽";
+  const orb=$("#escudo");
+  if(orb && !orb._orbBind){
+    orb._orbBind=true;
+    orb.title="Escritorio";
+    orb.setAttribute("role","button");
+    orb.onclick=function(){ if(E && typeof irA==="function") irA("escritorio"); };
+  }
   const part=proximoPartido();
   const datos=[
    ["Club",E.clubNombre,false,"bd-club"],

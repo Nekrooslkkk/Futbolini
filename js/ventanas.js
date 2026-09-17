@@ -1,10 +1,9 @@
 "use strict";
 /* ============================================================
-   FUTBOLINI 7.9992 · ventanas.js
+   FUTBOLINI 7.9993 · ventanas.js
    Chrome de ventana Aero (barra Vista + min/max/cerrar) sobre el
    modal() y las pestañas que ya existen. Sin CDN, sin segundo menú.
-   abrirSeccion → modal con chrome SO (Match, casino, etc.)
-   envolverVistaSO → envuelve Finanzas/Vida DENTRO de #vista
+   Los botones de caption se dibujan en css/so.css (como 7.css, pero nuestro).
    ============================================================ */
 
 function montarBarraSO(host, titulo, icono, onCerrar, onMin, onMax){
@@ -14,11 +13,11 @@ function montarBarraSO(host, titulo, icono, onCerrar, onMin, onMax){
   barra.appendChild(el("span","so-ic",icono||""));
   barra.appendChild(el("span","so-titulo",titulo||""));
   const ctr=el("div","so-ctrl");
-  [["–","Minimizar",onMin||function(){ host.classList.toggle("so-min"); }],
-   ["□","Maximizar",onMax||function(){ host.classList.toggle("so-maxi"); }],
-   ["✕","Cerrar",onCerrar||function(){ if(typeof cerrarModal==="function") cerrarModal(); }]
-  ].forEach(function(x,i){
-    const b=el("button","so-btn"+(i===2?" cerrar":""),x[0]);
+  [["min","Minimizar",onMin||function(){ host.classList.toggle("so-min"); }],
+   ["max","Maximizar",onMax||function(){ host.classList.toggle("so-maxi"); }],
+   ["cerrar","Cerrar",onCerrar||function(){ if(typeof cerrarModal==="function") cerrarModal(); }]
+  ].forEach(function(x){
+    const b=el("button","so-btn "+x[0]);
     b.type="button"; b.setAttribute("aria-label",x[1]); b.title=x[1];
     b.onclick=function(ev){ if(ev) ev.stopPropagation(); x[2](); };
     ctr.appendChild(b);

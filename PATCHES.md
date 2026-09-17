@@ -2527,6 +2527,18 @@ El informe mezcló bugs reales con pedidos de XP.css/7.css (quedan fuera: el jue
 
 **Probado:** node --check + suite.
 
+## 7.9993 · Aero Vista de verdad (sin CDN)
+
+Pediste CDNs de XP.css / 7.css. El problema no es que se paguen: el juego tiene que abrir sin señal, unpkg se cae, y esas librerías pintan `.window` / `.title-bar` — no nuestros `.panel`. Meterlas era reescribir todo el HTML.
+
+- **css/so.css** (local): taskbar de vidrio, orb de inicio, cada panel con marco Vista, botones de caption (min/max/X rojo) dibujados en CSS.
+- El escudo de la barra es el orb: tocas y vuelves al Escritorio.
+- Finanzas/Vida/Match siguen en ventana SO. Cero unpkg.
+- Tests T40. **util.js:** 7.9992 → **7.9993**. 8.00 sigue reservada.
+
+**Probado:** node --check + suite.
+
+
 
 
 

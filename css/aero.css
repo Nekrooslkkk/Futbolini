@@ -337,39 +337,10 @@ body[data-tema="aero"] ::selection{background:rgba(60,200,150,.38)}
 @media (prefers-reduced-motion:reduce){ body[data-tema="aero"] .btn-aqua:hover::before{animation:none} }
 
 /* ============================================================
-   7.9992 · ventanas SO (Aero existente, sin CDN)
-   Una sola definición. Azul Vista en la barra; el resto del club
-   sigue el bloque "ESTÉTICA ESTRICTA WINDOWS VISTA" de más arriba.
+   7.9992/7.9993 · ventanas SO
+   El chrome Vista (taskbar, marco, caption) vive en css/so.css
+   para no pelear especificidad con este archivo.
    ============================================================ */
-body[data-tema="aero"] .ventana-so{
-  padding:0; border-radius:7px 7px 4px 4px; overflow:hidden;
-  border:1px solid rgba(60,90,130,.65);
-  background:linear-gradient(180deg,rgba(248,252,255,.96),rgba(224,238,252,.92));
-  box-shadow:0 20px 60px rgba(0,20,60,.55), inset 0 1px 0 rgba(255,255,255,.9);
-  backdrop-filter:blur(14px) saturate(1.4); -webkit-backdrop-filter:blur(14px) saturate(1.4);
-}
-body[data-tema="aero"] .ventana-so.panel::after{display:none}
-body[data-tema="aero"] .ventana-so.in-vista{
-  margin:0 0 12px; box-shadow:0 8px 22px rgba(0,20,60,.28), inset 0 1px 0 rgba(255,255,255,.9);
-}
-body[data-tema="aero"] .ventana-so .so-barra{
-  display:flex; align-items:center; gap:8px; padding:6px 8px;
-  background:linear-gradient(to bottom,#5b9be6 0%,#2461a3 50%,#00317a 51%,#1e5b9e 100%);
-  color:#fff; text-shadow:0 -1px 1px rgba(0,0,0,.45); font-weight:700;
-  border-bottom:1px solid #06264f; user-select:none;
-}
-body[data-tema="aero"] .ventana-so .so-ic{flex:0 0 auto}
-body[data-tema="aero"] .ventana-so .so-titulo{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-body[data-tema="aero"] .ventana-so .so-ctrl{display:flex;gap:3px}
-body[data-tema="aero"] .ventana-so .so-btn{
-  width:22px; height:18px; border-radius:3px; font-size:11px; line-height:1;
-  border:1px solid rgba(255,255,255,.55); color:#fff; padding:0; cursor:pointer;
-  background:linear-gradient(to bottom,rgba(255,255,255,.35),rgba(255,255,255,.08));
-}
-body[data-tema="aero"] .ventana-so .so-btn.cerrar{
-  background:linear-gradient(to bottom,#ff7a5c,#c8402c 52%,#9b2717);
-}
-body[data-tema="aero"] .ventana-so .so-cuerpo{padding:12px}
 body[data-tema="aero"] .ventana-so.so-min .so-cuerpo{display:none}
 body[data-tema="aero"] .ventana-so.so-maxi{box-shadow:0 0 0 2px rgba(0,180,255,.35), 0 20px 60px rgba(0,20,60,.55)}
 
