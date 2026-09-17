@@ -2885,7 +2885,7 @@ function modalAvancePartido(part){
 function pendientesAtender(){
   const p=[]; if(!E) return p;
   const urg=(E.decPend||[]).filter(x=>x.peso==="alto");
-  if(urg.length) p.push({ic:"📥",fuerte:true,t:urg.length+" decisión"+(urg.length>1?"es":"")+" urgente"+(urg.length>1?"s":"")+" sin resolver",d:"En Decisiones sobre la mesa.",ir:"escritorio"});
+  if(urg.length) p.push({ic:"📥",fuerte:true,t:urg.length+(urg.length>1?" decisiones urgentes":" decisión urgente")+" sin resolver",d:"En Decisiones sobre la mesa.",ir:"escritorio"});
   if(typeof notifsAccionables==="function"){ const a=notifsAccionables(); if(a.length) p.push({ic:"📨",fuerte:true,t:a.length+" aviso"+(a.length>1?"s":"")+" que requiere"+(a.length>1?"n":"")+" tu respuesta",d:"Ofertas o pedidos esperando.",ir:"avisos"}); }
   if(Array.isArray(E.objetivos) && typeof progresoObjetivo==="function"){ const r=E.objetivos.filter(o=>progresoObjetivo(o).estado==="riesgo"); if(r.length) p.push({ic:"🎯",t:"Meta en riesgo: "+r[0].t,d:"El directorio lo evalúa al cierre.",ir:"escritorio"}); }
   if(typeof quimicaEquipo==="function" && typeof onceIdeal==="function"){ const q=quimicaEquipo(onceIdeal()); if(q.prom<48) p.push({ic:"🔗",t:"Química floja ("+q.prom+"/100)",d:"Acomoda la pizarra antes del partido.",ir:"escritorio"}); }

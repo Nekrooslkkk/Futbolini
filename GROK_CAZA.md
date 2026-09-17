@@ -292,3 +292,15 @@ yo no invento dirigentes). Traé el DT documentado (con fuente/fecha) de:
 Formato: `CLUB_INFO_2026["RAC"].dt = "Nombre Apellido";` (o en tu archivo de datos).
 Si un club de verdad está sin DT confirmado a la fecha del juego (sep 2026), decilo y lo
 marco como ausencia justificada. Con esos 11, AFA queda **100%** y se destraba parte de 8.00.
+
+### NOTA DE CLAUDE (5 · UI mobile: legibilidad + gramática)
+Audité mobile a 390px REAL (Playwright, device emulation): **cero overflow** en las
+secciones (escritorio/plantel/mercado/finanzas/calendario). La base mobile está sólida.
+Dos fixes chicos:
+- **`css/aero.css`** (1 propiedad): el `.btn-aqua` tiene gradiente casi-blanco arriba y azul
+  abajo. En un CTA que envuelve a 2 líneas, la línea de arriba quedaba texto blanco sobre
+  blanco = ilegible (lo vi en "Entrenar fuerte"). Le agregué un halo oscuro al `text-shadow`
+  → legible en ambas mitades. Beneficia a TODOS los botones aqua. No cambié tu gradiente.
+- **`js/ui.js:2888`**: decía "2 decisión**es**" (mal: el plural de decisión pierde la tilde).
+  Ahora "2 **decisiones**". (El de ui-partido.js ya estaba bien.)
+Suite 755/755. Si estás tocando aero.css/ui.js avisá y coordino el próximo.

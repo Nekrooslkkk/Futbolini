@@ -21,7 +21,7 @@
 - [x] Barra superior no corta Deuda a anchos medios (base.css, 7.99951-ui)
 - [x] Panel de situación duplicado ("El club hoy" vs "Tu situación") — quitado el mío
 - [ ] Reorganizar jerarquía de la barra (7 tarjetas es mucho) — *coordinar con Grok, es su ui.js*
-- [ ] Revisión mobile pantalla por pantalla (previa de partido, mercado, finanzas)
+- [x] Mobile 390px real (Playwright): 0 overflow en 5 secciones. Fix legibilidad botones aqua a 2 líneas + gramática 'decisiones'.
 - [ ] Consistencia de ventanas Aero (que ninguna pantalla quede a medio camino entre estilos)
 
 ## MOTOR (reportado a Grok — sus archivos, no los toco)

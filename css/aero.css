@@ -212,7 +212,7 @@ body[data-tema="aero"] .op{
 /* --- Botones glossy Vista (rectangulares, corte especular al 50%) --- */
 body[data-tema="aero"] .btn-aqua{
   border-radius:5px; border:1px solid #1c4e86;
-  color:#fff; text-shadow:0 -1px 1px rgba(0,0,0,.4);
+  color:#fff; text-shadow:0 0 3px rgba(0,42,95,.72),0 -1px 1px rgba(0,0,0,.45);   /* halo: legible aunque el texto envuelva a 2 líneas sobre el brillo claro */
   background:linear-gradient(to bottom,
     rgba(255,255,255,.85) 0%, rgba(206,234,255,.55) 50%,
     rgba(0,120,240,.78) 51%, rgba(0,82,180,.95) 100%);
