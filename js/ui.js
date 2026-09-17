@@ -879,7 +879,8 @@ function vistaInstitucion(){
     d.innerHTML='<div class="fila" style="border:none;padding:3px 0"><span>'+g.ic+" <b>"+g.n+'</b> <span class="mini">poder '+x.poder+'</span></span>'+
       '<b>'+etiquetaAprobacion(x.aprob)+' ('+signo(x.aprob)+')</b></div>'+
       barrita(x.aprob+100,x.aprob>=0?"#4fbf3f":"#c9392c",200)+
-      '<div class="mini" style="margin-top:3px">'+g.quiere+'</div>';
+      '<div class="mini" style="margin-top:3px"><b>Quiere:</b> '+g.quiere+'</div>'+
+      '<div class="mini">'+(x.aprob>=0?("<b>Si te banca:</b> "+(g.banca||"te deja trabajar.")):"<b>Si te corta:</b> "+g.castigo)+'</div>';
     if(x.aprob<-45) d.appendChild(el("div","mini","⚠ "+g.castigo));
     pg.cuerpo.appendChild(d);
   });
@@ -1432,8 +1433,10 @@ function modalRepeticion(c){
   modal(box=>{
     const gano=c.gf>c.gc, emp=c.gf===c.gc;
     const faseEtq=c.fase==="clausura"?"Clausura":(c.fase==="apertura"?"Apertura":(c.tipo==="copa"?"Copa · "+(c.ronda||""):"Fecha "+(c.fecha||"—")));
-    box.appendChild(el("div","cab",'<span class="ic">🎞️</span><span>Repetición · '+faseEtq+'</span>'));
-    const cc=el("div","cuerpo"); box.appendChild(cc);
+    box.innerHTML="";
+    const cc=(typeof montarBarraSO==="function")
+      ? montarBarraSO(box,"Repetición · "+faseEtq,"🎞️",function(){ cerrarModal(); })
+      : (function(){ box.appendChild(el("div","cab",'<span class="ic">🎞️</span><span>Repetición · '+faseEtq+'</span>')); const x=el("div","cuerpo"); box.appendChild(x); return x; })();
     const marc=el("div","marcador");
     marc.innerHTML='<div class="eq">'+(c.local?E.clubNombre:c.rivalNombre)+'</div>'+
       '<div class="go">'+(c.local?c.gf+" - "+c.gc:c.gc+" - "+c.gf)+'</div>'+
@@ -1486,13 +1489,23 @@ function modalRepeticion(c){
     }
     if(c.real) cc.appendChild(el("div","resul mitad","<b>En la historia real:</b> ese partido terminó "+c.real+"."));
     const b=el("button","btn-aqua ancho gris","Cerrar"); b.onclick=cerrarModal; cc.appendChild(b);
-  });
+  },{clase:"ventana-so"});
 }
 /* 7.71 · Recorrido de copa(s) del año, ronda por ronda, con global y estado.
    Todo se deriva del calendario + E.flags.copaAcum + copaCampeon (Copa Chile incluida). */
 function panelCopas(v){
   const copaMatches=(E.calendario||[]).filter(p=>p.tipo==="copa");
-  if(!copaMatches.length) return;
+  if(!copaMatches.length){
+    const why=(E.eraBase==="2026c")
+      ?"En 2026 la Segunda no juega Copa Chile (bases ANFP). Tampoco hay cupo CONMEBOL por esta categoría."
+      :(E.eraBase===1925)
+        ?"1925 es amateur: no hay Copa Chile ni Libertadores."
+        :"Este año no hay copas en tu calendario (todavía no clasificás, o el formato de la época no las arma).";
+    const pc=panel("Copas del año","🏆");
+    pc.cuerpo.appendChild(el("p","mini",why));
+    v.appendChild(pc);
+    return;
+  }
   /* agrupar por torneo, preservando el orden de aparición */
   const torneos=[], porTorneo={};
   copaMatches.forEach(m=>{ const t=m.torneo||"Copa"; if(!porTorneo[t]){ porTorneo[t]=[]; torneos.push(t); } porTorneo[t].push(m); });
@@ -2016,7 +2029,14 @@ function renderPostEl(t){
     "<div class='mini' style='opacity:.6;margin-top:2px'>♡ "+(t.likes||0).toLocaleString("es-CL")+
     (t.rts?" · RT "+t.rts:"")+(t.replies?" · "+t.replies+" resp.":"")+"</div>";
   if(t.hilo&&t.hilo.length){
-    t.hilo.slice(-8).forEach(h=>{ d.appendChild(el("p","mini hilo-linea","↳ <b>"+h.autor+"</b> "+h.texto)); });
+    const ver=t._hiloOpen?t.hilo:t.hilo.slice(-6);
+    ver.forEach(h=>{ d.appendChild(el("p","mini hilo-linea","↳ <b>"+h.autor+"</b> "+h.texto)); });
+    if(t.hilo.length>6){
+      const mas=el("button","btn-aqua chico gris",t._hiloOpen?"Cerrar hilo":("Ver hilo ("+t.hilo.length+")"));
+      mas.style.marginTop="4px";
+      mas.onclick=function(ev){ if(ev) ev.stopPropagation(); t._hiloOpen=!t._hiloOpen; if(typeof irA==="function") irA("redes"); };
+      d.appendChild(mas);
+    }
   }
   const acc=el("div"); acc.style.marginTop="6px";
   [["like",t._like?"❤ Te gusta":"♡ Me gusta"],["rt",t._rt?"🔁 Reposteado":"RT"],["reply","Responder"],["report","🚩 Reportar"]].forEach(([k,n])=>{
@@ -3267,7 +3287,7 @@ $("#btnTemas").onclick=()=>{
   if(acc && !document.getElementById("btnApoyar")){
     const d=document.createElement("button");
     d.className="btn-aqua chico verde"; d.id="btnApoyar"; d.title="Apoyar Futbolini"; d.setAttribute("aria-label","Apoyar");
-    d.textContent="💚";
+    d.textContent="₿";
     d.onclick=function(){ if(typeof abrirDonar==="function") abrirDonar(); };
     const aj=document.getElementById("btnAjustes")||document.getElementById("btnTemas");
     if(aj) acc.insertBefore(d, aj); else acc.appendChild(d);
@@ -3312,7 +3332,7 @@ function pantallaArranque(haySave,slots){
     btns.appendChild(be);
   }
   if(typeof botonDonar==="function"){
-    const ba=el("button","btn-aqua chico arranque-btn","💚 Apoyar");
+    const ba=el("button","btn-aqua chico arranque-btn","₿ Apoyar");
     ba.onclick=function(ev){ if(ev) ev.stopPropagation(); if(typeof abrirDonar==="function") abrirDonar(); };
     btns.appendChild(ba);
   }

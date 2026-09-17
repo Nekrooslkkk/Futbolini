@@ -171,5 +171,30 @@ const ARCOS_GENERICOS = [
         {t:"Dejarlo hacer para no pelear", d:"Evitás el conflicto, pero pierdes autoridad.", grupos:{hinchada:6,camarin:-8,tecnico:-6}, rep:{credibilidad:-4}, mem:"dejaste que el ídolo con cargo te pasara por encima", cierra:true}
        ]}
     ]
+  },
+  {
+    id:"gen_deuda", t:"La deuda toca el timbre",
+    desc:"Vence una cuota. No es un globo: es fecha y número.",
+    cond:E=>((E.deuda||0)>=400),
+    capitulos:[
+      {id:"gd_1", t:"Llamó el banco", ctx:"Vence una cuota gorda. El directorio quiere refinanciar. La hinchada no quiere oír de bancos. El camarín pregunta si van a cobrar.",
+       ops:[
+        {t:"Refinanciar y estirar", d:"Baja el golpe de hoy, sube el total. El directorio respira.", ef:{deuda:40}, grupos:{directorio:8,sponsors:4,hinchada:-4}, mem:"refinanciaste una cuota para no reventar la caja", cierra:true},
+        {t:"Pagar aunque duela", d:"Queda menos caja, pero nadie te apunta con el dedo.", ef:{plata:-80,deuda:-80}, grupos:{directorio:6,camarin:4,prensa:3}, mem:"pagaste la cuota aunque la caja quedó flaca", cierra:true},
+        {t:"Patada pa adelante", d:"Hoy no pasa nada. Mañana el interés muerde.", grupos:{directorio:-8,sponsors:-6}, mem:"pateaste una deuda que ya tenía fecha", cierra:true}
+       ]}
+    ]
+  },
+  {
+    id:"gen_barra", t:"La puerta de la galería",
+    desc:"La barra pide mesa. No es un trámite: es poder en la calle.",
+    capitulos:[
+      {id:"gb_1", t:"Quieren hablar", ctx:"Piden mesa: entradas, viajes, un gesto. Si los ignorás, el domingo se siente. Si les das todo, el directorio se asusta.",
+       ops:[
+        {t:"Sentarte y escuchar", d:"No prometés. Escuchar ya baja un cambio.", grupos:{hinchada:8,directorio:-2,comunidad:4}, mem:"te sentaste con la barra sin vender el club", cierra:true},
+        {t:"Cerrarles la puerta", d:"Orden institucional. El estadio se puede vaciar o calentar.", grupos:{directorio:8,hinchada:-12,anfp:4}, mem:"le cerraste la puerta a la barra", cierra:true},
+        {t:"Un pacto chico, por escrito", d:"Viajes o un palco. Queda registro. Después cobran.", ef:{plata:-25}, grupos:{hinchada:10,directorio:-6}, mem:"cerraste un pacto chico con la barra", cierra:true}
+       ]}
+    ]
   }
 ];

@@ -12,7 +12,7 @@ Si no tenés Node:
   python -m http.server 8787
 
 El juego guarda en el navegador (localStorage). Offline.
-Donaciones: pegá tu link en js/donar.js (DONAR.url). El botón 💚 ya está.
-Si el url está vacío, el juego no se rompe: muestra un cartel honesto.
+Donaciones: Bitcoin. Pegá DONAR.btc en js/donar.js. El libro (DONAR.libro) lo actualizás vos.
+Sin dirección el botón no se rompe: explica el hueco. Gracias: destinado al juego, se reparte cuando haga falta.
 
 Ctrl+Shift+R si ves una versión vieja.

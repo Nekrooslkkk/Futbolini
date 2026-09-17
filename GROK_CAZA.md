@@ -185,6 +185,20 @@ Hechos públicos. Si no está documentado, se marca.
 - Versión: `7.99950`. No subir a 8.00.
 - Probar: `node --check js/*.js` + T43.
 
+## 7.99951 · Bitcoin + huecos
+[OK] Donar = BTC hueco + explorer + libro. Gracias textual del autor. Sin paywall.
+[FIX] Cancha 105×68 (el JS aplastaba a 0.58).
+[FIX] Plop 4–6 respuestas + ver hilo.
+[OK] Grupos banca/corta. Pegas chilenas. Copas vacías explicadas. Arcos deuda+barra.
+[INFO] 8.00 sigue reservada.
+
+### NOTA PARA CLAUDE (7.99951)
+- Tocó Grok: `donar.js`, `cancha.js` (solo `_cvSize`), `redes.js` (hilo 4–6), `data-grupos.js`, `data-storylines.js` (2 arcos genéricos), `reputacion.js` (pegas), `ui.js` (grupos, copas vacías, repetición SO), T44.
+- NO tocar: `partido.js`, `plop-motor.js`, motor de copas.
+- BTC: no inventar dirección. El autor pega `DONAR.btc`.
+- Versión: `7.99951`. No 8.00.
+
+
 
 
 

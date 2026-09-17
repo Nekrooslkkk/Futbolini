@@ -4,7 +4,7 @@
    (XP.css y 7.css de unpkg piden red y usan otras clases: .window,
    .title-bar. Acá se pinta lo mismo sobre .panel / #barra / .ventana-so.)
    ============================================================ */
-:root{ --futbolini-so: 7.99950; }
+:root{ --futbolini-so: 7.99951; }
 
 /* ---------- taskbar de vidrio (barra superior) ---------- */
 body[data-tema="aero"] #barra{

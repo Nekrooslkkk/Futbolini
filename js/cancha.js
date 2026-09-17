@@ -203,7 +203,7 @@ function _cvDraw(ctx,w,h){
 }
 function _cvSize(canvas){
   const cssW=canvas.clientWidth||canvas.parentNode&&canvas.parentNode.clientWidth||320;
-  const cssH=Math.min(268,Math.round(cssW*0.58));
+  const cssH=Math.min(320,Math.round(cssW*68/105));
   const dpr=Math.min(2,window.devicePixelRatio||1);
   if(canvas._w!==cssW || canvas._h!==cssH){
     canvas.style.height=cssH+"px";

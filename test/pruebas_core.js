@@ -1711,10 +1711,28 @@
       nuevaPartida("CC",2026,"historico");
       var t={autor:"@hincha_de_ley",texto:"dt contestame",hilo:[],replies:0,tipo:"hincha"};
       var r=responderHilo(t,"vamos a ganar el título");
-      ok(r && r.length>=2 && r.length<=4, "2–4 respuestas en el hilo");
+      ok(r && r.length>=4 && r.length<=6, "4–6 respuestas en el hilo");
       ok(t.hilo.length>=2, "el post acumula hilo");
-      ok(t.replies>=2, "replies cuenta");
+      ok(t.replies>=4, "replies cuenta");
     }, "Plop discute");
+
+    /* T44 · 7.99951 Bitcoin + cancha FIFA + grupos + pegas + arcos */
+    grupo("Grok 7.99951 (BTC + huecos)");
+    safe(function(){
+      ok(VERSION==="7.99951" || /^7\.9995/.test(VERSION), "VERSION 7.99951");
+      ok(typeof donarTieneBtc==="function" && donarTieneBtc()===false, "BTC hueco (aún no hay dirección)");
+      ok(Array.isArray(DONAR.libro), "libro de aportes es lista");
+      ok(/destinado al juego/i.test(DONAR.gracias||""), "mensaje de gracias");
+      ok(DONAR.perks===false, "sigue sin paywall");
+    }, "Apoyar Bitcoin");
+    safe(function(){
+      ok(GRUPOS.every(function(g){ return g.banca && g.castigo && g.quiere; }), "cada grupo: quiere / banca / corta");
+      ok(ARCOS_GENERICOS.length>=4, "arcos genéricos >=4 (deuda, barra, sede, ídolo)");
+    }, "institución + historia");
+    safe(function(){
+      var src=String(_cvSize);
+      ok(/68\s*\/\s*105/.test(src), "cancha usa 105×68 (no 0.58 aplastado)");
+    }, "cancha FIFA");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

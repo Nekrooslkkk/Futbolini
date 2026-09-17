@@ -157,28 +157,37 @@ const PLOP_RESP_HINCHA=[
   "si el camarín piensa lo mismo, vamos bien",
   "la barra te está escuchando. no la cagues",
   "otro comunicado. a ver si esta vez pega",
-  "gracias por contestar. no todos los dt lo hacen"
+  "gracias por contestar. no todos los dt lo hacen",
+  "yo no te banco siempre pero acá tenís razón",
+  "la tribuna anotó. no se te olvide",
+  "decilo en la conferencia también, no sólo acá",
+  "el que no lee a la gente después se queja del lienzo"
 ];
 const PLOP_RESP_PRENSA=[
   "el cuerpo técnico sale a responder. se viene una semana larga.",
   "palabras del dt. ahora hay que ver si el once acompaña.",
-  "la cuenta oficial se metió en el hilo. el entorno toma nota."
+  "la cuenta oficial se metió en el hilo. el entorno toma nota.",
+  "queda registrado. si no se cumple, vuelve este tuit.",
+  "tono de dt que quiere cerrar la semana. el rival ya lo leyó."
 ];
 const PLOP_RESP_TROLL=[
   "ksksks el dt contestando tuits a las 2 am",
   "hablai como si fueras guardiola po hermano",
-  "tweet más largo que tu racha de triunfos"
+  "tweet más largo que tu racha de triunfos",
+  "otro hilo. otro domingo. misma película",
+  "cuando ganan es el plan, cuando pierden es el árbitro"
 ];
 const PLOP_RESP_JUG=[
   "el grupo está enfocado. el dt ya habló.",
-  "leímos. a trabajar."
+  "leímos. a trabajar.",
+  "en el camarín se entiende. afuera, ruido."
 ];
 function responderHilo(t, txtYo){
   if(!t) return [];
   t.hilo=t.hilo||[];
   const yo=(txtYo||"").toLowerCase();
   const club=(E&&E.clubNombre)||"el club";
-  const n=typeof ri==="function"?ri(2,4):2;
+  const n=typeof ri==="function"?ri(4,6):4;
   const out=[];
   const pick=function(arr){ return (typeof elige==="function")?elige(arr):arr[Math.floor(Math.random()*arr.length)]; };
   const h=(typeof HANDLES_HINCHA!=="undefined")?HANDLES_HINCHA:["@hincha_de_ley"];

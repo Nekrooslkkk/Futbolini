@@ -2572,6 +2572,25 @@ Para sacar plata del juego (donar) sin paywall, y para que la primera pantalla s
 
 **Probado:** node --check + suite.
 
+## 7.99951 · Bitcoin + huecos (Plop, cancha, grupos, pegas, copas, arcos)
+
+Todavía no 8.00. Se tapan huecos. Donar: Bitcoin, sin pasarela, sin perks.
+
+- **`js/donar.js`:** `DONAR.btc` (vacío), explorer mempool.space, `DONAR.libro` (lista que pegás vos), mensaje: *muchas gracias por donar, todo será destinado al juego, repartiremos cuando sea necesario*. Postre del autor + distribución equitativa, escrito. Cero paywall.
+- **Cancha:** el JS aplastaba a `alto = ancho×0.58`. Ahora **105×68** (FIFA), como el CSS.
+- **Plop:** hilo de **4–6** respuestas; «ver hilo» si hay más de 6.
+- **Grupos:** cada uno dice qué quiere, qué hace si te banca y qué hace si te corta.
+- **Pegas:** radio AM, sindicato, asado, micro de la barra. Chilensis.
+- **Copas:** si no hay (Segunda / 1925), el calendario lo **dice**, no se calla.
+- **Arcos genéricos:** deuda con fecha + mesa de la barra (cualquier club).
+- **Repetición:** ventana SO.
+- Tests T44. **util.js:** 7.99950 → **7.99951**. 8.00 sigue reservada.
+
+**NOTA PARA CLAUDE:** `cancha.js` sólo el ratio. No tocar `partido.js` / `plop-motor.js`. No inventar dirección BTC.
+
+**Probado:** node --check + suite.
+
+
 
 
 

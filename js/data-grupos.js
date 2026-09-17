@@ -8,22 +8,31 @@
 
 const GRUPOS=[
  {id:"directorio", n:"Directorio",        ic:"🎩", quiere:"Estabilidad, caja sana y mantenerse en el cargo.",
+  banca:"Te deja firmar estatutos y fichajes sin veto.",
   castigo:"Te bloquea estatutos, te fuerza a vender y puede destituirte."},
  {id:"socios",     n:"Socios",            ic:"🗳️", quiere:"Ser escuchados y que el club siga siendo de ellos.",
+  banca:"Bancan asambleas y ponen el pecho cuando hay que recortar.",
   castigo:"Vota en contra, exige asamblea y puede revocar al directorio."},
  {id:"hinchada",   n:"Hinchada",          ic:"📣", quiere:"Que se gane, entradas baratas y que no se venda a los ídolos.",
+  banca:"Llena el estadio, empuja y te cubre cuando la tabla aprieta.",
   castigo:"Funas, lienzos, incidentes y estadio vacío."},
  {id:"camarin",    n:"Camarín",           ic:"👕", quiere:"Sueldos al día, premios y respeto al grupo.",
+  banca:"Corre por vos los partidos feos. El capitán te cierra filas.",
   castigo:"Paro, filtraciones y rendimiento en el piso."},
  {id:"tecnico",    n:"Cuerpo técnico",    ic:"📋", quiere:"Autoridad, los refuerzos que pidió y continuidad.",
+  banca:"Alinea el once con tu plan y no te discute en la tele.",
   castigo:"Renuncia pública y se lleva a su gente."},
  {id:"prensa",     n:"Prensa",            ic:"🎙️", quiere:"Acceso, declaraciones y material.",
+  banca:"Titulares a favor y menos cacería después de un tropiezo.",
   castigo:"Campaña en contra y presión permanente sobre el plantel."},
  {id:"anfp",       n:"ANFP",              ic:"🏛️", quiere:"Que votes con ellos y que no hagas ruido.",
+  banca:"Calendario piola y un voto cuando hace falta.",
   castigo:"Calendario malo, sanciones y aislamiento en las votaciones."},
  {id:"sponsors",   n:"Sponsors y TV",     ic:"💼", quiere:"Imagen limpia, audiencia y estabilidad.",
+  banca:"Renuevan, suben el contrato y no te apuran el naming.",
   castigo:"Se bajan del contrato o lo renegocian a la baja."},
  {id:"comunidad",  n:"Comunidad",         ic:"🏘️", quiere:"Que el club siga representando a los suyos.",
+  banca:"Aporte, voluntarios y que el barrio te defienda.",
   castigo:"Corta el aporte, rompe con el club y empuja al cisma."}
 ];
 const GRUPO_POR_ID={}; GRUPOS.forEach(g=>GRUPO_POR_ID[g.id]=g);

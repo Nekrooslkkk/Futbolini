@@ -480,11 +480,15 @@ function vistaVida(){
   const pin=panel("Pegas honestas","💼","agua");
   pin.cuerpo.appendChild(el("p","mini","Plata honesta para tu bolsillo, aparte del sueldo. Cada una se puede hacer una vez por semana; algunas piden que tengas nombre (imagen pública)."));
   const CHANGAS=[
-    {id:"columna",t:"Columna en un diario",d:"Escribís de fútbol. Pagan poco, pero es fijo.",pago:[3,8],req:0},
-    {id:"clinica",t:"Clínica de fútbol para chicos",d:"Un día enseñando. Suma cariño de la comunidad y algo de plata.",pago:[5,12],req:0},
-    {id:"charla",t:"Charla motivacional en una empresa",d:"Liderazgo y trabajo en equipo. Buena plata por un rato.",pago:[10,22],req:35},
-    {id:"tv",t:"Comentar un partido en la tele",d:"Panelista por una noche. Necesitas algo de figura.",pago:[7,16],req:40},
-    {id:"publicidad",t:"Publicidad de una marca",d:"Prestas tu cara. Cuanto más conocido, más pagan.",pago:[12,28],req:55}
+    {id:"columna",t:"Columna en el diario",d:"Escribís de fútbol en chilensis. Pagan poco, pero es fijo.",pago:[3,8],req:0},
+    {id:"clinica",t:"Escuelita en la población",d:"Un sábado enseñando a cabros chicos. Cariño de barrio y unas lucas.",pago:[5,12],req:0},
+    {id:"radio",t:"Pega en la radio AM",d:"Comentar la fecha en un estudio chico. Voz, no figura.",pago:[4,10],req:10},
+    {id:"sindicato",t:"Palestra en el sindicato",d:"Te piden hablar de pega, no de táctica. El barrio te mira distinto.",pago:[6,14],req:20},
+    {id:"asado",t:"Asado con los socios",d:"No es show: es estar. Te sale de tu bolsillo o te dejan un sobre.",pago:[2,9],req:0},
+    {id:"charla",t:"Charla en una empresa",d:"Liderazgo y trabajo en equipo. Buena plata por un rato.",pago:[10,22],req:35},
+    {id:"tv",t:"Panel en la tele",d:"Una noche de gritos. Necesitás algo de figura.",pago:[7,16],req:40},
+    {id:"micro",t:"Cargar el micro de la barra",d:"Pega sucia, lucas al tiro. La barra no se olvida.",pago:[8,18],req:25},
+    {id:"publicidad",t:"Cara pa una marca",d:"Prestas el hocico. Cuanto más conocido, más pagan.",pago:[12,28],req:55}
   ];
   CHANGAS.forEach(ch=>{
     const hecha=E.flags["changa_"+ch.id]===(E.anio+"-"+E.idx);   /* 6.25 · fix: keyear por año+idx (antes colisionaba en el 2do año) */
@@ -495,8 +499,9 @@ function vistaVida(){
     b.disabled=hecha||faltaFama;
     b.onclick=()=>{
       const pago=ri(ch.pago[0],ch.pago[1]); E.personal.bolsillo+=pago; E.flags["changa_"+ch.id]=(E.anio+"-"+E.idx);
-      if(ch.id==="clinica") aplicarGrupos({comunidad:3});
-      if(ch.id==="tv"||ch.id==="publicidad") aplicarRep({publica:2});
+      if(ch.id==="clinica"||ch.id==="sindicato"||ch.id==="asado") aplicarGrupos({comunidad:3});
+      if(ch.id==="micro") aplicarGrupos({hinchada:4});
+      if(ch.id==="tv"||ch.id==="publicidad"||ch.id==="radio") aplicarRep({publica:2});
       if(typeof recordar==="function"&&pago>=15) recordar("changa","te hiciste unos pesos: "+ch.t.toLowerCase(),{peso:"bajo"});
       guardar(); render(); aviso("💵 +"+plata(pago)+" al bolsillo");
     };
