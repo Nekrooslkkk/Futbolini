@@ -1478,7 +1478,7 @@
     /* T37 · 7.999 lista de concentrados 16/18/23 + el que sale no reingresa */
     grupo("Grok 7.999 (lista de concentrados + banca real)");
     safe(function(){
-      ok(VERSION==="7.999", "VERSION 7.999");
+      ok(VERSION==="7.9991" || /^7\.99/.test(VERSION), "VERSION 7.99x");
       ok(typeof listaMaxEra==="function" && listaMaxEra(2026)===23, "2026: lista de 23");
       ok(listaMaxEra(2006)===18, "2006: lista de 18");
       ok(listaMaxEra(1991)===16, "1991: lista de 16");
@@ -1533,6 +1533,28 @@
       ok(PREGUNTAS_BETA.some(function(p){ return /lista|nomina|banca/i.test(p.q); }), "prensa pregunta por la lista");
       ok(RELATO_BETA.some(function(r){ return r.m==="descuento"; }), "relato cubre el descuento");
     }, "corte de figura + prensa/relato");
+
+    /* T38 · 7.9991 banco Aero + bolsillo/bolsa a prueba de save roto + swipe */
+    grupo("Grok 7.9991 (banco + bolsillo + swipe)");
+    safe(function(){
+      ok(VERSION==="7.9991", "VERSION 7.9991");
+      ok(typeof bolsilloDT==="function", "bolsilloDT");
+      ok(typeof engancharSwipeTinder==="function", "swipe del Match");
+      ok(typeof detenerCancha==="function", "detenerCancha sigue existiendo");
+    }, "API 7.9991");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      E.personal.bolsillo="na";
+      ok(bolsilloDT()===0 || typeof bolsilloDT()==="number", "bolsilloDT repara un valor podrido");
+      ok(typeof E.personal.bolsillo==="number", "bolsillo queda numérico");
+      delete E.bolsa.precio;
+      normalizarBolsa();
+      ok(typeof E.bolsa.precio==="number" && E.bolsa.precio>0, "normalizarBolsa rellena precio: "+E.bolsa.precio);
+      delete E.personal;
+      var r=girarRuleta("rojo", 1);
+      ok(r && typeof r.n==="number", "ruleta no crashea sin E.personal");
+      ok(E.personal && typeof E.personal.bolsillo==="number", "girarRuleta deja bolsillo numérico");
+    }, "saves rotos no tumban bolsa ni casino");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

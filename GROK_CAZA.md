@@ -138,6 +138,15 @@ Hechos públicos. Si no está documentado, se marca.
 [OK] 5 cambios IFAB de 7.998 ahora tienen 12 suplentes de verdad en 2026.
 [INFO] 8.00 sigue reservada. Playoffs 2006 estilo México: dato listo, motor pendiente.
 
+## 7.9991 · banco Aero + swipe + saves
+[NO] El "error de sintaxis" de barra.js NO existía (pactar ya chequea la caja).
+[NO] No se cargan XP.css/7.css de internet (juego offline, sin CDN).
+[FIX] bolsa/casino: precio y bolsillo se normalizan si el save viene podrido.
+[FIX] cancha: cancelAnimationFrame si el canvas sale del DOM.
+[FIX] Finanzas = ventanilla de 4 cuentas. Match se desliza.
+[INFO] 8.00 sigue reservada.
+
+
 
 
 

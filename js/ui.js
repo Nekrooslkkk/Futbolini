@@ -1010,6 +1010,23 @@ function sparkNode(hist){
 }
 function vistaFinanzas(){
   const v=$("#vista");
+  /* 7.9991 · "banco": las cuentas de un vistazo, como ventanilla Aero */
+  const banco=el("div","banco-cuentas");
+  const accs=[
+    {k:"Caja del club", v:plata(E.plata), cls:"corriente", d:"Cuenta corriente del club. Con esto se pagan sueldos e intereses."},
+    {k:"Deuda", v:plata(E.deuda), cls:(E.deuda||0)>1500?"pasivo mal":"pasivo", d:"Pasivo. Cada semana come intereses."},
+    {k:"Tu bolsillo", v:plata((E.personal&&E.personal.bolsillo)||0), cls:"personal", d:"Plata tuya. No es de la tesorería."},
+    {k:"Acciones", v:(E.bolsa&&typeof valorTenencia==="function")?plata(Math.round(valorTenencia())):"—", cls:"inversion", d:"Lo que tienes en la sociedad anónima del club."}
+  ];
+  accs.forEach(a=>{
+    const chip=el("button","banco-cta "+a.cls);
+    chip.type="button";
+    chip.title=a.d;
+    chip.innerHTML="<span class='k'>"+a.k+"</span><b class='v'>"+a.v+"</b>";
+    banco.appendChild(chip);
+  });
+  v.appendChild(banco);
+
   const p=panel("Caja","💰");
   p.cuerpo.appendChild(fila("Disponible",plata(E.plata)));
   p.cuerpo.appendChild(fila("Deuda total",plata(E.deuda)));
@@ -1093,7 +1110,7 @@ function vistaFinanzas(){
     cot.innerHTML="<span class='precio'>"+plata(E.bolsa.precio)+"</span> <span class='var "+(vr>=0?"sube":"baja")+"'>"+(vr>=0?"▲ +":"▼ ")+vr+"%</span>";
     pb.cuerpo.appendChild(cot);
     pb.cuerpo.appendChild(sparkNode(E.bolsa.historia));
-    pb.cuerpo.appendChild(el("p","mini","Vos sabes los resultados antes que el mercado. Ganar hace subir la acción; perder la hunde. Especulás con tu bolsillo personal."));
+    pb.cuerpo.appendChild(el("p","mini","Tú sabes los resultados antes que el mercado. Ganar hace subir la acción; perder la hunde. Especulas con tu bolsillo personal."));
     pb.cuerpo.appendChild(fila("Bolsillo personal",plata(E.personal.bolsillo)));
     if(E.bolsa.acciones>0){
       pb.cuerpo.appendChild(fila("Tu tenencia",plata(valorTenencia())+" ("+(E.bolsa.acciones).toFixed(2)+" acc.)"));

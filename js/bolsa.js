@@ -39,19 +39,22 @@ function normalizarBolsa(){
     E.bolsa={ precio:p, base:p, historia:[p], acciones:0, invertido:0,
               flotante:0.35, sociedad:nombreSociedad() };
   }
-  if(!Array.isArray(E.bolsa.historia)||!E.bolsa.historia.length) E.bolsa.historia=[E.bolsa.precio||fundamentoBolsa()];
+  if(typeof E.bolsa.precio!=="number" || isNaN(E.bolsa.precio)) E.bolsa.precio=fundamentoBolsa();
+  if(typeof E.bolsa.base!=="number" || isNaN(E.bolsa.base)) E.bolsa.base=E.bolsa.precio;
+  if(!Array.isArray(E.bolsa.historia)||!E.bolsa.historia.length) E.bolsa.historia=[E.bolsa.precio];
   if(E.bolsa.acciones===undefined) E.bolsa.acciones=0;
   if(E.bolsa.invertido===undefined) E.bolsa.invertido=0;
   E.bolsa.sociedad=nombreSociedad();
   if(!E.finanzas) E.finanzas={ delegado:false };
   if(E.finanzas.delegado===undefined) E.finanzas.delegado=false;
+  if(typeof bolsilloDT==="function") bolsilloDT();
 }
 
 /* el precio persigue el fundamento con inercia + ruido especulativo (semanal) */
 function actualizarBolsa(){
-  if(!E.bolsa) normalizarBolsa();
+  normalizarBolsa();
   const fund=fundamentoBolsa();
-  const ruido=(Math.random()-0.5)*E.bolsa.precio*0.05;
+  const ruido=(Math.random()-0.5)*(E.bolsa.precio||fund)*0.05;
   let np=E.bolsa.precio + (fund-E.bolsa.precio)*0.22 + ruido;
   E.bolsa.precio=clamp(Math.round(np*100)/100, 3, 1000);
   E.bolsa.base=fund;
@@ -75,16 +78,18 @@ function variacionBolsa(){ const h=E.bolsa.historia; if(!h||h.length<2) return 0
 /* invertir un monto del bolsillo personal; recibe acciones fraccionarias */
 function invertirBolsa(monto){
   if(!E.bolsa) normalizarBolsa();
+  if(typeof bolsilloDT==="function") bolsilloDT();
   monto=Math.round(monto);
-  if(monto<=0||E.personal.bolsillo<monto) return false;
+  if(monto<=0||!E.personal||E.personal.bolsillo<monto) return false;
   E.personal.bolsillo-=monto;
-  E.bolsa.acciones+=monto/E.bolsa.precio;
+  E.bolsa.acciones+=monto/Math.max(0.01,E.bolsa.precio);
   E.bolsa.invertido+=monto;
   return true;
 }
 /* liquidar una fracción (0..1) de la tenencia; devuelve lo recaudado */
 function liquidarBolsa(frac){
   if(!E.bolsa||E.bolsa.acciones<=0) return 0;
+  if(typeof bolsilloDT==="function") bolsilloDT();
   frac=clamp(frac,0,1);
   const acc=E.bolsa.acciones*frac;
   const ingreso=Math.round(acc*E.bolsa.precio);

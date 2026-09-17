@@ -154,6 +154,38 @@ function generarTinder(){
   if(pool.length<3) pool=CANDIDATOS.slice();   /* fallback si el filtro deja pocos */
   return mezcla(pool).slice(0,6).map(c=>Object.assign({},c,{orb:elige(ORBES),afin:(Math.random()*0.25)}));
 }
+function engancharSwipeTinder(card, onPass, onLike){
+  if(!card) return;
+  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  let x0=null, dx=0, locked=false;
+  const start=e=>{
+    if(locked || (e.button!=null && e.button!==0)) return;
+    try{ card.setPointerCapture(e.pointerId); }catch(err){}
+    x0=e.clientX; dx=0;
+    card.style.transition="none";
+  };
+  const move=e=>{
+    if(x0==null||locked) return;
+    dx=e.clientX-x0;
+    card.style.transform="translateX("+dx+"px) rotate("+(dx/22)+"deg)";
+  };
+  const end=()=>{
+    if(x0==null||locked) return;
+    card.style.transition="transform .22s ease, opacity .22s ease";
+    if(dx>72){
+      locked=true; card.style.transform="translateX(140%) rotate(16deg)"; card.style.opacity="0";
+      setTimeout(onLike,200);
+    } else if(dx<-72){
+      locked=true; card.style.transform="translateX(-140%) rotate(-16deg)"; card.style.opacity="0";
+      setTimeout(onPass,200);
+    } else { card.style.transform=""; }
+    x0=null; dx=0;
+  };
+  card.addEventListener("pointerdown", start);
+  card.addEventListener("pointermove", move);
+  card.addEventListener("pointerup", end);
+  card.addEventListener("pointercancel", end);
+}
 function modalTinder(){
   const cartas=generarTinder(); let i=0;
   const era=typeof eraMatch==="function"?eraMatch():{ic:"💘",cab:"Match · buscar pareja",paso:"✕ Paso",like:"❤ Me gusta",fin:"No hay más perfiles por hoy."};
@@ -175,9 +207,13 @@ function modalTinder(){
         (cand.id?'<div class="mini centro">'+cand.id+'</div>':'')+
         '<p style="margin-top:6px">'+cand.bio+'</p>';
       c.appendChild(card);
+      c.appendChild(el("p","mini centro tinder-hint","Desliza a la derecha si te late · a la izquierda si pasas"));
+      const pasar=()=>{ i++; pintar(); };
+      const late=()=>{ likeCandidato(cand); i++; pintar(); };
+      if(typeof engancharSwipeTinder==="function") engancharSwipeTinder(card, pasar, late);
       const row=el("div","tinder-acc");
-      const bp=el("button","btn-aqua ancho gris",era.paso); bp.onclick=()=>{ i++; pintar(); };
-      const bl=el("button","btn-aqua ancho verde",era.like); bl.onclick=()=>{ likeCandidato(cand); i++; pintar(); };
+      const bp=el("button","btn-aqua tinder-round gris",era.paso); bp.onclick=pasar;
+      const bl=el("button","btn-aqua tinder-round verde",era.like); bl.onclick=late;
       row.appendChild(bp); row.appendChild(bl); c.appendChild(row);
       const x=el("button","btn-aqua ancho","Cerrar"); x.style.marginTop="6px"; x.onclick=()=>{ cerrarModal(); render(); }; c.appendChild(x);
     };

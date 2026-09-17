@@ -215,14 +215,18 @@ function _cvSize(canvas){
 function _cvFrame(ts){
   const canvas=_cvCanvas;
   if(!canvas || canvas!==_cvCanvas) return;
-  if(!canvas.isConnected || !P_ACTUAL){ _cvRAF=0; return; }
+  if(!canvas.isConnected || !P_ACTUAL){
+    if(_cvRAF) cancelAnimationFrame(_cvRAF);
+    _cvRAF=0; _cvCanvas=null;
+    return;
+  }
   const dt=Math.min(0.05,(ts-_cvLast)/1000||0.016); _cvLast=ts;
   const P=P_ACTUAL;
   _cvStep(P,dt);
   _cvSize(canvas);
   _cvDraw(canvas.getContext("2d"), canvas.width, canvas.height);
   if(!P.terminado) _cvRAF=requestAnimationFrame(_cvFrame);
-  else _cvRAF=0;
+  else { if(_cvRAF) cancelAnimationFrame(_cvRAF); _cvRAF=0; }
 }
 /* API: montar el canvas en el partido actual (llamado desde pintarPartido) */
 function montarCancha(canvas){

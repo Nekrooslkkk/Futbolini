@@ -154,6 +154,23 @@ body[data-tema="aero"] .canal-tv .ch{
   background:linear-gradient(180deg,#2a2a3a,#141422);
   box-shadow:0 1px 0 rgba(255,220,120,.35) inset;
 }
+body[data-tema="aero"] .banco-cta{
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(220,245,255,.28));
+  border:1px solid rgba(255,255,255,.7);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 4px 12px rgba(10,60,30,.16);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  color:var(--tinta);
+}
+body[data-tema="aero"] .banco-cta.pasivo.mal{
+  background:linear-gradient(180deg,rgba(255,210,200,.55),rgba(255,150,130,.22));
+  border-color:rgba(200,80,50,.35);
+}
+body[data-tema="aero"] .banco-cta.personal{
+  background:linear-gradient(180deg,rgba(255,255,240,.6),rgba(255,230,160,.28));
+}
+body[data-tema="aero"] .banco-cta.inversion{
+  background:linear-gradient(180deg,rgba(220,255,230,.6),rgba(140,220,170,.24));
+}
 
 /* --- pulido XP / Luna (bordes duros, profundidad clásica) --- */
 body[data-tema="aero"] .panel{
@@ -211,8 +228,12 @@ body[data-tema="aero"] .op{
 /* tarjeta de Tinder */
 .tinder-card{border:1px solid var(--linea);border-radius:14px;padding:12px;
   background:linear-gradient(160deg,rgba(255,255,255,.28),rgba(180,220,255,.14));
-  box-shadow:0 4px 14px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.6);margin-bottom:8px}
+  box-shadow:0 4px 14px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.6);margin-bottom:8px;
+  touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
+.tinder-card:active{cursor:grabbing}
+.tinder-hint{margin:0 0 4px}
 .tinder-acc{display:flex;gap:8px;margin-top:8px}
+.tinder-acc .tinder-round{flex:1;min-height:48px;border-radius:999px;font-weight:700}
 .centro{text-align:center}
 
 /* ============================================================

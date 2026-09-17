@@ -2501,6 +2501,18 @@ El banco era todo el plantel: en 2026 podías meter al 28° si querías. El que 
 
 **Probado:** node --check + suite.
 
+## 7.9991 · Banco Aero + Match con swipe + saves rotos
+
+El informe de bugs mezcló cosas reales con inventos (`pactar()` ya validaba la caja; la cancha ya se detenía al salir). Lo que sí se rompía: bolsa/casino con un save a medias, y el Match no se deslizaba.
+
+- **Sin CDN.** XP.css / 7.css de internet quedan fuera: el juego corre offline. Se pule el Aero que ya existía.
+- **Finanzas:** ventanilla con 4 cuentas (caja, deuda, bolsillo, acciones).
+- **Match:** deslizas la carta a la derecha = me gusta, a la izquierda = paso. Botones redondos.
+- **Defensa:** `bolsilloDT`, `normalizarBolsa` rellena `precio`/`base`, la ruleta no crashea sin `E.personal`, la cancha cancela el RAF si el canvas se va.
+- Tests T38. **util.js:** 7.999 → **7.9991**. 8.00 sigue reservada.
+
+**Probado:** node --check + suite.
+
 
 
 

@@ -239,6 +239,7 @@ function normalizarEstado(){
   if(!E.dinastia.raiz) E.dinastia.raiz=E.perfil.nombre||"DT";
   if(!E.personal) E.personal={bolsillo:50,propiedades:[],autos:[]};
   if(E.personal.sueldo===undefined) E.personal.sueldo=8;
+  if(typeof E.personal.bolsillo!=="number" || isNaN(E.personal.bolsillo)) E.personal.bolsillo=50;
   if(E.flags.desfalco===undefined) E.flags.desfalco=0;
   if(!E.config) E.config={autoPausa:true};
   if(E.config.spoiler===undefined) E.config.spoiler=(E.modo!=="libre");
@@ -294,6 +295,14 @@ function normalizarEstado(){
     if(E.tactica.bancaManual===undefined) E.tactica.bancaManual=null;
     if(!E.tactica.roles) E.tactica.roles={}; }
   if(typeof rellenarPlantelLista==="function") rellenarPlantelLista();
+}
+/* 7.9991 · bolsillo personal a prueba de saves viejos o a medias */
+function bolsilloDT(delta){
+  if(!E) return 0;
+  if(!E.personal) E.personal={bolsillo:50,propiedades:[],autos:[]};
+  if(typeof E.personal.bolsillo!=="number" || isNaN(E.personal.bolsillo)) E.personal.bolsillo=0;
+  if(typeof delta==="number") E.personal.bolsillo=Math.max(0, E.personal.bolsillo+delta);
+  return E.personal.bolsillo;
 }
 /* ---------- historial de temporadas (memoria a largo plazo) ---------- */
 function tablaOrdenada(){

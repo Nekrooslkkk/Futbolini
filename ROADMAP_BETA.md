@@ -132,8 +132,8 @@
 
 ## 14 · VIDA (estilo BitLife realista pero piola)
 - [ ] **[MOTOR]** Edad: **calendario** bueno para cambiarla.
-- [ ] **[MOTOR]** Orientación del match que **sirva**; más opciones; mejores citas; poder responder más;
-      que no sea tan rápido; poder mejorar o no estar; **tener una vida**.
+- [~] **[MOTOR]** Orientación del match que **sirva**; más opciones; mejores citas; poder responder más;
+      que no sea tan rápido; poder mejorar o no estar; **tener una vida**. *(swipe en la carta 7.9991)*
 - [ ] **[MOTOR]** Lo que te compras: más **visible** y mejor.
 - [ ] **[MOTOR+GROK]** Más **trabajos**; changas → **"pegas"** (chilenizar todo, hoy no es NADA chilensis).
 - [ ] **[GROK]** Vida social: más variedad (no repetido).

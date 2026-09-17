@@ -12,7 +12,7 @@ body{
 }
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 button{background:none;border:none}
-:focus-visible{outline:3px solid #ffd94d;outline-offset:2px}
+:focus-visible{outline:3px solid var(--aqua,#6fe8d2);outline-offset:2px}
 .oculto{display:none !important}
 .mini{font-size:11.5px;line-height:1.5;color:var(--tinta-suave)}
 .dato{font-family:var(--f-dato)}
@@ -290,6 +290,13 @@ textarea.entrada:focus{outline:2px solid #39b7e0}
 .cotiza .var{font-family:var(--f-dato,monospace);font-size:13px;font-weight:700;padding:1px 6px;border-radius:4px}
 .cotiza .var.sube{color:#0d6b2c;background:#1e9e4622}
 .cotiza .var.baja{color:#a12318;background:#c0392b22}
+
+/* 7.9991 · ventanilla del banco (cuentas de un vistazo) */
+.banco-cuentas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.banco-cta{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;text-align:left;
+  border-radius:8px;border:1px solid var(--linea);cursor:default;min-height:56px}
+.banco-cta .k{font-size:10.5px;letter-spacing:.3px;text-transform:uppercase;color:var(--tinta-suave)}
+.banco-cta .v{font-family:var(--f-dato,monospace);font-size:15px;font-weight:800}
 .spark{margin:4px 0 8px;border:1px solid rgba(0,0,0,.12);border-radius:5px;padding:2px;background:rgba(255,255,255,.35)}
 table.flujo{width:100%;border-collapse:collapse;font-size:13px}
 table.flujo td,table.flujo th{padding:3px 6px;border-bottom:1px solid rgba(0,0,0,.08);text-align:left}

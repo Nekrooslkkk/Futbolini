@@ -19,11 +19,13 @@ const APUESTAS_CASINO=[
 function colorRuleta(n){ return n===0?"verde":(RULETA_ROJOS.indexOf(n)>=0?"rojo":"negro"); }
 function girarRuleta(apId, monto, plenoNum){
   const ap=APUESTAS_CASINO.find(a=>a.id===apId); if(!ap) return null;
+  if(typeof bolsilloDT==="function") bolsilloDT();
+  else { if(!E.personal) E.personal={}; if(typeof E.personal.bolsillo!=="number") E.personal.bolsillo=0; }
   const n=ri(0,36);
   const gano=ap.gana(n, plenoNum);
   const pago=gano?monto*ap.pago:0;
   const neto=pago-monto;
-  E.personal.bolsillo=Math.max(0, E.personal.bolsillo+neto);
+  E.personal.bolsillo=Math.max(0, (E.personal.bolsillo||0)+neto);
   E.personal.ruletaHist=E.personal.ruletaHist||[];
   E.personal.ruletaHist.unshift({n:n,color:colorRuleta(n),gano:gano,neto:neto});
   if(E.personal.ruletaHist.length>14) E.personal.ruletaHist.length=14;
@@ -34,8 +36,9 @@ function girarRuleta(apId, monto, plenoNum){
 function desviarFondos(monto){
   monto=Math.round(Math.min(monto, E.plata*0.6));
   if(monto<=0){ if(typeof aviso==="function") aviso("No hay caja del club para desviar."); return; }
+  if(typeof bolsilloDT==="function") bolsilloDT();
   E.plata=Math.max(0, E.plata-monto);
-  E.personal.bolsillo+=monto;
+  E.personal.bolsillo=(E.personal.bolsillo||0)+monto;
   E.flags.desfalco=(E.flags.desfalco||0)+monto;
   E.ind.riesgo=clamp(E.ind.riesgo+Math.round(5+monto/60),0,100);
   aplicarRep({credibilidad:-3});
