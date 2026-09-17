@@ -1,5 +1,12 @@
 # FUTBOLINI 3.0 — Bitácora de parches
 
+## 7.99956 · En línea + login + voseo de datos
+**Archivos:** `nube.js`, `ui.js`, `css/base.css`, `servidor.js`, `ui-partido.js`, `data-formato2026.js`, `data-decisiones-plus.js`, `data-superprompt-83.js`, `pulido.js`
+- **Ajustes:** «Hay x personas jugando ahora» con botón verde que parpadea. Latido `/api/presencia`.
+- Login 👤: correo/clave con etiquetas, ver clave, Enter, recuerda el mail.
+- Voseo de datos (lista Claude 12) a tú neutro; pulido se queda en chilensis; Argentina conserva `jugás`.
+- Traje Claude 8–12 (O'Higgins, ANFP→AFA, voseo UI). Tests T49. **No 8.00.**
+
 ## 7.99955 · El 45' de verdad + 11 DTs AFA
 **Archivos:** `partido.js`, `ui-partido.js`, `data-planteles.js`, `util.js`, `test/pruebas_core.js`
 - **Descanso clavado al 45'.** El reloj saltaba 2–4 min (44→48) y se comía la ventana `min<48`. Ahora, si el próximo tick cruza 45, `P.min=45` y dispara `entretiempo` (igual que el 90' de descuento). Momentos tácticos: 46 afuera (`[12,32,52,64,76,84]`). `pasoEnVivo` no deja que un momento tape el HT.

@@ -1195,7 +1195,7 @@ function cuposChileDesde(pos, copaChile, b){
   if(era==="2026c") return {lib:false,sud:false,via:"",detalle:"Segunda no clasifica a copas CONMEBOL.",vias:[]};
   var promoB=!!(b&&(flags.ligaBCampeon||flags.ligaBLiguilla));
   if(b&&!promoB){
-    return {lib:false,sud:false,via:"",detalle:"La B no clasifica a Libertadores ni Sudamericana. El premio es subir. Si ganás Copa Chile y no subís, no hay repechaje Chile 4: hay que estar en Primera el año siguiente.",vias:[]};
+    return {lib:false,sud:false,via:"",detalle:"La B no clasifica a Libertadores ni Sudamericana. El premio es subir. Si ganas Copa Chile y no subes, no hay repechaje Chile 4: hay que estar en Primera el año siguiente.",vias:[]};
   }
   var vias=[], lib=false, sud=false;
   var defLib=!!flags.copaCampeon, defSud=!!flags.copaSudCampeon;
@@ -1213,16 +1213,16 @@ function cuposChileDesde(pos, copaChile, b){
     if(defLib){ lib=true; vias.push("campeón de Libertadores "+anio+" (cupo CONMEBOL extra: no consume Chile 1–4)"); }
     if(defSud){ lib=true; vias.push("campeón de Sudamericana "+anio+" (entra a Libertadores "+next+" como cupo extra: no consume Chile 1–4)"); }
     if(pos===1){
-      if(extra) vias.push("Chile 1: ya tenés Libertadores por el cupo extra, el 2° hereda Chile 1 (el 3° hereda Chile 2; el repechaje Chile 4 lo juega el 4°)");
+      if(extra) vias.push("Chile 1: ya tienes Libertadores por el cupo extra, el 2° hereda Chile 1 (el 3° hereda Chile 2; el repechaje Chile 4 lo juega el 4°)");
       else { lib=true; vias.push("Chile 1 · campeón de Liga"); }
     }
     if(pos===2){
-      if(extra) vias.push("Chile 2: ya tenés Libertadores por el cupo extra, el siguiente de la tabla hereda Chile 2");
-      else if(primeroExtra){ lib=true; vias.push("Chile 1 · subcampeón: el campeón ya está por cupo CONMEBOL extra, heredás Chile 1"); }
+      if(extra) vias.push("Chile 2: ya tienes Libertadores por el cupo extra, el siguiente de la tabla hereda Chile 2");
+      else if(primeroExtra){ lib=true; vias.push("Chile 1 · subcampeón: el campeón ya está por cupo CONMEBOL extra, heredas Chile 1"); }
       else { lib=true; vias.push("Chile 2 · subcampeón de Liga"); }
     }
     if(copaLiga){
-      if(lib) vias.push("Copa de la Liga: ya tenés Libertadores, el Chile 3 lo hereda el siguiente de la tabla que no esté clasificado");
+      if(lib) vias.push("Copa de la Liga: ya tienes Libertadores, el Chile 3 lo hereda el siguiente de la tabla que no esté clasificado");
       else { lib=true; vias.push("Chile 3 · campeón Copa de la Liga"); }
     }
     var clNpcYaLib=_posClubTabla(npcCL)===1||_posClubTabla(npcCL)===2||(npcCL&&(npcCL===npcLib||npcCL===npcSud));
@@ -1233,7 +1233,7 @@ function cuposChileDesde(pos, copaChile, b){
     if(pos===3&&tablaCorrida&&!lib){
       lib=true; vias.push("Chile 2 · 3° de Liga: el campeón ya está por cupo CONMEBOL extra y el 2° heredó Chile 1");
     }
-    if(pos===3&&extra) vias.push("Chile 4: ya tenés Libertadores por el cupo extra, el repechaje lo juega el 4°");
+    if(pos===3&&extra) vias.push("Chile 4: ya tienes Libertadores por el cupo extra, el repechaje lo juega el 4°");
   }
   var yaLib=lib;
   var playoffTerceroPos=(tablaCorrida&&!copaLiga)?4:3;
@@ -1553,7 +1553,7 @@ function cuposChileDesde(pos, copaChile, b){
     {ctx:"liguilla_b",quien:"@pibe_de_la_popular",txt:"el 2° espera. nosotros nos jugamos la vida en cuartos. formato enfermo. firmado"},
     {ctx:"liguilla_b",quien:"@RadioGolAM",txt:"Liguilla Liga de Ascenso: 3°–8°, 4°–7°, 5°–6°. Sin gol de visita. Empate: penales, salvo la final."},
     {ctx:"liguilla_b",quien:"@cuenta_troll",txt:"el dt dijo «respetar la regular». hermano la regular se acabó, ahora es cuchillo"},
-    {ctx:"liguilla_b",quien:"@datofutbol",txt:"de Primera bajan 2. de la B suben 2. si no lo tenés claro, anotalo en la mano"},
+    {ctx:"liguilla_b",quien:"@datofutbol",txt:"de Primera bajan 2. de la B suben 2. si no lo tienes claro, anotalo en la mano"},
     {ctx:"liguilla_b",quien:"@hincha_de_ley",txt:"local primero el que salió peor. justicia poética o trampa, según quién seas"},
     {ctx:"zonal",quien:"@hincha_de_ley",txt:"en la zona se juega contra el vecino. el clásico de pueblo duele más que un grande"},
     {ctx:"zonal",quien:"@doña_clarita",txt:"ida y vuelta con el de al lado. el almacén ya tomó bando"},
@@ -1569,7 +1569,7 @@ function cuposChileDesde(pos, copaChile, b){
     {sit:"copa_liga",q:"¿La Copa de la Liga es un título o un trámite para minutos?"},
     {sit:"copa_liga",q:"Solo pasa el 1° de grupo. ¿Eso cambia cómo arma el once?"},
     {sit:"copa_liga",q:"El campeón se lleva Chile 3. ¿El plantel lo tiene claro?"},
-    {sit:"copa_liga",q:"Si ya están en Libertadores, el Chile 3 lo hereda otro. ¿Se lo explicás al plantel o lo dejás pasar?"},
+    {sit:"copa_liga",q:"Si ya están en Libertadores, el Chile 3 lo hereda otro. ¿Se lo explicas al plantel o lo dejas pasar?"},
     {sit:"copa_liga",q:"¿Prioriza la liga o este torneo nuevo que la gente todavía nombra mal?"},
     {sit:"supercopa",q:"Enero, Final Four, cancha neutral. ¿Se puede llegar bien a la liga después de esto?"},
     {sit:"supercopa",q:"¿La Supercopa es el primer título del año o un amistoso caro?"},

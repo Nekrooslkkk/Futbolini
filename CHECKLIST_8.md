@@ -7,7 +7,7 @@
 ## Estado verificado (barrido automático de Claude · headless)
 - ✅ 79 clubes jugables botean en su época. 316 partidos simulados. **0 errores de consola.**
 - ✅ Todas las secciones renderizan sin excepción en las 3 divisiones + AFA + 1925/1991/2006.
-- ✅ Suite de regresión: **812/812** verde (Grok 7.99955).
+- ✅ Suite de regresión: **820/820** verde (Grok 7.99956).
 - → Conclusión: el motor NO crashea. Lo que falta para 8.00 es UX y rigor de datos.
 
 ## RIGOR (auditor de Claude · vara = Colo-Colo)
@@ -29,6 +29,8 @@
 - [x] `partido.js`: `tieneRasgo` duplicada — Grok 7.99954
 - [x] Entretiempo clavado al 45' (no se salta con tick 2–4 min) — Grok 7.99955
 - [x] 11 DTs AFA 2026 con fuente — Grok 7.99955
+- [x] Voseo de datos (lista Claude 12) — Grok 7.99956
+- [x] Panel «Hay x personas jugando ahora» en Ajustes — Grok 7.99956
 - [ ] Playoffs 2006 estilo México: dato listo, motor pendiente *(Grok)*
 - [ ] Formato Segunda liguilla de 7: dato listo, ¿motor cerrado? *(verificar con Grok)*
 

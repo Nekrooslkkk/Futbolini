@@ -28,6 +28,16 @@ function versionDelJuego(){
 }
 function versionInfo(){ return {nombre:"Futbolini",build:versionDelJuego(),offline:true,ia:"heuristica-local"}; }
 
+/* quién tiene el juego abierto (latido de ~90s) */
+const PRESENCIA=new Map();
+const PRESENCIA_TTL=90000;
+function presenciaN(id){
+  const now=Date.now();
+  if(id) PRESENCIA.set(String(id).slice(0,80), now);
+  for(const [k,t] of PRESENCIA) if(now-t>PRESENCIA_TTL) PRESENCIA.delete(k);
+  return Math.max(1, PRESENCIA.size);
+}
+
 function send(res,code,body,type){
   res.writeHead(code,{"Content-Type":type||"text/plain; charset=utf-8","Cache-Control":"no-cache"});
   res.end(body);
@@ -36,6 +46,22 @@ function api(req,res){
   if(req.url==="/api/health"||req.url==="/api/version"){
     send(res,200,JSON.stringify(versionInfo()),"application/json; charset=utf-8");
     return true;
+  }
+  if((req.url||"").split("?")[0]==="/api/presencia"){
+    if(req.method==="GET"){
+      send(res,200,JSON.stringify({n:presenciaN()}),"application/json; charset=utf-8");
+      return true;
+    }
+    if(req.method==="POST"){
+      let raw="";
+      req.on("data",c=>raw+=c);
+      req.on("end",()=>{
+        let id="";
+        try{ id=JSON.parse(raw||"{}").id||""; }catch(e){ id=""; }
+        send(res,200,JSON.stringify({n:presenciaN(id||"anon")}),"application/json; charset=utf-8");
+      });
+      return true;
+    }
   }
   if(req.url==="/api/pensar" && req.method==="POST"){
     let raw="";

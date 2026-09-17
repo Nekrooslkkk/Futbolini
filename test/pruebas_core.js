@@ -1849,6 +1849,21 @@
       });
     }, "11 DTs AFA documentados");
 
+    /* T49 · 7.99956 en línea + login + voseo de datos */
+    grupo("Grok 7.99956 (en línea + login)");
+    safe(function(){
+      ok(VERSION==="7.99956" || /^7\.99956/.test(VERSION), "VERSION 7.99956");
+      ok(typeof panelEnLinea==="function", "panel En este momento");
+      ok(typeof presenciaLatido==="function" && typeof presenciaN==="function", "presencia API");
+      ok(presenciaN()>=1, "al menos 1 (vos)");
+      ok(typeof modalCuenta==="function", "login de cuenta");
+    }, "API 7.99956");
+    safe(function(){
+      ok(typeof FORMAT_SEGUNDA_2026==="object", "FORMAT_SEGUNDA_2026");
+      ok((FORMAT_SEGUNDA_2026.juego||"").indexOf("tenés")<0, "Segunda: sin tenés rioplatense");
+      ok((FORMAT_SEGUNDA_2026.juego||"").indexOf("tú tienes")>=0, "Segunda: tú tienes");
+    }, "voseo de datos (carril Grok)");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }

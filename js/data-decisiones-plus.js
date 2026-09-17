@@ -62,7 +62,7 @@
    mitad:{txt:"El ejemplo se entendió, el equipo lo extrañó un rato.",ef:{moral:-2}},
    mal:{txt:"El vestuario lo leyó como escarmiento selectivo. El {CAPITAN} pidió hablar.",ef:{moral:-6},grupos:{camarin:-10}}},
   {t:"Tapar y rezar",d:"Nadie vio nada.",dif:58,grupos:{prensa:-12},rep:{dureza:-4},
-   bien:{txt:"El audio no salió. Te debés una.",ef:{riesgo:3}},
+   bien:{txt:"El audio no salió. Te debes una.",ef:{riesgo:3}},
    mitad:{txt:"Salió tarde y desinflado. Costó un par de columnas.",grupos:{prensa:-6}},
    mal:{txt:"Salió con tu nombre: «el club sabía y calló».",ef:{riesgo:10,prestigio:-6},grupos:{prensa:-14,directorio:-8}}}
  ]},

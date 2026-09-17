@@ -171,3 +171,68 @@ async function _nubeAutoDisparar(){
   _nubeAutoEnCurso=false;
   if(_nubeAutoPend&&!_nubeAutoTimer) _nubeAutoTimer=setTimeout(_nubeAutoDisparar,5000); /* algo cambió mientras subía */
 }
+
+/* ---------- presencia: quién está con el juego abierto ----------
+   Latido cada ~25s a /api/presencia. Si no hay servidor (Pages, file://),
+   cuenta 1: vos. El panel de Ajustes pinta "Hay x personas jugando ahora". */
+const PRESENCIA_ID_LLAVE="futbolini_presencia_id";
+const PRESENCIA_MAIL_LLAVE="futbolini_nube_email";
+let _presenciaTimer=null, _presenciaN=1, _presenciaOk=false;
+
+function presenciaId(){
+  try{
+    var id=sessionStorage.getItem(PRESENCIA_ID_LLAVE);
+    if(!id){
+      id=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID()
+        :("p"+Date.now().toString(36)+Math.random().toString(36).slice(2,10));
+      sessionStorage.setItem(PRESENCIA_ID_LLAVE,id);
+    }
+    return id;
+  }catch(e){ return "p"+Date.now(); }
+}
+function presenciaN(){ return Math.max(1, _presenciaN|0); }
+function presenciaRuta(){
+  try{
+    if(typeof location==="undefined") return "/api/presencia";
+    /* iframe /juego → mismo origen del preview */
+    return "/api/presencia";
+  }catch(e){ return "/api/presencia"; }
+}
+async function presenciaLatido(){
+  try{
+    const r=await fetch(presenciaRuta(),{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({id:presenciaId()}),
+      cache:"no-store"
+    });
+    if(!r.ok) throw new Error("http "+r.status);
+    const j=await r.json().catch(()=>({}));
+    const n=Math.max(1, parseInt(j&&j.n,10)||1);
+    _presenciaN=n; _presenciaOk=true;
+    presenciaPintar();
+    return n;
+  }catch(e){
+    _presenciaOk=false; _presenciaN=1; presenciaPintar();
+    return 1;
+  }
+}
+function presenciaPintar(){
+  const n=presenciaN();
+  const txt=document.getElementById("presenciaTxt");
+  if(txt) txt.innerHTML="Hay <b>"+n+"</b> persona"+(n===1?"":"s")+" jugando ahora";
+  const btn=document.getElementById("presenciaVivo");
+  if(btn) btn.setAttribute("aria-label", n+" en línea");
+}
+function presenciaArrancar(){
+  if(_presenciaTimer) return;
+  presenciaLatido();
+  _presenciaTimer=setInterval(presenciaLatido, 25000);
+  try{ document.addEventListener("visibilitychange", function(){ if(!document.hidden) presenciaLatido(); }); }catch(e){}
+}
+function nubeMailRecordado(){
+  try{ return localStorage.getItem(PRESENCIA_MAIL_LLAVE)||""; }catch(e){ return ""; }
+}
+function nubeRecordarMail(m){
+  try{ if(m) localStorage.setItem(PRESENCIA_MAIL_LLAVE,m); }catch(e){}
+}

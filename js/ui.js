@@ -2631,12 +2631,31 @@ function panelMisPartidas(v){
 function fechaCorta(ts){
   try{ return new Date(ts).toLocaleDateString("es-CL",{day:"2-digit",month:"2-digit"}); }catch(e){ return ""; }
 }
+/* ---------------- en línea (Ajustes) ---------------- */
+function panelEnLinea(v){
+  const p=panel("En este momento","🟢","agua");
+  const linea=el("div","presencia-linea");
+  const btn=el("button","presencia-vivo");
+  btn.type="button"; btn.id="presenciaVivo";
+  btn.setAttribute("aria-label","Jugadores en línea");
+  btn.title="En línea";
+  const txt=el("span","presencia-txt");
+  txt.id="presenciaTxt";
+  const n=(typeof presenciaN==="function")?presenciaN():1;
+  txt.innerHTML="Hay <b>"+n+"</b> persona"+(n===1?"":"s")+" jugando ahora";
+  linea.appendChild(btn); linea.appendChild(txt);
+  p.cuerpo.appendChild(linea);
+  p.cuerpo.appendChild(el("p","mini","Quien tenga el juego abierto cuenta. El punto verde parpadea mientras hay gente."));
+  v.appendChild(p);
+  if(typeof presenciaLatido==="function") presenciaLatido();
+}
 /* ---------------- ajustes ---------------- */
 function vistaAjustes(){
   const v=$("#vista");
+  panelEnLinea(v);
   const don=panel("El proyecto","💚");
   don.cuerpo.appendChild(el("p",null,"Futbolini es gratis y siempre lo va a ser. Corre 100% en tu navegador, sin servidor obligatorio: el ayudante es un compositor local (lee el club y arma frases), no una IA de pago."));
-  don.cuerpo.appendChild(el("p","mini","Si quieres ayudar: comparte el juego, o invitale un café al autor. Nada se bloquea si no donás."));
+  don.cuerpo.appendChild(el("p","mini","Si quieres ayudar: comparte el juego, o invitale un café al autor. Nada se bloquea si no donas."));
   if(typeof botonDonar==="function") don.cuerpo.appendChild(botonDonar("btn-aqua ancho verde"));
   v.appendChild(don);
   panelMisPartidas(v);
@@ -2801,6 +2820,9 @@ function vistaAjustes(){
     }
     v.appendChild(pn);
   }
+
+  /* ---- Modo Dios y modo dev: solo con partida abierta ---- */
+  if(!E) return;
 
   /* ---- Modo Dios (panel de cheats) ---- */
   const pg=panel("Modo Dios","😇","alerta");
@@ -3278,12 +3300,12 @@ function pintarBtnCuenta(){
 function modalCuenta(){
   if(typeof nubeActiva!=="function" || !nubeActiva()){ aviso("La cuenta en la nube no está configurada"); if(E) irA("ajustes"); return; }
   modal(box=>{
-    box.appendChild(el("div","cab",'<span class="ic">☁️</span><span>Tu cuenta en la nube</span>'));
+    box.appendChild(el("div","cab",'<span class="ic">☁️</span><span>Tu cuenta</span>'));
     const cc=el("div","cuerpo"); box.appendChild(cc);
-    const estInp="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid rgba(0,0,0,.15)";
+    const estInp="display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:10px 12px;border-radius:10px;border:1px solid rgba(0,0,0,.18);font-size:15px";
     if(nubeLogueado()){
-      cc.appendChild(el("p",null,"Conectado como <b>"+(nubeEmail()||"tu cuenta")+"</b>."));
-      cc.appendChild(el("p","mini","Tu partida se respalda sola en la nube. Entrá con esta cuenta en otro equipo o celular para seguir donde ibas."));
+      cc.appendChild(el("p",null,"Sesión de <b>"+(nubeEmail()||"tu cuenta")+"</b>."));
+      cc.appendChild(el("p","mini","La partida te sigue a otro celular o computadora. Subir es automático si lo dejaste prendido; bajar siempre pide confirmación."));
       const bSub=el("button","btn-aqua chico","☁️ Subir partida ahora");
       bSub.onclick=async()=>{ if(!E||!E.club){ aviso("No hay partida abierta"); return; } bSub.disabled=true; const r=await nubeSubir(E); bSub.disabled=false; aviso(r.ok?"Partida subida a la nube":("No se pudo subir: "+r.msg)); };
       const bBaj=el("button","btn-aqua chico"); bBaj.textContent="⬇️ Bajar partida"; bBaj.style.marginLeft="6px";
@@ -3293,15 +3315,36 @@ function modalCuenta(){
       bOut.onclick=()=>{ nubeSalir(); cerrarModal(); pintarBtnCuenta(); aviso("Sesión cerrada"); };
       cc.appendChild(bOut);
     }else{
-      cc.appendChild(el("p","mini","Entrá con tu correo para que tu partida te siga en cualquier dispositivo. Es opcional: sin cuenta, el juego anda igual."));
-      const iMail=el("input"); iMail.type="email"; iMail.placeholder="correo"; iMail.autocomplete="email"; iMail.style.cssText=estInp;
-      const iPass=el("input"); iPass.type="password"; iPass.placeholder="clave (6+ letras)"; iPass.autocomplete="current-password"; iPass.style.cssText=estInp;
-      cc.appendChild(iMail); cc.appendChild(iPass);
-      const bIn=el("button","btn-aqua chico verde","Entrar"); bIn.style.marginTop="8px";
-      bIn.onclick=async()=>{ if(!iMail.value||!iPass.value){ aviso("Completá correo y clave"); return; } bIn.disabled=true; const r=await nubeEntrar(iMail.value.trim(),iPass.value); bIn.disabled=false; if(r.ok){ cerrarModal(); pintarBtnCuenta(); aviso("Hola de nuevo, "+r.email); } else aviso(r.msg); };
-      const bReg=el("button","btn-aqua chico","Crear cuenta"); bReg.style.marginLeft="6px";
-      bReg.onclick=async()=>{ if(!iMail.value||!iPass.value){ aviso("Completá correo y clave"); return; } if(iPass.value.length<6){ aviso("La clave necesita al menos 6 letras"); return; } bReg.disabled=true; const r=await nubeRegistrar(iMail.value.trim(),iPass.value); bReg.disabled=false; if(!r.ok){ aviso(r.msg); return; } if(r.confirmar){ aviso(r.msg); } else { cerrarModal(); pintarBtnCuenta(); aviso("¡Cuenta creada!"); } };
+      cc.appendChild(el("p","mini","Correo y clave. Es opcional: sin cuenta el juego sigue igual, en este navegador."));
+      cc.appendChild(el("label","lb","Correo"));
+      const iMail=el("input"); iMail.type="email"; iMail.placeholder="tu@correo.com"; iMail.autocomplete="email"; iMail.style.cssText=estInp;
+      if(typeof nubeMailRecordado==="function") iMail.value=nubeMailRecordado();
+      cc.appendChild(iMail);
+      cc.appendChild(el("label","lb","Clave"));
+      const wrap=el("div","clave-wrap");
+      const iPass=el("input"); iPass.type="password"; iPass.placeholder="mínimo 6 caracteres"; iPass.autocomplete="current-password"; iPass.style.cssText=estInp; iPass.style.paddingRight="72px";
+      const tog=el("button","clave-ver"); tog.type="button"; tog.textContent="ver"; tog.setAttribute("aria-label","Mostrar clave");
+      tog.onclick=()=>{ const on=iPass.type==="password"; iPass.type=on?"text":"password"; tog.textContent=on?"ocultar":"ver"; };
+      wrap.appendChild(iPass); wrap.appendChild(tog); cc.appendChild(wrap);
+      const ir=async(fn,btn)=>{
+        const mail=(iMail.value||"").trim(), pass=iPass.value||"";
+        if(!mail||!pass){ aviso("Completa correo y clave"); return; }
+        btn.disabled=true;
+        const r=await fn(mail,pass);
+        btn.disabled=false;
+        if(!r.ok){ aviso(r.msg); return; }
+        if(typeof nubeRecordarMail==="function") nubeRecordarMail(mail);
+        if(r.confirmar){ aviso(r.msg); return; }
+        cerrarModal(); pintarBtnCuenta(); aviso(r.email?("Hola, "+r.email):"Listo");
+      };
+      const bIn=el("button","btn-aqua chico verde","Entrar"); bIn.style.marginTop="10px";
+      bIn.onclick=()=>ir(nubeEntrar,bIn);
+      const bReg=el("button","btn-aqua chico"); bReg.textContent="Crear cuenta"; bReg.style.marginLeft="6px";
+      bReg.onclick=()=>{ if((iPass.value||"").length<6){ aviso("La clave necesita al menos 6 caracteres"); return; } ir(nubeRegistrar,bReg); };
+      iPass.addEventListener("keydown",function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); bIn.click(); } });
+      iMail.addEventListener("keydown",function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); iPass.focus(); } });
       cc.appendChild(bIn); cc.appendChild(bReg);
+      setTimeout(function(){ try{ (iMail.value?iPass:iMail).focus(); }catch(e){} }, 40);
     }
     const bx=el("button","btn-aqua chico gris ancho","Cerrar"); bx.style.marginTop="10px"; bx.onclick=cerrarModal; cc.appendChild(bx);
   });
@@ -3310,6 +3353,7 @@ function modalCuenta(){
 $("#btnAvanzar").onclick=avanzar;
 $("#btnRapido").onclick=modalAvanceRapido;
 $("#btnCuenta").onclick=modalCuenta;
+if(typeof presenciaArrancar==="function") try{ presenciaArrancar(); }catch(e){}
 $("#btnAvisos").onclick=()=>{ if(E) modalAvisos(); };
 { const _c=document.getElementById("campanaAvisos"); if(_c) _c.onclick=()=>{ if(E) modalAvisos(); }; }
 $("#btnTemas").onclick=()=>{

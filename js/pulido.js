@@ -272,7 +272,7 @@ function irMeta74(o){
       if(o) return "El directorio mira «"+o.t+"». "+comoHacerObjetivo(o);
     }
     if(t("libertadores","sudamericana","conmebol","copa libertadores")){
-      if(_div74()==="C") return "En Segunda no hay Libertadores ni Copa Chile (bases ANFP: 32 = Primera + B). El premio es subir a la B: el año que viene sí jugás Copa Chile. Si querís ver quién manda en Primera, Calendario: pestaña Tablas.";
+      if(_div74()==="C") return "En Segunda no hay Libertadores ni Copa Chile (bases ANFP: 32 = Primera + B). El premio es subir a la B: el año que viene sí jugái Copa Chile. Si querís ver quién manda en Primera, Calendario: pestaña Tablas.";
       if(_div74()==="B") return "La B no clasifica a Libertadores, salvo que ganes Copa Chile y subas. Copa Chile sí se juega. El 1° de la regular sube directo; 2°–8° van a liguilla. Si llegás a Primera, entra Copa de la Liga.";
       if(_div74()==="ARG") return "Campeón de Apertura y de Clausura van a Libertadores. En el juego es una rueda de 29: terminá arriba. Copa Chile no se juega acá.";
       const enLib=typeof LIB_GRUPOS_2026_CHILE==="object"&&E&&LIB_GRUPOS_2026_CHILE[E.club];
@@ -287,7 +287,7 @@ function irMeta74(o){
     }
     if(t("segunda","zona","liguilla")){
       if(_div74()==="C") return "Tu zona son 7 clubes, 12 fechas. Top 3 a liguilla de título. El 1° de esa liguilla sube a la B. Abajo se huele Tercera. Cada punto vale doble.";
-      return "Segunda se juega por zonas Norte/Sur. Si subís o bajás, el que llega brigido lo ves en Calendario → 2ª Norte/Sur.";
+      return "Segunda se juega por zonas Norte/Sur. Si subís o bajái, el que llega brigido lo ves en Calendario → 2ª Norte/Sur.";
     }
     if(t("que hago","qué hago","como hago","cómo hago","meta","finanza","deuda","ordenar")){
       const o=(E&&E.objetivos||[]).find(x=>typeof progresoObjetivo==="function"&&progresoObjetivo(x).estado==="riesgo")
