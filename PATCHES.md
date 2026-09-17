@@ -2634,3 +2634,15 @@ Preparado aparte para no pisar a Grok. Tres archivos nuevos + doc, nada de los e
 - **test/pruebas_dev.js + test/correr_dev.sh** — suite propia (24/24), aparte de `pruebas_core.js`
   para no chocar con Grok.
 **Probado:** node --check + `correr_dev.sh` 24/24 + `correr.sh` 485/485 (sin regresiones) + capturas del panel.
+
+### 8.0-dev (actualizado sobre 7.99940)
+- Rebase del motor sobre el main de Grok. Sin conflictos; ambas suites verdes (736/736 y 29/29).
+- **Quitado panel duplicado:** mi "El club hoy" (7.86) mostraba el MISMO texto que el
+  "🎯 Tu situación" que Grok agregó después en `data-tarea-e.js` (y el de él además lista
+  los clásicos). Se queda el de Grok; saqué el mío de `ui.js`. Test actualizado.
+- **Esquema +1 dimensión:** `decisiones` — la vara que puso Grok en `data-rigor-801.js`
+  ("que cada semana te llegue una carta que solo existe en ese club"). Ahora el auditor la mide.
+- **Auditor más honesto:** los clubes que solo son RIVALES del calendario (CBS, FV, y 9 de 1925)
+  no se pueden dirigir, así que ya no arrastran el promedio; se listan aparte.
+- Foto real del rigor hoy: **Chile 2026/B/Segunda/1991/2006/1925 = 100%** (dirigibles),
+  **Argentina 91%** ← único hueco: 23 de 30 clubes sin decisión propia, 11 sin DT, 10 sin clásico.

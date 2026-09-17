@@ -668,12 +668,8 @@ function vistaEscritorio(){
   }
   izq.appendChild(pb);
 
-  /* E-1 · por qué juego a esto: la situación del club (Grok TAREA E / Claude 7.86). Solo si hay dato. */
-  if(typeof SITUACION_CLUB==="object" && SITUACION_CLUB[E.club]){
-    const psit=panel("El club hoy","🎯","agua");
-    psit.cuerpo.appendChild(el("p",null,SITUACION_CLUB[E.club]));
-    der.appendChild(psit);
-  }
+  /* La situación del club NO se pinta acá: la pinta "🎯 Tu situación" (data-tarea-e.js),
+     que además lista los clásicos. Tener las dos mostraba el MISMO texto dos veces. */
 
   /* estado */
   const pe=panel("Estado del club","📊","agua");

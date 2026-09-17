@@ -53,7 +53,10 @@ function auditarClub(id){
 
 /* auditoría de una liga entera */
 function auditarLiga(era){
-  var ids=devIdsLiga(era), fichas=ids.map(auditarClub);
+  var todos=devIdsLiga(era);
+  var jug=todos.filter(function(id){ return typeof devEsJugable!=="function" || devEsJugable(id); });
+  var soloRival=todos.filter(function(id){ return jug.indexOf(id)<0; });
+  var ids=jug, fichas=ids.map(auditarClub);
   var suma=fichas.reduce(function(s,f){ return s+f.pct; },0);
   /* qué campo falta más seguido en esta liga */
   var cuenta={};
@@ -63,7 +66,7 @@ function auditarLiga(era){
   return {
     era:era,
     nombre:((typeof ERA!=="undefined"&&ERA[era]&&ERA[era].n)||String(era)),
-    clubes:ids.length,
+    clubes:ids.length, soloRival:soloRival,
     pct: ids.length?Math.round(suma/ids.length):0,
     huecos:huecos,
     fichas:fichas.sort(function(a,b){ return a.pct-b.pct; })
@@ -116,6 +119,7 @@ function devInforme(){
     r.huecos.slice(0,6).forEach(function(h){ L.push("   falta "+h.n+" en "+h.cuantos+" clubes"); });
     var peores=r.fichas.slice(0,3).map(function(x){ return x.id+" "+x.pct+"%"; }).join(" · ");
     if(peores) L.push("   peores: "+peores);
+    if(r.soloRival.length) L.push("   (fuera del promedio, solo rivales: "+r.soloRival.join(", ")+")");
   });
   return L.join("\n");
 }

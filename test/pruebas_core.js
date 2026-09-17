@@ -132,7 +132,7 @@
         "SITUACION_CLUB tiene cobertura ("+Object.keys(SITUACION_CLUB||{}).length+" clubes)");
       nuevaPartida("CC",2026,"historico"); SEC="escritorio"; render();
       var txt=(document.getElementById("vista")||{}).textContent||"";
-      ok(txt.indexOf("El club hoy")>=0, "el escritorio muestra el panel 'El club hoy'");
+      ok(txt.indexOf("Tu situación")>=0, "el escritorio muestra el panel de situación");
       ok(SITUACION_CLUB.CC && txt.indexOf(SITUACION_CLUB.CC.slice(0,24))>=0, "muestra la situación real del club elegido");
       nuevaPartida("SMO",2026,"historico",{categoria:"C"}); SEC="escritorio"; render();
       var txt2=(document.getElementById("vista")||{}).textContent||"";

@@ -17,6 +17,7 @@
       t(typeof ESQUEMA_LIGA!=="undefined" && ESQUEMA_LIGA.length>=4, "ESQUEMA_LIGA definido");
       var conSet=ESQUEMA_CLUB.filter(function(c){ return typeof c.set==="function"; }).length;
       t(conSet>=14, "la mayoría de campos son editables ("+conSet+")");
+      t(ESQUEMA_CLUB.some(function(c){ return c.k==="decisiones"; }), "mide la DECISIÓN PROPIA del club (vara de data-rigor-801)");
       ESQUEMA_CLUB.forEach(function(c){
         if(typeof c.get!=="function") t(false,"campo "+c.k+" sin get");
       });
@@ -32,6 +33,13 @@
       var l=auditarLiga("2026");
       t(l && l.clubes>=16, "auditarLiga lee Primera ("+(l&&l.clubes)+" clubes)");
       t(l.pct>=90, "Primera 2026 va sobre 90% de rigor ("+l.pct+"%)");
+      /* los clubes que solo son RIVALES no arrastran el promedio */
+      var l91=auditarLiga("1991");
+      t(l91.soloRival && l91.soloRival.length>0, "1991 separa los clubes solo-rival ("+(l91.soloRival||[]).join(",")+")");
+      t(l91.pct===100, "1991 marca 100% contando solo los dirigibles ("+l91.pct+"%)");
+      t(typeof devEsJugable==="function" && devEsJugable("CC") && !devEsJugable("FV"),
+        "devEsJugable distingue dirigible (CC) de solo-rival (FV)");
+      t(devDecisionesDe("CC").length>0, "Colo-Colo tiene decisiones propias ("+devDecisionesDe("CC").length+")");
       t(auditarTodo().length>=5, "auditarTodo recorre todas las ligas");
       t(typeof devInforme==="function" && devInforme().indexOf("RIGOR")>=0, "devInforme arma el informe");
     },"Auditor");

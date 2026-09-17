@@ -33,6 +33,7 @@ function _devMapa(nombre){
       case "PLANTELES_REALES": return (typeof PLANTELES_REALES !=="undefined")?PLANTELES_REALES :null;
       case "LIGAS":            return (typeof LIGAS            !=="undefined")?LIGAS            :null;
       case "ERA":              return (typeof ERA              !=="undefined")?ERA              :null;
+      case "DECISIONES":       return (typeof DECISIONES       !=="undefined")?DECISIONES       :null;
     }
   }catch(e){}
   return null;
@@ -133,6 +134,9 @@ var ESQUEMA_CLUB=[
   {k:"escudoImg",grupo:"cancha", n:"Escudo archivo (svg/png)",  req:false, tipo:"json", donde:"ESCUDOS_FOTOS[id]",
    get:function(id){ var o=_devDe("ESCUDOS_FOTOS",id); return (o&&o.src)?o:null; },
    set:function(id,v){ _devPone("ESCUDOS_FOTOS",id,v); }},
+  {k:"decisiones",grupo:"alma", n:"Decisión propia del club",  req:true, tipo:"ro", donde:"DECISIONES (campo .club)",
+   get:function(id){ var n=devDecisionesDe(id); return n.length?n:null; }},
+
   {k:"plantel",  grupo:"cancha", n:"Plantel real documentado",  req:false, tipo:"ro", donde:"PLANTELES_REALES[id]",
    get:function(id){ var o=_devDe("PLANTELES_REALES",id);
                      if(!o) return null; var k=Object.keys(o); return k.length?o:null; }},
@@ -171,6 +175,30 @@ var GLORIA_ERA_BASE={ CC:1991 };
    en partido.js/esClasico. Una liga extranjera solo puede usar el array, así que
    esto se declara acá para que la auditoría no dé falsos negativos. */
 var CLASICO_HARDCODE=["CC","UCH","UC"];
+
+/* Decisiones que SOLO le pasan a este club (la vara de Grok en data-rigor-801.js:
+   "que cada semana te llegue una carta que solo existe en ese club"). */
+function devDecisionesDe(id){
+  var out=[];
+  try{
+    var D=_devMapa("DECISIONES"); if(!D||!D.length) return out;
+    D.forEach(function(d){ if(d && d.club===id) out.push(d.id||"?"); });
+  }catch(e){}
+  return out;
+}
+
+/* ¿el jugador puede ELEGIR este club? El picker de inicio ofrece los de
+   CLUB_INFO (core 1991) + CLUB_INFO_2026 + B + C + Argentina. Los que solo
+   figuran como RIVAL del calendario (ej. CBS, FV en 1991) no se manejan, así
+   que no tiene sentido exigirles ficha completa: quedan fuera del promedio. */
+function devEsJugable(id){
+  try{
+    var a=_devMapa("CLUB_INFO_2026"), b=(typeof CLUB_INFO!=="undefined")?CLUB_INFO:null;
+    if(a&&a[id]) return true;
+    if(b&&b[id]) return true;
+  }catch(e){}
+  return false;
+}
 
 /* rivales declarados de un club (array de pares + trío hardcodeado) */
 function devRivalesDe(id){
