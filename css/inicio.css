@@ -16,10 +16,35 @@
 .pick-tab[aria-pressed="true"]{background:linear-gradient(180deg,#eaf6ff,#bfe0ff);
   border-color:rgba(90,160,230,.7);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 2px 7px rgba(40,110,190,.25)}
 .pick-buscar{flex:0 0 auto;min-width:150px;max-width:230px;box-sizing:border-box;
-  padding:8px 12px;border-radius:999px;border:1px solid rgba(0,0,0,.14);font-size:13px;
-  background:rgba(255,255,255,.72)}
+  padding:8px 12px;border-radius:999px;border:1px solid rgba(90,160,230,.45);font-size:13px;
+  background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(230,244,255,.62));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
 .pick-buscar:focus{outline:2px solid rgba(90,160,230,.55);outline-offset:1px}
-.pick-cont{font-size:11px;opacity:.7;font-weight:600;white-space:nowrap;margin-left:2px}
+.pick-cont{font-size:11px;opacity:.7;font-weight:600;white-space:nowrap;margin-left:2px;
+  padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.45);border:1px solid rgba(90,160,230,.28)}
+
+/* ---- canales Wii: tiles más grandes, vidrio ---- */
+.picker-grid.iconos,.iconos.picker-grid{
+  grid-template-columns:repeat(auto-fill,minmax(124px,1fr));
+  gap:10px;
+}
+.picker-grid .icono{
+  min-height:96px;padding:14px 8px;
+  background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(226,240,252,.42));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 3px 8px rgba(0,20,50,.12);
+}
+.picker-grid .icono .g{font-size:32px;line-height:1.15}
+.picker-grid .icono .n{font-size:12px;margin-top:5px;font-weight:700}
+.picker-grid .icono .ciu{font-size:10px}
+
+.ini-tit{margin:4px 0 6px}
+.ini-bajada{margin:0 0 10px;line-height:1.45}
+.ini-legal{margin:0 0 14px;padding:6px 10px;border-radius:6px;
+  background:rgba(255,248,210,.55);border:1px solid rgba(180,140,40,.28);font-size:12.5px}
+.ini-legal summary{cursor:pointer;font-weight:700}
+.ini-apoyar{margin:14px 0 8px;padding:10px 12px;border-radius:7px;
+  background:linear-gradient(180deg,rgba(232,255,232,.7),rgba(200,240,200,.35));
+  border:1px solid rgba(40,140,60,.28)}
 
 /* ---- entrada animada de las cards (stagger por índice) ---- */
 @keyframes cardIn{from{opacity:0;transform:translateY(9px) scale(.97)}to{opacity:1;transform:none}}
@@ -56,4 +81,8 @@ body.perf .icono:hover,body.perf .pick-tab:hover,body.perf .mi:hover{transform:n
   .picker-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
   .picker-tabs::-webkit-scrollbar{display:none}
   .pick-buscar{max-width:none;width:100%}
+  .picker-grid.iconos,.iconos.picker-grid{grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}
+  .picker-grid .icono{min-height:78px;padding:10px 6px}
+  .picker-grid .icono .g{font-size:24px}
+  .picker-grid .icono .n{font-size:10.5px}
 }

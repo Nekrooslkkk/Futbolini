@@ -172,6 +172,20 @@ Hechos públicos. Si no está documentado, se marca.
 [FIX] Bios 1925/1991: se acabó el DJ en 1925. Pools de época.
 [INFO] 8.00 sigue reservada.
 
+## 7.99950 · Apoyar + inicio Vista + Plop discute
+[OK] `js/donar.js`: UNA línea (`DONAR.url`) para pegar Ko-fi/PayPal/Mercado Pago. Vacío = cartel honesto.
+[OK] Inicio = ventana SO, tiles más grandes, legal en details. 💚 en barra/boot/Ajustes/Más.
+[FIX] Publicar o responder en Plop arma un hilo de 2–4 respuestas.
+[INFO] 8.00 sigue reservada.
+
+### NOTA PARA CLAUDE (7.99950)
+- Tocó Grok: `js/donar.js` (nuevo), `util.js` VERSION, `ui.js`, `redes.js` (`responderHilo`), `css/inicio.css`, `css/so.css`, `index.html`, T43, BRIEFING §9.
+- NO tocar: `cancha.js`, `partido.js`, `plop-motor.js`.
+- Donar: no inventar URL. El autor pega en `DONAR.url`.
+- Versión: `7.99950`. No subir a 8.00.
+- Probar: `node --check js/*.js` + T43.
+
+
 
 
 

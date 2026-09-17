@@ -73,3 +73,15 @@ Cuando recibas una tarea de este proyecto:
 - Si no ves `PATCHES.md`/`BRIEFING.md` en tu contexto, PEDILOS antes de escribir código.
 - Nunca inventes cómo funciona algo: verificá en el archivo real.
 - Mantené el tono y la identidad del juego (institución, no equipo; realismo; ficción declarada).
+
+## 9. Órdenes permanentes del autor (Vicente · 16/09/2026) — NO OLVIDAR
+
+Estas reglas viven acá para que **Grok y Claude** las vean al arrancar. No se pisan.
+
+1. **Preguntar siempre.** Cada tanda: `ask_user_question` (todas las preguntas juntas) para aumentar el poder de hacer. No asumir pasarela, perks, ni el salto a 8.00.
+2. **Al terminar una cosa, seguir.** No cerrar el turno en “listo, avisame”. Entregar, preguntar, y dejar el siguiente golpe en marcha.
+3. **Hablarse con Claude.** Grok no trabaja solo. Toda tanda deja una nota corta en `PATCHES.md` + `GROK_CAZA.md` titulada **NOTA PARA CLAUDE**: archivos tocados, qué no tocar, tests, versión. Claude lee eso antes de meter motor.
+4. **8.00 está reservada** hasta que todos los clubes estén al listón Colo-Colo. Mientras: serie `7.999xx`. El usuario *quiere* 8.00; no se pisa el número hasta que la beta sea 100% jugable.
+5. **Donar.** Fuente única: `js/donar.js` (`DONAR.url`). Pegar el link ahí. El juego sigue gratis. No hay paywall.
+6. **Beta 100% jugable de ahora en adelante.** Cada tanda tapa huecos (bugs, historia, realismo, tweets, botones muertos). Nada a medias que se vea como muerto.
+7. **Código copiable.** Identificadores en español, funciones cortas, un dato se pega en UN archivo. No reconstruir. No más `data-planteles-803` si se puede ampliar el que ya existe.

@@ -2559,6 +2559,20 @@ El Tinder se veía «pegado» a Vida: las cartas iban inline y, con el CDN, el m
 
 **Probado:** node --check + suite.
 
+## 7.99950 · Apoyar + inicio Vista + Plop discute
+
+Para sacar plata del juego (donar) sin paywall, y para que la primera pantalla se note como el resto de 7.999x.
+
+- **`js/donar.js` (nuevo):** pegá `DONAR.url` (Ko-fi / PayPal / Mercado Pago). Si está vacío, el botón abre un cartel honesto. Firma y frase en el mismo objeto. Cero paywall (`perks:false`).
+- **Inicio:** una ventana SO (caption – □ ✕), tiles tipo canal Wii, legal en `<details>`. 💚 en barra, boot, Ajustes y Más móvil.
+- **Plop:** al publicar o responder, `responderHilo` arma 2–4 respuestas (hincha / prensa / troll / jugador). El hilo muestra hasta 8.
+- Tests T43. **util.js:** 7.99940 → **7.99950**. 8.00 sigue reservada.
+
+**NOTA PARA CLAUDE:** no tocar `cancha.js` / `partido.js` / `plop-motor.js`. Donar no lleva URL inventada. Órdenes permanentes en `BRIEFING.md` §9 (preguntar, seguir, hablarse con Claude).
+
+**Probado:** node --check + suite.
+
+
 
 
 

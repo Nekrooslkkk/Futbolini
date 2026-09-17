@@ -147,6 +147,69 @@ function esVerificado(t){
   if(!(typeof t==="string") && (t.tipo==="prensa"||t.tipo==="club")) return true;
   return !!(E&&E.plopVerif&&E.plopVerif[h]);
 }
+
+/* 7.99950 · el hilo te discute de verdad (2–4 respuestas, no un tweet suelto). */
+const PLOP_RESP_HINCHA=[
+  "te leí dt. ahora a demostrar en la cancha po",
+  "bien dicho. la gente pide eso hace rato",
+  "hablai lindo y el domingo se juega wn",
+  "banco. pero con hechos, no con plop",
+  "si el camarín piensa lo mismo, vamos bien",
+  "la barra te está escuchando. no la cagues",
+  "otro comunicado. a ver si esta vez pega",
+  "gracias por contestar. no todos los dt lo hacen"
+];
+const PLOP_RESP_PRENSA=[
+  "el cuerpo técnico sale a responder. se viene una semana larga.",
+  "palabras del dt. ahora hay que ver si el once acompaña.",
+  "la cuenta oficial se metió en el hilo. el entorno toma nota."
+];
+const PLOP_RESP_TROLL=[
+  "ksksks el dt contestando tuits a las 2 am",
+  "hablai como si fueras guardiola po hermano",
+  "tweet más largo que tu racha de triunfos"
+];
+const PLOP_RESP_JUG=[
+  "el grupo está enfocado. el dt ya habló.",
+  "leímos. a trabajar."
+];
+function responderHilo(t, txtYo){
+  if(!t) return [];
+  t.hilo=t.hilo||[];
+  const yo=(txtYo||"").toLowerCase();
+  const club=(E&&E.clubNombre)||"el club";
+  const n=typeof ri==="function"?ri(2,4):2;
+  const out=[];
+  const pick=function(arr){ return (typeof elige==="function")?elige(arr):arr[Math.floor(Math.random()*arr.length)]; };
+  const h=(typeof HANDLES_HINCHA!=="undefined")?HANDLES_HINCHA:["@hincha_de_ley"];
+  const p=(typeof HANDLES_PRENSA!=="undefined")?HANDLES_PRENSA:["@RadioGolAM"];
+  for(let i=0;i<n;i++){
+    let autor, texto, tipo="hincha";
+    if(i===0 && /ganar|título|estrella|me voy/.test(yo)){
+      autor=pick(p); tipo="prensa";
+      texto="el dt prometió en público. queda registrado.";
+    } else if(i===n-1 && Math.random()<0.45){
+      autor="@cuenta_troll"; tipo="hincha"; texto=pick(PLOP_RESP_TROLL);
+    } else if(i===1 && Math.random()<0.35){
+      autor=(typeof handleJugador==="function")?handleJugador():"@jugador_oficial";
+      tipo="jugador"; texto=pick(PLOP_RESP_JUG);
+    } else if(Math.random()<0.25){
+      autor=pick(p); tipo="prensa"; texto=pick(PLOP_RESP_PRENSA);
+    } else {
+      autor=pick(h); texto=pick(PLOP_RESP_HINCHA);
+    }
+    texto=String(texto).replace(/\{CLUB\}/g,club);
+    const item={autor:autor,texto:texto,fecha:"ahora",tipo:tipo};
+    t.hilo.push(item);
+    t.replies=(t.replies||0)+1;
+    out.push(item);
+  }
+  return out;
+}
+function responderAlPostPropio(item, txt){
+  if(!item) return;
+  responderHilo(item, txt||item.texto||"");
+}
 /* 6.11 · convierte un recuerdo (2ª persona) en algo que la gente comenta (3ª persona) */
 function memoriaEn3a(txt){
   let t=" "+txt;

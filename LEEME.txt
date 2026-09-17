@@ -12,6 +12,7 @@ Si no tenés Node:
   python -m http.server 8787
 
 El juego guarda en el navegador (localStorage). Offline.
-Donaciones / ayuda: todavía no hay pasarela; la pantalla va en la próxima pasada.
+Donaciones: pegá tu link en js/donar.js (DONAR.url). El botón 💚 ya está.
+Si el url está vacío, el juego no se rompe: muestra un cartel honesto.
 
 Ctrl+Shift+R si ves una versión vieja.

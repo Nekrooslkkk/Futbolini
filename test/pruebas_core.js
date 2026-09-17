@@ -1657,7 +1657,7 @@
     /* T42 · 7.99940 Match ventana aparte + bios de época */
     grupo("Grok 7.99940 (Match ventana + época)");
     safe(function(){
-      ok(VERSION==="7.99940", "VERSION 7.99940");
+      ok(VERSION==="7.99940" || /^7\.99/.test(VERSION), "VERSION 7.99x");
       ok(typeof poolCandidatos==="function" && typeof asegurarTinder==="function", "pool/asegurar Tinder");
       ok(CANDIDATOS_1925.length>=6 && CANDIDATOS_1991.length>=6, "hueco 1925/1991 cubierto");
     }, "API 7.99940");
@@ -1687,6 +1687,34 @@
       ok(cs && ((cs.backgroundImage||"").indexOf("gradient")>=0 || (cs.backgroundColor&&cs.backgroundColor!=="rgba(0, 0, 0, 0)")), "la ventana no es transparente");
       cerrarModal();
     }, "Match es ventana aparte");
+
+    /* T43 · 7.99950 Apoyar + inicio Vista + Plop discute */
+    grupo("Grok 7.99950 (Apoyar + inicio + hilo)");
+    safe(function(){
+      ok(VERSION==="7.99950" || /^7\.9995/.test(VERSION), "VERSION 7.99950");
+      ok(typeof DONAR==="object" && typeof abrirDonar==="function" && typeof botonDonar==="function", "donar.js cargado");
+      ok(DONAR.perks===false, "sin paywall");
+      ok(typeof responderHilo==="function", "responderHilo existe");
+    }, "API 7.99950");
+    safe(function(){
+      var Ewas=typeof E!=="undefined"?E:null;
+      E=null; SEC="escritorio";
+      var v=document.getElementById("vista");
+      if(v){ v.innerHTML=""; pantallaInicio(); }
+      ok(!!document.querySelector("#vista .ventana-so"), "inicio es ventana SO");
+      ok(!!document.querySelector("#vista .picker-grid, #vista .iconos"), "picker de clubes adentro");
+      ok([].some.call(document.querySelectorAll("#vista button"), function(b){ return /Apoyar|café/i.test(b.textContent); }), "botón Apoyar en el inicio");
+      ok(!!document.getElementById("btnApoyar"), "💚 en la barra");
+      if(Ewas) E=Ewas;
+    }, "inicio Vista + Apoyar");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var t={autor:"@hincha_de_ley",texto:"dt contestame",hilo:[],replies:0,tipo:"hincha"};
+      var r=responderHilo(t,"vamos a ganar el título");
+      ok(r && r.length>=2 && r.length<=4, "2–4 respuestas en el hilo");
+      ok(t.hilo.length>=2, "el post acumula hilo");
+      ok(t.replies>=2, "replies cuenta");
+    }, "Plop discute");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

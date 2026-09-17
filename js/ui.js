@@ -81,6 +81,12 @@ function abrirMasMovil(){
     const bt=el("button","btn-aqua ancho","◐ Cambiar tema"); bt.style.marginTop="6px";
     bt.onclick=function(){ cerrarModal(); const b=$("#btnTemas"); if(b) b.click(); };
     acc.appendChild(bt);
+    if(typeof botonDonar==="function"){
+      const bd=botonDonar("btn-aqua ancho verde"); bd.style.marginTop="6px";
+      const _on=bd.onclick;
+      bd.onclick=function(ev){ cerrarModal(); if(_on) _on(ev); };
+      acc.appendChild(bd);
+    }
     const bc=el("button","btn-aqua ancho gris","Cerrar"); bc.style.marginTop="6px"; bc.onclick=cerrarModal;
     acc.appendChild(bc);
     c.appendChild(acc);
@@ -97,7 +103,15 @@ function pintarBarra(){
   pintarBtnCuenta(); pintarCampana();
   const bd=$("#barraDatos"); bd.innerHTML="";
   const badge=$("#avisoBadge");
-  if(!E){ $("#escudo").textContent="⚽"; if(badge) badge.classList.add("oculto"); return; }
+  if(!E){
+    $("#escudo").textContent="⚽";
+    if(badge) badge.classList.add("oculto");
+    if(bd){
+      bd.appendChild(el("div","bd",'<div class="k">Versión</div><div class="v">'+(typeof VERSION!=="undefined"?VERSION:"")+'</div>'));
+      bd.appendChild(el("div","bd",'<div class="k">Estado</div><div class="v">Elegí club</div>'));
+    }
+    return;
+  }
   if(badge){ const n=notifsNoLeidas(); badge.textContent=n>9?"9+":String(n); badge.classList.toggle("oculto",!n); }
   const ic=(typeof infoClub==="function"&&infoClub(E.club))||(CLUB_INFO&&CLUB_INFO[E.club])||{esc:"⚽"};
   const _es=(typeof escudoHTML==="function")?escudoHTML(E.club,24,""):"";
@@ -232,22 +246,29 @@ function pickerClubes(cont){
 }
 function pantallaInicio(){
   const v=$("#vista");
-  const p=panel("Futbolini "+(typeof VERSION!=="undefined"?VERSION:""),"🏟️");
+  const host=(typeof envolverVistaSO==="function")?envolverVistaSO("Futbolini "+(typeof VERSION!=="undefined"?VERSION:""),"⚽"):v;
   const _T=(typeof T==="function")?T:((k,d)=>d);
-  p.cuerpo.appendChild(el("h2","tit",_T("ini_headline","No manejas un equipo. Manejas una institución.")));
-  p.cuerpo.appendChild(el("p",null,_T("ini_bajada","Gente con intereses distintos empujando para lados distintos, plata que se acaba, "+
-   "reglas internas que puedes cambiar si tienes el poder para hacerlo, y una historia real que puedes seguir o romper.")));
-  p.cuerpo.appendChild(el("div","resul mitad",
-   "<b>Antes de entrar.</b> Este juego usa nombres reales de clubes, jugadores y dirigentes del fútbol chileno. "+
+  host.appendChild(el("h2","tit ini-tit",_T("ini_headline","No manejas un equipo. Manejas una institución.")));
+  host.appendChild(el("p","ini-bajada",_T("ini_bajada","Gente con intereses distintos empujando para lados distintos, plata que se acaba, reglas internas que puedes cambiar si tienes el poder, y una historia real que puedes seguir o romper.")));
+  const legal=el("details","ini-legal");
+  legal.appendChild(el("summary",null,"Antes de entrar · ficción"));
+  legal.appendChild(el("p","mini",
+   "Este juego usa nombres reales de clubes, jugadores y dirigentes del fútbol chileno. "+
    "Los resultados, títulos y fechas se apoyan en registros públicos, pero <b>todo lo demás es ficción</b>: "+
    "las conversaciones, las negociaciones, los conflictos internos y cualquier frase atribuida a alguien están inventados "+
    "para efectos del juego. Nada de lo que pase acá adentro ocurrió así en la vida real."));
-  v.appendChild(p);
+  host.appendChild(legal);
 
-  const paso1=panel((typeof T==="function"?T("ini_elige","1 · Elige club"):"1 · Elige club"),"⚪");
-  pickerClubes(paso1.cuerpo);
-  paso1.cuerpo.appendChild(el("p","mini","Los clásicos se pueden jugar en 1991 (calendario real, Copa Libertadores de Colo-Colo) o en 2026. Primera B arranca en la Liga de Ascenso y Segunda en su zona (Norte/Sur). Planteles documentados donde hay; el resto se rellena con cantera."));
-  v.appendChild(paso1);
+  host.appendChild(el("h3","sub",_T("ini_elige","1 · Elige club")));
+  pickerClubes(host);
+  host.appendChild(el("p","mini","Los clásicos se pueden jugar en 1991 (calendario real, Copa Libertadores de Colo-Colo) o en 2026. Primera B arranca en la Liga de Ascenso y Segunda en su zona (Norte/Sur). Planteles documentados donde hay; el resto se rellena con cantera."));
+
+  if(typeof botonDonar==="function"){
+    const pd=el("div","ini-apoyar");
+    pd.appendChild(el("p","mini","Gratis para siempre. Si te gusta, un café ayuda a seguirlo — no se bloquea nada si no donás."));
+    pd.appendChild(botonDonar("btn-aqua ancho verde"));
+    host.appendChild(pd);
+  }
 
   /* 7.00 · duelo P2P contra un amigo */
   if(typeof modalDuelo==="function"){
@@ -1995,7 +2016,7 @@ function renderPostEl(t){
     "<div class='mini' style='opacity:.6;margin-top:2px'>♡ "+(t.likes||0).toLocaleString("es-CL")+
     (t.rts?" · RT "+t.rts:"")+(t.replies?" · "+t.replies+" resp.":"")+"</div>";
   if(t.hilo&&t.hilo.length){
-    t.hilo.slice(-3).forEach(h=>{ d.appendChild(el("p","mini","↳ <b>"+h.autor+"</b> "+h.texto)); });
+    t.hilo.slice(-8).forEach(h=>{ d.appendChild(el("p","mini hilo-linea","↳ <b>"+h.autor+"</b> "+h.texto)); });
   }
   const acc=el("div"); acc.style.marginTop="6px";
   [["like",t._like?"❤ Te gusta":"♡ Me gusta"],["rt",t._rt?"🔁 Reposteado":"RT"],["reply","Responder"],["report","🚩 Reportar"]].forEach(([k,n])=>{
@@ -2092,6 +2113,7 @@ function reaccionarPost(t,tipo){
     t.replies++;
     t.hilo.push({autor:handleDT(),texto:txt,fecha:"ahora"});
     if(typeof postProc==="function") postProc(handleDT(),"dt","@"+String(t.autor||"").replace(/^@/,"")+" "+txt,"neutro");
+    if(typeof responderHilo==="function") responderHilo(t, txt);
     aplicarRep({prensa:1});
   }
   guardar(); irA("redes");
@@ -2146,7 +2168,9 @@ function vistaRedes(){
     bp.disabled=true;
     evaluarPost(txt).then(ev=>{
       aplicarPost(txt,ev);
-      if(typeof postProc==="function") postProc(REDES_PEST==="club"?handleClub():(handleDT()), REDES_PEST==="club"?"club":"dt", txt, ev.sentimiento>10?"bueno":(ev.sentimiento<-10?"malo":"neutro"));
+      let item=null;
+      if(typeof postProc==="function") item=postProc(REDES_PEST==="club"?handleClub():(handleDT()), REDES_PEST==="club"?"club":"dt", txt, ev.sentimiento>10?"bueno":(ev.sentimiento<-10?"malo":"neutro"));
+      if(item && typeof responderAlPostPropio==="function") responderAlPostPropio(item, txt);
       irA("redes");
     });
   };
@@ -2547,7 +2571,8 @@ function vistaAjustes(){
   const v=$("#vista");
   const don=panel("El proyecto","💚");
   don.cuerpo.appendChild(el("p",null,"Futbolini es gratis y siempre lo va a ser. Corre 100% en tu navegador, sin servidor obligatorio: el ayudante es un compositor local (lee el club y arma frases), no una IA de pago."));
-  don.cuerpo.appendChild(el("p","mini","Si quieres ayudar: comparte el juego o escribile al autor. La mejor forma de sostenerlo es que lo juegue más gente."));
+  don.cuerpo.appendChild(el("p","mini","Si querés ayudar: compartí el juego, o invitale un café al autor. Nada se bloquea si no donás."));
+  if(typeof botonDonar==="function") don.cuerpo.appendChild(botonDonar("btn-aqua ancho verde"));
   v.appendChild(don);
   panelMisPartidas(v);
   const p=panel("Ajustes","⚙️");
@@ -3239,6 +3264,14 @@ $("#btnTemas").onclick=()=>{
     const temas=document.getElementById("btnTemas");
     if(temas) acc.insertBefore(b, temas); else acc.appendChild(b);
   }
+  if(acc && !document.getElementById("btnApoyar")){
+    const d=document.createElement("button");
+    d.className="btn-aqua chico verde"; d.id="btnApoyar"; d.title="Apoyar Futbolini"; d.setAttribute("aria-label","Apoyar");
+    d.textContent="💚";
+    d.onclick=function(){ if(typeof abrirDonar==="function") abrirDonar(); };
+    const aj=document.getElementById("btnAjustes")||document.getElementById("btnTemas");
+    if(aj) acc.insertBefore(d, aj); else acc.appendChild(d);
+  }
 })();
 /* ---------- pantalla de arranque (que entrar no sea fome) ---------- */
 function pantallaArranque(haySave,slots){
@@ -3277,6 +3310,11 @@ function pantallaArranque(haySave,slots){
     const be=el("button","btn-aqua ancho verde arranque-btn"); be.textContent="▶ Entrar al juego";
     be.onclick=()=>salir();
     btns.appendChild(be);
+  }
+  if(typeof botonDonar==="function"){
+    const ba=el("button","btn-aqua chico arranque-btn","💚 Apoyar");
+    ba.onclick=function(ev){ if(ev) ev.stopPropagation(); if(typeof abrirDonar==="function") abrirDonar(); };
+    btns.appendChild(ba);
   }
   inner.appendChild(btns);
   const hint=el("div","arr-hint"); hint.innerHTML="<b>Enter</b> para entrar · <b>← →</b> para elegir";
@@ -3334,7 +3372,7 @@ document.addEventListener("keydown",function(e){
   /* versión única en badge y footer */
   if(typeof VERSION!=="undefined"){
     const vb=$("#verBadge"); if(vb) vb.textContent=VERSION;
-    const pt=$("#pieTxt"); if(pt) pt.textContent="Futbolini "+VERSION+" · dramatización · Frutiger Aero";
+    const pt=$("#pieTxt"); if(pt) pt.textContent="Futbolini "+VERSION+" · dramatización · Frutiger Aero · Apoyar";
   }
   const t=await Store.get("futbolini3_tema");
   document.body.dataset.tema=t||"aero";
