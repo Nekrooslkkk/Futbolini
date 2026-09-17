@@ -1626,7 +1626,7 @@
     /* T41 · 7.9994 CDN de ventana como extra; local siempre */
     grupo("Grok 7.9994 (CDN extra, local de plan A)");
     safe(function(){
-      ok(VERSION==="7.9994", "VERSION 7.9994");
+      ok(VERSION==="7.9994" || /^7\.99/.test(VERSION), "VERSION 7.99x");
       ok(typeof cargarCdnAero==="function", "cargarCdnAero");
       ok(typeof CDN_7_WINDOW==="string" && CDN_7_WINDOW.indexOf("window.css")>=0, "CDN pide solo window.css, no el 7.css entero");
       ok(CDN_7_WINDOW.indexOf("xp.css")<0, "no se carga XP.css (pelea con Vista)");
@@ -1653,6 +1653,40 @@
       }
       ok(!!document.querySelector('link[href="css/so.css"]') || !!document.querySelector('link[href*="so.css"]'), "so.css está en el documento sí o sí");
     }, "offline = local, online = extra");
+
+    /* T42 · 7.99940 Match ventana aparte + bios de época */
+    grupo("Grok 7.99940 (Match ventana + época)");
+    safe(function(){
+      ok(VERSION==="7.99940", "VERSION 7.99940");
+      ok(typeof poolCandidatos==="function" && typeof asegurarTinder==="function", "pool/asegurar Tinder");
+      ok(CANDIDATOS_1925.length>=6 && CANDIDATOS_1991.length>=6, "hueco 1925/1991 cubierto");
+    }, "API 7.99940");
+    safe(function(){
+      nuevaPartida("CC",1925,"historico");
+      var p=poolCandidatos();
+      ok(p===CANDIDATOS_1925, "1925 no usa bios de Tinder 2026");
+      ok(p.some(function(c){ return /palco|platea|modista|esgrima/i.test(c.bio); }), "bios 1925 de época");
+      nuevaPartida("CC",1991,"historico");
+      ok(poolCandidatos()===CANDIDATOS_1991, "1991 usa pool 90s");
+      nuevaPartida("CC",2026,"historico");
+      ok(poolCandidatos()===CANDIDATOS, "2026 sigue el pool Match");
+    }, "bios según época");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var v=document.getElementById("vista");
+      if(v){ v.innerHTML=""; vistaVida(); }
+      ok(!document.querySelector("#vista .tinder-stack"), "Vida ya no mete el stack adentro");
+      ok([].some.call(document.querySelectorAll("#vista button"), function(b){ return /Match|Messenger|presentaciones/i.test(b.textContent); }), "botón para abrir la ventana");
+      modalTinder();
+      var capa=document.getElementById("capa-modal");
+      ok(capa && capa.querySelector(".ventana-so"), "Match abre ventana SO");
+      ok(capa.querySelector(".tinder-card"), "hay carta en la ventana");
+      var titulo=(capa.querySelector(".so-titulo")||capa.querySelector(".title-bar-text")||{}).textContent||"";
+      ok(/Match|Messenger|Presentaciones/i.test(titulo), "título de ventana: "+titulo);
+      var cs=capa.querySelector(".ventana-so")?getComputedStyle(capa.querySelector(".ventana-so")):null;
+      ok(cs && ((cs.backgroundImage||"").indexOf("gradient")>=0 || (cs.backgroundColor&&cs.backgroundColor!=="rgba(0, 0, 0, 0)")), "la ventana no es transparente");
+      cerrarModal();
+    }, "Match es ventana aparte");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

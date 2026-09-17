@@ -4,7 +4,7 @@
    (XP.css y 7.css de unpkg piden red y usan otras clases: .window,
    .title-bar. Acá se pinta lo mismo sobre .panel / #barra / .ventana-so.)
    ============================================================ */
-:root{ --futbolini-so: 7.9994; }
+:root{ --futbolini-so: 7.99940; }
 
 /* ---------- taskbar de vidrio (barra superior) ---------- */
 body[data-tema="aero"] #barra{
@@ -242,25 +242,21 @@ body[data-tema="aero"] #pie{
   text-shadow:0 1px 2px rgba(0,0,0,.45);
 }
 
-/* ---------- 7.9994 · si el CDN de window.css cargó, él pinta el marco ----------
-   so.css sigue siendo el plan A (offline). html.cdn-7 solo existe con red. */
-html.cdn-7 body[data-tema="aero"] .ventana-so{
-  background:transparent; border:0; padding:0; box-shadow:none;
+/* El CDN de window.css es extra. NUNCA transparentar el modal:
+   si se saca el fondo, Match «desaparece» encima de Vida. */
+html.cdn-7 body[data-tema="aero"] .ventana-so.in-vista{
+  /* las pestañas ya tienen so.css; el CDN puede sumar vidrio sin borrar */
 }
-html.cdn-7 body[data-tema="aero"] .ventana-so .so-barra{
-  background:transparent; border:0; box-shadow:none; margin:0;
+.modal.ventana-so{
+  min-height:280px;
+  background:linear-gradient(180deg, #8ec4f0 0%, #3a7ec8 40%, #163a78 100%);
 }
-html.cdn-7 body[data-tema="aero"] .ventana-so .so-barra::after{ display:none; }
-html.cdn-7 .ventana-so .so-btn,
-html.cdn-7 .ventana-so .so-btn.cerrar{
-  width:auto; height:auto; background:none; border:0; box-shadow:none; filter:none;
+.modal.ventana-so .so-cuerpo,
+.modal.ventana-so .window-body{
+  min-height:220px;
+  background:linear-gradient(180deg, rgba(252,254,255,.96), rgba(226,238,250,.9));
 }
-html.cdn-7 .ventana-so .so-btn::before,
-html.cdn-7 .ventana-so .so-btn::after{ content:none !important; background:none !important; }
-html.cdn-7 body[data-tema="aero"] .ventana-so .so-cuerpo{
-  margin:0; background:transparent; border:0; box-shadow:none; padding:8px;
-}
-html.cdn-7 .ventana-so .so-ctrl{
-  margin:0; border:0; overflow:visible; box-shadow:none; border-radius:0;
-}
+.tinder-cuerpo .tinder-stack{ min-height:200px; }
+.tinder-cuerpo .tinder-card:not(.tinder-back){ min-height:148px; }
+
 

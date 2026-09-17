@@ -115,13 +115,45 @@ const CANDIDATOS=[
  {n:"Coni",edad:30,id:"",bio:"Abogada. Si te metes en un lío dirigencial, mejor tenerla de tu lado que enfrente."},
  {n:"Dani",edad:23,id:"hombre trans",bio:"Estudiante de cine, sueña con dirigir el documental de tu dinastía. Optimista incurable."}
 ];
+/* 7.99940 · hueco: en 1925/1991 no hay app ni DJ. Mismos perfiles, otra época. */
+const CANDIDATOS_1925=[
+ {n:"Elvira",edad:26,id:"",bio:"Hija de un dirigente. Te vieron juntos en el intermedio y ya corre el rumor en la platea."},
+ {n:"Héctor",edad:31,id:"",bio:"Empleado de aduana e hincha del rival. En 1925 el amor prohibido se discute en el café, no en Plop."},
+ {n:"Rosa",edad:28,id:"mujer trans",bio:"Modista del centro. Cose los banderines del club y no le teme a ninguna tribuna."},
+ {n:"César",edad:24,id:"",bio:"Estudiante de leyes. Recita a Neruda mal y pregunta si de verdad vas a la banca o es pose."},
+ {n:"Marta",edad:33,id:"",bio:"Viuda de un socio fundador. Tiene palco y opiniones sobre cada alineación."},
+ {n:"León",edad:29,id:"hombre trans",bio:"Maestro de esgrima. Directo, sin vueltas: si te presenta, te presenta en serio."},
+ {n:"Amanda",edad:25,id:"persona no binaria",bio:"Tiple de revista. Canta en el intermedio benéfico y se ríe de los discursos del directorio."},
+ {n:"Sofía",edad:30,id:"",bio:"Enfermera de la posta. Aguanta poco el carrete y muchísimo el drama de la institución."}
+];
+const CANDIDATOS_1991=[
+ {n:"Pilar",edad:27,id:"",bio:"Sale en el baile de Las Condes. Pregunta si el club va a la banca o si es cuento para la tele."},
+ {n:"Rodrigo",edad:32,id:"",bio:"Vendedor de autos e hincha del clásico rival. Amor prohibido, la barra ya murmuró."},
+ {n:"Tamara",edad:26,id:"mujer trans",bio:"Estilista. Te va a pedir la camiseta del 91 y no acepta un no por respuesta."},
+ {n:"Andrés",edad:29,id:"",bio:"Periodista de un vespertino. Peligroso: todo lo que digas puede salir el lunes."},
+ {n:"Kathy",edad:24,id:"",bio:"Estudiante de periodismo. Carrete hasta las cinco y al otro día en la U."},
+ {n:"Fabián",edad:28,id:"hombre trans",bio:"Profe de educación física. Hace un asado de campeonato y discute el 3-5-2 mejor que tu ayudante."},
+ {n:"Alex",edad:31,id:"persona no binaria",bio:"Diseña afiches del recinto. Le da exactamente igual quién ganó el clásico, y se nota."},
+ {n:"Daniela",edad:30,id:"",bio:"Secretaria del directorio. Sabe más de la interna que tú. Cuidadito lo que firmas."}
+];
+function poolCandidatos(){
+  const a=(typeof E!=="undefined"&&E&&E.anio)||2026;
+  if(a<=1935) return CANDIDATOS_1925;
+  if(a<=2003) return CANDIDATOS_1991;
+  return CANDIDATOS;
+}
+function asegurarTinder(){
+  if(!E||!E.perfil) return;
+  if(!E.perfil.tinder) E.perfil.tinder={matches:[]};
+  if(!Array.isArray(E.perfil.tinder.matches)) E.perfil.tinder.matches=[];
+}
 /* género aproximado del candidato (para el filtro de orientación) */
 function generoCandidato(c){
   const id=(c.id||"").toLowerCase();
   if(id.indexOf("no binaria")>=0||id.indexOf("travesti")>=0) return "X";
   if(id.indexOf("mujer")>=0) return "F";
   if(id.indexOf("hombre")>=0) return "M";
-  return (["Javiera","Fran","Ignacia","Vale","Pau","Coni"].indexOf(c.n)>=0)?"F":"M";
+  return (["Javiera","Fran","Ignacia","Vale","Pau","Coni","Elvira","Rosa","Marta","Amanda","Sofía","Pilar","Tamara","Kathy","Daniela"].indexOf(c.n)>=0)?"F":"M";
 }
 function candidatoPasaFiltro(c){
   const o=E.perfil.orientacion||"Libre", g=E.perfil.genero||"M", cg=generoCandidato(c);
@@ -150,8 +182,10 @@ function eraMatch(){
     cab:"Presentaciones · gente del club"};
 }
 function generarTinder(){
-  let pool=CANDIDATOS.filter(candidatoPasaFiltro);
-  if(pool.length<3) pool=CANDIDATOS.slice();   /* fallback si el filtro deja pocos */
+  asegurarTinder();
+  const base=poolCandidatos();
+  let pool=base.filter(candidatoPasaFiltro);
+  if(pool.length<3) pool=base.slice();
   return mezcla(pool).slice(0,6).map(c=>Object.assign({},c,{orb:elige(ORBES),afin:(Math.random()*0.25)}));
 }
 function engancharSwipeTinder(card, onPass, onLike){
@@ -187,19 +221,18 @@ function engancharSwipeTinder(card, onPass, onLike){
   card.addEventListener("pointercancel", end);
 }
 function modalTinder(){
+  asegurarTinder();
   const cartas=generarTinder(); let i=0;
   const era=typeof eraMatch==="function"?eraMatch():{ic:"💘",cab:"Match · buscar pareja",paso:"✕ Paso",like:"❤ Me gusta",fin:"No hay más perfiles por hoy."};
-  const cuerpo=(typeof abrirSeccion==="function")?abrirSeccion(era.cab, era.ic||"💘"):null;
-  const pintarEn=function(box){
+  const abrir=typeof abrirSeccion==="function"?abrirSeccion:null;
+  const pintarEn=function(cuerpo){
     const pintar=()=>{
-      box.innerHTML="";
-      if(!cuerpo) box.appendChild(el("div","cab",'<span class="ic">'+(era.ic||"💘")+'</span><span>'+era.cab+'</span>'));
-      const c=cuerpo?box:el("div","cuerpo");
-      if(!cuerpo) box.appendChild(c);
-      if(E.perfil.pareja) c.appendChild(el("div","resul mitad","Estás en pareja con <b>"+E.perfil.pareja.n+"</b>. Coquetear por acá es jugar con fuego 🔥"));
+      cuerpo.innerHTML="";
+      cuerpo.classList.add("tinder-cuerpo");
+      if(E.perfil&&E.perfil.pareja) cuerpo.appendChild(el("div","resul mitad","Estás en pareja con <b>"+E.perfil.pareja.n+"</b>. Coquetear por acá es jugar con fuego 🔥"));
       if(i>=cartas.length){
-        c.appendChild(el("p","mini",era.fin));
-        const x=el("button","btn-aqua ancho gris","Cerrar"); x.onclick=()=>{ cerrarModal(); render(); }; c.appendChild(x);
+        cuerpo.appendChild(el("p","mini centro",era.fin));
+        const x=el("button","btn-aqua ancho gris","Cerrar"); x.onclick=()=>{ cerrarModal(); render(); }; cuerpo.appendChild(x);
         return;
       }
       const cand=cartas[i];
@@ -215,23 +248,27 @@ function modalTinder(){
         (cand.id?'<div class="mini centro">'+cand.id+'</div>':'')+
         '<p style="margin-top:6px">'+cand.bio+'</p>';
       stack.appendChild(card);
-      c.appendChild(stack);
-      c.appendChild(el("p","mini centro tinder-hint","Desliza a la derecha si te late · a la izquierda si pasas"));
+      cuerpo.appendChild(stack);
+      cuerpo.appendChild(el("p","mini centro tinder-hint","Desliza a la derecha si te late · a la izquierda si pasas"));
       const pasar=()=>{ i++; pintar(); };
       const late=()=>{ likeCandidato(cand); i++; pintar(); };
       if(typeof engancharSwipeTinder==="function") engancharSwipeTinder(card, pasar, late);
       const row=el("div","tinder-acc");
       const bp=el("button","btn-aqua tinder-round gris",era.paso); bp.onclick=pasar;
       const bl=el("button","btn-aqua tinder-round verde",era.like); bl.onclick=late;
-      row.appendChild(bp); row.appendChild(bl); c.appendChild(row);
-      const x=el("button","btn-aqua ancho","Cerrar"); x.style.marginTop="6px"; x.onclick=()=>{ cerrarModal(); render(); }; c.appendChild(x);
+      row.appendChild(bp); row.appendChild(bl); cuerpo.appendChild(row);
     };
     pintar();
   };
-  if(cuerpo) pintarEn(cuerpo);
-  else modal(pintarEn);
+  if(abrir) pintarEn(abrir(era.cab, era.ic||"💘"));
+  else modal(function(box){
+    box.appendChild(el("div","cab",'<span class="ic">'+(era.ic||"💘")+'</span><span>'+era.cab+'</span>'));
+    const c=el("div","cuerpo tinder-cuerpo"); box.appendChild(c);
+    pintarEn(c);
+  });
 }
 function likeCandidato(cand){
+  asegurarTinder();
   const prob=clamp(0.4+E.rep.publica/220+(cand.afin||0),0.15,0.92);
   if(Math.random()<prob){
     if(!E.perfil.tinder.matches.some(m=>m.n===cand.n))
@@ -499,39 +536,6 @@ function vistaVida(){
     const br=el("button","btn-aqua chico rojo","Terminar"); br.style.marginLeft="6px"; br.onclick=romperPareja; pt.cuerpo.appendChild(br);
   } else {
     pt.cuerpo.appendChild(el("p","mini","Soltero y a la búsqueda. "+(typeof eraMatch==="function"?eraMatch().mini:"Si hay química, lo invitas a salir.")));
-    /* 7.9992 · stack inline: 1 carta visible + 1 detrás, swipe y botones redondos */
-    const stack=el("div","tinder-stack");
-    const cartas=(typeof generarTinder==="function")?generarTinder():[];
-    let i=0;
-    const pintarStack=()=>{
-      stack.innerHTML="";
-      if(!cartas.length || i>=cartas.length){
-        stack.appendChild(el("p","mini centro","No hay más perfiles por hoy."));
-        return;
-      }
-      if(cartas[i+1]){
-        const back=el("div","tinder-card tinder-back");
-        back.innerHTML='<span class="aero-orb '+cartas[i+1].orb+' orb-grande"></span>';
-        stack.appendChild(back);
-      }
-      const cand=cartas[i];
-      const card=el("div","tinder-card");
-      card.innerHTML='<span class="aero-orb '+cand.orb+' orb-grande"></span>'+
-        '<h3 class="tit centro" style="margin:6px 0 0">'+cand.n+", "+cand.edad+"</h3>"+
-        (cand.id?'<div class="mini centro">'+cand.id+'</div>':'')+
-        '<p style="margin-top:6px">'+cand.bio+'</p>';
-      stack.appendChild(card);
-      const pasar=()=>{ i++; pintarStack(); };
-      const late=()=>{ likeCandidato(cand); i++; pintarStack(); };
-      if(typeof engancharSwipeTinder==="function") engancharSwipeTinder(card, pasar, late);
-      const row=el("div","tinder-acc");
-      const eraS=typeof eraMatch==="function"?eraMatch():{paso:"✕ Paso",like:"❤ Me gusta"};
-      const bp=el("button","btn-aqua tinder-round gris",eraS.paso); bp.onclick=pasar;
-      const bl=el("button","btn-aqua tinder-round verde",eraS.like); bl.onclick=late;
-      row.appendChild(bp); row.appendChild(bl); stack.appendChild(row);
-    };
-    pintarStack();
-    pt.cuerpo.appendChild(stack);
   }
   /* hijos (futura dinastía) */
   if(E.perfil.hijos && E.perfil.hijos.length){
@@ -743,6 +747,7 @@ const DILEMAS_CITA=[
   op:[{t:"No comentas. La foto habla sola.",ok:6},{t:"Pides que la bajen, haces más ruido",ok:-8},{t:"La subes tú: «sí, estábamos ahí»",ok:10}]}
 ];
 function chatMatch(match){
+  asegurarTinder();
   let i=0, pts=0;
   /* 6.23 · pregunta del CLUB con opción de mentir (si mientes, se filtra a la prensa) */
   const joven=(E.plantel||[]).filter(j=>!j.vendido&&!j.cedido&&j.edad<=23&&j.proy>=j.nivel+2).sort((a,b)=>b.proy-a.proy)[0];

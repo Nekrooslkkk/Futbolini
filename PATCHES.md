@@ -2548,6 +2548,18 @@ Sin internet no se queda en blanco: `css/so.css` se carga siempre. Si hay red, s
 
 **Probado:** node --check + suite.
 
+## 7.99940 · Match ventana aparte + bios de época
+
+El Tinder se veía «pegado» a Vida: las cartas iban inline y, con el CDN, el modal quedaba transparente (fondo `transparent` + overflow). No parecía una ventana.
+
+- Match abre **ventana SO propia** (`abrirSeccion`). Vida solo tiene el botón.
+- El CDN ya no transparenta el modal. `so.css` pinta el marco sí o sí.
+- Hueco: 1925 y 1991 tenían bios de Tinder 2026 (DJ, app). Pools de época (`CANDIDATOS_1925` / `_1991`).
+- Tests T42. **util.js:** 7.9994 → **7.99940**. 8.00 sigue reservada.
+
+**Probado:** node --check + suite.
+
+
 
 
 

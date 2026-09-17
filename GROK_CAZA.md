@@ -167,6 +167,12 @@ Hechos públicos. Si no está documentado, se marca.
 [OK] onerror saca el link; XP.css no se carga (pelea con Vista).
 [INFO] 8.00 sigue reservada.
 
+## 7.99940 · Match ventana + época
+[FIX] Match era inline en Vida + modal transparente con CDN → ventana SO propia.
+[FIX] Bios 1925/1991: se acabó el DJ en 1925. Pools de época.
+[INFO] 8.00 sigue reservada.
+
+
 
 
 
