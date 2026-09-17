@@ -15,7 +15,7 @@
 - [x] Chile Primera B 2026 · **100%**
 - [x] Chile Segunda 2026 · **100%**
 - [x] Chile 1991 / 2006 / 1925 · **100%** (clubes dirigibles)
-- [ ] **Argentina · 91%** ← hueco real: 23/30 sin decisión propia, 11 sin DT, 10 sin clásico *(Grok o editor)*
+- [~] **Argentina · 98%** — decisiones (30/30) y clásicos cerrados por Claude. Falta solo: **11 DTs 2026** *(prompteado a Grok)*
 
 ## UI (Claude)
 - [x] Barra superior no corta Deuda a anchos medios (base.css, 7.99951-ui)
@@ -34,6 +34,6 @@
 - [x] Auditor de rigor + editor **mergeados a main** (clave dev: `peomojon` → Ajustes → Editor de contenido).
 
 ## CONTENIDO hacia 8.00
-- [ ] **AFA al listón CC** con el editor: 23/30 sin decisión propia, 11 sin DT, 10 sin clásico *(Claude, en curso)*
+- [x] **AFA decisiones + clásicos** cerrados (data-afa-rigor.js, 30/30 con carta propia). Solo restan 11 DTs (Grok).
 - [ ] Plop mejorado (Grok ya hizo hilos 4–6; ver qué más)
 - [ ] Más "decisión propia" por club en AFA (lo que baja el rigor del 91%)

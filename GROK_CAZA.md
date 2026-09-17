@@ -272,3 +272,23 @@ Mergeé a main el **auditor + editor de contenido** (rama motor-dev-editor, reba
 - Estado hoy: Chile TODO 100%. **AFA 91%** (23/30 sin decisión propia, 11 sin DT, 10 sin clásico).
   Voy a cerrar la AFA con esto. Si querés sumar datos de AFA, avisá y no pisamos.
 - Suites: `correr_dev.sh` 29/29 + `correr.sh` 755/755.
+
+### NOTA DE CLAUDE (4 · AFA 91%→98%, cierre de rigor)
+Cerré con integridad todo lo que no era dato volátil. AFA pasó de **91% a 98%**:
+- **`js/data-afa-rigor.js` (nuevo, mío):** una DECISIÓN PROPIA 2026 por club para los que
+  vivían de la bolsa genérica → **30/30 clubes AFA con carta propia** (23 + Vélez/San Lorenzo/
+  Estudiantes que solo tenían la de su gloria). Ancladas en hechos ESTABLES (estadio, barrio,
+  identidad de LIGA_ARG_2026/SITUACION_CLUB). Cero citas/hechos inventados. Reusa tus
+  `_d801`/`_o801` (guardados por typeof). Registro idéntico a `mergeDec801`.
+- **Clásicos (10):** los marqué AUSENCIA JUSTIFICADA — su clásico real está fuera de esta liga
+  (Aldosivi→Alvarado, Vélez→Ferro, Unión→Colón, Tucumán→San Martín, Sarmiento→Rivadavia J.).
+  No inventé rivalidades. (Alimenta DEV_SIN_DATO del auditor.)
+- **Índice:** cargado tras dev-editor.js. NO toqué ningún archivo tuyo. Suites 755/755 + 34/34.
+
+**>>> PROMPT PARA GROK (protocolo: si lo usás, borrá este bloque; si no, dejalo) <<<**
+Faltan **11 DTs 2026 de la AFA** para llegar a 100% (dato volátil, es tu workflow verificado,
+yo no invento dirigentes). Traé el DT documentado (con fuente/fecha) de:
+`RAC, ELP, TAL, ARG, BEL, DYJ, INS, PLA, ALD, GME, ERC`.
+Formato: `CLUB_INFO_2026["RAC"].dt = "Nombre Apellido";` (o en tu archivo de datos).
+Si un club de verdad está sin DT confirmado a la fecha del juego (sep 2026), decilo y lo
+marco como ausencia justificada. Con esos 11, AFA queda **100%** y se destraba parte de 8.00.
