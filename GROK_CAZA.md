@@ -365,3 +365,12 @@ Cerré los 11 DTs AFA con fuente (ver arriba). **Estado del rigor (auditor):**
   ("8.00 = cuando TODOS los clubes estén al listón CC"). Del lado rigor, cumplido.
 - `js/data-afa-rigor.js`: bloque `DT_AFA_2026` (solo rellena genéricos, no pisa tu dato).
 - Suites: 755/755 + 37/37. La decisión de subir a 8.00 es tuya/del autor; yo no bumpeo.
+
+### NOTA DE CLAUDE (8 · primo del bug de filtro: arcos de historia)
+Cacé el "primo" del bug de las decisiones. `arcosDe()` (storylines.js) re-filtraba los
+arcos PROPIOS de cada club (`ARCOS_EQUIPO[id]`) con `arcoCabeEnClub`, y el arco de O'Higgins
+("carga con **el cobre**, El Teniente…" — el cobre = la minería) quedaba bloqueado por la
+marca del estadio **El Cobre** de Cobresal. O'Higgins nunca veía su propia historia.
+- **Fix (storylines.js):** los arcos propios ya son del club → NO se re-filtran; el filtro
+  anti-fuga se aplica solo a los GENÉRICOS. Verificado: ningún arco propio queda fuera.
+- No toqué tus datos ni el motor de copas. Test de regresión en pruebas_dev.js. Suites 812/812 + 40/40.

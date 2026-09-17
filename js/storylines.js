@@ -15,9 +15,14 @@ function arcosDe(club){
   const id=(typeof idClubCanon==="function")?idClubCanon(club):club;
   const propios=(typeof ARCOS_EQUIPO!=="undefined"&&ARCOS_EQUIPO[id])?ARCOS_EQUIPO[id]:[];
   const gen=(typeof ARCOS_GENERICOS!=="undefined")?ARCOS_GENERICOS:[];
-  return propios.concat(gen).filter(function(a){
+  /* FIX (Claude): los arcos PROPIOS (ARCOS_EQUIPO[id]) ya son de este club; NO se
+     re-filtran por marcas (el arco de O'Higgins decía "el cobre" —la minería— y lo
+     bloqueaba la marca del estadio El Cobre de Cobresal). El filtro anti-fuga es
+     solo para los GENÉRICOS, que sí pueden mencionar un estadio ajeno. */
+  const genOk=gen.filter(function(a){
     return typeof arcoCabeEnClub!=="function" || arcoCabeEnClub(a, id);
   });
+  return propios.concat(genOk);
 }
 function arcoPorId(id){ return arcosDe(E.club).find(a=>a.id===id)||null; }
 /* ¿hay un arco elegible para arrancar? (respeta era y condición) */

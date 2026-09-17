@@ -109,6 +109,19 @@
       t(typeof DT_AFA_2026==="object" && CLUB_INFO_2026.PLA && CLUB_INFO_2026.PLA.dt!=="el cuerpo técnico", "DTs AFA cargados (dato Wikipedia 2026)");
     }, "AFA rigor");
 
+    grupo("Arcos propios no se auto-bloquean (Claude)");
+    safe(function(){
+      t(typeof arcosDe==="function" && typeof ARCOS_EQUIPO==="object", "sistema de arcos disponible");
+      // O'Higgins: su arco 'ohi_rancagua' menciona 'el cobre' (minería) y antes lo
+      // bloqueaba la marca del estadio El Cobre de Cobresal. Debe llegar igual.
+      nuevaPartida("OHI",2026,"historico");
+      var ids=arcosDe("OHI").map(function(a){return a.id;});
+      t(ids.indexOf("ohi_rancagua")>=0, "O'Higgins recibe su arco propio (Rancagua/el cobre)");
+      // ningún arco de ARCOS_EQUIPO debe quedar fuera de arcosDe de su club
+      var propiosOHI=(ARCOS_EQUIPO.OHI||[]).map(function(a){return a.id;});
+      t(propiosOHI.every(function(id){ return ids.indexOf(id)>=0; }), "todos los arcos propios de OHI llegan");
+    }, "Arcos propios");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));
