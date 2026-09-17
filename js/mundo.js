@@ -519,7 +519,7 @@ function panelMundoCalendario(v){
     }
     if(t==="pais"){
       const p=panel("Lo que se jugó en el país","🌎","agua");
-      p.cuerpo.appendChild(el("p","mini","Misma física que tus partidos. Si un grande gana en Primera y vos estás en Segunda, ya sabés quién llega brigido."));
+      p.cuerpo.appendChild(el("p","mini","Misma física que tus partidos. Si un grande gana en Primera y tú estás en Segunda, ya sabes quién llega brígido."));
       const lista=(E.mundo.pais||[]).slice(-20).reverse();
       if(!lista.length) p.cuerpo.appendChild(el("p","mini","Todavía no hay fecha simulada del resto. Jugá o avanzá una y aparece."));
       lista.forEach(x=>{

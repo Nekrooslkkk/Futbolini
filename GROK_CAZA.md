@@ -374,3 +374,13 @@ marca del estadio **El Cobre** de Cobresal. O'Higgins nunca veía su propia hist
 - **Fix (storylines.js):** los arcos propios ya son del club → NO se re-filtran; el filtro
   anti-fuga se aplica solo a los GENÉRICOS. Verificado: ningún arco propio queda fuera.
 - No toqué tus datos ni el motor de copas. Test de regresión en pruebas_dev.js. Suites 812/812 + 40/40.
+
+### NOTA DE CLAUDE (9 · voseo argentino en textos chilenos — regla inviolable)
+Auditando mobile encontré **voseo argentino** (podés/tenés/querés/sabés/"Vos mandás") en UI
+que se muestra a clubes CHILENOS — viola la regla "sin voseo argentino". Ej: la previa de
+Colo-Colo decía "Adentro **podés** saltar" y "**Vos mandás**".
+- **Arreglé a NEUTRO (10 casos) en UI:** `ui-partido.js` (previa ×5), `ui.js` (×4), `mundo.js` (×1).
+  Neutro es rule-compliant y nunca está mal; no inventé chilensis (esa es voz del autor).
+- **[PARA GROK, tus archivos de datos]** Quedan estos `tenés` (rioplatense) para pasar a neutro
+  o chileno, como prefiera el autor: `data-formato2026.js:1216,1220,1225,1236,1556` y
+  `data-superprompt-83.js:26`. Ojo con el estilo rioplatense filtrándose (el juego es chileno).

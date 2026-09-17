@@ -146,8 +146,8 @@ function pantallaPrevia(part){
   const bar=el("div","barra-jugar");
   bar.setAttribute("role","group");
   bar.setAttribute("aria-label","Cómo vives el partido");
-  [["📺 Ver en vivo","seguir","Lo ves minuto a minuto. Adentro podés saltar al resultado."],
-   ["🎯 Dirigir","dirigir","Vos mandás: plan en vivo, entretiempo, penales, cambios."]].forEach(([n,m,d])=>{
+  [["📺 Ver en vivo","seguir","Lo ves minuto a minuto. Adentro puedes saltar al resultado."],
+   ["🎯 Dirigir","dirigir","Tú mandas: plan en vivo, entretiempo, penales, cambios."]].forEach(([n,m,d])=>{
     const b=el("button","btn-aqua ancho cta-jugar"+(m==="dirigir"?" verde":""),
       n+" · <span class='cta-d'>"+d+"</span>");
     b.onclick=()=>arrancarPartido(part,m);
@@ -191,7 +191,7 @@ function pantallaPrevia(part){
     p1.cuerpo.appendChild(f);
   });
   p1.cuerpo.appendChild(el("div","resul mitad","<b>Lectura del plan:</b> "+lecturaPlan()));
-  p1.cuerpo.appendChild(el("p","mini","Este plan se siente en el ruedo. En <b>Dirigir</b> lo podés cambiar en vivo y al descanso."));
+  p1.cuerpo.appendChild(el("p","mini","Este plan se siente en el ruedo. En <b>Dirigir</b> lo puedes cambiar en vivo y al descanso."));
   if(typeof fraseCuerpoTecnico==="function"){
     p1.cuerpo.appendChild(el("p","mini","<b>Ayudante:</b> «"+fraseCuerpoTecnico(part)+"»"));
   }
@@ -1080,7 +1080,7 @@ function modalEntretiempo(){
       ? montarBarraSO(box,"Entretiempo · "+P.gl+"-"+P.gv,"☕",function(){ salir(); })
       : (function(){ box.appendChild(el("div","cab",'<span class="ic">☕</span><span>Entretiempo</span>')); const c=el("div","cuerpo"); box.appendChild(c); return c; })();
     cuerpo.appendChild(el("p",null,clima));
-    cuerpo.appendChild(el("p","mini","Quince minutos. Lo que digas acá mueve empuje y orden. Después podés retocar el plan."));
+    cuerpo.appendChild(el("p","mini","Quince minutos. Lo que digas acá mueve empuje y orden. Después puedes retocar el plan."));
     const ops=[
       {t:"Los reto: esto no se aguanta",d:"Orden y bronca. Sube el orden, cansa un poco.",ef:{orden:2.4,empuje:0.6,desgaste:0.8}},
       {t:"Tranquilos, el plan está",d:"No tocar nada. Confianza.",ef:{orden:1.2,empuje:0.4}},
@@ -1132,7 +1132,7 @@ function modalCambio(){
       box.appendChild(el("div","cab",'<span class="ic">🔄</span><span>'+cabTxt+'</span>'));
       const c=el("div","cuerpo"); box.appendChild(c);
       c.appendChild(el("p","mini","Quién SALE y quién ENTRA. Minuto "+P.min+(P.min>=90?" (descuento)":"")+"."+(maxV<99?" Varios cambios en la misma parada cuentan como una sola.":"")));
-      if(maxV<99) c.appendChild(el("p","mini",(P._ventanaAbierta?"Parada abierta: podés meter otro ahora sin gastar otra.":(enHT?"Entretiempo: no gasta parada.":"Te quedan "+quedanV+" parada"+(quedanV===1?"":"s")+"."))));
+      if(maxV<99) c.appendChild(el("p","mini",(P._ventanaAbierta?"Parada abierta: puedes meter otro ahora sin gastar otra.":(enHT?"Entretiempo: no gasta parada.":"Te quedan "+quedanV+" parada"+(quedanV===1?"":"s")+"."))));
       c.appendChild(el("h3","sub","Sale de la cancha"));
       const g1=el("div","align-grid");
       P.once.slice().sort((a,b)=>(b.cansancio||0)-(a.cansancio||0)).forEach(j=>{

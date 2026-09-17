@@ -1560,7 +1560,7 @@ function panelCopas(v){
           });
           tg.appendChild(tgb);
           pc.cuerpo.appendChild(tg);
-          pc.cuerpo.appendChild(el("p","mini","Tabla viva: solo lo jugado. El resto del grupo se llena ronda a ronda con la misma física Poisson. Nadie aparece con 6 PJ cuando vos tenés 1."));
+          pc.cuerpo.appendChild(el("p","mini","Tabla viva: solo lo jugado. El resto del grupo se llena ronda a ronda con la misma física Poisson. Nadie aparece con 6 PJ cuando tú tienes 1."));
         }
       }
     });
@@ -2005,12 +2005,12 @@ function pantallaSinClub(){
     p.cuerpo.appendChild(el("h3","sub",ofertas.length?"… o volver a empezar desde abajo":"Empezar de nuevo desde abajo"));
     p.cuerpo.appendChild(el("p","mini",quemado
       ?"Tu nombre está quemado arriba, pero en la Segunda División te dan la oportunidad de reconstruirte. De acá para arriba."
-      :"Si querés el desafío de subir desde el fondo, la Segunda te espera."));
+      :"Si quieres el desafío de subir desde el fondo, la Segunda te espera."));
     rescate.forEach(o=>p.cuerpo.appendChild(btn(o.id,2026)));
   }
   const b=el("button","btn-aqua ancho gris","Retirarme del fútbol");
   b.style.marginTop="8px";
-  b.onclick=()=>{ if(confirm("¿Seguro que querés retirarte? Podés seguir dirigiendo desde la Segunda División en vez de terminar la carrera.")){ finDeCarrera("Decidiste no seguir."); render(); } };
+  b.onclick=()=>{ if(confirm("¿Seguro que quieres retirarte? Puedes seguir dirigiendo desde la Segunda División en vez de terminar la carrera.")){ finDeCarrera("Decidiste no seguir."); render(); } };
   p.cuerpo.appendChild(b);
   return p;
 }
@@ -2635,7 +2635,7 @@ function vistaAjustes(){
   const v=$("#vista");
   const don=panel("El proyecto","💚");
   don.cuerpo.appendChild(el("p",null,"Futbolini es gratis y siempre lo va a ser. Corre 100% en tu navegador, sin servidor obligatorio: el ayudante es un compositor local (lee el club y arma frases), no una IA de pago."));
-  don.cuerpo.appendChild(el("p","mini","Si querés ayudar: compartí el juego, o invitale un café al autor. Nada se bloquea si no donás."));
+  don.cuerpo.appendChild(el("p","mini","Si quieres ayudar: comparte el juego, o invitale un café al autor. Nada se bloquea si no donás."));
   if(typeof botonDonar==="function") don.cuerpo.appendChild(botonDonar("btn-aqua ancho verde"));
   v.appendChild(don);
   panelMisPartidas(v);
