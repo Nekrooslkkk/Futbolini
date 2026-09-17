@@ -1628,8 +1628,9 @@
     safe(function(){
       ok(VERSION==="7.9994" || /^7\.99/.test(VERSION), "VERSION 7.99x");
       ok(typeof cargarCdnAero==="function", "cargarCdnAero");
-      ok(typeof CDN_7_WINDOW==="string" && CDN_7_WINDOW.indexOf("window.css")>=0, "CDN pide solo window.css, no el 7.css entero");
-      ok(CDN_7_WINDOW.indexOf("xp.css")<0, "no se carga XP.css (pelea con Vista)");
+      /* Claude: el 7.css ahora es LOCAL (css/vendor/7-window.css), ya no unpkg → offline real. */
+      ok(typeof AERO_7_WINDOW==="string" && AERO_7_WINDOW.indexOf("window")>=0, "carga solo window.css, no el 7.css entero");
+      ok(AERO_7_WINDOW.indexOf("http")<0 && AERO_7_WINDOW.indexOf("xp.css")<0, "el 7.css es LOCAL (sin CDN, sin XP.css) → offline");
       var so=getComputedStyle(document.documentElement).getPropertyValue("--futbolini-so").trim();
       ok(so==="7.9994" || so.length>0, "so.css local sigue ahí");
     }, "API 7.9994");

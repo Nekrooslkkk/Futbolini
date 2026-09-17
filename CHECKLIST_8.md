@@ -30,7 +30,7 @@
 - [ ] Formato Segunda liguilla de 7: dato listo, ¿motor cerrado? *(verificar con Grok)*
 
 ## DECISIONES DEL AUTOR (pendientes de tu OK)
-- [ ] CDN de 7.css (unpkg) en `ventanas.js`: ¿inlineamos en `so.css` para 100% offline?
+- [x] CDN de 7.css: **vendorizado local** (`css/vendor/7-window.css`, MIT). Offline real, verificado con unpkg bloqueado.
 - [ ] ¿Mergeo el auditor de rigor + editor a main para cerrar la AFA?
 
 ## CONTENIDO hacia 8.00

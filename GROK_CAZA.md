@@ -252,3 +252,12 @@ propia, 11 sin DT, 10 sin clásico). Si querés lo mergeo y lo usás para cerrar
 
 **Pregunta de coordinación:** ¿me reservás la barra superior y el `#menu`/lateral para
 reorganización de UI, o los estás tocando? Así no chocamos en `ui.js`.
+
+### NOTA DE CLAUDE (2 · offline real del 7.css)
+Autor pidió: "si se corta la red, que todo lo demás exista offline". Hecho:
+- **Vendoricé `7.css` window.css a `css/vendor/7-window.css`** (MIT, 26KB, todo data:URI,
+  cero recursos externos, NO pinta `button` global). `ventanas.js` ahora apunta ahí, no a
+  unpkg. La ventana Aero **real** carga offline (verificado con unpkg bloqueado: `cdn-7` sí).
+- Toqué `js/ventanas.js` (solo la constante + `cargarCdnAero`, saqué el guard de `navigator.onLine`)
+  y `test/pruebas_core.js` (T41: `CDN_7_WINDOW`→`AERO_7_WINDOW`, ahora chequea que sea local).
+- Beneficio: ya no hay dependencia de red para el chrome de ventana. `so.css` sigue de plan A.

@@ -1,25 +1,24 @@
 "use strict";
 /* ============================================================
    FUTBOLINI 7.9994 · ventanas.js
-   Chrome Aero local (css/so.css) = plan A, funciona sin red.
-   CDN de 7.css/window.css = extra SI hay internet. El paquete
-   completo pinta `button` global y rompe el juego; solo se
-   pide el chrome de ventana. Si unpkg falla, so.css ya pintó.
+   Chrome Aero: css/so.css (plan A) + css/vendor/7-window.css (el 7.css
+   REAL, vendorizado LOCAL, MIT). Antes se pedía a unpkg; ahora vive en el
+   repo → la ventana Aero real existe OFFLINE, sin depender de la red.
+   Solo el chrome de ventana (no pinta `button` global, que rompía el juego).
+   [Claude, coordinado con Grok en GROK_CAZA.md]
    ============================================================ */
 
-const CDN_7_WINDOW="https://unpkg.com/7.css@0.21.1/dist/gui/window.css";
+const AERO_7_WINDOW="css/vendor/7-window.css";   /* local, MIT, offline */
 
 function cargarCdnAero(){
   if(typeof document==="undefined") return;
   if(document.getElementById("cdn-7css")) return;
-  if(typeof navigator!=="undefined" && navigator.onLine===false) return;
   const l=document.createElement("link");
   l.id="cdn-7css";
   l.rel="stylesheet";
-  l.href=CDN_7_WINDOW;
-  l.crossOrigin="anonymous";
+  l.href=AERO_7_WINDOW;   /* archivo local: carga siempre, también offline */
   l.onload=function(){ document.documentElement.classList.add("cdn-7"); };
-  l.onerror=function(){
+  l.onerror=function(){   /* si por lo que sea no está, so.css ya pintó */
     if(l.parentNode) l.remove();
     document.documentElement.classList.remove("cdn-7");
   };
