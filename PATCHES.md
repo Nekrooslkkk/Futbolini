@@ -1,5 +1,12 @@
 # FUTBOLINI 3.0 — Bitácora de parches
 
+## 7.99955 · El 45' de verdad + 11 DTs AFA
+**Archivos:** `partido.js`, `ui-partido.js`, `data-planteles.js`, `util.js`, `test/pruebas_core.js`
+- **Descanso clavado al 45'.** El reloj saltaba 2–4 min (44→48) y se comía la ventana `min<48`. Ahora, si el próximo tick cruza 45, `P.min=45` y dispara `entretiempo` (igual que el 90' de descuento). Momentos tácticos: 46 afuera (`[12,32,52,64,76,84]`). `pasoEnVivo` no deja que un momento tape el HT.
+- **11 DTs AFA** con fuente sep 2026 (Vojvoda, Medina, De Felippe, Diez, Zielinski, Vaccari, Flores, Palermo, Sanguinetti, Franco, Forestello). IIFE `dtsAfa11` al final de `data-planteles.js`.
+- Macul: River/Boca no hablan de Macul. Frase meta ya sacada por Claude.
+- Tests T48. **No 8.00.**
+
 ## 7.99954 · Merge Claude + perder se siente
 **Archivos:** `partido.js`, `data-caza-97.js`, `data-rigor-801.js`, `pulido.js`, `ventanas.js`, `ui.js`, `index.html`, `css/aero.css`, `css/base.css`, `css/vendor/7-window.css`, `js/data-afa-rigor.js`, `js/dev-*.js`
 - Traje a Claude (Opus 4.8): 7.css local, editor de rigor, AFA 98%, barra/mobile, **bug Macul** (River/Boca/Independiente no veían su carta).

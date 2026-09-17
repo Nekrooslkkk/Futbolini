@@ -985,8 +985,10 @@ function pasoEnVivo(){
   if(PAUSADO) return;
   const P=P_ACTUAL; if(!P){ clearInterval(TIMER); return; }
   if(P.terminado||(P._descDicho&&P.min>=(typeof topePartido==="function"?topePartido(P):90))){ clearInterval(TIMER); pintarPartido(); cerrarPartido(); return; }
-  /* momento táctico programado (solo dirigir) */
-  if(P.modo==="dirigir" && P.momentoIdx<P.momentos.length && P.min>=P.momentos[P.momentoIdx]){
+  /* momento táctico (solo dirigir). Nunca tape el descanso: si todavía no hubo
+     45', solo dispara momentos del primer tiempo (12, 32). */
+  if(P.modo==="dirigir" && P.momentoIdx<P.momentos.length && P.min>=P.momentos[P.momentoIdx]
+     && (P._htDicho || P.min<45)){
     clearInterval(TIMER); pintarPartido(); mostrarMomento(); return;
   }
   const ev=tickPartido(P);

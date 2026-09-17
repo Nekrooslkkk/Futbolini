@@ -375,7 +375,7 @@ function iniciarPartido(part,modo){
     clasico:esClasico(part), var:((E&&E.anio)||0)>=2016,
     cambios:0, cambiosMax:cambiosMaxEra((E&&E.anio)||2026),
     ventanas:0, ventanasMax:ventanasMaxEra((E&&E.anio)||2026),
-    descuento2:0, _descDicho:false, _salieron:[]
+    descuento2:0, _descDicho:false, _htDicho:false, _salieron:[]
   };
   P.once.forEach(j=>{ j.estado="once"; });
   lista.forEach(j=>{ if(P.once.indexOf(j)<0) j.estado="banca"; });
@@ -531,7 +531,9 @@ function polemicaArbitral(P){
   }
 }
 function momentosPartido(part){
-  const base=[12,32,46,58,70,82];
+  /* 12 y 32 el primer tiempo. El 45 es el descanso (no un momento).
+     Segundo tiempo a partir del 52: el 46 robaba la charla si el reloj saltaba. */
+  const base=[12,32,52,64,76,84];
   if(part.ronda==="FINAL"||part.tipo==="copa") base.push(88);
   return base;
 }
@@ -654,6 +656,14 @@ function tickPartido(P){
   if(P._descDicho && P.min>=tope){ return {tipo:"fin",min:P.min}; }
   const paso=P.min>=90?ri(1,2):ri(2,4);
   const next=P.min+paso;
+  /* 7.99955 · descanso clavado al 45' (igual que el 90' de descuento).
+     El salto de 2–4 min se comía la ventana min>=45 && min<48 (44+4=48). */
+  if(!P._htDicho && !P._descDicho && next>=45 && P.min<45){
+    P.min=45;
+    P._htDicho=true;
+    linea(P,45,"Descanso. Van "+marcadorTxt(P)+". Quince minutos para hablar.","grave");
+    return {tipo:"entretiempo",min:45};
+  }
   if(!P._descDicho && next>=90){
     P.min=90;
     P.descuento2=calcularDescuento(P);
@@ -665,12 +675,6 @@ function tickPartido(P){
   P.cansancio+=P.desgaste*0.011*paso;
   (P.once||[]).forEach(j=>{ j.cansancio=clamp((j.cansancio||0)+P.desgaste*0.009*paso,0,30); });
   const min=P.min;
-  /* 7.99952 · descanso: el DT habla. En dirigir se abre la charla. */
-  if(!P._htDicho && min>=45 && min<48){
-    P._htDicho=true;
-    linea(P,45,"Descanso. Van "+marcadorTxt(P)+". Quince minutos para hablar.","grave");
-    return {tipo:"entretiempo",min:45};
-  }
   /* 7.99954 · vas perdiendo: la tribuna y el capitán hablan. El plan ofensivo empuja. */
   if(diffMarcador(P)<0 && min>=55 && !P._tensionDicha){
     P._tensionDicha=true;

@@ -1807,6 +1807,48 @@
       ok(a.el>b.el, "atacar también te abre atrás");
     }, "el plan se siente cuando vas perdiendo");
 
+    /* T48 · 7.99955 descanso clavado al 45' + 11 DTs AFA con fuente */
+    grupo("Grok 7.99955 (45' + DTs AFA)");
+    safe(function(){
+      ok(VERSION==="7.99955" || /^7\.9995/.test(VERSION), "VERSION 7.99955");
+    }, "versión");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var part=(E.calendario||[]).find(function(p){ return !p.jugado; })||E.calendario[0];
+      var P=iniciarPartido(part,"dirigir");
+      ok(P.momentos.indexOf(45)<0, "el 45 no es momento táctico");
+      ok(P.momentos.indexOf(46)<0, "el 46 no roba el descanso");
+      P.min=44; P._htDicho=false;
+      var oldRnd=Math.random;
+      Math.random=function(){ return 0.99; }; /* ri(2,4) → 4 · 44+4=48, el salto que se comía el 45 */
+      var ev=tickPartido(P);
+      Math.random=oldRnd;
+      ok(ev && ev.tipo==="entretiempo", "el tick no se salta el 45 (44+4 no se va a 48)");
+      ok(P.min===45, "reloj clavado en 45");
+      ok(P._htDicho===true, "descanso marcado");
+    }, "descanso: 44+4 clava 45");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var part=(E.calendario||[]).find(function(p){ return !p.jugado; })||E.calendario[0];
+      var P=iniciarPartido(part,"seguir");
+      var vio=false, guard=0;
+      while(!P.terminado && P.min<90 && guard++<80){
+        var ev=tickPartido(P);
+        if(ev && ev.tipo==="entretiempo"){ vio=true; ok(P.min===45, "siempre al 45, también en Ver en vivo"); break; }
+      }
+      ok(vio, "Ver en vivo también para al 45");
+    }, "descanso en seguir");
+    safe(function(){
+      var ids=["RAC","ELP","TAL","ARG","BEL","DYJ","INS","PLA","ALD","GME","ERC"];
+      var nomb={RAC:"Vojvoda",ELP:"Medina",TAL:"Felippe",ARG:"Diez",BEL:"Zielinski",
+                DYJ:"Vaccari",INS:"Flores",PLA:"Palermo",ALD:"Sanguinetti",GME:"Franco",ERC:"Forestello"};
+      ids.forEach(function(id){
+        var info=typeof CLUB_INFO_2026==="object"?CLUB_INFO_2026[id]:null;
+        ok(!!(info && info.dt), id+" tiene DT");
+        if(info && info.dt) ok(info.dt.indexOf(nomb[id])>=0, id+" DT es "+nomb[id]);
+      });
+    }, "11 DTs AFA documentados");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }

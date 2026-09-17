@@ -2096,3 +2096,36 @@ const PLANTEL_RAN_FULL_2026=[
     });
   }
 })();
+
+/* 7.99955 · 11 DTs AFA que faltaban. Hechos públicos a 16–17 sep 2026.
+   Protocolo Claude: fuente + fecha. No se inventa dirigente.
+     RAC  Juan Pablo Vojvoda     TyC 16 sep 2026 (ensayo vs Sarmiento) + La Nación 14 sep
+     ELP  Alexander Medina       TN 12 sep 2026 (vs Platense) + estudiantesdelaplata.com 23 feb
+     TAL  Omar De Felippe        La Voz 16 sep 2026 + Infobae 1 sep (reemplazó a Sampaoli)
+     ARG  Nicolás Diez           es.wikipedia plantel 15 sep 2026 (último partido 13 sep)
+     BEL  Ricardo Zielinski      TN 13 sep 2026 (vs Sarmiento)
+     DYJ  Julio Vaccari          es.wikipedia 13 sep 2026 (ciclo desde 24 may) + sitio oficial
+     INS  Diego Flores           TN 14 sep 2026 (vs Estudiantes RC) + Perfil 5 sep
+     PLA  Martín Palermo         Olé 15 sep 2026 (Libertadores vs Flu) + TN 12 sep
+     ALD  Javier Sanguinetti     TyC 10 sep 2026 (1ª victoria) + TN 12 sep vs Independiente Mza
+     GME  Darío Franco           La Nación 11 sep 2026 + TN 5 sep (vs Boca)
+     ERC  Rubén Forestello       La Voz 15 sep 2026 (vs Instituto) */
+(function dtsAfa11(){
+  if(typeof CLUB_INFO_2026!=="object") return;
+  var dts={
+    RAC:"Juan Pablo Vojvoda",
+    ELP:"Alexander Medina",
+    TAL:"Omar De Felippe",
+    ARG:"Nicolás Diez",
+    BEL:"Ricardo Zielinski",
+    DYJ:"Julio Vaccari",
+    INS:"Diego Flores",
+    PLA:"Martín Palermo",
+    ALD:"Javier Sanguinetti",
+    GME:"Darío Franco",
+    ERC:"Rubén Forestello"
+  };
+  Object.keys(dts).forEach(function(id){
+    if(CLUB_INFO_2026[id]) CLUB_INFO_2026[id].dt=dts[id];
+  });
+})();
