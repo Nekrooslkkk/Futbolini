@@ -49,6 +49,11 @@ button{background:none;border:none}
 .bd .v{font-family:var(--f-dato);font-size:13px;font-weight:700;color:#fff;line-height:1.25;white-space:nowrap}
 .bd.alerta .v{color:#ffcfc6}
 .barra-acc{display:flex;gap:6px;flex:0 0 auto;position:relative}
+/* 7.99951-ui (Claude) · La barra cortaba Deuda/Capital/Imagen entre 641–1100px
+   (7 tarjetas no caben con los botones). Las secundarias (Tu plata, Capital,
+   Imagen — que viven en sus propias vistas) se esconden ya desde 1100px, así
+   Caja y DEUDA siempre se ven. A ≤640px la regla de abajo saca también el Club. */
+@media(max-width:1100px){ .bd-sec{display:none} }
 /* En el celular la barra queda apretada: dejamos el escudo y los 3 datos vitales (Fecha, Caja, Deuda),
    sin scroll horizontal. Capital e Imagen viven en sus propias vistas. */
 @media(max-width:640px){
