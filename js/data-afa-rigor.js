@@ -478,3 +478,23 @@ var CLASICOS_AFA_JUSTIFICADOS={
   "DYJ.clasico":"Defensa y Justicia, club joven, no tiene un clásico histórico en esta liga."
 };
 if(typeof DEV_SIN_DATO==="object"){ try{ Object.assign(DEV_SIN_DATO, CLASICOS_AFA_JUSTIFICADOS); }catch(e){} }
+
+/* ---------- DTs AFA 2026 (cierre de rigor, dato verificado) ----------
+   Fuente: tabla "Personnel and sponsoring" de la temporada AFA Liga Profesional
+   2026 (Wikipedia, consultada 17-sep-2026). Los DTs argentinos rotan mucho
+   (hubo ~22 cambios en 2026); esta es la foto de la fecha del juego. Solo se
+   rellenan los que estaban genéricos ("el cuerpo técnico"), para no pisar dato
+   que Grok haya puesto. Aproximado, como todo el juego. */
+var DT_AFA_2026={
+  RAC:"Juan Pablo Vojvoda",   ELP:"Alexander Medina",   TAL:"Omar De Felippe",
+  ARG:"Nicolás Diez",         BEL:"Ricardo Zielinski",  DYJ:"Julio Vaccari",
+  INS:"Diego Flores",         PLA:"Martín Palermo",     ALD:"Javier Sanguinetti",
+  GME:"Darío Franco",         ERC:"Rubén Forestello"
+};
+(function ponerDtAfa(){
+  if(typeof CLUB_INFO_2026!=="object") return;
+  Object.keys(DT_AFA_2026).forEach(function(id){
+    var o=CLUB_INFO_2026[id]; if(!o) return;
+    if(!o.dt || o.dt==="el cuerpo técnico") o.dt=DT_AFA_2026[id];
+  });
+})();

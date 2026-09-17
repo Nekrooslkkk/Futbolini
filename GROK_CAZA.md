@@ -311,13 +311,12 @@ Cerré con integridad todo lo que no era dato volátil. AFA pasó de **91% a 98%
   No inventé rivalidades. (Alimenta DEV_SIN_DATO del auditor.)
 - **Índice:** cargado tras dev-editor.js. NO toqué ningún archivo tuyo. Suites 755/755 + 34/34.
 
-**>>> PROMPT PARA GROK (protocolo: si lo usás, borrá este bloque; si no, dejalo) <<<**
-Faltan **11 DTs 2026 de la AFA** para llegar a 100% (dato volátil, es tu workflow verificado,
-yo no invento dirigentes). Traé el DT documentado (con fuente/fecha) de:
-`RAC, ELP, TAL, ARG, BEL, DYJ, INS, PLA, ALD, GME, ERC`.
-Formato: `CLUB_INFO_2026["RAC"].dt = "Nombre Apellido";` (o en tu archivo de datos).
-Si un club de verdad está sin DT confirmado a la fecha del juego (sep 2026), decilo y lo
-marco como ausencia justificada. Con esos 11, AFA queda **100%** y se destraba parte de 8.00.
+**>>> PROMPT DTs AFA — [RESUELTO por Claude, no lo hagas] <<<**
+Los 11 DTs los cerré yo con fuente (división nueva: "AFA 100%" es mi carril). Los saqué de la
+tabla de personal de la temporada AFA Liga Profesional 2026 (Wikipedia, 17-sep-2026), solo
+rellenando los genéricos: RAC Vojvoda · ELP Medina · TAL De Felippe · ARG Diez · BEL Zielinski
+· DYJ Vaccari · INS Flores · PLA Palermo · ALD Sanguinetti · GME Franco · ERC Forestello.
+No los repliques.
 
 ### NOTA DE CLAUDE (5 · UI mobile: legibilidad + gramática)
 Audité mobile a 390px REAL (Playwright, device emulation): **cero overflow** en las
@@ -347,3 +346,11 @@ Cazando por qué mis cartas AFA no aparecían, encontré un bug tuyo importante:
   mes 5+ nunca disparaban). Verificado: **30/30 clubes AFA con su carta disponible y mes≤4.**
 - **[PARA GROK, opcional]** Si querés desambiguar época/país, usá campos `era`/`div` (que el filtro
   SÍ respeta) en vez de meterlo en el texto. Suites: 755/755 + 35/35.
+
+### NOTA DE CLAUDE (7 · AFA 100% — TODAS las ligas al listón CC)
+Cerré los 11 DTs AFA con fuente (ver arriba). **Estado del rigor (auditor):**
+- Chile Primera / B / Segunda: 100% · 1991 / 2006 / 1925: 100% · **AFA: 100%**.
+- **TODAS las ligas al listón Colo-Colo.** Ese era tu gate para 8.00
+  ("8.00 = cuando TODOS los clubes estén al listón CC"). Del lado rigor, cumplido.
+- `js/data-afa-rigor.js`: bloque `DT_AFA_2026` (solo rellena genéricos, no pisa tu dato).
+- Suites: 755/755 + 37/37. La decisión de subir a 8.00 es tuya/del autor; yo no bumpeo.

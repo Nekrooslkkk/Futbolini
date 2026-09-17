@@ -55,11 +55,16 @@
     grupo("Edición en vivo (el motor)");
     safe(function(){
       t(typeof aplicarParcheClubes==="function","aplicarParcheClubes existe");
-      var antes=auditarClub("DYJ").pct;
+      /* Con TODO al 100% ya no hay club incompleto: demostramos el mecanismo
+         bajando un campo (el rigor cae), y volviéndolo a poner (sube). */
       var dtPrevio=(CLUB_INFO_2026.DYJ||{}).dt;
+      var lleno=auditarClub("DYJ").pct;
+      CLUB_INFO_2026.DYJ.dt="el cuerpo técnico";        /* "vaciar" el DT */
+      var bajo=auditarClub("DYJ").pct;
+      t(bajo<lleno,"al vaciar el DT el rigor CAE ("+lleno+"% → "+bajo+"%)");
       aplicarParcheClubes({DYJ:{dt:"DT de prueba"}});
       t(CLUB_INFO_2026.DYJ.dt==="DT de prueba","editar el DT escribe en CLUB_INFO_2026");
-      t(auditarClub("DYJ").pct>antes,"el rigor sube al completar ("+antes+"% → "+auditarClub("DYJ").pct+"%)");
+      t(auditarClub("DYJ").pct>bajo,"el rigor SUBE al completar ("+bajo+"% → "+auditarClub("DYJ").pct+"%)");
       aplicarParcheClubes({DYJ:{clasico:["LAN"]}});
       t(devRivalesDe("DYJ").indexOf("LAN")>=0,"se puede definir el clásico");
       /* dejar como estaba para no ensuciar otras pruebas */
@@ -93,7 +98,7 @@
       var conDec=ids.filter(function(id){ return DECISIONES.some(function(d){return d.club===id && d.anio===2026;}); });
       t(conDec.length===ids.length, "los 30 clubes AFA tienen decisión propia ("+conDec.length+"/"+ids.length+")");
       var a=auditarLiga("arg2026");
-      t(a.pct>=98, "rigor AFA ≥98% ("+a.pct+"%)");
+      t(a.pct===100, "rigor AFA 100% — todos los clubes al listón CC ("+a.pct+"%)");
       // clásicos: 0 pendientes (los sin rival en liga están justificados)
       var sinClas=ids.filter(function(id){ return auditarClub(id).faltanReq.some(function(x){return x.k==="clasico";}); });
       t(sinClas.length===0, "ningún club AFA queda marcado sin clásico (los reales fuera de liga = justificados)");
@@ -101,6 +106,7 @@
       // integridad: las decisiones abren sin romper
       var d=DECISIONES.filter(function(x){return x.id==="tal26_interior";})[0];
       t(d && d.op && d.op.length>=2 && d.op[0].bien, "carta AFA bien formada (Talleres)");
+      t(typeof DT_AFA_2026==="object" && CLUB_INFO_2026.PLA && CLUB_INFO_2026.PLA.dt!=="el cuerpo técnico", "DTs AFA cargados (dato Wikipedia 2026)");
     }, "AFA rigor");
 
     OUT.push("\n════════════════════════");

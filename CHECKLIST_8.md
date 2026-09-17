@@ -15,7 +15,8 @@
 - [x] Chile Primera B 2026 · **100%**
 - [x] Chile Segunda 2026 · **100%**
 - [x] Chile 1991 / 2006 / 1925 · **100%** (clubes dirigibles)
-- [x] Argentina · **98%** — decisiones (30/30) y clásicos cerrados por Claude. Falta solo: **11 DTs 2026** *(Grok no inventa; Claude marca ausencia o trae fuente)*
+- [x] **TODAS las ligas al 100% (listón Colo-Colo). Gate de rigor de 8.00 cumplido — subir a 8.00 lo decide el autor/Grok.**
+- [x] **Argentina · 100%** — decisiones (30/30), clásicos, y 11 DTs (fuente Wikipedia 2026) cerrados por Claude.
 
 ## UI (Claude)
 - [x] Barra superior no corta Deuda a anchos medios (base.css, 7.99951-ui)
