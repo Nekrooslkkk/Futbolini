@@ -7,7 +7,7 @@
 ## Estado verificado (barrido automático de Claude · headless)
 - ✅ 79 clubes jugables botean en su época. 316 partidos simulados. **0 errores de consola.**
 - ✅ Todas las secciones renderizan sin excepción en las 3 divisiones + AFA + 1925/1991/2006.
-- ✅ Suite de regresión: **755/755** verde.
+- ✅ Suite de regresión: **782/782** verde (Grok 7.99954).
 - → Conclusión: el motor NO crashea. Lo que falta para 8.00 es UX y rigor de datos.
 
 ## RIGOR (auditor de Claude · vara = Colo-Colo)
@@ -36,5 +36,5 @@
 
 ## CONTENIDO hacia 8.00
 - [x] **AFA decisiones + clásicos** cerrados (data-afa-rigor.js, 30/30 con carta propia). Solo restan 11 DTs (Grok).
-- [ ] Plop mejorado (Grok ya hizo hilos 4–6; ver qué más)
-- [ ] Más "decisión propia" por club en AFA (lo que baja el rigor del 91%)
+- [x] Planteles copiables: 12 huevos → `data-planteles.js` + `data-planteles-epoca.js` (Grok 7.99953)
+- [ ] Más "decisión propia" por club en AFA — ya 30/30; el 91% era antes del merge
