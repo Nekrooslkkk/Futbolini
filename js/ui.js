@@ -862,11 +862,12 @@ function vistaInstitucion(){
 
   /* jugadas de poder (arriesgarse con el capital) */
   const pp=panel("Jugadas de poder","♟️","alerta");
-  pp.cuerpo.appendChild(el("p","mini","Movidas fuertes: gastás capital para ir por un premio grande… o que te explote. Tu credibilidad ("+Math.round((E.rep&&E.rep.credibilidad)||50)+"/100) baja el riesgo de que salga mal."));
+  pp.cuerpo.appendChild(el("p","mini","Movidas fuertes: gastas capital para ir por un premio grande… o que te explote. Tu credibilidad ("+Math.round((E.rep&&E.rep.credibilidad)||50)+"/100) baja el riesgo de que salga mal."));
+  const _locFed=(typeof localizarFed==="function")?localizarFed:(x=>x);   /* ANFP→AFA en liga extranjera */
   JUGADAS_PODER.forEach(j=>{
     const b=el("button","op"); b.disabled=(E.capital||0)<j.costo;
     const pm=Math.round(probMalaJugada(j)*100);
-    b.innerHTML='<div class="t">'+j.ic+" "+j.n+" · "+j.costo+' cap.</div><div class="d">'+j.desc+" <span class='mini'>(riesgo de que salga mal: ~"+pm+"%)</span></div>";
+    b.innerHTML=_locFed('<div class="t">'+j.ic+" "+j.n+" · "+j.costo+' cap.</div><div class="d">'+j.desc+" <span class='mini'>(riesgo de que salga mal: ~"+pm+"%)</span></div>");
     b.onclick=()=>hacerJugadaPoder(j);
     pp.cuerpo.appendChild(b);
   });
@@ -891,13 +892,13 @@ function vistaInstitucion(){
   ESTATUTOS.forEach(cat=>{
     const actual=cat.op.find(o=>o.id===E.estatutos[cat.id]);
     const d=el("div");
-    d.innerHTML='<div class="fila"><span>'+cat.ic+" "+cat.n+'</span><b>'+(actual?actual.n:"—")+'</b></div>';
+    d.innerHTML='<div class="fila"><span>'+cat.ic+" "+cat.n+'</span><b>'+_locFed(actual?actual.n:"—")+'</b></div>';
     const f=el("div","fichas");
     cat.op.forEach(o=>{
       if(o.id===E.estatutos[cat.id]) return;
       const costo=cat.pesado?42:22;
-      const b=el("button","ficha",o.n+" · "+costo);
-      b.title=o.d;
+      const b=el("button","ficha",_locFed(o.n)+" · "+costo);
+      b.title=_locFed(o.d);
       b.onclick=()=>cambiarEstatuto(cat,o,costo);
       f.appendChild(b);
     });

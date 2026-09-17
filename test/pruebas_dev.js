@@ -122,6 +122,23 @@
       t(propiosOHI.every(function(id){ return ids.indexOf(id)>=0; }), "todos los arcos propios de OHI llegan");
     }, "Arcos propios");
 
+    grupo("Localización de federación AFA→ANFP (Claude)");
+    safe(function(){
+      t(typeof localizarFed==="function" && typeof sincronizarGrupoFed==="function", "sistema de federación disponible");
+      // Chile: el grupo se llama ANFP
+      nuevaPartida("CC",2026,"historico"); SEC="institucion"; render();
+      t(GRUPO_POR_ID.anfp && GRUPO_POR_ID.anfp.n==="ANFP", "en Chile el grupo federación es 'ANFP' ("+(GRUPO_POR_ID.anfp&&GRUPO_POR_ID.anfp.n)+")");
+      var tc=(document.getElementById("vista")||{}).textContent||"";
+      t(/\bANFP\b/.test(tc), "Chile SÍ menciona ANFP (no se rompió)");
+      // Argentina: el grupo se llama AFA y no se cuela ANFP indebido
+      nuevaPartida("BOC",2026,"historico",{categoria:"ARG"}); SEC="institucion"; render();
+      t(GRUPO_POR_ID.anfp && GRUPO_POR_ID.anfp.n==="AFA", "en AFA el grupo federación es 'AFA' ("+(GRUPO_POR_ID.anfp&&GRUPO_POR_ID.anfp.n)+")");
+      var ta=(document.getElementById("vista")||{}).textContent||"";
+      var neto=(ta.match(/\bANFP\b/g)||[]).length-(ta.match(/no (es )?(la )?ANFP/g)||[]).length;
+      t(neto===0, "institución de Boca no muestra ANFP indebido (neto="+neto+")");
+      t(typeof localizarFed==="function" && localizarFed("Lobby en la ANFP").indexOf("AFA")>=0, "localizarFed traduce ANFP→AFA en partida argentina");
+    }, "Localización AFA");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

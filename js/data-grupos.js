@@ -154,6 +154,6 @@ const INTERACCIONES=[
    {t:"Invitar a un ídolo a la práctica",d:"Un histórico que le habla al plantel. La mística no se compra… casi.",plata:-30,ef:{moral:6,hinchada:4},grupos:{hinchada:6,comunidad:4}}
  ]},
  {g:"Anónimos",ic:"🕵️",ops:[
-   {t:"Escuchar a un informante anónimo",d:"Alguien que dice tener data del vestuario rival o de los pasillos de la ANFP.",soplo:true}
+   {t:"Escuchar a un informante anónimo",d:"Alguien que dice tener data del vestuario rival o de los pasillos del poder.",soplo:true}
  ]}
 ];

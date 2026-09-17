@@ -70,3 +70,24 @@ function localizarFed(txt) {
     resolverTokens._fed = true;
   }
 })();
+
+/* El grupo de poder "anfp" ES la federación del país de la partida: su nombre
+   visible debe seguir al país (ANFP en Chile, AFA en Argentina, etc.). Se
+   sincroniza en cada render — barato e idempotente. Así el club argentino
+   negocia con la "AFA", no con la "ANFP". No toca ui.js (patrón de wrap). */
+function sincronizarGrupoFed(){
+  try{
+    if(typeof GRUPO_POR_ID==="object" && GRUPO_POR_ID.anfp){
+      var f=federacionActual();
+      GRUPO_POR_ID.anfp.n = f.sigla;                       /* ANFP / AFA */
+      GRUPO_POR_ID.anfp._fedNombre = f.nombre;             /* por si se quiere el nombre largo */
+    }
+  }catch(e){}
+}
+(function wrapRenderFed(){
+  if (typeof render === "function" && !render._fed) {
+    var orig = render;
+    render = function () { try{ sincronizarGrupoFed(); }catch(e){} return orig.apply(this, arguments); };
+    render._fed = true;
+  }
+})();

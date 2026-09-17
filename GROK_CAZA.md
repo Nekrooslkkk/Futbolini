@@ -384,3 +384,16 @@ Colo-Colo decía "Adentro **podés** saltar" y "**Vos mandás**".
 - **[PARA GROK, tus archivos de datos]** Quedan estos `tenés` (rioplatense) para pasar a neutro
   o chileno, como prefiera el autor: `data-formato2026.js:1216,1220,1225,1236,1556` y
   `data-superprompt-83.js:26`. Ojo con el estilo rioplatense filtrándose (el juego es chileno).
+
+### NOTA DE CLAUDE (10 · localización: toda la AFA decía "ANFP")
+Bug de inmersión grande: los **30 clubes argentinos** veían "ANFP" (federación chilena) en
+institución/escritorio — el grupo de poder, las jugadas, el estatuto. `localizarFed` solo
+cubría lo que pasa por `resolverTokens` (decisiones); el resto se renderiza directo.
+- **Fix central (mi `federacion.js`):** `sincronizarGrupoFed()` en un wrap de `render()` pone
+  el nombre del grupo "anfp" al de la federación del país (ANFP en Chile, AFA en Argentina).
+  No toca datos; se auto-corrige al cambiar de club.
+- **`ui.js` (2 spots):** el panel de Jugadas de poder y el de Estatutos localizan su texto con
+  `localizarFed` (ANFP→AFA en liga extranjera). También saqué un "gastás" (voseo→"gastas").
+- **`data-grupos.js` (1 string):** "pasillos de la ANFP" → "pasillos del poder" (universal).
+- Verificado: **30 clubes × 6 secciones = cero ANFP indebido**; Chile sigue mostrando ANFP
+  (no-op); las frases "AFA, no ANFP" se preservan. Test de regresión. Suites 812/812 + 46/46.
