@@ -40,6 +40,12 @@
 .dev-ro{ opacity:.7; }
 .dev-justi{ opacity:.85; }
 
+.pegar-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 10px; margin:8px 0; }
+.pegar-grid label{ display:flex; flex-direction:column; gap:3px; font-size:12px; font-weight:600; }
+.pegar-grid .span2{ grid-column:1 / -1; }
+.pegar-adv{ margin:8px 0; padding:8px 10px; border:1px dashed rgba(20,60,110,.28); border-radius:8px; }
+.pegar-adv summary{ cursor:pointer; font-weight:700; font-size:13px; }
+
 .dev-chip{ display:inline-block; padding:2px 7px; border-radius:99px; margin:2px 3px 0 0;
   border:1px solid var(--linea,rgba(0,0,0,.18)); font-size:11px; }
 .dev-chip.ok{ border-color:#2fa84f; }
@@ -48,4 +54,5 @@
 @media (max-width:720px){
   .dev-cont{ max-height:68vh; }
   .dev-grid{ grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); }
+  .pegar-grid{ grid-template-columns:1fr; }
 }

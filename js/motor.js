@@ -1435,6 +1435,7 @@ async function guardar(){
   if(!E) return;
   E.saveVer=SAVE_VER;
   if(!E._slot) E._slot=nuevoSlotId();
+  if(typeof saneaEstado==="function") saneaEstado(E);
   await Store.set(slotKey(E._slot),E);
   await Store.set(LLAVE,E);                 /* compat: el save legacy = la partida activa */
   await slotFijarActivo(E._slot);

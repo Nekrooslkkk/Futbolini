@@ -74,7 +74,7 @@ var ESQUEMA_CLUB=[
   /* --- identidad --- */
   {k:"nombre",   grupo:"identidad", n:"Nombre del club",        req:true, tipo:"texto", donde:"CLUB_INFO_2026[id].n",
    get:function(id){ var o=_devDe("CLUB_INFO_2026",id); return o?_devTxt(o.n):null; },
-   set:function(id,v){ _devSet("CLUB_INFO_2026",id,"n",v); }},
+   set:function(id,v){ _devSet("CLUB_INFO_2026",id,"n",v); try{ if(typeof CLUB_INFO!=="undefined"&&CLUB_INFO[id]) CLUB_INFO[id].n=v; }catch(e){} }},
   {k:"desc",     grupo:"identidad", n:"Descripción (quién es)", req:true, tipo:"parrafo", donde:"CLUB_INFO_2026[id].desc",
    get:function(id){ var o=_devDe("CLUB_INFO_2026",id); return o?_devTxt(o.desc):null; },
    set:function(id,v){ _devSet("CLUB_INFO_2026",id,"desc",v); }},
@@ -257,4 +257,63 @@ function aplicarParcheClubes(parche){
     });
   });
   return n;
+}
+
+/* PEGAR un club. Si A (nombre) cambia, B (CLUB_INFO 1991) también.
+   HTML se recorta: esto entra al picker. */
+function parsearPegarClub(txt){
+  var out={}, lines=String(txt||"").split(/\r?\n/);
+  lines.forEach(function(ln){
+    var m=String(ln).match(/^\s*([A-Za-zÁÉÍÓÚÑáéíóúñ_]+)\s*[:：]\s*(.+)\s*$/);
+    if(!m) return;
+    var k=m[1].toLowerCase().replace(/[áà]/g,"a").replace(/[éè]/g,"e").replace(/[íì]/g,"i").replace(/[óò]/g,"o").replace(/[úù]/g,"u");
+    var v=m[2].trim();
+    if(k==="id"||k==="codigo"||k==="sigla") out.id=v.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
+    else if(k==="nombre"||k==="club") out.nombre=v;
+    else if(k==="ciudad") out.ciudad=v;
+    else if(k==="fund"||k==="fundacion") out.fund=parseInt(v,10)||null;
+    else if(k==="dt"||k==="tecnico") out.dt=v;
+    else if(k==="desc"||k==="descripcion") out.desc=v;
+    else if(k==="situacion") out.situacion=v;
+    else if(k==="liga"||k==="era") out.liga=v;
+  });
+  return out;
+}
+function _devLimpiaTxt(s,max){
+  if(typeof textoLimpio==="function") return textoLimpio(s,max||400);
+  s=String(s==null?"":s).replace(/<[^>]*>/g,"");
+  return s.trim().slice(0,max||400);
+}
+function _devPonerEnLiga(era,id,nombre){
+  try{
+    era=String(era==null?"2026":era);
+    if(typeof LIGAS==="undefined"||!LIGAS[era]) return false;
+    var hay=false;
+    LIGAS[era].forEach(function(c){
+      if(c&&c.id===id){ hay=true; if(nombre) c.n=nombre; }
+    });
+    if(hay) return true;
+    LIGAS[era].push({id:id, n:nombre||id, c:nombre||id, fuerza:55, aforo:8000, est:"Estadio", ciudad:""});
+    return true;
+  }catch(e){ return false; }
+}
+function crearClubDesdePegar(txt){
+  var d=parsearPegarClub(txt);
+  if(!d.id||d.id.length<2) return {ok:false,msg:"Falta el ID (2 a 6 letras, ej. SMO)"};
+  d.nombre=_devLimpiaTxt(d.nombre||"",80);
+  if(!d.nombre) return {ok:false,msg:"Falta el nombre"};
+  var id=d.id;
+  _devSet("CLUB_INFO_2026",id,"n",d.nombre);
+  if(d.desc) _devSet("CLUB_INFO_2026",id,"desc",_devLimpiaTxt(d.desc,400));
+  if(d.dt) _devSet("CLUB_INFO_2026",id,"dt",_devLimpiaTxt(d.dt,80));
+  if(d.ciudad) _devSet("CLUB_META",id,"ciudad",_devLimpiaTxt(d.ciudad,80));
+  if(d.fund && d.fund>1800 && d.fund<2100) _devSet("CLUB_META",id,"fund",d.fund);
+  if(d.situacion) _devPone("SITUACION_CLUB",id,_devLimpiaTxt(d.situacion,500));
+  try{ if(typeof CLUB_INFO!=="undefined"&&CLUB_INFO[id]) CLUB_INFO[id].n=d.nombre;
+       else if(typeof CLUB_INFO!=="undefined") CLUB_INFO[id]={n:d.nombre}; }catch(e){}
+  if(d.liga) _devPonerEnLiga(d.liga,id,d.nombre);
+  return {ok:true,id:id,nombre:d.nombre,liga:d.liga||null};
+}
+function PEGAR_CLUB_EJEMPLO(){
+  return "ID: XXX\nnombre: Club de ejemplo\nciudad: Santiago\nfund: 1909\ndt: Cuerpo técnico\nliga: 2026\ndesc: Quién es este club, en una frase.\nsituacion: Por qué el jugador elige dirigir acá.";
 }

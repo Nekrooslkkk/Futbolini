@@ -66,7 +66,7 @@ function localizarFed(txt) {
 (function wrapFed() {
   if (typeof resolverTokens === "function" && !resolverTokens._fed) {
     var orig = resolverTokens;
-    resolverTokens = function (t, E) { return localizarFed(orig(t, E)); };
+    resolverTokens = function (t, E, extra) { return localizarFed(orig(t, E, extra)); };
     resolverTokens._fed = true;
   }
 })();

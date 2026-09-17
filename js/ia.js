@@ -177,7 +177,7 @@ function preguntarAyudante(q){
     }
   }
   if(t("tactic","formacion","mentalidad","presion","plan","estilo","alinea")){
-    return (typeof lecturaPlan==="function")?("Tu plan actual: "+lecturaPlan()):"Revisá formación, mentalidad, estilo y presión en la previa del partido.";
+    return (typeof lecturaPlan==="function")?("Tu plan actual: "+lecturaPlan()):"Revisa formación, mentalidad, estilo y presión en la previa del partido.";
   }
   /* fallback: lo más importante ahora mismo */
   const ins=(typeof cerebroLocal==="function")?cerebroLocal():[];
@@ -217,7 +217,7 @@ function aplicarPost(texto, ev){
   E.redes.unshift({texto:texto, s:s, cons:ev.consecuencia||"", promesa:ev.promesa&&ev.promesa.hay?ev.promesa.texto:null,
     anio:E.anio, fecha:(part&&part.f?fechaTxt(part.f):"cierre"), ia:false});
   if(E.redes.length>30) E.redes.length=30;
-  if(typeof postProc==="function") postProc((typeof handleClub==="function"?handleClub():"@club"),"dt",texto,s>15?"bueno":(s<-15?"malo":"neutro"));
+  /* el post al feed lo pinta vistaRedes (handle club vs DT). Acá solo el muro. */
   notificar({t:"Publicaste en la red del club", tipo:s>15?"bueno":(s<-15?"malo":"neutro"),
     d:"«"+texto+"» — "+ (ev.consecuencia||"") + (ev.promesa&&ev.promesa.hay?" Quedó registrada una promesa pública: "+ev.promesa.texto+".":""), bandeja:false});
   guardar();

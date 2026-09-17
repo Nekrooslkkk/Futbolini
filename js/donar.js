@@ -42,7 +42,8 @@ function donarExplorer(){
 }
 function donarAlias(m){
   const a=m&&m.alias&&String(m.alias).trim();
-  return a||"anónimo";
+  if(!a) return "anónimo";
+  return (typeof textoLimpio==="function")?textoLimpio(a,40):a.replace(/<[^>]*>/g,"").slice(0,40);
 }
 function donarTexto(){
   const f=(DONAR&&DONAR.frase)||"Apoyar Futbolini";
@@ -74,10 +75,10 @@ function abrirDonar(){
     const cuerpo=(typeof montarBarraSO==="function")
       ? montarBarraSO(caja,"Apoyar Futbolini","₿",function(){ cerrarModal(); })
       : (function(){ caja.appendChild(el("div","cab",'<span class="ic">₿</span><span>Apoyar Futbolini</span>')); const c=el("div","cuerpo"); caja.appendChild(c); return c; })();
-    cuerpo.appendChild(el("p",null,"Futbolini es <b>gratis y se queda gratis</b>. Nada se bloquea si no donás."));
-    cuerpo.appendChild(el("p","mini","Bitcoin: nadie tiene que saber quién sos. La chain sí muestra cuánto entra y a qué se destina — anonimato de la persona, transparencia de la plata."));
+    cuerpo.appendChild(el("p",null,"Futbolini es <b>gratis y se queda gratis</b>. Nada se bloquea si no donas."));
+    cuerpo.appendChild(el("p","mini","Bitcoin: nadie tiene que saber quién eres. La chain sí muestra cuánto entra y a qué se destina — anonimato de la persona, transparencia de la plata."));
     cuerpo.appendChild(el("p","mini",(DONAR.reparto||"")));
-    cuerpo.appendChild(el("div","resul bien","<b>Si donás:</b> "+(DONAR.gracias||"")));
+    cuerpo.appendChild(el("div","resul bien","<b>Si donas:</b> "+(DONAR.gracias||"")));
 
     if(donarTieneBtc()){
       const dir=el("div","resul mitad");
@@ -114,8 +115,12 @@ function abrirDonar(){
     } else {
       libro.forEach(function(m){
         const quien=(typeof donarAlias==="function")?donarAlias(m):((m.alias&&String(m.alias).trim())||"anónimo");
-        cuerpo.appendChild(el("div","fila","<span>"+(m.fecha||"—")+" · "+quien+" · "+(m.para||"juego")+"</span><b>"+(m.btc||"—")+" BTC</b>"));
-        if(m.nota) cuerpo.appendChild(el("p","mini",m.nota));
+        const fila=el("div","fila");
+        const sp=el("span"); sp.textContent=(m.fecha||"—")+" · "+quien+" · "+(m.para||"juego");
+        const bt=el("b"); bt.textContent=(m.btc||"—")+" BTC";
+        fila.appendChild(sp); fila.appendChild(bt);
+        cuerpo.appendChild(fila);
+        if(m.nota){ const pn=el("p","mini"); pn.textContent=String(m.nota); cuerpo.appendChild(pn); }
       });
     }
 

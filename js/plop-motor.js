@@ -364,7 +364,11 @@ function plopRegistrarResultado(res){
     const outcome=res.yo>res.otro?"W":(res.yo<res.otro?"L":"D");
     const callback=plopFraseMemoria(mem, outcome, res);   /* usa la racha PREVIA */
     mem.racha.push(outcome); if(mem.racha.length>8) mem.racha.shift();
-    mem.ultRes={o:outcome, marcador:res.yo+"-"+res.otro, rival:res.rival||""};
+    var riv=res.rival||(mem.ultRes&&(mem.ultRes.riv||mem.ultRes.rival))||"";
+    mem.ultRes=Object.assign({}, mem.ultRes||{}, {
+      o:outcome, marcador:res.yo+"-"+res.otro, rival:riv, riv:riv,
+      yo:res.yo, otro:res.otro, gano:outcome==="W", empate:outcome==="D"
+    });
     return callback;
   }catch(e){ return null; }
 }

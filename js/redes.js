@@ -42,6 +42,8 @@ function cuentaPrensa(){
 function uidPost(){ return "p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function postProc(autor,tipo,texto,tono,extra){
   E.timeline=E.timeline||[];
+  autor=(typeof textoLimpio==="function")?textoLimpio(autor,48):String(autor||"").slice(0,48);
+  texto=(typeof textoLimpio==="function")?textoLimpio(texto,280):String(texto||"").replace(/<[^>]*>/g,"").slice(0,280);
   const part=typeof proximoPartido==="function"?proximoPartido():null;
   const likesBase=tipo==="prensa"?ri(80,2800):tipo==="club"?ri(200,4500):tipo==="rival"?ri(40,900):ri(5,1800);
   const item={
@@ -61,19 +63,22 @@ function postProc(autor,tipo,texto,tono,extra){
    pitazo final (no se muere al cerrar el partido). Solo con Twitter (2008+). */
 function persistirTicker(P, res){
   try{
-    if(!P || (E.anio||2026)<2008) return;
+    if(!P || !E || (E.anio||2026)<2008) return;
     const fechaLbl="fecha "+((E.temporada&&E.temporada.pj)||"");
     const vistos={};
     const elegidos=(P.ticker||[]).filter(function(t){
       if(!t||!t.texto||vistos[t.texto]) return false; vistos[t.texto]=true; return true;
     }).slice(0,5);
-    /* de más viejo a más nuevo para que el último quede arriba del feed */
     elegidos.reverse().forEach(function(t){
       postProc(t.autor||"@hincha", "hincha", t.texto, t.tono||"neutro", {fecha:fechaLbl, postPartido:true});
     });
-    /* una reacción de cierre atada al resultado real */
     if(res){
       const gano=res.yo>res.otro, empate=res.yo===res.otro, riv=(P.part&&P.part.rivalNombre)||"el rival";
+      try{
+        E.plop=E.plop||{humor:60,hist:[],racha:[],ultRes:null};
+        E.plop.ultRes={yo:res.yo,otro:res.otro,riv:riv,gano:gano,empate:empate};
+        if(typeof plopRecuerda==="function") plopRecuerda((gano?"ganamos":empate?"empatamos":"perdimos")+" "+res.yo+"-"+res.otro+" vs "+riv);
+      }catch(e2){}
       const pool=gano?[
         {a:"@barra_del_sur",x:"3 puntazos ante "+riv+". así se sale a la calle wn 🔥",t:"bueno"},
         {a:"@datofutbol_cl",x:res.yo+"-"+res.otro+" a "+riv+". la tabla nos empieza a sonreír.",t:"bueno"}
@@ -92,6 +97,10 @@ function persistirTicker(P, res){
 function tendencias(){
   const t=[];
   const part=typeof proximoPartido==="function"?proximoPartido():null;
+  if(E.plop&&E.plop.ultRes){
+    var riv=E.plop.ultRes.riv||E.plop.ultRes.rival;
+    if(riv) t.push({tag:"#"+String(riv).replace(/\s+/g,""), n:ri(2500,28000)});
+  }
   if(part) t.push({tag:"#"+String(part.rivalNombre||"rival").replace(/\s+/g,""), n:ri(1200,18000)});
   t.push({tag:"#"+(E.clubNombre||"Club").replace(/\s+/g,""), n:ri(3000,40000)});
   t.push({tag:"#LigaDePrimera", n:ri(8000,55000)});

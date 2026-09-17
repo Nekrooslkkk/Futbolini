@@ -28,8 +28,8 @@ function _estClub74(){
 (function wrapTokens74(){
   if(typeof resolverTokens!=="function"||resolverTokens._p74) return;
   const orig=resolverTokens;
-  resolverTokens=function(txt,est){
-    let s=orig(txt,est);
+  resolverTokens=function(txt,est,extra){
+    let s=orig(txt,est,extra);
     if(!s||typeof s!=="string") return s;
     try{
       const c=(typeof clubMundo==="function")?clubMundo((est&&est.club)||(E&&E.club)):(typeof clubLookup==="function"?clubLookup((est&&est.club)||(E&&E.club)):null);

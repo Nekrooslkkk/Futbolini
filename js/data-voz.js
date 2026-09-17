@@ -475,7 +475,15 @@ function empujarTicker(P, autor, texto, tono, m){
         const ctx=ctxDeEvento(P, ev);
         if(ctx && Math.random()<0.72){
           const t=tuitDeCtx(ctx);
-          if(t){ empujarTicker(P, t.quien, (typeof resolverTokens==="function"&&typeof E!=="undefined"&&E?resolverTokens(t.txt,E):t.txt), tonoDeCtx(ctx), ev.min||P.min||0); return; }
+          if(t){
+            var extra=null;
+            if(ev.tipo==="gol"){
+              const gd=(P.golesDetalle||[]).filter(function(g){return g.propio;});
+              const aut=gd.length?gd[gd.length-1].quien:null;
+              if(aut) extra={GOLEADOR:aut};
+            }
+            empujarTicker(P, t.quien, (typeof resolverTokens==="function"&&typeof E!=="undefined"&&E?resolverTokens(t.txt,E,extra):t.txt), tonoDeCtx(ctx), ev.min||P.min||0); return;
+          }
         }
       }catch(e){}
       return orig(P, ev);

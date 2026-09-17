@@ -240,3 +240,19 @@ html.cdn-7 body:not([data-tema="aero"]) .window.glass:after{
 }
 
 
+
+html body[data-tema="negro"] .codigo-in{
+  background:rgba(255,255,255,.08); color:#eaf6ff; border-color:rgba(120,190,255,.28);
+}
+html body[data-tema="negro"] .dev-in,
+html body[data-tema="negro"] .dev-ta,
+html body[data-tema="negro"] .dev-select{
+  background:rgba(255,255,255,.08); color:#eaf6ff; border-color:rgba(120,190,255,.28);
+}
+html body[data-tema="negro"] .plop-card{
+  color:#dbecff;
+  background:linear-gradient(180deg,rgba(18,32,52,.92),rgba(12,22,38,.88));
+  border-color:rgba(120,190,255,.18);
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset, 0 4px 12px rgba(0,0,0,.35);
+}
+html body[data-tema="negro"] .hilo-linea{ border-left-color:rgba(120,190,255,.35); }

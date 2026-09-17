@@ -1231,7 +1231,7 @@
     grupo("Grok 7.994 (tablas vivas + AFA + Sudamericana)");
     safe(function(){
       ok(typeof VERSION==="string" && /^7\.\d+$/.test(VERSION), "VERSION 7.x");
-      ok(typeof VERSION==="string" && /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(typeof VERSION==="string" && /^7\.9/.test(VERSION), "VERSION 7.99x");
       nuevaPartida("TRA",2026,"historico",{categoria:"C"});
       var liga=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"; });
       ok(liga.length===12, "Trasandino: 12 PJ zonales (6 rivales ida/vuelta + 2 byes fuera del calendario)");
@@ -1282,7 +1282,7 @@
     /* T33 · 7.995 scripts 801/802/rigor que 7.994 no subió */
     grupo("Grok 7.995 (planteles glory + decisiones propias)");
     safe(function(){
-      ok(typeof VERSION==="string" && /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(typeof VERSION==="string" && /^7\.9/.test(VERSION), "VERSION 7.99x");
       ok(typeof DECISIONES_801!=="undefined" && DECISIONES_801.length>=40, "DECISIONES_801 cargó (≥40 cartas de club)");
       ok(DECISIONES.some(function(d){ return d.id==="cc26_concesionaria" && d.club==="CC"; }), "CC 2026 tiene carta propia (concesionaria)");
       ok(DECISIONES.some(function(d){ return d.id==="smo26_pintana" && d.club==="SMO"; }), "Morning 2026 tiene carta propia (no hereda CC)");
@@ -1297,7 +1297,7 @@
     /* T34 · 7.996 partido vivo + planteles 2006 */
     grupo("Grok 7.996 (cancha + relato + 2006 documentado)");
     safe(function(){
-      ok(typeof VERSION==="string" && /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(typeof VERSION==="string" && /^7\.9/.test(VERSION), "VERSION 7.99x");
       ok(typeof PLANTEL_UCH_2006!=="undefined" && PLANTEL_UCH_2006.length>=18, "UCH 2006 plantel ≥18");
       ok(typeof PLANTEL_AUD_2006!=="undefined" && PLANTEL_AUD_2006.length>=16, "AUD 2006 plantel ≥16");
       ok(typeof PLANTEL_UC_2006!=="undefined" && PLANTEL_UC_2006.length>=18, "UC 2006 plantel ≥18");
@@ -1336,7 +1336,7 @@
     /* T35 · 7.997 repetición + Clausura 2006 + prensa ×2 */
     grupo("Grok 7.997 (repetición + Clausura 2006 + prensa)");
     safe(function(){
-      ok(typeof VERSION==="string" && /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(typeof VERSION==="string" && /^7\.9/.test(VERSION), "VERSION 7.99x");
       ok(typeof persistirRepeticion==="function", "persistirRepeticion existe");
       ok(typeof compactarRelato==="function", "compactarRelato existe");
       ok(typeof elegirPreguntasPrensa==="function", "elegirPreguntasPrensa existe");
@@ -1425,7 +1425,7 @@
     /* T36 · 7.998 5 cambios IFAB + descuento + bloque/ritmo */
     grupo("Grok 7.998 (cambios IFAB + descuento + palancas)");
     safe(function(){
-      ok(VERSION==="7.999" || /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(VERSION==="7.999" || /^7\.9/.test(VERSION), "VERSION 7.99x");
       ok(typeof cambiosMaxEra==="function" && cambiosMaxEra(2026)===5, "2026 permite 5 cambios");
       ok(cambiosMaxEra(2006)===3, "2006 permite 3 cambios");
       ok(cambiosMaxEra(1991)===2, "1991 permite 2 cambios");
@@ -1487,7 +1487,7 @@
     /* T37 · 7.999 lista de concentrados 16/18/23 + el que sale no reingresa */
     grupo("Grok 7.999 (lista de concentrados + banca real)");
     safe(function(){
-      ok(VERSION==="7.9991" || /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(VERSION==="7.9991" || /^7\.9/.test(VERSION), "VERSION 7.99x");
       ok(typeof listaMaxEra==="function" && listaMaxEra(2026)===23, "2026: lista de 23");
       ok(listaMaxEra(2006)===18, "2006: lista de 18");
       ok(listaMaxEra(1991)===16, "1991: lista de 16");
@@ -1546,7 +1546,7 @@
     /* T38 · 7.9991 banco Aero + bolsillo/bolsa a prueba de save roto + swipe */
     grupo("Grok 7.9991 (banco + bolsillo + swipe)");
     safe(function(){
-      ok(VERSION==="7.9991" || /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(VERSION==="7.9991" || /^7\.9/.test(VERSION), "VERSION 7.99x");
       ok(typeof bolsilloDT==="function", "bolsilloDT");
       ok(typeof engancharSwipeTinder==="function", "swipe del Match");
       ok(typeof detenerCancha==="function", "detenerCancha sigue existiendo");
@@ -1568,7 +1568,7 @@
     /* T39 · 7.9992 NaN del casino, flags de barra, ventanas SO, cancha/penal */
     grupo("Grok 7.9992 (bolsillo NaN + flags + ventanas SO)");
     safe(function(){
-      ok(VERSION==="7.9992" || /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(VERSION==="7.9992" || /^7\.9/.test(VERSION), "VERSION 7.99x");
       ok(typeof abrirSeccion==="function" && typeof envolverVistaSO==="function", "ventanas SO");
       ok(typeof canvasBolsa==="function", "canvasBolsa");
       ok(typeof montarBarraSO==="function", "montarBarraSO");
@@ -1617,7 +1617,7 @@
     /* T40 · 7.9993 chrome Vista local (sin CDN) */
     grupo("Grok 7.9993 (Aero Vista local, sin CDN)");
     safe(function(){
-      ok(VERSION==="7.9993" || /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(VERSION==="7.9993" || /^7\.9/.test(VERSION), "VERSION 7.99x");
       var so=getComputedStyle(document.documentElement).getPropertyValue("--futbolini-so").trim();
       ok(so.length>0, "so.css cargado (--futbolini-so="+so+")");
     }, "API 7.9993 + so.css local");
@@ -1635,7 +1635,7 @@
     /* T41 · 7.9994 CDN de ventana como extra; local siempre */
     grupo("Grok 7.9994 (CDN extra, local de plan A)");
     safe(function(){
-      ok(VERSION==="7.9994" || /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(VERSION==="7.9994" || /^7\.9/.test(VERSION), "VERSION 7.99x");
       ok(typeof cargarCdnAero==="function", "cargarCdnAero");
       /* Claude: 7.css LOCAL (css/vendor/7-window.css), ya no unpkg. */
       ok(typeof AERO_7_WINDOW==="string" && AERO_7_WINDOW.indexOf("window")>=0, "carga solo window.css, no el 7.css entero");
@@ -1671,7 +1671,7 @@
     /* T42 · 7.99940 Match ventana aparte + bios de época */
     grupo("Grok 7.99940 (Match ventana + época)");
     safe(function(){
-      ok(VERSION==="7.99940" || /^7\.99/.test(VERSION), "VERSION 7.99x");
+      ok(VERSION==="7.99940" || /^7\.9/.test(VERSION), "VERSION 7.99x");
       ok(typeof poolCandidatos==="function" && typeof asegurarTinder==="function", "pool/asegurar Tinder");
       ok(CANDIDATOS_1925.length>=6 && CANDIDATOS_1991.length>=6, "hueco 1925/1991 cubierto");
     }, "API 7.99940");
@@ -1705,7 +1705,7 @@
     /* T43 · 7.99950 Apoyar + inicio Vista + Plop discute */
     grupo("Grok 7.99950 (Apoyar + inicio + hilo)");
     safe(function(){
-      ok(VERSION==="7.99950" || /^7\.9995/.test(VERSION), "VERSION 7.99950");
+      ok(VERSION==="7.99950" || /^7\.9/.test(VERSION), "VERSION 7.99950");
       ok(typeof DONAR==="object" && typeof abrirDonar==="function" && typeof botonDonar==="function", "donar.js cargado");
       ok(DONAR.perks===false, "sin paywall");
       ok(typeof responderHilo==="function", "responderHilo existe");
@@ -1733,7 +1733,7 @@
     /* T44 · 7.99951 Bitcoin + cancha FIFA + grupos + pegas + arcos */
     grupo("Grok 7.99951 (BTC + huecos)");
     safe(function(){
-      ok(VERSION==="7.99951" || /^7\.9995/.test(VERSION), "VERSION 7.99951");
+      ok(VERSION==="7.99951" || /^7\.9/.test(VERSION), "VERSION 7.99951");
       ok(typeof donarTieneBtc==="function" && donarTieneBtc()===false, "BTC hueco (aún no hay dirección)");
       ok(Array.isArray(DONAR.libro), "libro de aportes es lista");
       ok(/destinado al juego/i.test(DONAR.gracias||""), "mensaje de gracias");
@@ -1751,7 +1751,7 @@
     /* T45 · 7.99952 dirigir en vivo + copas del país + mercado con voces + alias */
     grupo("Grok 7.99952 (dirigir + copas + voces)");
     safe(function(){
-      ok(VERSION==="7.99952" || /^7\.9995/.test(VERSION), "VERSION 7.99952");
+      ok(VERSION==="7.99952" || /^7\.9/.test(VERSION), "VERSION 7.99952");
       ok(typeof snapshotPlan==="function" && typeof reaplicarPlan==="function", "plan en vivo API");
       ok(typeof modalPlanVivo==="function" && typeof modalEntretiempo==="function", "pizarra + entretiempo");
       ok(typeof panelCopasPais==="function", "copas del país aunque no clasifiques");
@@ -1782,7 +1782,7 @@
     /* T46 · 7.99953 planteles en 2 archivos, no 12 huevos */
     grupo("Grok 7.99953 (menos huevo)");
     safe(function(){
-      ok(VERSION==="7.99953" || /^7\.9995/.test(VERSION), "VERSION 7.99953");
+      ok(VERSION==="7.99953" || /^7\.9/.test(VERSION), "VERSION 7.99953");
       var scripts=[].map.call(document.querySelectorAll("script[src]"), function(s){ return s.getAttribute("src")||""; });
       ok(scripts.some(function(s){ return /js\/data-planteles\.js$/.test(s); }), "data-planteles.js cargado");
       ok(scripts.some(function(s){ return /js\/data-planteles-epoca\.js$/.test(s); }), "data-planteles-epoca.js cargado");
@@ -1794,7 +1794,7 @@
     /* T47 · 7.99954 merge Claude + perder se siente */
     grupo("Grok 7.99954 (Claude + perder)");
     safe(function(){
-      ok(VERSION==="7.99954" || /^7\.9995/.test(VERSION), "VERSION 7.99954");
+      ok(VERSION==="7.99954" || /^7\.9/.test(VERSION), "VERSION 7.99954");
       ok(typeof AERO_7_WINDOW==="string" && AERO_7_WINDOW.indexOf("http")<0, "7.css local (Claude)");
       ok(typeof planCuandoVasPerdiendo==="function" && typeof diffMarcador==="function", "perder API");
       ok(typeof decisionCabeEnClub==="function", "decisionCabeEnClub");
@@ -1823,7 +1823,7 @@
     /* T48 · 7.99955 descanso clavado al 45' + 11 DTs AFA con fuente */
     grupo("Grok 7.99955 (45' + DTs AFA)");
     safe(function(){
-      ok(VERSION==="7.99955" || /^7\.9995/.test(VERSION), "VERSION 7.99955");
+      ok(VERSION==="7.99955" || /^7\.9/.test(VERSION), "VERSION 7.99955");
     }, "versión");
     safe(function(){
       nuevaPartida("CC",2026,"historico");
@@ -1865,7 +1865,7 @@
     /* T49 · 7.99956 en línea + login + voseo de datos */
     grupo("Grok 7.99956 (en línea + login)");
     safe(function(){
-      ok(VERSION==="7.99956" || /^7\.9995/.test(VERSION), "VERSION 7.9995x");
+      ok(VERSION==="7.99956" || /^7\.9/.test(VERSION), "VERSION 7.9995x");
       ok(typeof panelEnLinea==="function", "panel En este momento");
       ok(typeof presenciaLatido==="function" && typeof presenciaN==="function", "presencia API");
       ok(presenciaN()>=1, "al menos 1 (vos)");
@@ -1965,7 +1965,7 @@
       return {ln:ln, bg:bg, at:at};
     }
     safe(function(){
-      ok(VERSION==="7.99958" || /^7\.99958/.test(VERSION), "VERSION 7.99958");
+      ok(VERSION==="7.9000" || /^7\.9/.test(VERSION), "VERSION 7.9x");
       ok(typeof panelCuadro2006==="function", "panelCuadro2006");
       var orig=document.body.getAttribute("data-tema")||"aero";
       var n=_medirTema("negro", true);
@@ -1990,6 +1990,67 @@
       var txt=(document.getElementById("vista")&&document.getElementById("vista").innerText)||"";
       ok(/Cuadro Apertura/.test(txt), "el calendario muestra el cuadro aunque ya arrancó el Clausura");
     }, "cuadro 2006 visible");
+
+    /* T52 · 7.9000 xss + otp + pegar + plop coordinado */
+    grupo("Grok 7.9000 (xss + otp + pegar + plop)");
+    safe(function(){
+      ok(VERSION==="7.9000", "VERSION 7.9000");
+      ok(typeof escHtml==="function", "escHtml existe");
+      ok(escHtml("<script>")==="&lt;script&gt;", "escHtml escapea tags");
+      ok(escHtml("&")==="&amp;", "escHtml escapea amp primero");
+      ok(escHtml('"')==="&quot;", "escHtml escapea comillas");
+      ok(mailOk("a@b.cl") && !mailOk("a@b") && !mailOk("<x@y.z>") && !mailOk("no"), "mailOk");
+      ok(codigoOk("123456") && codigoOk("12 34 56") && !codigoOk("12345") && !codigoOk("abcdef"), "codigoOk 6 dígitos");
+      ok(textoLimpio("<b>hola</b>")==="hola", "textoLimpio recorta HTML");
+      ok(typeof nubePedirCodigo==="function" && typeof nubeVerificarCodigo==="function", "OTP pedir/verificar");
+      ok(typeof pintarFormularioCuenta==="function" && typeof pintarSesionNube==="function", "login compartido Ajustes/modal");
+    }, "helpers xss + otp");
+    safe(function(){
+      ok(typeof parsearPegarClub==="function" && typeof crearClubDesdePegar==="function", "PEGAR club");
+      var r=parsearPegarClub("ID: TST\nnombre: Club Test XSS <script>\nciudad: Santiago\nliga: 2026");
+      ok(r.id==="TST" && /script/.test(r.nombre||""), "parsea PEGAR (HTML crudo)");
+      var c=crearClubDesdePegar("ID: TST\nnombre: Club Test XSS <script>alert(1)</script>\nciudad: Santiago\nliga: 2026");
+      ok(c.ok && c.id==="TST", "crearClubDesdePegar");
+      ok(CLUB_INFO_2026.TST && String(CLUB_INFO_2026.TST.n).indexOf("<")<0, "PEGAR recorta HTML del nombre");
+      ok(typeof CLUB_INFO!=="undefined" && CLUB_INFO.TST && CLUB_INFO.TST.n===CLUB_INFO_2026.TST.n, "espeja nombre 1991");
+      ok(typeof LIGAS!=="undefined" && LIGAS[2026] && LIGAS[2026].some(function(x){return x.id==="TST";}), "entra a la liga 2026");
+      try{
+        delete CLUB_INFO_2026.TST;
+        if(typeof CLUB_META!=="undefined") delete CLUB_META.TST;
+        if(typeof CLUB_INFO!=="undefined") delete CLUB_INFO.TST;
+        if(typeof LIGAS!=="undefined" && LIGAS[2026]){
+          for(var i=LIGAS[2026].length-1;i>=0;i--) if(LIGAS[2026][i]&&LIGAS[2026][i].id==="TST") LIGAS[2026].splice(i,1);
+        }
+      }catch(e){}
+    }, "PEGAR club coordina mapas");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var t=postProc("@xss","hincha","hola <img src=x onerror=alert(1)>","neutro");
+      ok(String(t.texto).indexOf("<img")<0, "postProc recorta HTML");
+      var n=renderPostEl(t);
+      ok(n.innerHTML.indexOf("<img")<0 && n.innerHTML.indexOf("onerror")<0, "renderPostEl no inyecta HTML del post");
+      ok(/hola/.test(n.textContent||""), "el texto se ve como texto");
+    }, "plop no XSS");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      if(E) E.anio=2026;
+      E.plop={humor:60,hist:[],racha:[],ultRes:null};
+      persistirTicker({ticker:[{autor:"@a",texto:"hola",tono:"bueno"}], part:{rivalNombre:"Palestino"}}, {yo:2,otro:1});
+      ok(E.plop && E.plop.ultRes && E.plop.ultRes.riv==="Palestino" && E.plop.ultRes.gano===true, "persistirTicker escribe ultRes");
+      var tags=tendencias().map(function(x){return x.tag;}).join(" ");
+      ok(/Palestino/.test(tags), "tendencias lee el último rival");
+    }, "plop coordina con partido");
+    safe(function(){
+      ok(typeof enviarReply==="function", "reply inline (sin prompt)");
+      var out=resolverTokens("Gol de {GOLEADOR}", {plantel:[{n:"Delantero",pos:"DEL",goles:0,nivel:70,vendido:false,rasgos:[],edad:25,proy:70,valor:80,forma:70}], dt:"DT", clubNombre:"Club", anio:2026, club:"CC"}, {GOLEADOR:"Zamorano"});
+      ok(out.indexOf("Zamorano")>=0, "{GOLEADOR} usa el extra del ultimo gol");
+    }, "GOLEADOR = el que acaba de marcar");
+    safe(function(){
+      SEC="ajustes"; render();
+      var txt=(document.getElementById("vista")&&document.getElementById("vista").textContent)||"";
+      ok(/Cuenta en la nube/.test(txt), "Ajustes muestra cuenta");
+      ok(/Código al correo|Clave/.test(txt), "login con clave y código");
+    }, "login en Ajustes");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

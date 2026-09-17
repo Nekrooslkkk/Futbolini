@@ -108,7 +108,7 @@ function pintarBarra(){
     if(badge) badge.classList.add("oculto");
     if(bd){
       bd.appendChild(el("div","bd",'<div class="k">Versión</div><div class="v">'+(typeof VERSION!=="undefined"?VERSION:"")+'</div>'));
-      bd.appendChild(el("div","bd",'<div class="k">Estado</div><div class="v">Elegí club</div>'));
+      bd.appendChild(el("div","bd",'<div class="k">Estado</div><div class="v">Elige club</div>'));
     }
     return;
   }
@@ -618,7 +618,13 @@ function vistaEscritorio(){
     const resp=el("div","resul mitad"); resp.hidden=true;
     const inp=el("input"); inp.type="text"; inp.placeholder="Preguntale al ayudante… (rival, química, plata, camarín, mercado…)";
     inp.style.cssText="display:block;width:100%;box-sizing:border-box;padding:9px 11px;border-radius:8px;border:1px solid rgba(0,0,0,.15)";
-    const responder=()=>{ const q=inp.value.trim(); if(!q){ inp.focus(); return; } resp.hidden=false; resp.innerHTML="<b>🧑‍🏫 Ayudante:</b> "+preguntarAyudante(q); };
+    const responder=()=>{
+      const q=inp.value.trim(); if(!q){ inp.focus(); return; }
+      resp.hidden=false; resp.textContent="";
+      const b=el("b"); b.textContent="🧑‍🏫 Ayudante:";
+      resp.appendChild(b);
+      resp.appendChild(document.createTextNode(" "+String(preguntarAyudante(q)||"")));
+    };
     inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); responder(); } };
     const bq=el("button","btn-aqua chico","Preguntar"); bq.style.marginTop="6px"; bq.onclick=responder;
     const chips=el("div","fichas"); chips.style.marginTop="6px";
@@ -1367,7 +1373,7 @@ function vistaPlantel(){
     const can=Math.round(j.cansancio||0);
     if(can>=18) tr.className="cans-alto";
     else if(can>=10) tr.className="cans-medio";
-    tr.innerHTML="<td>"+(j.real?"● ":"")+j.n+(j.lesion>0?" 🩹":"")+(j.cedido?" 🔄":"")+"</td><td>"+j.pos+"</td><td class='mini'>"+rol+"</td><td class='n'>"+j.edad+
+    tr.innerHTML="<td>"+(j.real?"● ":"")+(typeof escHtml==="function"?escHtml(j.n):j.n)+(j.lesion>0?" 🩹":"")+(j.cedido?" 🔄":"")+"</td><td>"+j.pos+"</td><td class='mini'>"+rol+"</td><td class='n'>"+j.edad+
       "</td><td class='n'>"+j.nivel+"</td><td class='n'>"+Math.round(j.forma)+"</td>"+
       (typeof celdaCans==="function"?celdaCans(j):("<td class='n'>"+can+"</td>"))+
       "<td class='n'>"+j.goles+"</td><td class='n'>"+plata(j.sueldo)+"</td>";
@@ -1887,7 +1893,11 @@ function vistaHistoria(){
   if(linea.length){
     const ph=panel("Línea de "+(E.clubNombre||"club"),"📜","agua");
     linea.forEach(h=>{
-      ph.cuerpo.appendChild(el("div","hito-linea","<b>"+h.anio+" · "+h.hito+"</b><div class='mini'>"+h.txt+"</div>"));
+      const row=el("div","hito-linea");
+      const tit=el("b"); tit.textContent=(h.anio||"")+" · "+(h.hito||"");
+      const mini=el("div","mini"); mini.textContent=h.txt||"";
+      row.appendChild(tit); row.appendChild(mini);
+      ph.cuerpo.appendChild(row);
     });
     ph.cuerpo.appendChild(el("p","mini","Hechos públicos de este club. Lo que pasa adentro de la partida es ficción del juego."));
     v.appendChild(ph);
@@ -2150,18 +2160,35 @@ let REDES_TAB="inicio";
 /* 6.3 · render de un post (reutilizable por el feed y por los bots que entran solos) */
 function renderPostEl(t){
   const ic=t.tipo==="prensa"?"🎙️":(t.tipo==="jugador"?"⚽":(t.tipo==="club"?"🏟️":(t.tipo==="dt"?"🧑‍💼":(t.tipo==="rival"?"🆚":"👤"))));
-  const verif=(typeof esVerificado==="function"&&esVerificado(t))?" <span class='verif' title='Cuenta verificada'>✔</span>":"";
-  const d=el("div","resul "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"mitad")));
-  d.innerHTML="<b>"+ic+" "+t.autor+verif+"</b> <span class='mini'>· "+(t.fecha||"hoy")+" "+(t.anio||"")+"</span><br>"+t.texto+
-    "<div class='mini' style='opacity:.6;margin-top:2px'>♡ "+(t.likes||0).toLocaleString("es-CL")+
-    (t.rts?" · RT "+t.rts:"")+(t.replies?" · "+t.replies+" resp.":"")+"</div>";
+  const d=el("div","resul plop-card "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"mitad")));
+  t._nodo=d;
+  const cab=el("div","plop-cab");
+  const aut=el("b"); aut.textContent=ic+" "+(t.autor||"");
+  cab.appendChild(aut);
+  if(typeof esVerificado==="function"&&esVerificado(t)){
+    const vf=el("span","verif"); vf.title="Cuenta verificada"; vf.textContent="✔"; cab.appendChild(vf);
+  }
+  const meta=el("span","mini"); meta.textContent=" · "+(t.fecha||"hoy")+" "+(t.anio||"");
+  cab.appendChild(meta);
+  d.appendChild(cab);
+  const tx=el("div","plop-txt"); tx.textContent=t.texto||""; d.appendChild(tx);
+  const st=el("div","mini"); st.style.opacity=".6"; st.style.marginTop="2px";
+  st.textContent="♡ "+(t.likes||0).toLocaleString("es-CL")+(t.rts?" · RT "+t.rts:"")+(t.replies?" · "+t.replies+" resp.":"");
+  d.appendChild(st);
   if(t.hilo&&t.hilo.length){
     const ver=t._hiloOpen?t.hilo:t.hilo.slice(-6);
-    ver.forEach(h=>{ d.appendChild(el("p","mini hilo-linea","↳ <b>"+h.autor+"</b> "+h.texto)); });
+    ver.forEach(h=>{
+      const ln=el("p","mini hilo-linea");
+      const ba=el("b"); ba.textContent=h.autor||"";
+      ln.appendChild(document.createTextNode("↳ "));
+      ln.appendChild(ba);
+      ln.appendChild(document.createTextNode(" "+(h.texto||"")));
+      d.appendChild(ln);
+    });
     if(t.hilo.length>6){
       const mas=el("button","btn-aqua chico gris",t._hiloOpen?"Cerrar hilo":("Ver hilo ("+t.hilo.length+")"));
       mas.style.marginTop="4px";
-      mas.onclick=function(ev){ if(ev) ev.stopPropagation(); t._hiloOpen=!t._hiloOpen; if(typeof irA==="function") irA("redes"); };
+      mas.onclick=function(ev){ if(ev) ev.stopPropagation(); t._hiloOpen=!t._hiloOpen; _repintarPost(t); };
       d.appendChild(mas);
     }
   }
@@ -2172,7 +2199,23 @@ function renderPostEl(t){
     acc.appendChild(b);
   });
   d.appendChild(acc);
+  if(t._replyOpen){
+    const wrap=el("div","plop-reply");
+    const inp=el("input","entrada"); inp.type="text"; inp.maxLength=140; inp.placeholder="Responder…"; inp.setAttribute("aria-label","Responder");
+    const ok=el("button","btn-aqua chico verde","Enviar");
+    ok.onclick=function(ev){ if(ev) ev.stopPropagation(); enviarReply(t, inp.value); };
+    inp.onkeydown=function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); enviarReply(t, inp.value); } };
+    wrap.appendChild(inp); wrap.appendChild(ok); d.appendChild(wrap);
+    setTimeout(function(){ try{ inp.focus(); }catch(e){} }, 30);
+  }
   return d;
+}
+function _repintarPost(t){
+  try{
+    const host=t&&t._nodo;
+    if(host&&host.parentNode){ const neu=renderPostEl(t); host.parentNode.replaceChild(neu,host); return; }
+  }catch(e){}
+  if(typeof irA==="function") irA("redes");
 }
 /* bots que hacen que el feed se mueva solo, como en Twitter */
 let PLOP_TIMER=null;
@@ -2254,16 +2297,25 @@ function reaccionarPost(t,tipo){
       aviso("🚩 Reportar a alguien que no molestaba te hace quedar mal (−1 credibilidad)."); aplicarRep({credibilidad:-1});
     }
   } else {
-    const r=prompt("Responder a "+t.autor,"");
-    if(r===null) return;
-    const txt=(r||"").trim()||elige(["Te leí.","Se trabaja.","Gracias por el banco."]);
-    t.replies++;
-    t.hilo.push({autor:handleDT(),texto:txt,fecha:"ahora"});
-    if(typeof postProc==="function") postProc(handleDT(),"dt","@"+String(t.autor||"").replace(/^@/,"")+" "+txt,"neutro");
-    if(typeof responderHilo==="function") responderHilo(t, txt);
-    aplicarRep({prensa:1});
+    t._replyOpen=!t._replyOpen;
+    _repintarPost(t);
+    return;
   }
-  guardar(); irA("redes");
+  guardar();
+  _repintarPost(t);
+}
+function enviarReply(t, raw){
+  const txt=(typeof textoLimpio==="function")?textoLimpio(raw,140):String(raw||"").replace(/<[^>]*>/g,"").trim().slice(0,140);
+  if(!txt){ aviso("Escribe algo"); return; }
+  t._replyOpen=false;
+  t.replies=(t.replies||0)+1;
+  t.hilo=t.hilo||[];
+  t.hilo.push({autor:handleDT(),texto:txt,fecha:"ahora"});
+  if(typeof postProc==="function") postProc(handleDT(),"dt","@"+String(t.autor||"").replace(/^@/,"")+" "+txt,"neutro");
+  if(typeof responderHilo==="function") responderHilo(t, txt);
+  aplicarRep({prensa:1});
+  guardar();
+  _repintarPost(t);
 }
 /* quitar un me gusta: revierte parte del acercamiento */
 function quitarLike(t){
@@ -2273,7 +2325,7 @@ function quitarLike(t){
   const amistoso=(t.tipo==="hincha"||t.tipo==="club"||t.tipo==="jugador"||t.tono==="bueno");
   if(amistoso){ aplicarGrupos({hinchada:-1}); aviso("Quitaste el like. La gente lo nota (−1 hinchada)."); }
   else aviso("Like retirado.");
-  guardar(); irA("redes");
+  guardar(); _repintarPost(t);
 }
 /* impulsar tu cuenta con plata (crecer para comerte todo) */
 function impulsarPlop(monto){
@@ -2287,7 +2339,7 @@ function impulsarPlop(monto){
 function vistaRedes(){
   if(typeof sembrarRedes==="function" && (!E.timeline||E.timeline.length<3)) sembrarRedes();
   const v=$("#vista");
-  const cab=panel("PLOP! · 2008","🐦","agua");
+  const cab=panel("PLOP! · "+(E.anio||2008),"🐦","agua");
   pestañasRedes(cab.cuerpo);
   const tabs=el("div","fichas");
   [["inicio","Inicio"],["menciones","Menciones"],["megusta","Me gusta"],["tendencias","Tendencias"]].forEach(([k,n])=>{
@@ -2311,7 +2363,7 @@ function vistaRedes(){
   p.cuerpo.appendChild(ta); p.cuerpo.appendChild(cnt);
   const bp=el("button","btn-aqua ancho verde",REDES_PEST==="club"?"Publicar en la cuenta oficial":"Publicar en tu perfil");
   bp.onclick=()=>{
-    const txt=(ta.value||"").trim().slice(0,140); if(!txt){ aviso("Escribe algo primero"); return; }
+    const txt=(typeof textoLimpio==="function")?textoLimpio(ta.value,140):String(ta.value||"").trim().slice(0,140); if(!txt){ aviso("Escribe algo primero"); return; }
     bp.disabled=true;
     evaluarPost(txt).then(ev=>{
       aplicarPost(txt,ev);
@@ -2335,7 +2387,7 @@ function vistaRedes(){
       });
       p.cuerpo.appendChild(fr);
     } else {
-      p.cuerpo.appendChild(el("div","resul mitad","📄 Los <b>comunicados oficiales</b> los redacta un <b>Community Manager</b>. Contratá uno en Finanzas y acá te van a aparecer comunicados largos y bien escritos para la cuenta del club."));
+      p.cuerpo.appendChild(el("div","resul mitad","📄 Los <b>comunicados oficiales</b> los redacta un <b>Community Manager</b>. Contrata uno en Finanzas y acá te van a aparecer comunicados largos y bien escritos para la cuenta del club."));
     }
   }
   v.appendChild(p);
@@ -2353,17 +2405,22 @@ function vistaRedes(){
     bs.onclick=()=>{ campanaCM("serio"); render(); };
     pcd.cuerpo.appendChild(bh); pcd.cuerpo.appendChild(bs);
   } else {
-    pcd.cuerpo.appendChild(el("div","resul mitad","Contratá un <b>Community Manager</b> en Finanzas para monetizar seguidores (sponsor digital) y lanzar campañas."));
+    pcd.cuerpo.appendChild(el("div","resul mitad","Contrata un <b>Community Manager</b> en Finanzas para monetizar seguidores (sponsor digital) y lanzar campañas."));
   }
   /* tu identidad en PLOP: usuario y verificado */
   E.plopVerif=E.plopVerif||{};
   const miHandle=(typeof handleDT==="function")?handleDT():"@dt";
   const verifOwn=!!E.plopVerif[miHandle];
-  pcd.cuerpo.appendChild(el("h3","sub","Tu cuenta: "+miHandle+(verifOwn?" ✔":"")));
-  const inU=el("input"); inU.type="text"; inU.maxLength=16; inU.className="entrada"; inU.style.width="100%";
+  const titCta=el("h3","sub"); titCta.textContent="Tu cuenta: "+miHandle+(verifOwn?" ✔":"");
+  pcd.cuerpo.appendChild(titCta);
+  const inU=el("input"); inU.type="text"; inU.maxLength="16"; inU.className="entrada"; inU.style.width="100%";
   inU.placeholder="Tu usuario (ej: @dtcrack)"; inU.value=(E.perfil&&E.perfil.plopUser)||"";
   const bU=el("button","btn-aqua chico verde","Guardar usuario"); bU.style.marginTop="5px";
-  bU.onclick=()=>{ let u=(inU.value||"").trim().replace(/\s/g,"").replace(/^@*/,"@").slice(0,16); if(u.length<2){ aviso("Pon un usuario válido"); return; } E.perfil=E.perfil||{}; E.perfil.plopUser=u; guardar(); render(); aviso("Ahora firmas como "+u); };
+  bU.onclick=()=>{
+    let u=(inU.value||"").trim().replace(/\s/g,"").replace(/[<>"'`]/g,"").replace(/^@*/,"@").slice(0,16);
+    if(u.length<2){ aviso("Pon un usuario válido"); return; }
+    E.perfil=E.perfil||{}; E.perfil.plopUser=u; guardar(); render(); aviso("Ahora firmas como "+u);
+  };
   pcd.cuerpo.appendChild(inU); pcd.cuerpo.appendChild(bU);
   if(!verifOwn){
     const bV=el("button","btn-aqua chico"+(E.plata<150?" gris":""),"✔ Comprar verificado · "+plata(150)); bV.style.marginLeft="6px"; bV.style.marginTop="5px";
@@ -2372,7 +2429,7 @@ function vistaRedes(){
     pcd.cuerpo.appendChild(bV);
   }
   /* crecer para comerte todo: impulsar la cuenta con plata */
-  pcd.cuerpo.appendChild(el("p","mini","Impulsá tu cuenta: plata a cambio de alcance y seguidores. El que domina la conversación domina la calle."));
+  pcd.cuerpo.appendChild(el("p","mini","Impulsa tu cuenta: plata a cambio de alcance y seguidores. El que domina la conversación domina la calle."));
   const imp=el("div");
   [["Impulso chico",80],["Campaña",200],["Ofensiva total",500]].forEach(([n,m])=>{
     const b=el("button","btn-aqua chico"+(E.plata<m?" gris":" verde"),n+" · "+plata(m)); b.style.marginRight="5px"; b.style.marginTop="4px";
@@ -2388,12 +2445,7 @@ function vistaRedes(){
     const likeados=(E.timeline||[]).filter(t=>t._like||ids.indexOf(t.id)>=0);
     if(!likeados.length) pl.cuerpo.appendChild(el("p","mini","Todavía no le diste me gusta a nada. Tus likes acercan (o alejan) a la gente: elige bien a quién apoyas."));
     likeados.forEach(t=>{
-      const d=el("div","resul "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"mitad")));
-      d.innerHTML="<b>"+t.autor+"</b> <span class='mini'>· "+t.fecha+"</span><br>"+t.texto;
-      const b=el("button","btn-aqua chico gris","Quitar me gusta"); b.style.marginTop="5px";
-      b.onclick=()=>quitarLike(t);
-      d.appendChild(b);
-      pl.cuerpo.appendChild(d);
+      pl.cuerpo.appendChild(renderPostEl(t));
     });
     v.appendChild(pl);
     return;
@@ -2698,7 +2750,13 @@ function panelMisPartidas(v){
       const fila=el("div","fila");
       const etq=(s.epoca||("Año "+s.anio))+(s.gen>1?" · gen "+s.gen:"");
       const cuando=s.guardado?fechaCorta(s.guardado):"";
-      fila.innerHTML='<span>'+(esAct?"▶ ":"")+"<b>"+(s.clubNombre||s.club)+"</b> <span class='mini'>"+etq+(cuando?" · "+cuando:"")+(esAct?" · actual":"")+"</span></span>";
+      const sp=el("span");
+      if(esAct) sp.appendChild(document.createTextNode("▶ "));
+      const bn=el("b"); bn.textContent=s.clubNombre||s.club||"";
+      sp.appendChild(bn);
+      const mini=el("span","mini"); mini.textContent=" "+etq+(cuando?" · "+cuando:"")+(esAct?" · actual":"");
+      sp.appendChild(mini);
+      fila.appendChild(sp);
       const acc=el("span","");
       if(!esAct){
         const bc=el("button","btn-aqua chico","Continuar"); bc.onclick=()=>continuarPartida(s.id); acc.appendChild(bc);
@@ -2732,6 +2790,143 @@ function panelEnLinea(v){
   if(typeof presenciaLatido==="function") presenciaLatido();
 }
 /* ---------------- ajustes ---------------- */
+function _inpNubeCss(){
+  return "display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:10px 12px;border-radius:10px;border:1px solid rgba(0,0,0,.18);font-size:15px";
+}
+function pintarSesionNube(cc, opts){
+  opts=opts||{};
+  const mail=(typeof nubeEmail==="function"&&nubeEmail())||"tu cuenta";
+  const p=el("p"); p.appendChild(document.createTextNode("Sesión de "));
+  const b=el("b"); b.textContent=mail; p.appendChild(b);
+  p.appendChild(document.createTextNode(". La partida te sigue a otro celular o computadora."));
+  cc.appendChild(p);
+  const bSub=el("button","btn-aqua chico","☁️ Subir partida");
+  bSub.onclick=async()=>{ if(!E||!E.club){ aviso("No hay partida abierta"); return; } bSub.disabled=true; const r=await nubeSubir(E); bSub.disabled=false; aviso(r.ok?"Partida subida a la nube":("No se pudo subir: "+(r.msg||""))); };
+  const bBaj=el("button","btn-aqua chico"); bBaj.textContent="⬇️ Bajar partida"; bBaj.style.marginLeft="6px";
+  bBaj.onclick=async()=>{
+    bBaj.disabled=true; const r=await nubeBajar(); bBaj.disabled=false;
+    if(!r.ok){ aviso(r.msg); return; }
+    if(E&&E.club && !confirm("Esto reemplaza tu partida actual por la de la nube. ¿Seguir?")) return;
+    E=r.estado; normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod();
+    await guardar(); if(opts.cerrar&&typeof cerrarModal==="function") cerrarModal();
+    aviso("Partida bajada de la nube"); SEC="escritorio"; render();
+  };
+  cc.appendChild(bSub); cc.appendChild(bBaj);
+  const bOut=el("button","btn-aqua chico gris"); bOut.textContent="Cerrar sesión"; bOut.style.marginLeft="6px";
+  bOut.onclick=()=>{ nubeSalir(); if(opts.cerrar&&typeof cerrarModal==="function") cerrarModal(); if(typeof pintarBtnCuenta==="function") pintarBtnCuenta(); aviso("Sesión cerrada"); if(!opts.cerrar) render(); };
+  cc.appendChild(bOut);
+}
+function pintarFormularioCuenta(cc, opts){
+  opts=opts||{};
+  let modo=opts.modo||"clave";
+  const caja=el("div","nube-login");
+  const estilo=_inpNubeCss();
+  caja.appendChild(el("p","mini","Correo y clave, o un código de 6 dígitos al mail. Es opcional: sin cuenta el juego sigue igual, en este navegador."));
+  const tabs=el("div","fichas");
+  const bClave=el("button","ficha","Clave"); const bCod=el("button","ficha","Código al correo");
+  tabs.appendChild(bClave); tabs.appendChild(bCod); caja.appendChild(tabs);
+  caja.appendChild(el("label","lb","Correo"));
+  const iMail=el("input"); iMail.type="email"; iMail.placeholder="tu@correo.com"; iMail.autocomplete="email"; iMail.style.cssText=estilo;
+  if(typeof nubeMailRecordado==="function") iMail.value=nubeMailRecordado();
+  caja.appendChild(iMail);
+  const wrapClave=el("div","nube-clave");
+  wrapClave.appendChild(el("label","lb","Clave"));
+  const wrap=el("div","clave-wrap");
+  const iPass=el("input"); iPass.type="password"; iPass.placeholder="mínimo 6 caracteres"; iPass.autocomplete="current-password"; iPass.style.cssText=estilo; iPass.style.paddingRight="72px";
+  const tog=el("button","clave-ver"); tog.type="button"; tog.textContent="ver"; tog.setAttribute("aria-label","Mostrar clave");
+  tog.onclick=()=>{ const on=iPass.type==="password"; iPass.type=on?"text":"password"; tog.textContent=on?"ocultar":"ver"; };
+  wrap.appendChild(iPass); wrap.appendChild(tog); wrapClave.appendChild(wrap);
+  caja.appendChild(wrapClave);
+  const wrapCod=el("div","nube-codigo"); wrapCod.hidden=true;
+  wrapCod.appendChild(el("p","mini nube-modo","Te mandamos 6 números. Vence en unos minutos. Revisa spam."));
+  const iCod=el("input","codigo-in"); iCod.type="text"; iCod.inputMode="numeric"; iCod.autocomplete="one-time-code"; iCod.maxLength=6; iCod.placeholder="000000"; iCod.setAttribute("aria-label","Código de 6 dígitos");
+  wrapCod.appendChild(iCod); caja.appendChild(wrapCod);
+  const err=el("p","mini"); err.style.color="#b23"; caja.appendChild(err);
+  const acc=el("div"); acc.style.marginTop="8px"; caja.appendChild(acc);
+  function setErr(t){ err.textContent=t||""; }
+  function sync(){
+    bClave.setAttribute("aria-pressed",modo==="clave"?"true":"false");
+    bCod.setAttribute("aria-pressed",modo==="codigo"?"true":"false");
+    wrapClave.hidden=modo!=="clave"; wrapCod.hidden=modo!=="codigo";
+    acc.innerHTML="";
+    if(modo==="clave"){
+      const bIn=el("button","btn-aqua chico verde","Entrar");
+      const bReg=el("button","btn-aqua chico"); bReg.textContent="Crear cuenta"; bReg.style.marginLeft="6px";
+      bIn.onclick=async()=>{
+        const mail=(iMail.value||"").trim(), pass=iPass.value||"";
+        if(typeof mailOk==="function" && !mailOk(mail)){ setErr("Ese correo no se ve válido"); return; }
+        if(!mail||!pass){ setErr("Completa correo y clave"); return; }
+        bIn.disabled=true; setErr("");
+        const r=await nubeEntrar(mail,pass); bIn.disabled=false;
+        if(!r.ok){ setErr(r.msg||"No se pudo entrar"); return; }
+        if(typeof nubeRecordarMail==="function") nubeRecordarMail(mail);
+        if(r.confirmar){ setErr(r.msg||"Revisa el correo"); modo="codigo"; sync(); return; }
+        if(opts.cerrar&&typeof cerrarModal==="function") cerrarModal();
+        if(typeof pintarBtnCuenta==="function") pintarBtnCuenta();
+        aviso(r.email?("Hola, "+r.email):"Listo");
+        if(!opts.cerrar) render();
+      };
+      bReg.onclick=async()=>{
+        const mail=(iMail.value||"").trim(), pass=iPass.value||"";
+        if(typeof mailOk==="function" && !mailOk(mail)){ setErr("Ese correo no se ve válido"); return; }
+        if(!mail||!pass){ setErr("Completa correo y clave"); return; }
+        if(pass.length<6){ setErr("La clave necesita al menos 6 caracteres"); return; }
+        bReg.disabled=true; setErr("");
+        const r=await nubeRegistrar(mail,pass); bReg.disabled=false;
+        if(!r.ok){ setErr(r.msg||"No se pudo crear"); return; }
+        if(typeof nubeRecordarMail==="function") nubeRecordarMail(mail);
+        if(r.confirmar){ aviso(r.msg||"Revisa el correo"); modo="codigo"; sync(); return; }
+        if(opts.cerrar&&typeof cerrarModal==="function") cerrarModal();
+        if(typeof pintarBtnCuenta==="function") pintarBtnCuenta();
+        aviso("Cuenta creada"); if(!opts.cerrar) render();
+      };
+      iPass.onkeydown=function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); bIn.click(); } };
+      acc.appendChild(bIn); acc.appendChild(bReg);
+    }else{
+      const bPedir=el("button","btn-aqua chico","Enviar código");
+      const bVer=el("button","btn-aqua chico verde"); bVer.textContent="Verificar"; bVer.style.marginLeft="6px";
+      function pintarCooldown(){
+        if(typeof nubePuedePedirCodigo!=="function") return;
+        if(!nubePuedePedirCodigo()){
+          bPedir.disabled=true;
+          bPedir.textContent="Espera "+nubeSegundosCodigo()+" s";
+        }else{
+          bPedir.disabled=false; bPedir.textContent="Enviar código";
+        }
+      }
+      pintarCooldown();
+      bPedir.onclick=async()=>{
+        const mail=(iMail.value||"").trim();
+        if(typeof mailOk==="function" && !mailOk(mail)){ setErr("Ese correo no se ve válido"); return; }
+        bPedir.disabled=true; setErr("");
+        const r=await nubePedirCodigo(mail);
+        if(!r.ok){ bPedir.disabled=false; setErr(r.msg||"No se pudo enviar"); return; }
+        aviso(r.msg); iCod.focus(); pintarCooldown();
+        var iv=setInterval(function(){ pintarCooldown(); if(typeof nubePuedePedirCodigo==="function"&&nubePuedePedirCodigo()) clearInterval(iv); },1000);
+      };
+      bVer.onclick=async()=>{
+        const mail=(iMail.value||"").trim(), tok=(iCod.value||"").replace(/\D/g,"");
+        if(typeof mailOk==="function" && !mailOk(mail)){ setErr("Ese correo no se ve válido"); return; }
+        if(typeof codigoOk==="function" ? !codigoOk(tok) : tok.length!==6){ setErr("El código son 6 números"); return; }
+        bVer.disabled=true; setErr("");
+        const r=await nubeVerificarCodigo(mail,tok); bVer.disabled=false;
+        if(!r.ok){ setErr(r.msg||"Código inválido"); return; }
+        if(opts.cerrar&&typeof cerrarModal==="function") cerrarModal();
+        if(typeof pintarBtnCuenta==="function") pintarBtnCuenta();
+        aviso(r.email?("Hola, "+r.email):"Listo"); if(!opts.cerrar) render();
+      };
+      iCod.onkeydown=function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); bVer.click(); } };
+      iCod.oninput=function(){ iCod.value=String(iCod.value||"").replace(/\D/g,"").slice(0,6); };
+      acc.appendChild(bPedir); acc.appendChild(bVer);
+    }
+  }
+  bClave.onclick=()=>{ modo="clave"; sync(); };
+  bCod.onclick=()=>{ modo="codigo"; sync(); };
+  iMail.onkeydown=function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); if(modo==="clave") iPass.focus(); else iCod.focus(); } };
+  sync();
+  cc.appendChild(caja);
+  setTimeout(function(){ try{ (iMail.value?(modo==="codigo"?iCod:iPass):iMail).focus(); }catch(e){} }, 40);
+}
 function vistaAjustes(){
   const v=$("#vista");
   panelEnLinea(v);
@@ -2842,20 +3037,7 @@ function vistaAjustes(){
       pn.cuerpo.appendChild(bProbar); pn.cuerpo.appendChild(bGuardar);
       pn.cuerpo.appendChild(el("p","mini","Esto queda guardado en <b>este navegador</b> (no en el repo). Para que tus amigos tengan login en la página publicada, la llave anon va en <code>js/nube.js</code> — avisame y lo dejo listo."));
     }else if(nubeLogueado()){
-      pn.cuerpo.appendChild(el("p",null,"Sesión iniciada como <b>"+(nubeEmail()||"tu cuenta")+"</b>. Tu partida te sigue a cualquier equipo."));
-      const bSub=el("button","btn-aqua chico","Subir partida");
-      bSub.onclick=async()=>{ bSub.disabled=true; const r=await nubeSubir(E); bSub.disabled=false; aviso(r.ok?"Partida subida a la nube":("No se pudo subir: "+r.msg)); };
-      const bBaj=el("button","btn-aqua chico"); bBaj.textContent="Bajar partida"; bBaj.style.marginLeft="6px";
-      bBaj.onclick=async()=>{
-        bBaj.disabled=true; const r=await nubeBajar(); bBaj.disabled=false;
-        if(!r.ok){ aviso(r.msg); return; }
-        if(E&&E.club && !confirm("Esto reemplaza tu partida actual por la de la nube. ¿Seguir?")) return;
-        E=r.estado; normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod();
-        await guardar(); aviso("Partida bajada de la nube"); SEC="escritorio"; render();
-      };
-      const bOut=el("button","btn-aqua chico gris"); bOut.textContent="Cerrar sesión"; bOut.style.marginLeft="6px";
-      bOut.onclick=()=>{ nubeSalir(); aviso("Sesión cerrada"); render(); };
-      pn.cuerpo.appendChild(bSub); pn.cuerpo.appendChild(bBaj); pn.cuerpo.appendChild(bOut);
+      pintarSesionNube(pn.cuerpo, {});
       /* auto-respaldo: solo sube, nunca baja ni pisa tu partida sin permiso */
       const autoOn=(typeof nubeAutoActivo==="function")?nubeAutoActivo():false;
       pn.cuerpo.appendChild(el("label","lb","Respaldo automático"));
@@ -2872,27 +3054,9 @@ function vistaAjustes(){
       const cuando=ult?("último respaldo: "+new Date(ult).toLocaleString("es-CL",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})):"todavía sin respaldo automático";
       pn.cuerpo.appendChild(el("p","mini",(autoOn
         ? "Con auto-respaldo, tu partida se sube sola a la nube cada vez que el juego guarda: aunque limpies el navegador o cambies de equipo, no la pierdes. <span id=\"nubeAutoTxt\">"+cuando+"</span>."
-        : "Modo manual: subí después de jugar y bajá al empezar en otro equipo. Bajar SIEMPRE es manual y con confirmación, para que nunca pierdas una partida sin querer.")));
+        : "Modo manual: sube después de jugar y baja al empezar en otro equipo. Bajar SIEMPRE es manual y con confirmación, para que nunca pierdas una partida sin querer.")));
     }else{
-      pn.cuerpo.appendChild(el("p","mini","Entra con tu correo para guardar la partida en la nube y seguir en cualquier dispositivo. Es opcional: sin cuenta, el juego anda igual offline."));
-      const estiloInp="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid rgba(0,0,0,.15)";
-      const iMail=el("input"); iMail.type="email"; iMail.placeholder="correo"; iMail.autocomplete="email"; iMail.style.cssText=estiloInp;
-      const iPass=el("input"); iPass.type="password"; iPass.placeholder="clave"; iPass.autocomplete="current-password"; iPass.style.cssText=estiloInp;
-      pn.cuerpo.appendChild(iMail); pn.cuerpo.appendChild(iPass);
-      const bIn=el("button","btn-aqua chico verde","Entrar"); bIn.style.marginTop="6px";
-      bIn.onclick=async()=>{
-        if(!iMail.value||!iPass.value){ aviso("Completa correo y clave"); return; }
-        bIn.disabled=true; const r=await nubeEntrar(iMail.value.trim(),iPass.value); bIn.disabled=false;
-        if(r.ok){ aviso("Hola de nuevo, "+r.email); render(); } else aviso(r.msg);
-      };
-      const bReg=el("button","btn-aqua chico"); bReg.textContent="Crear cuenta"; bReg.style.marginLeft="6px";
-      bReg.onclick=async()=>{
-        if(!iMail.value||!iPass.value){ aviso("Completa correo y clave"); return; }
-        if(iPass.value.length<6){ aviso("La clave necesita al menos 6 caracteres"); return; }
-        bReg.disabled=true; const r=await nubeRegistrar(iMail.value.trim(),iPass.value); bReg.disabled=false;
-        if(r.ok){ aviso(r.confirmar?r.msg:"Cuenta creada"); render(); } else aviso(r.msg);
-      };
-      pn.cuerpo.appendChild(bIn); pn.cuerpo.appendChild(bReg);
+      pintarFormularioCuenta(pn.cuerpo, {});
     }
     /* si la config se pegó a mano en el juego, dejar reconfigurar/borrar */
     if(nubeActiva() && typeof nubeConfigManual==="function" && nubeConfigManual()){
@@ -3384,50 +3548,8 @@ function modalCuenta(){
   modal(box=>{
     box.appendChild(el("div","cab",'<span class="ic">☁️</span><span>Tu cuenta</span>'));
     const cc=el("div","cuerpo"); box.appendChild(cc);
-    const estInp="display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:10px 12px;border-radius:10px;border:1px solid rgba(0,0,0,.18);font-size:15px";
-    if(nubeLogueado()){
-      cc.appendChild(el("p",null,"Sesión de <b>"+(nubeEmail()||"tu cuenta")+"</b>."));
-      cc.appendChild(el("p","mini","La partida te sigue a otro celular o computadora. Subir es automático si lo dejaste prendido; bajar siempre pide confirmación."));
-      const bSub=el("button","btn-aqua chico","☁️ Subir partida ahora");
-      bSub.onclick=async()=>{ if(!E||!E.club){ aviso("No hay partida abierta"); return; } bSub.disabled=true; const r=await nubeSubir(E); bSub.disabled=false; aviso(r.ok?"Partida subida a la nube":("No se pudo subir: "+r.msg)); };
-      const bBaj=el("button","btn-aqua chico"); bBaj.textContent="⬇️ Bajar partida"; bBaj.style.marginLeft="6px";
-      bBaj.onclick=async()=>{ bBaj.disabled=true; const r=await nubeBajar(); bBaj.disabled=false; if(!r.ok){ aviso(r.msg); return; } if(E&&E.club && !confirm("Esto reemplaza tu partida actual por la de la nube. ¿Seguir?")) return; E=r.estado; normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod(); await guardar(); cerrarModal(); aviso("Partida bajada de la nube"); SEC="escritorio"; render(); };
-      cc.appendChild(bSub); cc.appendChild(bBaj);
-      const bOut=el("button","btn-aqua chico gris ancho","Cerrar sesión"); bOut.style.marginTop="8px";
-      bOut.onclick=()=>{ nubeSalir(); cerrarModal(); pintarBtnCuenta(); aviso("Sesión cerrada"); };
-      cc.appendChild(bOut);
-    }else{
-      cc.appendChild(el("p","mini","Correo y clave. Es opcional: sin cuenta el juego sigue igual, en este navegador."));
-      cc.appendChild(el("label","lb","Correo"));
-      const iMail=el("input"); iMail.type="email"; iMail.placeholder="tu@correo.com"; iMail.autocomplete="email"; iMail.style.cssText=estInp;
-      if(typeof nubeMailRecordado==="function") iMail.value=nubeMailRecordado();
-      cc.appendChild(iMail);
-      cc.appendChild(el("label","lb","Clave"));
-      const wrap=el("div","clave-wrap");
-      const iPass=el("input"); iPass.type="password"; iPass.placeholder="mínimo 6 caracteres"; iPass.autocomplete="current-password"; iPass.style.cssText=estInp; iPass.style.paddingRight="72px";
-      const tog=el("button","clave-ver"); tog.type="button"; tog.textContent="ver"; tog.setAttribute("aria-label","Mostrar clave");
-      tog.onclick=()=>{ const on=iPass.type==="password"; iPass.type=on?"text":"password"; tog.textContent=on?"ocultar":"ver"; };
-      wrap.appendChild(iPass); wrap.appendChild(tog); cc.appendChild(wrap);
-      const ir=async(fn,btn)=>{
-        const mail=(iMail.value||"").trim(), pass=iPass.value||"";
-        if(!mail||!pass){ aviso("Completa correo y clave"); return; }
-        btn.disabled=true;
-        const r=await fn(mail,pass);
-        btn.disabled=false;
-        if(!r.ok){ aviso(r.msg); return; }
-        if(typeof nubeRecordarMail==="function") nubeRecordarMail(mail);
-        if(r.confirmar){ aviso(r.msg); return; }
-        cerrarModal(); pintarBtnCuenta(); aviso(r.email?("Hola, "+r.email):"Listo");
-      };
-      const bIn=el("button","btn-aqua chico verde","Entrar"); bIn.style.marginTop="10px";
-      bIn.onclick=()=>ir(nubeEntrar,bIn);
-      const bReg=el("button","btn-aqua chico"); bReg.textContent="Crear cuenta"; bReg.style.marginLeft="6px";
-      bReg.onclick=()=>{ if((iPass.value||"").length<6){ aviso("La clave necesita al menos 6 caracteres"); return; } ir(nubeRegistrar,bReg); };
-      iPass.addEventListener("keydown",function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); bIn.click(); } });
-      iMail.addEventListener("keydown",function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); iPass.focus(); } });
-      cc.appendChild(bIn); cc.appendChild(bReg);
-      setTimeout(function(){ try{ (iMail.value?iPass:iMail).focus(); }catch(e){} }, 40);
-    }
+    if(nubeLogueado()) pintarSesionNube(cc, {cerrar:true});
+    else pintarFormularioCuenta(cc, {cerrar:true});
     const bx=el("button","btn-aqua chico gris ancho","Cerrar"); bx.style.marginTop="10px"; bx.onclick=cerrarModal; cc.appendChild(bx);
   });
 }

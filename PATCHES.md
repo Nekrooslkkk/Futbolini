@@ -2678,3 +2678,14 @@ VERSION **7.99957**. 8.00 reservada. BTC hueco. Segunda = cantera.
 - **2006:** el calendario pinta el cuadro de playoffs de todo el país (`panelCuadro2006`). Se guarda al coronar.
 - **Tests T51.** VERSION **7.99958**. 8.00 reservada. BTC hueco. Segunda = cantera.
 - **Cierre temas:** `aplicarTema()` pinta `data-tema` con setAttribute. 7.css se reordena: `temas.css` vuelve a quedar al final. `background-color !important` en el cuerpo de negro/claro/insano, porque 7.css carga tarde y traía `#f0f0f0`. T51 mide `.so-cuerpo.window-body` (no cae al padre).
+
+## 7.9000 · XSS + OTP + editor PEGAR + Plop coordinado
+El número retrocede a **7.9000**; las features de 7.999xx se quedan. No es 8.00.
+
+- **XSS:** `aviso` ahora textContent. `escHtml` / `mailOk` / `codigoOk` / `textoLimpio` / `saneaEstado` (al guardar). Plop `renderPostEl` DOM; `postProc` recorta HTML; reply inline (sin prompt); alias del libro y nombres de plantel/partidas escapados.
+- **Login:** Ajustes y modal usan `pintarFormularioCuenta`. Pestaña Código al correo (6 dígitos, cooldown 60s). `nubePedirCodigo` + `nubeVerificarCodigo`. Logout pega a GoTrue.
+- **Editor:** pestaña ➕ Nuevo (formulario + PEGAR). Nombre se espeja a CLUB_INFO 1991. Liga opcional → entra al selector. Vacío = borrar. Plantilla JSON ind/caja.
+- **Plop:** feed fuera del masonry; header con el año de la partida; `{GOLEADOR}` = el que acaba de marcar; `persistirTicker` → `E.plop.ultRes` (tendencias).
+- Tests T52. **No 8.00.** BTC hueco. Segunda = cantera.
+
+**NOTA PARA CLAUDE:** ibas a mejorar el código y se te acabaron los tokens. NO unscopear `so.css`. NO tocar `nube.js` / `util.js` / `partido.js`.

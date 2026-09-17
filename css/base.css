@@ -536,12 +536,12 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 /* PC ancho: las vistas de lista fluyen en columnas (masonry con multicolumn) */
 @media(min-width:1000px){
   #vista:is([data-sec="finanzas"],[data-sec="institucion"],[data-sec="mercado"],[data-sec="vida"],
-    [data-sec="redes"],[data-sec="historia"],[data-sec="carrera"],[data-sec="ajustes"],
+    [data-sec="historia"],[data-sec="carrera"],[data-sec="ajustes"],
     [data-sec="avisos"],[data-sec="calendario"]){
     column-count:2; column-gap:14px;
   }
   #vista:is([data-sec="finanzas"],[data-sec="institucion"],[data-sec="mercado"],[data-sec="vida"],
-    [data-sec="redes"],[data-sec="historia"],[data-sec="carrera"],[data-sec="ajustes"],
+    [data-sec="historia"],[data-sec="carrera"],[data-sec="ajustes"],
     [data-sec="avisos"],[data-sec="calendario"]) > *{
     break-inside:avoid; -webkit-column-break-inside:avoid; page-break-inside:avoid;
     margin:0 0 14px !important; width:100%;
@@ -549,7 +549,7 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 }
 @media(min-width:1560px){
   #vista:is([data-sec="finanzas"],[data-sec="institucion"],[data-sec="mercado"],[data-sec="vida"],
-    [data-sec="redes"],[data-sec="historia"],[data-sec="carrera"],[data-sec="ajustes"],
+    [data-sec="historia"],[data-sec="carrera"],[data-sec="ajustes"],
     [data-sec="avisos"],[data-sec="calendario"]){ column-count:3; }
   #vista{max-width:1560px}
 }
@@ -560,6 +560,23 @@ body[data-tema="aero"] .align-jug.on{background:linear-gradient(180deg,rgba(90,2
 #plopFeed::-webkit-scrollbar-thumb{background:rgba(30,90,160,.35);border-radius:6px}
 #plopFeed > .resul{margin-top:9px}
 #plopFeed > .resul:first-child{margin-top:2px}
+.plop-card{text-align:left;padding:10px 12px;border-radius:10px;
+  border:1px solid rgba(20,60,110,.14);
+  background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(232,244,255,.55));
+  box-shadow:0 1px 0 rgba(255,255,255,.65) inset, 0 4px 10px rgba(20,50,90,.08)}
+.plop-cab{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.plop-cab b{font-size:13.5px}
+.plop-txt{margin:6px 0 4px;white-space:pre-wrap;word-break:break-word;line-height:1.4;font-size:14px}
+.hilo-linea{margin:3px 0 0 10px;padding-left:8px;border-left:2px solid rgba(30,90,160,.25)}
+.plop-reply{margin-top:8px;display:flex;gap:6px;align-items:center}
+.plop-reply .entrada{flex:1;min-width:0}
+.plop-nuevo{animation:avisoPop .35s ease-out}
+.codigo-otp{display:flex;gap:8px;align-items:center;margin:8px 0}
+.codigo-in{width:100%;max-width:220px;letter-spacing:.35em;font-size:22px;font-weight:800;
+  text-align:center;padding:10px 8px;border-radius:10px;border:1px solid rgba(20,50,80,.28);
+  font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,Consolas,monospace}
+.nube-login .fichas{margin:6px 0 10px}
+.nube-modo{font-size:12.5px;opacity:.8;margin:0 0 8px}
 /* indicador "en vivo" */
 .envivo{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#c0392b}
 .envivo::before{content:"";width:8px;height:8px;border-radius:50%;background:#e8453a;
@@ -671,7 +688,6 @@ body[data-tema="negro"] .hito-linea{border-left-color:rgba(120,190,255,.45);back
   #vista[data-sec="finanzas"],
   #vista[data-sec="historia"],
   #vista[data-sec="carrera"],
-  #vista[data-sec="redes"],
   #vista[data-sec="avisos"],
   #vista[data-sec="vida"]{
     column-count:2; column-gap:12px;
@@ -680,7 +696,6 @@ body[data-tema="negro"] .hito-linea{border-left-color:rgba(120,190,255,.45);back
   #vista[data-sec="finanzas"] > .panel,
   #vista[data-sec="historia"] > .panel,
   #vista[data-sec="carrera"] > .panel,
-  #vista[data-sec="redes"] > .panel,
   #vista[data-sec="avisos"] > .panel,
   #vista[data-sec="vida"] > .panel{
     break-inside:avoid;

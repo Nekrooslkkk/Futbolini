@@ -319,16 +319,16 @@ function plantelRival(idOrNombre,fuerza){
   }));
 }
 /* ---------- tokens: las decisiones nombran jugadores de verdad ---------- */
-function resolverTokens(txt,E){
+function resolverTokens(txt,E,extra){
   if(!txt) return txt;
-  const p=E.plantel.filter(j=>!j.vendido);
+  const p=(E&&E.plantel||[]).filter(j=>!j.vendido);
   const mejor=(f,filtro)=>{const l=filtro?p.filter(filtro):p; if(!l.length) return null;
     return l.slice().sort((a,b)=>f(b)-f(a))[0];};
   const val={
-    CAPITAN:(mejor(j=>j.nivel+(j.rasgos.includes("capitán")?40:0))||{}).n,
+    CAPITAN:(mejor(j=>j.nivel+((j.rasgos||[]).includes("capitán")?40:0))||{}).n,
     GOLEADOR:(mejor(j=>j.goles*10+j.nivel,j=>j.pos==="DEL")||{}).n,
     ARQUERO:(mejor(j=>j.nivel,j=>j.pos==="ARQ")||{}).n,
-    IDOLO:(mejor(j=>j.nivel+(j.rasgos.includes("ídolo")?40:0))||{}).n,
+    IDOLO:(mejor(j=>j.nivel+((j.rasgos||[]).includes("ídolo")?40:0))||{}).n,
     JOVEN:(mejor(j=>j.proy-j.edad,j=>j.edad<=23)||{}).n,
     VETERANO:(mejor(j=>j.edad,j=>j.edad>=28)||{}).n,
     DEFENSA_JOVEN:(mejor(j=>j.proy-j.edad,j=>j.pos==="DEF"&&j.edad<=24)||{}).n,
@@ -340,6 +340,7 @@ function resolverTokens(txt,E){
     RIVAL:((typeof proximoPartido==="function"&&proximoPartido()&&proximoPartido().rivalNombre)||"el rival"),
     ANIO:E.anio
   };
+  if(extra&&typeof extra==="object") Object.keys(extra).forEach(function(k){ if(extra[k]!=null) val[k]=extra[k]; });
   return txt.replace(/\{([A-Z_]+)\}/g,(m,k)=> val[k]!=null?val[k]:m);
 }
 function jugadorPorToken(token,E){

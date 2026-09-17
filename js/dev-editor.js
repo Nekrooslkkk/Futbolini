@@ -55,7 +55,7 @@
     var p=panel("Editor de contenido","🧱","agua");
     p.classList.add("dev-editor-acceso");
     p.cuerpo.appendChild(el("p","mini",
-      "Editá clubes, ligas y datos sin tocar archivos. Mide el <b>rigor</b> de cada club contra Colo-Colo y te dice qué falta. Lo editado queda como parche y se exporta a un .js."));
+      "Edita clubes, ligas y datos sin tocar archivos. Mide el <b>rigor</b> de cada club contra Colo-Colo y te dice qué falta. Lo editado queda como parche y se exporta a un .js."));
     var n=parcheCuenta();
     if(n) p.cuerpo.appendChild(el("p","mini","Tienes <b>"+n+"</b> campo(s) editados sin exportar."));
     var b=el("button","btn-aqua ancho verde","🧱 Abrir editor");
@@ -79,7 +79,7 @@
       var c=el("div","cuerpo"); box.appendChild(c);
 
       var tabs=el("div","fichas dev-tabs");
-      [["rigor","📏 Rigor"],["club","🏟️ Club"],["liga","🏆 Liga"],["exportar","💾 Exportar"]].forEach(function(t){
+      [["rigor","📏 Rigor"],["club","🏟️ Club"],["nuevo","➕ Nuevo"],["liga","🏆 Liga"],["exportar","💾 Exportar"]].forEach(function(t){
         var b=el("button","ficha",t[1]);
         b.setAttribute("aria-pressed",TAB===t[0]?"true":"false");
         b.onclick=function(){ TAB=t[0]; pintar(); };
@@ -90,11 +90,12 @@
       function pintar(){
         c.innerHTML=""; c.appendChild(tabs);
         Array.prototype.forEach.call(tabs.children,function(b,i){
-          b.setAttribute("aria-pressed",["rigor","club","liga","exportar"][i]===TAB?"true":"false");
+          b.setAttribute("aria-pressed",["rigor","club","nuevo","liga","exportar"][i]===TAB?"true":"false");
         });
         cont.innerHTML=""; c.appendChild(cont);
         if(TAB==="rigor") pintarRigor(cont,pintar);
         else if(TAB==="club") pintarClub(cont,pintar);
+        else if(TAB==="nuevo") pintarNuevo(cont,pintar);
         else if(TAB==="liga") pintarLiga(cont,pintar);
         else pintarExportar(cont,pintar);
         var x=el("button","btn-aqua ancho","Cerrar"); x.style.marginTop="10px";
@@ -109,26 +110,42 @@
     cont.appendChild(el("p","mini",
       "Cada club se mide contra <b>"+DEV_CLUB_REF+"</b>: si tiene los mismos campos llenos, va 100%. "+
       "Los datos que <i>a propósito</i> no existen (sin fuente) no cuentan en contra."));
-    var todo=auditarTodo();
-    todo.forEach(function(r){
-      var p=el("div","dev-liga");
-      p.appendChild(el("div","dev-liga-cab","<b>"+r.nombre+"</b> <span class='mini'>["+r.era+"] · "+r.clubes+" clubes</span><b class='dev-pct'>"+r.pct+"%</b>"));
-      p.innerHTML+=barraPct(r.pct);
-      if(r.huecos.length){
-        var h=el("div","mini dev-huecos","Huecos: "+r.huecos.slice(0,5).map(function(x){ return x.n+" ("+x.cuantos+")"; }).join(" · "));
-        p.appendChild(h);
-      }
-      var grid=el("div","dev-grid");
-      r.fichas.forEach(function(f){
-        var b=el("button","dev-club"+(f.pct>=100?" ok":(f.pct>=75?" medio":" mal")));
-        b.innerHTML="<b>"+f.id+"</b><span>"+f.pct+"%</span>";
-        b.title=f.faltanReq.length?("Falta: "+f.faltanReq.map(function(x){return x.n;}).join(", ")):"Completo";
-        b.onclick=function(){ CLUB_SEL=f.id; TAB="club"; repintar(); };
-        grid.appendChild(b);
+    var busca=el("input","dev-in"); busca.type="search"; busca.placeholder="Filtrar por nombre o ID…"; busca.style.margin="6px 0";
+    var solo=el("label","mini"); var chk=el("input"); chk.type="checkbox";
+    solo.appendChild(chk); solo.appendChild(document.createTextNode(" solo los que no llegan a 100%"));
+    var host=el("div");
+    function dibujar(){
+      host.innerHTML="";
+      var q=(busca.value||"").toLowerCase().trim();
+      var todo=auditarTodo();
+      todo.forEach(function(r){
+        var p=el("div","dev-liga");
+        var cab=el("div","dev-liga-cab");
+        var tit=el("b"); tit.textContent=r.nombre||"";
+        var mini=el("span","mini"); mini.textContent=" ["+r.era+"] · "+r.clubes+" clubes";
+        var pct=el("b","dev-pct"); pct.textContent=r.pct+"%";
+        cab.appendChild(tit); cab.appendChild(mini); cab.appendChild(pct);
+        p.appendChild(cab);
+        p.appendChild(el("div",null,barraPct(r.pct)));
+        var grid=el("div","dev-grid");
+        r.fichas.forEach(function(f){
+          if(chk.checked && f.pct>=100) return;
+          var nom=_nombreDe(f.id)||"";
+          if(q && (f.id+" "+nom).toLowerCase().indexOf(q)<0) return;
+          var b=el("button","dev-club"+(f.pct>=100?" ok":(f.pct>=75?" medio":" mal")));
+          var ib=el("b"); ib.textContent=f.id; b.appendChild(ib);
+          var sp=el("span"); sp.textContent=f.pct+"%"; b.appendChild(sp);
+          b.title=nom+(f.faltanReq.length?(" · Falta: "+f.faltanReq.map(function(x){return x.n;}).join(", ")):" · Completo");
+          b.onclick=function(){ CLUB_SEL=f.id; TAB="club"; repintar(); };
+          grid.appendChild(b);
+        });
+        if(!grid.children.length) return;
+        p.appendChild(grid);
+        host.appendChild(p);
       });
-      p.appendChild(grid);
-      cont.appendChild(p);
-    });
+    }
+    busca.oninput=dibujar; chk.onchange=dibujar;
+    cont.appendChild(busca); cont.appendChild(solo); cont.appendChild(host); dibujar();
   }
 
   /* ---------- pestaña CLUB ---------- */
@@ -148,14 +165,38 @@
       });
       if(og.children.length) sel.appendChild(og);
     });
+    try{
+      var idsP=Object.keys(parcheLeer()||{});
+      var ogP=document.createElement("optgroup"); ogP.label="Parche (nuevos / editados)";
+      idsP.forEach(function(id){
+        if(vistos[id]) return; vistos[id]=1;
+        var o=document.createElement("option"); o.value=id;
+        o.textContent=id+" · "+((_nombreDe(id))||"(nuevo)")+"  (parche)";
+        ogP.appendChild(o);
+      });
+      if(ogP.children.length) sel.appendChild(ogP);
+    }catch(e){}
     if(!CLUB_SEL) CLUB_SEL=sel.value||"CC";
     sel.value=CLUB_SEL;
     sel.onchange=function(){ CLUB_SEL=sel.value; repintar(); };
+    var busca=el("input","dev-in"); busca.type="search"; busca.placeholder="Buscar en el selector…";
+    busca.style.marginBottom="6px";
+    busca.oninput=function(){
+      var q=(busca.value||"").toLowerCase();
+      Array.prototype.forEach.call(sel.querySelectorAll("option"),function(o){
+        o.hidden=!!q && (o.textContent||"").toLowerCase().indexOf(q)<0;
+      });
+    };
+    cont.appendChild(busca);
     cont.appendChild(sel);
 
     var a=auditarClub(CLUB_SEL);
     var cab=el("div","dev-club-cab");
-    cab.innerHTML="<b>"+(_nombreDe(CLUB_SEL)||CLUB_SEL)+"</b> <span class='mini'>"+CLUB_SEL+"</span> <b class='dev-pct'>"+a.pct+"%</b>"+barraPct(a.pct);
+    var nb=el("b"); nb.textContent=_nombreDe(CLUB_SEL)||CLUB_SEL;
+    var idsp=el("span","mini"); idsp.textContent=" "+CLUB_SEL+" ";
+    var pct=el("b","dev-pct"); pct.textContent=a.pct+"%";
+    cab.appendChild(nb); cab.appendChild(idsp); cab.appendChild(pct);
+    cab.appendChild(el("div",null,barraPct(a.pct)));
     cont.appendChild(cab);
     if(a.justificados&&a.justificados.length){
       a.justificados.forEach(function(j){
@@ -207,21 +248,35 @@
     fila.appendChild(entrada);
 
     var acc=el("div","dev-acc");
+    if(esJson && !String(entrada.value||"").trim()){
+      var bp=el("button","btn-aqua chico gris","Plantilla");
+      bp.onclick=function(){
+        if(campo.k==="ind") entrada.value=JSON.stringify({plantel:50,moral:50,hinchada:50,socios:40,cantera:45,estadio:45,prestigio:40,riesgo:50},null,1);
+        else if(campo.k==="caja") entrada.value=JSON.stringify({plata:80,deuda:40},null,1);
+        else if(campo.k==="colores") entrada.value='["#111111","#ffffff"]';
+        else if(campo.tipo==="lista") entrada.value='["CC"]';
+        else entrada.value="{ }";
+        entrada.focus();
+      };
+      acc.appendChild(bp);
+    }
     var bg=el("button","btn-aqua chico verde","Guardar");
     var msg=el("span","mini dev-msg","");
     bg.onclick=function(){
       var nuevo;
       if(esJson){
         var t=entrada.value.trim();
-        if(!t){ msg.textContent="vacío: no se guardó"; return; }
-        try{ nuevo=JSON.parse(t); }
-        catch(err){ msg.textContent="❌ JSON inválido: "+err.message; msg.className="mini dev-msg mal"; return; }
+        if(!t){ nuevo=null; }
+        else {
+          try{ nuevo=JSON.parse(t); }
+          catch(err){ msg.textContent="❌ JSON inválido: "+err.message; msg.className="mini dev-msg mal"; return; }
+        }
       }else if(campo.tipo==="numero"){
-        nuevo=parseInt(entrada.value,10);
-        if(isNaN(nuevo)){ msg.textContent="❌ no es número"; return; }
+        if(!String(entrada.value).trim()){ nuevo=null; }
+        else { nuevo=parseInt(entrada.value,10); if(isNaN(nuevo)){ msg.textContent="❌ no es número"; return; } }
       }else{
         nuevo=entrada.value.trim();
-        if(!nuevo){ msg.textContent="vacío: no se guardó"; return; }
+        if(!nuevo) nuevo=null;
       }
       try{ campo.set(id,nuevo); }catch(err){ msg.textContent="❌ "+err.message; return; }
       parcheSet(id,campo.k,nuevo);
@@ -239,6 +294,70 @@
       if(typeof v==="object") return Object.keys(v).join(", ").slice(0,80);
       return String(v).slice(0,80);
     }catch(e){ return "—"; }
+  }
+
+  /* ---------- pestaña NUEVO (formulario + PEGAR) ---------- */
+  function pintarNuevo(cont,repintar){
+    cont.appendChild(el("p","mini","Crea o <b>mejora</b> un club. Si el ID ya existe, se actualiza (no se duplica). Si cambia el nombre, también se espeja en la ficha 1991. El HTML se recorta. Si pones liga, el club aparece en el selector."));
+    var grid=el("div","pegar-grid");
+    function campo(lbl,ph,cls){
+      var lab=el("label"); lab.textContent=lbl;
+      var i=el("input","dev-in"); i.placeholder=ph||""; if(cls) lab.className=cls;
+      lab.appendChild(i); grid.appendChild(lab); return i;
+    }
+    var iId=campo("ID (2-6 letras)","SMO");
+    var iNom=campo("Nombre","Club de ejemplo");
+    var iCiu=campo("Ciudad","Santiago");
+    var iFund=campo("Fundación","1909"); iFund.type="number";
+    var iDt=campo("DT","Cuerpo técnico");
+    var iLiga=campo("Liga (2026, 2026b, 2026c, 1991, arg2026…)","2026");
+    iLiga.value="2026";
+    var labD=el("label","span2"); labD.textContent="Descripción";
+    var iDesc=el("textarea","dev-ta"); iDesc.rows=2; iDesc.placeholder="Quién es este club, en una frase.";
+    labD.appendChild(iDesc); grid.appendChild(labD);
+    var labS=el("label","span2"); labS.textContent="Situación (por qué dirigir acá)";
+    var iSit=el("textarea","dev-ta"); iSit.rows=2; iSit.placeholder="Por qué el jugador elige este club.";
+    labS.appendChild(iSit); grid.appendChild(labS);
+    cont.appendChild(grid);
+
+    var det=el("details","pegar-adv");
+    var sum=el("summary"); sum.textContent="O pega un bloque de texto (PEGAR)";
+    det.appendChild(sum);
+    var ta=el("textarea","dev-ta"); ta.rows=8;
+    ta.value=(typeof PEGAR_CLUB_EJEMPLO==="function")?PEGAR_CLUB_EJEMPLO():"ID: XXX\nnombre: Club de ejemplo";
+    det.appendChild(ta);
+    det.appendChild(el("p","mini","Formato: ID / nombre / ciudad / fund / dt / liga / desc / situacion. Una clave por línea."));
+    cont.appendChild(det);
+
+    var msg=el("p","mini","");
+    var bg=el("button","btn-aqua ancho verde","Crear / mejorar club");
+    bg.style.marginTop="8px";
+    function bloqueDeForm(){
+      var id=(iId.value||"").trim(), nom=(iNom.value||"").trim();
+      if(!id&&!nom) return ta.value;
+      return "ID: "+id+"\nnombre: "+nom+"\nciudad: "+(iCiu.value||"")+"\nfund: "+(iFund.value||"")+"\ndt: "+(iDt.value||"")+"\nliga: "+(iLiga.value||"")+"\ndesc: "+(iDesc.value||"")+"\nsituacion: "+(iSit.value||"");
+    }
+    bg.onclick=function(){
+      if(typeof crearClubDesdePegar!=="function"){ msg.textContent="Motor de PEGAR no cargó"; return; }
+      var r=crearClubDesdePegar(bloqueDeForm());
+      if(!r.ok){ msg.textContent="❌ "+r.msg; msg.className="mini dev-msg mal"; return; }
+      var p=(typeof parsearPegarClub==="function")?parsearPegarClub(bloqueDeForm()):{};
+      if(p.nombre) parcheSet(r.id,"nombre",p.nombre);
+      if(p.desc) parcheSet(r.id,"desc",p.desc);
+      if(p.dt) parcheSet(r.id,"dt",p.dt);
+      if(p.ciudad) parcheSet(r.id,"ciudad",p.ciudad);
+      if(p.fund) parcheSet(r.id,"fund",p.fund);
+      if(p.situacion) parcheSet(r.id,"situacion",p.situacion);
+      msg.textContent="✅ "+r.id+" · "+r.nombre+(r.liga?" · liga "+r.liga:"")+" — abre en Club para números, historia y clásico.";
+      msg.className="mini dev-msg bien";
+      CLUB_SEL=r.id;
+      if(typeof aviso==="function") aviso("Club "+r.id+" listo. Sigue en la pestaña Club.");
+      TAB="club"; setTimeout(repintar,280);
+    };
+    var ir=el("button","btn-aqua chico","Abrir en Club →"); ir.style.marginTop="6px";
+    ir.onclick=function(){ TAB="club"; repintar(); };
+    cont.appendChild(bg); cont.appendChild(ir); cont.appendChild(msg);
+    cont.appendChild(el("p","mini","Plantel y decisiones propias siguen en los .js (no se inventan acá). Segunda 2026 = cantera."));
   }
 
   /* ---------- pestaña LIGA ---------- */
@@ -285,8 +404,8 @@
     };
     var bx=el("button","btn-aqua chico rojo","🗑 Borrar parche");
     bx.onclick=function(){
-      if(!confirm("¿Borrar TODO lo editado? (recarga después para volver a los datos originales)")) return;
-      parcheBorrar(); aviso("Parche borrado"); repintar();
+      if(!confirm("¿Borrar TODO lo editado? (se recarga para volver a los datos originales)")) return;
+      parcheBorrar(); aviso("Parche borrado"); try{ location.reload(); }catch(e){ repintar(); }
     };
     acc.appendChild(bc); acc.appendChild(bd); acc.appendChild(bx);
     cont.appendChild(acc);

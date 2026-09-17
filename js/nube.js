@@ -39,7 +39,7 @@ async function nubeProbar(url,anonKey){
   try{
     const r=await fetch(url+"/auth/v1/settings",{ headers:{ apikey:anonKey } });
     if(r.ok) return { ok:true };
-    return { ok:false, msg:"El servidor respondió "+r.status+". Revisá la anon key." };
+    return { ok:false, msg:"El servidor respondió "+r.status+". Revisa la anon key." };
   }catch(e){ return { ok:false, msg:"No se pudo conectar. ¿La URL está bien? ¿Hay internet?" }; }
 }
 
@@ -84,6 +84,7 @@ function nubeMsg(j, fallback){
   if(/already registered|already been registered|user already/.test(s)) return "Ese correo ya tiene cuenta. Entra con tu clave.";
   if(/password/.test(s) && /(6|least|short)/.test(s)) return "La clave necesita al menos 6 caracteres";
   if(/email/.test(s) && /invalid/.test(s)) return "Ese correo no se ve válido";
+  if(/otp|expired|invalid token|token has expired|invalid.*code/.test(s)) return "Código inválido o vencido. Pide otro.";
   if(/rate limit|too many|over_request/.test(s)) return "Demasiados intentos. Espera un minuto.";
   if(/network|failed to fetch|load failed/.test(s)) return "No hay red. El juego sigue igual, sin cuenta.";
   return raw||fallback||"No se pudo";
@@ -114,7 +115,55 @@ async function nubeRefrescar(){
   }catch(e){}
   return false;
 }
-function nubeSalir(){ nubeGuardarSesion(null); }
+function nubeSalir(){
+  try{
+    const s=nubeSesion();
+    if(s&&s.access_token){
+      nubeFetch("/auth/v1/logout",{ method:"POST", headers:nubeHeaders(true) }).catch(function(){});
+    }
+  }catch(e){}
+  nubeGuardarSesion(null);
+}
+
+/* Código de 6 dígitos al correo (OTP de GoTrue). Misma cuenta, sin clave.
+   Cooldown de 60s en ESTE navegador para no spamear el proyecto. */
+let _nubeOtpHasta=0;
+function nubePuedePedirCodigo(){ return Date.now()>=_nubeOtpHasta; }
+function nubeSegundosCodigo(){ return Math.max(0, Math.ceil((_nubeOtpHasta-Date.now())/1000)); }
+async function nubePedirCodigo(email){
+  email=String(email||"").trim();
+  if(typeof mailOk==="function" && !mailOk(email)) return { ok:false, msg:"Ese correo no se ve válido" };
+  if(!nubePuedePedirCodigo()) return { ok:false, msg:"Espera "+nubeSegundosCodigo()+" s para pedir otro código" };
+  try{
+    const r=await nubeFetch("/auth/v1/otp",{ method:"POST", headers:nubeHeaders(false),
+      body:JSON.stringify({ email:email, create_user:true }) });
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok) return { ok:false, msg:nubeMsg(j,"No se pudo enviar el código") };
+    _nubeOtpHasta=Date.now()+60000;
+    if(typeof nubeRecordarMail==="function") nubeRecordarMail(email);
+    return { ok:true, msg:"Te mandamos un código de 6 dígitos. Revisa bandeja y spam." };
+  }catch(e){ return { ok:false, msg:nubeMsg({message:e&&e.message},"No hay red. El juego sigue igual, sin cuenta.") }; }
+}
+async function nubeVerificarCodigo(email, token){
+  email=String(email||"").trim();
+  token=String(token||"").replace(/\D/g,"");
+  if(typeof mailOk==="function" && !mailOk(email)) return { ok:false, msg:"Ese correo no se ve válido" };
+  if(typeof codigoOk==="function" ? !codigoOk(token) : !/^\d{6}$/.test(token)) return { ok:false, msg:"El código son 6 números" };
+  const probar=async function(tipo){
+    const r=await nubeFetch("/auth/v1/verify",{ method:"POST", headers:nubeHeaders(false),
+      body:JSON.stringify({ type:tipo, email:email, token:token }) });
+    const j=await r.json().catch(()=>({}));
+    return { r:r, j:j };
+  };
+  try{
+    let x=await probar("email");
+    if(!(x.r.ok&&x.j.access_token)) x=await probar("signup");
+    if(!(x.r.ok&&x.j.access_token)) return { ok:false, msg:nubeMsg(x.j,"Código inválido o vencido") };
+    nubeSetToken(x.j);
+    if(typeof nubeRecordarMail==="function") nubeRecordarMail(email);
+    return { ok:true, email:nubeEmail() };
+  }catch(e){ return { ok:false, msg:nubeMsg({message:e&&e.message},"No hay red") }; }
+}
 
 /* ---------- sync de partida (tabla 'saves', una fila por usuario) ---------- */
 async function nubeSubir(estado){

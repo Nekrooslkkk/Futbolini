@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-const VERSION="7.99958";
+const VERSION="7.9000";
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
 function el(tag,cls,html){const n=document.createElement(tag);if(cls)n.className=cls;if(html!=null)n.innerHTML=html;return n;}
@@ -21,6 +21,45 @@ function eligePeso(lista,peso){
 }
 function mezcla(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=ri(0,i);[b[i],b[j]]=[b[j],b[i]];}return b;}
 
+/* Texto de usuario → HTML: NUNCA innerHTML con alias, posts, correo, PEGAR. */
+function escHtml(s){
+  return String(s==null?"":s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+function mailOk(s){
+  s=String(s||"").trim();
+  if(s.length<5||s.length>120) return false;
+  if(/[<>"'`]/.test(s)) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+}
+function codigoOk(s){ return /^\d{6}$/.test(String(s||"").replace(/\s/g,"")); }
+function textoLimpio(s,max){
+  s=String(s==null?"":s).replace(/<[^>]*>/g,"").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"");
+  if(max) s=s.slice(0,max);
+  return s.trim();
+}
+/* Partida guardada: recorta HTML de lo que el jugador tipeó (posts, alias, nombres). */
+function saneaEstado(est){
+  if(!est||typeof est!=="object") return est;
+  try{
+    if(est.clubNombre) est.clubNombre=textoLimpio(est.clubNombre,80);
+    if(est.dt) est.dt=textoLimpio(est.dt,80);
+    (est.plantel||[]).forEach(function(j){ if(j&&j.n) j.n=textoLimpio(j.n,80); });
+    (est.timeline||[]).forEach(function(t){
+      if(!t) return;
+      if(t.autor) t.autor=textoLimpio(t.autor,48);
+      if(t.texto) t.texto=textoLimpio(t.texto,280);
+      (t.hilo||[]).forEach(function(h){
+        if(!h) return;
+        if(h.autor) h.autor=textoLimpio(h.autor,48);
+        if(h.texto) h.texto=textoLimpio(h.texto,280);
+      });
+    });
+    if(est.perfil&&est.perfil.plopUser) est.perfil.plopUser=textoLimpio(est.perfil.plopUser,16).replace(/[<>"'`]/g,"");
+  }catch(e){}
+  return est;
+}
 /* Pesos chilenos. Toda la plata del juego está en MILLONES de pesos de la época. */
 function plata(v){
   const n=Math.round(v);
@@ -59,7 +98,8 @@ const Store={
 /* ---------- avisos ---------- */
 function aviso(txt,ms){
   const cont=$("#avisos"); if(!cont) return;
-  const n=el("div","aviso",txt); cont.appendChild(n);
+  const n=el("div","aviso"); n.textContent=String(txt==null?"":txt);
+  cont.appendChild(n);
   setTimeout(()=>{ n.style.transition="opacity .3s"; n.style.opacity="0"; setTimeout(()=>n.remove(),320); }, ms||2600);
 }
 /* ---------- modal ---------- */

@@ -88,8 +88,28 @@
       t(!!m,"el editor abre");
       var txt=m?(m.textContent||""):"";
       t(txt.indexOf("Rigor")>=0 && txt.indexOf("Exportar")>=0,"tiene las pestañas Rigor y Exportar");
+      t(txt.indexOf("Nuevo")>=0,"tiene la pestaña Nuevo (PEGAR)");
       cerrarModal();
     },"Panel");
+
+    grupo("PEGAR club (crear / mejorar)");
+    safe(function(){
+      t(typeof parsearPegarClub==="function" && typeof crearClubDesdePegar==="function","motor PEGAR");
+      var p=parsearPegarClub("ID: ZZZ\nnombre: Club Zeta\nciudad: Talca\nliga: 2026");
+      t(p.id==="ZZZ" && p.nombre==="Club Zeta" && p.liga==="2026","parsea ID/nombre/liga");
+      var r=crearClubDesdePegar("ID: ZZZ\nnombre: Club <b>Zeta</b>\nciudad: Talca\nliga: 2026");
+      t(r.ok && r.id==="ZZZ","crea el club");
+      t(CLUB_INFO_2026.ZZZ && CLUB_INFO_2026.ZZZ.n==="Club Zeta","HTML recortado, nombre vivo");
+      t(CLUB_INFO.ZZZ && CLUB_INFO.ZZZ.n==="Club Zeta","espejo 1991");
+      t(LIGAS[2026].some(function(c){return c.id==="ZZZ";}),"aparece en la liga");
+      try{
+        delete CLUB_INFO_2026.ZZZ; delete CLUB_INFO.ZZZ;
+        if(CLUB_META) delete CLUB_META.ZZZ;
+        if(LIGAS[2026]){
+          for(var i=LIGAS[2026].length-1;i>=0;i--) if(LIGAS[2026][i]&&LIGAS[2026][i].id==="ZZZ") LIGAS[2026].splice(i,1);
+        }
+      }catch(e){}
+    },"PEGAR");
 
     grupo("Cierre de rigor AFA (Claude)");
     safe(function(){
