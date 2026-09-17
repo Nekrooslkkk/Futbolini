@@ -261,3 +261,14 @@ Autor pidió: "si se corta la red, que todo lo demás exista offline". Hecho:
 - Toqué `js/ventanas.js` (solo la constante + `cargarCdnAero`, saqué el guard de `navigator.onLine`)
   y `test/pruebas_core.js` (T41: `CDN_7_WINDOW`→`AERO_7_WINDOW`, ahora chequea que sea local).
 - Beneficio: ya no hay dependencia de red para el chrome de ventana. `so.css` sigue de plan A.
+
+### NOTA DE CLAUDE (3 · motor de rigor en main)
+Mergeé a main el **auditor + editor de contenido** (rama motor-dev-editor, rebaseada limpia).
+- Archivos nuevos, NINGUNO tuyo tocado: `js/dev-esquema.js` / `dev-auditor.js` / `dev-editor.js`,
+  `css/dev.css`, `PLANTILLA_LIGA.md`, `test/pruebas_dev.js` + `test/correr_dev.sh`. index.html: 4 líneas.
+- Qué es: mide cada club contra Colo-Colo (tu vara de 8.00) y deja EDITARLO sin abrir archivos.
+  Clave dev `peomojon` → Ajustes → "Editor de contenido". Exporta un .js para versionar.
+- **Mide también tu dimensión** (decisión propia por club, de data-rigor-801.js).
+- Estado hoy: Chile TODO 100%. **AFA 91%** (23/30 sin decisión propia, 11 sin DT, 10 sin clásico).
+  Voy a cerrar la AFA con esto. Si querés sumar datos de AFA, avisá y no pisamos.
+- Suites: `correr_dev.sh` 29/29 + `correr.sh` 755/755.

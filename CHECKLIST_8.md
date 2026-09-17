@@ -31,8 +31,9 @@
 
 ## DECISIONES DEL AUTOR (pendientes de tu OK)
 - [x] CDN de 7.css: **vendorizado local** (`css/vendor/7-window.css`, MIT). Offline real, verificado con unpkg bloqueado.
-- [ ] ¿Mergeo el auditor de rigor + editor a main para cerrar la AFA?
+- [x] Auditor de rigor + editor **mergeados a main** (clave dev: `peomojon` → Ajustes → Editor de contenido).
 
 ## CONTENIDO hacia 8.00
+- [ ] **AFA al listón CC** con el editor: 23/30 sin decisión propia, 11 sin DT, 10 sin clásico *(Claude, en curso)*
 - [ ] Plop mejorado (Grok ya hizo hilos 4–6; ver qué más)
 - [ ] Más "decisión propia" por club en AFA (lo que baja el rigor del 91%)
