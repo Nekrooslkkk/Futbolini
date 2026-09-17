@@ -147,7 +147,7 @@ function preguntarAyudante(q){
   if(t("moral","camarin","animo","vestuario","descontent")){
     const m=Math.round((E.ind&&E.ind.moral)||50);
     if(m<45) return "El camarín está cortado (moral "+m+"). Una charla con el capitán, un once que no sea de castigo, y ganar cura casi todo. En Finanzas puedes gastar para reconquistar a los descontentos.";
-    return "El camarín está bien (moral "+m+"). Sostené el clima: no rompas lo que funciona.";
+    return "El camarín está bien (moral "+m+"). Sostén el clima: no rompas lo que funciona.";
   }
   if(t("hinchada","barra","gente","socios","publico")){
     const h=Math.round((E.ind&&E.ind.hinchada)||50);

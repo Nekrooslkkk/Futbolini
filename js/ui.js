@@ -265,7 +265,7 @@ function pantallaInicio(){
 
   if(typeof botonDonar==="function"){
     const pd=el("div","ini-apoyar");
-    pd.appendChild(el("p","mini","Gratis para siempre. Si te gusta, un café ayuda a seguirlo — no se bloquea nada si no donás."));
+    pd.appendChild(el("p","mini","Gratis para siempre. Si te gusta, un café ayuda a seguirlo — no se bloquea nada si no donas."));
     pd.appendChild(botonDonar("btn-aqua ancho verde"));
     host.appendChild(pd);
   }
@@ -422,7 +422,7 @@ function elegirEpoca(id){
       c.appendChild(fila("Deportivo","plantel "+ib.plantel+" · cantera "+ib.cantera));
       c.appendChild(fila("Económico",plata(cb.plata)+" en caja · "+plata(cb.deuda)+" de deuda"));
       c.appendChild(fila("Interno","hinchada "+ib.hinchada+" · socios "+ib.socios+" · riesgo "+ib.riesgo));
-      /* E-1 · la situación del club: por qué te metés en esto (Grok TAREA E / Claude 7.86) */
+      /* E-1 · la situación del club: por qué te metes en esto (Grok TAREA E / Claude 7.86) */
       if(typeof SITUACION_CLUB==="object" && SITUACION_CLUB[id])
         c.appendChild(el("p","mini","<b>La situación:</b> "+SITUACION_CLUB[id]));
       /* corte 18/08 solo en la temporada 2026 actual (no en glorias históricas) */
@@ -779,7 +779,7 @@ function abrirDecision(d,enModal){
         bp.onclick=()=>{ if(quedan<=0){ aviso("Ya usaste las 3 pistas del ayudante este campeonato"); return; } if(!E.flags) E.flags={}; E.flags[clave]=usadas+1; pistaOn=true; pintar(cont); };
         p.cuerpo.appendChild(bp);
       } else {
-        p.cuerpo.appendChild(el("p","mini","🧑‍🏫 El ayudante te da su lectura: 🔥 la ve buena · 😐 tibia · 🧊 la ve mala. (Es su opinión, decidís vos.)"));
+        p.cuerpo.appendChild(el("p","mini","🧑‍🏫 El ayudante te da su lectura: 🔥 la ve buena · 😐 tibia · 🧊 la ve mala. (Es su opinión, decides tú.)"));
       }
       const ops=el("div","ops");
       d.op.forEach((o,i)=>{
@@ -810,27 +810,27 @@ function abrirDecision(d,enModal){
   else { const v=$("#vista"); v.innerHTML=""; pintar(v); window.scrollTo({top:0}); }
 }
 /* ---------------- institución ---------------- */
-/* jugadas de poder: gastás capital para arriesgarte a un premio grande o a que te explote.
+/* jugadas de poder: gastas capital para arriesgarte a un premio grande o a que te explote.
    Tu credibilidad baja el riesgo de que salga mal. */
 const JUGADAS_PODER=[
  {id:"lobby_anfp",n:"Lobby en la ANFP",ic:"🤝",costo:18,prob:0.42,
-  desc:"Movés tus contactos para pelear mejor reparto de TV y un fixture más amable.",
+  desc:"Mueves tus contactos para pelear mejor reparto de TV y un fixture más amable.",
   bueno:{ef:{plata:180},grupos:{anfp:6},msg:"Conseguiste un guiño: más plata de TV y calendario amigable."},
   malo:{grupos:{anfp:-12,prensa:-6},ef:{riesgo:4},msg:"Se filtró la movida: la ANFP se ofende y la prensa habla de tráfico de influencias."}},
  {id:"golpe_camarin",n:"Golpe de autoridad",ic:"✊",costo:12,prob:0.4,
-  desc:"Parás el camarín en seco: reglas nuevas, disciplina de hierro.",
+  desc:"Paras el camarín en seco: reglas nuevas, disciplina de hierro.",
   bueno:{ef:{moral:8},grupos:{camarin:8},msg:"El grupo entendió el mensaje: se ordenan y tiran para el mismo lado."},
-  malo:{ef:{moral:-10},grupos:{camarin:-12},msg:"Se resintieron: un referente filtró que sos un dictador."}},
+  malo:{ef:{moral:-10},grupos:{camarin:-12},msg:"Se resintieron: un referente filtró que eres un dictador."}},
  {id:"sponsor_agresivo",n:"Exprimir a los sponsors",ic:"💼",costo:15,prob:0.45,
-  desc:"Renegociás los contratos con la marca al límite.",
+  desc:"Renegocias los contratos con la marca al límite.",
   bueno:{ef:{plata:150},grupos:{sponsors:5},msg:"Sacaste más plata sin romper la relación."},
   malo:{grupos:{sponsors:-14},rep:{credibilidad:-6},msg:"Un sponsor se fue con un portazo público."}},
  {id:"purga_directorio",n:"Purga en el directorio",ic:"🪑",costo:25,prob:0.5,
-  desc:"Corrés a los que te hacen sombra y ponés gente tuya.",
+  desc:"Corres a los que te hacen sombra y pones gente tuya.",
   bueno:{grupos:{directorio:10},ef:{capital:12},msg:"Consolidaste poder: el directorio ahora te responde."},
   malo:{grupos:{directorio:-16,socios:-8},ef:{riesgo:5},msg:"Se armó una interna: te quedaste con enemigos adentro."}},
  {id:"presion_arbitral",n:"Apretar al arbitraje",ic:"🧑‍⚖️",costo:16,prob:0.5,
-  desc:"Mandás un mensaje fuerte de cara al próximo partido.",
+  desc:"Mandas un mensaje fuerte de cara al próximo partido.",
   bueno:{mod:{id:"favor_arb",n:"Guiño arbitral",ef:{arbitraje:3},anios:1},msg:"El próximo pito parece mirarte con mejores ojos."},
   malo:{grupos:{anfp:-10},rep:{credibilidad:-5},ef:{riesgo:4},msg:"Te expusiste: ahora el arbitraje te va a mirar con lupa."}}
 ];
@@ -1501,7 +1501,7 @@ function panelCopas(v){
       ?"En 2026 la Segunda no juega Copa Chile (bases ANFP). Tampoco hay cupo CONMEBOL por esta categoría. Igual el resto del país las juega: las ves abajo."
       :(E.eraBase===1925)
         ?"1925 es amateur: no hay Copa Chile ni Libertadores."
-        :"Este año no hay copas en TU calendario (todavía no clasificás, o el formato de la época no las arma). El resto del país sí las juega: abajo está el cuadro.";
+        :"Este año no hay copas en TU calendario (todavía no clasificas, o el formato de la época no las arma). El resto del país sí las juega: abajo está el cuadro.";
     const pc=panel("Copas del año","🏆");
     pc.cuerpo.appendChild(el("p","mini",why));
     v.appendChild(pc);
@@ -1828,9 +1828,9 @@ function vistaHistoria(){
         p2.cuerpo.appendChild(el("div","resul mitad","<b>Contexto real.</b> "+ctx));
     }
     if(esC){
-      p2.cuerpo.appendChild(el("p","mini","Segunda División Profesional: 14 clubes, zonas Norte/Sur (12 PJ + 2 byes). Top 3 de cada zona a liguilla de ascenso de 7 (ida y vuelta, se parte de 0; volver a cruzar rivales de tu zona es el formato real). El 1° de esa liguilla sube a la B. No hay una final de 3 botones. Copa Chile no incluye Segunda (bases ANFP: 32 = Primera + B). Si subís, el año que viene jugás Copa Chile. No hay Libertadores por liga. Esta pantalla no es la de Colo-Colo 1991."));
+      p2.cuerpo.appendChild(el("p","mini","Segunda División Profesional: 14 clubes, zonas Norte/Sur (12 PJ + 2 byes). Top 3 de cada zona a liguilla de ascenso de 7 (ida y vuelta, se parte de 0; volver a cruzar rivales de tu zona es el formato real). El 1° de esa liguilla sube a la B. No hay una final de 3 botones. Copa Chile no incluye Segunda (bases ANFP: 32 = Primera + B). Si subes, el año que viene juegas Copa Chile. No hay Libertadores por liga. Esta pantalla no es la de Colo-Colo 1991."));
     } else if(esB){
-      p2.cuerpo.appendChild(el("p","mini","Liga de Ascenso: 16 clubes, 3 puntos por victoria. Copa Chile (Primera + B). No se inventan octavos: hay que clasificar. La B no clasifica a Libertadores por liga. Si subís a Primera, el año que viene entra Copa de la Liga."));
+      p2.cuerpo.appendChild(el("p","mini","Liga de Ascenso: 16 clubes, 3 puntos por victoria. Copa Chile (Primera + B). No se inventan octavos: hay que clasificar. La B no clasifica a Libertadores por liga. Si subes a Primera, el año que viene entra Copa de la Liga."));
     } else if(base==="arg2026"){
       p2.cuerpo.appendChild(el("p","mini","Liga Profesional Argentina 2026 (AFA, no ANFP). 30 clubes, una rueda de 29 fechas. No se juega Copa Chile ni el Campeonato Nacional chileno de 1991."));
     } else {
@@ -2149,7 +2149,7 @@ function reaccionarPost(t,tipo){
       if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"malo");
       aviso("🤦 Reposteaste a una cuenta rival. Te auto-troleaste: la gente y la prensa te caen encima.");
     } else if(esPropioCritico){
-      /* repostear a un hincha propio enojado con vos: autocrítica, raro pero no te funa */
+      /* repostear a un hincha propio enojado contigo: autocrítica, raro pero no te funa */
       if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"neutro");
       aviso("🔁 Reposteaste a un hincha picado contigo. Mostrar autocrítica no está mal, pero no esperes aplausos.");
     } else {
@@ -3116,9 +3116,9 @@ function abrirEventoDecision(ev){
 /* 5.0 · negociación cara a cara con jugadores (Persuadir/Prometer/Forzar/Convencer) */
 function modalNegociacion(neg){
   const OPCS=[
-    {k:"persuadir",sev:"verde", t:"Persuadir",       d:"Apelás a la razón y al proyecto. Seguro, efecto moderado."},
+    {k:"persuadir",sev:"verde", t:"Persuadir",       d:"Apelas a la razón y al proyecto. Seguro, efecto moderado."},
     {k:"prometer", sev:"amarillo",t:"Prometer aumento",d:"Le tiras plata futura. Suele funcionar, pero pesa en la planilla."},
-    {k:"forzar",   sev:"rojo",  t:"Forzar permanencia",d:"Sacás la chapa de autoridad. Alto riesgo si sale mal."},
+    {k:"forzar",   sev:"rojo",  t:"Forzar permanencia",d:"Sacas la chapa de autoridad. Alto riesgo si sale mal."},
     {k:"convencer",sev:"morado",t:"Convencer",       d:"Charla larga y personal. Impredecible: puede salir redondo o peor."}
   ];
   modal(box=>{
@@ -3227,9 +3227,9 @@ function liguillaJugable(pend, onDone){
     const p=panel("Liguilla de ascenso","🏆","agua");
     p.cuerpo.appendChild(el("div","centro",'<div style="font-size:40px">🥊</div>'));
     p.cuerpo.appendChild(el("h2","tit centro",E.clubNombre+" vs "+rivalN));
-    p.cuerpo.appendChild(el("p","mini centro","Final a ida y vuelta por el ascenso a Primera B. Elegí cómo la jugás: el planteamiento inclina el cruce."));
+    p.cuerpo.appendChild(el("p","mini centro","Final a ida y vuelta por el ascenso a Primera B. Elige cómo la juegas: el planteamiento inclina el cruce."));
     const cont=el("div"); cont.style.marginTop="10px";
-    const posturas=[["🛡️ Aguantar",-1,"Te parás firme atrás y salís de contra. Menos riesgo, menos gol."],
+    const posturas=[["🛡️ Aguantar",-1,"Te paras firme atrás y sales de contra. Menos riesgo, menos gol."],
                     ["⚖️ Equilibrado",0,"Ni muy arriba ni muy atrás. La fuerza real manda."],
                     ["⚔️ Ir al frente",1,"Presión alta y a buscarlo. Más gol tuyo… y más expuesto."]];
     posturas.forEach(([et,val,desc])=>{

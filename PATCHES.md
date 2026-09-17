@@ -2645,3 +2645,12 @@ Todavía no 8.00. Se tapan huecos. Donar: Bitcoin, sin pasarela, sin perks.
 
 
 
+
+## Claude · voseo argentino → neutro en ui.js / ia.js (regla inviolable)
+Caza de bugs "Adelante con los bugs". Barrido de voseo en la capa de UI (mi carril).
+Textos de club en contexto chileno que decían voseo se pasaron a tú neutro:
+- **ui.js JUGADAS_PODER:** "Movés/Parás/Renegociás/Corrés/ponés/Mandás" → "Mueves/Paras/Renegocias/Corres/pones/Mandas"; "sos un dictador" → "eres un dictador".
+- **ui.js escritorio/copas/ascenso:** "clasificás", "Si subís… jugás", "Elegí cómo la jugás", "Te parás… salís de contra", "Apelás", "Sacás", "decidís vos" → "tú" neutro; "enojado con vos" → "contigo"; "si no donás" → "si no donas".
+- **ia.js:** "Sostené el clima" → "Sostén el clima".
+Antes verifiqué (headless, Boca AFA) que **panelCopasPais NO filtra Copa Chile** a un club argentino: el guard `pj>0` evita punteros chilenos. Falso positivo, no se tocó.
+**Probado:** node --check + suite core 812/812 + dev 46/46.
