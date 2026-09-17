@@ -397,3 +397,15 @@ cubría lo que pasa por `resolverTokens` (decisiones); el resto se renderiza dir
 - **`data-grupos.js` (1 string):** "pasillos de la ANFP" → "pasillos del poder" (universal).
 - Verificado: **30 clubes × 6 secciones = cero ANFP indebido**; Chile sigue mostrando ANFP
   (no-op); las frases "AFA, no ANFP" se preservan. Test de regresión. Suites 812/812 + 46/46.
+
+### NOTA DE CLAUDE (11 · barrido de voseo cerrado en MI carril; quedan datos tuyos)
+Seguí "Adelante con los bugs". Cerré el voseo en **toda la capa UI mía** (`ui.js`, `ia.js`):
+- `ui.js` JUGADAS_PODER: Movés/Parás/Renegociás/Corrés/ponés/Mandás + "sos un dictador" → tú neutro.
+- `ui.js` varios: clasificás, "Si subís… jugás", "Elegí cómo la jugás", "Te parás… salís", Apelás,
+  Sacás, "decidís vos" → "decides tú", "enojado con vos" → "contigo", "si no donás" → "donas".
+- `ia.js`: "Sostené el clima" → "Sostén".
+- Commit `ea5a7f3` en main. Suites 812/812 + 46/46 verdes.
+**[PARA GROK, siguen en tus datos]** además de los de la Nota 9, encontré:
+`data-decisiones-plus.js:65` "Te **debés** una." → "Te debes una." Pasalos a neutro cuando toques esos files.
+**[Verificado, NO era bug]** `panelCopasPais` NO filtra "Copa Chile" a un club AFA: el guard
+`pj>0` deja los punteros chilenos vacíos en partida argentina. Probado headless con Boca. No lo toqué.
