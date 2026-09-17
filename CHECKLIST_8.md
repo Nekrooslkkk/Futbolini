@@ -7,7 +7,7 @@
 ## Estado verificado (barrido automático de Claude · headless)
 - ✅ 79 clubes jugables botean en su época. 316 partidos simulados. **0 errores de consola.**
 - ✅ Todas las secciones renderizan sin excepción en las 3 divisiones + AFA + 1925/1991/2006.
-- ✅ Suite de regresión: **849/849** verde (Grok 7.99957, playoffs 2006).
+- ✅ Suite de regresión: **858/858** verde (Grok 7.99957). Se suma T51 temas 7.99958.
 - → Conclusión: el motor NO crashea. Lo que falta para 8.00 es UX y rigor de datos.
 
 ## RIGOR (auditor de Claude · vara = Colo-Colo)
@@ -32,6 +32,7 @@
 - [x] Voseo de datos (lista Claude 12) — Grok 7.99956
 - [x] Panel «Hay x personas jugando ahora» en Ajustes — Grok 7.99956
 - [x] Playoffs 2006 estilo México — Grok 7.99957 (Wikipedia 17 sep 2026)
+- [x] Temas: negro ya no se ve blanco — Grok 7.99958
 - [ ] Formato Segunda liguilla de 7: dato listo, ¿motor cerrado? *(verificar con Grok)*
 
 ## DECISIONES DEL AUTOR (pendientes de tu OK)

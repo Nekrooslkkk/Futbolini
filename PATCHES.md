@@ -2672,3 +2672,9 @@ El Apertura 2006 cerraba la rueda regular y saltaba al Clausura. En 2006 el tít
 
 VERSION **7.99957**. 8.00 reservada. BTC hueco. Segunda = cantera.
 
+
+## 7.99958 · Negro oscuro + cuadro 2006
+- **Temas:** el cliente de `.ventana-so` / `.window-body` ya no es blanco en modo oscuro. Vidrio Vista solo en Aero (`css/so.css` + `css/temas.css`). Negro, Claro e Insano tienen cliente propio. 7.css no pisa el modo oscuro.
+- **2006:** el calendario pinta el cuadro de playoffs de todo el país (`panelCuadro2006`). Se guarda al coronar.
+- **Tests T51.** VERSION **7.99958**. 8.00 reservada. BTC hueco. Segunda = cantera.
+- **Cierre temas:** `aplicarTema()` pinta `data-tema` con setAttribute. 7.css se reordena: `temas.css` vuelve a quedar al final. `background-color !important` en el cuerpo de negro/claro/insano, porque 7.css carga tarde y traía `#f0f0f0`. T51 mide `.so-cuerpo.window-body` (no cae al padre).

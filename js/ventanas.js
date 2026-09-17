@@ -1,14 +1,46 @@
 "use strict";
 /* ============================================================
-   FUTBOLINI 7.9994 · ventanas.js
+   FUTBOLINI 7.99958 · ventanas.js
    Chrome Aero: css/so.css (plan A) + css/vendor/7-window.css (el 7.css
    REAL, vendorizado LOCAL, MIT). Antes se pedía a unpkg; ahora vive en el
    repo → la ventana Aero real existe OFFLINE, sin depender de la red.
    Solo el chrome de ventana (no pinta `button` global, que rompía el juego).
    [Claude, coordinado con Grok en GROK_CAZA.md]
+   7.99958: el vidrio Vista (.window / .window-body / cdn-7) SOLO en Aero.
+   Negro/claro/insano no heredan el cliente blanco de 7.css.
    ============================================================ */
 
 const AERO_7_WINDOW="css/vendor/7-window.css";   /* local, MIT, offline */
+
+function temaActual(){
+  if(typeof document==="undefined" || !document.body) return "aero";
+  return document.body.getAttribute("data-tema") || document.body.dataset.tema || "aero";
+}
+function esAero(){ return temaActual()==="aero"; }
+
+function syncChromeTema(){
+  if(typeof document==="undefined") return;
+  /* cdn-7 marca que 7-window.css cargó. NO se saca al cambiar de tema:
+     7.css no usa esa clase, y sacarla dejaba reglas !important pegadas
+     en Chromium (el cliente negro se quedaba en claro/aero). */
+  if(document.getElementById("cdn-7css")) document.documentElement.classList.add("cdn-7");
+}
+
+/* Pinta el atributo que leen so.css / temas.css. No hace render(). */
+function aplicarTema(k){
+  k=k||"aero";
+  if(typeof document==="undefined" || !document.body) return;
+  document.body.setAttribute("data-tema", k);
+  try{ document.body.dataset.tema=k; }catch(e){}
+  syncChromeTema();
+}
+
+function _reponerTemasCss(){
+  /* 7.css se inyecta tarde y pisa .window-body en blanco. temas.css
+     tiene que quedar DESPUÉS para que negro/claro/insano ganen. */
+  const t=document.querySelector('link[href="css/temas.css"],link[href*="temas.css"]');
+  if(t && t.parentNode) t.parentNode.appendChild(t);
+}
 
 function cargarCdnAero(){
   if(typeof document==="undefined") return;
@@ -17,7 +49,11 @@ function cargarCdnAero(){
   l.id="cdn-7css";
   l.rel="stylesheet";
   l.href=AERO_7_WINDOW;   /* archivo local: carga siempre, también offline */
-  l.onload=function(){ document.documentElement.classList.add("cdn-7"); };
+  l.onload=function(){
+    document.documentElement.classList.add("cdn-7");
+    _reponerTemasCss();
+    syncChromeTema();
+  };
   l.onerror=function(){   /* si por lo que sea no está, so.css ya pintó */
     if(l.parentNode) l.remove();
     document.documentElement.classList.remove("cdn-7");
@@ -27,7 +63,10 @@ function cargarCdnAero(){
 
 function montarBarraSO(host, titulo, icono, onCerrar, onMin, onMax){
   if(!host) return null;
-  host.classList.add("ventana-so","window","glass");
+  host.classList.add("ventana-so");
+  const aero=esAero();
+  if(aero) host.classList.add("window","glass");
+  else host.classList.remove("window","glass");
   const barra=el("div","so-barra title-bar");
   barra.appendChild(el("span","so-ic",icono||""));
   const tit=el("span","so-titulo title-bar-text",titulo||"");
@@ -46,7 +85,7 @@ function montarBarraSO(host, titulo, icono, onCerrar, onMin, onMax){
   });
   barra.appendChild(ctr);
   host.appendChild(barra);
-  const cuerpo=el("div","so-cuerpo window-body");
+  const cuerpo=el("div", aero?"so-cuerpo window-body":"so-cuerpo");
   host.appendChild(cuerpo);
   host._cuerpo=cuerpo;
   return cuerpo;
@@ -72,3 +111,8 @@ function envolverVistaSO(titulo, icono){
 }
 
 cargarCdnAero();
+if(typeof document!=="undefined"){
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded", syncChromeTema);
+  } else syncChromeTema();
+}

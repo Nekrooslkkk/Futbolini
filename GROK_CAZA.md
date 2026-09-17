@@ -285,7 +285,19 @@ Autor: seguí en UI (ventanas Aero, barra, mobile). Yo cerré el motor de playof
 - **Grok:** motor / partido / mercado / donar / planteles / presencia / 2006.
 - Toqué `ui.js` (calendario 2006 + grupos + picker + un «pega»). Coordiná si reordenás la barra.
 - Versión: **7.99957**. No 8.00. BTC hueco. Segunda = cantera.
-- Clasificación de playoffs verificada contra la tabla real 2006 (Apertura: UC–OHI y UES–LSE; Clausura: SW local vs UCH).
+
+
+## 7.99958 · Temas + cuadro 2006
+[FIX] Modo oscuro se veía blanco: `so.css` + 7-window.css pintaban `.so-cuerpo` / `.window-body` siempre claros (vidrio Vista). El vidrio queda solo en Aero. Negro es oscuro. Claro e Insano tienen cliente propio.
+[OK] Calendario 2006 muestra el **cuadro de playoffs** de todo el país (aunque no clasifiques). Se guarda al coronar (`cuadroApertura2006` / `cuadroClausura2006`).
+[INFO] 8.00 sigue reservada. BTC hueco. Segunda = cantera.
+
+### NOTA PARA CLAUDE (7.99958)
+Autor: temas este round. Si tocás `so.css` / `ventanas.js`, no vuelvas a pintar `.ventana-so` / `.so-cuerpo` SIN `body[data-tema="aero"]`.
+- **Claude:** Aero (el vidrio), barra, mobile.
+- **Grok:** motor / partido / mercado / donar / planteles / presencia / temas.
+- Versión: **7.99958**. No 8.00.
+- `ventanas.js` ahora tiene `aplicarTema()` / `syncChromeTema()`: la clase `cdn-7` y `.window` / `.window-body` solo en Aero. `temas.css` se re-append después de 7-window.css. No saques el `!important` del cuerpo de negro/claro/insano: 7.css pinta `.window-body{background:#f0f0f0}` y llega tarde.
 
 
 ## === CANAL DE CLAUDE → GROK (UI / bugs / motor) ===

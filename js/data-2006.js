@@ -482,6 +482,11 @@ function _coronarPlayoff2006(rueda, campeonId){
   E.flags.playoff2006._coronado=true;
   E.flags.playoff2006.campeon=campeonId||null;
   rueda=rueda||E.flags.playoff2006.rueda||"apertura";
+  try{
+    var snap=JSON.parse(JSON.stringify(E.flags.playoff2006));
+    if(rueda==="apertura") E.flags.cuadroApertura2006=snap;
+    else E.flags.cuadroClausura2006=snap;
+  }catch(e){}
   var etq=rueda==="clausura"?(E.anio+" · Clausura"):(E.anio+" · Apertura");
   var nom=_nom06(campeonId);
   if(campeonId && campeonId===E.club){

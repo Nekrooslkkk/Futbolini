@@ -117,3 +117,126 @@ body[data-tema="insano"] .barra-jugar{
   border:2px dashed #ff00aa;
 }
 
+/* ================= 7.99958 · ventanas SO en CADA tema =================
+   so.css + 7-window.css pintaban el cliente BLANCO siempre (.so-cuerpo /
+   .window-body). El vidrio Vista queda solo en Aero. Negro de verdad oscuro. */
+
+/* --- negro --- */
+body[data-tema="negro"]{ color-scheme:dark; }
+html body[data-tema="negro"] .ventana-so,
+html body[data-tema="negro"] .ventana-so.window,
+html body[data-tema="negro"] .modal.ventana-so{
+  background-color:#0b1522;
+  background-image:linear-gradient(180deg,#2b425e 0%,#1a2c42 42%,#0b1522 100%);
+  border:1px solid rgba(120,190,255,.28);
+  box-shadow:inset 0 1px 0 rgba(160,210,255,.18), 0 14px 36px rgba(0,0,0,.55);
+}
+html body[data-tema="negro"] .ventana-so .so-barra,
+html body[data-tema="negro"] .ventana-so .title-bar{
+  background:linear-gradient(180deg,#3a5f88 0%,#25405c 48%,#17293d 100%);
+  color:#eaf6ff; text-shadow:0 1px 2px rgba(0,0,0,.6);
+  border-bottom:1px solid rgba(120,190,255,.25);
+}
+html body[data-tema="negro"] .ventana-so .so-titulo,
+html body[data-tema="negro"] .ventana-so .title-bar-text{ color:#eaf6ff; text-shadow:0 1px 2px #000; }
+html body[data-tema="negro"] .ventana-so .so-cuerpo,
+html body[data-tema="negro"] .ventana-so .window-body,
+html.cdn-7 body[data-tema="negro"] .window-body,
+html.cdn-7 body[data-tema="negro"] .window.is-bright .window-body{
+  background-color:#111c29 !important;
+  background-image:linear-gradient(180deg,#1b2b3d 0%,#111c29 100%) !important;
+  color:#dbecff !important;
+  border:1px solid rgba(120,190,255,.18);
+}
+html body[data-tema="negro"] .window:before,
+html body[data-tema="negro"] .window.glass:after{ opacity:0; background:none; }
+html body[data-tema="negro"] .panel > .cuerpo{
+  background:transparent; color:#dbecff; border:none; box-shadow:none;
+}
+html body[data-tema="negro"] input[type=text],
+html body[data-tema="negro"] input[type=email],
+html body[data-tema="negro"] input[type=password],
+html body[data-tema="negro"] input[type=number],
+html body[data-tema="negro"] textarea,
+html body[data-tema="negro"] select{
+  background:rgba(255,255,255,.08); color:#eaf6ff; border-color:rgba(120,190,255,.28);
+}
+html body[data-tema="negro"] .pick-tab,
+html body[data-tema="negro"] .pick-buscar,
+html body[data-tema="negro"] .picker-grid .icono,
+html body[data-tema="negro"] .icono{
+  background:linear-gradient(180deg,#22354b,#162536);
+  color:#cfe4f7; border-color:rgba(120,190,255,.22);
+}
+html body[data-tema="negro"] .pick-tab[aria-pressed="true"]{
+  background:linear-gradient(180deg,#3d8fd6,#1c5f9e); color:#fff;
+}
+html body[data-tema="negro"] .ini-legal{
+  background:rgba(40,60,90,.45); border-color:rgba(120,190,255,.25); color:#dbecff;
+}
+html body[data-tema="negro"] .ini-apoyar{
+  background:linear-gradient(180deg,rgba(30,70,50,.45),rgba(14,40,28,.35));
+  border-color:rgba(80,200,140,.3);
+}
+html body[data-tema="negro"] .tabla-liga th,
+html body[data-tema="negro"] .tabla-liga td{ border-color:rgba(120,190,255,.12); }
+html body[data-tema="negro"] .fila{ border-bottom-color:rgba(120,190,255,.12); }
+
+/* --- claro --- */
+body[data-tema="claro"]{ color-scheme:light; }
+html body[data-tema="claro"] .ventana-so,
+html body[data-tema="claro"] .ventana-so.window,
+html body[data-tema="claro"] .modal.ventana-so{
+  background-color:#fff; border:1px solid rgba(20,50,80,.18);
+  box-shadow:0 10px 28px rgba(20,50,80,.16);
+}
+html body[data-tema="claro"] .ventana-so .so-barra,
+html body[data-tema="claro"] .ventana-so .title-bar{
+  background:linear-gradient(180deg,#6ba7e6,#3d7fc4 52%,#2f6fb5);
+  color:#fff; text-shadow:0 1px 1px rgba(0,40,80,.4);
+  border-bottom:1px solid #24578f;
+}
+html body[data-tema="claro"] .ventana-so .so-titulo,
+html body[data-tema="claro"] .ventana-so .title-bar-text{ color:#fff; text-shadow:0 1px 1px rgba(0,40,80,.45); }
+html body[data-tema="claro"] .ventana-so .so-cuerpo,
+html body[data-tema="claro"] .ventana-so .window-body,
+html.cdn-7 body[data-tema="claro"] .window-body,
+html.cdn-7 body[data-tema="claro"] .window.is-bright .window-body{
+  background-color:#fff !important;
+  background-image:none !important;
+  color:#12222f !important;
+  border:1px solid rgba(20,50,80,.12);
+}
+html body[data-tema="claro"] .window:before,
+html body[data-tema="claro"] .window.glass:after{ opacity:0; background:none; }
+html body[data-tema="claro"] .panel > .cuerpo{ background:#fff; color:#12222f; }
+
+/* --- insano --- */
+html body[data-tema="insano"] .ventana-so,
+html body[data-tema="insano"] .modal.ventana-so{
+  background:linear-gradient(135deg,#ff88dd,#66ffff 50%,#faff00);
+  border:3px double #ff00aa;
+}
+html body[data-tema="insano"] .ventana-so .so-barra,
+html body[data-tema="insano"] .ventana-so .title-bar{
+  background:linear-gradient(90deg,#ff00aa,#00ffe1); color:#180032;
+  text-shadow:1px 1px 0 #ffff00;
+}
+html body[data-tema="insano"] .ventana-so .so-cuerpo,
+html body[data-tema="insano"] .ventana-so .window-body,
+html.cdn-7 body[data-tema="insano"] .window-body{
+  background-color:#ffe6fa !important;
+  background-image:none !important;
+  color:#180032 !important;
+  border:2px dashed #ff00aa;
+}
+html body[data-tema="insano"] .window:before,
+html body[data-tema="insano"] .window.glass:after{ opacity:.25; }
+
+/* 7.css :before azul/vidrio no debe asomar en negro/claro */
+html.cdn-7 body:not([data-tema="aero"]) .window:before,
+html.cdn-7 body:not([data-tema="aero"]) .window.glass:after{
+  opacity:0 !important; background:none !important; content:none;
+}
+
+

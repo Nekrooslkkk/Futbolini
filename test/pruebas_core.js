@@ -1644,6 +1644,9 @@
       ok(so==="7.9994" || so.length>0, "so.css local sigue ahí");
     }, "API 7.9994");
     safe(function(){
+      var orig=document.body.getAttribute("data-tema");
+      document.body.setAttribute("data-tema","aero");
+      if(document.body.dataset) document.body.dataset.tema="aero";
       var host=el("div");
       document.body.appendChild(host);
       montarBarraSO(host,"Banco","🏦");
@@ -1652,6 +1655,7 @@
       ok(host.querySelector('button[aria-label="Close"]'), "aria-label Close (7.css)");
       ok(host.querySelector("button.is-minimize") && host.querySelector("button.is-close"), "is-minimize / is-close");
       host.remove();
+      if(orig) document.body.setAttribute("data-tema", orig);
     }, "HTML compatible con 7.css");
     safe(function(){
       var off=typeof navigator!=="undefined" && navigator.onLine===false;
@@ -1928,6 +1932,64 @@
       ok(nubeMsg({error:"Invalid login credentials"},"x")==="Correo o clave incorrectos", "login inválido en castellano");
       ok(nubeMsg({msg:"User already registered"},"x").indexOf("ya tiene cuenta")>=0, "correo repetido en castellano");
     }, "login: errores en castellano");
+
+    /* T51 · 7.99958 temas: negro no se ve blanco + cuadro 2006 */
+    grupo("Grok 7.99958 (temas + cuadro playoffs)");
+    function _luma(el){
+      if(!el) return -1;
+      var c=getComputedStyle(el).backgroundColor||"";
+      var m=c.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+      if(!m) return -1;
+      var r=+m[1], g=+m[2], b=+m[3], a=1;
+      if(/rgba/.test(c)){
+        var ma=c.match(/,\s*([0-9.]+)\s*\)/);
+        if(ma) a=+ma[1];
+      }
+      if(a===0) return -1;
+      return 0.2126*r+0.7152*g+0.0722*b;
+    }
+    function _medirTema(tema, con7){
+      document.body.setAttribute("data-tema", tema);
+      if(document.body.dataset) document.body.dataset.tema=tema;
+      var w=document.createElement("div");
+      w.className=con7?"ventana-so window glass":"ventana-so";
+      var c=document.createElement("div");
+      c.className=con7?"so-cuerpo window-body":"so-cuerpo";
+      w.appendChild(c);
+      document.body.appendChild(w);
+      c.style.display="none"; void c.offsetHeight; c.style.display="";
+      var bg=getComputedStyle(c).backgroundColor;
+      var ln=_luma(c);
+      var at=document.body.getAttribute("data-tema");
+      w.remove();
+      return {ln:ln, bg:bg, at:at};
+    }
+    safe(function(){
+      ok(VERSION==="7.99958" || /^7\.99958/.test(VERSION), "VERSION 7.99958");
+      ok(typeof panelCuadro2006==="function", "panelCuadro2006");
+      var orig=document.body.getAttribute("data-tema")||"aero";
+      var n=_medirTema("negro", true);
+      ok(n.at==="negro" && n.ln>=0 && n.ln<90, "negro: el cuerpo es oscuro (luma "+Math.round(n.ln)+" bg="+n.bg+" attr="+n.at+")");
+      var cl=_medirTema("claro", true);
+      ok(cl.at==="claro" && cl.ln>160, "claro: el cuerpo es claro (luma "+Math.round(cl.ln)+" bg="+cl.bg+" attr="+cl.at+")");
+      var a=_medirTema("aero", true);
+      ok(a.at==="aero" && a.ln>140, "aero: el vidrio sigue claro (luma "+Math.round(a.ln)+" bg="+a.bg+" attr="+a.at+")");
+      var i=_medirTema("insano", true);
+      ok(i.at==="insano" && i.ln>=0, "insano: renderiza (luma "+Math.round(i.ln)+" bg="+i.bg+")");
+      document.body.setAttribute("data-tema", orig);
+      if(document.body.dataset) document.body.dataset.tema=orig;
+    }, "los 4 temas pintan");
+    safe(function(){
+      nuevaPartida("CC",2006,"historico");
+      (E.calendario||[]).filter(function(p){ return p.tipo==="liga"; }).forEach(function(p){ p.jugado=true; });
+      avanzarFase2006({tipo:"liga",fase:"apertura"});
+      _coronarPlayoff2006("apertura","CC");
+      ok(!!(E.flags&&E.flags.cuadroApertura2006), "el cuadro del Apertura se guarda");
+      ok(E.flags.cuadroApertura2006.campeon==="CC", "el cuadro recuerda al campeón");
+      SEC="calendario"; render();
+      var txt=(document.getElementById("vista")&&document.getElementById("vista").innerText)||"";
+      ok(/Cuadro Apertura/.test(txt), "el calendario muestra el cuadro aunque ya arrancó el Clausura");
+    }, "cuadro 2006 visible");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

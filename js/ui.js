@@ -1676,6 +1676,44 @@ function filaCalendario(c,i){
   if(c.jugado){ d.style.cursor="pointer"; d.onclick=()=>modalRepeticion(c); }
   return d;
 }
+function _nomPo06(id){
+  if(!id) return "—";
+  if(typeof _nom06==="function") return _nom06(id);
+  const c=(typeof clubLookup==="function"&&clubLookup(id))||{};
+  return c.c||c.n||id;
+}
+function _lineaLlave06(ll){
+  if(!ll) return "";
+  if(ll.pendiente) return _nomPo06(ll.mejor)+" vs "+_nomPo06(ll.peor)+" · se juega";
+  if(ll.ida && ll.vue){
+    const a=_nomPo06(ll.localIda||ll.peor), b=_nomPo06(ll.localVue||ll.mejor);
+    return a+" "+ll.ida[0]+"-"+ll.ida[1]+" · "+b+" "+ll.vue[0]+"-"+ll.vue[1]+(ll.pens?" · penales":"");
+  }
+  if(ll.mejor&&ll.peor) return _nomPo06(ll.mejor)+" vs "+_nomPo06(ll.peor);
+  return "";
+}
+function panelCuadro2006(v, st, titulo){
+  if(!st||!v) return;
+  const p=panel(titulo||"Cuadro de playoffs","🌳","agua");
+  p.cuerpo.appendChild(el("p","mini","Aunque no estés en una llave, el cuadro es de todo el país. Sin goles de visita."));
+  if(st.repechaje&&st.repechaje.length){
+    p.cuerpo.appendChild(el("h3","sub","Repechaje"));
+    (st.repechaje||[]).forEach(r=>{
+      const g=(st.repGanadores||[]).filter(x=>x===r.local||x===r.visita)[0];
+      p.cuerpo.appendChild(el("div","fila","<span>"+_nomPo06(r.local)+" vs "+_nomPo06(r.visita)+"</span><b>"+(g?("pasa "+_nomPo06(g)):"—")+"</b>"));
+    });
+  }
+  [["cuartos","Cuartos"],["semis","Semifinal"],["final","Final"]].forEach(par=>{
+    const arr=(st.llaves&&st.llaves[par[0]])||[];
+    if(!arr.length) return;
+    p.cuerpo.appendChild(el("h3","sub",par[1]));
+    arr.forEach(ll=>{
+      p.cuerpo.appendChild(el("div","fila","<span>"+_lineaLlave06(ll)+"</span><b>"+(ll.gana?_nomPo06(ll.gana):(ll.pendiente?"en juego":"—"))+"</b>"));
+    });
+  });
+  if(st.campeon) p.cuerpo.appendChild(el("div","resul bien","Campeón: <b>"+_nomPo06(st.campeon)+"</b>"));
+  v.appendChild(p);
+}
 function vistaCalendario(){
   const v=$("#vista");
   if(E.eraBase===2006){
@@ -1691,6 +1729,8 @@ function vistaCalendario(){
       if(camp) ppo.cuerpo.appendChild(el("div","resul bien","Campeón: <b>"+(typeof _nom06==="function"?_nom06(camp):camp)+"</b>"));
       v.appendChild(ppo);
     }
+    const stA=(E.flags&&E.flags.cuadroApertura2006)||(E.flags&&E.flags.playoff2006&&E.flags.playoff2006.rueda==="apertura"&&E.flags.playoff2006);
+    if(stA) panelCuadro2006(v, stA, "Cuadro Apertura 2006");
     if(E.calendario.some(c=>c.tipo==="liga"&&c.fase==="clausura")){
       const cla=panel("Calendario · Clausura 2006","📅","agua");
       E.calendario.forEach((c,i)=>{ if(c.tipo==="liga"&&c.fase==="clausura") cla.cuerpo.appendChild(filaCalendario(c,i)); });
@@ -1703,6 +1743,8 @@ function vistaCalendario(){
       E.calendario.forEach((c,i)=>{ if(c.torneo==="Playoffs Clausura 2006") ppc.cuerpo.appendChild(filaCalendario(c,i)); });
       v.appendChild(ppc);
     }
+    const stC=(E.flags&&E.flags.cuadroClausura2006)||(E.flags&&E.flags.playoff2006&&E.flags.playoff2006.rueda==="clausura"&&E.flags.playoff2006);
+    if(stC) panelCuadro2006(v, stC, "Cuadro Clausura 2006");
     const otros06=(E.calendario||[]).filter(c=>c.tipo!=="liga"&&c.torneo!=="Playoffs Apertura 2006"&&c.torneo!=="Playoffs Clausura 2006");
     if(otros06.length){
       const po=panel("Otros compromisos "+E.anio,"📅");
@@ -2705,7 +2747,7 @@ function vistaAjustes(){
   [["aero","Frutiger Aero"],["negro","Negro"],["claro","Claro"],["insano","Insano"]].forEach(([k,n])=>{
     const b=el("button","ficha",n);
     b.setAttribute("aria-pressed",document.body.dataset.tema===k?"true":"false");
-    b.onclick=()=>{ document.body.dataset.tema=k; Store.set("futbolini3_tema",k); render(); };
+    b.onclick=()=>{ if(typeof aplicarTema==="function") aplicarTema(k); else { document.body.setAttribute("data-tema",k); document.body.dataset.tema=k; } Store.set("futbolini3_tema",k); render(); };
     f.appendChild(b);
   });
   p.cuerpo.appendChild(f);
@@ -3399,7 +3441,9 @@ $("#btnAvisos").onclick=()=>{ if(E) modalAvisos(); };
 $("#btnTemas").onclick=()=>{
   const orden=["aero","negro","claro","insano"];
   const i=(orden.indexOf(document.body.dataset.tema)+1)%orden.length;
-  document.body.dataset.tema=orden[i]; Store.set("futbolini3_tema",orden[i]); render();
+  const k=orden[i];
+  if(typeof aplicarTema==="function") aplicarTema(k); else { document.body.setAttribute("data-tema",k); document.body.dataset.tema=k; }
+  Store.set("futbolini3_tema",k); render();
 };
 /* 7.61 · botón de Ajustes SIEMPRE en la barra (también sin partida): así se
    pueden borrar guardados / cambiar tema / cargar respaldo sin entrar a un club.
@@ -3524,7 +3568,8 @@ document.addEventListener("keydown",function(e){
     const pt=$("#pieTxt"); if(pt) pt.textContent="Futbolini "+VERSION+" · dramatización · Frutiger Aero · Apoyar";
   }
   const t=await Store.get("futbolini3_tema");
-  document.body.dataset.tema=t||"aero";
+  if(typeof aplicarTema==="function") aplicarTema(t||"aero");
+  else { document.body.setAttribute("data-tema", t||"aero"); document.body.dataset.tema=t||"aero"; }
   /* 7.62 · navegación lateral tipo Wii en PC (por defecto encendida; conmutable en Ajustes) */
   try{ const nl=await Store.get("futbolini3_lateral"); document.body.classList.toggle("nav-lateral", nl!==false); }
   catch(e){ document.body.classList.add("nav-lateral"); }
