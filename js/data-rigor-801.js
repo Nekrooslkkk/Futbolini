@@ -817,7 +817,7 @@ _d801("sci26_barnechea","SCI",2026,"institucional","medio",3,
 /* ========== AFA 2026 ========== */
 _d801("boc26_bombonera","BOC",2026,"hinchada","alto",3,
   "La Bombonera no se negocia",
-  "Boca Juniors. La Bombonera es la semana. El Superclásico manda; el promedio acecha igual. Esto no es el Monumental de Macul ni la ANFP.",
+  "Boca Juniors. La Bombonera es la semana. El Superclásico manda; el promedio acecha igual.",
   [
     _o801("Cerrar concentrados, sin teatro","Cabeza. La calle pide pecho.",40,{tecnico:10,camarin:8,hinchada:-4},
       "El plantel llegó entero al Fortín.",
@@ -832,7 +832,7 @@ _d801("boc26_bombonera","BOC",2026,"hinchada","alto",3,
   ]),
 _d801("riv26_monumental","RIV",2026,"institucional","alto",2,
   "El Monumental llena; el promedio acecha",
-  "River Plate. El Monumental de Núñez (no el de Macul) se llena. Ser el más grande de Argentina no te salva el promedio. El Superclásico manda la semana.",
+  "River Plate. El Monumental de Núñez se llena. Ser el más grande de Argentina no te salva el promedio. El Superclásico manda la semana.",
   [
     _o801("Foco en el promedio, sin teatro","Serio. Poco épico.",38,{directorio:8,camarin:8,hinchada:-4},
       "Se habla de puntos. La tribuna quería himno.",
@@ -862,7 +862,7 @@ _d801("rac26_avellaneda","RAC",2026,"institucional","medio",3,
   ]),
 _d801("ind26_rojo","IND",2026,"institucional","medio",3,
   "Rey de Copas, Avellaneda",
-  "Independiente. El Rojo pide Europa otra vez, no nostalgia. El clásico de Avellaneda manda. Esto no es Copa Chile ni Quilín.",
+  "Independiente. El Rojo pide Europa otra vez, no nostalgia. El clásico de Avellaneda manda.",
   [
     _o801("Construir para volver a copas","Lento.",40,{camarin:10,socios:8,hinchada:-4},
       "Se habla de piso. La gente pide Libertadores ya.",
@@ -1108,6 +1108,10 @@ _d801("elp09_copa","ELP",2009,"institucional","alto",6,
   decisionCabeEnClub=function(d){
     if(!orig(d)) return false;
     if(!d||typeof E==="undefined"||!E) return true;
+    /* FIX (Claude): una carta con `club` explícito ya está gateada por su tag;
+       no re-aplicar marcas de estadio (bloqueaban p.ej. Gimnasia LP porque "El
+       Bosque" estaba marcado como de Estudiantes). Las marcas son para la bolsa. */
+    if(d.club) return true;
     var club=E.club;
     var blob="";
     try{ blob=((d.t||"")+" "+(d.d||"")).toLowerCase(); }catch(e){ return true; }

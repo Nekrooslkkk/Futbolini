@@ -22,6 +22,12 @@ function _esSeg97(){
 function decisionCabeEnClub(d){
   if(!d||typeof E==="undefined"||!E) return true;
   if(d.club && d.club!==E.club) return false;
+  /* FIX (Claude): una decisión con `club` EXPLÍCITO ya está bien gateada arriba
+     (d.club===E.club). Las heurísticas anti-fuga de abajo (marcas de estadio,
+     ANFP/Copa Chile en AFA, etc.) son para la BOLSA genérica. Aplicarlas a una
+     carta propia bloqueaba a River/Boca/Independiente por su PROPIA frase
+     desambiguadora ("esto no es el Monumental de Macul ni la ANFP"). */
+  if(d.club) return true;
   var club=E.club;
   var blob=_blobDec97(d);
   if(_esAFA97(club) && (/\banfp\b/.test(blob)||/quilín|quilin/.test(blob)||/copa chile/.test(blob))) return false;

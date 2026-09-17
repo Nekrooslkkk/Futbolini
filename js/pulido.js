@@ -65,6 +65,15 @@ function textoAjenoClub74(d){
   if(!E||!d) return false;
   const txt=((d.t||"")+" "+(d.d||"")).toLowerCase();
   const club=E.club;
+  /* FIX (Claude): una carta con `club` EXPLÍCITO de este club NO es "ajena" por su
+     frase desambiguadora ("el Monumental de Núñez, no el de Macul"). Esas heurísticas
+     de términos chilenos son para la BOLSA. Bloqueaban a River/Boca/Independiente su
+     propia carta. Igual se respetan las restricciones de época/división explícitas. */
+  if(d.club===club){
+    if(d.era){ const e=Array.isArray(d.era)?d.era:[d.era]; if(e.indexOf(E.eraBase)<0 && e.indexOf(String(E.eraBase))<0) return true; }
+    if(d.div){ const s=Array.isArray(d.div)?d.div:[d.div]; if(s.indexOf(_div74())<0) return true; }
+    return false;
+  }
   if(/macul/.test(txt) && club!=="CC") return true;
   if(/monumental/.test(txt) && club!=="CC" && club!=="RIV" && club!=="TUC" && club!=="BOC") return true;
   if(/\banfp\b|quilín|quilin/.test(txt) && (typeof esClubArg==="function" && esClubArg(club))) return true;

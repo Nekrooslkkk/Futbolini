@@ -64,7 +64,7 @@ _dAfa("tal26_interior","TAL",2026,"institucional","alto",3,
       {be:{capital:4}}) ]),
 
 /* HURACÁN · Ducó · Parque Patricios */
-_dAfa("hur26_duco","HUR",2026,"institucional","medio",5,
+_dAfa("hur26_duco","HUR",2026,"institucional","medio",1,
   "El Ducó pide plata",
   "El Tomás A. Ducó es historia viva de Parque Patricios, pero la historia tiene goteras. Hay que elegir entre poner plata en el estadio o en el plantel, y en Huracán las dos cosas son urgentes.",
   [
@@ -80,7 +80,7 @@ _dAfa("hur26_duco","HUR",2026,"institucional","medio",5,
       {we:{estadio:-6}}) ]),
 
 /* LANÚS · el Granate · continental */
-_dAfa("lan26_continental","LAN",2026,"institucional","medio",6,
+_dAfa("lan26_continental","LAN",2026,"institucional","medio",2,
   "Sudamericana o liga",
   "Lanús se ordena y otra vez huele a copa. Pero el calendario aprieta: priorizar la Sudamericana puede costar puntos en el torneo, y el sur del Gran Buenos Aires no perdona quedarse sin nada.",
   [
@@ -96,7 +96,7 @@ _dAfa("lan26_continental","LAN",2026,"institucional","medio",6,
       {}) ]),
 
 /* ARGENTINOS JRS · La Paternal · cuna de Maradona · cantera */
-_dAfa("arg26_cantera","ARG",2026,"cantera","alto",7,
+_dAfa("arg26_cantera","ARG",2026,"cantera","alto",3,
   "Otra joya de La Paternal en la vidriera",
   "Argentinos es fábrica: en el semillero de La Paternal siempre hay un pibe que Europa mira. Llega una oferta grande por la última joya. Vender sostiene el club; retener alimenta el sueño de una campaña.",
   [
@@ -128,7 +128,7 @@ _dAfa("new26_escuela","NEW",2026,"institucional","medio",4,
       {}) ]),
 
 /* BELGRANO · el Pirata · Córdoba */
-_dAfa("bel26_pirata","BEL",2026,"hinchada","alto",8,
+_dAfa("bel26_pirata","BEL",2026,"hinchada","alto",4,
   "El Pirata quiere su clásico",
   "Belgrano vive para el clásico cordobés con Talleres. La hinchada del Gigante de Alberdi pide que el club se plante como el más grande de Córdoba, con todo lo que eso implica de gasto y de presión.",
   [
@@ -144,7 +144,7 @@ _dAfa("bel26_pirata","BEL",2026,"hinchada","alto",8,
       {}) ]),
 
 /* DEFENSA Y JUSTICIA · el Halcón · Florencio Varela · club de copas */
-_dAfa("dyj26_modelo","DYJ",2026,"refuerzos","medio",6,
+_dAfa("dyj26_modelo","DYJ",2026,"refuerzos","medio",2,
   "El modelo Halcón bajo presión",
   "Defensa hizo de la nada un club de copas: comprar barato, potenciar, vender caro. Ahora llega una oferta por el goleador justo cuando el equipo ilusiona. Vender es el ADN; retener sería cambiar de piel.",
   [
@@ -160,7 +160,7 @@ _dAfa("dyj26_modelo","DYJ",2026,"refuerzos","medio",6,
       {be:{moral:6}}) ]),
 
 /* INSTITUTO · La Gloria · Córdoba · cantera */
-_dAfa("ins26_gloria","INS",2026,"cantera","medio",5,
+_dAfa("ins26_gloria","INS",2026,"cantera","medio",1,
   "La Gloria se aferra a su cantera",
   "Instituto se sostiene con lo que produce Alta Córdoba, no con marketing porteño. Un empresario ofrece plata a cambio de meter mano en las inferiores. Es tentador y es un riesgo para la identidad.",
   [
@@ -192,7 +192,7 @@ _dAfa("uni26_interior","UNI",2026,"institucional","medio",4,
       {}) ]),
 
 /* GIMNASIA (LP) · el Lobo · El Bosque · 1887 */
-_dAfa("glp26_bosque","GLP",2026,"hinchada","alto",5,
+_dAfa("glp26_bosque","GLP",2026,"hinchada","alto",1,
   "El Bosque, patrimonio del Lobo",
   "Gimnasia es de 1887 y su cancha en El Bosque es identidad pura. Hay presión para modernizarla o incluso mudarse por seguridad, y la hinchada más fiel del país no quiere ni escuchar la palabra 'mudanza'.",
   [
@@ -208,7 +208,7 @@ _dAfa("glp26_bosque","GLP",2026,"hinchada","alto",5,
       {wg:{hinchada:-12}}) ]),
 
 /* ATLÉTICO TUCUMÁN · el Decano del norte · el viaje */
-_dAfa("tuc26_viaje","TUC",2026,"preparacion","medio",6,
+_dAfa("tuc26_viaje","TUC",2026,"preparacion","medio",2,
   "El norte y sus 1.200 kilómetros",
   "Ser de Tucumán se paga en horas de micro y de avión. El Decano puede hacer del viaje un arma —localía brava, rival cansado— o que el desgaste se lo coma a él. La logística de la temporada se define ahora.",
   [
@@ -224,7 +224,7 @@ _dAfa("tuc26_viaje","TUC",2026,"preparacion","medio",6,
       {we:{plata:-50}}) ]),
 
 /* TIGRE · el Matador · Victoria */
-_dAfa("tig26_yoyo","TIG",2026,"institucional","alto",7,
+_dAfa("tig26_yoyo","TIG",2026,"institucional","alto",3,
   "Cortar el yo-yo de una vez",
   "Tigre sube y baja, sube y baja. En Victoria están cansados del ascensor. Se puede armar un plantel para pelear tranquilo la permanencia o arriesgar por una campaña que ilusione, sabiendo que caer otra vez sería durísimo.",
   [
@@ -240,7 +240,7 @@ _dAfa("tig26_yoyo","TIG",2026,"institucional","alto",7,
       {we:{moral:-6}}) ]),
 
 /* BANFIELD · el Taladro · Florencio Sola · cantera */
-_dAfa("ban26_taladro","BAN",2026,"cantera","medio",5,
+_dAfa("ban26_taladro","BAN",2026,"cantera","medio",1,
   "El Taladro y su fábrica de juveniles",
   "Banfield es cantera y bandera del sur. La Sola siempre tiene un pibe listo para debutar, pero el cuerpo técnico duda entre tirarlos a la pileta ya o esperar a que maduren para no quemarlos.",
   [
@@ -256,7 +256,7 @@ _dAfa("ban26_taladro","BAN",2026,"cantera","medio",5,
       {}) ]),
 
 /* PLATENSE · el Calamar · Vicente López */
-_dAfa("pla26_permanencia","PLA",2026,"institucional","medio",6,
+_dAfa("pla26_permanencia","PLA",2026,"institucional","medio",2,
   "El Calamar, con los pies en Primera",
   "Platense volvió a la elite y en Vicente López lo saben: cada año en Primera es una pequeña hazaña. La discusión es si gastar la caja en asegurar la permanencia o guardarla para cuando venga la mala.",
   [
@@ -272,7 +272,7 @@ _dAfa("pla26_permanencia","PLA",2026,"institucional","medio",6,
       {be:{capital:4}}) ]),
 
 /* CENTRAL CÓRDOBA (SdE) · Santiago del Estero · Madre de Ciudades */
-_dAfa("cco26_norte","CCO",2026,"institucional","medio",5,
+_dAfa("cco26_norte","CCO",2026,"institucional","medio",1,
   "Santiago del Estero en la mesa grande",
   "Central Córdoba metió al norte profundo en Primera y estrena un estadio moderno, el Madre de Ciudades. La pregunta es cómo aprovecharlo: convertirlo en fortín ferroviario o alquilarlo para eventos y sumar caja.",
   [
@@ -288,7 +288,7 @@ _dAfa("cco26_norte","CCO",2026,"institucional","medio",5,
       {be:{plata:90},we:{estadio:-5}}) ]),
 
 /* INDEPENDIENTE RIVADAVIA · la Lepra mendocina · Cuyo en Primera */
-_dAfa("irv26_cuyo","IRV",2026,"hinchada","medio",6,
+_dAfa("irv26_cuyo","IRV",2026,"hinchada","medio",2,
   "Cuyo quiere quedarse en Primera",
   "Independiente Rivadavia subió y Mendoza entera empujó. Mantenerse es la obsesión. La Lepra mendocina puede jugarse a un plantel regional con identidad o traer nombres de Buenos Aires que aseguren categoría.",
   [
@@ -304,7 +304,7 @@ _dAfa("irv26_cuyo","IRV",2026,"hinchada","medio",6,
       {we:{moral:-6}}) ]),
 
 /* SARMIENTO (Junín) · el Verde */
-_dAfa("sar26_pueblo","SAR",2026,"finanzas","medio",5,
+_dAfa("sar26_pueblo","SAR",2026,"finanzas","medio",1,
   "Junín, con lo justo",
   "Sarmiento es club de pueblo del interior bonaerense: caja chica, hinchada fiel, cada peso pesa. Se puede estirar el presupuesto para reforzar o cuidar cada centavo y confiar en el sentido de pertenencia.",
   [
@@ -352,7 +352,7 @@ _dAfa("gme26_debut","GME",2026,"institucional","alto",3,
       {we:{capital:-4}}) ]),
 
 /* DEPORTIVO RIESTRA · Villa Soldati · club chico de verdad */
-_dAfa("rie26_chico","RIE",2026,"gris","medio",6,
+_dAfa("rie26_chico","RIE",2026,"gris","medio",2,
   "El club más chico, en la máxima",
   "Riestra llegó a Primera desde Villa Soldati siendo, de verdad, un club chico: poca hinchada, estructura mínima, presupuesto de otra dimensión. Aparecen ayudas de origen dudoso que resolverían la caja pero podrían atar al club.",
   [
@@ -384,7 +384,7 @@ _dAfa("erc26_interior","ERC",2026,"institucional","medio",4,
       {}) ]),
 
 /* BARRACAS CENTRAL · La Ribera · el Guapo */
-_dAfa("bar26_barrio","BAR",2026,"hinchada","medio",5,
+_dAfa("bar26_barrio","BAR",2026,"hinchada","medio",1,
   "El Guapo y su identidad de barrio",
   "Barracas Central es un club de barrio en La Ribera que llegó a Primera. Con el crecimiento aparecen presiones para 'modernizar' la imagen y despegarse del sello barrial. La hinchada quiere que el Guapo siga siendo el Guapo.",
   [
@@ -403,7 +403,7 @@ _dAfa("bar26_barrio","BAR",2026,"hinchada","medio",5,
 /* VÉLEZ · el Fortín · Liniers · cantera y pelea de arriba
    (tenían decisión de gloria pero no de 2026 — se completa la temporada actual) */
 DECISIONES_AFA.push(
-_dAfa("vel26_fortin","VEL",2026,"cantera","medio",5,
+_dAfa("vel26_fortin","VEL",2026,"cantera","medio",1,
   "El Fortín entre la cantera y la urgencia",
   "Vélez hizo escuela formando y vendiendo, pero la gente de Liniers también pide pelear arriba ya. Aparece la disyuntiva de siempre: subir pibes de la cantera al Amalfitani o gastar en un refuerzo para competir de inmediato.",
   [
@@ -438,7 +438,7 @@ _dAfa("slo26_boedo","SLO",2026,"institucional","alto",4,
 
 /* ESTUDIANTES (LP) · el Pincha · el clásico platense */
 DECISIONES_AFA.push(
-_dAfa("elp26_pincha","ELP",2026,"hinchada","alto",8,
+_dAfa("elp26_pincha","ELP",2026,"hinchada","alto",4,
   "Semana de clásico platense",
   "Estudiantes vive para ganarle a Gimnasia. En La Plata el clásico define el humor del año entero. El Pincha debate entre volcar todo a la previa del clásico o mantener la cabeza fría para no descuidar el torneo.",
   [
