@@ -319,7 +319,7 @@ function mundoArmarNoticias(part){
     const arr=_ordTabla(E.mundo.ligas["2026"].tab, E.mundo.ligas["2026"].ids);
     if(arr[0]&&arr[0].pj>0) out.push({tipo:"imp", t:_nomClub(arr[0].id)+" manda en Primera",
       d:"Puntero con "+arr[0].pts+" pts. "+(arr[1]?("Lo persigue "+_nomClub(arr[1].id)+" ("+arr[1].pts+")."):"")+
-        (E.eraBase==="2026c"||E.eraBase==="2026b"?" Si subís, ese es el que te va a esperar.":"")});
+        (E.eraBase==="2026c"||E.eraBase==="2026b"?" Si subes, ese es el que te va a esperar.":"")});
   }
   if(E.mundo.ligas["2026b"] && (E.eraBase==="2026c"||E.eraBase===2026||E.eraBase==="2026")){
     const arr=_ordTabla(E.mundo.ligas["2026b"].tab, E.mundo.ligas["2026b"].ids);
@@ -443,7 +443,7 @@ function panelMundoCalendario(v){
         [["arg2026A","Apertura · Zona A"],["arg2026B","Apertura · Zona B"]].forEach(([k,nom])=>{
           const propia=_ligaKeyJugador()===k;
           grid.appendChild(cabTabla(nom+(propia?" · la tuya":""),"📊", mundoFilasLiga(k),
-            propia?"Tus puntos + el resto de la fecha, misma física Poisson.":"No la jugás: se simula igual, ronda a ronda. Nadie empieza con 14 PJ.", false));
+            propia?"Tus puntos + el resto de la fecha, misma física Poisson.":"No la juegas: se simula igual, ronda a ronda. Nadie empieza con 14 PJ.", false));
         });
         cont.appendChild(grid);
         return;
@@ -502,7 +502,7 @@ function panelMundoCalendario(v){
       const sud=E.mundo.copas.sud||{};
       if((lib.grupos&&Object.keys(lib.grupos).length)||(sud.grupos&&Object.keys(sud.grupos).length)){
         const p=panel("CONMEBOL · grupos 2026","🌎","agua");
-        p.cuerpo.appendChild(el("p","mini","Grupos reales 2026. Se simulan con la misma física Poisson. Si lo jugás vos, vale tu marcador. Sudamericana también tiene tabla."));
+        p.cuerpo.appendChild(el("p","mini","Grupos reales 2026. Se simulan con la misma física Poisson. Si lo juegas tú, vale tu marcador. Sudamericana también tiene tabla."));
         [["lib","Libertadores"],["sud","Sudamericana"]].forEach(([k,nom])=>{
           const pack=E.mundo.copas[k];
           if(!pack||!pack.grupos) return;
@@ -572,7 +572,7 @@ function panelMundoCalendario(v){
     }
     if(t==="copaArg"){
       const p=panel("Copa Argentina 2026","🏆","agua");
-      p.cuerpo.appendChild(el("p","mini","64 equipos, partido único en cancha neutral. Empate: penales, sin alargue. El campeón entra a Libertadores 2027. Cruces de 32avos documentados (sorteo 10 dic 2025). El marcador lo jugás vos; no se copia el resultado histórico."));
+      p.cuerpo.appendChild(el("p","mini","64 equipos, partido único en cancha neutral. Empate: penales, sin alargue. El campeón entra a Libertadores 2027. Cruces de 32avos documentados (sorteo 10 dic 2025). El marcador lo juegas tú; no se copia el resultado histórico."));
       const ms=(E.calendario||[]).filter(x=>x.tipo==="copa"&&/Copa Argentina/i.test(x.torneo||""));
       if(!ms.length) p.cuerpo.appendChild(el("p","mini","Este club todavía no tiene Copa Argentina en el calendario (o no es un club AFA)."));
       else ms.forEach(m=>{
