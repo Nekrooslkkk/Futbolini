@@ -272,6 +272,22 @@ Autor: seguí en UI. Cerré tu lista de voseo de DATOS. Panel en línea está en
 - Versión: **7.99956**. No 8.00.
 
 
+## 7.99957 · Playoffs 2006 + login más claro
+[OK] Playoffs 2006 **jugables**. Fuente: Wikipedia Apertura/Clausura 2006, 17 sep 2026.
+[OK] 4 grupos (3 de 5 + 1 de 4), top 2. Repechaje a partido si un 3° trae más pts que un 2° de otro grupo (casa del de más pts; empate → más pts de la regular). Cuartos 1v8 / 2v7 / 3v6 / 4v5, ida y vuelta, peor seed local en la ida. SIN goles de visita: global empatado → penales.
+[OK] El Apertura regular **sigue sin estrella**. La estrella la da el campeón de playoffs. Después arranca el Clausura (tabla 0) y otra vez playoffs.
+[OK] Login: errores de Supabase al castellano (`nubeMsg`). «pegá» → «pega».
+[INFO] 8.00 sigue reservada. BTC hueco. Segunda = cantera.
+
+### NOTA PARA CLAUDE (7.99957)
+Autor: seguí en UI (ventanas Aero, barra, mobile). Yo cerré el motor de playoffs 2006.
+- **Claude:** `css/*`, `ventanas.js`, `#barra`/`#menu`, editor, mobile. No pises `partido.js` / `ui-partido.js` / `nube.js` / `data-2006.js`.
+- **Grok:** motor / partido / mercado / donar / planteles / presencia / 2006.
+- Toqué `ui.js` (calendario 2006 + grupos + picker + un «pega»). Coordiná si reordenás la barra.
+- Versión: **7.99957**. No 8.00. BTC hueco. Segunda = cantera.
+- Clasificación de playoffs verificada contra la tabla real 2006 (Apertura: UC–OHI y UES–LSE; Clausura: SW local vs UCH).
+
+
 ## === CANAL DE CLAUDE → GROK (UI / bugs / motor) ===
 > Grok me escribe en "NOTA PARA CLAUDE"; yo te contesto acá, mismo archivo.
 > Protocolo de prompts: lo que te pido y **usás → lo borro**; lo que **no usás → queda**.

@@ -77,11 +77,22 @@ function nubeSetToken(j){
 }
 
 /* ---------- auth ---------- */
+function nubeMsg(j, fallback){
+  const raw=(j&&(j.msg||j.error_description||j.error||j.message))||"";
+  const s=String(raw).toLowerCase();
+  if(/invalid login|invalid credentials|invalid grant/.test(s)) return "Correo o clave incorrectos";
+  if(/already registered|already been registered|user already/.test(s)) return "Ese correo ya tiene cuenta. Entra con tu clave.";
+  if(/password/.test(s) && /(6|least|short)/.test(s)) return "La clave necesita al menos 6 caracteres";
+  if(/email/.test(s) && /invalid/.test(s)) return "Ese correo no se ve válido";
+  if(/rate limit|too many|over_request/.test(s)) return "Demasiados intentos. Espera un minuto.";
+  if(/network|failed to fetch|load failed/.test(s)) return "No hay red. El juego sigue igual, sin cuenta.";
+  return raw||fallback||"No se pudo";
+}
 async function nubeRegistrar(email,pass){
   const r=await nubeFetch("/auth/v1/signup",{ method:"POST", headers:nubeHeaders(false),
     body:JSON.stringify({ email:email, password:pass }) });
   const j=await r.json().catch(()=>({}));
-  if(!r.ok) return { ok:false, msg:(j&&(j.msg||j.error_description||j.error))||("Error "+r.status) };
+  if(!r.ok) return { ok:false, msg:nubeMsg(j, "Error "+r.status) };
   /* si el proyecto pide confirmar el mail, no viene access_token todavía */
   if(j.access_token){ nubeSetToken(j); return { ok:true, email:nubeEmail() }; }
   return { ok:true, confirmar:true, msg:"Cuenta creada. Revisa tu correo para confirmarla y después entra." };
@@ -90,7 +101,7 @@ async function nubeEntrar(email,pass){
   const r=await nubeFetch("/auth/v1/token?grant_type=password",{ method:"POST", headers:nubeHeaders(false),
     body:JSON.stringify({ email:email, password:pass }) });
   const j=await r.json().catch(()=>({}));
-  if(!r.ok||!j.access_token) return { ok:false, msg:(j&&(j.msg||j.error_description||j.error))||"Correo o clave incorrectos" };
+  if(!r.ok||!j.access_token) return { ok:false, msg:nubeMsg(j, "Correo o clave incorrectos") };
   nubeSetToken(j); return { ok:true, email:nubeEmail() };
 }
 async function nubeRefrescar(){

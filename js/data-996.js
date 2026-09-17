@@ -172,8 +172,10 @@ const PLANTEL_UC_2006=[
         var ids=(typeof LIGA_2006!=="undefined")?LIGA_2006.map(function(c){ return c.id; }):[];
         var fase=E.flags&&E.flags.fase2006;
         var nota=fase==="clausura"
-          ?"Clausura 2006 (18 fechas, tabla desde 0, localías invertidas). El Apertura regular ya cerró sin estrella — los playoffs estilo México no se juegan todavía. Descenso: tabla anual."
-          :"Apertura 2006 (18 fechas, 19 clubes, un bye). Al cerrar la rueda arranca el Clausura desde cero. Playoffs estilo México: documentados, no jugables.";
+          ?"Clausura 2006 (18 fechas, tabla desde 0, localías invertidas). El título se define en playoffs. Descenso: tabla anual."
+          :(fase==="playoffApertura"||fase==="playoffClausura")
+            ?"Playoffs 2006: repechaje + cuartos/semis/final. Sin goles de visita. El regular no entrega estrella."
+            :"Apertura 2006 (18 fechas, 19 clubes, un bye). Al cerrar la rueda: playoffs por el título, después Clausura desde cero.";
         return {ids:ids, nota:nota, titulo:fase==="clausura"?"Tabla · Clausura 2006":"Tabla · Apertura 2006", filas:null};
       }
       return origT.apply(this, arguments);

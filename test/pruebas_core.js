@@ -1376,20 +1376,29 @@
       var ape=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"&&p.fase==="apertura"; });
       var cla=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"&&p.fase==="clausura"; });
       ok(ape.length===18, "Apertura sigue siendo 18");
-      ok(cla.length===18, "Clausura siembra 18 más");
+      ok((E.titulos||[]).length===titulos0.length, "cerrar Apertura regular NO entrega estrella");
+      ok(!(E.titulos||[]).some(function(t){ return /Apertura/i.test(t); }), "ningún título dice Apertura todavía");
+      var po=(E.calendario||[]).filter(function(p){ return (p.torneo||"").indexOf("Playoffs Apertura")>=0; });
+      ok(E.flags.fase2006==="playoffApertura", "flag pasa a playoffs del Apertura, no salta al Clausura");
+      ok(cla.length===0, "Clausura todavía no se siembra: faltan los playoffs");
+      ok(po.length>=1, "se siembran partidos de playoff (repechaje o cuartos)");
+      ok(typeof clasificarPlayoffs2006==="function", "clasificarPlayoffs2006");
+      var riv="UCH";
+      var aVs=ape.filter(function(p){ return p.rivalId===riv; })[0];
+      ok(aVs, "CC cruza a la U en el Apertura");
+      _coronarPlayoff2006("apertura","CC");
+      var cla2=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"&&p.fase==="clausura"; });
+      ok(cla2.length===18, "después del campeón de playoffs, Clausura siembra 18");
       ok(E.flags.fase2006==="clausura", "flag pasa a clausura");
       ok(Object.keys(E.tabla).length>=19 && Object.keys(E.tabla).every(function(id){ return !(E.tabla[id]&&E.tabla[id].pj); }), "tabla del Clausura parte en 0");
       ok(E.tablaApertura && typeof E.tablaApertura==="object", "snapshot del Apertura");
-      ok((E.titulos||[]).length===titulos0.length, "cerrar Apertura NO entrega estrella");
-      ok(!(E.titulos||[]).some(function(t){ return /Apertura/i.test(t); }), "ningún título dice Apertura");
-      var riv="UCH";
-      var aVs=ape.filter(function(p){ return p.rivalId===riv; })[0];
-      var cVs=cla.filter(function(p){ return p.rivalId===riv; })[0];
+      ok((E.titulos||[]).some(function(t){ return /Apertura/i.test(t); }), "el título del Apertura lo da el playoff");
+      var cVs=cla2.filter(function(p){ return p.rivalId===riv; })[0];
       ok(aVs && cVs, "CC cruza a la U en ambas ruedas");
       ok(aVs.local!==cVs.local, "localía invertida vs la U en el Clausura");
       var anual=tablaAnual2006();
       ok(anual.length===19, "tabla anual tiene 19");
-    }, "2006 Apertura → Clausura sin estrella falsa");
+    }, "2006 Apertura → playoffs → Clausura");
     safe(function(){
       nuevaPartida("CC",2006,"historico");
       var part=E.calendario[0];
@@ -1852,7 +1861,7 @@
     /* T49 · 7.99956 en línea + login + voseo de datos */
     grupo("Grok 7.99956 (en línea + login)");
     safe(function(){
-      ok(VERSION==="7.99956" || /^7\.99956/.test(VERSION), "VERSION 7.99956");
+      ok(VERSION==="7.99956" || /^7\.9995/.test(VERSION), "VERSION 7.9995x");
       ok(typeof panelEnLinea==="function", "panel En este momento");
       ok(typeof presenciaLatido==="function" && typeof presenciaN==="function", "presencia API");
       ok(presenciaN()>=1, "al menos 1 (vos)");
@@ -1863,6 +1872,62 @@
       ok((FORMAT_SEGUNDA_2026.juego||"").indexOf("tenés")<0, "Segunda: sin tenés rioplatense");
       ok((FORMAT_SEGUNDA_2026.juego||"").indexOf("tú tienes")>=0, "Segunda: tú tienes");
     }, "voseo de datos (carril Grok)");
+
+    /* T50 · 7.99957 playoffs 2006 */
+    grupo("Grok 7.99957 (playoffs 2006 estilo México)");
+    safe(function(){
+      ok(typeof GRUPOS_2006==="object" && GRUPOS_2006.apertura && GRUPOS_2006.clausura, "GRUPOS_2006 Apertura y Clausura");
+      var idsA=[], L, i, g;
+      ["A","B","C","D"].forEach(function(letra){
+        g=GRUPOS_2006.apertura[letra]||[];
+        ok(g.length>=4, "Apertura grupo "+letra+" tiene "+g.length);
+        g.forEach(function(id){ idsA.push(id); });
+      });
+      ok(idsA.length===19, "Apertura: 19 clubes en grupos (3×5 + 1×4)");
+      ok(idsA.indexOf("CC")>=0 && idsA.indexOf("DCO")<0, "CC en grupos, Concepción no");
+      var idsC=[];
+      ["A","B","C","D"].forEach(function(letra){ (GRUPOS_2006.clausura[letra]||[]).forEach(function(id){ idsC.push(id); }); });
+      ok(idsC.length===19, "Clausura: 19 clubes en grupos");
+    }, "grupos documentados");
+    safe(function(){
+      /* Tabla real Apertura 2006 (Wikipedia 17 sep 2026) */
+      function F(pts,gf,gc){ return {pj:18,pts:pts,gf:gf,gc:gc,pg:0,pe:0,pp:0}; }
+      var tab={
+        UDC:F(33,31,23), AUD:F(32,32,22), UC:F(32,27,20), CBS:F(22,26,32), SW:F(17,16,30),
+        UCH:F(35,27,20), LSE:F(22,32,31), EVE:F(21,20,27), COQ:F(17,16,26), SMO:F(12,15,31),
+        CC:F(40,54,22), CBL:F(30,32,24), UES:F(28,24,21), ANT:F(21,26,31), PMO:F(17,18,28),
+        HUA:F(36,30,18), OHI:F(21,26,31), PAL:F(16,22,35), RAN:F(16,26,40)
+      };
+      var r=clasificarPlayoffs2006(tab,"apertura");
+      ok(r.directos.indexOf("CC")>=0 && r.directos.indexOf("HUA")>=0 && r.directos.indexOf("UCH")>=0 && r.directos.indexOf("UDC")>=0, "los 4 primeros de grupo van directo");
+      ok(r.directos.indexOf("AUD")>=0 && r.directos.indexOf("CBL")>=0, "los 2 mejores 2° (AUD 32, CBL 30) van directo");
+      ok(r.directos.indexOf("LSE")<0 && r.directos.indexOf("OHI")<0, "LSE y OHI (2° flojos) van a repechaje");
+      ok(r.repechaje.length===2, "2 repechajes (Apertura 2006 real)");
+      var pares=r.repechaje.map(function(x){ return [x.local,x.visita].sort().join("-"); }).sort().join("|");
+      ok(pares.indexOf("OHI")>=0 && pares.indexOf("UC")>=0, "repechaje UC vs O'Higgins (histórico 1-1, clasifica UC)");
+      ok(pares.indexOf("LSE")>=0 && pares.indexOf("UES")>=0, "repechaje U. Española vs La Serena (histórico 2-2, clasifica UES)");
+      ok(r.repechaje.every(function(x){ return (tab[x.local].pts||0)>=(tab[x.visita].pts||0); }), "el local del repechaje es el de más pts");
+    }, "clasificación Apertura 2006 vs historia");
+    safe(function(){
+      function F(pts,gf,gc){ return {pj:18,pts:pts,gf:gf,gc:gc,pg:0,pe:0,pp:0}; }
+      var tab={
+        CBL:F(37,30,18), CC:F(29,28,20), SW:F(28,24,18), PAL:F(20,18,22), CBS:F(18,16,24),
+        OHI:F(35,28,16), COQ:F(29,24,18), RAN:F(24,20,20), HUA:F(20,18,22), UES:F(14,12,26),
+        PMO:F(33,26,16), AUD:F(29,25,18), UDC:F(25,22,20), LSE:F(18,16,24), SMO:F(17,14,26),
+        UC:F(31,24,16), UCH:F(23,20,22), ANT:F(21,18,22), EVE:F(21,18,22)
+      };
+      var r=clasificarPlayoffs2006(tab,"clausura");
+      ok(r.directos.indexOf("CBL")>=0 && r.directos.indexOf("OHI")>=0 && r.directos.indexOf("PMO")>=0 && r.directos.indexOf("UC")>=0, "1° de cada grupo Clausura");
+      ok(r.directos.indexOf("CC")>=0 && r.directos.indexOf("COQ")>=0 && r.directos.indexOf("AUD")>=0, "los tres 2° con 29 pts van directo");
+      ok(r.repechaje.length===1, "1 repechaje (UCH 23 vs un 3° con más pts)");
+      ok(r.repechaje[0].visita==="UCH" || r.repechaje[0].local==="UCH", "U. de Chile va al repechaje");
+      ok(r.repechaje[0].local==="SW", "Wanderers (3° A, 28 pts) es local vs la U");
+    }, "clasificación Clausura 2006 vs historia");
+    safe(function(){
+      ok(typeof nubeMsg==="function", "nubeMsg traduce errores");
+      ok(nubeMsg({error:"Invalid login credentials"},"x")==="Correo o clave incorrectos", "login inválido en castellano");
+      ok(nubeMsg({msg:"User already registered"},"x").indexOf("ya tiene cuenta")>=0, "correo repetido en castellano");
+    }, "login: errores en castellano");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

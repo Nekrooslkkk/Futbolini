@@ -2661,3 +2661,14 @@ Textos de club en contexto chileno que decían voseo se pasaron a tú neutro:
 - **ia.js:** "Sostené el clima" → "Sostén el clima".
 Antes verifiqué (headless, Boca AFA) que **panelCopasPais NO filtra Copa Chile** a un club argentino: el guard `pj>0` evita punteros chilenos. Falso positivo, no se tocó.
 **Probado:** node --check + suite core 812/812 + dev 46/46.
+
+## 7.99957 · Playoffs 2006 jugables + login en castellano
+El Apertura 2006 cerraba la rueda regular y saltaba al Clausura. En 2006 el título se definía en playoffs estilo México (Wikipedia Apertura/Clausura 2006, 17 sep 2026).
+
+- **`js/data-2006.js`:** `GRUPOS_2006` (Apertura y Clausura, 3 grupos de 5 + 1 de 4). `clasificarPlayoffs2006`: top 2 de grupo; si un 3° trae más pts que un 2° de otro grupo, repechaje a partido en casa del de más pts (empate → más pts de la regular). Cuartos 1v8, ida y vuelta, peor seed local en la ida, sin goles de visita, penales si empata el global. El regular no entrega estrella; la estrella la da el campeón de playoffs. Después, Clausura desde 0 y otra vez playoffs.
+- **`js/ui.js`:** calendario de playoffs, tablas de grupo, picker. «pegá» → «pega».
+- **`js/nube.js`:** `nubeMsg` traduce errores de Supabase.
+- **Tests T50** + T35 reescrito (18 fechas kickoff se mantiene; Clausura se siembra DESPUÉS del campeón de playoffs).
+
+VERSION **7.99957**. 8.00 reservada. BTC hueco. Segunda = cantera.
+

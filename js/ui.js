@@ -376,11 +376,11 @@ function elegirEpoca(id){
           ?"1925: amateur. Liga Metropolitana de Deportes. No hay redes, ni Libertadores, ni mercado millonario. Victoria vale 2 puntos. Plantel de Colo-Colo documentado (Arellano y los Rebeldes)."
           :"1925: amateur. Liga Metropolitana de Deportes. No hay redes, ni Libertadores, ni mercado millonario. Victoria vale 2 puntos. El plantel documentado de esa temporada es el de Colo-Colo; el de este club se arma con cantera."));
         else if(sel.base===2006) c.appendChild(el("p","mini",id==="CC"
-          ?"2006: Apertura (18 fechas) y Clausura (otras 18, tabla desde 0). 19 clubes (Concepción suspendido). Plantel de Colo-Colo documentado (Borghi, Suazo, Mati, Valdivia, Alexis). El Apertura regular NO entrega estrella."
-          :id==="UCH"?"2006: Apertura y Clausura (18+18). Plantel de la U documentado (Huerta, Salas, Alcázar, Iturra, Pinto). Finalista del Apertura vs Colo-Colo — los playoffs no se juegan todavía."
-          :id==="AUD"?"2006: Apertura y Clausura (18+18). Plantel de Audax documentado (Raúl Toro, Villanueva, Di Santo, Peric). Finalista del Clausura — NO campeón."
-          :id==="UC"?"2006: Apertura y Clausura (18+18). Plantel de Católica documentado (Pellicer, Quinteros, Conca, Arrué, Buljubasich, Medel de 18)."
-          :"2006: Apertura y Clausura (18+18, tabla del Clausura desde 0). 19 clubes (Concepción suspendido). Planteles documentados: Colo-Colo, la U, Audax y Católica; el resto, cantera."));
+          ?"2006: Apertura (18 fechas + playoffs) y Clausura (otras 18 + playoffs). 19 clubes (Concepción suspendido). Plantel de Colo-Colo documentado (Borghi, Suazo, Mati, Valdivia, Alexis). El regular NO entrega estrella: el título se juega en cuartos/semis/final."
+          :id==="UCH"?"2006: Apertura y Clausura (18+18) con playoffs estilo México. Plantel de la U documentado (Huerta, Salas, Alcázar, Iturra, Pinto). En la historia fue finalista del Apertura vs Colo-Colo."
+          :id==="AUD"?"2006: Apertura y Clausura (18+18) con playoffs. Plantel de Audax documentado (Raúl Toro, Villanueva, Di Santo, Peric). En la historia fue finalista del Clausura — NO campeón."
+          :id==="UC"?"2006: Apertura y Clausura (18+18) con playoffs. Plantel de Católica documentado (Pellicer, Quinteros, Conca, Arrué, Buljubasich, Medel de 18)."
+          :"2006: Apertura y Clausura (18+18, tabla del Clausura desde 0) + playoffs estilo México. 19 clubes (Concepción suspendido). Planteles documentados: Colo-Colo, la U, Audax y Católica; el resto, cantera."));
         else if(esC) c.appendChild(el("p","mini","Este club juega en la Segunda División Profesional 2026 (3er nivel). Victoria vale 3 puntos. El objetivo es ascender a la Primera B."));
         else if(esB) c.appendChild(el("p","mini","Este club juega en la Primera B 2026 (Liga de Ascenso). Victoria vale 3 puntos. Copa Chile con grupos reales."));
         else if(solo2026) c.appendChild(el("p","mini","Este club juega en la Primera División 2026."));
@@ -1682,14 +1682,31 @@ function vistaCalendario(){
     const ape=panel("Calendario · Apertura 2006","📅");
     E.calendario.forEach((c,i)=>{ if(c.tipo==="liga"&&(c.fase==="apertura"||!c.fase)) ape.cuerpo.appendChild(filaCalendario(c,i)); });
     v.appendChild(ape);
+    const poA=(E.calendario||[]).filter(c=>c.torneo==="Playoffs Apertura 2006");
+    if(poA.length){
+      const ppo=panel("Playoffs Apertura 2006","🏆","agua");
+      ppo.cuerpo.appendChild(el("p","mini","Repechaje a partido único. Cuartos, semis y final ida y vuelta. Sin goles de visita: el global empatado se va a penales. El regular no entrega estrella."));
+      E.calendario.forEach((c,i)=>{ if(c.torneo==="Playoffs Apertura 2006") ppo.cuerpo.appendChild(filaCalendario(c,i)); });
+      const camp=(E.flags&&E.flags.campeonApertura2006)||(E.flags&&E.flags.playoff2006&&E.flags.playoff2006.rueda==="apertura"&&E.flags.playoff2006.campeon);
+      if(camp) ppo.cuerpo.appendChild(el("div","resul bien","Campeón: <b>"+(typeof _nom06==="function"?_nom06(camp):camp)+"</b>"));
+      v.appendChild(ppo);
+    }
     if(E.calendario.some(c=>c.tipo==="liga"&&c.fase==="clausura")){
       const cla=panel("Calendario · Clausura 2006","📅","agua");
       E.calendario.forEach((c,i)=>{ if(c.tipo==="liga"&&c.fase==="clausura") cla.cuerpo.appendChild(filaCalendario(c,i)); });
       v.appendChild(cla);
     }
-    if(E.calendario.some(c=>c.tipo!=="liga")){
+    const poC=(E.calendario||[]).filter(c=>c.torneo==="Playoffs Clausura 2006");
+    if(poC.length){
+      const ppc=panel("Playoffs Clausura 2006","🏆","agua");
+      ppc.cuerpo.appendChild(el("p","mini","Misma modalidad que el Apertura: repechaje, cuartos, semis, final. Sin goles de visita."));
+      E.calendario.forEach((c,i)=>{ if(c.torneo==="Playoffs Clausura 2006") ppc.cuerpo.appendChild(filaCalendario(c,i)); });
+      v.appendChild(ppc);
+    }
+    const otros06=(E.calendario||[]).filter(c=>c.tipo!=="liga"&&c.torneo!=="Playoffs Apertura 2006"&&c.torneo!=="Playoffs Clausura 2006");
+    if(otros06.length){
       const po=panel("Otros compromisos "+E.anio,"📅");
-      E.calendario.forEach((c,i)=>{ if(c.tipo!=="liga") po.cuerpo.appendChild(filaCalendario(c,i)); });
+      E.calendario.forEach((c,i)=>{ if(c.tipo!=="liga"&&c.torneo!=="Playoffs Apertura 2006"&&c.torneo!=="Playoffs Clausura 2006") po.cuerpo.appendChild(filaCalendario(c,i)); });
       v.appendChild(po);
     }
   } else {
@@ -1720,7 +1737,7 @@ function vistaCalendario(){
   const _esSeg=(E.eraBase==="2026c");
   const _zTxt=_esSeg&&typeof zonaSegDe==="function"&&typeof nombreZona==="function"?(" · Zona "+nombreZona(zonaSegDe(E.club))):"";
   const _fase06=E.eraBase===2006&&E.flags&&E.flags.fase2006;
-  const _titTabla=_fase06==="clausura"?"Tabla · Clausura 2006":(_fase06==="apertura"?"Tabla · Apertura 2006":"Tabla de posiciones"+_zTxt);
+  const _titTabla=_fase06==="clausura"||_fase06==="playoffClausura"?"Tabla · Clausura 2006":(_fase06==="apertura"||_fase06==="playoffApertura"?"Tabla · Apertura 2006":"Tabla de posiciones"+_zTxt);
   const pt=panel(_titTabla,"📊","agua");
   const arr=_clubesTabla.map(c=>Object.assign({id:c.id,n:c.n},E.tabla[c.id]||{pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}));
   arr.sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc));
@@ -1740,15 +1757,38 @@ function vistaCalendario(){
     (_esSeg?("Zona de "+arr.length+" clubes (Norte/Sur, 12 PJ + 2 byes). Top 3 de cada zona van a la liguilla de ascenso de 7 (ida y vuelta, se parte de 0; el 1° sube a la B). Los 4°s se cruzan. Bottom 3, liguilla de permanencia. Volver a cruzar rivales de tu zona en la liguilla es el formato real.")
     :(E.eraBase===2006
       ?(_fase06==="clausura"
-        ?"Clausura 2006: tabla desde 0 (18 fechas, localías invertidas). El Apertura regular no entrega estrella (playoffs estilo México no se juegan). Descenso: tabla anual."
-        :"Apertura 2006: 18 fechas (bye). Al terminar arranca el Clausura desde cero. Playoffs estilo México: documentados, no jugables.")
+        ?"Clausura 2006: tabla desde 0 (18 fechas, localías invertidas). El título se define en playoffs (repechaje + cuartos/semis/final). Descenso: tabla anual."
+        :(_fase06==="playoffApertura"||_fase06==="playoffClausura"
+          ?"Playoffs 2006: 8 clubes. Repechaje a partido (empate → más pts de la regular). Llaves ida y vuelta, sin goles de visita, penales si empata el global."
+          :"Apertura 2006: 18 fechas (bye) + 4 grupos. Al terminar, playoffs estilo México por el título. El regular no entrega estrella."))
       :("Campeonato de "+LIGA_ACT.length+" equipos.")))));
   v.appendChild(pt);
+  if(E.eraBase===2006 && typeof filasGrupo2006==="function"){
+    const ruedaG=(_fase06==="clausura"||_fase06==="playoffClausura")?"clausura":"apertura";
+    const pg=panel("Grupos "+(ruedaG==="clausura"?"Clausura":"Apertura")+" 2006","🔠");
+    pg.cuerpo.appendChild(el("p","mini","La fase regular es todos contra todos. Los grupos solo ordenan quién entra a playoffs: 2 mejores de cada uno. Si un 3° trae más puntos que un 2° de otro grupo, hay repechaje. Fuente: Wikipedia 17 sep 2026."));
+    ["A","B","C","D"].forEach(letra=>{
+      const fil=filasGrupo2006(letra, ruedaG, E.tabla)||[];
+      if(!fil.length) return;
+      pg.cuerpo.appendChild(el("h3","sub","Grupo "+letra));
+      const tg=el("table","tabla-liga tabla-mini");
+      tg.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>Pts</th><th class='n'>PJ</th><th class='n'>DG</th></tr></thead>";
+      const tgb=el("tbody");
+      fil.forEach((c,i)=>{
+        const tr=el("tr",c.id===E.club?"yo":"");
+        const _ec=(typeof escudoChip==="function")?escudoChip(c.id):"";
+        tr.innerHTML="<td class='n'>"+(i+1)+"</td><td>"+_ec+(c.c||c.n||c.id)+"</td><td class='n'>"+(c.pts||0)+"</td><td class='n'>"+(c.pj||0)+"</td><td class='n'>"+((c.gf||0)-(c.gc||0))+"</td>";
+        tgb.appendChild(tr);
+      });
+      tg.appendChild(tgb); pg.cuerpo.appendChild(tg);
+    });
+    v.appendChild(pg);
+  }
   if(E.eraBase===2006 && typeof tablaAnual2006==="function" && E.tablaApertura){
     const anual=tablaAnual2006();
     if(anual&&anual.length){
       const panAnual=panel("Tabla anual 2006 (Apertura + Clausura)","📉");
-      panAnual.cuerpo.appendChild(el("p","mini","Suma de las dos ruedas. En 2006 bajó Santiago Morning por esta tabla; Rangers y Palestino fueron a promoción. Playoffs de título: no se juegan todavía."));
+      panAnual.cuerpo.appendChild(el("p","mini","Suma de las dos ruedas. En 2006 bajó Santiago Morning por esta tabla; Rangers y Palestino fueron a promoción. El título de cada rueda se juega en playoffs."));
       const ta=el("table","tabla-liga");
       ta.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>G</th><th class='n'>E</th><th class='n'>P</th><th class='n'>GF</th><th class='n'>GC</th><th class='n'>Pts</th></tr></thead>";
       const tba=el("tbody");
@@ -2743,7 +2783,7 @@ function vistaAjustes(){
     const pn=panel("Cuenta en la nube","☁️");
     if(!nubeActiva()){
       /* aún sin configurar: formulario para pegar URL + anon key (admin) */
-      pn.cuerpo.appendChild(el("p","mini","Para prender el login (gratis, con Supabase) pegá acá la <b>URL</b> y la <b>llave pública (anon)</b> de tu proyecto. Los pasos para crear el proyecto están en <b>SETUP_NUBE.md</b>. La llave anon es <b>pública a propósito</b>: es seguro dejarla acá. La que NUNCA se pega es la <i>service_role</i>."));
+      pn.cuerpo.appendChild(el("p","mini","Para prender el login (gratis, con Supabase) pega acá la <b>URL</b> y la <b>llave pública (anon)</b> de tu proyecto. Los pasos para crear el proyecto están en <b>SETUP_NUBE.md</b>. La llave anon es <b>pública a propósito</b>: es seguro dejarla acá. La que NUNCA se pega es la <i>service_role</i>."));
       const estiloCfg="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid rgba(0,0,0,.15);font-size:13px";
       const cfg0=(typeof nubeConfig==="function")?nubeConfig():{url:"",anonKey:""};
       const iUrl=el("input"); iUrl.type="url"; iUrl.placeholder="https://xxxx.supabase.co"; iUrl.value=cfg0.url||""; iUrl.style.cssText=estiloCfg; iUrl.spellcheck=false;
