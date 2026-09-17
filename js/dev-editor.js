@@ -7,7 +7,7 @@
    Cómo entrar: Ajustes → Modo desarrollador → clave → "Editor de contenido".
 
    Cómo funciona (importante):
-   - Lo que editás se aplica EN VIVO sobre los mapas del juego y queda
+   - Lo que editas se aplica EN VIVO sobre los mapas del juego y queda
      guardado como PARCHE en localStorage (no toca ningún archivo).
    - Cuando te gusta, "Exportar" te da un .js listo para dejar en js/ y
      cargar en index.html. Eso lo hace permanente y versionable en git.
@@ -57,7 +57,7 @@
     p.cuerpo.appendChild(el("p","mini",
       "Editá clubes, ligas y datos sin tocar archivos. Mide el <b>rigor</b> de cada club contra Colo-Colo y te dice qué falta. Lo editado queda como parche y se exporta a un .js."));
     var n=parcheCuenta();
-    if(n) p.cuerpo.appendChild(el("p","mini","Tenés <b>"+n+"</b> campo(s) editados sin exportar."));
+    if(n) p.cuerpo.appendChild(el("p","mini","Tienes <b>"+n+"</b> campo(s) editados sin exportar."));
     var b=el("button","btn-aqua ancho verde","🧱 Abrir editor");
     b.onclick=function(){ abrirEditorContenido(); };
     p.cuerpo.appendChild(b);
@@ -243,7 +243,7 @@
 
   /* ---------- pestaña LIGA ---------- */
   function pintarLiga(cont,repintar){
-    cont.appendChild(el("p","mini","Estado del <b>formato</b> de cada torneo (no de sus clubes). Para crear una liga nueva mirá <b>PLANTILLA_LIGA.md</b>."));
+    cont.appendChild(el("p","mini","Estado del <b>formato</b> de cada torneo (no de sus clubes). Para crear una liga nueva mira <b>PLANTILLA_LIGA.md</b>."));
     devErasLiga().forEach(function(era){
       var f=auditarFormato(era), r=auditarLiga(era);
       var d=el("div","dev-liga");
@@ -261,8 +261,8 @@
   function pintarExportar(cont,repintar){
     var p=parcheLeer(), n=parcheCuenta();
     cont.appendChild(el("p","mini",
-      "Lo editado vive en tu navegador. Para hacerlo <b>permanente</b>: copiá este archivo, guardalo como "+
-      "<code>js/data-parche-dev.js</code> y agregalo al final de <code>index.html</code>. Ahí queda en git."));
+      "Lo editado vive en tu navegador. Para hacerlo <b>permanente</b>: copia este archivo, guárdalo como "+
+      "<code>js/data-parche-dev.js</code> y agrégalo al final de <code>index.html</code>. Ahí queda en git."));
     if(!n){ cont.appendChild(el("div","resul mitad","Todavía no editaste nada.")); return; }
     cont.appendChild(el("p","mini","<b>"+n+"</b> campo(s) en "+Object.keys(p).length+" club(es).")); 
     var txt=_generarArchivo(p);
@@ -272,7 +272,7 @@
     var bc=el("button","btn-aqua chico verde","📋 Copiar");
     bc.onclick=function(){
       try{ ta.select(); document.execCommand("copy"); aviso("Copiado"); }
-      catch(e){ aviso("Copialo a mano (Ctrl+C)"); }
+      catch(e){ aviso("Cópialo a mano (Ctrl+C)"); }
     };
     var bd=el("button","btn-aqua chico","⬇ Descargar .js");
     bd.onclick=function(){
@@ -281,11 +281,11 @@
         var a=document.createElement("a");
         a.href=URL.createObjectURL(blob); a.download="data-parche-dev.js";
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      }catch(e){ aviso("No se pudo descargar; copiá el texto"); }
+      }catch(e){ aviso("No se pudo descargar; copia el texto"); }
     };
     var bx=el("button","btn-aqua chico rojo","🗑 Borrar parche");
     bx.onclick=function(){
-      if(!confirm("¿Borrar TODO lo editado? (recargá después para volver a los datos originales)")) return;
+      if(!confirm("¿Borrar TODO lo editado? (recarga después para volver a los datos originales)")) return;
       parcheBorrar(); aviso("Parche borrado"); repintar();
     };
     acc.appendChild(bc); acc.appendChild(bd); acc.appendChild(bx);
