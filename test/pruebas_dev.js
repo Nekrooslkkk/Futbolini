@@ -111,6 +111,35 @@
       }catch(e){}
     },"PEGAR");
 
+    grupo("Liga nueva: generador de scaffold (Claude)");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      DEV_ON=true; if(!E.flags)E.flags={}; E.flags.dev=true;
+      abrirEditorContenido();
+      var tabs=document.querySelectorAll(".dev-tabs .ficha");
+      t(tabs.length===5, "el editor tiene 5 pestañas (Rigor/Club/Nuevo/Liga/Exportar)");
+      tabs[3].click(); // Liga
+      var m=document.querySelector(".modal.dev-editor");
+      t(!!m && !!m.querySelector(".dev-liga-nueva"), "la pestaña Liga ofrece 'Liga nueva — generar .js'");
+      var byPh=function(ph){ return [].slice.call(m.querySelectorAll("input,select,textarea")).filter(function(x){return (x.placeholder||"").indexOf(ph)>=0;})[0]; };
+      byPh("Superliga").value="Superliga Danesa"; byPh("din2026").value="din2026"; byPh("dinamarca").value="dinamarca";
+      byPh("FCK").value="FCK | FC Kobenhavn | Copenhague | 78 | 38000 | Parken\nBIF | Brondby | Brondby | 72 | 28000 | Brondby Stadion";
+      [].slice.call(m.querySelectorAll("button")).filter(function(b){return b.textContent.indexOf("Generar")>=0;})[0].click();
+      var js=([].slice.call(m.querySelectorAll("textarea")).filter(function(x){return x.readOnly && x.value.indexOf("registrarLiga")>=0;})[0]||{}).value||"";
+      t(js.indexOf("registrarLiga(")>=0 && (js.match(/id:"/g)||[]).length===2, "genera un .js con registrarLiga y 2 clubes");
+      var okSyntax=true, cfg=null;
+      try{ (new Function("registrarLiga", js))(function(c){ cfg=c; }); }catch(e){ okSyntax=false; }
+      t(okSyntax, "el .js generado es sintácticamente válido");
+      t(cfg && cfg.eraKey==="din2026" && cfg.clubs.length===2 && cfg.era && cfg.era.pais==="dinamarca", "el scaffold registra eraKey/clubes/país bien");
+      t(cfg && cfg.clubs[0].fuerza===78, "la fuerza se parsea (deriva indicadores en el motor)");
+      // XSS: etiqueta en un nombre de club NO llega al .js
+      byPh("FCK").value="EVL | <img src=x onerror=alert(1)>Mal | Ciudad | 60 | 100 | Est";
+      [].slice.call(m.querySelectorAll("button")).filter(function(b){return b.textContent.indexOf("Generar")>=0;})[0].click();
+      var js2=([].slice.call(m.querySelectorAll("textarea")).filter(function(x){return x.readOnly;})[0]||{}).value||"";
+      t(js2.indexOf("onerror")<0, "el generador recorta HTML de los nombres (anti-XSS)");
+      cerrarModal();
+    }, "Liga nueva");
+
     grupo("Cierre de rigor AFA (Claude)");
     safe(function(){
       t(typeof DECISIONES_AFA!=="undefined" && DECISIONES_AFA.length>=23, "DECISIONES_AFA: 23 cartas propias ("+(typeof DECISIONES_AFA!=="undefined"?DECISIONES_AFA.length:0)+")");

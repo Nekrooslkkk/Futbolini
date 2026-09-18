@@ -51,6 +51,11 @@
 .dev-chip.ok{ border-color:#2fa84f; }
 .dev-chip.mal{ border-color:#c0392b; color:#c0392b; }
 
+/* Liga nueva (generador de scaffold) */
+.dev-liga-nueva{ margin-top:14px; padding-top:10px; border-top:1px dashed rgba(20,60,110,.28); }
+.dev-h3{ font-size:14px; margin:2px 0 4px; }
+.dev-liga-nueva > label{ display:flex; flex-direction:column; gap:3px; font-size:12px; font-weight:600; margin:6px 0; }
+
 @media (max-width:720px){
   .dev-cont{ max-height:68vh; }
   .dev-grid{ grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); }

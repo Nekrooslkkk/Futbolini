@@ -362,7 +362,7 @@
 
   /* ---------- pestaña LIGA ---------- */
   function pintarLiga(cont,repintar){
-    cont.appendChild(el("p","mini","Estado del <b>formato</b> de cada torneo (no de sus clubes). Para crear una liga nueva mira <b>PLANTILLA_LIGA.md</b>."));
+    cont.appendChild(el("p","mini","Estado del <b>formato</b> de cada torneo (no de sus clubes)."));
     devErasLiga().forEach(function(era){
       var f=auditarFormato(era), r=auditarLiga(era);
       var d=el("div","dev-liga");
@@ -374,6 +374,120 @@
       d.appendChild(el("p","mini","Clubes de este torneo: <b>"+r.pct+"%</b> de rigor promedio."));
       cont.appendChild(d);
     });
+    _pintarLigaNueva(cont);
+  }
+
+  /* Liga nueva: generador de scaffold .js (como el Exportar de clubes, pero para
+     una liga entera). Puro codegen — NO toca el motor. Copiás/descargás el .js,
+     lo dejás en js/, lo sumás a index.html y ya tenés "la liga danesa". */
+  function _pintarLigaNueva(cont){
+    var wrap=el("div","dev-liga-nueva");
+    wrap.appendChild(el("h3","dev-h3","➕ Liga nueva — generar .js"));
+    wrap.appendChild(el("p","mini","Copia el formato de una liga existente. Llenás nombre, clave de época y los clubes; el motor deriva fuerza→indicadores, caja, estatuto y poder. Un club por línea: <code>ID | Nombre | Ciudad | fuerza(30-90) | aforo | Estadio</code>."));
+    var grid=el("div","pegar-grid");
+    function campo(lbl,ph,val,span){
+      var lab=el("label"); if(span) lab.className="span2"; lab.textContent=lbl;
+      var i=el("input","dev-in"); i.placeholder=ph||""; if(val!=null) i.value=val;
+      lab.appendChild(i); grid.appendChild(lab); return i;
+    }
+    var iNom=campo("Nombre de la liga","Superliga Danesa");
+    var iEra=campo("Clave de época (única)","din2026");
+    /* base de época: reusar una existente para heredar reglas */
+    var labB=el("label"); labB.textContent="Época base (hereda reglas)";
+    var selB=el("select","dev-select");
+    ["2026","2026b","2026c","1991","2006","arg2026"].forEach(function(k){
+      var o=document.createElement("option"); o.value=k; o.textContent=k; selB.appendChild(o);
+    });
+    labB.appendChild(selB); grid.appendChild(labB);
+    var iPais=campo("País (federación: chile, argentina…)","dinamarca");
+    var iPts=campo("Puntos por victoria","3"); iPts.type="number"; iPts.value="3";
+    wrap.appendChild(grid);
+
+    var labC=el("label","span2"); labC.textContent="Clubes (uno por línea)";
+    var taC=el("textarea","dev-ta"); taC.rows=6;
+    taC.placeholder="FCK | FC København | Copenhague | 78 | 38000 | Parken\nBIF | Brøndby IF | Brøndby | 72 | 28000 | Brøndby Stadion";
+    labC.appendChild(taC); wrap.appendChild(labC);
+
+    var acc=el("div","dev-acc");
+    var bGen=el("button","btn-aqua chico verde","⚙ Generar .js");
+    var bCop=el("button","btn-aqua chico","📋 Copiar"); bCop.disabled=true;
+    var bDes=el("button","btn-aqua chico","⬇ Descargar .js"); bDes.disabled=true;
+    acc.appendChild(bGen); acc.appendChild(bCop); acc.appendChild(bDes);
+    wrap.appendChild(acc);
+    var msg=el("p","mini dev-msg","");
+    var salida=el("textarea","dev-ta"); salida.rows=12; salida.readOnly=true; salida.style.display="none";
+    wrap.appendChild(msg); wrap.appendChild(salida);
+    cont.appendChild(wrap);
+
+    bGen.onclick=function(){
+      var meta={
+        nombre:_lp(iNom.value,60), eraKey:_claveEra(iEra.value),
+        baseEra:selB.value, pais:_lp(iPais.value,24).toLowerCase().replace(/[^a-z]/g,""),
+        pts:Math.max(1,Math.min(3,parseInt(iPts.value,10)||3))
+      };
+      if(!meta.eraKey){ msg.textContent="❌ Falta la clave de época (solo letras/números, ej: din2026)."; msg.className="mini dev-msg mal"; return; }
+      var clubs=_parseClubesLiga(taC.value);
+      if(!clubs.length){ msg.textContent="❌ No leí ningún club válido. Formato: ID | Nombre | Ciudad | fuerza | aforo | Estadio."; msg.className="mini dev-msg mal"; return; }
+      var txt=_scaffoldLiga(meta,clubs);
+      salida.value=txt; salida.style.display="block";
+      bCop.disabled=false; bDes.disabled=false;
+      msg.textContent="✅ Liga "+meta.eraKey+" con "+clubs.length+" club(es). Guarda el .js en js/, agrégalo a index.html DESPUÉS de liga-registrar.js.";
+      msg.className="mini dev-msg bien";
+    };
+    bCop.onclick=function(){ try{ salida.select(); document.execCommand("copy"); if(typeof aviso==="function") aviso("Copiado"); }catch(e){ if(typeof aviso==="function") aviso("Cópialo a mano (Ctrl+C)"); } };
+    bDes.onclick=function(){
+      try{
+        var blob=new Blob([salida.value],{type:"text/javascript"});
+        var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+        a.download="data-liga-"+(_claveEra(iEra.value)||"nueva")+".js";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      }catch(e){ if(typeof aviso==="function") aviso("No se pudo descargar; copia el texto"); }
+    };
+  }
+  /* helpers del generador de liga */
+  function _lp(s,max){ return (typeof textoLimpio==="function")?textoLimpio(s,max):String(s==null?"":s).replace(/<[^>]*>/g,"").trim().slice(0,max||80); }
+  function _claveEra(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,16); }
+  function _parseClubesLiga(txt){
+    var out=[];
+    String(txt||"").split(/\n+/).forEach(function(ln){
+      ln=ln.trim(); if(!ln) return;
+      var p=ln.split("|").map(function(x){ return x.trim(); });
+      var id=String(p[0]||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
+      var nom=_lp(p[1],48);
+      if(!id||!nom) return;
+      var fuerza=Math.max(30,Math.min(90,parseInt(p[3],10)||55));
+      var aforo=Math.max(0,parseInt((p[4]||"").replace(/[^0-9]/g,""),10)||0);
+      out.push({ id:id, n:nom, c:_lp(p[2],32)||nom, fuerza:fuerza, aforo:aforo,
+                 est:_lp(p[5],48)||("Estadio de "+(_lp(p[2],32)||nom)), ciudad:_lp(p[2],32)||"" });
+    });
+    return out;
+  }
+  function _jsStr(s){ return '"'+String(s==null?"":s).replace(/\\/g,"\\\\").replace(/"/g,'\\"')+'"'; }
+  function _scaffoldLiga(meta,clubs){
+    var fecha=new Date().toISOString().slice(0,10);
+    var varName="LIGA_"+meta.eraKey.toUpperCase().replace(/[^A-Z0-9]/g,"_");
+    var lineas=clubs.map(function(c){
+      return "  { id:"+_jsStr(c.id)+", n:"+_jsStr(c.n)+", c:"+_jsStr(c.c)+", fuerza:"+c.fuerza+
+             ", aforo:"+c.aforo+", est:"+_jsStr(c.est)+", ciudad:"+_jsStr(c.ciudad)+", z:\"—\" }";
+    }).join(",\n");
+    return '"use strict";\n'+
+      '/* ============================================================\n'+
+      '   FUTBOLINI · data-liga-'+meta.eraKey+'.js\n'+
+      '   Liga generada por el Editor de contenido el '+fecha+'.\n'+
+      '   Cargar en index.html DESPUÉS de liga-registrar.js.\n'+
+      '   El motor deriva indicadores, caja, estatuto y poder de la fuerza (0-90).\n'+
+      '   INTEGRIDAD: pon nombres/estadios REALES y documentados; nada inventado como real.\n'+
+      '   ============================================================ */\n'+
+      'var '+varName+'=[\n'+lineas+'\n];\n'+
+      'if(typeof registrarLiga==="function"){\n'+
+      '  registrarLiga({\n'+
+      '    eraKey:'+_jsStr(meta.eraKey)+',\n'+
+      '    clubs:'+varName+',\n'+
+      '    baseEra:'+_jsStr(meta.baseEra)+',\n'+
+      '    nombre:'+_jsStr(meta.nombre||("Liga "+meta.eraKey))+',\n'+
+      '    era:{ n:'+_jsStr(meta.nombre||meta.eraKey)+(meta.pais?', pais:'+_jsStr(meta.pais):'')+', puntosVictoria:'+meta.pts+' }\n'+
+      '  });\n'+
+      '}\n';
   }
 
   /* ---------- pestaña EXPORTAR ---------- */
