@@ -71,6 +71,8 @@ function datosEra(base){
     return {info:CLUB_INFO_1925, ind:IND_BASE_1925, caja:CAJA_BASE_1925};
   if(base===2026 || base==="2026b" || base==="2026c" || base==="arg2026")
     return {info:CLUB_INFO_2026, ind:IND_BASE_2026, caja:CAJA_BASE_2026};
+  if(typeof LIGAS==="object" && LIGAS[base] && typeof CLUB_INFO_2026==="object")
+    return {info:CLUB_INFO_2026, ind:IND_BASE_2026, caja:CAJA_BASE_2026};
   return {info:CLUB_INFO, ind:IND_BASE, caja:CAJA_BASE};
 }
 function infoClub(clubId){ return datosEra(E?E.eraBase:1991).info[clubId] || CLUB_INFO[clubId]; }
@@ -122,6 +124,11 @@ function nuevaPartida(clubId,anio,modo,extra){
   /* 7.49 · Segunda División Profesional (3er nivel) */
   if(typeof esClubC==="function" && esClubC(clubId) && (anio>=2010 || base===2026 || base==="2026c")) base="2026c";
   if(typeof esClubArg==="function" && esClubArg(clubId) && anio>=2010) base="arg2026";
+  /* liga clonada / registrada: el club no está en Primera Chile */
+  if(!(extra&&extra.categoria) && !(extra&&extra.epoca&&extra.epoca.liga)){
+    const er=(typeof eraCustomDeClub==="function")?eraCustomDeClub(clubId):null;
+    if(er){ base=er; if(anio<2010) anio=2026; }
+  }
   /* 7.98 · un club que no jugó el Nacional 1991 no arranca en esa liga
      (Limache 2010, Segunda 2026, etc. no heredan Colo-Colo 1991). */
   if(base===1991 && typeof clubJugoNacional91==="function" && !clubJugoNacional91(clubId)){
@@ -189,7 +196,65 @@ function reiniciarTabla(){
   LIGA_ACT.forEach(c=>E.tabla[c.id]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0});
 }
 /* puntos por victoria según la época (2 en 1991, 3 en 2026) */
-function puntosVictoria(){ return (E&&eraDe(E.eraBase)?eraDe(E.eraBase).puntosVictoria:2); }
+function puntosVictoria(){
+  if(E&&E.eraMod&&typeof E.eraMod.puntosVictoria==="number") return E.eraMod.puntosVictoria;
+  return (E&&eraDe(E.eraBase)?eraDe(E.eraBase).puntosVictoria:2);
+}
+function reformaFed(id){
+  return !!(E&&E.fed&&E.fed.reformas&&E.fed.reformas.indexOf(id)>=0);
+}
+function aplicarReformasAlTorneo(){
+  if(!E) return;
+  E.eraMod=E.eraMod||{};
+  const era=(typeof eraDe==="function")?eraDe(E.eraBase):null;
+  if(reformaFed("puntos")) E.eraMod.puntosVictoria=2;
+  else delete E.eraMod.puntosVictoria;
+  if(reformaFed("menos_desc")) E.eraMod.nDescensos=1;
+  else delete E.eraMod.nDescensos;
+  if(reformaFed("pro_grandes")){
+    const base=(era&&era.cuposInternacional)||4;
+    E.eraMod.cuposInternacional=base+2;
+  } else if(!E.flags||!E.flags.fed_cupo_robado) delete E.eraMod.cuposInternacional;
+  if(E.fed&&E.fed.presidente){
+    E.fed.torneoAplicado=E.anio;
+  }
+}
+function fedNivelContinental(){
+  const n=(E&&E.flags&&E.flags.fed_conmebol)||0;
+  if(n>=6) return "fifa";
+  if(n>=3) return "conmebol";
+  return null;
+}
+function aplicarSaltoFed(){
+  if(!E) return null;
+  E.fed=E.fed||{presidente:false,mandato:0,sospecha:0,reformas:[],electo:0};
+  const n=(E.flags&&E.flags.fed_conmebol)||0;
+  let subio=null;
+  if(n>=3 && !E.fed.conmebolOk){
+    E.fed.conmebolOk=true; subio="conmebol";
+    if(typeof notificar==="function") notificar({t:"🌎 Peso en la CONMEBOL",tipo:"bueno",bandeja:true,
+      d:"La confederación te reconoce. El siguiente escalón es la FIFA (seguí presionando)."});
+  }
+  if(n>=6 && !E.fed.fifaOk){
+    E.fed.fifaOk=true; subio="fifa";
+    if(typeof notificar==="function") notificar({t:"🌍 Llegaste a la FIFA",tipo:"bueno",bandeja:true,
+      d:"Ya no solo mandas tu asociación: tienes silla en el mapa mundial. La cara de este nivel la arma el otro carril."});
+  }
+  return subio;
+}
+function aplicarGuerraFed(){
+  if(!E||!E.flags||!(E.flags.fed_guerra>0)) return;
+  E.eraMod=E.eraMod||{};
+  const era=(typeof eraDe==="function")?eraDe(E.eraBase):null;
+  const base=(E.eraMod.cuposInternacional!=null)?E.eraMod.cuposInternacional:((era&&era.cuposInternacional)||4);
+  E.eraMod.cuposInternacional=base+Math.min(2, E.flags.fed_guerra);
+  E.flags.fed_cupo_robado=E.flags.fed_guerra;
+  if(typeof aplicarGrupos==="function") aplicarGrupos({sponsors:3,prensa:2,anfp:1});
+  if(typeof postProc==="function" && (E.anio||2026)>=2008){
+    const sig=(typeof fedSigla==="function")?fedSigla():"la asociación";
+    postProc("@DeporteTotal","prensa",sig+" le disputa cupos y sponsors a la asociación vecina. Guerra fría continental.","neutro");
+  }
+}
 /* Rellena campos nuevos en partidas guardadas de antes del roadmap 3.0.
    No sube la versión: solo agrega lo que falte sin tocar lo existente. */
 /* 7.10 · versión del formato de save. Subir SOLO cuando cambie la estructura de E;
@@ -209,6 +274,7 @@ function normalizarEstado(){
   if(!E.eraBase) E.eraBase=baseEra(E.anio);
   if(typeof initLigaMod==="function") initLigaMod();   /* ascenso/descenso: rosters por-save */
   if(typeof activarLiga==="function") activarLiga(E.eraBase);
+  if(typeof aplicarReformasAlTorneo==="function") aplicarReformasAlTorneo();
   if(!E.flags) E.flags={};
   if(!Array.isArray(E.pendientesEncadenadas)) E.pendientesEncadenadas=[];
   if(!E.decProc||typeof E.decProc!=="object") E.decProc={};
@@ -1089,6 +1155,7 @@ function divisionVigenteDe(id){
       if(E.eraBase==="2026b") return "B";
       if(E.eraBase===2026 || E.eraBase==="2026") return "P";
       if(E.eraBase==="arg2026") return "ARG";
+      if(typeof esEraHardcode==="function" && !esEraHardcode(E.eraBase)) return "X";
     }
     if(E.ligaMod){
       if((E.ligaMod[2026]||[]).indexOf(id)>=0) return "P";
@@ -1105,6 +1172,7 @@ function juegaCopaChile(clubId, anio){
   if((anio||0)<2026) return false;
   if(typeof E!=="undefined" && E){
     if(E.eraBase==="arg2026" || E.eraBase===1991 || E.eraBase===2006 || E.eraBase===1925) return false;
+    if(typeof esEraHardcode==="function" && !esEraHardcode(E.eraBase)) return false;
   }
   const d=divisionVigenteDe(clubId);
   return d==="P" || d==="B";
@@ -1112,6 +1180,7 @@ function juegaCopaChile(clubId, anio){
 function juegaCopaDeLaLiga(clubId, anio){
   if((anio||0)<2026) return false;
   if(typeof E!=="undefined" && E && (E.eraBase==="arg2026" || E.eraBase===1991 || E.eraBase===2006 || E.eraBase===1925)) return false;
+  if(typeof E!=="undefined" && E && typeof esEraHardcode==="function" && !esEraHardcode(E.eraBase)) return false;
   return divisionVigenteDe(clubId)==="P";
 }
 function _fuerzaClubId(id){ const m=(typeof clubMapaTodos==="function")?clubMapaTodos():{}; const c=m[id]||CLUB_POR_ID[id]; return (c&&c.fuerza)||55; }
@@ -1160,7 +1229,11 @@ function _ascensoSegunda(){
 /* 7.63 · cupos reales de ascenso/descenso por par de divisiones.
    Primera 2026 baja 2 (los reales) y la B sube 2 (campeón + liguilla) → tamaños 16/16 intactos.
    B↔Segunda: 1 (campeón de Segunda sube; el último de la B baja). Balanceado = no cambia el nº de clubes. */
-function _cuposDiv(up,lo){ return (up===2026 && lo==="2026b")?2:1; }
+function _cuposDiv(up,lo){
+  var n=(up===2026 && lo==="2026b")?2:1;
+  if(up===2026 && lo==="2026b" && typeof reformaFed==="function" && reformaFed("menos_desc")) n=1;
+  return n;
+}
 /* nombres de una lista de ids como texto ("A", "A y B", "A, B y C") */
 function _nombresLista(ids){
   const ns=(ids||[]).map(id=>(typeof nombreDeClub==="function")?nombreDeClub(id):id);
@@ -1338,6 +1411,9 @@ function posicionEnTabla(){
 function nuevoAnio(){
   E.anio++;
   limpiarMods();
+  if(typeof aplicarReformasAlTorneo==="function") aplicarReformasAlTorneo();
+  if(typeof aplicarSaltoFed==="function") aplicarSaltoFed();
+  if(typeof aplicarGuerraFed==="function") aplicarGuerraFed();
   /* envejecer plantel y aplicar salidas
      6.32 · el desarrollo SIGUE LO QUE HICISTE: un joven que jugó mucho y bien crece
      hacia su proyección; uno al que no le diste minutos (banca, lesiones, mal rendimiento)

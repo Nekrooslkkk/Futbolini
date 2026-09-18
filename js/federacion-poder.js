@@ -133,7 +133,9 @@
     { id:"menos_desc", n:"Bajar los descensos", d:"Menos equipos bajan: la hinchada respira, los chicos te aman.",
       ef:function(){ if(typeof aplicarGrupos==="function") aplicarGrupos({hinchada:6,comunidad:6,directorio:-3}); } },
     { id:"pro_grandes", n:"Torneo para los grandes", d:"Más cupos y plata a los poderosos: sponsors felices, provincia molesta.",
-      ef:function(){ if(typeof aplicarGrupos==="function") aplicarGrupos({sponsors:8,comunidad:-6}); if(typeof aplicarEfectos==="function") aplicarEfectos({prestigio:4}); } }
+      ef:function(){ if(typeof aplicarGrupos==="function") aplicarGrupos({sponsors:8,comunidad:-6}); if(typeof aplicarEfectos==="function") aplicarEfectos({prestigio:4}); } },
+    { id:"puntos", n:"La victoria vale 2 puntos", d:"Volvemos al fútbol antiguo: ganar suma 2. El campeonato se aprieta.",
+      ef:function(){ if(typeof aplicarGrupos==="function") aplicarGrupos({comunidad:4,directorio:-2}); } }
   ];
 
   function fedHacerPoder(p){
@@ -298,4 +300,5 @@
   window.panelAsociacion=panelAsociacion;
   window.FED_PODERES=FED_PODERES;
   window.FED_REQ=FED_REQ;
+  window.FED_REFORMAS=FED_REFORMAS;
 })();

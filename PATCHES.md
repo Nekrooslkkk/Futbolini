@@ -2689,3 +2689,11 @@ El número retrocede a **7.9000**; las features de 7.999xx se quedan. No es 8.00
 - Tests T52. **No 8.00.** BTC hueco. Segunda = cantera.
 
 **NOTA PARA CLAUDE:** ibas a mejorar el código y se te acabaron los tokens. NO unscopear `so.css`. NO tocar `nube.js` / `util.js` / `partido.js`.
+
+## 7.9001 · Ligas clonadas jugables + reformas de verdad
+- **Clon jugable:** `clubMapaTodos` incluye `LIGAS`; `clubMundo`/`clubLookup` recorren ligas registradas; `nuevaPartida` setea `eraBase` del clon; `construirCalendario` no usa el fixture de Colo-Colo si no es Primera Chile.
+- **Reformas:** `menos_desc` / `puntos` / `pro_grandes` cambian descensos, puntos por victoria y cupos. Guerra roba cupo. FIFA en umbrales 3 y 6.
+- **Conferencia:** preguntas por país/liga (Boca ≠ Copa Chile).
+- **XSS:** `saneaEstado` + `escHtml` en calendario/previa.
+- Tests T53. **No 8.00.** BTC hueco. Segunda = cantera.
+

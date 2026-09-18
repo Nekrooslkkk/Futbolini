@@ -50,6 +50,7 @@ function registrarLiga(cfg){
 
   /* 1 · la liga y su época */
   if(typeof LIGAS==="object") LIGAS[era]=clubs;
+  if(typeof clubMapaTodosReset==="function") clubMapaTodosReset();
   if(typeof ERA==="object"){
     var eb=ERA[base]||ERA[2026]||{n:"2026",puntosVictoria:3};
     ERA[era]=cfg.era?Object.assign({},eb,cfg.era):Object.assign({},eb);

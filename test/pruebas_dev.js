@@ -213,6 +213,22 @@
         "cargar el .js exportado reconstruye la liga al 100% (persistencia real)");
     }, "Clonar rigor");
 
+    grupo("Liga clonada JUGABLE (Grok 7.9001)");
+    safe(function(){
+      t(typeof eraCustomDeClub==="function" && typeof clubMundo==="function", "helpers de Grok para clon jugable");
+      t(typeof LIGAS==="object" && LIGAS.tst_din && LIGAS.tst_din.length>=4, "tst_din sigue registrada tras el clon");
+      t(eraCustomDeClub("FCK")==="tst_din", "eraCustomDeClub(FCK) = tst_din");
+      var okNP=nuevaPartida("FCK",2026,"historico");
+      t(okNP!==false && E && E.club==="FCK", "nuevaPartida con un club clonado arranca");
+      t(E.eraBase==="tst_din", "eraBase es la liga clonada (no 2026) — da "+E.eraBase);
+      t((E.calendario||[]).length>=6, "el calendario NO está vacío ("+(E.calendario||[]).length+" fechas)");
+      t(clubMundo("FCK") && clubMundo("FCK").id==="FCK", "clubMundo indexa el clon");
+      t(typeof preguntasDeLiga==="function", "preguntasDeLiga existe (Boca ≠ Copa Chile)");
+      var L=preguntasDeLiga({rivalNombre:"Brondby",fuerzaRival:74,local:true});
+      var qs=L.map(function(x){return x.q;}).join(" ");
+      t(!/Copa Chile/.test(qs), "una liga clonada no pregunta por Copa Chile");
+    }, "Liga clonada jugable");
+
     grupo("Cierre de rigor AFA (Claude)");
     safe(function(){
       t(typeof DECISIONES_AFA!=="undefined" && DECISIONES_AFA.length>=23, "DECISIONES_AFA: 23 cartas propias ("+(typeof DECISIONES_AFA!=="undefined"?DECISIONES_AFA.length:0)+")");

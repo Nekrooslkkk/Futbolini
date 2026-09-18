@@ -1,6 +1,6 @@
 # FUTBOLINI — Briefing para agentes de IA (memoria portátil)
 
-> Versión en juego: **7.9000** (el número retrocedió; las features de 7.999xx se quedan). No es 8.00.
+> Versión en juego: **7.9001** (clon jugable + reformas de verdad). No es 8.00.
 
 > Pegá este archivo COMPLETO al inicio de cualquier sesión con otra IA (Grok, Gemini, etc.)
 > junto con `PATCHES.md`. Es la memoria del proyecto: sin esto, la IA "olvida" y rompe el hilo.

@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-const VERSION="7.9000";
+const VERSION="7.9001";
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
 function el(tag,cls,html){const n=document.createElement(tag);if(cls)n.className=cls;if(html!=null)n.innerHTML=html;return n;}
@@ -57,6 +57,11 @@ function saneaEstado(est){
       });
     });
     if(est.perfil&&est.perfil.plopUser) est.perfil.plopUser=textoLimpio(est.perfil.plopUser,16).replace(/[<>"'`]/g,"");
+    (est.calendario||[]).forEach(function(p){
+      if(!p) return;
+      if(p.rivalNombre) p.rivalNombre=textoLimpio(p.rivalNombre,80);
+      if(p.sede) p.sede=textoLimpio(p.sede,80);
+    });
   }catch(e){}
   return est;
 }

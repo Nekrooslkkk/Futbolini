@@ -52,6 +52,7 @@ function clubLookup(id){
     L=listas[i];
     for(j=0;j<L.length;j++) if(L[j].id===id) return L[j];
   }
+  if(typeof clubEnLigasRegistradas==="function"){ var r=clubEnLigasRegistradas(id); if(r) return r; }
   return null;
 }
 

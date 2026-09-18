@@ -198,14 +198,54 @@ let CLUB_POR_ID={}; LIGA91.forEach(c=>CLUB_POR_ID[c.id]=c);
    7.60 · memoizado: los arrays de liga son estáticos, así que se arma una sola vez
    (antes se reconstruía en cada llamada, y el simulador lo pide por-club → O(n²)). */
 let _mapaTodosCache=null;
+function clubMapaTodosReset(){ _mapaTodosCache=null; }
 function clubMapaTodos(){
   if(_mapaTodosCache) return _mapaTodosCache;
   /* los clubes modernos (2026 / Primera B) ganan el id ante colisiones con 1991
      (ej: COB = Cobresal en 2026, pero Cobreloa en 1991). El ascenso/descenso es era moderna. */
   const m={};
   [LIGA_2026,(typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:null),(typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:null),(typeof LIGA_ARG_2026!=="undefined"?LIGA_ARG_2026:null),(typeof LIGA_2006!=="undefined"?LIGA_2006:null),(typeof LIGA_1925!=="undefined"?LIGA_1925:null),LIGA91].forEach(L=>{ if(L) L.forEach(c=>{ if(!m[c.id]) m[c.id]=c; }); });
+  /* ligas registradas / clonadas: no pisan un id ya conocido */
+  try{
+    if(typeof LIGAS==="object"){
+      Object.keys(LIGAS).forEach(function(k){
+        const L=LIGAS[k]; if(!L) return;
+        L.forEach(function(c){ if(c&&c.id&&!m[c.id]) m[c.id]=c; });
+      });
+    }
+  }catch(e){}
   _mapaTodosCache=m;
   return m;
+}
+function esEraHardcode(b){
+  return b===1991||b===2026||b==="2026"||b==="2026b"||b==="2026c"||b==="arg2026"||b===2006||b===1925;
+}
+function esEraPrimeraChile(){
+  if(typeof E==="undefined"||!E||E.eraBase==null) return true;
+  const b=E.eraBase;
+  return b===2026||b==="2026";
+}
+/* Si el club SOLO vive en una liga registrada (clonada), esa es su época. */
+function eraCustomDeClub(id){
+  if(!id||typeof LIGAS!=="object") return null;
+  let found=null, inBase=false;
+  Object.keys(LIGAS).forEach(function(k){
+    const arr=LIGAS[k];
+    if(!arr||!arr.some(function(c){ return c&&c.id===id; })) return;
+    if(esEraHardcode(k)||esEraHardcode(+k)) inBase=true;
+    else found=k;
+  });
+  return inBase?null:found;
+}
+function clubEnLigasRegistradas(id){
+  if(!id||typeof LIGAS!=="object") return null;
+  let found=null;
+  Object.keys(LIGAS).forEach(function(k){
+    const arr=LIGAS[k];
+    if(!arr) return;
+    for(let i=0;i<arr.length;i++) if(arr[i]&&arr[i].id===id){ found=arr[i]; return; }
+  });
+  return found;
 }
 /* 7.97 · id canónico para HISTORIA / arcos.
    En 1991 COB es Cobreloa; en 2026 COB es Cobresal (Cobreloa = CBL).
@@ -428,7 +468,7 @@ function construirCalendario(clubId, anio, conCopa){
     cal.sort((a,b)=>ordenFecha(a.f)-ordenFecha(b.f));
     return cal;
   }
-  if(anio===2026 && typeof LIGA_CC_2026!=="undefined" && !(typeof E!=="undefined"&&E&&(E.eraBase==="2026b"||E.eraBase==="2026c"||E.eraBase==="arg2026"))){
+  if(anio===2026 && typeof LIGA_CC_2026!=="undefined" && esEraPrimeraChile() && !((typeof eraCustomDeClub==="function")&&eraCustomDeClub(clubId))){
     LIGA_CC_2026.forEach(p=>{
       const pares=emparejarFecha(anio,p.fecha,clubId,null);
       const mio=pares.find(x=>x[0]===clubId||x[1]===clubId);
@@ -466,6 +506,19 @@ function construirCalendario(clubId, anio, conCopa){
       });
       cal.sort((a,b)=>(a.f.m*100+(a.f.d||15))-(b.f.m*100+(b.f.d||15)));
       return cal;
+    }
+  }
+  /* liga registrada / clonada: no es Primera Chile ni B/C/AFA/2006/1925 */
+  const eraClon=(typeof eraCustomDeClub==="function")?eraCustomDeClub(clubId):null;
+  const eraCal=(typeof E!=="undefined" && E && E.eraBase && typeof LIGAS==="object" && LIGAS[E.eraBase] && !esEraHardcode(E.eraBase))?E.eraBase:eraClon;
+  if(eraCal && typeof LIGAS==="object" && LIGAS[eraCal]){
+    const clubs=LIGAS[eraCal];
+    const nom=(typeof ERA==="object" && ERA[eraCal] && ERA[eraCal].n) || String(eraCal);
+    const nFechas=Math.max(6, (clubs.length||2)*2);
+    const fechasZ=(typeof fechasSemanales==="function")?fechasSemanales(2,1,nFechas,12):fechasTemporada();
+    if(typeof calendarioZonal==="function"){
+      const zonal=calendarioZonal(clubId, clubs, {torneo:nom, fechas:fechasZ, fase:"liga"});
+      if(zonal&&zonal.length) return zonal;
     }
   }
   const fx=fixturesLiga(LIGA_ACT), fechas=fechasTemporada();

@@ -1445,9 +1445,9 @@ function modalRepeticion(c){
       ? montarBarraSO(box,"Repetición · "+faseEtq,"🎞️",function(){ cerrarModal(); })
       : (function(){ box.appendChild(el("div","cab",'<span class="ic">🎞️</span><span>Repetición · '+faseEtq+'</span>')); const x=el("div","cuerpo"); box.appendChild(x); return x; })();
     const marc=el("div","marcador");
-    marc.innerHTML='<div class="eq">'+(c.local?E.clubNombre:c.rivalNombre)+'</div>'+
+    marc.innerHTML='<div class="eq">'+escHtml(c.local?E.clubNombre:c.rivalNombre)+'</div>'+
       '<div class="go">'+(c.local?c.gf+" - "+c.gc:c.gc+" - "+c.gf)+'</div>'+
-      '<div class="eq">'+(c.local?c.rivalNombre:E.clubNombre)+'</div>';
+      '<div class="eq">'+escHtml(c.local?c.rivalNombre:E.clubNombre)+'</div>';
     cc.appendChild(marc);
     cc.appendChild(el("p","mini",(c.local?"De local":"De visita")+" en "+(c.sede||"—")+" · "+fechaTxt(c.f)+" · "+
       (gano?"Victoria":(emp?"Empate":"Derrota"))+
@@ -1543,7 +1543,7 @@ function panelCopas(v){
         const est=m.jugado?(m.gf>m.gc?"ok":(m.gf<m.gc?"mal":"neu")):"neu";
         const _ec=(typeof escudoChip==="function")?escudoChip(m.rivalId):"";
         const fila=el("div","fila"+(m.jugado?" fila-click":""));
-        fila.innerHTML='<span>'+(m.local?"vs ":"a ")+_ec+(m.rivalNombre||"Rival")+' <span class="mini">'+fechaTxt(m.f)+(m.sede?" · "+m.sede:"")+(m.jugado?" · ▶ ver repetición":"")+'</span></span><b class="etq '+est+'">'+marc+'</b>';
+        fila.innerHTML='<span>'+(m.local?"vs ":"a ")+_ec+escHtml(m.rivalNombre||"Rival")+' <span class="mini">'+fechaTxt(m.f)+(m.sede?" · "+escHtml(m.sede):"")+(m.jugado?" · ▶ ver repetición":"")+'</span></span><b class="etq '+est+'">'+marc+'</b>';
         if(m.jugado){ fila.style.cursor="pointer"; fila.onclick=()=>modalRepeticion(m); }
         pc.cuerpo.appendChild(fila);
       });
@@ -1674,7 +1674,7 @@ function filaCalendario(c,i){
   const _ecal=(typeof escudoChip==="function")?escudoChip(c.rivalId):"";
   const faseTxt=c.fase==="clausura"?" · Clausura":(c.fase==="apertura"?" · Apertura":"");
   d.innerHTML='<span>'+(i===E.idx?"▶ ":"")+(c.tipo==="copa"?"🏆 ":"")+
-    (c.local?"vs ":"a ")+_ecal+c.rivalNombre+' <span class="mini">'+fechaTxt(c.f)+
+    (c.local?"vs ":"a ")+_ecal+escHtml(c.rivalNombre)+' <span class="mini">'+fechaTxt(c.f)+
     (c.tipo==="copa"?" · "+c.ronda:"")+faseTxt+(c.fecha?" · F"+c.fecha:"")+
     (c.jugado?" · ▶ ver repetición":"")+
     (!c.jugado&&c.real&&E.config&&E.config.spoiler?" · hist. "+c.real:"")+'</span></span>'+
@@ -3179,7 +3179,7 @@ function modalAvancePartido(part){
   modal(box=>{
     box.appendChild(el("div","cab",'<span class="ic">📅</span><span>Hay un partido en el calendario</span>'));
     const c=el("div","cuerpo"); box.appendChild(c);
-    c.appendChild(el("h2","tit",(part.local?"vs ":"visita a ")+part.rivalNombre));
+    c.appendChild(el("h2","tit",(part.local?"vs ":"visita a ")+escHtml(part.rivalNombre)));
     c.appendChild(el("p","mini",(typeof etqCompromiso==="function"?etqCompromiso(part):(part.tipo==="copa"?(part.torneo||"Copa")+" · "+part.ronda:"fecha "+part.fecha))+
       " · "+fechaTxt(part.f)+" · "+part.sede));
     c.appendChild(el("p",null,"Avanzar no salta fechas. O lo diriges, o lo dejas al azar con la táctica que ya armaste."));

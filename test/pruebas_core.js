@@ -1994,7 +1994,7 @@
     /* T52 · 7.9000 xss + otp + pegar + plop coordinado */
     grupo("Grok 7.9000 (xss + otp + pegar + plop)");
     safe(function(){
-      ok(VERSION==="7.9000", "VERSION 7.9000");
+      ok(VERSION==="7.9000" || VERSION==="7.9001" || /^7\.9/.test(VERSION), "VERSION 7.9x");
       ok(typeof escHtml==="function", "escHtml existe");
       ok(escHtml("<script>")==="&lt;script&gt;", "escHtml escapea tags");
       ok(escHtml("&")==="&amp;", "escHtml escapea amp primero");
@@ -2051,6 +2051,83 @@
       ok(/Cuenta en la nube/.test(txt), "Ajustes muestra cuenta");
       ok(/Código al correo|Clave/.test(txt), "login con clave y código");
     }, "login en Ajustes");
+
+    /* T53 · 7.9001 ligas clonadas jugables + reformas de verdad */
+    grupo("Grok 7.9001 (clon jugable + reformas)");
+    safe(function(){
+      ok(VERSION==="7.9001", "VERSION 7.9001");
+      ok(typeof eraCustomDeClub==="function" && typeof clubEnLigasRegistradas==="function", "helpers de liga clonada");
+      ok(typeof aplicarReformasAlTorneo==="function" && typeof aplicarSaltoFed==="function" && typeof aplicarGuerraFed==="function", "motor de asociación");
+      ok(typeof preguntasDeLiga==="function", "preguntas localizadas por liga");
+    }, "helpers 7.9001");
+    safe(function(){
+      ok(typeof registrarLiga==="function", "registrarLiga");
+      var clubs=[
+        {id:"FCK",n:"FC Kobenhavn",c:"Kobenhavn",fuerza:80,aforo:38000,est:"Parken",ciudad:"Copenhague"},
+        {id:"BIF",n:"Brondby",c:"Brondby",fuerza:74,aforo:28000,est:"Brondby Stadion",ciudad:"Brondby"},
+        {id:"FCM",n:"Midtjylland",c:"Herning",fuerza:76,aforo:12000,est:"MCH Arena",ciudad:"Herning"},
+        {id:"AGF",n:"AGF Aarhus",c:"Aarhus",fuerza:68,aforo:20000,est:"Ceres Park",ciudad:"Aarhus"}
+      ];
+      registrarLiga({eraKey:"tst_din", clubs:clubs, baseEra:2026, nombre:"Superliga TST"});
+      if(typeof clubMapaTodosReset==="function") clubMapaTodosReset();
+      ok(eraCustomDeClub("FCK")==="tst_din", "eraCustomDeClub(FCK)=tst_din");
+      ok(!!clubEnLigasRegistradas("FCK"), "clubEnLigasRegistradas encuentra FCK");
+      var okNP=nuevaPartida("FCK",2026,"historico");
+      ok(okNP!==false && E && E.club==="FCK", "nuevaPartida FCK arranca");
+      ok(E.eraBase==="tst_din", "eraBase es la liga clonada (no Primera Chile) — da "+E.eraBase);
+      ok((E.calendario||[]).length>=6, "calendario de la liga clonada tiene fechas ("+(E.calendario||[]).length+")");
+      ok(typeof clubMundo==="function" && clubMundo("FCK") && clubMundo("FCK").id==="FCK", "clubMundo encuentra el clon");
+      ok(typeof clubLookup==="function" && clubLookup("BIF"), "clubLookup encuentra rivales clonados");
+      ok(!(E.calendario||[]).some(function(p){ return /Colo-Colo|Universidad de Chile|Copa Chile/.test((p.rivalNombre||"")+(p.torneo||"")); }), "el fixture no es el de Colo-Colo");
+    }, "liga clonada JUGABLE");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      E.fed={presidente:true,mandato:1,sospecha:0,reformas:["menos_desc","puntos","pro_grandes"],electo:2026};
+      aplicarReformasAlTorneo();
+      ok(puntosVictoria()===2, "reforma puntos: victoria vale 2");
+      ok(_cuposDiv(2026,"2026b")===1, "reforma menos_desc: Primera baja 1 (no 2)");
+      ok(E.eraMod && E.eraMod.cuposInternacional>=6, "reforma pro_grandes: más cupos internacionales");
+      E.flags=E.flags||{}; E.flags.fed_conmebol=3;
+      aplicarSaltoFed();
+      ok(E.fed.conmebolOk, "fed_conmebol>=3 desbloquea CONMEBOL");
+      E.flags.fed_conmebol=6;
+      aplicarSaltoFed();
+      ok(E.fed.fifaOk, "fed_conmebol>=6 desbloquea FIFA");
+      E.flags.fed_guerra=1;
+      aplicarGuerraFed();
+      ok(E.flags.fed_cupo_robado>=1, "guerra entre asociaciones roba cupo");
+    }, "reformas de verdad + FIFA + guerra");
+    safe(function(){
+      nuevaPartida("BOC",2026,"historico",{categoria:"ARG"});
+      var L=preguntasConferencia({rivalNombre:"River Plate",fuerzaRival:80,local:true});
+      var qs=L.map(function(x){return x.q;}).join(" ");
+      ok(!/Copa Chile/.test(qs), "Boca no recibe preguntas de Copa Chile");
+      ok(/Copa Argentina|AFA|fútbol argentino/.test(qs), "Boca recibe preguntas argentinas");
+      nuevaPartida("CC",2026,"historico");
+      var L2=preguntasConferencia({rivalNombre:"Universidad de Chile",fuerzaRival:75,local:true});
+      var qs2=L2.map(function(x){return x.q;}).join(" ");
+      ok(/Copa Chile|ANFP/.test(qs2), "Chile sí habla de Copa Chile / ANFP");
+    }, "preguntas localizadas por liga");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      if(E.calendario&&E.calendario[0]) E.calendario[0].rivalNombre='<img src=x onerror=alert(1)>X';
+      saneaEstado(E);
+      ok(E.calendario[0] && String(E.calendario[0].rivalNombre).indexOf("<")<0, "saneaEstado limpia rivalNombre del calendario");
+    }, "XSS residual calendario");
+    safe(function(){
+      try{
+        ["FCK","BIF","FCM","AGF"].forEach(function(id){
+          if(typeof CLUB_INFO_2026==="object") delete CLUB_INFO_2026[id];
+          if(typeof CLUB_INFO==="object") delete CLUB_INFO[id];
+          if(typeof IND_BASE_2026==="object") delete IND_BASE_2026[id];
+          if(typeof CAJA_BASE_2026==="object") delete CAJA_BASE_2026[id];
+        });
+        if(typeof LIGAS==="object") delete LIGAS.tst_din;
+        if(typeof ERA==="object") delete ERA.tst_din;
+        if(typeof clubMapaTodosReset==="function") clubMapaTodosReset();
+      }catch(e){}
+      ok(true, "limpia clones de prueba");
+    }, "cleanup clones");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

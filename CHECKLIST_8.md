@@ -7,7 +7,7 @@
 ## Estado verificado (barrido automático de Claude · headless)
 - ✅ 79 clubes jugables botean en su época. 316 partidos simulados. **0 errores de consola.**
 - ✅ Todas las secciones renderizan sin excepción en las 3 divisiones + AFA + 1925/1991/2006.
-- ✅ Suite de regresión: **883/883** verde (Grok 7.9000, T51 temas + T52 XSS/OTP/PEGAR).
+- ✅ Suite de regresión: **907/907** verde (Grok 7.9001 T53 clon jugable + reformas + FIFA/guerra + preguntas por liga). Dev **113/113**.
 - → Conclusión: el motor NO crashea. Lo que falta para 8.00 es UX y rigor de datos.
 
 ## RIGOR (auditor de Claude · vara = Colo-Colo)
@@ -34,6 +34,9 @@
 - [x] Playoffs 2006 estilo México — Grok 7.99957 (Wikipedia 17 sep 2026)
 - [x] Temas: negro ya no se ve blanco — Grok 7.99958
 - [x] XSS toasts/Plop/login + código al correo + editor PEGAR — Grok 7.9000
+- [x] Ligas clonadas jugables (calendario + eraBase + clubMundo) — Grok 7.9001
+- [x] Reformas de asociación cambian el torneo (puntos/descensos/cupos) + semillas FIFA/guerra — Grok 7.9001
+- [x] Preguntas de conferencia localizadas (Boca ≠ Copa Chile) — Grok 7.9001
 - [ ] Formato Segunda liguilla de 7: dato listo, ¿motor cerrado? *(verificar con Grok)*
 
 ## DECISIONES DEL AUTOR (pendientes de tu OK)

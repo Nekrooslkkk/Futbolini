@@ -581,9 +581,41 @@ const CONF_ARQ={
  calma:{grupos:{prensa:6,camarin:4},rep:{credibilidad:4},ef:{moral:3},txt:"Bajaste el perfil. La prensa y el camarín lo valoran."},
  mea :{grupos:{prensa:8,camarin:-2},rep:{credibilidad:6},ef:{moral:1},txt:"La autocrítica te subió crédito, aunque el grupo quedó algo tocado."},
  confianza:{grupos:{hinchada:7,prensa:2},rep:{publica:3},ef:{moral:2},txt:"Saliste confiado. La hinchada se ilusiona."},
- palo:{grupos:{hinchada:8,anfp:-6,prensa:-6},rep:{dureza:6,credibilidad:-2},ef:{},txt:"Calentaste la previa: la gente lo festeja, la ANFP y la prensa no."}
+ palo:{grupos:{hinchada:8,anfp:-6,prensa:-6},rep:{dureza:6,credibilidad:-2},ef:{},txt:"Calentaste la previa: la gente lo festeja, la asociación y la prensa no."}
 };
+function _nomRivLimpio(p){
+  const n=(p&&p.rivalNombre)||"el rival";
+  return (typeof textoLimpio==="function")?textoLimpio(n,80):String(n);
+}
+function preguntasDeLiga(part){
+  const riv=_nomRivLimpio(part);
+  const pais=(typeof paisDeEra==="function")?paisDeEra(typeof E!=="undefined"&&E?E.eraBase:null):"chile";
+  const custom=typeof E!=="undefined"&&E&&E.eraBase&&typeof esEraHardcode==="function"&&!esEraHardcode(E.eraBase);
+  const copa=(typeof fedCopa==="function")?fedCopa():(pais==="argentina"?"Copa Argentina":"Copa Chile");
+  const fed=(typeof fedSigla==="function")?fedSigla():(pais==="argentina"?"AFA":"ANFP");
+  const L=[];
+  if(custom){
+    L.push({q:"En esta liga el relato todavía se está armando. ¿Qué identidad quiere marcar ante "+riv+"?",ops:[
+       {t:"Trabajo silencioso, que hablen los puntos",k:"calma"},{t:"Una idea propia, que se note",k:"confianza"},{t:"Que se enteren quién manda",k:"palo"}]});
+    L.push({q:"El calendario de una liga que no es la de siempre. ¿Cómo lo toma el grupo?",ops:[
+       {t:"Partido a partido, sin inventar",k:"calma"},{t:"Ilusión: es una página nueva",k:"confianza"},{t:"Que se adapten ellos a nosotros",k:"palo"}]});
+  } else if(pais==="argentina"){
+    L.push({q:"¿La "+copa+" entra en los planes o prioriza el campeonato?",ops:[
+       {t:"El torneo local es la prioridad",k:"calma"},{t:"Vamos por las dos competencias",k:"confianza"},{t:"La copa también se pelea, punto",k:"palo"}]});
+    L.push({q:"La "+fed+" mira de reojo el fixture. ¿El plantel llega a pelear las dos competencias?",ops:[
+       {t:"Rotar con cabeza, no romper el equipo",k:"calma"},{t:"El grupo está para las dos",k:"confianza"},{t:"Que armen mejor el calendario",k:"palo"}]});
+    L.push({q:"En el fútbol argentino el resultado manda. ¿Sale a buscar los tres puntos ante "+riv+" sí o sí?",ops:[
+       {t:"Primero no perder, después ver",k:"calma"},{t:"A buscar el partido de entrada",k:"confianza"},{t:"Tres puntos o nada",k:"palo"}]});
+  } else {
+    L.push({q:"¿La "+copa+" entra en los planes o prioriza el campeonato?",ops:[
+       {t:"El Nacional es la prioridad",k:"calma"},{t:"Vamos por las dos competencias",k:"confianza"},{t:"La copa también se pelea, punto",k:"palo"}]});
+    L.push({q:"La "+fed+" y el fixture. ¿Le cierra el calendario o es demasiado?",ops:[
+       {t:"Se trabaja con lo que hay",k:"calma"},{t:"El grupo está para aguantar",k:"confianza"},{t:"Que armen mejor las fechas",k:"palo"}]});
+  }
+  return L;
+}
 function preguntasConferencia(part){
+  const riv=_nomRivLimpio(part);
   const fz=fuerzaEquipo(onceIdeal());
   const favorito=fz.base>part.fuerzaRival+6;
   const sinGanar=(E.temporada&&E.temporada.sinGanar)||0;
@@ -594,29 +626,29 @@ function preguntasConferencia(part){
   const clasico=(typeof esClasico==="function")&&esClasico(part);
   const dep=(E.objetivos||[]).find(o=>o.tipo==="pos");
   const bajoObj=dep&&(typeof posicionEnTabla==="function")&&E.temporada.pj>4&&posicionEnTabla()>dep.meta+2;
-  const L=[];
-  if(perdioUlt) L.push({q:"Después de la caída ante "+ult.rivalNombre+", ¿sigue creyendo en el proceso o hay para preocuparse?",ops:[
+  const L=preguntasDeLiga(part);
+  if(perdioUlt) L.push({q:"Después de la caída ante "+_nomRivLimpio(ult)+", ¿sigue creyendo en el proceso o hay para preocuparse?",ops:[
      {t:"Bancar el proceso, la mano no tiembla",k:"calma"},{t:"Autocrítica: me hago cargo yo",k:"mea"},{t:"Palo: el que dude que se baje",k:"palo"}]});
   if(sinGanar>=3) L.push({q:"Son "+sinGanar+" fechas sin ganar. ¿Siente que su puesto está en discusión?",ops:[
      {t:"Poner el pecho, me hago cargo",k:"calma"},{t:"Pedir tiempo y respaldo",k:"confianza"},{t:"Calentar: acá el que trabaja soy yo",k:"palo"}]});
   if(prom) L.push({q:"Se comenta que le prometió un arreglo a "+prom.quien+". ¿Verdad o versión?",ops:[
      {t:"Confirmar y apoyar al jugador",k:"confianza"},{t:"«De los temas internos no hablo»",k:"calma"},{t:"Negar todo de plano",k:"palo"}]});
-  if(clasico) L.push({q:"Se viene el clásico ante "+part.rivalNombre+". ¿Qué mensaje le deja a la gente?",ops:[
+  if(clasico) L.push({q:"Se viene el clásico ante "+riv+". ¿Qué mensaje le deja a la gente?",ops:[
      {t:"Paños fríos, foco en el fútbol",k:"calma"},{t:"Encender a la hinchada",k:"confianza"},{t:"Tirarle un palo al rival",k:"palo"}]});
-  if(favorito) L.push({q:"Son favoritos claros ante "+part.rivalNombre+". ¿No los relaja la vara alta?",ops:[
+  if(favorito) L.push({q:"Son favoritos claros ante "+riv+". ¿No los relaja la vara alta?",ops:[
      {t:"Humildad y respeto al rival",k:"calma"},{t:"Confianza total, vamos por todo",k:"confianza"},{t:"«Favorito se es en la cancha»",k:"palo"}]});
   if(bajoObj) L.push({q:"Están lejos del objetivo del año. ¿Le preocupa su continuidad?",ops:[
      {t:"Asumir la responsabilidad de frente",k:"mea"},{t:"Pedir que se banque el proyecto",k:"confianza"},{t:"Palo a la dirigencia por los refuerzos",k:"palo"}]});
-  if(ganoUlt&&sinGanar===0) L.push({q:"Vienen encendidos tras ganarle a "+ult.rivalNombre+". ¿Hasta dónde sueñan?",ops:[
+  if(ganoUlt&&sinGanar===0) L.push({q:"Vienen encendidos tras ganarle a "+_nomRivLimpio(ult)+". ¿Hasta dónde sueñan?",ops:[
      {t:"Pies en la tierra, paso a paso",k:"calma"},{t:"Ilusionar a la gente",k:"confianza"},{t:"«El que quiera soñar, que sueñe»",k:"palo"}]});
   /* evergreen: siempre disponibles, para que la conferencia sea más larga y variada */
   L.push({q:"¿Cómo llega el equipo físicamente para este partido?",ops:[
      {t:"Bien, trabajamos fuerte la semana",k:"calma"},{t:"Enteros y con confianza",k:"confianza"},{t:"Mejor que el rival, seguro",k:"palo"}]});
-  L.push({q:"¿Le preocupa algo puntual de "+part.rivalNombre+"?",ops:[
+  L.push({q:"¿Le preocupa algo puntual de "+riv+"?",ops:[
      {t:"Respeto total, hay que estar finos",k:"calma"},{t:"Nos preocupamos de lo nuestro",k:"confianza"},{t:"Que se preocupen ellos de nosotros",k:"palo"}]});
   L.push({q:"Un mensaje para la gente que va a ir a la cancha.",ops:[
      {t:"Que nos banque, lo vamos a dejar todo",k:"confianza"},{t:"Humildad y a alentar los 90",k:"calma"},{t:"Que vayan a ver una goleada",k:"palo"}]});
-  L.push({q:"Previa ante "+part.rivalNombre+". ¿Con qué se queda de cara al partido?",ops:[
+  L.push({q:"Previa ante "+riv+". ¿Con qué se queda de cara al partido?",ops:[
      {t:"Bajar el perfil y pedir humildad",k:"calma"},{t:"Salir con confianza total",k:"confianza"},{t:"Un palo al rival y a los árbitros",k:"palo"}]});
   if(typeof estrellasCortadas==="function"){
     const cort=estrellasCortadas(onceIdeal());

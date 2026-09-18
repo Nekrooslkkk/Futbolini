@@ -20,6 +20,7 @@ function clubMundo(id){
   for(let i=0;i<listas.length;i++){
     for(let j=0;j<listas[i].length;j++) if(listas[i][j].id===id) return listas[i][j];
   }
+  if(typeof clubEnLigasRegistradas==="function") return clubEnLigasRegistradas(id);
   return null;
 }
 function _nomClub(id){ const c=clubMundo(id); return c?(c.c||c.n):id; }
@@ -62,6 +63,7 @@ function _ligaKeyJugador(){
   }
   if(E.eraBase==="2026b") return "2026b";
   if(E.eraBase===2026||E.eraBase==="2026") return "2026";
+  if(E.eraBase && typeof LIGAS==="object" && LIGAS[E.eraBase]) return String(E.eraBase);
   return null;
 }
 function _clubsDeLiga(key){
@@ -76,6 +78,7 @@ function _clubsDeLiga(key){
     const z=key==="2026cN"?"norte":"sur";
     return LIGA_C_2026.filter(c=>c.z===z);
   }
+  if(typeof LIGAS==="object" && LIGAS[key] && LIGAS[key].length) return LIGAS[key].slice();
   return [];
 }
 function _fxLiga(clubs){
@@ -93,6 +96,18 @@ function mundoInit(){
     const tab={}; clubs.forEach(c=>tab[c.id]=_fila0());
     M.ligas[k]={ ids:clubs.map(c=>c.id), tab:tab, fx:_fxLiga(clubs), ronda:0, nom:_nomLiga(k) };
   });
+  /* liga clonada / registrada del jugador */
+  try{
+    const propia=_ligaKeyJugador();
+    if(propia && !M.ligas[propia]){
+      const clubs=_clubsDeLiga(propia);
+      if(clubs.length){
+        const tab={}; clubs.forEach(c=>tab[c.id]=_fila0());
+        const nom=(typeof ERA==="object"&&ERA[propia]&&ERA[propia].n)||propia;
+        M.ligas[propia]={ ids:clubs.map(c=>c.id), tab:tab, fx:_fxLiga(clubs), ronda:0, nom:nom };
+      }
+    }
+  }catch(e){}
   if(typeof COPA_CHILE_GRUPOS_2026==="object"){
     M.copas.chile.grupos={}; M.copas.chile.ronda=0; M.copas.chile.partidos=[];
     Object.keys(COPA_CHILE_GRUPOS_2026).forEach(letra=>{
