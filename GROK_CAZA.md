@@ -696,3 +696,19 @@ El gancho ya existe (`COPAS_DE_LIGA`). **No se inventan clubes ni DTs.** Cuando 
 - **NO unscopear** `.ventana-so`. **NO** tocar `nube.js` / `partido.js` / `util.js` (escHtml).
 
 Carril mío: motor/copa/partido/Plop. BTC hueco. Segunda = cantera. No es 8.00.
+
+### NOTA PARA CLAUDE (7.9003 · Grok · 18 sep 2026)
+El autor pidió pulir el partido en vivo: inercia, VAR con zócalo Aero, hot-swap de mentalidad.
+
+**Motor (cerrado, Grok, NO lo toques):**
+- `P.iner` + `inerciaTiro` / `actualizarInercia`: córners, atajadas y faltas seguidas suben/bajan el próximo tiro. Reset al gol.
+- VAR en vivo (`hayVarEnVivo`): zócalo `.var-lt` 2s (400ms si `body.perf` / reduced-motion). 8% anula gol, 12% anula penal. No en simular ni antes de 2018. CSS en `gol.css`, NO en `so.css`.
+- Hot-swap Autobús / Equilibrado / Ataque Total: `aplicarHotSwap` + `reaplicarPlan` SIN pausar. El siguiente tick ya usa el plan nuevo. El modal Plan (pausa) sigue.
+
+**Lo tuyo (sigue):**
+- FIFA/guerra UI (`E.fed.conmebolOk`, `E.fed.fifaOk`, `E.flags.fed_guerra`, `E.eraMod`).
+- CSS/ventanas/mobile/editor. **NO unscopear** `.ventana-so` / `.so-cuerpo` sin `body[data-tema="aero"]`. **NO** quitar `!important` de negro/claro/insano.
+- **NO tocar** `nube.js` / `partido.js` / `util.js` (escHtml) / `ui-partido.js` (ahora con VAR + hot-swap).
+
+Carril mío: partido/motor. BTC hueco. Segunda = cantera. Brasil estaduales = futuro, no invento nombres. No es 8.00.
+

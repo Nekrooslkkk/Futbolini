@@ -373,6 +373,7 @@ function iniciarPartido(part,modo){
     lineas:[], goleadores:[], tarjetas:[], lesionados:[], ticker:[], terminado:false,
     momentos:momentosPartido(part), momentoIdx:0, fase:"equilibrio",
     clasico:esClasico(part), var:((E&&E.anio)||0)>=2016,
+    iner:{cor:0,ataj:0,falta:0}, _varHold:false, _skipVar:false,
     cambios:0, cambiosMax:cambiosMaxEra((E&&E.anio)||2026),
     ventanas:0, ventanasMax:ventanasMaxEra((E&&E.anio)||2026),
     descuento2:0, _descDicho:false, _htDicho:false, _salieron:[]
@@ -644,7 +645,69 @@ function peligro(P){
     const k=planCuandoVasPerdiendo(P);
     yo*=k.yo; el*=k.el;
   }
+  /* 7.9003 · inercia: córners / atajadas / faltas seguidas empujan el próximo tiro. */
+  const iner=inerciaTiro(P);
+  yo*=iner.yo; el*=iner.el;
   return { yo:yo, el:el };
+}
+/* 7.9003 · VAR en vivo: zócalo + pausa dramática. No en simular, no antes de 2018,
+   no cuando se salta al resultado (_skipVar). P.var (2016+) sigue sirviendo para polémica. */
+function hayVarEnVivo(P){
+  if(!P || !P.var || P._skipVar) return false;
+  if(P.modo==="simular") return false;
+  const anio=((typeof E!=="undefined"&&E&&E.anio)||0);
+  return anio>=2018;
+}
+/* 7.9003 · racha de córners / atajadas / faltas. Tope 3. Reset al gol. */
+function inerciaTiro(P){
+  const i=(P&&P.iner)||{};
+  const cor=Math.min(3,i.cor||0), ataj=Math.min(3,i.ataj||0), falta=Math.min(3,i.falta||0);
+  return { yo:1+cor*0.08+ataj*0.05, el:1+(falta>=2?0.03:0), remate:1+cor*0.12+ataj*0.08 };
+}
+function resetInercia(P){
+  if(!P) return;
+  P.iner={cor:0,ataj:0,falta:0};
+}
+function actualizarInercia(P,ev){
+  if(!P||!ev) return;
+  P.iner=P.iner||{cor:0,ataj:0,falta:0};
+  const i=P.iner;
+  const min=ev.min||P.min||0;
+  switch(ev.tipo){
+    case "gol":
+    case "golRival":
+      resetInercia(P);
+      break;
+    case "corner":
+      if(ev.aFavor!==false){
+        i.cor=Math.min(3,(i.cor||0)+1);
+        if(ev.deAtajada) i.ataj=Math.min(3,(i.ataj||0)+1);
+        if((i.cor===2||i.cor===3) && typeof linea==="function"){
+          linea(P,min,"Asedio: van "+i.cor+" córners seguidos. El área rival no respira.","grave");
+        }
+      } else {
+        i.cor=0;
+      }
+      break;
+    case "atajada":
+      if(ev.aFavor){
+        i.ataj=Math.min(3,(i.ataj||0)+1);
+        if((i.ataj===2||i.ataj===3) && typeof linea==="function"){
+          linea(P,min,"El arquero rival vuela de nuevo. "+i.ataj+" atajadas seguidas: algo tiene que caer.","grave");
+        }
+      } else {
+        i.ataj=0;
+      }
+      break;
+    case "tarjeta":
+    case "roja":
+      i.falta=Math.min(3,(i.falta||0)+1);
+      if((i.falta===2||i.falta===3) && typeof linea==="function"){
+        linea(P,min,"Faltas seguidas. El árbitro ya no perdona y el rival huele sangre.","");
+      }
+      break;
+    default: break;
+  }
 }
 /* Un tick avanza el reloj un poco y devuelve UN evento. Los eventos simples
    (gol, chance, tarjeta, color) se aplican acá; los de acción (penal, tiro
@@ -702,12 +765,20 @@ function tickPartido(P){
   if(P.fase==="dominio"){ N=23; pl.yo*=1.08; }
   if(P.fase==="ahogo"){ N=25; pl.el*=1.08; }
   const r=Math.random();
-  if(r<pl.yo/N){ anotaPropio(P,min); return {tipo:"gol",min:min}; }
-  if(r<(pl.yo+pl.el)/N){ anotaRival(P,min); return {tipo:"golRival",min:min}; }
+  const varVivo=hayVarEnVivo(P);
+  if(r<pl.yo/N){
+    if(varVivo) return {tipo:"varCheck",kind:"gol",min:min};
+    anotaPropio(P,min); return {tipo:"gol",min:min};
+  }
+  if(r<(pl.yo+pl.el)/N){
+    if(varVivo) return {tipo:"varCheck",kind:"golRival",min:min};
+    anotaRival(P,min); return {tipo:"golRival",min:min};
+  }
   /* acción: penal */
   if(Math.random()<0.006){ const aFavor=Math.random()<clamp(0.5+(P.ataque-P.rival)*0.004,0.2,0.8);
     P._penalCancha=aFavor?1:-1;
     P._penalSeq=(P._penalSeq||0)+1;
+    if(varVivo) return {tipo:"varCheck",kind:aFavor?"penal":"penalRival",min:min,aFavor:aFavor};
     return {tipo:aFavor?"penal":"penalRival",min:min,aFavor:aFavor}; }
   /* acción: lesión */
   if(min>20&&Math.random()<0.006){ return {tipo:"lesion",min:min}; }
@@ -747,9 +818,9 @@ function tickPartido(P){
     linea(P,min,min>75?("Amarilla para "+j.n+". En este tramo duele más.")
       :("Amarilla para "+j.n+(caliente?", que juega siempre al límite.":".")),min>70?"grave":"");
     return {tipo:"tarjeta",min:min}; }
-  /* 7.77 · MÁS PATEOS: remates al arco y atajadas. No cambian el marcador, pero llenan
-     el partido de acción (y disparan la voz del arquero figura). */
-  if(Math.random()<0.075){
+  /* 7.77 · MÁS PATEOS: remates al arco y atajadas. 7.9003 · la inercia sube la chance. */
+  const iner=inerciaTiro(P);
+  if(Math.random()<0.075*iner.remate){
     const j=elige(P.once.filter(x=>x.pos!=="ARQ"))||{n:"tu delantero"};
     const remates=[
       "¡"+j.n+" saca el zurdazo y el arquero de "+P.part.rivalNombre+" manotea al córner! Estuvo cerquísima.",
@@ -757,12 +828,22 @@ function tickPartido(P){
       "Cabezazo de "+j.n+" y el arquero rival vuela a sacarla del ángulo. ¡Uf!",
       j.n+" probó de lejos y obligó a la palomita. Sigue el asedio."
     ];
-    linea(P,min,elige(remates));
+    const frase=elige(remates);
+    if(Math.random()<0.45){
+      linea(P,min,frase+" Córner.");
+      return {tipo:"corner",min:min,aFavor:true,deAtajada:true};
+    }
+    linea(P,min,frase);
     return {tipo:"atajada",min:min,aFavor:true};
   }
   if(Math.random()<0.055){
     linea(P,min,"Remate peligroso de "+P.part.rivalNombre+"… ¡y tu arquero la saca de un manotazo! La tribuna lo ovaciona.");
     return {tipo:"atajada",min:min,aFavor:false};
+  }
+  /* 7.9003 · córner de asedio (sin atajada previa). */
+  if(Math.random()<0.04*iner.remate){
+    linea(P,min,"Córner para "+((typeof E!=="undefined"&&E&&E.clubNombre)||"nosotros")+".");
+    return {tipo:"corner",min:min,aFavor:true};
   }
   /* chance perdida — con contexto de marcador y minuto (más seguido: más pateos) */
   if(Math.random()<0.20){
@@ -780,6 +861,7 @@ function tickPartido(P){
    Se llama después de cada tick con el evento devuelto. */
 function actualizarStats(P,ev){
   if(!P.stats) P.stats={pos:0.5,remMio:0,remRiv:0,arcMio:0,arcRiv:0,corMio:0,corRiv:0};
+  if(typeof actualizarInercia==="function") actualizarInercia(P,ev);
   const s=P.stats;
   const posT=clamp(0.5+((P.ataque||0)-(P.rival||0))*0.006+(P.fase==="dominio"?0.12:(P.fase==="ahogo"?-0.12:0))+(P.empuje||0)*0.008,0.22,0.78);
   s.pos+=(posT-s.pos)*0.08;
@@ -790,6 +872,7 @@ function actualizarStats(P,ev){
     case "penalRival": s.remRiv++; s.arcRiv++; break;
     case "chance": s.remMio++; if(Math.random()<0.5) s.arcMio++; if(Math.random()<0.35) s.corMio++; break;
     case "atajada": if(ev.aFavor){ s.remMio++; s.arcMio++; if(Math.random()<0.4) s.corMio++; } else { s.remRiv++; s.arcRiv++; } break;   /* 7.77 */
+    case "corner": if(ev.aFavor!==false){ s.corMio++; if(ev.deAtajada){ s.remMio++; s.arcMio++; } } else s.corRiv++; break;
     case "polemica": if(Math.random()<0.5) s.remMio++; break;
   }
   if(Math.random()<0.014) s.corRiv++;
@@ -931,14 +1014,17 @@ function resolverEventoAuto(P,ev){
 }
 /* Corrida en bloque (simular y para completar tramos). */
 function correrHasta(P,hasta){
+  const prevSkip=P._skipVar; P._skipVar=true;
   let guard=0;
   while(!P.terminado&&guard++<800){
     const techo=(hasta>=90)?topePartido(P):hasta;
     if(P.min>=techo && (hasta<90 || P._descDicho)) break;
     const ev=tickPartido(P);
+    if(typeof actualizarInercia==="function") actualizarInercia(P,ev);
     if(ev.tipo==="fin") break;
     if(ev.tipo==="penal"||ev.tipo==="penalRival"||ev.tipo==="lesion"||ev.tipo==="tiroLibre") resolverEventoAuto(P,ev);
   }
+  P._skipVar=prevSkip;
 }
 /* momentos de decisión del modo dirigir */
 /* Pools tácticos grandes por situación. momentoActual elige 4 al azar

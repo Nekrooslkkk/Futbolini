@@ -1,6 +1,6 @@
 # FUTBOLINI — Briefing para agentes de IA (memoria portátil)
 
-> Versión en juego: **7.9002** (liga clonada completa: copa doméstica). No es 8.00.
+> Versión en juego: **7.9003** (inercia + VAR zócalo Aero + hot-swap Autobús). No es 8.00.
 
 > Pegá este archivo COMPLETO al inicio de cualquier sesión con otra IA (Grok, Gemini, etc.)
 > junto con `PATCHES.md`. Es la memoria del proyecto: sin esto, la IA "olvida" y rompe el hilo.

@@ -4,6 +4,33 @@
    Pantallas de previa, partido en vivo y resumen.
    ============================================================ */
 let P_ACTUAL=null, TIMER=null, PAUSADO=false, MOMENTO_OPS=[], VEL_PARTIDO=260;
+/* 7.9003 · palancas rápidas: cambian el cálculo del SIGUIENTE tick, sin pausar. */
+const HOT_SWAPS={
+  bus:{n:"🚌 Autobús", ment:"Ultradefensivo", bloque:"Bajo", presion:"Baja"},
+  eq: {n:"⚖️ Equilibrado", ment:"Equilibrado", bloque:"Medio", presion:"Media"},
+  ata:{n:"⚔️ Ataque Total", ment:"Ultraofensivo", bloque:"Alto", presion:"Alta"}
+};
+function aplicarHotSwap(id, Popt){
+  const P=Popt||P_ACTUAL;
+  if(!P||P.terminado) return null;
+  const hs=HOT_SWAPS[id]; if(!hs) return null;
+  if(typeof E==="undefined"||!E) return null;
+  E.tactica=E.tactica||{};
+  if(E.tactica.mentalidad===hs.ment && E.tactica.bloque===hs.bloque && E.tactica.presion===hs.presion){
+    P._hotSwap=id;
+    return hs;
+  }
+  E.tactica.mentalidad=hs.ment;
+  E.tactica.bloque=hs.bloque;
+  E.tactica.presion=hs.presion;
+  if(typeof reaplicarPlan==="function") reaplicarPlan(P);
+  P._hotSwap=id;
+  if(typeof linea==="function") linea(P,P.min,"Cambio en caliente: "+hs.n+". El equipo lo siente YA.","cambio");
+  if(typeof guardar==="function") guardar();
+  /* NO se pausa, NO se corta el intervalo: el siguiente tick ya usa el plan nuevo. */
+  if(P===P_ACTUAL && typeof pintarPartido==="function") pintarPartido();
+  return hs;
+}
 /* Atajos durante el partido: Espacio = pausa/reanuda · 1/2/3 = decidir */
 function partidoTeclas(e){
   if(!P_ACTUAL||P_ACTUAL.terminado) return;
@@ -839,6 +866,101 @@ function celebrarGol(P, propio, quien, marcEl){
   const dur=(perf||reduce)?1000:1750;
   setTimeout(()=>{ if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); }, dur);
 }
+/* 7.9003 · zócalo VAR estilo Aero (lower-third). Pausa 2s, después valida o anula. */
+function varDuracionMs(){
+  const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const perf=document.body&&document.body.classList.contains("perf");
+  return (perf||reduce)?400:2000;
+}
+function mostrarVar(P, ev){
+  if(!P||!ev) return;
+  P._varHold=true;
+  if(typeof TIMER!=="undefined" && TIMER) clearInterval(TIMER);
+  const viejo=document.querySelector(".var-lt");
+  if(viejo&&viejo.parentNode) viejo.parentNode.removeChild(viejo);
+  const esPenal=ev.kind==="penal"||ev.kind==="penalRival";
+  const propio=ev.kind==="gol"||ev.kind==="penal";
+  const club=propio?((typeof E!=="undefined"&&E&&E.clubNombre)||"nosotros"):((P.part&&P.part.rivalNombre)||"el rival");
+  const ov=el("div","var-lt");
+  const badge=el("div","var-badge","VAR");
+  const body=el("div","var-body");
+  const kicker=el("div","var-kicker","Revisando");
+  const title=el("div","var-title", esPenal?"Posible penal":"Jugada de gol");
+  const sub=el("div","var-sub", club+" · el juez va al monitor");
+  body.appendChild(kicker); body.appendChild(title); body.appendChild(sub);
+  ov.appendChild(badge); ov.appendChild(body);
+  document.body.appendChild(ov);
+  const anula=Math.random()<(esPenal?0.12:0.08);
+  const dur=varDuracionMs();
+  setTimeout(function(){
+    ov.classList.add(anula?"anula":"ok");
+    kicker.textContent=anula?"Decisión":"Confirmado";
+    if(anula){
+      title.textContent=esPenal?"NO HAY PENAL":"GOL ANULADO";
+      sub.textContent="El VAR corta la alegría.";
+      if(typeof linea==="function"){
+        linea(P,ev.min, esPenal
+          ?("VAR: no hay penal"+(propio?"":" en contra")+". El juez se corrige.")
+          :("VAR: se ANULA el gol de "+club+". Fuera de juego milimétrico."), "grave");
+      }
+      if(typeof resetInercia==="function") resetInercia(P);
+    } else {
+      title.textContent=esPenal?"PENAL CONFIRMADO":"GOL VALIDADO";
+      sub.textContent=esPenal?"El juez señala el punto.":"La jugada queda. Se grita.";
+      if(typeof linea==="function"){
+        linea(P,ev.min, esPenal
+          ?("VAR: penal "+(propio?"a favor":"en contra")+" confirmado.")
+          :("VAR: gol de "+club+" VALIDADO."), esPenal?"":"gol");
+      }
+    }
+    const after=dur<=400?200:800;
+    setTimeout(function(){
+      if(ov&&ov.parentNode) ov.parentNode.removeChild(ov);
+      P._varHold=false;
+      if(anula){
+        if(typeof pintarPartido==="function") pintarPartido();
+        if(!PAUSADO && !(MOMENTO_OPS&&MOMENTO_OPS.length) && typeof correrEnVivo==="function") correrEnVivo();
+        return;
+      }
+      aplicarVarValidado(P, ev);
+    }, after);
+  }, dur);
+}
+function aplicarVarValidado(P, ev){
+  if(!P||!ev) return;
+  const kind=ev.kind;
+  if(kind==="gol"){
+    if(typeof anotaPropio==="function") anotaPropio(P, ev.min);
+    if(typeof actualizarStats==="function") actualizarStats(P,{tipo:"gol",min:ev.min});
+    if(typeof pintarPartido==="function") pintarPartido();
+    if(!PAUSADO && !(MOMENTO_OPS&&MOMENTO_OPS.length) && typeof correrEnVivo==="function") correrEnVivo();
+    return;
+  }
+  if(kind==="golRival"){
+    if(typeof anotaRival==="function") anotaRival(P, ev.min);
+    if(typeof actualizarStats==="function") actualizarStats(P,{tipo:"golRival",min:ev.min});
+    if(typeof pintarPartido==="function") pintarPartido();
+    if(!PAUSADO && !(MOMENTO_OPS&&MOMENTO_OPS.length) && typeof correrEnVivo==="function") correrEnVivo();
+    return;
+  }
+  const tipo=kind==="penal"?"penal":"penalRival";
+  const acc={tipo:tipo, min:ev.min, aFavor:kind==="penal"};
+  if(tipo==="penalRival"){
+    if(typeof resolverEventoAuto==="function") resolverEventoAuto(P, acc);
+    if(typeof pintarPartido==="function") pintarPartido();
+    if(!PAUSADO && typeof correrEnVivo==="function") correrEnVivo();
+    return;
+  }
+  const autoP=!E.config||E.config.autoPausa!==false;
+  if(P.modo==="dirigir"&&autoP && typeof mostrarAccion==="function"){
+    if(typeof pintarPartido==="function") pintarPartido();
+    mostrarAccion(acc);
+    return;
+  }
+  if(typeof resolverEventoAuto==="function") resolverEventoAuto(P, acc);
+  if(typeof pintarPartido==="function") pintarPartido();
+  if(!PAUSADO && !(MOMENTO_OPS&&MOMENTO_OPS.length) && typeof correrEnVivo==="function") correrEnVivo();
+}
 function pintarPartido(){
   const P=P_ACTUAL; if(!P) return;
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
@@ -910,6 +1032,28 @@ function pintarPartido(){
     p.cuerpo.appendChild(el("div","mini centro canal-live","📺 "+ch.n+" · "+ch.d));
   }
   if(!P.terminado&&P.modo!=="simular"){
+    const hsRow=el("div","hot-swap");
+    hsRow.setAttribute("role","group");
+    hsRow.setAttribute("aria-label","Mentalidad en caliente");
+    Object.keys(HOT_SWAPS).forEach(function(id){
+      const hs=HOT_SWAPS[id];
+      const on=!!(E.tactica && E.tactica.mentalidad===hs.ment && E.tactica.bloque===hs.bloque);
+      const b=el("button","hot-b"+(on?" on":""), hs.n);
+      b.type="button";
+      b.setAttribute("aria-pressed", on?"true":"false");
+      b.title=hs.n+" · se siente en el próximo minuto, sin pausar";
+      b.disabled=!!(MOMENTO_OPS&&MOMENTO_OPS.length);
+      b.onclick=function(){ aplicarHotSwap(id); };
+      hsRow.appendChild(b);
+    });
+    p.cuerpo.appendChild(hsRow);
+    if(P.iner && (P.iner.cor>=2 || P.iner.ataj>=2 || P.iner.falta>=2)){
+      const bits=[];
+      if(P.iner.cor>=2) bits.push(P.iner.cor+" córners seguidos");
+      if(P.iner.ataj>=2) bits.push(P.iner.ataj+" atajadas seguidas");
+      if(P.iner.falta>=2) bits.push(P.iner.falta+" faltas seguidas");
+      p.cuerpo.appendChild(el("div","mini hot-iner","🔥 Inercia: "+bits.join(" · ")+". El próximo tiro pesa más."));
+    }
     const ctrl=el("div","ctrlPartido");
     const main=el("div","ctrl-main");
     const bp=el("button","btn-aqua chico",PAUSADO?"▶ Seguir":"⏸ Pausa");
@@ -1020,6 +1164,7 @@ function correrEnVivo(){
 function pasoEnVivo(){
   if(PAUSADO) return;
   const P=P_ACTUAL; if(!P){ clearInterval(TIMER); return; }
+  if(P._varHold) return;
   if(P.terminado||(P._descDicho&&P.min>=(typeof topePartido==="function"?topePartido(P):90))){ clearInterval(TIMER); pintarPartido(); cerrarPartido(); return; }
   /* momento táctico (solo dirigir). Nunca tape el descanso: si todavía no hubo
      45', solo dispara momentos del primer tiempo (12, 32). */
@@ -1028,6 +1173,10 @@ function pasoEnVivo(){
     clearInterval(TIMER); pintarPartido(); mostrarMomento(); return;
   }
   const ev=tickPartido(P);
+  if(ev && ev.tipo==="varCheck"){
+    if(typeof tickerPost==="function") tickerPost(P,ev);
+    if(typeof mostrarVar==="function"){ mostrarVar(P, ev); return; }
+  }
   if(typeof actualizarStats==="function") actualizarStats(P,ev);
   if(typeof actualizarApoyo==="function") actualizarApoyo(P);
   if(typeof tickerPost==="function") tickerPost(P,ev);

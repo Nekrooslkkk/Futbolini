@@ -603,6 +603,15 @@ function tickerPost(P, ev){
       break;
     case "polemica":
       autor=elige(HANDLES_PRENSA); texto="📺 Repiten la jugada del "+m+"'… el árbitro ya es tendencia."; tono="neutro"; break;
+    case "varCheck":
+      autor=elige(HANDLES_PRENSA); tono="neutro";
+      texto="📺 VAR en el "+m+"'. El juez se va al monitor y el estadio se queda mudo."; break;
+    case "corner":
+      if(ev.aFavor!==false && Math.random()<0.55){
+        autor=elige(HANDLES_HINCHA); tono="neutro";
+        texto="Córner nuestro, "+m+"'. A meterla de cabeza 🙏";
+      }
+      break;
     default: return;
   }
   if(!texto) return;

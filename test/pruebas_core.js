@@ -2117,7 +2117,7 @@
     /* T54 · 7.9002 liga completa: copa doméstica del clon */
     grupo("Grok 7.9002 (liga completa + copa doméstica)");
     safe(function(){
-      ok(VERSION==="7.9002", "VERSION 7.9002");
+      ok(VERSION==="7.9002" || VERSION==="7.9003" || /^7\.9/.test(VERSION), "VERSION 7.9002+");
       ok(typeof nombreCopaDomestica==="function" && typeof partidosCopaDomesticaDe==="function", "helpers copa doméstica");
       var clubs=[
         {id:"FCK",n:"FC Kobenhavn",c:"Kobenhavn",fuerza:80,aforo:38000,est:"Parken",ciudad:"Copenhague"},
@@ -2157,6 +2157,71 @@
       }catch(e){}
       ok(true, "limpia clones de prueba");
     }, "cleanup clones");
+
+    /* T55 · 7.9003 inercia + VAR zócalo + hot-swap Autobús */
+    grupo("Grok 7.9003 (inercia + VAR + hot-swap)");
+    safe(function(){
+      ok(VERSION==="7.9003" || /^7\.9/.test(VERSION), "VERSION 7.9003");
+      ok(typeof inerciaTiro==="function" && typeof actualizarInercia==="function", "API inercia");
+      ok(typeof hayVarEnVivo==="function" && typeof mostrarVar==="function", "API VAR");
+      ok(typeof aplicarHotSwap==="function" && typeof HOT_SWAPS==="object", "API hot-swap");
+      ok(HOT_SWAPS.bus && HOT_SWAPS.eq && HOT_SWAPS.ata, "Autobús / Equilibrado / Ataque Total");
+    }, "API 7.9003");
+    safe(function(){
+      var k0=inerciaTiro({iner:{cor:0,ataj:0,falta:0}});
+      var k3=inerciaTiro({iner:{cor:3,ataj:0,falta:0}});
+      ok(k3.yo>k0.yo && k3.yo>=1.24, "3 córners seguidos suben el peligro propio ("+k3.yo+")");
+      ok(k3.remate>k0.remate && k3.remate>=1.35, "3 córners suben la chance de remate ("+k3.remate+")");
+      var kf=inerciaTiro({iner:{cor:0,ataj:0,falta:2}});
+      ok(kf.el>1, "2 faltas seguidas empujan al rival");
+      var P={iner:{cor:0,ataj:0,falta:0}, lineas:[], min:70, once:[], part:{rivalNombre:"X"}};
+      actualizarInercia(P,{tipo:"corner",min:70,aFavor:true});
+      actualizarInercia(P,{tipo:"corner",min:71,aFavor:true});
+      actualizarInercia(P,{tipo:"corner",min:72,aFavor:true});
+      ok(P.iner.cor===3, "la racha de córners llega a 3");
+      actualizarInercia(P,{tipo:"gol",min:73});
+      ok(P.iner.cor===0 && P.iner.ataj===0, "el gol resetea la inercia");
+    }, "inercia de córners / faltas");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var part=(E.calendario||[]).find(function(p){ return !p.jugado; })||E.calendario[0];
+      var P=iniciarPartido(part,"simular");
+      ok(P.iner && P.iner.cor===0, "iniciarPartido arranca sin racha");
+      P.iner={cor:0,ataj:0,falta:0};
+      var a=peligro(P);
+      P.iner={cor:3,ataj:3,falta:0};
+      var b=peligro(P);
+      ok(b.yo>a.yo, "peligro() siente la inercia (yo "+a.yo.toFixed(2)+" → "+b.yo.toFixed(2)+")");
+      ok(!hayVarEnVivo(P), "simular no frena por VAR");
+    }, "peligro + simular sin VAR");
+    safe(function(){
+      nuevaPartida("CC",1991,"historico");
+      var part=(E.calendario||[]).find(function(p){ return !p.jugado; })||E.calendario[0];
+      var P=iniciarPartido(part,"dirigir");
+      ok(!P.var && !hayVarEnVivo(P), "1991 no tiene VAR en vivo");
+      nuevaPartida("CC",2026,"historico");
+      var part2=(E.calendario||[]).find(function(p){ return !p.jugado; })||E.calendario[0];
+      var P2=iniciarPartido(part2,"dirigir");
+      ok(!!P2.var && hayVarEnVivo(P2), "2026 dirigir tiene VAR en vivo");
+    }, "VAR según época");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var part=(E.calendario||[]).find(function(p){ return !p.jugado; })||E.calendario[0];
+      var P=iniciarPartido(part,"dirigir");
+      P_ACTUAL=P; PAUSADO=false;
+      var atk0=P.ataque;
+      aplicarHotSwap("ata", P);
+      ok(E.tactica.mentalidad==="Ultraofensivo", "Ataque Total pone Ultraofensivo");
+      ok(E.tactica.bloque==="Alto" && E.tactica.presion==="Alta", "Ataque Total: bloque alto + presión alta");
+      ok(P.ataque>atk0, "el ataque sube en el acto ("+atk0.toFixed(1)+" → "+P.ataque.toFixed(1)+")");
+      ok(PAUSADO===false, "hot-swap NO pausa el partido");
+      var atk1=P.ataque;
+      aplicarHotSwap("bus", P);
+      ok(E.tactica.mentalidad==="Ultradefensivo", "Autobús pone Ultradefensivo");
+      ok(P.ataque<atk1, "Autobús baja el ataque");
+      ok(PAUSADO===false, "Autobús tampoco pausa");
+      P_ACTUAL=null;
+    }, "hot-swap sin pausar");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

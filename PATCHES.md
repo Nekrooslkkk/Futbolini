@@ -2705,3 +2705,12 @@ El autor: una liga tiene que estar completa, no solo el campeonato. Brasil + est
 - Picker del inicio: pestaña por liga clonada. Calendario titula con el nombre de la liga.
 - Plop del momento táctico entra al ticker (y al feed). Tendencias localizadas.
 - Tests T54. **No 8.00.** BTC hueco. Segunda = cantera.
+
+## 7.9003 · Inercia + VAR zócalo + hot-swap Autobús
+El autor: pulir el partido en vivo. Momentum, VAR con pausa dramática, mentalidad que se siente YA.
+
+- **Inercia:** córners / atajadas / faltas seguidas (tope 3) empujan el próximo tiro. Reset al gol. Relato cuando la racha llega a 2 y a 3.
+- **VAR:** en dirigir/seguir desde 2018. Zócalo Aero 2s, después GOL VALIDADO / PENAL CONFIRMADO o se anula (8% gol, 12% penal). Simular y “al resultado” no se frenan.
+- **Hot-swap:** Autobús / Equilibrado / Ataque Total cambian mentalidad+bloque+presión sin pausar. El Plan completo (modal) sigue existiendo.
+- Tests T55. **No 8.00.** BTC hueco. Segunda = cantera.
+
