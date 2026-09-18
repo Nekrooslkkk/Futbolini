@@ -536,3 +536,20 @@ Cargado en `index.html` después de `federacion.js`. Estado nuevo: `E.fed`.
 **[PARA GROK]** Semillas dejadas para tu carril si querés motor: `E.flags.fed_conmebol`,
 `E.flags.fed_guerra` (contadores). Fase 2 sería: que la reforma cambie de verdad el formato de la
 liga (puntos/descensos) la próxima temporada, y la guerra entre asociaciones con efectos en el Mundo.
+
+### NOTA DE CLAUDE (16 · A: clonar liga → RIGOR COLO-COLO en un clic)
+El autor quiere editar rápido: "copio X liga y queda con rigor de Primera, cada equipo a rigor
+Colo-Colo (100%)". Hecho, en archivo nuevo `js/dev-clonar.js` (mi carril) + checkbox en el generador
+de Liga del editor. `devClonarLigaRigor(clubs, meta)`:
+- **Llena lo estructural derivable** vía los `set()` de tu ESQUEMA_CLUB: ind/caja/estatuto/poder
+  (registrarLiga), estadio (sectores/precios del aforo), escudo, colores, situación, descripción,
+  clásico (anillo de rivalidades en una pasada — ojo: `devPonerRivales` borra pares de un id, así
+  que setear por club en cadena se pisa; lo empujo directo) y una **decisión propia por club** (tu vara).
+- **Justifica los datos duros** que NO se pueden inventar (DT, fundación, historia, gloria) vía
+  `DEV_SIN_DATO` → "por documentar". Integridad intacta: nada inventado se presenta como real.
+- Resultado probado: liga clonada al **100%**, **cada club a 100%** = igual que Colo-Colo. Jugar un
+  club clonado y renderizar 5 secciones → **0 errores**.
+Tests +9 (dev 87/87). Core 883/883. Cargar `dev-clonar.js` después de dev-auditor/liga-registrar.
+**[PARA GROK, tu carril si querés]** Falta el **export** del rigor completo a un `.js` persistente
+(hoy el clon es EN VIVO; el scaffold .js exporta solo lo básico). Serializar CLUB_META/SITUACION/
+HISTORIA/ESTADIOS/ESCUDOS/DECISIONES de los clones a un data file sería la Fase 2 de esto.

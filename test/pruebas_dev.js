@@ -140,6 +140,30 @@
       cerrarModal();
     }, "Liga nueva");
 
+    grupo("Clonar liga a RIGOR COLO-COLO (Claude)");
+    safe(function(){
+      t(typeof devClonarLigaRigor==="function", "motor de clonado a rigor disponible");
+      var clubs=[
+        {id:"FCK",n:"FC Kobenhavn",c:"Kobenhavn",fuerza:80,aforo:38000,est:"Parken",ciudad:"Copenhague"},
+        {id:"BIF",n:"Brondby",c:"Brondby",fuerza:74,aforo:28000,est:"Brondby Stadion",ciudad:"Brondby"},
+        {id:"FCM",n:"Midtjylland",c:"Herning",fuerza:76,aforo:12000,est:"MCH Arena",ciudad:"Herning"},
+        {id:"AGF",n:"AGF Aarhus",c:"Aarhus",fuerza:68,aforo:20000,est:"Ceres Park",ciudad:"Aarhus"}
+      ];
+      var r=devClonarLigaRigor(clubs,{eraKey:"tst_din", baseEra:"2026", nombre:"Superliga TST", pais:"dinamarca", pts:3});
+      t(r&&r.ok, "clona sin romper");
+      t(auditarLiga("tst_din").pct===100, "la liga clonada queda con rigor de Primera (100%) — da "+auditarLiga("tst_din").pct+"%");
+      var cada=clubs.map(function(c){ return auditarClub(c.id).pct; });
+      t(cada.every(function(p){return p===100;}), "CADA club queda a rigor Colo-Colo (100%): "+cada.join("/"));
+      t(auditarClub("FCK").pct===auditarClub("CC").pct, "un club clonado iguala el rigor de la vara Colo-Colo");
+      // integridad: los datos duros NO se inventan, quedan justificados
+      var j=auditarClub("BIF").justificados.map(function(x){return x.k;});
+      t(j.indexOf("dt")>=0 && j.indexOf("fund")>=0 && j.indexOf("historia")>=0, "DT/fundación/historia quedan JUSTIFICADOS (no inventados): "+j.join(","));
+      t((CLUB_INFO_2026.BIF.dt||"el cuerpo técnico")==="el cuerpo técnico", "no se inventó un DT real (queda el placeholder del motor)");
+      // estructural sí lleno: estadio con sectores, escudo, decisión propia, clásico
+      t(devDecisionesDe("FCK").length>0, "cada club recibe su decisión propia (vara de Grok)");
+      t(devRivalesDe("FCK").length>0, "cada club recibe un clásico (anillo de rivalidades)");
+    }, "Clonar rigor");
+
     grupo("Cierre de rigor AFA (Claude)");
     safe(function(){
       t(typeof DECISIONES_AFA!=="undefined" && DECISIONES_AFA.length>=23, "DECISIONES_AFA: 23 cartas propias ("+(typeof DECISIONES_AFA!=="undefined"?DECISIONES_AFA.length:0)+")");

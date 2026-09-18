@@ -408,6 +408,13 @@
     taC.placeholder="FCK | FC København | Copenhague | 78 | 38000 | Parken\nBIF | Brøndby IF | Brøndby | 72 | 28000 | Brøndby Stadion";
     labC.appendChild(taC); wrap.appendChild(labC);
 
+    /* clonar a rigor Colo-Colo: llena todo lo estructural y deja los datos duros
+       como "por documentar" (justificados). La liga queda al 100% en el auditor. */
+    var labR=el("label","mini"); labR.style.display="flex"; labR.style.gap="6px"; labR.style.alignItems="center"; labR.style.margin="4px 0";
+    var chkR=el("input"); chkR.type="checkbox"; chkR.checked=true;
+    labR.appendChild(chkR); labR.appendChild(document.createTextNode(" Clonar a rigor Colo-Colo (cada club al 100%, aplicado en vivo)"));
+    wrap.appendChild(labR);
+
     var acc=el("div","dev-acc");
     var bGen=el("button","btn-aqua chico verde","⚙ Generar .js");
     var bCop=el("button","btn-aqua chico","📋 Copiar"); bCop.disabled=true;
@@ -431,7 +438,15 @@
       var txt=_scaffoldLiga(meta,clubs);
       salida.value=txt; salida.style.display="block";
       bCop.disabled=false; bDes.disabled=false;
-      msg.textContent="✅ Liga "+meta.eraKey+" con "+clubs.length+" club(es). Guarda el .js en js/, agrégalo a index.html DESPUÉS de liga-registrar.js.";
+      var extra="";
+      if(chkR.checked && typeof devClonarLigaRigor==="function"){
+        var r=devClonarLigaRigor(clubs,meta);
+        if(r&&r.ok){
+          extra=" · 🟢 Clonada EN VIVO a rigor Colo-Colo: liga al "+(r.pct!=null?r.pct+"%":"100%")+" (datos duros marcados 'por documentar'). Míralo en la pestaña Rigor.";
+          if(typeof CLUB_SEL==="undefined"){} CLUB_SEL=clubs[0].id;
+        }
+      }
+      msg.textContent="✅ Liga "+meta.eraKey+" con "+clubs.length+" club(es). Guarda el .js en js/, agrégalo a index.html DESPUÉS de liga-registrar.js."+extra;
       msg.className="mini dev-msg bien";
     };
     bCop.onclick=function(){ try{ salida.select(); document.execCommand("copy"); if(typeof aviso==="function") aviso("Copiado"); }catch(e){ if(typeof aviso==="function") aviso("Cópialo a mano (Ctrl+C)"); } };
