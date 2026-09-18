@@ -31,6 +31,14 @@
   function _justif(id,k,motivo){
     if(typeof DEV_SIN_DATO==="object" && DEV_SIN_DATO) DEV_SIN_DATO[id+"."+k]=motivo;
   }
+  /* perfil según la fuerza: da vida a desc/situación sin inventar hechos */
+  function _perfilFuerza(f){
+    f=f||55;
+    if(f>=78) return { desc:"uno de los pesos pesados", meta:"Te contratan para ganar el título y competir en el continente." };
+    if(f>=70) return { desc:"un club consolidado", meta:"El objetivo es meterse arriba y pelear un cupo internacional." };
+    if(f>=60) return { desc:"un club de mitad de tabla", meta:"Estabilizar el club y soñar con dar el salto es el mandato." };
+    return { desc:"un club chico", meta:"Sobrevivir en la categoría y crecer de a poco es la misión." };
+  }
   /* color determinístico y estable a partir del ID (cosmético, no es un "dato") */
   function _hash(s){ var h=0,i; s=String(s||""); for(i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; } return h; }
   function _colorDe(id,off){ var h=(_hash(id)+(off||0)*97)%360; return "hsl("+h+",55%,45%)"; }
@@ -86,13 +94,14 @@
     clubs.forEach(function(c,i){
       var id=c.id; if(!id) return;
       var col=_coloresDe(c);
-      /* identidad */
-      _setRigor("desc", id, (c.n||id)+", de "+(c.ciudad||c.c||"la región")+". Ficha base — completar con fuente.");
+      var tier=_perfilFuerza(c.fuerza), ciu=(c.ciudad||c.c||"la región");
+      /* identidad — descripción derivada del tier (más viva que un placeholder pelado) */
+      _setRigor("desc", id, (c.n||id)+", "+tier.desc+" de "+ciu+". (Ficha base del clonador — completar con fuente.)");
       if(c.ciudad) _setRigor("ciudad", id, c.ciudad); else _justif(id,"ciudad","Ciudad por documentar (no se inventa).");
       if(typeof c.fund==="number" && c.fund>1800) _setRigor("fund", id, c.fund); else _justif(id,"fund","Año de fundación por documentar (no se inventa).");
       _setRigor("colores", id, col);
-      /* alma */
-      _setRigor("situacion", id, "Diriges a "+(c.n||id)+". Objetivos, historia y clásico se completan en el editor.");
+      /* alma — la situación arranca del objetivo que impone el tamaño del club */
+      _setRigor("situacion", id, "Diriges a "+(c.n||id)+". "+tier.meta+" Historia, clásico y DT se completan en el editor.");
       _justif(id,"dt","DT por documentar (no se inventa un nombre real).");
       _justif(id,"historia","Línea de historia por documentar con fuente.");
       _justif(id,"gloria","Época dorada por documentar.");
