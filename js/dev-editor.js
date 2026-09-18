@@ -436,16 +436,18 @@
       var clubs=_parseClubesLiga(taC.value);
       if(!clubs.length){ msg.textContent="❌ No leí ningún club válido. Formato: ID | Nombre | Ciudad | fuerza | aforo | Estadio."; msg.className="mini dev-msg mal"; return; }
       var txt=_scaffoldLiga(meta,clubs);
-      salida.value=txt; salida.style.display="block";
-      bCop.disabled=false; bDes.disabled=false;
       var extra="";
       if(chkR.checked && typeof devClonarLigaRigor==="function"){
         var r=devClonarLigaRigor(clubs,meta);
         if(r&&r.ok){
-          extra=" · 🟢 Clonada EN VIVO a rigor Colo-Colo: liga al "+(r.pct!=null?r.pct+"%":"100%")+" (datos duros marcados 'por documentar'). Míralo en la pestaña Rigor.";
-          if(typeof CLUB_SEL==="undefined"){} CLUB_SEL=clubs[0].id;
+          /* con rigor completo, el .js descargable ES el persistente (todo el rigor) */
+          if(typeof devExportarLigaRigor==="function"){ var full=devExportarLigaRigor(clubs,meta); if(full) txt=full; }
+          extra=" · 🟢 Clonada a rigor Colo-Colo: liga al "+(r.pct!=null?r.pct+"%":"100%")+". El .js de abajo YA trae todo el rigor (persistente). Datos duros marcados 'por documentar'.";
+          CLUB_SEL=clubs[0].id;
         }
       }
+      salida.value=txt; salida.style.display="block";
+      bCop.disabled=false; bDes.disabled=false;
       msg.textContent="✅ Liga "+meta.eraKey+" con "+clubs.length+" club(es). Guarda el .js en js/, agrégalo a index.html DESPUÉS de liga-registrar.js."+extra;
       msg.className="mini dev-msg bien";
     };

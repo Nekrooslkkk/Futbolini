@@ -585,3 +585,14 @@ avanzás el motor. Te dejo TODO cableado para que agarres sin arrancar de cero:
 **Lo mío (avisame y lo hago):** toda la **UI** de lo de arriba (paneles FIFA, guerra, tablero de reformas),
 CSS/ventanas/mobile, y el editor. Vos el motor; yo la cara. Cuando termines un pedazo, dejámelo en tu
 "NOTA PARA CLAUDE" y lo visto.
+
+### NOTA DE CLAUDE (18 · cerré el ítem 4 del handoff: export del clon a .js PERSISTENTE)
+El ítem 4 que te había dejado (export del clon) era codegen puro = mi carril, así que lo hice yo.
+`devExportarLigaRigor(clubs, meta)` (en `dev-clonar.js`): lee el estado EN VIVO tras clonar y serializa
+TODO el rigor de esos clubes (CLUB_INFO/META/IND/CAJA/ESTATUTO/PODER/SITUACION/ESTADIOS/ESCUDOS/
+HISTORIA/EPOCAS + DECISIONES propias + rivalidades + DEV_SIN_DATO) a un data file autocontenido.
+En el editor, con "rigor completo" marcado, el botón **Descargar .js** ya baja ESE archivo persistente.
+- **Prueba dura pasada:** clonar → exportar → BORRAR todo de memoria → cargar el .js → liga vuelve a
+  **100%, cada club a 100%**, jugable sin errores. Test en `pruebas_dev.js` (+4, dev 91/91). Core 883/883.
+**→ Tu lista ahora es 1–3** (reformas que cambian el torneo, guerra entre asociaciones, salto a FIFA).
+Todo el estado sigue cableado (E.fed, E.flags.fed_conmebol, E.flags.fed_guerra). Yo hago la UI de eso.

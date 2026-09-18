@@ -124,5 +124,67 @@
     return { ok:true, era:meta.eraKey, clubes:clubs.length, pct:pct };
   }
 
+  /* ---------- EXPORTAR el clon a un .js PERSISTENTE ----------
+     Lee el estado EN VIVO (después de devClonarLigaRigor) y serializa TODO el
+     rigor de esos clubes a un data file autocontenido. Cargándolo en index.html
+     la liga vuelve a quedar al 100% sin re-clonar. */
+  function _mapa(nombre){ return (typeof _devMapa==="function")?_devMapa(nombre):null; }
+  function _slice(nombre,ids){ var m=_mapa(nombre)||{}, o={}; ids.forEach(function(id){ if(m[id]!=null) o[id]=m[id]; }); return o; }
+  function _jstr(s){ return '"'+String(s==null?"":s).replace(/\\/g,"\\\\").replace(/"/g,'\\"')+'"'; }
+  function devExportarLigaRigor(clubs, meta){
+    if(!clubs||!clubs.length||!meta||!meta.eraKey) return "";
+    var ids=clubs.map(function(c){return c.id;});
+    var fecha=new Date().toISOString().slice(0,10);
+    var varName="LIGA_"+meta.eraKey.toUpperCase().replace(/[^A-Z0-9]/g,"_");
+    var J=function(o){ return JSON.stringify(o,null,0); };
+    /* club array para registrarLiga (registra LIGAS/ERA; los detalles van aparte) */
+    var lineas=clubs.map(function(c){
+      return "  {id:"+_jstr(c.id)+",n:"+_jstr(c.n)+",c:"+_jstr(c.c||c.n)+",fuerza:"+(c.fuerza||55)+
+             ",aforo:"+(c.aforo||0)+",est:"+_jstr(c.est||"")+",ciudad:"+_jstr(c.ciudad||"")+",z:\"—\"}";
+    }).join(",\n");
+    /* slices en vivo de cada estructura */
+    var infos=_slice("CLUB_INFO_2026",ids), metas=_slice("CLUB_META",ids), inds=_slice("IND_BASE_2026",ids),
+        cajas=_slice("CAJA_BASE_2026",ids), estat=_slice("ESTATUTO_INICIAL",ids), poder=_slice("PODER_CLUB",ids),
+        sit=_slice("SITUACION_CLUB",ids), estad=_slice("ESTADIOS_DATA",ids), esc=_slice("ESCUDOS_CLUB",ids),
+        hist=_slice("HISTORIA_LINEA",ids), epo=_slice("EPOCAS_CLUB",ids);
+    var D=_mapa("DECISIONES")||[]; var decs=D.filter(function(d){ return d && ids.indexOf(d.club)>=0; });
+    var R=(typeof RIVALIDADES_2026!=="undefined")?RIVALIDADES_2026:[];
+    var rivs=R.filter(function(p){ return ids.indexOf(p[0])>=0 || ids.indexOf(p[1])>=0; });
+    var sd={}; if(typeof DEV_SIN_DATO==="object") Object.keys(DEV_SIN_DATO).forEach(function(k){ if(ids.indexOf(String(k).split(".")[0])>=0) sd[k]=DEV_SIN_DATO[k]; });
+
+    return '"use strict";\n'+
+      '/* ============================================================\n'+
+      '   FUTBOLINI · data-liga-'+meta.eraKey+'.js  (LIGA A RIGOR COLO-COLO)\n'+
+      '   Generada por el Editor ('+fecha+'). Cada club al 100% de rigor.\n'+
+      '   Cargar en index.html DESPUÉS de liga-registrar.js y dev-esquema.js.\n'+
+      '   INTEGRIDAD: los datos duros (DT/fundación/historia/gloria) van marcados\n'+
+      '   como "por documentar" en DEV_SIN_DATO — reemplazalos con fuente real.\n'+
+      '   ============================================================ */\n'+
+      'var '+varName+'=[\n'+lineas+'\n];\n'+
+      'if(typeof registrarLiga==="function"){ registrarLiga({eraKey:'+_jstr(meta.eraKey)+',clubs:'+varName+
+        ',baseEra:'+_jstr(meta.baseEra||"2026")+',nombre:'+_jstr(meta.nombre||meta.eraKey)+
+        ',era:{n:'+_jstr(meta.nombre||meta.eraKey)+(meta.pais?',pais:'+_jstr(meta.pais):'')+',puntosVictoria:'+(meta.pts||3)+'}}); }\n'+
+      '(function(){\n'+
+      '  function fus(mapa,data){ if(typeof mapa!=="object"||!mapa) return; Object.keys(data).forEach(function(id){ mapa[id]=Object.assign(mapa[id]||{},data[id]); }); }\n'+
+      '  function put(mapa,data){ if(typeof mapa!=="object"||!mapa) return; Object.keys(data).forEach(function(id){ mapa[id]=data[id]; }); }\n'+
+      '  try{ if(typeof CLUB_INFO_2026!=="undefined") fus(CLUB_INFO_2026,'+J(infos)+'); }catch(e){}\n'+
+      '  try{ if(typeof CLUB_INFO!=="undefined") Object.keys('+J(infos)+').forEach(function(id){ if(!CLUB_INFO[id]) CLUB_INFO[id]=CLUB_INFO_2026[id]; }); }catch(e){}\n'+
+      '  try{ if(typeof CLUB_META!=="undefined") fus(CLUB_META,'+J(metas)+'); }catch(e){}\n'+
+      '  try{ if(typeof IND_BASE_2026!=="undefined") put(IND_BASE_2026,'+J(inds)+'); }catch(e){}\n'+
+      '  try{ if(typeof CAJA_BASE_2026!=="undefined") put(CAJA_BASE_2026,'+J(cajas)+'); }catch(e){}\n'+
+      '  try{ if(typeof ESTATUTO_INICIAL!=="undefined") put(ESTATUTO_INICIAL,'+J(estat)+'); }catch(e){}\n'+
+      '  try{ if(typeof PODER_CLUB!=="undefined") put(PODER_CLUB,'+J(poder)+'); }catch(e){}\n'+
+      '  try{ if(typeof SITUACION_CLUB!=="undefined") put(SITUACION_CLUB,'+J(sit)+'); }catch(e){}\n'+
+      '  try{ if(typeof ESTADIOS_DATA!=="undefined") put(ESTADIOS_DATA,'+J(estad)+'); }catch(e){}\n'+
+      '  try{ if(typeof ESCUDOS_CLUB!=="undefined") put(ESCUDOS_CLUB,'+J(esc)+'); }catch(e){}\n'+
+      '  try{ if(typeof HISTORIA_LINEA!=="undefined") put(HISTORIA_LINEA,'+J(hist)+'); }catch(e){}\n'+
+      '  try{ if(typeof EPOCAS_CLUB!=="undefined") put(EPOCAS_CLUB,'+J(epo)+'); }catch(e){}\n'+
+      '  try{ if(typeof DECISIONES!=="undefined"){ '+J(decs)+'.forEach(function(d){ if(!DECISIONES.some(function(x){return x.id===d.id;})) DECISIONES.push(d); }); } }catch(e){}\n'+
+      '  try{ if(typeof RIVALIDADES_2026!=="undefined"){ '+J(rivs)+'.forEach(function(p){ if(!RIVALIDADES_2026.some(function(q){return (q[0]===p[0]&&q[1]===p[1])||(q[0]===p[1]&&q[1]===p[0]);})) RIVALIDADES_2026.push(p); }); } }catch(e){}\n'+
+      '  try{ if(typeof DEV_SIN_DATO==="object") Object.assign(DEV_SIN_DATO,'+J(sd)+'); }catch(e){}\n'+
+      '})();\n';
+  }
+
   window.devClonarLigaRigor=devClonarLigaRigor;
+  window.devExportarLigaRigor=devExportarLigaRigor;
 })();

@@ -162,6 +162,25 @@
       // estructural sí lleno: estadio con sectores, escudo, decisión propia, clásico
       t(devDecisionesDe("FCK").length>0, "cada club recibe su decisión propia (vara de Grok)");
       t(devRivalesDe("FCK").length>0, "cada club recibe un clásico (anillo de rivalidades)");
+      /* EXPORT PERSISTENTE: exportar → borrar de memoria → recargar el .js → 100% otra vez */
+      t(typeof devExportarLigaRigor==="function", "exportador de liga a rigor disponible");
+      var meta2={eraKey:"tst_prs", baseEra:"2026", nombre:"Liga Persist TST", pais:"dinamarca", pts:3};
+      var clubs2=[{id:"PZA",n:"Alpha",c:"A",fuerza:70,aforo:9000,est:"Est A",ciudad:"Ciudad A"},
+                  {id:"PZB",n:"Beta",c:"B",fuerza:66,aforo:8000,est:"Est B",ciudad:"Ciudad B"}];
+      devClonarLigaRigor(clubs2, meta2);
+      var jsTxt=devExportarLigaRigor(clubs2, meta2);
+      t(jsTxt.indexOf("registrarLiga")>=0 && jsTxt.length>1000, "el export genera un .js completo ("+jsTxt.length+" chars)");
+      // borrar de memoria
+      ["CLUB_INFO_2026","CLUB_META","IND_BASE_2026","CAJA_BASE_2026","ESTATUTO_INICIAL","PODER_CLUB","SITUACION_CLUB","ESTADIOS_DATA","ESCUDOS_CLUB"].forEach(function(nm){ var m=_devMapa(nm); if(m){ delete m.PZA; delete m.PZB; } });
+      for(var z=DECISIONES.length-1;z>=0;z--){ if(DECISIONES[z].club==="PZA"||DECISIONES[z].club==="PZB") DECISIONES.splice(z,1); }
+      for(var w=RIVALIDADES_2026.length-1;w>=0;w--){ var pr=RIVALIDADES_2026[w]; if(pr[0]==="PZA"||pr[1]==="PZA"||pr[0]==="PZB"||pr[1]==="PZB") RIVALIDADES_2026.splice(w,1); }
+      Object.keys(DEV_SIN_DATO).forEach(function(k){ if(k.indexOf("PZA.")===0||k.indexOf("PZB.")===0) delete DEV_SIN_DATO[k]; });
+      delete LIGAS["tst_prs"]; if(typeof ERA==="object") delete ERA["tst_prs"];
+      t(auditarClub("PZA").pct<100, "tras borrar de memoria, el club ya NO está al 100%");
+      // recargar el .js exportado (como data file fresco)
+      (new Function(jsTxt))();
+      t(auditarLiga("tst_prs").pct===100 && auditarClub("PZA").pct===100 && auditarClub("PZB").pct===100,
+        "cargar el .js exportado reconstruye la liga al 100% (persistencia real)");
     }, "Clonar rigor");
 
     grupo("Cierre de rigor AFA (Claude)");
