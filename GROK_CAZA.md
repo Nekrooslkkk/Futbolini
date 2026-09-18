@@ -553,3 +553,35 @@ Tests +9 (dev 87/87). Core 883/883. Cargar `dev-clonar.js` después de dev-audit
 **[PARA GROK, tu carril si querés]** Falta el **export** del rigor completo a un `.js` persistente
 (hoy el clon es EN VIVO; el scaffold .js exporta solo lo básico). Serializar CLUB_META/SITUACION/
 HISTORIA/ESTADIOS/ESCUDOS/DECISIONES de los clones a un data file sería la Fase 2 de esto.
+
+### NOTA DE CLAUDE (17 · ⭐ HANDOFF — pulí lo nuevo, ahora te toca a vos avanzar B)
+Cerré una **ultra-pulida** de todo lo que metí (Modo Asociación, clon a rigor, generador de ligas,
+seguridad). Estado: **dev 87/87, core 883/883, barrido completo SIN defectos, 0 errores de consola,
+mobile 390px sin desborde**. El panel de Asociación quedó reubicado tras "Jugadas de poder".
+
+El autor quiere llegar a **B (Modo Asociación completo)**. Acordamos que yo dejaba las bases y VOS
+avanzás el motor. Te dejo TODO cableado para que agarres sin arrancar de cero:
+
+**GANCHOS/ESTADO QUE YA EXISTEN (usalos, no los reinventes):**
+- `E.fed = {presidente, mandato, sospecha, reformas:[ids], electo}` — persistente, saneado, lazy-init.
+- `E.flags.fed_conmebol` (contador) — semilla del **salto a la FIFA**.
+- `E.flags.fed_guerra` (contador) — semilla de la **guerra entre asociaciones**.
+- `FED_REFORMAS` (en `federacion-poder.js`): ids `tv_todos`/`menos_desc`/`pro_grandes` — hoy dan efecto
+  inmediato (grupos/plata); `E.fed.reformas` guarda cuáles firmó.
+- `devClonarLigaRigor(clubs, meta)` (en `dev-clonar.js`): clona una liga a rigor 100%.
+
+**PARA GROK — avanza esto (tu carril: motor):**
+1. **Reformas que cambian DE VERDAD el torneo** la próxima temporada. Leé `E.fed.reformas` al armar
+   la temporada y aplicá: `menos_desc` → menos descensos; `pro_grandes` → más cupos internacionales a
+   los grandes; una nueva `puntos` → cambiar `ERA[base].puntosVictoria`. Hoy es solo efecto de grupos.
+2. **Guerra entre asociaciones** con efecto en el Mundo: usando `E.flags.fed_guerra`, que le puedas
+   robar un cupo CONMEBOL / sponsors / una figura a la liga vecina, con reacción de la prensa continental.
+3. **Salto a la FIFA**: cuando `E.flags.fed_conmebol` pase un umbral, desbloquear un nivel más
+   (presidencia CONMEBOL → FIFA) con sus propios poderes. Yo puedo hacer la UI cuando definas el motor.
+4. **Export del clon a `.js` permanente**: hoy `devClonarLigaRigor` aplica EN VIVO (100% en memoria) pero
+   el botón "Descargar .js" del editor exporta solo el scaffold básico. Falta serializar a un data file
+   `CLUB_META / SITUACION_CLUB / HISTORIA_LINEA / ESTADIOS_DATA / ESCUDOS_CLUB / DECISIONES` de los clones.
+
+**Lo mío (avisame y lo hago):** toda la **UI** de lo de arriba (paneles FIFA, guerra, tablero de reformas),
+CSS/ventanas/mobile, y el editor. Vos el motor; yo la cara. Cuando termines un pedazo, dejámelo en tu
+"NOTA PARA CLAUDE" y lo visto.
