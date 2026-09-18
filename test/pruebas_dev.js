@@ -151,6 +151,25 @@
       t(inf.ricos.length<inf.total, "el analizador distingue niveles (no todos ricos)");
     }, "Cobertura");
 
+    grupo("Generador de decisiones propias / dar alma (Claude)");
+    safe(function(){
+      t(typeof crearDecisionDesde==="function" && typeof parsearPegarDecision==="function", "generador de decisiones disponible");
+      var antes=auditarContenido("LAN").decisiones;
+      var r=crearDecisionDesde("club: LAN\nanio: 2026\nbuzon: hinchada\ntitulo: Prueba de alma\ncontexto: Contexto de prueba.\nop: Bancar | +tecnico -hinchada\nop: Cambiar | +hinchada -plata:120");
+      t(r.ok===true, "crea una decisión propia bien formada");
+      t(auditarContenido("LAN").decisiones===antes+1, "el club sube su alma (+1 decisión, "+antes+"→"+auditarContenido("LAN").decisiones+")");
+      var d=DECISIONES.filter(function(x){return x.id===r.id;})[0];
+      t(d && d.club==="LAN" && d.anio===2026 && d.op.length===2 && !!d.op[0].bien, "la carta tiene la forma del motor (club/año/op/bien)");
+      t(d.op[1].grupos && d.op[1].grupos.hinchada===6 && d.op[1].bien.ef.plata===-120, "parsea los efectos (+hinchada, -plata:120)");
+      t(!crearDecisionDesde("club: XX\ntitulo: incompleta").ok, "rechaza una decisión sin opciones");
+      var js=devExportarDecisiones("LAN");
+      t(js.indexOf("DECISIONES.push")>=0, "exporta las decisiones creadas a un .js");
+      var okS=true; try{ new Function(js); }catch(e){ okS=false; }
+      t(okS, "el .js de decisiones exportado es válido");
+      // limpiar para no ensuciar otras pruebas
+      for(var z=DECISIONES.length-1;z>=0;z--){ if(/^dev_lan_/.test(DECISIONES[z].id||"")) DECISIONES.splice(z,1); }
+    }, "Decisiones alma");
+
     grupo("Clonar liga a RIGOR COLO-COLO (Claude)");
     safe(function(){
       t(typeof devClonarLigaRigor==="function", "motor de clonado a rigor disponible");

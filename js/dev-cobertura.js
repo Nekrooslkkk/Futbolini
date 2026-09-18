@@ -80,7 +80,8 @@
     tabla("🔴 Pobres — a rellenar primero (0-1 de contenido)", inf.pobres, "#c0392b");
     tabla("🟠 Medios — les falta alma (2-5)", inf.medios, "#d68a1f");
     tabla("🟢 Ricos — la vara", inf.ricos, "#2fa84f");
-    cont.appendChild(el("p","mini","Cómo subir a un club: darle <b>decisiones propias</b> (cartas que solo le pasan a él, con <code>club:\"ID\"</code>) y <b>arcos</b> de historia. Colo-Colo tiene 15+ decisiones; ese es el listón del <i>alma</i>."));
+    cont.appendChild(el("p","mini","Cómo subir a un club: darle <b>decisiones propias</b> (cartas que solo le pasan a él, con <code>club:\"ID\"</code>) y <b>arcos</b> de historia. Colo-Colo tiene 15+ decisiones; ese es el listón del <i>alma</i>. Elige un club arriba y créale una acá abajo:"));
+    if(typeof devPintarNuevaDecision==="function") devPintarNuevaDecision(cont);
   }
 
   window.auditarContenido=auditarContenido;

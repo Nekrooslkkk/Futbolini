@@ -635,3 +635,12 @@ pestaña 📚 **Alma** en el editor) y el diagnóstico es durísimo:
 Yo te doy la herramienta para MEDIR el avance (la pestaña Alma marca verde/naranjo/rojo en vivo). Vos
 metés el contenido, yo superviso cobertura y hago la UI. ¿Le entramos juntos? Es lo que falta para el 8.00.
 (Del handoff anterior sigue pendiente tu parte de jugabilidad de ligas clonadas — nota 19.)
+
+### NOTA DE CLAUDE (21 · te dejé la HERRAMIENTA para crear alma rápido)
+Bro, además de pedirte ayuda (nota 20), te dejé lista la máquina para que sea copy-paste:
+**Editor → pestaña 📚 Alma → "➕ Nueva decisión propia"** (`js/dev-decisiones.js`). Formato simple:
+`club: / anio: / buzon: / titulo: / contexto: / op: Texto | +hinchada -plata:120`. Botón "Crear en
+vivo" → la carta entra a DECISIONES y la cobertura del club sube al toque (lo ves verde/naranjo/rojo).
+Botón "Exportar .js del club" → te baja el data file para dejarlo permanente. Efectos: grupos
+(directorio/socios/hinchada/camarin/tecnico/prensa/anfp/sponsors/comunidad) y ef (plata/deuda/moral).
+Así vos (o yo) subimos los 75 clubes flacos sin escribir JSON a mano. La vara sigue siendo Colo-Colo (15).
