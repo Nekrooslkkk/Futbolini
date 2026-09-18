@@ -196,6 +196,21 @@
     return false;
   }
 
+  /* inserta el panel justo DESPUÉS de "Jugadas de poder" (la escalada natural del
+     poder); si no lo encuentra, lo cuelga al final. */
+  function _insertarPanel(v,p){
+    try{
+      var ps=v.querySelectorAll(".panel");
+      for(var i=0;i<ps.length;i++){
+        var cab=ps[i].querySelector(".cab");
+        if(cab && (cab.textContent||"").indexOf("Jugadas de poder")>=0){
+          v.insertBefore(p, ps[i].nextSibling); return;
+        }
+      }
+    }catch(e){}
+    v.appendChild(p);
+  }
+
   /* ---------- el panel (se cuelga de Institución) ---------- */
   function panelAsociacion(v){
     if(typeof E!=="object"||!E||!E.grupos||!E.grupos.anfp) return;
@@ -220,7 +235,7 @@
       bp.onclick=function(){ fedPostular(); };
       p.cuerpo.appendChild(bp);
       if(faltan.length) p.cuerpo.appendChild(el("p","mini","Te falta: "+faltan.map(function(r){return r.n.toLowerCase();}).join(", ")+". Sube tu peso con las Jugadas de poder y ganando en la cancha."));
-      v.appendChild(p);
+      _insertarPanel(v,p);
       return;
     }
 
@@ -244,7 +259,7 @@
       p.cuerpo.appendChild(b);
     });
     p.cuerpo.appendChild(el("p","mini","Fase 1 del <b>Modo Asociación</b>. Vienen: guerra abierta entre asociaciones, el salto a la <b>FIFA</b> y control del fútbol mundial."));
-    v.appendChild(p);
+    _insertarPanel(v,p);
   }
 
   /* ---------- avance de año: sube el mandato, baja algo la sospecha ---------- */
