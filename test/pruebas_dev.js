@@ -159,6 +159,28 @@
       t(typeof localizarFed==="function" && localizarFed("Lobby en la ANFP").indexOf("AFA")>=0, "localizarFed traduce ANFP→AFA en partida argentina");
     }, "Localización AFA");
 
+    grupo("Seguridad de texto: huecos que cerró Claude sobre el XSS de Grok");
+    safe(function(){
+      t(typeof textoLimpio==="function" && typeof escHtml==="function", "helpers de Grok presentes (textoLimpio/escHtml)");
+      var xss='<img src=x onerror=alert(1)>Pep';
+      t(textoLimpio(xss).indexOf("<")<0, "textoLimpio quita etiquetas ("+textoLimpio(xss)+")");
+      t(textoLimpio(textoLimpio(xss))===textoLimpio(xss), "textoLimpio es IDEMPOTENTE");
+      // HUECO 1+1b: el nombre del DT, linaje e hijos se sanean en la CARGA (normalizarEstado),
+      // que es la frontera de confianza real (un .fut envenenado se dibuja tras normalizar).
+      nuevaPartida("CC",2026,"historico");
+      E.perfil.nombre='<script>x()</script>Vicente';
+      E.dinastia.linaje='<img onerror=y>Familia';
+      if(!E.perfil.hijos) E.perfil.hijos=[]; E.perfil.hijos.push({nombre:'<b onmouseover=z>Pepe</b>'});
+      normalizarEstado();
+      t(E.perfil.nombre.indexOf("<")<0, "normalizarEstado limpia el NOMBRE DEL DT ("+E.perfil.nombre+")");
+      t(E.dinastia.linaje.indexOf("<")<0, "normalizarEstado limpia el linaje ("+E.dinastia.linaje+")");
+      t(E.perfil.hijos[0].nombre.indexOf("<")<0, "normalizarEstado limpia nombres de hijos");
+      E.perfil.nombre='<img src=x onerror=alert(1)>Vicente'; normalizarEstado();
+      t(E.perfil.nombre==="Vicente", "una etiqueta completa se borra entera, queda el texto ("+E.perfil.nombre+")");
+      // util.js de Grok queda intacto: escHtml no fue tocado
+      t(escHtml("<b>")==="&lt;b&gt;", "escHtml de Grok sigue funcionando (no se tocó su archivo)");
+    }, "Seguridad texto");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

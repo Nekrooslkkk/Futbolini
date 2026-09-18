@@ -416,7 +416,7 @@ function vistaVida(){
   win.appendChild(av);
   const info=el("div","aero-info");
   const inNombre=el("input"); inNombre.className="entrada"; inNombre.value=E.perfil.nombre; inNombre.style.width="100%"; inNombre.placeholder="Tu nombre";
-  inNombre.onchange=()=>{ const val=inNombre.value.trim()||"DT"; E.perfil.nombre=val; if(E.dinastia.generacion<=1) E.dinastia.raiz=val; guardar(); };
+  inNombre.onchange=()=>{ const val=(typeof textoLimpio==="function"?textoLimpio(inNombre.value,40):inNombre.value.trim())||"DT"; E.perfil.nombre=val; inNombre.value=val; if(E.dinastia.generacion<=1) E.dinastia.raiz=val; guardar(); };
   info.appendChild(el("label","lb","Nombre"+(E.dinastia.generacion>1?" (heredado)":"")));
   info.appendChild(inNombre);
   /* 7.0 · edad más piola: stepper simple en vez de escribir la fecha entera */

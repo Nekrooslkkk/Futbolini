@@ -71,7 +71,7 @@ function mpEngancharCanal(dc){
   dc.onclose=function(){ MP.conectado=false; if(typeof mpAlCaer==="function") mpAlCaer(); };
   dc.onmessage=function(ev){
     let m=null; try{ m=JSON.parse(ev.data); }catch(e){ return; }
-    if(m&&m.tipo==="hola"){ MP.rival=m.nombre||"Rival"; if(typeof mpAlConectar==="function") mpAlConectar(); }
+    if(m&&m.tipo==="hola"){ MP.rival=(typeof textoLimpio==="function"?textoLimpio(m.nombre,40):String(m.nombre||"").replace(/<[^>]*>/g,""))||"Rival"; if(typeof mpAlConectar==="function") mpAlConectar(); }
     if(typeof MP.onMensaje==="function") MP.onMensaje(m);
   };
 }

@@ -295,6 +295,23 @@ function normalizarEstado(){
     if(E.tactica.bancaManual===undefined) E.tactica.bancaManual=null;
     if(!E.tactica.roles) E.tactica.roles={}; }
   if(typeof rellenarPlantelLista==="function") rellenarPlantelLista();
+  /* seguridad: sanear texto de usuario en la CARGA (frontera de confianza). saneaEstado
+     (de Grok, en util.js) es idempotente y también corre en guardar(); acá lo llamo para
+     que un slot que se dibuja antes de re-guardar (continuarPartida) tampoco inyecte HTML.
+     saneaEstado cubre clubNombre/dt/plantel/timeline/plopUser; le sumo acá — sin tocar su
+     archivo — los campos que quedaban sueltos: nombre del DT, linaje, pareja e hijos. */
+  if(typeof saneaEstado==="function") saneaEstado(E);
+  if(typeof textoLimpio==="function"){
+    if(E.perfil){
+      if(E.perfil.nombre) E.perfil.nombre=textoLimpio(E.perfil.nombre,40)||"DT";
+      if(E.perfil.pareja&&E.perfil.pareja.nombre) E.perfil.pareja.nombre=textoLimpio(E.perfil.pareja.nombre,40);
+      (E.perfil.hijos||[]).forEach(function(h){ if(h&&h.nombre) h.nombre=textoLimpio(h.nombre,40); });
+    }
+    if(E.dinastia){
+      if(E.dinastia.linaje) E.dinastia.linaje=textoLimpio(E.dinastia.linaje,50);
+      if(E.dinastia.raiz)   E.dinastia.raiz=textoLimpio(E.dinastia.raiz,40);
+    }
+  }
 }
 /* 7.9991 · bolsillo personal a prueba de saves viejos o a medias */
 function bolsilloDT(delta){
