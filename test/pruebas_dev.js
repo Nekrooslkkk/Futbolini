@@ -171,6 +171,40 @@
       t(propiosOHI.every(function(id){ return ids.indexOf(id)>=0; }), "todos los arcos propios de OHI llegan");
     }, "Arcos propios");
 
+    grupo("Modo Asociación: subir a controlar la ANFP/AFA (Claude)");
+    safe(function(){
+      t(typeof fedEstado==="function" && typeof fedPostular==="function" && typeof FED_PODERES!=="undefined", "sistema de Asociación disponible");
+      nuevaPartida("CC",2026,"historico");
+      // sin requisitos, no se puede postular
+      E.grupos.anfp.aprob=0; E.capital=10; E.ind.prestigio=40;
+      t(!fedPuedePostular(), "sin peso/capital/prestigio NO se puede postular");
+      SEC="institucion"; render();
+      var vt=(document.getElementById("vista")||{}).textContent||"";
+      t(vt.indexOf("La Asociación")>=0 && vt.indexOf("Postular")>=0, "el panel de Asociación aparece en Institución");
+      // con requisitos, sí; postular con victoria forzada
+      E.grupos.anfp.aprob=60; E.capital=120; E.ind.prestigio=80; E.rep.credibilidad=90;
+      t(fedPuedePostular(), "con peso+capital+prestigio SÍ se puede postular");
+      var _r=Math.random, _c=window.confirm; Math.random=function(){return 0.01;}; window.confirm=function(){return true;};
+      fedPostular(); Math.random=_r; window.confirm=_c;
+      t(fedEstado().presidente===true, "gana la elección y preside la asociación");
+      SEC="institucion"; render();
+      var vt2=(document.getElementById("vista")||{}).textContent||"";
+      t(vt2.indexOf("Presides")>=0 && vt2.indexOf("Poderes de la asociación")>=0, "la UI cambia a presidente con sus poderes");
+      // poder corrupto: sube plata y sospecha; con random alto no estalla
+      var plata0=E.plata, s0=fedEstado().sospecha, _r2=Math.random; Math.random=function(){return 0.99;};
+      fedHacerPoder(FED_PODERES.filter(function(p){return p.id==="tv_favor";})[0]); Math.random=_r2;
+      t(E.plata>plata0, "'Repartir la TV a tu favor' mete plata al club");
+      t(fedEstado().sospecha>s0, "las movidas turbias suben la sospecha ("+s0+"→"+fedEstado().sospecha+")");
+      // amaño: mod de arbitraje real
+      var _r3=Math.random; Math.random=function(){return 0.99;};
+      fedHacerPoder(FED_PODERES.filter(function(p){return p.id==="amanar";})[0]); Math.random=_r3;
+      t(typeof modSuma==="function" && modSuma("arbitraje")>0, "'Amañar' deja un mod de arbitraje para tu club");
+      // escándalo: sospecha alta + suerte pésima → destitución
+      fedEstado().sospecha=90; var _r4=Math.random; Math.random=function(){return 0.0;};
+      var estallo=fedChequearEscandalo(); Math.random=_r4;
+      t(estallo===true && fedEstado().presidente===false, "con sospecha alta estalla el escándalo y te destituyen");
+    }, "Modo Asociación");
+
     grupo("Localización de federación AFA→ANFP (Claude)");
     safe(function(){
       t(typeof localizarFed==="function" && typeof sincronizarGrupoFed==="function", "sistema de federación disponible");

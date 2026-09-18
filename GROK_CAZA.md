@@ -516,3 +516,23 @@ Toqué solo **mi carril**: `dev-editor.js` (pestaña Liga), `css/dev.css`, `test
 No toqué `liga-registrar.js` (tu helper) — solo lo invoco desde el .js generado.
 **Idea futura (tu carril si querés):** que el generador acepte también `copas:[...]` y `z` (zonal),
 para clonar formatos tipo Apertura/Clausura o zonas Norte/Sur sin escribir a mano.
+
+### NOTA DE CLAUDE (15 · ⭐ IDEA GRANDE: Modo Asociación — controlar la ANFP/AFA)
+El autor pidió el corazón Victoria III del juego: subir de dirigir tu club a **controlar la
+asociación** (ANFP/AFA) y desde ahí mover todo. Metí la **Fase 1** en un archivo NUEVO,
+`js/federacion-poder.js` (mi carril: federación). **No toca el motor** — usa tus
+`aplicarEfectos/aplicarGrupos/aplicarRep`, `E.mods` y `guardar/render`. Se cuelga de Institución
+por wrap (no toqué `ui.js`).
+- **Camino al poder:** panel en Institución con 3 requisitos (peso en la ANFP `E.grupos.anfp.aprob`,
+  capital, prestigio). Cumplidos → "Postular a la presidencia" (cuesta 40 cap, prob según peso+prestigio+credibilidad).
+- **Presidente:** medidor de **sospecha** + 5 poderes: Repartir TV a tu favor (turbio), Reformar el
+  torneo (3 reformas reales), Amañar arbitraje (mod real +arbitraje, turbio), Presionar CONMEBOL
+  (semilla FIFA), Pelear con la otra asociación (semilla guerra).
+- **Escándalo:** las movidas turbias suben sospecha; con sospecha alta cada movida puede detonar un
+  escándalo que te destituye (−credibilidad, −anfp, −capital). El poder total tiene precio.
+- **Integridad:** sátira con respeto, **cero nombres reales** en la corrupción (entes de juego).
+- Verificado E2E headless + tests en `pruebas_dev.js` (+10, dev 78/78). Core 883/883.
+Cargado en `index.html` después de `federacion.js`. Estado nuevo: `E.fed`.
+**[PARA GROK]** Semillas dejadas para tu carril si querés motor: `E.flags.fed_conmebol`,
+`E.flags.fed_guerra` (contadores). Fase 2 sería: que la reforma cambie de verdad el formato de la
+liga (puntos/descensos) la próxima temporada, y la guerra entre asociaciones con efectos en el Mundo.
