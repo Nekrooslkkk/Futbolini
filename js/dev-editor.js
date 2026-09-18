@@ -79,7 +79,7 @@
       var c=el("div","cuerpo"); box.appendChild(c);
 
       var tabs=el("div","fichas dev-tabs");
-      [["rigor","📏 Rigor"],["club","🏟️ Club"],["nuevo","➕ Nuevo"],["liga","🏆 Liga"],["exportar","💾 Exportar"]].forEach(function(t){
+      [["rigor","📏 Rigor"],["club","🏟️ Club"],["nuevo","➕ Nuevo"],["liga","🏆 Liga"],["alma","📚 Alma"],["exportar","💾 Exportar"]].forEach(function(t){
         var b=el("button","ficha",t[1]);
         b.setAttribute("aria-pressed",TAB===t[0]?"true":"false");
         b.onclick=function(){ TAB=t[0]; pintar(); };
@@ -90,13 +90,14 @@
       function pintar(){
         c.innerHTML=""; c.appendChild(tabs);
         Array.prototype.forEach.call(tabs.children,function(b,i){
-          b.setAttribute("aria-pressed",["rigor","club","nuevo","liga","exportar"][i]===TAB?"true":"false");
+          b.setAttribute("aria-pressed",["rigor","club","nuevo","liga","alma","exportar"][i]===TAB?"true":"false");
         });
         cont.innerHTML=""; c.appendChild(cont);
         if(TAB==="rigor") pintarRigor(cont,pintar);
         else if(TAB==="club") pintarClub(cont,pintar);
         else if(TAB==="nuevo") pintarNuevo(cont,pintar);
         else if(TAB==="liga") pintarLiga(cont,pintar);
+        else if(TAB==="alma"){ if(typeof devPintarCobertura==="function") devPintarCobertura(cont); else cont.appendChild(el("p","mini","Analizador de contenido no cargó.")); }
         else pintarExportar(cont,pintar);
         var x=el("button","btn-aqua ancho","Cerrar"); x.style.marginTop="10px";
         x.onclick=cerrarModal; c.appendChild(x);

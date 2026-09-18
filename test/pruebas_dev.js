@@ -117,7 +117,7 @@
       DEV_ON=true; if(!E.flags)E.flags={}; E.flags.dev=true;
       abrirEditorContenido();
       var tabs=document.querySelectorAll(".dev-tabs .ficha");
-      t(tabs.length===5, "el editor tiene 5 pestañas (Rigor/Club/Nuevo/Liga/Exportar)");
+      t(tabs.length===6, "el editor tiene 6 pestañas (Rigor/Club/Nuevo/Liga/Alma/Exportar)");
       tabs[3].click(); // Liga
       var m=document.querySelector(".modal.dev-editor");
       t(!!m && !!m.querySelector(".dev-liga-nueva"), "la pestaña Liga ofrece 'Liga nueva — generar .js'");
@@ -139,6 +139,17 @@
       t(js2.indexOf("onerror")<0, "el generador recorta HTML de los nombres (anti-XSS)");
       cerrarModal();
     }, "Liga nueva");
+
+    grupo("Cobertura de contenido / Alma por club (Claude)");
+    safe(function(){
+      t(typeof auditarContenido==="function" && typeof devInformeCobertura==="function", "analizador de cobertura disponible");
+      var cc=auditarContenido("CC");
+      t(cc.decisiones>=6 && cc.nivel==="rico", "Colo-Colo es 'rico' en alma ("+cc.decisiones+" decisiones)");
+      var inf=devInformeCobertura();
+      t(inf.total>=40, "recorre todos los clubes dirigibles ("+inf.total+")");
+      t(inf.pobres.length>0, "detecta clubes 'pobres' de contenido ("+inf.pobres.length+")");
+      t(inf.ricos.length<inf.total, "el analizador distingue niveles (no todos ricos)");
+    }, "Cobertura");
 
     grupo("Clonar liga a RIGOR COLO-COLO (Claude)");
     safe(function(){
