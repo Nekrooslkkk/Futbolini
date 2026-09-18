@@ -2697,3 +2697,11 @@ El número retrocede a **7.9000**; las features de 7.999xx se quedan. No es 8.00
 - **XSS:** `saneaEstado` + `escHtml` en calendario/previa.
 - Tests T53. **No 8.00.** BTC hueco. Segunda = cantera.
 
+
+## 7.9002 · Liga clonada completa (copa doméstica)
+El autor: una liga tiene que estar completa, no solo el campeonato. Brasil + estaduales = futuro (sin inventar clubes).
+
+- **Copa automática** al registrar/clonar una liga nueva. KO con los clubes de esa liga. No es Copa Chile.
+- Picker del inicio: pestaña por liga clonada. Calendario titula con el nombre de la liga.
+- Plop del momento táctico entra al ticker (y al feed). Tendencias localizadas.
+- Tests T54. **No 8.00.** BTC hueco. Segunda = cantera.

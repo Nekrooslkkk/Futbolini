@@ -227,6 +227,9 @@
       var L=preguntasDeLiga({rivalNombre:"Brondby",fuerzaRival:74,local:true});
       var qs=L.map(function(x){return x.q;}).join(" ");
       t(!/Copa Chile/.test(qs), "una liga clonada no pregunta por Copa Chile");
+      t(typeof nombreCopaDomestica==="function", "nombreCopaDomestica (liga completa)");
+      t((E.calendario||[]).some(function(p){ return p.tipo==="copa" && !/Copa Chile/i.test(p.torneo||""); }),
+        "el clon trae copa doméstica en el calendario");
     }, "Liga clonada jugable");
 
     grupo("Cierre de rigor AFA (Claude)");

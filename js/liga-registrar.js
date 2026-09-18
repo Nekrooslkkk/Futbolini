@@ -74,6 +74,11 @@ function registrarLiga(cfg){
   });
   if(cfg.copas && cfg.copas.length){
     COPAS_DE_LIGA[era]=(COPAS_DE_LIGA[era]||[]).concat(cfg.copas);
+  } else if(clubs.length>=2 && typeof esEraHardcode==="function" && !esEraHardcode(era)){
+    /* liga clonada/nueva: copa doméstica automática (el campeonato solo no es liga completa) */
+    var nomCopa=_nombreCopaDeMeta(cfg.nombre||era);
+    COPAS_DE_LIGA[era]=[{id:"copaDom", nombre:nomCopa, tipo:"eliminacion"}];
+    if(typeof ERA==="object" && ERA[era]) ERA[era].copa=nomCopa;
   }
   return clubs.length;
 }
@@ -158,3 +163,146 @@ function fechasSemanales(m0, d0, n, topeM){
   }
   return out;
 }
+
+/* ---------- copa doméstica de una liga registrada / clonada ----------
+   Una liga completa = campeonato + copa. Si el autor no pasó copas:[],
+   se arma un KO con los clubes de ESA liga (cero clubes inventados).
+   Ligas estatales (Brasil, etc.) = copas:[{tipo:"estatal",...}] cuando
+   haya clubes documentados. No se inventan. */
+function _nombreCopaDeMeta(nombre){
+  var n=String(nombre||"").replace(/^(Liga|Superliga|Campeonato)(\s+(de|Profesional))?\s+/i,"").trim();
+  if(!n) n=String(nombre||"").trim();
+  if(!n) return "Copa doméstica";
+  if(/^Copa\s/i.test(n)) return n;
+  return "Copa "+n;
+}
+function nombreCopaDomestica(era){
+  era=era||(typeof E!=="undefined"&&E?E.eraBase:null);
+  var copas=(typeof copasDeLiga==="function")?copasDeLiga(era):((typeof COPAS_DE_LIGA==="object"&&COPAS_DE_LIGA[era])||[]);
+  if(copas.length && copas[0] && copas[0].nombre) return copas[0].nombre;
+  if(typeof ERA==="object" && ERA[era] && ERA[era].copa) return ERA[era].copa;
+  var n=(typeof ERA==="object" && ERA[era] && ERA[era].n) || "";
+  return _nombreCopaDeMeta(n||era||"doméstica");
+}
+function _rondasCopaN(n){
+  n=n||2;
+  if(n<=2) return ["FINAL"];
+  if(n<=4) return ["Semifinal","FINAL"];
+  if(n<=8) return ["Cuartos","Semifinal","FINAL"];
+  if(n<=16) return ["Octavos","Cuartos","Semifinal","FINAL"];
+  return ["16avos","Octavos","Cuartos","Semifinal","FINAL"];
+}
+function _rivalesCopaDom(clubId, era){
+  var clubs=(typeof LIGAS==="object" && LIGAS[era])?LIGAS[era]:[];
+  return clubs.filter(function(c){ return c&&c.id&&c.id!==clubId; })
+    .slice().sort(function(a,b){ return String(a.id).localeCompare(String(b.id)); });
+}
+function _mkCopaDom(clubId, riv, torneo, ronda, f, local){
+  var yo=_clubCal(clubId);
+  var cRiv=riv||{};
+  local=!!local;
+  return {
+    tipo:"copa", torneo:torneo, ronda:ronda,
+    rivalId:cRiv.id||null,
+    rivalNombre:cRiv.n||cRiv.c||cRiv.id||"ganador de la otra llave",
+    fuerzaRival:cRiv.fuerza||62,
+    local:local,
+    sede:local?((yo&&yo.est)||"local"):(cRiv.est||"estadio neutral"),
+    f:f||{m:3,d:12}, jugado:false,
+    clima:(typeof climaDeFecha==="function")?climaDeFecha((f&&f.m)||3,"copaDom"+clubId+ronda):"despejado",
+    notaId:"CD-"+(clubId||"x")+"-"+(ronda||"R")
+  };
+}
+function partidosCopaDomesticaDe(clubId, era){
+  era=era||(typeof E!=="undefined"&&E?E.eraBase:null);
+  if(!era || (typeof esEraHardcode==="function" && esEraHardcode(era))) return [];
+  var clubs=(typeof LIGAS==="object" && LIGAS[era])?LIGAS[era]:[];
+  if(!clubs || clubs.length<2) return [];
+  var rivs=_rivalesCopaDom(clubId, era);
+  if(!rivs.length) return [];
+  var rondas=_rondasCopaN(clubs.length);
+  var nom=nombreCopaDomestica(era);
+  return [_mkCopaDom(clubId, rivs[0], nom, rondas[0], {m:3,d:12}, true)];
+}
+function resolverCopaDomestica(part, yo, otro){
+  var nom=nombreCopaDomestica();
+  var pasa=yo>otro, pens=false;
+  if(yo===otro){ pasa=Math.random()<0.5; pens=true; }
+  var extra=pens?" Empate: a penales.":"";
+  if(!pasa){
+    if(typeof sacarCopaPendienteTorneo==="function") sacarCopaPendienteTorneo(nom);
+    else if(E&&E.calendario) E.calendario=E.calendario.filter(function(p){ return !(p.tipo==="copa"&&p.torneo===nom&&!p.jugado); });
+    if(typeof notificar==="function") notificar({t:"Eliminado de "+nom,tipo:"malo",
+      d:"Fuera en "+(part.ronda||"ronda")+" "+yo+"-"+otro+" ante "+(part.rivalNombre||"el rival")+"."+extra});
+    if(typeof aplicarEfectos==="function") aplicarEfectos({moral:-3,prestigio:-1});
+    return;
+  }
+  if(part.ronda==="FINAL"){
+    E.flags=E.flags||{};
+    E.flags.copaCampeon=true;
+    E.flags.copaCampeonTorneo=nom;
+    if(E.titulos && E.titulos.indexOf(E.anio+" · "+nom)<0) E.titulos.push(E.anio+" · "+nom);
+    if(typeof notificar==="function") notificar({t:"🏆 CAMPEÓN — "+nom,tipo:"bueno",
+      d:"Campeón de "+nom+" "+E.anio+"."+extra});
+    if(typeof aplicarEfectos==="function") aplicarEfectos({moral:8,prestigio:6,plata:180});
+    return;
+  }
+  if(typeof aplicarEfectos==="function") aplicarEfectos({moral:3,plata:40});
+  var era=E&&E.eraBase;
+  var clubs=(typeof LIGAS==="object" && LIGAS[era])?LIGAS[era]:[];
+  var rondas=_rondasCopaN(clubs.length);
+  var idx=rondas.indexOf(part.ronda);
+  var nxtR=rondas[idx+1]||"FINAL";
+  var ya=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"&&p.torneo===nom; }).map(function(p){ return p.rivalId; });
+  var resto=_rivalesCopaDom(E.club, era).filter(function(c){ return ya.indexOf(c.id)<0; });
+  resto.sort(function(a,b){ return (b.fuerza||0)-(a.fuerza||0); });
+  var next=resto[0]||{id:null, n:"ganador de la otra llave", fuerza:64, est:"estadio neutral"};
+  var f={m:Math.min(11, ((part.f&&part.f.m)||3)+2), d:18};
+  var p=_mkCopaDom(E.club, next, nom, nxtR, f, false);
+  if(typeof notificar==="function") notificar({t:"Avanza en "+nom,tipo:"bueno",
+    d:"Pasaste "+(part.ronda||"ronda")+"."+extra+" Sigue "+nxtR+"."});
+  if(typeof insertarCopaYOrdenar==="function") insertarCopaYOrdenar([p]);
+  else if(E&&E.calendario){
+    E.calendario.push(p);
+    E.calendario.sort(function(a,b){
+      var oa=(typeof ordenFecha==="function")?ordenFecha(a.f):(a.f.m*100+(a.f.d||1));
+      var ob=(typeof ordenFecha==="function")?ordenFecha(b.f):(b.f.m*100+(b.f.d||1));
+      return oa-ob;
+    });
+  }
+}
+(function wrapCalendarioCopaDom(){
+  if(typeof construirCalendario!=="function" || construirCalendario._copaDom) return;
+  var orig=construirCalendario;
+  construirCalendario=function(clubId, anio, conCopa){
+    if(typeof resolverCopa==="function" && !resolverCopa._copaDom){
+      var origR=resolverCopa;
+      resolverCopa=function(part, yo, otro){
+        try{
+          var nom=(typeof nombreCopaDomestica==="function")?nombreCopaDomestica():"";
+          if(part && part.tipo==="copa" && nom && part.torneo===nom){
+            resolverCopaDomestica(part, yo, otro); return;
+          }
+        }catch(e){}
+        return origR.apply(this, arguments);
+      };
+      resolverCopa._copaDom=true;
+    }
+    var cal=orig(clubId, anio, conCopa)||[];
+    var era=(typeof E!=="undefined"&&E&&E.eraBase)||null;
+    if(era && typeof esEraHardcode==="function" && !esEraHardcode(era) && conCopa!==false){
+      var ya=cal.some(function(p){ return p&&p.tipo==="copa"; });
+      if(!ya){
+        (partidosCopaDomesticaDe(clubId, era)||[]).forEach(function(p){ cal.push(p); });
+        cal.sort(function(a,b){
+          var oa=(typeof ordenFecha==="function")?ordenFecha(a.f):(a.f.m*100+(a.f.d||1));
+          var ob=(typeof ordenFecha==="function")?ordenFecha(b.f):(b.f.m*100+(b.f.d||1));
+          return oa-ob;
+        });
+      }
+    }
+    return cal;
+  };
+  construirCalendario._copaDom=true;
+})();
+

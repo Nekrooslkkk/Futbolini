@@ -591,10 +591,14 @@ function preguntasDeLiga(part){
   const riv=_nomRivLimpio(part);
   const pais=(typeof paisDeEra==="function")?paisDeEra(typeof E!=="undefined"&&E?E.eraBase:null):"chile";
   const custom=typeof E!=="undefined"&&E&&E.eraBase&&typeof esEraHardcode==="function"&&!esEraHardcode(E.eraBase);
-  const copa=(typeof fedCopa==="function")?fedCopa():(pais==="argentina"?"Copa Argentina":"Copa Chile");
+  const copa=(typeof nombreCopaDomestica==="function" && custom)
+    ? nombreCopaDomestica(E.eraBase)
+    : ((typeof fedCopa==="function")?fedCopa():(pais==="argentina"?"Copa Argentina":"Copa Chile"));
   const fed=(typeof fedSigla==="function")?fedSigla():(pais==="argentina"?"AFA":"ANFP");
   const L=[];
   if(custom){
+    L.push({q:"¿La "+copa+" entra en los planes o prioriza el campeonato?",ops:[
+       {t:"El campeonato es la prioridad",k:"calma"},{t:"Vamos por las dos competencias",k:"confianza"},{t:"La copa también se pelea, punto",k:"palo"}]});
     L.push({q:"En esta liga el relato todavía se está armando. ¿Qué identidad quiere marcar ante "+riv+"?",ops:[
        {t:"Trabajo silencioso, que hablen los puntos",k:"calma"},{t:"Una idea propia, que se note",k:"confianza"},{t:"Que se enteren quién manda",k:"palo"}]});
     L.push({q:"El calendario de una liga que no es la de siempre. ¿Cómo lo toma el grupo?",ops:[
@@ -999,7 +1003,7 @@ function pintarPartido(){
     const tk=el("div","ticker");
     P.ticker.slice(0,10).forEach(t=>{
       const d=el("div","tk "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"")));
-      d.innerHTML="<b>"+t.autor+"</b> <span class='mini'>"+t.m+"'</span><br>"+t.texto;
+      d.innerHTML="<b>"+((typeof escHtml==="function")?escHtml(t.autor):t.autor)+"</b> <span class='mini'>"+(t.m||"?")+"'</span><br>"+((typeof escHtml==="function")?escHtml(t.texto):t.texto);
       tk.appendChild(d);
     });
     p.cuerpo.appendChild(tk);
@@ -1225,7 +1229,11 @@ function mostrarMomento(){
       const fg=el("div","fg-opina");
       fg.appendChild(el("div","fg-cab","📱 Plop! opina · lee a la gente"));
       const handles=(typeof HANDLES_HINCHA!=="undefined"&&HANDLES_HINCHA.length)?HANDLES_HINCHA:["@hincha_de_ley","@barra_del_fondo","@pibe_popular23"];
-      opin.forEach(op=>{ fg.appendChild(el("div","fg-op","<b>"+elige(handles)+"</b> "+op.t)); });
+      opin.forEach(op=>{
+        const h=elige(handles);
+        fg.appendChild(el("div","fg-op","<b>"+h+"</b> "+((typeof escHtml==="function")?escHtml(op.t):op.t)));
+        if(P.ticker) P.ticker.unshift({autor:h, texto:op.t, tono:"neutro", m:P.min||0});
+      });
       p.cuerpo.appendChild(fg);
     }
   }

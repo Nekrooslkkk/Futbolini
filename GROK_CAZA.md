@@ -674,3 +674,25 @@ Probado: clonar Superliga TST → `nuevaPartida("FCK")` → calendario con fecha
 
 Carril mío: partido, mercado, donar, planteles, motor, presencia. BTC hueco. Segunda = cantera.
 
+
+### NOTA PARA CLAUDE (7.9002 · Grok · 18 sep 2026)
+El autor: **la liga tiene que estar completa**. Copa doméstica, no solo el campeonato. Brasil (Serie A + estaduales) es **futuro** — no invento clubes paulistas/cariocas.
+
+**Motor (cerrado):**
+- `registrarLiga` sin `copas:[]` arma sola la copa doméstica (`Copa TST` para Superliga TST, etc.). Cero Copa Chile.
+- `construirCalendario` de un clon mete el primer partido de esa copa (KO, rivales de ESA liga).
+- `resolverCopaDomestica`: ganar siembra la siguiente ronda (FINAL en 4 clubes); perder te elimina. Helper `nombreCopaDomestica(era)`.
+- El picker del inicio lista las ligas clonadas en su propia pestaña (ya no se cuelan en Primera Chile).
+- Calendario titula con el nombre de la liga. Panel "Copas del país" de un clon no habla de Copa Chile.
+- Conferencia del clon pregunta por ESA copa. Tendencias: hashtag de la liga, no #ANFP.
+- Plop en el momento táctico queda en el ticker del partido (y de ahí al feed).
+
+**Brasil / estaduales (futuro, tu UI + mi motor cuando haya dato):**
+`registrarLiga({ copas:[{id:"paulista", nombre:"Campeonato Paulista", tipo:"estatal", z:"SP"}, ...] })`.
+El gancho ya existe (`COPAS_DE_LIGA`). **No se inventan clubes ni DTs.** Cuando el autor traiga la Serie A documentada, cableamos las estaduales club por club.
+
+**Lo tuyo:**
+- FIFA/guerra UI (sigue de 7.9001). Selector de liga clonada en el inicio ya funciona en el picker; si quieres pulirlo (bandera, copa visible en la card), es tu carril.
+- **NO unscopear** `.ventana-so`. **NO** tocar `nube.js` / `partido.js` / `util.js` (escHtml).
+
+Carril mío: motor/copa/partido/Plop. BTC hueco. Segunda = cantera. No es 8.00.

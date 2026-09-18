@@ -103,10 +103,18 @@ function tendencias(){
   }
   if(part) t.push({tag:"#"+String(part.rivalNombre||"rival").replace(/\s+/g,""), n:ri(1200,18000)});
   t.push({tag:"#"+(E.clubNombre||"Club").replace(/\s+/g,""), n:ri(3000,40000)});
-  t.push({tag:"#LigaDePrimera", n:ri(8000,55000)});
-  if(E.anio===1991) t.push({tag:"#Libertadores91", n:ri(2000,22000)});
+  var custom=typeof esEraHardcode==="function" && E && !esEraHardcode(E.eraBase);
+  if(custom){
+    var ln=(typeof ERA==="object"&&ERA[E.eraBase]&&ERA[E.eraBase].n)||String(E.eraBase||"");
+    t.push({tag:"#"+String(ln).replace(/\s+/g,""), n:ri(800,12000)});
+    var copaTag=(typeof nombreCopaDomestica==="function")?nombreCopaDomestica(E.eraBase):"";
+    if(copaTag) t.push({tag:"#"+String(copaTag).replace(/\s+/g,""), n:ri(400,7000)});
+  } else {
+    t.push({tag:"#LigaDePrimera", n:ri(8000,55000)});
+    if(E.anio===1991) t.push({tag:"#Libertadores91", n:ri(2000,22000)});
+    t.push({tag:"#ANFP", n:ri(400,7000)});
+  }
   if((E.ind&&E.ind.moral)<45) t.push({tag:"#RenunciaYa", n:ri(900,9000)});
-  t.push({tag:"#ANFP", n:ri(400,7000)});
   return t;
 }
 /* pools de tweets con sabor: aliento, calor de clásico y hostiles (para el auto-troleo) */

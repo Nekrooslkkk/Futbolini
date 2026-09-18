@@ -2055,7 +2055,7 @@
     /* T53 · 7.9001 ligas clonadas jugables + reformas de verdad */
     grupo("Grok 7.9001 (clon jugable + reformas)");
     safe(function(){
-      ok(VERSION==="7.9001", "VERSION 7.9001");
+      ok(VERSION==="7.9001" || VERSION==="7.9002" || /^7\.9/.test(VERSION), "VERSION 7.9x");
       ok(typeof eraCustomDeClub==="function" && typeof clubEnLigasRegistradas==="function", "helpers de liga clonada");
       ok(typeof aplicarReformasAlTorneo==="function" && typeof aplicarSaltoFed==="function" && typeof aplicarGuerraFed==="function", "motor de asociación");
       ok(typeof preguntasDeLiga==="function", "preguntas localizadas por liga");
@@ -2114,6 +2114,34 @@
       saneaEstado(E);
       ok(E.calendario[0] && String(E.calendario[0].rivalNombre).indexOf("<")<0, "saneaEstado limpia rivalNombre del calendario");
     }, "XSS residual calendario");
+    /* T54 · 7.9002 liga completa: copa doméstica del clon */
+    grupo("Grok 7.9002 (liga completa + copa doméstica)");
+    safe(function(){
+      ok(VERSION==="7.9002", "VERSION 7.9002");
+      ok(typeof nombreCopaDomestica==="function" && typeof partidosCopaDomesticaDe==="function", "helpers copa doméstica");
+      var clubs=[
+        {id:"FCK",n:"FC Kobenhavn",c:"Kobenhavn",fuerza:80,aforo:38000,est:"Parken",ciudad:"Copenhague"},
+        {id:"BIF",n:"Brondby",c:"Brondby",fuerza:74,aforo:28000,est:"Brondby Stadion",ciudad:"Brondby"},
+        {id:"FCM",n:"Midtjylland",c:"Herning",fuerza:76,aforo:12000,est:"MCH Arena",ciudad:"Herning"},
+        {id:"AGF",n:"AGF Aarhus",c:"Aarhus",fuerza:68,aforo:20000,est:"Ceres Park",ciudad:"Aarhus"}
+      ];
+      registrarLiga({eraKey:"tst_din", clubs:clubs, baseEra:2026, nombre:"Superliga TST"});
+      var copasReg=(typeof copasDeLiga==="function")?copasDeLiga("tst_din"):[];
+      ok(copasReg.length>=1 && !/Copa Chile/i.test(copasReg[0].nombre||""), "registrarLiga arma copa doméstica (no Copa Chile) — "+(copasReg[0]&&copasReg[0].nombre));
+      nuevaPartida("FCK",2026,"historico");
+      var copas=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"; });
+      ok(copas.length>=1, "el calendario del clon trae la copa ("+copas.length+")");
+      ok(copas[0] && !/Copa Chile/i.test(copas[0].torneo||""), "la copa no se llama Copa Chile — "+(copas[0]&&copas[0].torneo));
+      ok(copas[0] && copas[0].rivalId && copas[0].rivalId!=="FCK", "la copa es contra un club de la misma liga");
+      var L=preguntasConferencia(copas[0]);
+      var qs=L.map(function(x){return x.q;}).join(" ");
+      ok(!/Copa Chile/.test(qs), "conferencia del clon no pregunta Copa Chile");
+      ok(/Copa TST|Copa Superliga|campeonato/.test(qs), "conferencia nombra la copa de esa liga");
+      var tags=tendencias().map(function(x){return x.tag;}).join(" ");
+      ok(!/#ANFP/.test(tags), "tendencias de una liga clonada no empujan #ANFP");
+      if(typeof resolverCopa==="function") resolverCopa(copas[0], 2, 0);
+      ok((E.calendario||[]).some(function(p){ return p.tipo==="copa" && p.ronda==="FINAL"; }), "ganar la semifinal siembra la FINAL");
+    }, "liga completa con copa");
     safe(function(){
       try{
         ["FCK","BIF","FCM","AGF"].forEach(function(id){
@@ -2124,6 +2152,7 @@
         });
         if(typeof LIGAS==="object") delete LIGAS.tst_din;
         if(typeof ERA==="object") delete ERA.tst_din;
+        if(typeof COPAS_DE_LIGA==="object") delete COPAS_DE_LIGA.tst_din;
         if(typeof clubMapaTodosReset==="function") clubMapaTodosReset();
       }catch(e){}
       ok(true, "limpia clones de prueba");

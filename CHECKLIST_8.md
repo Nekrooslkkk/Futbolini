@@ -7,7 +7,7 @@
 ## Estado verificado (barrido automático de Claude · headless)
 - ✅ 79 clubes jugables botean en su época. 316 partidos simulados. **0 errores de consola.**
 - ✅ Todas las secciones renderizan sin excepción en las 3 divisiones + AFA + 1925/1991/2006.
-- ✅ Suite de regresión: **907/907** verde (Grok 7.9001 T53 clon jugable + reformas + FIFA/guerra + preguntas por liga). Dev **113/113**.
+- ✅ Suite de regresión: **917/917** verde (Grok 7.9002 T54 copa doméstica del clon). Dev **115/115**.
 - → Conclusión: el motor NO crashea. Lo que falta para 8.00 es UX y rigor de datos.
 
 ## RIGOR (auditor de Claude · vara = Colo-Colo)
@@ -37,6 +37,7 @@
 - [x] Ligas clonadas jugables (calendario + eraBase + clubMundo) — Grok 7.9001
 - [x] Reformas de asociación cambian el torneo (puntos/descensos/cupos) + semillas FIFA/guerra — Grok 7.9001
 - [x] Preguntas de conferencia localizadas (Boca ≠ Copa Chile) — Grok 7.9001
+- [x] Liga clonada COMPLETA: copa doméstica + picker + Plop al ticker — Grok 7.9002
 - [ ] Formato Segunda liguilla de 7: dato listo, ¿motor cerrado? *(verificar con Grok)*
 
 ## DECISIONES DEL AUTOR (pendientes de tu OK)

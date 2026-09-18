@@ -202,14 +202,26 @@ function pickerClubes(cont){
     add(id,CLUB_INFO[id],"Primera",!!jugo);
   });
   if(typeof CLUB_INFO_2026!=="undefined") Object.keys(CLUB_INFO_2026)
-    .filter(id=>(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]) && idsB.indexOf(id)<0 && idsC.indexOf(id)<0 && idsA.indexOf(id)<0)
+    .filter(id=>(typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]) && idsB.indexOf(id)<0 && idsC.indexOf(id)<0 && idsA.indexOf(id)<0
+      && !(typeof eraCustomDeClub==="function" && eraCustomDeClub(id)))
     .forEach(id=>add(id,CLUB_INFO_2026[id],"Primera",false));
   if(typeof LIGA_B_2026!=="undefined") LIGA_B_2026.forEach(c=>add(c.id,(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c,"Primera B",false));
   if(typeof LIGA_C_2026!=="undefined") LIGA_C_2026.forEach(c=>add(c.id,(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c,"Segunda",false));
   if(typeof LIGA_ARG_2026!=="undefined") LIGA_ARG_2026.forEach(c=>add(c.id,(typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c,"Argentina",false));
+  const extraLigas=[];
+  if(typeof LIGAS==="object" && typeof esEraHardcode==="function"){
+    Object.keys(LIGAS).forEach(function(k){
+      if(esEraHardcode(k)||esEraHardcode(+k)) return;
+      const L=LIGAS[k]; if(!L||!L.length) return;
+      const nom=(typeof ERA==="object"&&ERA[k]&&ERA[k].n)||k;
+      extraLigas.push({k:k, n:nom});
+      L.forEach(function(c){ add(c.id, (typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c, nom, false); });
+    });
+  }
 
   const _T=(typeof T==="function")?T:((k,d)=>d);
   const filtros=[["todos",_T("ini_f_todos","Todos")],["Primera","Primera"],["Primera B","Primera B"],["Segunda","Segunda"],["Argentina","Argentina"],["clasico",_T("ini_f_clasicos","Clásicos '91")]];
+  extraLigas.forEach(function(x){ filtros.push([x.n, x.n]); });
   let fAct="todos", q="";
   const barra=el("div","picker-barra");
   const tabs=el("div","picker-tabs"); barra.appendChild(tabs);
@@ -1503,7 +1515,9 @@ function modalRepeticion(c){
 function panelCopas(v){
   const copaMatches=(E.calendario||[]).filter(p=>p.tipo==="copa");
   if(!copaMatches.length){
-    const why=(E.eraBase==="2026c")
+    const why=(typeof esEraHardcode==="function" && !esEraHardcode(E.eraBase))
+      ?"La copa de esta liga se arma con el calendario. Si no aparece, arranca una partida nueva."
+      :(E.eraBase==="2026c")
       ?"En 2026 la Segunda no juega Copa Chile (bases ANFP). Tampoco hay cupo CONMEBOL por esta categoría. Igual el resto del país las juega: las ves abajo."
       :(E.eraBase===1925)
         ?"1925 es amateur: no hay Copa Chile ni Libertadores."
@@ -1584,6 +1598,13 @@ function panelCopas(v){
 /* 7.99952 · Copas del país aunque no las juegues: resultados + punteros. */
 function panelCopasPais(v){
   if(!E || E.eraBase===1925) return;
+  if(typeof esEraHardcode==="function" && !esEraHardcode(E.eraBase)){
+    const nom=(typeof nombreCopaDomestica==="function")?nombreCopaDomestica(E.eraBase):"la copa";
+    const pc=panel("Copas de esta liga","🌎","agua");
+    pc.cuerpo.appendChild(el("p","mini",nom+" se juega en tu calendario, con los clubes de esta liga. No es la Copa Chile."));
+    v.appendChild(pc);
+    return;
+  }
   if(!E.mundo && typeof mundoInit==="function"){ try{ mundoInit(); }catch(e){} }
   const pc=panel("Copas del país · se juegan igual","🌎","agua");
   pc.cuerpo.appendChild(el("p","mini","Aunque no clasificaste, las copas corren. Tablas vivas arriba (Mundo). Acá, los últimos partidos y quién manda en cada cuadro."));
@@ -1758,7 +1779,8 @@ function vistaCalendario(){
       v.appendChild(po);
     }
   } else {
-    const p=panel("Calendario "+E.anio,"📅");
+    const ligaN=(typeof ERA==="object"&&ERA[E.eraBase]&&ERA[E.eraBase].n)||"";
+    const p=panel("Calendario "+E.anio+(ligaN?" · "+ligaN:""),"📅");
     E.calendario.forEach((c,i)=>p.cuerpo.appendChild(filaCalendario(c,i)));
     v.appendChild(p);
   }
