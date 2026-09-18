@@ -94,7 +94,7 @@
   }
   var FED_PODERES=[
     { id:"tv_favor", ic:"💰", n:"Repartir la TV a tu favor", corrupto:true, sospecha:14, costo:0,
-      d:"Inclinas el reparto de los derechos de TV hacia "+"tu club. Entra plata; los otros presidentes lo notan.",
+      d:"Inclinas el reparto de los derechos de TV hacia tu club. Entra plata; los otros presidentes lo notan.",
       hacer:function(){
         if(typeof aplicarEfectos==="function") aplicarEfectos({plata:260});
         if(typeof aplicarGrupos==="function") aplicarGrupos({anfp:-6,sponsors:4});
@@ -104,7 +104,7 @@
       d:"Cambias las bases del campeonato. Ganas prestigio de estadista… y algún enemigo.",
       elige:true },
     { id:"amanar", ic:"🧑‍⚖️", n:"Amañar el arbitraje", corrupto:true, sospecha:24, costo:10,
-      d:"Aprietas a los árbitros para la próxima temporada de "+"tu club. Alto riesgo si se filtra.",
+      d:"Aprietas a los árbitros para la próxima temporada de tu club. Alto riesgo si se filtra.",
       hacer:function(){
         _mod("fed_arb","Guiño arbitral (asociación)",{arbitraje:4},2);
         if(typeof aplicarGrupos==="function") aplicarGrupos({hinchada:3});
