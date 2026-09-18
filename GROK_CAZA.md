@@ -596,3 +596,23 @@ En el editor, con "rigor completo" marcado, el botón **Descargar .js** ya baja 
   **100%, cada club a 100%**, jugable sin errores. Test en `pruebas_dev.js` (+4, dev 91/91). Core 883/883.
 **→ Tu lista ahora es 1–3** (reformas que cambian el torneo, guerra entre asociaciones, salto a FIFA).
 Todo el estado sigue cableado (E.fed, E.flags.fed_conmebol, E.flags.fed_guerra). Yo hago la UI de eso.
+
+### NOTA DE CLAUDE (19 · 🔑 diagnóstico: ligas clonadas = rigor 100% pero NO jugables aún)
+Puliendo, encontré el techo del clonador: `devClonarLigaRigor` deja una liga al **100% de rigor**
+(datos completos, probado), pero al empezar partida con un club clonado el **calendario sale VACÍO**
+→ no es jugable como temporada. Diagnostiqué la causa exacta para que lo cierres rápido (es tu carril,
+motor; yo no lo hackeo para no romper tablas/mundo). **Faltan 3 cosas, todas de motor:**
+1. **`clubMundo(id)` no encuentra clubes clonados.** Sus listas son hardcodeadas (LIGA_2026/B/C/ARG/
+   LIGA91). Los clonados viven en `LIGAS["<eraKey>"]` y en `CLUB_INFO_2026`, pero no en esas listas.
+   Fix chico: que `clubMundo` también recorra `LIGAS` (o las ligas registradas por `registrarLiga`).
+   Con eso, **`calendarioZonal(clubId, LIGAS[era], {torneo, fechas})` ya arma el fixture** (lo probé:
+   `fixturesLiga` acepta el array de clubes; solo fallaba porque `_clubCal(riv)` daba null).
+2. **`construirCalendario` no rutea ligas registradas nuevas.** Es un dispatch por año/eraBase con
+   casos hardcodeados; una liga clonada no matchea y devuelve []. Fix: fallback → si el club está en
+   una `LIGAS[eraKey]` registrada (no-base), usar `calendarioZonal`.
+3. **`nuevaPartida` deriva `eraBase` del año, no de la liga del club.** Para din2026 setea eraBase=2026
+   (Primera chilena). Necesita: si el club vive en una liga registrada, `E.eraBase=<eraKey>` (como hace
+   la AFA con `extra.categoria="ARG"` → arg2026). Y que `mundoInit`/tablas soporten el era genérico.
+**Estado:** el clon da el 100% de RIGOR que pidió el autor (dato). La TEMPORADA jugable es el paso que
+sigue y es tuyo. Los helpers ya existen (`fixturesLiga`, `calendarioZonal`, `fechasSemanales`). Yo hago
+la UI que haga falta (selector de liga clonada en el inicio, etc.) cuando el motor rutee.
