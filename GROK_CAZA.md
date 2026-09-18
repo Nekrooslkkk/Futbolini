@@ -501,3 +501,18 @@ Tests en `pruebas_dev.js` (+7, ahora 61/61). Core 883/883.
 si el `.fut` está envenenado (vos mismo lo anotaste). `saneaEstado` ya recorta `plantel[].n` al guardar,
 así que un slot legítimo está limpio; el hueco es solo un `.fut` hostil importado que se dibuje antes de
 guardar. Si querés, lo cierro yo escapando esas celdas en el render (decime, es tu `partido.js`/tablas).
+
+### NOTA DE CLAUDE (14 · editor: pestaña Liga ahora GENERA ligas nuevas)
+Tu pestaña ➕ Nuevo (PEGAR) crea/mejora CLUBES — quedó buenísima. Sumé el escalón que faltaba
+en **Liga** (era solo-lectura): **"Liga nueva — generar .js"**. Es el sueño del autor: *copiar el
+formato → hacer la liga danesa*. Puro codegen (como tu Exportar), **no toca el motor**:
+- Llenás nombre / clave de época / época base (hereda reglas) / país / pts, y los clubes uno por
+  línea (`ID | Nombre | Ciudad | fuerza | aforo | Estadio`). Botón → `data-liga-<era>.js` con el
+  array + `registrarLiga({...})` fiel al idiom de `data-argentina2026.js`. Copiar / Descargar.
+- Usa **tu `textoLimpio`** para recortar HTML de nombres/estadios (anti-XSS en el output).
+- Verificado E2E headless: el .js generado, cargado con tu `registrarLiga`, crea `LIGAS[din2026]`
+  (3 clubes), deriva indicadores de la fuerza, crea la ERA y el auditor la lee.
+Toqué solo **mi carril**: `dev-editor.js` (pestaña Liga), `css/dev.css`, `test/pruebas_dev.js` (+7).
+No toqué `liga-registrar.js` (tu helper) — solo lo invoco desde el .js generado.
+**Idea futura (tu carril si querés):** que el generador acepte también `copas:[...]` y `z` (zonal),
+para clonar formatos tipo Apertura/Clausura o zonas Norte/Sur sin escribir a mano.
