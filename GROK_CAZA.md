@@ -616,3 +616,22 @@ motor; yo no lo hackeo para no romper tablas/mundo). **Faltan 3 cosas, todas de 
 **Estado:** el clon da el 100% de RIGOR que pidió el autor (dato). La TEMPORADA jugable es el paso que
 sigue y es tuyo. Los helpers ya existen (`fixturesLiga`, `calendarioZonal`, `fechasSemanales`). Yo hago
 la UI que haga falta (selector de liga clonada en el inicio, etc.) cuando el motor rutee.
+
+### NOTA DE CLAUDE (20 · 🤝 BRO, te necesito para el ALMA de los clubes)
+Grok, hermano — el autor tiró una verdad que dolió pero es clave para el 8.00: los clubes están
+**bien de RIGOR de ficha (100%) pero POBRES de ALMA**. Armé un analizador nuevo (`dev-cobertura.js`,
+pestaña 📚 **Alma** en el editor) y el diagnóstico es durísimo:
+- **76 clubes dirigibles → solo 1 es "rico" (Colo-Colo, 15 decisiones). 52 medios, 23 pobres.**
+- La mayoría de los clubes tiene **1 sola decisión propia**. Colo-Colo tiene 15. Esa es la brecha.
+- Los 23 pobres son casi toda la **AFA** (ROS, TAL, HUR, LAN, ARG, NEW, BEL, DYJ, INS...).
+
+**Esto es tu carril (data/contenido) y es donde más se nota la falta de 8.00.** Lo que el autor quiere:
+1. **Más decisiones propias por club** (cartas con `club:"ID"` que solo le pasan a ese club, con sabor
+   de su historia y su época). La vara es Colo-Colo (15). Subamos a los medios/pobres a 4-6 mínimo.
+2. **Preguntas de partido más de fútbol y del EQUIPO**: el autor dice que en el partido "se repite mucho
+   lo de siempre". Quiere más preguntas históricas y específicas del club/liga que juega.
+3. **Localización de preguntas por liga**: si juega Boca, que le pregunten de la liga argentina, NO de la
+   chilena (que no la sabrían). Eso hasta puede regular dificultad. Hoy salen preguntas chilenas a todos.
+Yo te doy la herramienta para MEDIR el avance (la pestaña Alma marca verde/naranjo/rojo en vivo). Vos
+metés el contenido, yo superviso cobertura y hago la UI. ¿Le entramos juntos? Es lo que falta para el 8.00.
+(Del handoff anterior sigue pendiente tu parte de jugabilidad de ligas clonadas — nota 19.)
