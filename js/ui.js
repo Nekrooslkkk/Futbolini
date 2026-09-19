@@ -694,16 +694,32 @@ function vistaEscritorio(){
   const pd=panel("Decisiones sobre la mesa","📥",E.decPend.some(x=>x.peso==="alto")?"alerta":"");
   if(!E.decPend.length) pd.cuerpo.appendChild(el("p","mini","Nada pendiente. Por ahora."));
   else pd.cuerpo.appendChild(el("p","mini",E.decPend.length+" sobre la mesa. Las urgentes van primero; el resto puede esperar."));
-  const gridDec=el("div","grid-comodo");  /* 2 columnas en pantalla ancha: menos scroll */
+  /* 7.9006 · ordenadas y AGRUPADAS por naturaleza (no por siembra random):
+     Partido / Institución / Plata. Urgentes primero dentro de cada grupo. */
+  const GRUPO_DEC=[
+    {k:"partido",   n:T("dec_g_partido","⚽ Partido"),     bz:["preparacion"]},
+    {k:"plata",     n:T("dec_g_plata","💰 Plata"),         bz:["finanzas","refuerzos"]},
+    {k:"institucion",n:T("dec_g_inst","🏛️ Institución"),  bz:["institucional","camarin","hinchada","cantera","prensa","gris"]}
+  ];
+  const _grupoDe=bz=>{ for(const g of GRUPO_DEC){ if(g.bz.indexOf(bz)>=0) return g.k; } return "institucion"; };
+  const porGrupo={};
   E.decPend.slice().sort((a,b)=>(b.peso==="alto")-(a.peso==="alto")).forEach(x=>{
     const d=decisionPorId(x.id); if(!d) return;
-    const b=el("button","op"+(x.peso==="alto"?" dec-urgente":""));
-    b.innerHTML='<div class="t">'+BUZONES[d.buzon].ic+" "+resolverTokens(d.t,E)+'</div>'+
-      '<div class="d">'+BUZONES[d.buzon].n+(x.peso==="alto"?" · <b>"+T("dec_urg","hay que resolverla antes del próximo partido")+"</b>":"")+'</div>';
-    b.onclick=()=>abrirDecision(d,true);
-    gridDec.appendChild(b);
+    const gk=_grupoDe(d.buzon); (porGrupo[gk]=porGrupo[gk]||[]).push({x,d});
   });
-  pd.cuerpo.appendChild(gridDec);
+  GRUPO_DEC.forEach(g=>{
+    const items=porGrupo[g.k]; if(!items||!items.length) return;
+    pd.cuerpo.appendChild(el("h3","sub dec-grupo",g.n));
+    const gridDec=el("div","grid-comodo");
+    items.forEach(({x,d})=>{
+      const b=el("button","op"+(x.peso==="alto"?" dec-urgente":""));
+      b.innerHTML='<div class="t">'+BUZONES[d.buzon].ic+" "+resolverTokens(d.t,E)+'</div>'+
+        '<div class="d">'+BUZONES[d.buzon].n+(x.peso==="alto"?" · <b>"+T("dec_urg","hay que resolverla antes del próximo partido")+"</b>":"")+'</div>';
+      b.onclick=()=>abrirDecision(d,true);
+      gridDec.appendChild(b);
+    });
+    pd.cuerpo.appendChild(gridDec);
+  });
   izq.appendChild(pd);
 
   /* bandeja de novedades */
@@ -826,25 +842,26 @@ function abrirDecision(d,enModal){
       b.onclick=()=>{ if(enModal){ cerrarModal(); render(); } else irA("escritorio"); };
       p.cuerpo.appendChild(b);
     } else {
-      /* pista del ayudante: tibio/caliente/frío por opción, máx 3 por campeonato */
-      const clave="pistas_"+E.anio; const usadas=(E.flags&&E.flags[clave])||0; const quedan=3-usadas;
+      /* 7.9006 · las temperaturas 🔥😐🧊 SIEMPRE se ven (es lectura del club, no un
+         poder). El botón del ayudante marca UNA opción: la que él se jugaría. */
       const scores=d.op.map(puntajeOpcion); const mx=Math.max.apply(null,scores), mn=Math.min.apply(null,scores);
-      if(!pistaOn){
-        const bp=el("button","btn-aqua chico"+(quedan<=0?" gris":""));
-        bp.innerHTML="🧑‍🏫 Pedir pista al ayudante"+(quedan>0?" <span class='mini'>("+quedan+" de 3 este campeonato)</span>":" <span class='mini'>(sin pistas)</span>");
-        bp.onclick=()=>{ if(quedan<=0){ aviso("Ya usaste las 3 pistas del ayudante este campeonato"); return; } if(!E.flags) E.flags={}; E.flags[clave]=usadas+1; pistaOn=true; pintar(cont); };
-        p.cuerpo.appendChild(bp);
-      } else {
-        p.cuerpo.appendChild(el("p","mini","🧑‍🏫 El ayudante te da su lectura: 🔥 la ve buena · 😐 tibia · 🧊 la ve mala. (Es su opinión, decides tú.)"));
-      }
+      let idxElige=-1, mejor=-Infinity;
+      d.op.forEach((o,i)=>{ if(requisitoCumplido(o).ok && scores[i]>mejor){ mejor=scores[i]; idxElige=i; } });
+      const bp=el("button","btn-aqua chico"+(pistaOn?" gris":""));
+      bp.textContent="🧑‍🏫 "+(pistaOn?T("dec_elige_ya","El ayudante ya marcó su opción"):T("dec_elige","Él elegiría esta"));
+      bp.disabled=pistaOn || idxElige<0;
+      bp.onclick=()=>{ pistaOn=true; pintar(cont); };
+      p.cuerpo.appendChild(bp);
+      if(pistaOn) p.cuerpo.appendChild(el("p","mini","🧑‍🏫 "+T("dec_elige_txt","El ayudante se la jugaría acá. Decides tú.")));
       const ops=el("div","ops");
       d.op.forEach((o,i)=>{
         const chk=requisitoCumplido(o);
-        const b=el("button","op");
+        const b=el("button","op"+(pistaOn && i===idxElige?" op-elegida":""));
         b.disabled=!chk.ok;
-        let pista="";
-        if(pistaOn && mx!==mn){ pista=scores[i]===mx?" <span class='etq ok'>🔥 caliente</span>":(scores[i]===mn?" <span class='etq mal'>🧊 frío</span>":" <span class='etq neu'>😐 tibio</span>"); }
-        b.innerHTML='<div class="t">'+resolverTokens(o.t,E)+pista+'</div><div class="d">'+resolverTokens(o.d||"",E)+'</div>'+
+        let temp="";
+        if(mx!==mn){ temp=scores[i]===mx?" <span class='etq ok'>🔥</span>":(scores[i]===mn?" <span class='etq mal'>🧊</span>":" <span class='etq neu'>😐</span>"); }
+        const marca=(pistaOn && i===idxElige)?" <span class='etq ok'>🧑‍🏫 "+T("dec_elige_badge","él elegiría")+"</span>":"";
+        b.innerHTML='<div class="t">'+resolverTokens(o.t,E)+temp+marca+'</div><div class="d">'+resolverTokens(o.d||"",E)+'</div>'+
           (textoRequisitos(o)?'<div class="req">'+textoRequisitos(o)+(chk.ok?"":" · <b>"+chk.txt+"</b>")+'</div>':"");
         b.onclick=()=>{
           const r=resolverDecision(d,i);

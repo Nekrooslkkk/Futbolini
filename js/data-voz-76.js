@@ -116,13 +116,25 @@ const VOZ_NOTICIAS_76=[
   if(typeof titularesSemana!=="function"||titularesSemana._voz76) return;
   const orig=titularesSemana;
   titularesSemana=function(){
-    const out=orig()||[];
+    const out=orig()||[];   /* base: ya viene atada al club (tabla, rival, racha) */
     try{
-      VOZ_NOTICIAS_76.forEach(function(n,i){
-        if((i+((typeof E!=="undefined"&&E&&E.idx)||0))%3===0) out.push({t:n.t,d:n.d,tipo:n.tipo});
-      });
+      const semana=(((typeof E!=="undefined"&&E&&E.anio)||0)*100)+((typeof E!=="undefined"&&E&&E.idx)||0);
+      const noChistes=VOZ_NOTICIAS_76.filter(function(n){return n.tipo!=="chiste";});
+      const chistes=VOZ_NOTICIAS_76.filter(function(n){return n.tipo==="chiste";});
+      /* 7.9006 · 2 titulares de contexto (club/liga), rotando por semana */
+      for(var k=0;k<2 && noChistes.length;k++){
+        var n=noChistes[(semana+k)%noChistes.length];
+        out.push({t:n.t,d:n.d,tipo:n.tipo});
+      }
+      /* el chiste (VAR, etc.) con COOLDOWN determinístico: solo cada 3ª semana,
+         rotando entre los chistes → nunca dos seguidas, peso bajo. */
+      if(chistes.length && semana%3===0){
+        var c=chistes[Math.floor(semana/3)%chistes.length];
+        out.push({t:c.t,d:c.d,tipo:"chiste"});
+      }
     }catch(e){}
-    return out.slice(0,10);
+    /* menos ruido: 3–5 buenos > 12 genéricos */
+    return out.slice(0,6);
   };
   titularesSemana._voz76=true;
 })();

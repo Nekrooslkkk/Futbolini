@@ -817,3 +817,4 @@ html{scrollbar-width:thin;scrollbar-color:rgba(70,150,100,.55) transparent}
 .obj-mini{ position:relative; }
 .obj-chev{ position:absolute; top:5px; right:6px; background:transparent; border:none; cursor:pointer; font-size:13px; opacity:.55; padding:2px; line-height:1; }
 .obj-chev:hover{ opacity:1; }
+.op.op-elegida{ border:2px solid #2fa84f; box-shadow:0 0 0 2px rgba(47,168,79,.18); }
