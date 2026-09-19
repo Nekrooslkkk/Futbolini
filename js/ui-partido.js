@@ -1054,6 +1054,17 @@ function pintarPartido(){
       if(P.iner.falta>=2) bits.push(P.iner.falta+" faltas seguidas");
       p.cuerpo.appendChild(el("div","mini hot-iner","🔥 Inercia: "+bits.join(" · ")+". El próximo tiro pesa más."));
     }
+    if(P.tanda){
+      const tb=el("div","tanda-bar");
+      const yoN=(E&&E.clubNombre)||"nosotros", elN=(P.part&&P.part.rivalNombre)||"rival";
+      function dots(lado){
+        return (P.tanda.seq||[]).filter(function(x){ return x.lado===lado; }).map(function(x){ return x.gol?"⚽":"❌"; }).join(" ")
+          || "—";
+      }
+      tb.appendChild(el("div","tanda-row","<b>"+((typeof escHtml==="function")?escHtml(yoN):yoN)+"</b> <span>"+dots("yo")+"</span> <b>"+P.tanda.yo+"</b>"));
+      tb.appendChild(el("div","tanda-row","<b>"+((typeof escHtml==="function")?escHtml(elN):elN)+"</b> <span>"+dots("el")+"</span> <b>"+P.tanda.el+"</b>"));
+      p.cuerpo.appendChild(tb);
+    }
     const ctrl=el("div","ctrlPartido");
     const main=el("div","ctrl-main");
     const bp=el("button","btn-aqua chico",PAUSADO?"▶ Seguir":"⏸ Pausa");
@@ -1165,11 +1176,12 @@ function pasoEnVivo(){
   if(PAUSADO) return;
   const P=P_ACTUAL; if(!P){ clearInterval(TIMER); return; }
   if(P._varHold) return;
-  if(P.terminado||(P._descDicho&&P.min>=(typeof topePartido==="function"?topePartido(P):90))){ clearInterval(TIMER); pintarPartido(); cerrarPartido(); return; }
+  if(P.tanda && !P.tanda.done) return;
+  if(P.terminado || (P.tanda && P.tanda.done)){ clearInterval(TIMER); pintarPartido(); cerrarPartido(); return; }
   /* momento táctico (solo dirigir). Nunca tape el descanso: si todavía no hubo
      45', solo dispara momentos del primer tiempo (12, 32). */
   if(P.modo==="dirigir" && P.momentoIdx<P.momentos.length && P.min>=P.momentos[P.momentoIdx]
-     && (P._htDicho || P.min<45)){
+     && (P._htDicho || P.min<45) && !P.prorroga && !P.tanda){
     clearInterval(TIMER); pintarPartido(); mostrarMomento(); return;
   }
   const ev=tickPartido(P);
@@ -1181,6 +1193,13 @@ function pasoEnVivo(){
   if(typeof actualizarApoyo==="function") actualizarApoyo(P);
   if(typeof tickerPost==="function") tickerPost(P,ev);
   if(typeof tickerAmbiente==="function" && (!ev||ev.tipo==="nada") && Math.random()<0.14) tickerAmbiente(P);   /* 6.36 · tuits del momento */
+  if(ev.tipo==="fin" || ev.tipo==="tandaFin"){ clearInterval(TIMER); pintarPartido(); cerrarPartido(); return; }
+  if(ev.tipo==="tanda"){
+    clearInterval(TIMER); pintarPartido();
+    if(P.modo==="simular"){ if(typeof simularTanda==="function") simularTanda(P); pintarPartido(); cerrarPartido(); return; }
+    pasoTandaVivo(P); return;
+  }
+  if(ev.tipo==="prorroga"||ev.tipo==="prorrogaHT"){ pintarPartido(); return; }
   if(ev.tipo==="penalRival"){ resolverEventoAuto(P,ev); pintarPartido(); return; }
   if(ev.tipo==="entretiempo"){
     pintarPartido();
@@ -1198,9 +1217,44 @@ function pasoEnVivo(){
   }
   pintarPartido();
 }
+function registrarTandaKick(P, aFavor, gol, pateador){
+  const t=P&&P.tanda; if(!t) return;
+  t.seq.push({lado:aFavor?"yo":"el", gol:!!gol, n:pateador&&pateador.n});
+  if(gol){ if(aFavor) t.yo++; else t.el++; }
+  if(typeof linea==="function"){
+    linea(P,P.min,
+      ((pateador&&pateador.n)||(aFavor?"tu pateador":"el rival"))+" " +(gol?"la manda adentro.":"falla.")+" Tanda "+t.yo+"-"+t.el+".",
+      gol?"gol":"grave");
+  }
+  if(typeof tandaPuedeCortar==="function" && tandaPuedeCortar(t) && typeof cerrarTanda==="function") cerrarTanda(P);
+}
+function pasoTandaVivo(P){
+  P=P||P_ACTUAL;
+  if(!P||!P.tanda){ if(P) cerrarPartido(); return; }
+  if(P.tanda.done){ pintarPartido(); cerrarPartido(); return; }
+  const t=P.tanda;
+  const nYo=t.seq.filter(function(x){ return x.lado==="yo"; }).length;
+  const nEl=t.seq.filter(function(x){ return x.lado==="el"; }).length;
+  const tocaYo=nYo<=nEl;
+  pintarPartido();
+  if(tocaYo && P.modo==="dirigir"){
+    const pat=t.mios[nYo % Math.max(1,(t.mios||[]).length)]||{n:"tu pateador",nivel:70};
+    minijuegoPenal(P, pat, {tanda:true, onRes:function(gol){
+      registrarTandaKick(P, true, gol, pat);
+      setTimeout(function(){ pasoTandaVivo(P); }, 480);
+    }});
+    return;
+  }
+  setTimeout(function(){
+    if(typeof cobrarTandaAuto==="function") cobrarTandaAuto(P, tocaYo);
+    if(typeof tandaPuedeCortar==="function" && tandaPuedeCortar(t) && typeof cerrarTanda==="function") cerrarTanda(P);
+    pasoTandaVivo(P);
+  }, 700);
+}
 function reanudarPronto(){
   setTimeout(()=>{ if(!P_ACTUAL) return;
-    if(P_ACTUAL.terminado||(P_ACTUAL._descDicho&&P_ACTUAL.min>=(typeof topePartido==="function"?topePartido(P_ACTUAL):90))){ cerrarPartido(); }
+    if(P_ACTUAL.tanda && !P_ACTUAL.tanda.done){ pasoTandaVivo(P_ACTUAL); return; }
+    if(P_ACTUAL.terminado||(P_ACTUAL.tanda&&P_ACTUAL.tanda.done)){ cerrarPartido(); }
     else correrEnVivo();
   }, 650);
 }
@@ -1683,12 +1737,13 @@ function _botonesEfecto(c, inicial){
   c.appendChild(efRow);
   return function(){ return efecto; };
 }
-function minijuegoPenal(P,pateador){
+function minijuegoPenal(P,pateador,opts){
+  opts=opts||{};
   const arq=arqueroDe(P.rivalPlantel)||{n:"el arquero",nivel:70};
   const kit=_kitDe(P.part&&P.part.rivalId, ["#1a6ad4","#111827"]);
   let aim=null, tirado=false;
   modal(box=>{
-    box.appendChild(el("div","cab",'<span class="ic">🥅</span><span>'+_tt("arco_pen_tit","Penal · dibujá tu tiro")+'</span>'));
+    box.appendChild(el("div","cab",'<span class="ic">🥅</span><span>'+(opts.tanda?_tt("tanda_tit","Tanda · dibuja tu penal"):_tt("arco_pen_tit","Penal · dibuja tu tiro"))+'</span>'));
     const c=el("div","cuerpo penal-mini arco-vivo"); box.appendChild(c);
     _hudArco(c,"penal",P);
     c.appendChild(el("p","mini","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Toca el arco y aprieta <b>¡Patear!</b>. Los rincones casi no se atajan; al medio flojo, sí."));
@@ -1735,6 +1790,7 @@ function minijuegoPenal(P,pateador){
         if(out.res==="gol" && svg) svg.classList.add("arco-golazo");
         setTimeout(()=>{
           cerrarModal();
+          if(typeof opts.onRes==="function"){ opts.onRes(out.res==="gol"); return; }
           penalEnPartido(P,true,null,pateador,out.res==="gol"?true:(out.res==="afuera"?"afuera":false));
           pintarPartido(); reanudarPronto();
         },820);
@@ -1752,7 +1808,7 @@ function minijuegoTiroLibre(P){
   const kitAtk=_kitDe(typeof E!=="undefined"&&E&&E.club, ["#f4f4f4","#111111"]);
   let aim=null, tirado=false;
   modal(box=>{
-    box.appendChild(el("div","cab",'<span class="ic">🎯</span><span>'+_tt("arco_tl_tit","Tiro libre · dibujá tu remate")+'</span>'));
+    box.appendChild(el("div","cab",'<span class="ic">🎯</span><span>'+_tt("arco_tl_tit","Tiro libre · dibuja tu remate")+'</span>'));
     const c=el("div","cuerpo penal-mini arco-vivo"); box.appendChild(c);
     _hudArco(c,"tl",P);
     c.appendChild(el("p","mini","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Pásala por arriba o por el costado y busca el rincón lejos del arquero."));
@@ -1851,7 +1907,7 @@ function minijuegoCorner(P){
   const arqX=lado==="izq"?236:124;
   let aim=null, tirado=false;
   modal(box=>{
-    box.appendChild(el("div","cab",'<span class="ic">🚩</span><span>'+_tt("arco_cor_tit","Córner · dibujá el centro")+'</span>'));
+    box.appendChild(el("div","cab",'<span class="ic">🚩</span><span>'+_tt("arco_cor_tit","Córner · dibuja el centro")+'</span>'));
     const c=el("div","cuerpo penal-mini arco-vivo"); box.appendChild(c);
     _hudArco(c,"corner",P);
     c.appendChild(el("p","mini","Cobra <b>"+(j.n)+"</b>. Toca el área: primer palo, punto penal o segundo palo. El cabeceador salta ahí."));
@@ -2022,9 +2078,14 @@ function cerrarPartido(){
   if(typeof detenerCancha==="function") detenerCancha();
   const res=terminarPartido(P);
   if(typeof persistirTicker==="function") persistirTicker(P,res);  /* 7.12 · el partido queda en el feed de Plop! */
-  const gano=res.yo>res.otro;
+  const ganoPens=res.penales && res.penales.gano;
+  const perdioPens=res.penales && !res.penales.gano;
+  const gano=ganoPens || res.yo>res.otro;
   const p=panel("Final del partido","📄",gano?"":"alerta");
-  p.cuerpo.appendChild(el("h2","tit",(gano?"Victoria ":(res.yo<res.otro?"Derrota ":"Empate "))+res.yo+"-"+res.otro+" ante "+P.part.rivalNombre));
+  const tit=res.penales
+    ? ((ganoPens?"Victoria":"Derrota")+" en penales "+res.yo+"-"+res.otro+" ("+res.penales.yo+"-"+res.penales.el+") ante "+P.part.rivalNombre)
+    : ((gano?"Victoria ":(res.yo<res.otro?"Derrota ":"Empate "))+res.yo+"-"+res.otro+" ante "+P.part.rivalNombre);
+  p.cuerpo.appendChild(el("h2","tit",tit));
 
   /* caja de resumen: goles con minuto, tarjetas, lesiones */
   const cajita=el("div","resul mitad");
@@ -2036,6 +2097,7 @@ function cerrarPartido(){
   else html+="<b>Sin goles.</b><br>";
   if(res.tarjetas&&res.tarjetas.length) html+="<span class='mini'>Amarillas: "+res.tarjetas.join(", ")+"</span><br>";
   if(res.lesionados&&res.lesionados.length) html+="<span class='mini'>Lesionados: "+res.lesionados.join(", ")+"</span><br>";
+  if(res.penales) html+="<b>Penales:</b> "+res.penales.yo+"-"+res.penales.el+(res.penales.gano?" · pasamos":" · fuera")+"<br>";
   cajita.innerHTML=html;
   p.cuerpo.appendChild(cajita);
 

@@ -2732,4 +2732,13 @@ El autor: más diseño en penal/tiro libre, que el tiro libre no diga atajado, y
 - Claves `arco_*` en `T()` (neutro/cl/pt/en). Claude: seguir envolviendo su UI.
 - Tests T56 ampliados. **No 8.00.**
 
+## 7.9005 · Prórroga + tanda de penales
+El empate en copa ya no lo decide un `Math.random`. Se juega.
+
+- Copa Argentina: tanda, sin alargue (bases reales).
+- Copa Chile FINAL, copa clonada, Sudamericana primera fase, playoff de 4°s: prórroga 15+15 y tanda si hace falta.
+- Ida/vuelta: extra solo si el global queda empatado en el último partido de la ronda.
+- Dirigir: cada penal tuyo se dibuja en el arco. El marcador 1-1 se queda; la tanda es aparte (`part.penales`).
+- Tests T57. **No 8.00.** BTC hueco. Segunda = cantera.
+
 

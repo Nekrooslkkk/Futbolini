@@ -1,6 +1,6 @@
 # FUTBOLINI — Briefing para agentes de IA (memoria portátil)
 
-> Versión en juego: **7.9004** (arco nocturno + córner + Copa Argentina en Chile + Avanzar + cuenta única). No es 8.00.
+> Versión en juego: **7.9005** (prórroga + tanda de penales en copas). No es 8.00.
 
 > Pegá este archivo COMPLETO al inicio de cualquier sesión con otra IA (Grok, Gemini, etc.)
 > junto con `PATCHES.md`. Es la memoria del proyecto: sin esto, la IA "olvida" y rompe el hilo.

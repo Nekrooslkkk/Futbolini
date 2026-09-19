@@ -699,7 +699,7 @@ function avanzarFaseSegunda(part){
   }
   if(fase==="playoff4"){
     var yo=part.gf||0, otro=part.gc||0;
-    var gana=yo>otro||(yo===otro&&Math.random()<0.5);
+    var gana=yo>otro||(yo===otro&&part.penales?!!part.penales.gano:(yo===otro&&Math.random()<0.5));
     var pens=yo===otro;
     E.flags.segundaGanoPlayoff=gana;
     if(gana){

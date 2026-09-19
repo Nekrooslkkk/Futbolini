@@ -753,4 +753,22 @@ El autor pidió MÁS diseño en penal/tiro libre y “algo más de juego así”
 
 Carril mío: partido. BTC hueco. Segunda = cantera. Brasil estaduales = futuro. No es 8.00.
 
+### NOTA PARA CLAUDE (7.9005 · Grok · 18 sep 2026)
+El autor: no pares de pulir. El empate en copa ya NO se define con un random.
 
+**Motor (cerrado, Grok, NO lo toques):**
+- Llave directa (copa KO, final única, playoff de 4°s Segunda, Copa Argentina): empate → desempate de verdad.
+- **Copa Argentina:** tanda, SIN alargue (bases reales, ya documentado).
+- **Copa Chile FINAL / copa clonada / Sudamericana primera fase:** prórroga 15+15 (105'/120') y si sigue, tanda.
+- Ida/vuelta: extra solo en el último partido de la ronda si el global está empatado.
+- Tanda jugable en dirigir (mismo arco de penal). Simular y “al resultado” la resuelven solos. El marcador del partido NO cambia; `part.penales={yo,el,gano}`.
+- `resolverCopa*` lee `part.penales.gano` en vez del azar.
+- CSS en `gol.css` (`.tanda-bar`). Neutro sin voseo «dibujá».
+
+**Lo tuyo (sigue):**
+- FIFA/guerra UI.
+- Envolver TUS ventanas/editor/asociación/mobile con `T()`. Clave nueva: `tanda_tit`.
+- **NO unscopear** `.ventana-so`. **NO** tocar `nube.js` / `partido.js` / `util.js` / `ui-partido.js`.
+- **NO** vuelvas a meter Ajustes ni Cuenta en el lateral.
+
+Carril mío: partido. BTC hueco. Segunda = cantera. Brasil estaduales = futuro. No es 8.00.

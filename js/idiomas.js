@@ -69,12 +69,13 @@ var FRASES={
     arco_hud_pen:"PENAL",
     arco_hud_tl:"TIRO LIBRE",
     arco_hud_cor:"CÓRNER",
-    arco_pen_tit:"Penal · dibujá tu tiro",
-    arco_tl_tit:"Tiro libre · dibujá tu remate",
-    arco_cor_tit:"Córner · dibujá el centro",
+    arco_pen_tit:"Penal · dibuja tu tiro",
+    arco_tl_tit:"Tiro libre · dibuja tu remate",
+    arco_cor_tit:"Córner · dibuja el centro",
     arco_colocado:"Colocado",
     arco_potente:"Potente",
-    arco_picadita:"Picadita"
+    arco_picadita:"Picadita",
+    tanda_tit:"Tanda · dibuja tu penal"
   },
   /* --- CHILENSIS (de verdad): -ai/-ís, 'po', 'cachái', sin voseo argentino. --- */
   cl:{
@@ -122,12 +123,13 @@ var FRASES={
     arco_hud_pen:"PENAL",
     arco_hud_tl:"TIRO LIBRE",
     arco_hud_cor:"CÓRNER",
-    arco_pen_tit:"Penal · dibujá el tiro, po",
-    arco_tl_tit:"Tiro libre · dibujá el remate",
-    arco_cor_tit:"Córner · dibujá el centro",
+    arco_pen_tit:"Penal · dibuja el tiro, po",
+    arco_tl_tit:"Tiro libre · dibuja el remate",
+    arco_cor_tit:"Córner · dibuja el centro",
     arco_colocado:"Colocado",
     arco_potente:"Potente",
-    arco_picadita:"Picadita"
+    arco_picadita:"Picadita",
+    tanda_tit:"Tanda · dibuja el penal, po"
   },
   /* --- PORTUGUÊS (arranque; el usuario/Grok lo afinan). --- */
   pt:{
@@ -180,7 +182,8 @@ var FRASES={
     arco_cor_tit:"Escanteio · desenhe o cruzamento",
     arco_colocado:"Colocado",
     arco_potente:"Forte",
-    arco_picadita:"Cavadinha"
+    arco_picadita:"Cavadinha",
+    tanda_tit:"Disputa de pênaltis · desenhe o chute"
   },
   en:{
     ini_headline:"You don't run a team. You run an institution.",
@@ -232,7 +235,8 @@ var FRASES={
     arco_cor_tit:"Corner · draw the cross",
     arco_colocado:"Placed",
     arco_potente:"Power",
-    arco_picadita:"Chip"
+    arco_picadita:"Chip",
+    tanda_tit:"Shootout · draw your penalty"
   }
 };
 

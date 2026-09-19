@@ -73,20 +73,22 @@ function persistirTicker(P, res){
       postProc(t.autor||"@hincha", "hincha", t.texto, t.tono||"neutro", {fecha:fechaLbl, postPartido:true});
     });
     if(res){
-      const gano=res.yo>res.otro, empate=res.yo===res.otro, riv=(P.part&&P.part.rivalNombre)||"el rival";
+      const ganoPens=P.part&&P.part.penales&&P.part.penales.gano;
+      const perdioPens=P.part&&P.part.penales&&!P.part.penales.gano;
+      const gano=ganoPens||res.yo>res.otro, empate=!gano&&!perdioPens&&res.yo===res.otro, riv=(P.part&&P.part.rivalNombre)||"el rival";
       try{
         E.plop=E.plop||{humor:60,hist:[],racha:[],ultRes:null};
-        E.plop.ultRes={yo:res.yo,otro:res.otro,riv:riv,gano:gano,empate:empate};
-        if(typeof plopRecuerda==="function") plopRecuerda((gano?"ganamos":empate?"empatamos":"perdimos")+" "+res.yo+"-"+res.otro+" vs "+riv);
+        E.plop.ultRes={yo:res.yo,otro:res.otro,riv:riv,gano:gano,empate:empate,penales:P.part&&P.part.penales};
+        if(typeof plopRecuerda==="function") plopRecuerda((gano?"ganamos":empate?"empatamos":"perdimos")+" "+res.yo+"-"+res.otro+" vs "+riv+(P.part&&P.part.penales?" en penales":""));
       }catch(e2){}
       const pool=gano?[
-        {a:"@barra_del_sur",x:"3 puntazos ante "+riv+". así se sale a la calle wn 🔥",t:"bueno"},
-        {a:"@datofutbol_cl",x:res.yo+"-"+res.otro+" a "+riv+". la tabla nos empieza a sonreír.",t:"bueno"}
+        {a:"@barra_del_sur",x:(P.part&&P.part.penales?"en penales wn. ":"")+"3 puntazos ante "+riv+". así se sale a la calle wn 🔥",t:"bueno"},
+        {a:"@datofutbol_cl",x:res.yo+"-"+res.otro+" a "+riv+(P.part&&P.part.penales?" (tanda "+P.part.penales.yo+"-"+P.part.penales.el+")":"")+". la tabla nos empieza a sonreír.",t:"bueno"}
       ]:empate?[
         {a:"@garrafal_cl",x:"empate con "+riv+". ni fu ni fa. seguimos remando.",t:"neutro"},
         {a:"@socio_enojado",x:res.yo+"-"+res.otro+" con "+riv+". un punto que sabe a poco po.",t:"neutro"}
       ]:[
-        {a:"@el_verdadero_hincha",x:"caímos con "+riv+" "+res.otro+"-"+res.yo+". a levantar la cabeza.",t:"malo"},
+        {a:"@el_verdadero_hincha",x:"caímos con "+riv+" "+res.otro+"-"+res.yo+(P.part&&P.part.penales?" en la tanda":"")+". a levantar la cabeza.",t:"malo"},
         {a:"@viejo_del_bar",x:"otra vez a sufrir. contra "+riv+" no podíamos regalar así.",t:"malo"}
       ];
       const r=pool[Math.floor(Math.random()*pool.length)];
@@ -612,6 +614,15 @@ function tickerPost(P, ev){
         texto="Córner nuestro, "+m+"'. A meterla de cabeza 🙏";
       }
       break;
+    case "prorroga":
+      autor=elige(HANDLES_PRENSA); tono="neutro";
+      texto="⏱️ Empate. Hay alargue. Treinta minutos más y el corazón en la boca."; break;
+    case "prorrogaHT":
+      autor=elige(HANDLES_HINCHA); tono="neutro";
+      texto="Descanso de la prórroga. Todavía no se define. 😬"; break;
+    case "tanda":
+      autor=elige(HANDLES_PRENSA); tono="neutro";
+      texto="🚨 Tanda de penales. Que no le tiemble el pie."; break;
     default: return;
   }
   if(!texto) return;

@@ -167,6 +167,26 @@ body.perf .var-lt{ animation-duration:.15s; backdrop-filter:none; }
 .arco-res.palo{ background:linear-gradient(180deg,#c9d4e0,#7a8796); color:#102030; }
 .arco-res.afuera{ background:linear-gradient(180deg,#ef8d7d,#b23524); }
 .arco-res.defensa{ background:linear-gradient(180deg,#6b7c90,#3a4656); }
+
+/* 7.9005 · tanda de penales */
+.tanda-bar{
+  margin:8px 0 10px; padding:10px 12px; border-radius:12px;
+  background:linear-gradient(180deg, rgba(200,230,255,.22), rgba(20,50,90,.55));
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 6px 18px rgba(10,30,60,.28);
+  backdrop-filter:blur(10px) saturate(1.3);
+}
+.tanda-bar .tanda-row{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  font-family:var(--f-titulo,system-ui); font-weight:800; font-size:13px;
+  color:#f4fbff; padding:3px 0;
+}
+.tanda-bar .tanda-row span{ letter-spacing:3px; font-size:16px; }
+body[data-tema="negro"] .tanda-bar{ background:linear-gradient(180deg,#22354b,#162536); color:#eaf6ff; }
+body[data-tema="claro"] .tanda-bar{ background:#f2f6fa; color:#12222f; border-color:rgba(20,50,80,.16); }
+body[data-tema="claro"] .tanda-bar .tanda-row{ color:#12222f; }
+body.perf .tanda-bar{ backdrop-filter:none; }
+
 .arco-svg.arco-golazo{ animation:arcoFlash .7s ease-out; }
 @keyframes arcoFlash{
   0%{ filter:brightness(1.8) saturate(1.3); }

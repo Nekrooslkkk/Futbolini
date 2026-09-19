@@ -2281,6 +2281,69 @@
       ok(aj && /⚙️/.test(aj.textContent||""), "Ajustes es solo el logo ⚙️");
     }, "cuenta única + ajustes logo");
 
+    /* T57 · 7.9005 prórroga + tanda de penales */
+    grupo("Grok 7.9005 (prórroga + tanda)");
+    safe(function(){
+      ok(VERSION==="7.9005" || /^7\.9/.test(VERSION), "VERSION 7.9005");
+      ok(typeof esLlaveDirecta==="function" && typeof pideProrroga==="function" && typeof simularTanda==="function", "API desempate");
+      ok(typeof intentarDesempate==="function" && typeof tandaPuedeCortar==="function", "intentarDesempate + corte de tanda");
+      ok(esLlaveDirecta({tipo:"copa",ronda:"FINAL",torneo:"Copa Chile"}), "final de Copa Chile es llave");
+      ok(esLlaveDirecta({tipo:"copa",ronda:"32avos",torneo:"Copa Argentina"}), "Copa Argentina 32avos es llave");
+      ok(!esLlaveDirecta({tipo:"copa",ronda:"Grupo B",torneo:"Copa Libertadores"}), "grupo no es llave");
+      ok(!esLlaveDirecta({tipo:"liga",fecha:1}), "la liga no va a extra");
+      ok(pideProrroga({tipo:"copa",ronda:"FINAL",torneo:"Copa Chile"}), "Copa Chile FINAL tiene alargue");
+      ok(!pideProrroga({tipo:"copa",ronda:"32avos",torneo:"Copa Argentina"}), "Copa Argentina sin alargue (bases reales)");
+      ok(esPartidoUnicoDesempate({tipo:"copa",torneo:"Copa Argentina",ronda:"32avos"}), "Copa Argentina es partido único");
+      ok(!(FRASES.neutro.arco_pen_tit||"").match(/dibujá/), "neutro sin voseo dibujá");
+    }, "API 7.9005");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var part=(E.calendario||[]).find(function(p){ return !p.jugado; })||E.calendario[0];
+      var P=iniciarPartido(part,"simular");
+      ok(P.prorroga===0 && !P.tanda, "el partido arranca sin extra ni tanda");
+      P.prorroga=1;
+      ok(topePartido(P)===105, "1E llega al 105'");
+      P.prorroga=2;
+      ok(topePartido(P)===120, "2E llega al 120'");
+    }, "reloj de la prórroga");
+    safe(function(){
+      nuevaPartida("BOC",2026,"historico",{categoria:"ARG"});
+      var p=(E.calendario||[]).find(function(x){ return x.torneo==="Copa Argentina"; })||{tipo:"copa",torneo:"Copa Argentina",ronda:"32avos",rivalNombre:"X",fuerzaRival:70,local:true,sede:"x"};
+      var P=iniciarPartido(p,"simular");
+      if(P.part.local){ P.gl=1; P.gv=1; } else { P.gl=1; P.gv=1; }
+      P.min=90; P._descDicho=true; P.descuento2=0;
+      var ev=tickPartido(P);
+      ok(ev.tipo==="tanda" || (P.tanda && !P.prorroga), "Copa Argentina empatada se va a penales — "+ev.tipo);
+      ok(!P.prorroga, "Copa Argentina no abre prórroga");
+      simularTanda(P);
+      ok(P.tanda && P.tanda.done, "la tanda termina");
+      ok(P.tanda.yo!==P.tanda.el, "hay un ganador de la tanda");
+      ok(P.gl===1 && P.gv===1, "los goles del partido no cambian con la tanda");
+      ok(P.part.penales && P.part.penales.gano===(P.tanda.yo>P.tanda.el), "part.penales.gano coincide");
+    }, "tanda Copa Argentina");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var p={tipo:"copa",torneo:"Copa Chile",ronda:"FINAL",rivalNombre:"Universidad de Chile",rivalId:"UCH",fuerzaRival:78,local:false,sede:"Estadio Nacional"};
+      var P=iniciarPartido(p,"simular");
+      P.gl=1; P.gv=1; P.min=94; P._descDicho=true; P.descuento2=4;
+      var ev=intentarDesempate(P);
+      ok(ev.tipo==="prorroga" && P.prorroga===1, "final Copa Chile empatada abre prórroga");
+      P.min=105;
+      var ev2=intentarDesempate(P);
+      ok(ev2.tipo==="prorrogaHT" && P.prorroga===2, "al 105' hay descanso de la prórroga");
+      P.min=120;
+      var ev3=intentarDesempate(P);
+      ok(ev3.tipo==="tanda", "al 120' empatados van a la tanda");
+    }, "prórroga Copa Chile FINAL");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var part=(E.calendario||[]).find(function(p){ return p.tipo==="liga"; })||E.calendario[0];
+      var P=iniciarPartido(part,"simular");
+      P.gl=1; P.gv=1; P.min=94; P._descDicho=true; P.descuento2=4;
+      var ev=intentarDesempate(P);
+      ok(ev.tipo==="fin" && !P.prorroga && !P.tanda, "un empate de liga se acaba al 90'+, no hay extra");
+    }, "liga no tiene extra");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }

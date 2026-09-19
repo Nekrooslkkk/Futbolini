@@ -166,8 +166,15 @@ function _siguienteCopaArg(clubId, ronda){
 function resolverCopaArgentina(part, yo, otro){
   var pasa=yo>otro;
   var pens=false;
-  if(yo===otro){ pasa=Math.random()<0.5; pens=true; }
-  var penalTxt=pens?" Empate: a penales, sin alargue (bases Copa Argentina).":"";
+  if(yo===otro){
+    if(part&&part.penales){ pasa=!!part.penales.gano; pens=true; }
+    else { pasa=Math.random()<0.5; pens=true; }
+  }
+  var penalTxt=pens
+    ? (part&&part.penales
+      ? (" Tanda "+part.penales.yo+"-"+part.penales.el+" (sin alargue, bases Copa Argentina).")
+      : " Empate: a penales, sin alargue (bases Copa Argentina).")
+    : "";
   if(!pasa){
     if(typeof sacarCopaPendienteTorneo==="function") sacarCopaPendienteTorneo("Copa Argentina");
     else if(E&&E.calendario) E.calendario=E.calendario.filter(function(p){ return !(p.tipo==="copa"&&p.torneo==="Copa Argentina"&&!p.jugado); });

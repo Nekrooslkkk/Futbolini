@@ -227,8 +227,15 @@ function partidosCopaDomesticaDe(clubId, era){
 function resolverCopaDomestica(part, yo, otro){
   var nom=nombreCopaDomestica();
   var pasa=yo>otro, pens=false;
-  if(yo===otro){ pasa=Math.random()<0.5; pens=true; }
-  var extra=pens?" Empate: a penales.":"";
+  if(yo===otro){
+    if(part&&part.penales){ pasa=!!part.penales.gano; pens=true; }
+    else { pasa=Math.random()<0.5; pens=true; }
+  }
+  var extra=pens
+    ? (part&&part.penales
+      ? (" Tanda "+part.penales.yo+"-"+part.penales.el+".")
+      : " Empate: a penales.")
+    : "";
   if(!pasa){
     if(typeof sacarCopaPendienteTorneo==="function") sacarCopaPendienteTorneo(nom);
     else if(E&&E.calendario) E.calendario=E.calendario.filter(function(p){ return !(p.tipo==="copa"&&p.torneo===nom&&!p.jugado); });

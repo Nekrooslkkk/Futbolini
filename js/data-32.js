@@ -335,12 +335,16 @@ function resolverCopaChile32(part, yo, otro){
   if(k==="FINAL"){
     if(yo>otro) pasa=true;
     else if(yo<otro) pasa=false;
-    else { pasa=Math.random()<0.5; pens=true; }
+    else { pasa=part&&part.penales?!!part.penales.gano:Math.random()<0.5; pens=true; }
   } else {
-    pasa=acc.gf>acc.gc||(acc.gf===acc.gc&&Math.random()<0.5);
+    pasa=acc.gf>acc.gc||(acc.gf===acc.gc&&(part.penales?!!part.penales.gano:Math.random()<0.5));
     if(acc.gf===acc.gc) pens=true;
   }
-  var penalTxt=pens?" Se definió en penales (el juego no inventa el 4-3: solo quién pasa).":"";
+  var penalTxt=pens
+    ? (part&&part.penales
+      ? (" Tanda "+part.penales.yo+"-"+part.penales.el+".")
+      : " Se definió en penales.")
+    : "";
   if(!pasa){
     sacarCopaChilePendiente();
     notificar({t:"Eliminado de la Copa Chile",tipo:"malo",

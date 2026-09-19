@@ -112,16 +112,170 @@ function calcularDescuento(P){
   let n=2+Math.min(2,goles)+(cambios>=3?1:0)+(tarj>=3?1:0)+(les?1:0);
   return (typeof clamp==="function")?clamp(n,2,7):Math.max(2,Math.min(7,n));
 }
-function topePartido(P){ return 90+(P&&P.descuento2||0); }
+function topePartido(P){
+  if(P && P.tanda) return P.min||120;
+  if(P && P.prorroga===2) return 120;
+  if(P && P.prorroga===1) return 105;
+  return 90+(P&&P.descuento2||0);
+}
 function textoReloj(P,pausado){
   if(!P) return "";
   const p=pausado?"⏸ ":"";
   if(P.terminado) return "Final del partido";
+  if(P.tanda){
+    const t=P.tanda;
+    return p+"Tanda "+(t.yo||0)+"-"+(t.el||0)+(t.done?(t.gano?" · pasamos":" · fuera"):"");
+  }
+  if(P.prorroga===1) return p+"Prórroga "+P.min+"' · 1E";
+  if(P.prorroga===2) return p+"Prórroga "+P.min+"' · 2E";
   if(P.min<45) return p+"Minuto "+P.min+" · 1T";
   if(P.min<90) return p+"Minuto "+P.min+" · 2T";
   const extra=Math.max(1,P.min-90);
   const cupo=P.descuento2||0;
   return p+"90+"+extra+(cupo?" · descuento "+cupo+"'":" · descuento");
+}
+/* 7.9005 · llave que no puede quedar empatada: copa KO, playoff de 4°s, final única. */
+function esLlaveDirecta(part){
+  if(!part) return false;
+  if(part.fase==="playoff4") return true;
+  if(part.tipo!=="copa") return false;
+  const r=String(part.ronda||"");
+  if(/Grupo|Fase de grupos|Zona\s/i.test(r)) return false;
+  return true;
+}
+function pideProrroga(part){
+  if(!part) return false;
+  /* Copa Argentina: bases reales, partido único SIN alargue (documentado en el juego). */
+  if(/Copa Argentina/i.test(part.torneo||"")) return false;
+  return esLlaveDirecta(part);
+}
+function esPartidoUnicoDesempate(part){
+  if(!esLlaveDirecta(part)) return false;
+  if(part.fase==="playoff4") return true;
+  const r=String(part.ronda||""), t=String(part.torneo||"");
+  if(/Copa Argentina/i.test(t)) return true;
+  if(/FINAL/i.test(r) && /Copa Chile/i.test(t)) return true;
+  if(/Primera fase/i.test(r)) return true;
+  if(typeof esEraHardcode==="function" && typeof E!=="undefined" && E && !esEraHardcode(E.eraBase) && part.tipo==="copa") return true;
+  const same=((typeof E!=="undefined"&&E&&E.calendario)||[]).filter(function(p){
+    return p && p.tipo==="copa" && p.torneo===part.torneo && p.ronda===part.ronda;
+  });
+  return same.length<=1;
+}
+function marcadorDefine(P){
+  if(!P||!P.part) return {necesita:false, yo:0, otro:0};
+  const [yo,otro]=miMarcador(P);
+  if(P.diosForzar) return {necesita:false, yo:yo, otro:otro};
+  if(!esLlaveDirecta(P.part)) return {necesita:false, yo:yo, otro:otro};
+  if(esPartidoUnicoDesempate(P.part)) return {necesita:yo===otro, yo:yo, otro:otro};
+  const part=P.part;
+  const same=((E&&E.calendario)||[]).filter(function(p){
+    return p && p.tipo==="copa" && p.torneo===part.torneo && p.ronda===part.ronda;
+  });
+  const pending=same.filter(function(p){ return !p.jugado && p!==part; });
+  if(pending.length) return {necesita:false, yo:yo, otro:otro};
+  const key=/Copa Chile/i.test(part.torneo||"") ? ("CC-"+part.ronda) : part.ronda;
+  const acc=(E.flags&&E.flags.copaAcum&&E.flags.copaAcum[key])||{gf:0,gc:0};
+  return {necesita:(acc.gf+yo)===(acc.gc+otro), yo:yo, otro:otro, acumYo:acc.gf+yo, acumEl:acc.gc+otro};
+}
+function ordenTanda(once){
+  const c=(once||[]).filter(function(j){ return j && j.pos!=="ARQ"; });
+  const punt=function(j){
+    return (j.nivel||60)
+      +((j.rasgos&&j.rasgos.indexOf("penales")>=0)?25:0)
+      +((j.rasgos&&(j.rasgos.indexOf("frio de definicion")>=0||j.rasgos.indexOf("definición")>=0))?12:0);
+  };
+  return c.slice().sort(function(a,b){ return punt(b)-punt(a); });
+}
+function tandaPuedeCortar(t){
+  if(!t) return false;
+  const nYo=t.seq.filter(function(x){ return x.lado==="yo"; }).length;
+  const nEl=t.seq.filter(function(x){ return x.lado==="el"; }).length;
+  if(nYo<5 || nEl<5){
+    const remainYo=5-nYo, remainEl=5-nEl;
+    if(t.yo+remainYo < t.el) return true;
+    if(t.el+remainEl < t.yo) return true;
+    return false;
+  }
+  if(nYo===nEl && nYo>=5 && t.yo!==t.el) return true;
+  return false;
+}
+function iniciarTanda(P){
+  if(!P) return {tipo:"fin",min:0};
+  const mios=ordenTanda(P.once);
+  const sus=(P.rivalPlantel||[]).filter(function(x){ return x && x.pos!=="ARQ"; });
+  P.tanda={yo:0, el:0, seq:[], done:false, gano:false, mios:mios, sus:sus};
+  if(typeof linea==="function") linea(P,P.min,"Siguen empate. Se van a la tanda de penales.","grave");
+  return {tipo:"tanda", min:P.min};
+}
+function cobrarTandaAuto(P, aFavor){
+  const t=P.tanda; if(!t) return false;
+  const nYo=t.seq.filter(function(x){ return x.lado==="yo"; }).length;
+  const nEl=t.seq.filter(function(x){ return x.lado==="el"; }).length;
+  const pat=aFavor
+    ? (t.mios[nYo % Math.max(1,t.mios.length)]||{n:"tu pateador",nivel:70})
+    : (t.sus[nEl % Math.max(1,t.sus.length)]||{n:"el rival",nivel:70});
+  const arq=aFavor
+    ? ((typeof arqueroDe==="function")?arqueroDe(P.rivalPlantel):null)
+    : ((typeof arqueroDe==="function")?arqueroDe(P.once):null);
+  const gol=(typeof cobrarPenal==="function")?cobrarPenal(pat, arq||{nivel:70}):Math.random()<0.72;
+  t.seq.push({lado:aFavor?"yo":"el", gol:!!gol, n:pat.n});
+  if(gol){ if(aFavor) t.yo++; else t.el++; }
+  if(typeof linea==="function"){
+    linea(P,P.min,
+      (aFavor?(pat.n+" "):( (P.part&&P.part.rivalNombre)||"el rival")+" ("+pat.n+") ")+(gol?"la manda adentro.":"falla.")+" Tanda "+t.yo+"-"+t.el+".",
+      gol?"gol":"grave");
+  }
+  return !!gol;
+}
+function cerrarTanda(P){
+  const t=P.tanda; if(!t) return;
+  t.done=true;
+  t.gano=t.yo>t.el;
+  if(P.part) P.part.penales={yo:t.yo, el:t.el, gano:t.gano};
+  if(typeof linea==="function"){
+    linea(P,P.min, t.gano
+      ? ("¡Pasamos en penales "+t.yo+"-"+t.el+"!")
+      : ("Fuera en penales "+t.yo+"-"+t.el+"."), "grave");
+  }
+}
+function simularTanda(P){
+  if(!P) return null;
+  if(!P.tanda) iniciarTanda(P);
+  const t=P.tanda;
+  let guard=0;
+  while(!t.done && guard++<28){
+    const nYo=t.seq.filter(function(x){ return x.lado==="yo"; }).length;
+    const nEl=t.seq.filter(function(x){ return x.lado==="el"; }).length;
+    const tocaYo=nYo<=nEl;
+    cobrarTandaAuto(P, tocaYo);
+    if(tandaPuedeCortar(t)) cerrarTanda(P);
+  }
+  if(!t.done) cerrarTanda(P);
+  return t;
+}
+function intentarDesempate(P){
+  if(!P) return {tipo:"fin",min:0};
+  if(P.tanda) return {tipo:P.tanda.done?"tandaFin":"tanda", min:P.min};
+  const d=marcadorDefine(P);
+  if(!d.necesita) return {tipo:"fin", min:P.min};
+  if(pideProrroga(P.part) && !P.prorroga){
+    P.prorroga=1;
+    if(typeof linea==="function") linea(P,P.min,"Empate "+((typeof marcadorTxt==="function")?marcadorTxt(P):"")+". Hay prórroga: treinta minutos más.","grave");
+    return {tipo:"prorroga", min:P.min};
+  }
+  if(P.prorroga===1 && P.min>=105){
+    P.prorroga=2;
+    if(typeof linea==="function") linea(P,105,"Descanso de la prórroga. Van "+((typeof marcadorTxt==="function")?marcadorTxt(P):"")+".","grave");
+    return {tipo:"prorrogaHT", min:105};
+  }
+  if(P.prorroga===2 && P.min>=120){
+    const m=miMarcador(P);
+    if(m[0]!==m[1]) return {tipo:"fin", min:P.min};
+    return iniciarTanda(P);
+  }
+  if(!pideProrroga(P.part)) return iniciarTanda(P);
+  return {tipo:"fin", min:P.min};
 }
 
 /* ---------- pizarra libre ----------
@@ -374,6 +528,7 @@ function iniciarPartido(part,modo){
     momentos:momentosPartido(part), momentoIdx:0, fase:"equilibrio",
     clasico:esClasico(part), var:((E&&E.anio)||0)>=2016,
     iner:{cor:0,ataj:0,falta:0}, _varHold:false, _skipVar:false,
+    prorroga:0, tanda:null,
     cambios:0, cambiosMax:cambiosMaxEra((E&&E.anio)||2026),
     ventanas:0, ventanasMax:ventanasMaxEra((E&&E.anio)||2026),
     descuento2:0, _descDicho:false, _htDicho:false, _salieron:[]
@@ -648,6 +803,7 @@ function peligro(P){
   /* 7.9003 · inercia: córners / atajadas / faltas seguidas empujan el próximo tiro. */
   const iner=inerciaTiro(P);
   yo*=iner.yo; el*=iner.el;
+  if(P.prorroga){ yo*=0.88; el*=0.88; }
   return { yo:yo, el:el };
 }
 /* 7.9003 · VAR en vivo: zócalo + pausa dramática. No en simular, no antes de 2018,
@@ -715,8 +871,11 @@ function actualizarInercia(P,ev){
    auto-pausar y pedir una decisión. En simular se resuelven en automático. */
 function tickPartido(P){
   if(P.terminado) return {tipo:"fin",min:P.min};
+  if(P.tanda) return {tipo:P.tanda.done?"tandaFin":"tanda",min:P.min};
   const tope=topePartido(P);
-  if(P._descDicho && P.min>=tope){ return {tipo:"fin",min:P.min}; }
+  if(P._descDicho && P.min>=tope){
+    return (typeof intentarDesempate==="function")?intentarDesempate(P):{tipo:"fin",min:P.min};
+  }
   const paso=P.min>=90?ri(1,2):ri(2,4);
   const next=P.min+paso;
   /* 7.99955 · descanso clavado al 45' (igual que el 90' de descuento).
@@ -1034,13 +1193,29 @@ function resolverEventoAuto(P,ev){
 function correrHasta(P,hasta){
   const prevSkip=P._skipVar; P._skipVar=true;
   let guard=0;
-  while(!P.terminado&&guard++<800){
+  while(!P.terminado&&guard++<1000){
     const techo=(hasta>=90)?topePartido(P):hasta;
-    if(P.min>=techo && (hasta<90 || P._descDicho)) break;
+    if(P.min>=techo && (hasta<90 || P._descDicho)){
+      if(hasta>=90 && !P.tanda && typeof intentarDesempate==="function"){
+        const de=intentarDesempate(P);
+        if(de.tipo==="tanda"||de.tipo==="tandaFin"){
+          if(typeof simularTanda==="function") simularTanda(P);
+          break;
+        }
+        if(de.tipo==="prorroga"||de.tipo==="prorrogaHT") continue;
+      }
+      break;
+    }
     const ev=tickPartido(P);
     if(typeof actualizarInercia==="function") actualizarInercia(P,ev);
+    if(ev.tipo==="tanda"||ev.tipo==="tandaFin"){
+      if(typeof simularTanda==="function") simularTanda(P);
+      break;
+    }
     if(ev.tipo==="fin") break;
+    if(ev.tipo==="prorroga"||ev.tipo==="prorrogaHT") continue;
     if(ev.tipo==="penal"||ev.tipo==="penalRival"||ev.tipo==="lesion"||ev.tipo==="tiroLibre") resolverEventoAuto(P,ev);
+    if(ev.tipo==="corner" && ev.aFavor!==false && typeof centroCorner==="function") centroCorner(P);
   }
   P._skipVar=prevSkip;
 }
@@ -1282,6 +1457,10 @@ function persistirRepeticion(P,part){
   if(P.stats) part.stats={pos:P.stats.pos,remMio:P.stats.remMio,remRiv:P.stats.remRiv,arcMio:P.stats.arcMio,arcRiv:P.stats.arcRiv,corMio:P.stats.corMio,corRiv:P.stats.corRiv};
   if(P.arbitro) part.arbitro={n:P.arbitro.n,estilo:P.arbitro.estilo,desc:P.arbitro.desc};
   part.ticker=(P.ticker||[]).filter(t=>t&&t.texto).slice(0,5).map(t=>({autor:t.autor,texto:t.texto,tono:t.tono,m:t.m}));
+  if(part.penales||(P.tanda&&P.tanda.done)){
+    const t=P.tanda||{};
+    part.penales=part.penales||{yo:t.yo||0, el:t.el||0, gano:!!t.gano};
+  }
 }
 /* cierre del partido: tabla, moral, taquilla, historia */
 function terminarPartido(P){
@@ -1334,20 +1513,25 @@ function terminarPartido(P){
       esLiga:false, amistoso:true};
   }
   /* efectos anímicos */
-  if(yo>otro){ aplicarEfectos({moral:3,hinchada:2}); aplicarGrupos({hinchada:4,camarin:3,directorio:2,tecnico:2}); }
-  else if(yo<otro){ aplicarEfectos({moral:-3,hinchada:-2}); aplicarGrupos({hinchada:-4,camarin:-2,directorio:-3,prensa:-2}); }
+  const ganoPens=part.penales && part.penales.gano;
+  const perdioPens=part.penales && !part.penales.gano;
+  if(yo>otro || ganoPens){ aplicarEfectos({moral:3,hinchada:2}); aplicarGrupos({hinchada:4,camarin:3,directorio:2,tecnico:2}); }
+  else if(yo<otro || perdioPens){ aplicarEfectos({moral:-3,hinchada:-2}); aplicarGrupos({hinchada:-4,camarin:-2,directorio:-3,prensa:-2}); }
   else { aplicarGrupos({hinchada:-1}); }
   /* racha para el efecto mariposa: ganar corta la cuenta y rehabilita el aviso */
   if(E.temporada.sinGanar===undefined) E.temporada.sinGanar=0;
-  if(yo>otro){ E.temporada.sinGanar=0; E.flags.rachaLiquida=false; }
+  if(yo>otro || ganoPens){ E.temporada.sinGanar=0; E.flags.rachaLiquida=false; }
   else E.temporada.sinGanar++;
   /* invicto: se corta al perder, suma al ganar o empatar (para la voz de las redes) */
   if(E.temporada.sinPerder===undefined) E.temporada.sinPerder=0;
-  if(yo<otro) E.temporada.sinPerder=0; else E.temporada.sinPerder++;
+  if(yo<otro || perdioPens) E.temporada.sinPerder=0; else E.temporada.sinPerder++;
   if(typeof chequearPromesas==="function") chequearPromesas(yo,otro);
+  const tituPens=part.penales
+    ? ((ganoPens?"Victoria":"Derrota")+" en penales "+yo+"-"+otro+" ("+part.penales.yo+"-"+part.penales.el+") ante "+part.rivalNombre)
+    : ((yo>otro?"Victoria ":(yo<otro?"Derrota ":"Empate "))+yo+"-"+otro+" ante "+part.rivalNombre);
   notificar({
-    t:(yo>otro?"Victoria ":(yo<otro?"Derrota ":"Empate "))+yo+"-"+otro+" ante "+part.rivalNombre,
-    tipo:(yo>otro?"bueno":(yo<otro?"malo":"neutro")),
+    t:tituPens,
+    tipo:(ganoPens||yo>otro?"bueno":(perdioPens||yo<otro?"malo":"neutro")),
     d:(typeof etqCompromiso==="function"?etqCompromiso(part):(part.tipo==="copa"?(part.torneo||"Copa")+" · "+part.ronda:"fecha "+part.fecha))+", "+
       (part.local?"de local":"de visita")+" en "+part.sede+". "+
       (P.goleadores.length?("Goles: "+P.goleadores.join(", ")+". "):"")+
@@ -1433,7 +1617,8 @@ function terminarPartido(P){
   E.idx++;
   guardar();
   return {yo:yo,otro:otro,caja:caja,gente:gente,posAntes:posAntes,posDespues:posDespues,
-    golesDetalle:(P.golesDetalle||[]),tarjetas:(P.tarjetas||[]),lesionados:(P.lesionados||[]),esLiga:part.tipo==="liga"};
+    golesDetalle:(P.golesDetalle||[]),tarjetas:(P.tarjetas||[]),lesionados:(P.lesionados||[]),
+    esLiga:part.tipo==="liga", penales:part.penales||null};
 }
 /* los otros 7 partidos de la fecha (se guardan para mostrarlos en el resumen) */
 function simularResto(part){
@@ -1512,7 +1697,7 @@ function resolverCopa(part,yo,otro){
   if(jugados<idxRonda.length) return;
   let pasa;
   if(k==="Grupo 2"){ pasa=(acc.gf-acc.gc)>=-1; }
-  else { pasa=acc.gf>acc.gc||(acc.gf===acc.gc&&Math.random()<0.5); }
+  else { pasa=acc.gf>acc.gc||(acc.gf===acc.gc&& (part.penales?!!part.penales.gano:Math.random()<0.5)); }
   /* 7.71 · el torneo real (Copa Chile / Libertadores / Sudamericana), no hardcodeado */
   const torneo=part.torneo||"la Copa";
   const esAmerica=/Libertadores|Sudamericana/i.test(torneo);
