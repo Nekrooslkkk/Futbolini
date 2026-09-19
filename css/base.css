@@ -806,3 +806,11 @@ html{scrollbar-width:thin;scrollbar-color:rgba(70,150,100,.55) transparent}
   border:1px solid var(--linea);background:rgba(255,255,255,.04);cursor:pointer;font-size:10.5px;text-align:center}
 .duelo-club .g{font-size:16px}
 .duelo-club.sel{border-color:rgba(60,120,200,.6);background:linear-gradient(180deg,rgba(90,160,240,.24),rgba(90,160,240,.08))}
+
+/* 7.9006 · escritorio (Claude): resaltado al navegar, niebla del scouting, urgentes */
+.resaltado{ animation:resaltar 2.1s ease; }
+@keyframes resaltar{ 0%,100%{ box-shadow:0 0 0 0 rgba(230,140,30,0); } 18%,58%{ box-shadow:0 0 0 3px rgba(230,140,30,.6); } }
+.scout-niebla td{ opacity:.55; font-style:italic; }
+.op.dec-urgente{ border-left:3px solid #e07b2e; }
+.op.op-alerta{ border-left:3px solid #c0392b; }
+@media(prefers-reduced-motion:reduce){ .resaltado{ animation:none; outline:2px solid rgba(230,140,30,.7); } }

@@ -522,14 +522,44 @@ function vistaEscritorio(){
     p.cuerpo.appendChild(b);
     if(typeof plantelRival==="function"){
       const det=el("details"); det.className="rival-prev";
-      det.appendChild(el("summary","","👁️ Ver el once probable de "+part.rivalNombre));
+      det.appendChild(el("summary","","👁️ "+T("esc_once_ver","Once probable de ")+part.rivalNombre));
       try{
         const xi=plantelRival(part.rivalId||part.rivalNombre, part.fuerzaRival);
-        const t=el("table"); t.innerHTML="<thead><tr><th>Rival</th><th>Pos</th><th class='n'>Nivel</th></tr></thead>";
+        /* 7.9006 · niebla + informe pagado. Gratis: solo los obvios (real● + más nivel);
+           el resto en ???????. Un informe de $100 revela el XI completo (flag por rival+fecha). */
+        const claveScout=(E.club||"")+"|"+(part.rivalId||part.rivalNombre)+"|"+E.idx;
+        if(!E.flags) E.flags={}; if(!E.flags.scouting) E.flags.scouting={};
+        const pagado=!!E.flags.scouting[claveScout];
+        /* gratis: solo los 4 más obvios (mayor nivel). El resto en niebla, aunque
+           sean documentados: la lectura completa se paga. */
+        const revelados=xi.slice().sort((a,b)=>(b.nivel||0)-(a.nivel||0)).slice(0,4);
+        const ve=j=>pagado||revelados.indexOf(j)>=0;
+        const t=el("table"); t.innerHTML="<thead><tr><th>"+T("scout_rival","Rival")+"</th><th>"+T("scout_pos","Pos")+"</th><th class='n'>"+T("scout_nivel","Nivel")+"</th></tr></thead>";
         const tb=el("tbody");
-        xi.forEach(j=>tb.appendChild(el("tr",null,"<td>"+(j.real?"● ":"")+j.n+"</td><td>"+j.pos+"</td><td class='n'>"+j.nivel+"</td>")));
+        xi.forEach(j=>{
+          const nom=ve(j)?((j.real?"● ":"")+j.n):"???????";
+          const niv=pagado?j.nivel:(revelados.indexOf(j)>=0?("~"+(Math.round((j.nivel||60)/4)*4)):"—");
+          tb.appendChild(el("tr",ve(j)?null:"scout-niebla","<td>"+nom+"</td><td>"+j.pos+"</td><td class='n'>"+niv+"</td>"));
+        });
         t.appendChild(tb); det.appendChild(t);
-        det.appendChild(el("p","mini","● jugador real documentado. Es una lectura estimada: la formación final del rival puede cambiar."));
+        if(pagado){
+          det.appendChild(el("p","mini","● "+T("scout_real","jugador real documentado")+". "+T("scout_estim","Es una lectura estimada: la formación final puede cambiar.")));
+        } else {
+          det.appendChild(el("p","mini",T("scout_niebla","Ves a los conocidos; el resto es niebla. Un informe de scouting revela el once completo.")));
+          const caja=(E.plata||0)>=100;
+          const bi=el("button","btn-aqua chico"+(caja?" verde":" gris"));
+          bi.textContent="🔎 "+T("scout_btn","Informe completo")+" · "+plata(100);
+          bi.disabled=!caja;
+          if(!caja) bi.title=T("scout_sincaja","No te alcanza la caja para el informe");
+          bi.onclick=()=>{
+            if((E.plata||0)<100){ aviso(T("scout_sincaja","No te alcanza la caja para el informe")); return; }
+            aplicarEfectos({plata:-100});
+            E.flags.scouting[claveScout]=1;
+            guardar(); aviso("🔎 "+T("scout_comprado","Informe comprado")+": "+part.rivalNombre);
+            render();
+          };
+          det.appendChild(bi);
+        }
       }catch(e){ det.appendChild(el("p","mini","No se pudo leer el rival.")); }
       p.cuerpo.appendChild(det);
     }
@@ -550,8 +580,8 @@ function vistaEscritorio(){
     const pa=panel("Atiende antes de avanzar","⚠️","alerta");
     pa.cuerpo.appendChild(el("p","mini","Hay cosas que conviene resolver antes de apretar Avanzar. Toca una para ir a resolverla:"));
     pend.forEach(it=>{
-      const b=el("button","op"); b.innerHTML='<div class="t">'+it.ic+" "+it.t+'</div>'+(it.d?'<div class="req">'+it.d+'</div>':"");
-      b.onclick=()=>irA(it.ir);
+      const b=el("button","op"+(it.fuerte?" op-alerta":"")); b.innerHTML='<div class="t">'+it.ic+" "+it.t+'</div>'+(it.d?'<div class="req">'+it.d+'</div>':"");
+      b.onclick=()=>atenderPendiente(it);
       pa.cuerpo.appendChild(b);
     });
     izq.appendChild(pa);
@@ -579,6 +609,7 @@ function vistaEscritorio(){
       E.objetivos.filter(o=>E.uiObjTab==="todo"||o.cat===E.uiObjTab).forEach(o=>{
         const pr=progresoObjetivo(o), cat=CAT[o.cat]||CAT.deportivo, est=EST[pr.estado]||EST.encamino;
         const box=el("div","obj obj-mini");
+        box.setAttribute("data-meta", o.id||o.t);
         box.innerHTML=
           "<div class='obj-top'><span class='obj-cat' style='background:"+cat.c+"'>"+cat.ic+" "+cat.n+"</span>"+
           "<span class='obj-est' style='color:"+est.c+"'>"+(pr.cumplido?"✓ ":"")+est.n+"</span></div>"+
@@ -650,9 +681,9 @@ function vistaEscritorio(){
   const gridDec=el("div","grid-comodo");  /* 2 columnas en pantalla ancha: menos scroll */
   E.decPend.slice().sort((a,b)=>(b.peso==="alto")-(a.peso==="alto")).forEach(x=>{
     const d=decisionPorId(x.id); if(!d) return;
-    const b=el("button","op");
+    const b=el("button","op"+(x.peso==="alto"?" dec-urgente":""));
     b.innerHTML='<div class="t">'+BUZONES[d.buzon].ic+" "+resolverTokens(d.t,E)+'</div>'+
-      '<div class="d">'+BUZONES[d.buzon].n+(x.peso==="alto"?" · <b>hay que resolverla antes del próximo partido</b>":"")+'</div>';
+      '<div class="d">'+BUZONES[d.buzon].n+(x.peso==="alto"?" · <b>"+T("dec_urg","hay que resolverla antes del próximo partido")+"</b>":"")+'</div>';
     b.onclick=()=>abrirDecision(d,true);
     gridDec.appendChild(b);
   });
@@ -681,12 +712,8 @@ function vistaEscritorio(){
   }
   izq.appendChild(pb);
 
-  /* E-1 · por qué juego a esto: la situación del club (Grok TAREA E / Claude 7.86). Solo si hay dato. */
-  if(typeof SITUACION_CLUB==="object" && SITUACION_CLUB[E.club]){
-    const psit=panel("El club hoy","🎯","agua");
-    psit.cuerpo.appendChild(el("p",null,SITUACION_CLUB[E.club]));
-    der.appendChild(psit);
-  }
+  /* E-1 · la situación del club ya NO vive acá (era un párrafo genérico con ventana
+     propia). Se movió a Historia → capítulo 2026 "Hoy" (ver vistaHistoria). */
 
   /* estado */
   const pe=panel("Estado del club","📊","agua");
@@ -1940,6 +1967,11 @@ function vistaHistoria(){
     const p2=panel(tit,"📚","agua");
     const eraObj=(typeof eraDe==="function"?eraDe(esC?2026:base):ERA[2026])||ERA[2026];
     if(eraObj&&eraObj.desc && base!==1991) p2.cuerpo.appendChild(el("p",null,eraObj.desc));
+    /* 7.9006 · "El club hoy" vive acá ahora: por qué diriges a ESTE club, en su historia.
+       Reusa SITUACION_CLUB (no inventa hechos). Antes tenía ventana propia en el escritorio. */
+    if(typeof SITUACION_CLUB==="object" && SITUACION_CLUB[E.club]){
+      p2.cuerpo.appendChild(el("div","resul mitad","<b>"+T("hist_hoy","El club hoy")+".</b> "+SITUACION_CLUB[E.club]));
+    }
     if(typeof HISTORIA_BETA==="object" && HISTORIA_BETA[hid] && HISTORIA_BETA[hid].actual){
       const ctx=HISTORIA_BETA[hid].actual;
       if(!(typeof textoHistoriaAjeno==="function" && textoHistoriaAjeno(ctx, hid)))
@@ -3287,12 +3319,41 @@ function modalCierreTemporada(){
 }
 /* 4.c · cosas que conviene atender antes de avanzar (no bloqueantes).
    `fuerte:true` = amerita un aviso antes de avanzar; el resto solo se lista. */
+/* 7.9006 · resalta 2s un elemento recién renderizado (para "atiende" y metas). */
+function _resaltar(elm){
+  if(!elm) return;
+  try{ elm.scrollIntoView({behavior:"smooth",block:"center"}); }catch(e){ try{ elm.scrollIntoView(); }catch(e2){} }
+  elm.classList.add("resaltado");
+  setTimeout(function(){ try{ elm.classList.remove("resaltado"); }catch(e){} },2100);
+}
+function _buscarMarcar(sel,valor){
+  setTimeout(function(){
+    const cards=document.querySelectorAll("#vista "+sel);
+    for(let i=0;i<cards.length;i++){ if(valor==null || cards[i].getAttribute("data-meta")===String(valor)){ _resaltar(cards[i]); return; } }
+    const pnl=document.querySelector("#vista .panel"); if(pnl) _resaltar(pnl);
+  },70);
+}
+/* Un solo cerebro para "Atiende": abre la decisión, lleva a la meta o a la sección y MARCA. */
+function atenderPendiente(it){
+  if(!it) return;
+  if(it.abre==="decision" && typeof decisionPorId==="function"){
+    const d=decisionPorId(it.decId);
+    if(d){ abrirDecision(d,true); return; }
+  }
+  if(it.abre==="meta"){
+    irA("escritorio");
+    _buscarMarcar("[data-meta]", it.metaId);
+    return;
+  }
+  irA(it.ir);
+  if(it.ir==="finanzas"||it.ir==="institucion"||it.ir==="avisos") _buscarMarcar(".panel", null);
+}
 function pendientesAtender(){
   const p=[]; if(!E) return p;
   const urg=(E.decPend||[]).filter(x=>x.peso==="alto");
-  if(urg.length) p.push({ic:"📥",fuerte:true,t:urg.length===1?"1 decisión urgente sin resolver":(urg.length+" decisiones urgentes sin resolver"),d:"En Decisiones sobre la mesa.",ir:"escritorio"});
+  if(urg.length) p.push({ic:"📥",fuerte:true,t:urg.length===1?"1 decisión urgente sin resolver":(urg.length+" decisiones urgentes sin resolver"),d:"Toca para abrir la primera.",abre:"decision",decId:urg[0].id,ir:"escritorio"});
   if(typeof notifsAccionables==="function"){ const a=notifsAccionables(); if(a.length) p.push({ic:"📨",fuerte:true,t:a.length+" aviso"+(a.length>1?"s":"")+" que requiere"+(a.length>1?"n":"")+" tu respuesta",d:"Ofertas o pedidos esperando.",ir:"avisos"}); }
-  if(Array.isArray(E.objetivos) && typeof progresoObjetivo==="function"){ const r=E.objetivos.filter(o=>progresoObjetivo(o).estado==="riesgo"); if(r.length) p.push({ic:"🎯",t:"Meta en riesgo: "+r[0].t,d:"El directorio lo evalúa al cierre.",ir:"escritorio"}); }
+  if(Array.isArray(E.objetivos) && typeof progresoObjetivo==="function"){ const r=E.objetivos.filter(o=>progresoObjetivo(o).estado==="riesgo"); if(r.length) p.push({ic:"🎯",t:"Meta en riesgo: "+r[0].t,d:"Toca para ir a resolverla.",abre:"meta",metaId:r[0].id||r[0].t,ir:"escritorio"}); }
   if(typeof quimicaEquipo==="function" && typeof onceIdeal==="function"){ const q=quimicaEquipo(onceIdeal()); if(q.prom<48) p.push({ic:"🔗",t:"Química floja ("+q.prom+"/100)",d:"Acomoda la pizarra antes del partido.",ir:"escritorio"}); }
   if(E.ind && E.ind.moral<42) p.push({ic:"👥",t:"Camarín cortado (moral "+Math.round(E.ind.moral)+")",d:"Puedes reconquistarlos en Finanzas.",ir:"institucion"});
   if(E.flags && E.flags.sueldosAtrasados) p.push({ic:"💸",fuerte:true,t:"Sueldos atrasados",d:"El camarín se resiente cada semana.",ir:"finanzas"});
@@ -3304,7 +3365,7 @@ function modalAtiende(pend){
     box.appendChild(el("div","cab",'<span class="ic">⚠️</span><span>Atiende antes de avanzar</span>'));
     const cc=el("div","cuerpo"); box.appendChild(cc);
     cc.appendChild(el("p","mini","Tienes cosas sin resolver. Toca una para ir a atenderla, o avanza igual:"));
-    pend.forEach(it=>{ const b=el("button","op"); b.innerHTML='<div class="t">'+it.ic+" "+it.t+'</div>'+(it.d?'<div class="req">'+it.d+'</div>':""); b.onclick=()=>{ cerrarModal(); irA(it.ir); }; cc.appendChild(b); });
+    pend.forEach(it=>{ const b=el("button","op"+(it.fuerte?" op-alerta":"")); b.innerHTML='<div class="t">'+it.ic+" "+it.t+'</div>'+(it.d?'<div class="req">'+it.d+'</div>':""); b.onclick=()=>{ cerrarModal(); atenderPendiente(it); }; cc.appendChild(b); });
     const bx=el("button","btn-aqua ancho gris","Avanzar igual"); bx.style.marginTop="8px"; bx.onclick=()=>{ cerrarModal(); avanzar(); };
     cc.appendChild(bx);
   },{cerrarFuera:false});

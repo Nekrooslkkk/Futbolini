@@ -75,7 +75,17 @@ var FRASES={
     arco_colocado:"Colocado",
     arco_potente:"Potente",
     arco_picadita:"Picadita",
-    tanda_tit:"Tanda · dibuja tu penal"
+    tanda_tit:"Tanda · dibuja tu penal",
+    /* --- escritorio 7.9006 (Claude) --- */
+    hist_hoy:"El club hoy",
+    esc_once_ver:"Once probable de ",
+    scout_rival:"Rival", scout_pos:"Pos", scout_nivel:"Nivel",
+    scout_real:"jugador real documentado",
+    scout_estim:"Es una lectura estimada: la formación final puede cambiar.",
+    scout_niebla:"Ves a los conocidos; el resto es niebla. Un informe de scouting revela el once completo.",
+    scout_btn:"Informe completo", scout_sincaja:"No te alcanza la caja para el informe",
+    scout_comprado:"Informe comprado",
+    dec_urg:"hay que resolverla antes del próximo partido"
   },
   /* --- CHILENSIS (de verdad): -ai/-ís, 'po', 'cachái', sin voseo argentino. --- */
   cl:{
@@ -183,7 +193,16 @@ var FRASES={
     arco_colocado:"Colocado",
     arco_potente:"Forte",
     arco_picadita:"Cavadinha",
-    tanda_tit:"Disputa de pênaltis · desenhe o chute"
+    tanda_tit:"Disputa de pênaltis · desenhe o chute",
+    hist_hoy:"O clube hoje",
+    esc_once_ver:"Provável escalação de ",
+    scout_rival:"Rival", scout_pos:"Pos", scout_nivel:"Nível",
+    scout_real:"jogador real documentado",
+    scout_estim:"É uma leitura estimada: a escalação final pode mudar.",
+    scout_niebla:"Você vê os conhecidos; o resto é névoa. Um relatório revela o XI completo.",
+    scout_btn:"Relatório completo", scout_sincaja:"O caixa não cobre o relatório",
+    scout_comprado:"Relatório comprado",
+    dec_urg:"tem que ser resolvida antes da próxima partida"
   },
   en:{
     ini_headline:"You don't run a team. You run an institution.",
@@ -236,7 +255,16 @@ var FRASES={
     arco_colocado:"Placed",
     arco_potente:"Power",
     arco_picadita:"Chip",
-    tanda_tit:"Shootout · draw your penalty"
+    tanda_tit:"Shootout · draw your penalty",
+    hist_hoy:"The club today",
+    esc_once_ver:"Likely XI of ",
+    scout_rival:"Rival", scout_pos:"Pos", scout_nivel:"Rating",
+    scout_real:"documented real player",
+    scout_estim:"It's an estimate: the final lineup may change.",
+    scout_niebla:"You see the known faces; the rest is fog. A scouting report reveals the full XI.",
+    scout_btn:"Full report", scout_sincaja:"You can't afford the report",
+    scout_comprado:"Report bought",
+    dec_urg:"must be settled before the next match"
   }
 };
 

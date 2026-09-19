@@ -125,19 +125,23 @@
       ok(!document.querySelector(".intro-epoca"), "en 2026 NO aparece el panel de época");
     }, "Intro epoca");
 
-    /* 7.86 · la situación del club (Grok TAREA E, SITUACION_CLUB) SE MUESTRA en el escritorio */
-    grupo("Situación del club en el escritorio (7.86)");
+    /* 7.9006 · la situación del club (SITUACION_CLUB) se movió del escritorio a HISTORIA
+       (capítulo 2026 "Hoy"). El escritorio ya NO tiene ventana "El club hoy". */
+    grupo("Situación del club en Historia (7.9006)");
     safe(function(){
       ok(typeof SITUACION_CLUB==="object" && Object.keys(SITUACION_CLUB).length>=40,
         "SITUACION_CLUB tiene cobertura ("+Object.keys(SITUACION_CLUB||{}).length+" clubes)");
       nuevaPartida("CC",2026,"historico"); SEC="escritorio"; render();
+      var esc=(document.getElementById("vista")||{}).textContent||"";
+      ok(esc.indexOf("El club hoy")<0, "el escritorio YA NO muestra 'El club hoy' (se movió a Historia)");
+      SEC="historia"; render();
       var txt=(document.getElementById("vista")||{}).textContent||"";
-      ok(txt.indexOf("El club hoy")>=0, "el escritorio muestra el panel 'El club hoy'");
+      ok(txt.indexOf("El club hoy")>=0, "Historia muestra el capítulo 'El club hoy'");
       ok(SITUACION_CLUB.CC && txt.indexOf(SITUACION_CLUB.CC.slice(0,24))>=0, "muestra la situación real del club elegido");
-      nuevaPartida("SMO",2026,"historico",{categoria:"C"}); SEC="escritorio"; render();
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"}); SEC="historia"; render();
       var txt2=(document.getElementById("vista")||{}).textContent||"";
-      ok(SITUACION_CLUB.SMO && txt2.indexOf(SITUACION_CLUB.SMO.slice(0,20))>=0, "Segunda (S. Morning) también muestra su situación");
-    }, "Situación en escritorio");
+      ok(SITUACION_CLUB.SMO && txt2.indexOf(SITUACION_CLUB.SMO.slice(0,20))>=0, "Segunda (S. Morning) también muestra su situación en Historia");
+    }, "Situación en Historia");
 
     /* T4a0 · idiomas: T() resuelve por registro con fallback a neutro */
     grupo("Idiomas (neutro/chilensis/pt)");
