@@ -814,3 +814,6 @@ html{scrollbar-width:thin;scrollbar-color:rgba(70,150,100,.55) transparent}
 .op.dec-urgente{ border-left:3px solid #e07b2e; }
 .op.op-alerta{ border-left:3px solid #c0392b; }
 @media(prefers-reduced-motion:reduce){ .resaltado{ animation:none; outline:2px solid rgba(230,140,30,.7); } }
+.obj-mini{ position:relative; }
+.obj-chev{ position:absolute; top:5px; right:6px; background:transparent; border:none; cursor:pointer; font-size:13px; opacity:.55; padding:2px; line-height:1; }
+.obj-chev:hover{ opacity:1; }

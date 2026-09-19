@@ -61,6 +61,17 @@ function resolverStoryline(op){
   if(op.ef && typeof aplicarEfectos==="function") aplicarEfectos(op.ef);
   if(op.grupos && typeof aplicarGrupos==="function") aplicarGrupos(op.grupos);
   if(op.rep && typeof aplicarRep==="function") aplicarRep(op.rep);
+  /* 7.9006 · un capítulo resuelto CAMBIA el presente: puede dejar una bandera viva
+     (E.flags.obligacion_X) o un modificador (permanente o por años) que otra
+     decisión, meta o la UI lee después. Sin esto, la historia no pesaba. */
+  if(!E.flags) E.flags={};
+  if(typeof op.flag==="string") E.flags[op.flag]=true;
+  if(op.flags) for(var _k in op.flags) E.flags[_k]=op.flags[_k];
+  if(op.mod && Array.isArray(E.mods)){
+    E.mods.push({ id:op.mod.id, n:op.mod.n,
+      hasta:(op.mod.perm||op.mod.anios===Infinity)?99999:((E.anio||0)+(op.mod.anios||1)),
+      ef:op.mod.ef||{} });
+  }
   if(op.mem && typeof recordar==="function") recordar("storyline",op.mem,{peso:"alto"});
   if(op.logro && typeof desbloquear==="function") desbloquear(op.logro);   /* 7.0 · logro por elección de arco */
   const S=E.storyline, a=ctx.arco;

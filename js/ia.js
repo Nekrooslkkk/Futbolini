@@ -184,6 +184,35 @@ function preguntarAyudante(q){
   if(ins.length) return "Lo más importante ahora: "+ins[0].t+" — "+ins[0].d;
   return "Está todo tranquilo. Puedes mover un estatuto, mirar el mercado o dar una charla al plantel.";
 }
+/* 7.9006 · Ayudante con ACCIONES, no solo texto. Reusa preguntarAyudante (que puede
+   estar envuelto por copas/afa/pulido) para el texto y le suma botones que LLEVAN.
+   Tokeniza con sinónimos chilenos y combina 2 temas. Devuelve {txt, acc:[{t,go}], chips}. */
+function ayudanteResponde(q){
+  var base=(typeof preguntarAyudante==="function")?String(preguntarAyudante(q)||""):"";
+  if(!E) return {txt:base, acc:[], chips:[]};
+  var baja=(q||"").toLowerCase();
+  var norm=baja.normalize?baja.normalize("NFD").replace(/[̀-ͯ]/g,""):baja;
+  var t=function(){ for(var i=0;i<arguments.length;i++){ if(norm.indexOf(arguments[i])>=0) return true; } return false; };
+  var acc=[];
+  var push=function(txt,go){ for(var i=0;i<acc.length;i++){ if(acc[i].t===txt) return; } acc.push({t:txt,go:go}); };
+  var goPrevia=function(){ var p=(typeof proximoPartido==="function")?proximoPartido():null; if(p&&typeof pantallaPrevia==="function"){ pantallaPrevia(p); } else if(typeof irA==="function") irA("plantel"); };
+  if(t("once","pizarra","alinea","formacion","tactic","plan","volante","arco","defensa","medio ","estilo","mentalidad")) push("📋 "+T("ay_once","Armar el once"), goPrevia);
+  if(t("moral","camarin","animo","vestuario","descontent")) push("👥 "+T("ay_moral","Reconquistar el camarín"), function(){ irA("institucion"); });
+  if(t("lesion","lesionad","cansad","piernas","rotar","fisic")) push("🩹 "+T("ay_plantel","Ver el plantel"), function(){ irA("plantel"); });
+  if(t("plata","caja","luca","deuda","dinero","prestamo","economi","finanz","presupuesto","sueldo")) push("💰 "+T("ay_finanzas","Ir a Finanzas"), function(){ irA("finanzas"); });
+  if(t("barra","hinchada","popular","socios","gente","publico","estatuto","poder")) push("🏛️ "+T("ay_inst","Ir a Institución"), function(){ irA("institucion"); });
+  if(t("meta","objetivo","directorio","exig","espera","piden")) push("🎯 "+T("ay_metas","Ver las metas"), function(){ irA("escritorio"); });
+  if(t("rival","proximo","partido","clasico","enfrent","domingo","liguilla","copa")) push("👁️ "+T("ay_previa","Ver la previa"), goPrevia);
+  if(t("fich","refuerzo","mercado","vend","compr","cantera","representante")) push("🧳 "+T("ay_mercado","Ir al Mercado"), function(){ irA("mercado"); });
+  /* lesionados: nombres reales del plantel */
+  var extra="";
+  if(t("lesion","lesionad")){ var les=(E.plantel||[]).filter(function(j){return j.lesion>0&&!j.vendido;}).map(function(j){return j.n;}); extra=les.length?(" "+T("ay_les","Lesionados")+": "+les.join(", ")+"."):(" "+T("ay_sinles","No tienes lesionados de peso ahora.")); }
+  if(!acc.length){
+    return {txt:T("ay_nopillo","No te pillé bien. ¿Es del once, de la plata, de la meta o del rival?"),
+            chips:[T("ay_c_once","el once"),T("ay_c_plata","la plata"),T("ay_c_meta","la meta"),T("ay_c_rival","el rival"),T("ay_c_cam","el camarín"),T("ay_c_les","los lesionados")], acc:[]};
+  }
+  return {txt:base+extra, acc:acc, chips:[]};
+}
 function pensarOffline(tarea,ctx){
   ctx=ctx||{};
   if(tarea==="tinder"){

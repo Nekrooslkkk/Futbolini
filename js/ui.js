@@ -617,8 +617,12 @@ function vistaEscritorio(){
           barrita(pr.pct,est.c)+
           "<div class='obj-dato'>"+pr.txt+"</div>"+
           "<div class='obj-porque oculto'>💡 "+o.porque+"</div>";
-        box.style.cursor="pointer"; box.title="Toca para ver por qué importa";
-        box.onclick=()=>{ const pq=box.querySelector(".obj-porque"); if(pq) pq.classList.toggle("oculto"); };
+        box.style.cursor="pointer"; box.title=T("meta_ir","Toca para ir a trabajar esta meta");
+        box.onclick=()=>{ metaNavegar(o, pr); };
+        /* el 💡 "por qué" queda en un chevron secundario, no roba el click principal */
+        const chev=el("button","obj-chev","💡"); chev.title=T("meta_porque","Por qué importa");
+        chev.onclick=(e)=>{ e.stopPropagation(); const pq=box.querySelector(".obj-porque"); if(pq) pq.classList.toggle("oculto"); };
+        box.appendChild(chev);
         cont.appendChild(box);
       });
     }
@@ -654,22 +658,34 @@ function vistaEscritorio(){
   if(typeof preguntarAyudante==="function"){
     const qbox=el("div"); qbox.style.marginTop="8px";
     const resp=el("div","resul mitad"); resp.hidden=true;
-    const inp=el("input"); inp.type="text"; inp.placeholder="Preguntale al ayudante… (rival, química, plata, camarín, mercado…)";
+    const inp=el("input"); inp.type="text"; inp.id="ay-input"; inp.placeholder=T("ay_ph","Preguntale al ayudante… (rival, once, plata, camarín, meta, mercado…)");
     inp.style.cssText="display:block;width:100%;box-sizing:border-box;padding:9px 11px;border-radius:8px;border:1px solid rgba(0,0,0,.15)";
     const responder=()=>{
       const q=inp.value.trim(); if(!q){ inp.focus(); return; }
-      resp.hidden=false; resp.textContent="";
-      const b=el("b"); b.textContent="🧑‍🏫 Ayudante:";
+      const r=(typeof ayudanteResponde==="function")?ayudanteResponde(q):{txt:String(preguntarAyudante(q)||""),acc:[],chips:[]};
+      resp.hidden=false; resp.innerHTML="";
+      const b=el("b"); b.textContent="🧑‍🏫 "+T("esc_ayudante","Ayudante")+":";
       resp.appendChild(b);
-      resp.appendChild(document.createTextNode(" "+String(preguntarAyudante(q)||"")));
+      resp.appendChild(document.createTextNode(" "+(r.txt||"")));
+      if(r.acc && r.acc.length){
+        const fa=el("div","fichas"); fa.style.marginTop="6px";
+        r.acc.forEach(a=>{ const ba=el("button","btn-aqua chico",a.t); ba.onclick=()=>{ try{ if(a.go) a.go(); }catch(e){} }; fa.appendChild(ba); });
+        resp.appendChild(fa);
+      }
+      if(r.chips && r.chips.length){
+        const fc=el("div","fichas"); fc.style.marginTop="6px";
+        r.chips.forEach(txt=>{ const c=el("button","ficha",txt); c.onclick=()=>{ inp.value=txt; responder(); }; fc.appendChild(c); });
+        resp.appendChild(fc);
+      }
     };
     inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); responder(); } };
-    const bq=el("button","btn-aqua chico","Preguntar"); bq.style.marginTop="6px"; bq.onclick=responder;
+    const bq=el("button","btn-aqua chico",T("ay_preguntar","Preguntar")); bq.id="ay-btn"; bq.style.marginTop="6px"; bq.onclick=responder;
     const chips=el("div","fichas"); chips.style.marginTop="6px";
-    ["Informe de la semana","¿El domingo?","¿Cómo viene el rival?","¿Cómo estamos de plata?","¿Hablo con el capitán?"].forEach(txt=>{
+    [T("chip_domingo","¿El domingo?"),T("chip_rival","¿Cómo viene el rival?"),T("chip_plata","¿Cómo estamos de plata?"),T("ay_c_les","los lesionados"),T("chip_meta","¿Qué hago con la meta?")].forEach(txt=>{
       const c=el("button","ficha",txt); c.onclick=()=>{ inp.value=txt; responder(); }; chips.appendChild(c);
     });
     qbox.appendChild(inp); qbox.appendChild(bq); qbox.appendChild(chips); qbox.appendChild(resp);
+    cer._responder=responder; cer._inp=inp;   /* para precargar desde una meta (punto 5C) */
     cer.cuerpo.appendChild(qbox);
   }
   izq.appendChild(cer);
@@ -3332,6 +3348,28 @@ function _buscarMarcar(sel,valor){
     for(let i=0;i<cards.length;i++){ if(valor==null || cards[i].getAttribute("data-meta")===String(valor)){ _resaltar(cards[i]); return; } }
     const pnl=document.querySelector("#vista .panel"); if(pnl) _resaltar(pnl);
   },70);
+}
+/* 7.9006 · click en una meta = ACCIÓN, no un párrafo. Deportiva → previa/pizarra;
+   económica → Finanzas; institucional → Institución. En riesgo → el ayudante da la
+   lectura Y el botón para ir a trabajarla (un cerebro, dos entradas). */
+function metaNavegar(o, pr){
+  if(pr && pr.cumplido){ aviso(T("meta_ok","Meta cumplida. El directorio la da por buena.")); return; }
+  if(pr && pr.estado==="riesgo"){ _ayudanteMeta(o); return; }
+  const cat=o&&o.cat;
+  if(cat==="economico"){ irA("finanzas"); _buscarMarcar(".panel", null); }
+  else if(cat==="institucional"){ irA("institucion"); _buscarMarcar(".panel", null); }
+  else { irA("escritorio"); _buscarMarcar(".cta-jugar", null); }
+}
+function _ayudanteMeta(o){
+  irA("escritorio");
+  setTimeout(function(){
+    const inp=document.getElementById("ay-input"), btn=document.getElementById("ay-btn");
+    if(inp){
+      inp.value=T("meta_pregunta","¿Qué hago con la meta")+": "+((o&&o.t)||"")+"?";
+      if(btn) btn.click();
+      _resaltar(inp.closest?(inp.closest(".panel")||inp):inp);
+    }
+  },90);
 }
 /* Un solo cerebro para "Atiende": abre la decisión, lleva a la meta o a la sección y MARCA. */
 function atenderPendiente(it){

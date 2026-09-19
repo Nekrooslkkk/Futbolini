@@ -85,7 +85,17 @@ var FRASES={
     scout_niebla:"Ves a los conocidos; el resto es niebla. Un informe de scouting revela el once completo.",
     scout_btn:"Informe completo", scout_sincaja:"No te alcanza la caja para el informe",
     scout_comprado:"Informe comprado",
-    dec_urg:"hay que resolverla antes del próximo partido"
+    dec_urg:"hay que resolverla antes del próximo partido",
+    /* ayudante con acciones + metas 7.9006 */
+    ay_once:"Armar el once", ay_moral:"Reconquistar el camarín", ay_plantel:"Ver el plantel",
+    ay_finanzas:"Ir a Finanzas", ay_inst:"Ir a Institución", ay_metas:"Ver las metas",
+    ay_previa:"Ver la previa", ay_mercado:"Ir al Mercado",
+    ay_les:"Lesionados", ay_sinles:"No tienes lesionados de peso ahora.",
+    ay_nopillo:"No te pillé bien. ¿Es del once, de la plata, de la meta o del rival?",
+    ay_c_once:"el once", ay_c_plata:"la plata", ay_c_meta:"la meta", ay_c_rival:"el rival", ay_c_cam:"el camarín", ay_c_les:"los lesionados",
+    ay_ph:"Preguntale al ayudante… (rival, once, plata, camarín, meta, mercado…)", ay_preguntar:"Preguntar",
+    meta_ir:"Toca para ir a trabajar esta meta", meta_porque:"Por qué importa",
+    meta_ok:"Meta cumplida. El directorio la da por buena.", meta_pregunta:"¿Qué hago con la meta"
   },
   /* --- CHILENSIS (de verdad): -ai/-ís, 'po', 'cachái', sin voseo argentino. --- */
   cl:{
@@ -202,7 +212,16 @@ var FRASES={
     scout_niebla:"Você vê os conhecidos; o resto é névoa. Um relatório revela o XI completo.",
     scout_btn:"Relatório completo", scout_sincaja:"O caixa não cobre o relatório",
     scout_comprado:"Relatório comprado",
-    dec_urg:"tem que ser resolvida antes da próxima partida"
+    dec_urg:"tem que ser resolvida antes da próxima partida",
+    ay_once:"Montar a escalação", ay_moral:"Reconquistar o vestiário", ay_plantel:"Ver o elenco",
+    ay_finanzas:"Ir a Finanças", ay_inst:"Ir à Diretoria", ay_metas:"Ver as metas",
+    ay_previa:"Ver a prévia", ay_mercado:"Ir ao Mercado",
+    ay_les:"Lesionados", ay_sinles:"Sem lesionados de peso agora.",
+    ay_nopillo:"Não peguei bem. É da escalação, do dinheiro, da meta ou do rival?",
+    ay_c_once:"a escalação", ay_c_plata:"o dinheiro", ay_c_meta:"a meta", ay_c_rival:"o rival", ay_c_cam:"o vestiário", ay_c_les:"os lesionados",
+    ay_ph:"Pergunte ao auxiliar… (rival, escalação, dinheiro, elenco, meta, mercado…)", ay_preguntar:"Perguntar",
+    meta_ir:"Toque para trabalhar esta meta", meta_porque:"Por que importa",
+    meta_ok:"Meta cumprida. A diretoria aprova.", meta_pregunta:"O que faço com a meta"
   },
   en:{
     ini_headline:"You don't run a team. You run an institution.",
@@ -264,7 +283,16 @@ var FRASES={
     scout_niebla:"You see the known faces; the rest is fog. A scouting report reveals the full XI.",
     scout_btn:"Full report", scout_sincaja:"You can't afford the report",
     scout_comprado:"Report bought",
-    dec_urg:"must be settled before the next match"
+    dec_urg:"must be settled before the next match",
+    ay_once:"Set the lineup", ay_moral:"Win back the dressing room", ay_plantel:"See the squad",
+    ay_finanzas:"Go to Finance", ay_inst:"Go to Board", ay_metas:"See the targets",
+    ay_previa:"See the preview", ay_mercado:"Go to Market",
+    ay_les:"Injured", ay_sinles:"No key injuries right now.",
+    ay_nopillo:"I didn't get that. Is it about the lineup, money, the target or the rival?",
+    ay_c_once:"the lineup", ay_c_plata:"the money", ay_c_meta:"the target", ay_c_rival:"the rival", ay_c_cam:"the dressing room", ay_c_les:"the injured",
+    ay_ph:"Ask the assistant… (rival, lineup, money, squad, target, market…)", ay_preguntar:"Ask",
+    meta_ir:"Tap to go work on this target", meta_porque:"Why it matters",
+    meta_ok:"Target met. The board signs off.", meta_pregunta:"What do I do about the target"
   }
 };
 
