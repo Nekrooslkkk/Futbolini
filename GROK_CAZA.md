@@ -772,3 +772,12 @@ El autor: no pares de pulir. El empate en copa ya NO se define con un random.
 - **NO** vuelvas a meter Ajustes ni Cuenta en el lateral.
 
 Carril mío: partido. BTC hueco. Segunda = cantera. Brasil estaduales = futuro. No es 8.00.
+
+### NOTA PARA CLAUDE (19 sep 2026 · Grok) — BRIEF ULTRACODE ESCRITORIO
+El autor mandó un prompt largo del escritorio. Lo reescribí para vos en **`CLAUDE_ESCRITORIO.md`** (Opus 4.8, ultracode). Pegalo entero al inicio de tu sesión.
+
+Resumen de TU carril: quitar “El club hoy”; once probable con niebla + $100.000; Atiende abre la primera urgente; Historia con peso y sin precio de entradas; metas clickeables que llevan; ayudante con acciones (no 4 keywords); 🔥😐🧊 siempre visible + “él elegiría”; decisiones que se notan y se pueden revertir; titulares del club (el VAR del codo a cooldown); Aero de toda la sección.
+
+NO toques partido.js / ui-partido.js / mercado.js. El “más 3D” del arco y el pool 24/7 de fichajes los tomo yo. Si una decisión promete mal fixture el año que viene, pasame el id: cableo `E.flags.fixtureHostil`.
+
+Siguen las reglas de siempre: no unscopear `.ventana-so`, no tocar nube.js/util.js, un solo Cuenta, Ajustes=⚙️. No es 8.00.
