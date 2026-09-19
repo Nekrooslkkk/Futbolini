@@ -71,6 +71,10 @@ button{background:none;border:none}
 .bd .v{font-family:var(--f-dato);font-size:13px;font-weight:700;color:#fff;line-height:1.25;white-space:nowrap}
 .bd.alerta .v{color:#ffcfc6}
 .barra-acc{display:flex;gap:6px;flex:0 0 auto;position:relative}
+#btnCuenta{display:inline-flex;align-items:center;gap:5px;font-weight:800;letter-spacing:.2px}
+#btnCuenta .cta-txt{font-size:12px;line-height:1}
+#btnAjustes{min-width:44px;font-size:18px;padding-left:10px;padding-right:10px}
+@media(max-width:520px){ #btnCuenta .cta-txt{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)} }
 /* 7.99951-ui (Claude) · La barra cortaba Deuda/Capital/Imagen entre 641–1100px
    (7 tarjetas no caben con los botones). Las secundarias (Tu plata, Capital,
    Imagen — que viven en sus propias vistas) se esconden ya desde 1100px, así

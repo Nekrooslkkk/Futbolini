@@ -1006,11 +1006,29 @@ function tiroLibreAuto(P){
   linea(P,P.min,elige(["La barrera la desvía al córner.","¡Al travesaño! Por un pelo.",
     "El arquero vuela y la manda al córner.","Se fue rozando el palo."])); return false;
 }
+function centroCorner(P){
+  const des=(E.tactica&&E.tactica.corner&&P.once&&P.once.find(function(j){ return j.n===E.tactica.corner; }));
+  const aereo=des||(P.once||[]).filter(function(j){ return j.rasgos&&j.rasgos.indexOf("juego aéreo")>=0; })[0]
+    || (P.once||[]).filter(function(j){ return j.pos==="DEL"||j.pos==="DEF"; })[0] || (P.once&&P.once[0]);
+  const iner=((P.iner&&P.iner.cor)||0);
+  if(typeof linea==="function") linea(P,P.min,"Córner. Centro al área, sube "+((aereo&&aereo.n)||"el área")+".");
+  const aereoOk=aereo&&aereo.rasgos&&aereo.rasgos.indexOf("juego aéreo")>=0;
+  const prob=clamp(0.10+(iner*0.04)+(aereoOk?0.08:0)+(((aereo&&aereo.nivel)||70)-70)*0.003,0.06,0.30);
+  if(Math.random()<prob){
+    if(aereo){ aereo.goles=(aereo.goles||0)+1; P.goleadores.push(aereo.n); if(typeof regGol==="function") regGol(P,P.min,aereo.n,true,"cabeza"); }
+    if(P.part.local) P.gl++; else P.gv++;
+    if(typeof linea==="function") linea(P,P.min,"¡Gol de cabeza"+(aereo?" de "+aereo.n:"")+" de córner! "+((typeof marcadorTxt==="function")?marcadorTxt(P):""),"gol");
+    return true;
+  }
+  if(typeof linea==="function") linea(P,P.min,elige(["Despeja el primero.","El arquero se queda con el centro.","Cabezazo desviado."]));
+  return false;
+}
 function resolverEventoAuto(P,ev){
   if(ev.tipo==="penal") penalEnPartido(P,true);
   else if(ev.tipo==="penalRival") penalEnPartido(P,false);
   else if(ev.tipo==="lesion") lesionEnPartido(P);
   else if(ev.tipo==="tiroLibre") tiroLibreAuto(P);
+  else if(ev.tipo==="corner" && ev.aFavor!==false) centroCorner(P);
 }
 /* Corrida en bloque (simular y para completar tramos). */
 function correrHasta(P,hasta){

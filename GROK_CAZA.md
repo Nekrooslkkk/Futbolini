@@ -712,3 +712,45 @@ El autor pidió pulir el partido en vivo: inercia, VAR con zócalo Aero, hot-swa
 
 Carril mío: partido/motor. BTC hueco. Segunda = cantera. Brasil estaduales = futuro, no invento nombres. No es 8.00.
 
+### NOTA PARA CLAUDE (7.9004 · Grok · 18 sep 2026)
+El autor: pulir todo. Penal/tiro libre profesionales. Avanzar de verdad. Copa Argentina visible para Chile 2026. Un solo botón de Cuenta. Ajustes = solo el logo ⚙️ (fuera de la izquierda). Preparar TODO en portugués e inglés.
+
+**Motor (cerrado, Grok, NO lo toques):**
+- Penal y tiro libre comparten `htmlArcoVivo`. El tiro libre YA NO dice "atajado" cuando fue la barrera: el arquero no se tira. Resultado de transmisión: GOL / ATAJADA / LA BARRERA / TRAVESAÑO / AFUERA. CSS en `gol.css`.
+- Copa Argentina 2026 se simula en el mundo (`mundoSimCopaArg`, cruces documentados 32avos). Chile la ve en Calendario → pestaña Copa Argentina y en "Copas del país". No invento clubes.
+- Avanzar: recap al simular (`simularDesdeAvance`), cierre de temporada con modal (no `confirm`).
+- Barra: un solo **Cuenta** (el de arriba, con texto). Ajustes **solo el ⚙️**. Saqué Ajustes y Cuenta del menú izquierdo y del Más móvil.
+
+**i18n — ESTO ES TUYO AHORA:**
+- `IDIOMAS_DISPONIBLES` tiene `en` y `pt` completo (las claves actuales).
+- Protocolo: **toda cadena visible nueva pasa por `T("clave", "fallback neutro")`**. Si no está, cae a neutro. Nunca dejes un string suelto en ventanas / editor / asociación / mobile chrome.
+- Agregá las claves en `FRASES.neutro` + `FRASES.en` + `FRASES.pt` (+ `cl` si es voz de cancha).
+- Yo voy envolviendo lo que toco (partido/motor). Tú envolvé lo tuyo.
+
+**Lo tuyo (sigue):**
+- FIFA/guerra UI.
+- Envolver ventanas, editor, asociación, mobile con `T()`.
+- **NO unscopear** `.ventana-so`. **NO** tocar `nube.js` / `partido.js` / `util.js` / `ui-partido.js`.
+- **NO** vuelvas a meter Ajustes ni Cuenta en el lateral.
+
+Carril mío: partido/motor/mundo. BTC hueco. Segunda = cantera. No es 8.00.
+
+### NOTA PARA CLAUDE (7.9004b · Grok · 18 sep 2026)
+El autor pidió MÁS diseño en penal/tiro libre y “algo más de juego así”. Ya está subido.
+
+**Motor (cerrado, Grok, NO lo toques):**
+- `htmlArcoVivo` ahora es estadio nocturno (focos, tribuna, red, palos). HUD de transmisión. Arquero con los colores del rival (`_kitDe`).
+- Tiro libre: mismos 3 efectos que el penal. Barrera ≠ atajado (sigue).
+- **Córner jugable** en dirigir: `minijuegoCorner` + `cornerClasificar` + `centroCorner`. Misma cancha. Centro bajo = DESPEJA. Simular no pausa.
+- Avanzar recap más denso (posesión, tarjetas, siguiente). Editor Alt+←/→.
+- Claves nuevas `arco_*` en `FRASES` (neutro/cl/pt/en).
+
+**Lo tuyo (sigue, igual que 7.9004):**
+- FIFA/guerra UI.
+- Envolver TUS ventanas/editor/asociación/mobile con `T()`. Las claves `arco_*` ya están: usalas si mostrás esos zócalos.
+- **NO unscopear** `.ventana-so`. **NO** tocar `nube.js` / `partido.js` / `util.js` / `ui-partido.js`.
+- **NO** vuelvas a meter Ajustes ni Cuenta en el lateral.
+
+Carril mío: partido. BTC hueco. Segunda = cantera. Brasil estaduales = futuro. No es 8.00.
+
+

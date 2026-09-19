@@ -2223,6 +2223,64 @@
       P_ACTUAL=null;
     }, "hot-swap sin pausar");
 
+    /* T56 · 7.9004 penal/TL, Copa Argentina en Chile, avanzar, cuenta, i18n */
+    grupo("Grok 7.9004 (arco + Copa Argentina + avanzar + cuenta)");
+    safe(function(){
+      ok(VERSION==="7.9004" || /^7\.9/.test(VERSION), "VERSION 7.9004");
+      ok(typeof tlClasificar==="function" && typeof htmlArcoVivo==="function", "API arco compartido");
+      ok(typeof minijuegoPenal==="function" && typeof minijuegoTiroLibre==="function", "minijuegos penal y tiro libre");
+      ok(typeof minijuegoCorner==="function" && typeof cornerClasificar==="function" && typeof centroCorner==="function", "minijuego de córner");
+      ok(typeof simularDesdeAvance==="function" && typeof modalCierreTemporada==="function", "avanzar: recap + cierre con modal");
+      var barr=tlClasificar({cx:180,cy:140,fuera:false});
+      ok(barr.res==="barrera", "tiro al centro bajo = la barrera (no 'atajado')");
+      var afu=tlClasificar({cx:180,cy:10,fuera:true});
+      ok(afu.res==="afuera", "por arriba = afuera");
+      var rin=tlClasificar({cx:62,cy:50,fuera:false});
+      ok(rin.res==="arco", "rincón alto pasa la barrera");
+      var cDef=cornerClasificar({cx:180,cy:170,fuera:false});
+      ok(cDef.res==="defensa", "centro muy bajo = despeja (no atajado)");
+      var cAir=cornerClasificar({cx:96,cy:90,fuera:false});
+      ok(cAir.res==="aire" && cAir.zona==="primer", "centro al primer palo");
+      var svg=htmlArcoVivo({modo:"corner", barrera:false});
+      ok(/arco-flag/.test(svg) && /arcoCielo/.test(svg), "cancha de córner trae banderín y estadio");
+      var svgTl=htmlArcoVivo({barrera:true, modo:"tl"});
+      ok(/arco-wall/.test(svgTl) && /arco-muro/.test(svgTl), "tiro libre trae barrera");
+    }, "API 7.9004");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      if(!E.mundo) mundoInit();
+      mundoSimCopaArg(6);
+      var pack=E.mundo.copas&&E.mundo.copas.arg;
+      ok(pack && (pack.partidos||[]).length>=20, "Chile 2026 ve la Copa Argentina ("+(pack&&pack.partidos&&pack.partidos.length)+")");
+      ok((pack.partidos||[]).some(function(p){ return /Boca|River|Racing|Independiente/i.test((p.a||"")+" "+(p.b||"")); }), "salen clubes AFA documentados");
+      ok((pack.partidos||[]).every(function(p){ return /Copa Argentina/i.test(p.liga||""); }), "la etiqueta es Copa Argentina");
+    }, "Copa Argentina visible desde Chile");
+    safe(function(){
+      ok(typeof IDIOMAS_DISPONIBLES!=="undefined" && IDIOMAS_DISPONIBLES.some(function(x){ return x[0]==="en"; }), "inglés en el selector");
+      ok(IDIOMAS_DISPONIBLES.some(function(x){ return x[0]==="pt"; }), "portugués en el selector");
+      setIdioma("en");
+      ok(/institution/i.test(T("ini_headline")), "inglés traduce el headline");
+      ok(/GOAL|SAVED|WALL/i.test(T("arco_gol")+T("arco_ataja")+T("arco_barrera")), "inglés cubre el arco");
+      setIdioma("pt");
+      ok(/semana/i.test(T("esc_semana")), "portugués cubre el escritorio");
+      ok(/BARREIRA|PÊNALTI|ESCANTEIO/i.test(T("arco_barrera")+T("arco_hud_pen")+T("arco_hud_cor")), "portugués cubre el arco");
+      setIdioma("neutro");
+    }, "i18n en + pt");
+    safe(function(){
+      ok(SECCIONES.some(function(s){ return s[0]==="ajustes"; }), "irA('ajustes') sigue existiendo");
+      var m=document.getElementById("menu");
+      nuevaPartida("CC",2026,"historico");
+      pintarMenu();
+      var txt=(m&&m.textContent)||"";
+      ok(!/Ajustes/.test(txt), "Ajustes no está en el menú de la izquierda");
+      ok(!m.querySelector(".mi-cuenta"), "un solo botón de cuenta (no en el lateral)");
+      var b=document.getElementById("btnCuenta");
+      ok(b && !b.classList.contains("oculto"), "Cuenta visible en la barra");
+      ok(/Cuenta/i.test(b.textContent||b.getAttribute("aria-label")||""), "el botón dice Cuenta");
+      var aj=document.getElementById("btnAjustes");
+      ok(aj && /⚙️/.test(aj.textContent||""), "Ajustes es solo el logo ⚙️");
+    }, "cuenta única + ajustes logo");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }

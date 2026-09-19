@@ -188,8 +188,31 @@
         o.hidden=!!q && (o.textContent||"").toLowerCase().indexOf(q)<0;
       });
     };
+    var nav=el("div","dev-acc");
+    nav.style.margin="4px 0 8px";
+    function mover(delta){
+      var ops=sel.querySelectorAll("option:not([hidden])");
+      var idx=-1;
+      for(var i=0;i<ops.length;i++) if(ops[i].value===sel.value){ idx=i; break; }
+      var n=ops[(idx+delta+ops.length)%ops.length];
+      if(n){ sel.value=n.value; CLUB_SEL=n.value; repintar(); }
+    }
+    var bp=el("button","btn-aqua chico gris","← Anterior"); bp.onclick=function(){ mover(-1); };
+    var bn=el("button","btn-aqua chico gris","Siguiente →"); bn.onclick=function(){ mover(1); };
+    nav.appendChild(bp); nav.appendChild(bn);
+    nav.appendChild(el("span","mini","  Alt+← / Alt+→"));
     cont.appendChild(busca);
     cont.appendChild(sel);
+    cont.appendChild(nav);
+    if(!cont._navKeys){
+      cont._navKeys=true;
+      var host=cont.closest(".dev-editor")||document;
+      host.addEventListener("keydown", function(ev){
+        if(!ev.altKey) return;
+        if(ev.key==="ArrowLeft"){ ev.preventDefault(); mover(-1); }
+        if(ev.key==="ArrowRight"){ ev.preventDefault(); mover(1); }
+      });
+    }
 
     var a=auditarClub(CLUB_SEL);
     var cab=el("div","dev-club-cab");
@@ -199,6 +222,24 @@
     cab.appendChild(nb); cab.appendChild(idsp); cab.appendChild(pct);
     cab.appendChild(el("div",null,barraPct(a.pct)));
     cont.appendChild(cab);
+    if(a.faltanReq && a.faltanReq.length){
+      var jump=el("p","mini"); jump.appendChild(document.createTextNode("Falta: "));
+      a.faltanReq.forEach(function(x,i){
+        var s=el("button","btn-aqua chico gris"); s.textContent=x.n||x.k||"?"; s.style.margin="0 4px 4px 0";
+        s.onclick=function(){
+          var labs=cont.querySelectorAll(".dev-lab b");
+          for(var j=0;j<labs.length;j++){
+            if((labs[j].textContent||"")=== (x.n||"")){
+              var wrap=labs[j].closest(".dev-campo"); if(wrap) wrap.scrollIntoView({block:"center"});
+              var inp=wrap && wrap.querySelector("input,textarea"); if(inp) inp.focus();
+              break;
+            }
+          }
+        };
+        jump.appendChild(s);
+      });
+      cont.appendChild(jump);
+    }
     if(a.justificados&&a.justificados.length){
       a.justificados.forEach(function(j){
         cont.appendChild(el("p","mini dev-justi","🤍 <b>"+j.n+"</b> no se llena a propósito: "+j.motivo));
@@ -287,6 +328,10 @@
     };
     acc.appendChild(bg); acc.appendChild(msg);
     fila.appendChild(acc);
+    entrada.addEventListener("input", function(){ entrada.dataset.dirty="1"; });
+    entrada.addEventListener("blur", function(){
+      if(entrada.dataset.dirty==="1"){ entrada.dataset.dirty=""; bg.click(); }
+    });
     return fila;
   }
   function _resumen(v){

@@ -89,7 +89,7 @@ function _fxLiga(clubs){
 function mundoInit(){
   if(!E) return;
   const anio=E.anio||2026;
-  const M={ anio:anio, ligas:{}, copas:{chile:{}, copaLiga:{}, lib:{}, sud:{}}, noticias:[], pais:[], tick:-1 };
+  const M={ anio:anio, ligas:{}, copas:{chile:{}, copaLiga:{}, lib:{}, sud:{}, arg:{}}, noticias:[], pais:[], tick:-1 };
   ["2026","2026b","2026cN","2026cS","arg2026A","arg2026B"].forEach(k=>{
     const clubs=_clubsDeLiga(k);
     if(!clubs.length) return;
@@ -144,6 +144,11 @@ function mundoInit(){
     if(typeof SUD_FASE1_2026==="object"){
       Object.keys(SUD_FASE1_2026).forEach(id=>{ M.copas.sud.clubs[id]=_fila0(); });
     }
+  }
+  /* Copa Argentina 2026: el mundo es uno. Chile la ve aunque no la juegue. */
+  M.copas.arg={ronda:0, partidos:[], vivos:{}};
+  if(typeof COPA_ARG_32_2026==="object"){
+    Object.keys(COPA_ARG_32_2026).forEach(function(id){ M.copas.arg.vivos[id]=1; });
   }
   E.mundo=M;
 }
@@ -314,6 +319,65 @@ function mundoSimCopas(f, n){
       }
     });
   }
+  if(typeof mundoSimCopaArg==="function") mundoSimCopaArg(mes);
+}
+function mundoSimCopaArg(mes){
+  if(!E||!E.mundo||!E.mundo.copas) return;
+  if(!E.mundo.copas.arg) E.mundo.copas.arg={ronda:0,partidos:[],vivos:{}};
+  const pack=E.mundo.copas.arg;
+  if(typeof COPA_ARG_32_2026!=="object") return;
+  if(!pack.vivos||!Object.keys(pack.vivos).length){
+    Object.keys(COPA_ARG_32_2026).forEach(function(id){ pack.vivos[id]=1; });
+  }
+  const want=mes>=11?5:(mes>=10?4:(mes>=8?3:(mes>=5?2:(mes>=2?1:0))));
+  while((pack.ronda||0)<want){
+    const r=pack.ronda||0;
+    const nomR=["32avos","16avos","Octavos","Cuartos","Semifinal","FINAL"][Math.min(r,5)];
+    if(r===0){
+      Object.keys(COPA_ARG_32_2026).forEach(function(id){
+        const spec=COPA_ARG_32_2026[id];
+        if(E.club && (id===E.club || spec.id===E.club)){
+          const mio=(E.calendario||[]).find(function(p){ return p.tipo==="copa"&&/Copa Argentina/i.test(p.torneo||"")&&p.jugado; });
+          if(mio){
+            const gf=mio.gf||0, gc=mio.gc||0;
+            pack.partidos.push({a:_nomClub(id), b:spec.n, ga:gf, gb:gc, liga:"Copa Argentina · 32avos", ronda:"32avos", idA:id});
+            if(gf<=gc) pack.vivos[id]=0;
+          }
+          return;
+        }
+        const a=clubMundo(id)||{id:id,n:id,c:id,fuerza:70};
+        const b={id:spec.id||("riv_"+id), n:spec.n, c:spec.n, fuerza:spec.fue||50};
+        const g=_golesM(a,b);
+        let ga=g[0], gb=g[1], pens=false;
+        if(ga===gb){ pens=true; if(Math.random()<0.5) ga++; else gb++; }
+        pack.partidos.push({a:a.c||a.n, b:b.n, ga:ga, gb:gb, liga:"Copa Argentina · 32avos", ronda:"32avos", pens:pens, idA:id, idB:b.id});
+        E.mundo.pais.push({a:a.c||a.n, b:b.n, ga:ga, gb:gb, liga:"Copa Argentina", idA:id, idB:b.id});
+        if(ga<=gb) pack.vivos[id]=0;
+      });
+    } else {
+      const vivos=Object.keys(pack.vivos).filter(function(id){ return pack.vivos[id]; });
+      const used={};
+      vivos.forEach(function(id){
+        if(used[id]) return;
+        let opp=null;
+        if(r===1 && COPA_ARG_32_2026[id] && COPA_ARG_32_2026[id].next && COPA_ARG_32_2026[id].next.id) opp=COPA_ARG_32_2026[id].next.id;
+        if(r===2 && typeof COPA_ARG_OCTAVOS_2026==="object" && COPA_ARG_OCTAVOS_2026[id] && COPA_ARG_OCTAVOS_2026[id].id) opp=COPA_ARG_OCTAVOS_2026[id].id;
+        if(opp && pack.vivos[opp] && !used[opp] && opp!==id){
+          used[id]=used[opp]=1;
+          if(E.club && (id===E.club || opp===E.club)) return;
+          const a=clubMundo(id)||{id:id,n:id,c:id,fuerza:70};
+          const b=clubMundo(opp)||{id:opp,n:opp,c:opp,fuerza:70};
+          const g=_golesM(a,b);
+          let ga=g[0], gb=g[1], pens=false;
+          if(ga===gb){ pens=true; if(Math.random()<0.5) ga++; else gb++; }
+          pack.partidos.push({a:a.c||a.n, b:b.c||b.n, ga:ga, gb:gb, liga:"Copa Argentina · "+nomR, ronda:nomR, pens:pens, idA:id, idB:opp});
+          E.mundo.pais.push({a:a.c||a.n, b:b.c||b.n, ga:ga, gb:gb, liga:"Copa Argentina", idA:id, idB:opp});
+          if(ga>gb) pack.vivos[opp]=0; else pack.vivos[id]=0;
+        }
+      });
+    }
+    pack.ronda=r+1;
+  }
 }
 function _clubConmebol(id, g){
   const c=clubMundo(id);
@@ -432,7 +496,7 @@ function panelMundoCalendario(v){
   if(!E.uiMundoTab) E.uiMundoTab="tablas";
   const ops=esArg
     ?[["tablas","Tablas"],["arg2026A","Zona A"],["arg2026B","Zona B"],["conmebol","CONMEBOL"],["copaArg","Copa Argentina"],["pais","Resultados"]]
-    :[["tablas","Tablas"],["2026","Primera"],["2026b","Primera B"],["2026cN","2ª Norte"],["2026cS","2ª Sur"],["chile","Copa Chile"],["copaLiga","Copa de la Liga"],["conmebol","CONMEBOL"],["pais","Resultados"]];
+    :[["tablas","Tablas"],["2026","Primera"],["2026b","Primera B"],["2026cN","2ª Norte"],["2026cS","2ª Sur"],["chile","Copa Chile"],["copaLiga","Copa de la Liga"],["conmebol","CONMEBOL"],["copaArg","Copa Argentina"],["pais","Resultados"]];
   function cabTabla(titulo, ic, filas, nota, compact){
     const p=panel(titulo, ic||"📊","agua");
     if(nota) p.cuerpo.appendChild(el("p","mini",nota));
@@ -470,7 +534,7 @@ function panelMundoCalendario(v){
       });
       intro.innerHTML=bits.length
         ?("Punteros ahora · "+bits.join(" · ")+". Ligas y copas, todas. La tuya va marcada.")
-        :"Tablas del país entero. Se llenan al avanzar: Primera, B, las dos zonas de Segunda, Copa Chile, Copa de la Liga y los chilenos en CONMEBOL.";
+        :"Tablas del país entero. Se llenan al avanzar: Primera, B, las dos zonas de Segunda, Copa Chile, Copa Argentina, Copa de la Liga y CONMEBOL.";
       cont.appendChild(intro);
       const grid=el("div","tablas-pais");
       [
@@ -586,14 +650,26 @@ function panelMundoCalendario(v){
       return;
     }
     if(t==="copaArg"){
-      const p=panel("Copa Argentina 2026","🏆","agua");
-      p.cuerpo.appendChild(el("p","mini","64 equipos, partido único en cancha neutral. Empate: penales, sin alargue. El campeón entra a Libertadores 2027. Cruces de 32avos documentados (sorteo 10 dic 2025). El marcador lo juegas tú; no se copia el resultado histórico."));
-      const ms=(E.calendario||[]).filter(x=>x.tipo==="copa"&&/Copa Argentina/i.test(x.torneo||""));
-      if(!ms.length) p.cuerpo.appendChild(el("p","mini","Este club todavía no tiene Copa Argentina en el calendario (o no es un club AFA)."));
-      else ms.forEach(m=>{
-        const marc=m.jugado?(m.gf+"-"+m.gc):"—";
-        p.cuerpo.appendChild(el("div","fila","<span>"+(m.ronda||"32avos")+" vs "+(m.rivalNombre||"?")+(m.sede?" · "+m.sede:"")+"</span><b>"+marc+"</b>"));
-      });
+      const p=panel("Copa Argentina 2026","🇦🇷","agua");
+      p.cuerpo.appendChild(el("p","mini","El mundo es uno: 64 equipos, partido único en cancha neutral, empate a penales (sin alargue). Cruces de 32avos documentados (sorteo 10 dic 2025). Aunque dirijas en Chile, acá ves cómo va. No se inventan clubes."));
+      const pack=E.mundo&&E.mundo.copas&&E.mundo.copas.arg;
+      const ms=(pack&&pack.partidos)||[];
+      const mios=(E.calendario||[]).filter(function(x){ return x.tipo==="copa"&&/Copa Argentina/i.test(x.torneo||""); });
+      if(mios.length){
+        p.cuerpo.appendChild(el("h3","sub","Tu cuadro"));
+        mios.forEach(function(m){
+          const marc=m.jugado?(m.gf+"-"+m.gc):"—";
+          p.cuerpo.appendChild(el("div","fila","<span>"+(m.ronda||"32avos")+" vs "+(m.rivalNombre||"?")+(m.sede?" · "+m.sede:"")+"</span><b>"+marc+"</b>"));
+        });
+      }
+      if(ms.length){
+        p.cuerpo.appendChild(el("h3","sub","Lo que se jugó"));
+        ms.slice(-24).reverse().forEach(function(x){
+          p.cuerpo.appendChild(el("div","fila","<span><span class='mini'>"+(x.ronda||"")+" · </span>"+x.a+" vs "+x.b+(x.pens?" · penales":"")+"</span><b>"+x.ga+"-"+x.gb+"</b>"));
+        });
+      } else {
+        p.cuerpo.appendChild(el("p","mini","Todavía no se jugó una ronda. Avanza una fecha (febrero en adelante) y acá aparecen los 32avos."));
+      }
       cont.appendChild(p);
       return;
     }
@@ -613,7 +689,7 @@ function panelMundoCalendario(v){
   wrap.appendChild(el("h2","tit mundo-tit",esArg?"Tablas de la Liga Profesional":"Tablas del país"));
   wrap.appendChild(el("p","mini",esArg
     ?"Apertura 2026: 2 zonas de 15 (sorteo AFA). 14 PJ de zona. Copa Argentina: 32avos a partido único en cancha neutral, empate a penales. CONMEBOL 2026 de Boca D, Estudiantes A, Platense E, Independiente Rivadavia C."
-    :"Primera, B, Segunda Norte y Sur, Copa Chile, Copa de la Liga, Libertadores y Sudamericana. Aunque no las juegues, se simulan. La tuya va marcada."));
+    :"Primera, B, Segunda Norte y Sur, Copa Chile, Copa Argentina, Copa de la Liga, Libertadores y Sudamericana. Aunque no las juegues, se simulan. La tuya va marcada."));
   wrap.appendChild(tabs); wrap.appendChild(cont);
   v.appendChild(wrap);
   pintar();

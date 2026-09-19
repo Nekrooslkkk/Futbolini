@@ -44,8 +44,6 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   body.con-dock #btnRapido,
   body.con-dock #btnTemas,
   body.con-dock #btnAvisos,
-  body.con-dock #btnCuenta,
-  body.con-dock #btnAjustes,
   body.con-dock .campana,
   body.en-partido #btnAvanzar,
   body.en-partido #btnRapido,
@@ -53,6 +51,9 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   body.en-partido #btnAvisos,
   body.en-partido .campana,
   body.en-partido .barra-acc{display:none !important}
+  /* 7.9004 · Cuenta y ⚙️ se quedan en la barra también con dock */
+  body.con-dock #btnCuenta,
+  body.con-dock #btnAjustes{display:inline-flex !important;align-items:center}
 
   body.con-dock #menu{display:none !important}
 

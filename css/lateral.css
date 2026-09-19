@@ -4,14 +4,13 @@
    - El #menu deja de ser una fila de pestañas arriba y pasa a ser
      una BARRA VERTICAL a la izquierda (botones grandes ícono+texto).
    - La #barra de arriba queda como BARRA DE TAREAS (datos + acciones).
-   - El botón de cuenta (👤) se saca de la barra y baja al pie del
-     lateral (se pidió: la barra con lo necesario MENOS la cuenta).
+   - El botón de cuenta (👤 Cuenta) queda UN SOLO en la barra de tareas.
+   - Ajustes es solo el ⚙️ de la barra, no un canal del lateral.
    Todo va detrás de body.nav-lateral y SOLO en PC (>=901px): en el
    celular sigue mandando el dock de movil.css sin tocar nada.
    ============================================================ */
 
-/* La cuenta vive en el lateral, no en la fila horizontal: por defecto
-   escondida, se muestra recién dentro del lateral en PC (ver más abajo). */
+/* 7.9004 · un solo botón de cuenta: el de la barra. El .mi-cuenta del menú ya no se pinta. */
 .mi-cuenta{display:none}
 
 @media(min-width:901px){
@@ -19,8 +18,6 @@
 
   /* ---- barra de tareas (arriba, a lo ancho) ---- */
   body.nav-lateral #barra{ padding-left:14px; padding-right:14px; }
-  /* la cuenta se saca de la barra de acciones */
-  body.nav-lateral .barra-acc #btnCuenta{ display:none; }
 
   /* ---- lateral tipo Wii ---- */
   body.nav-lateral #menu{
@@ -71,9 +68,6 @@
 
   /* pip de avisos/decisiones arriba a la derecha del canal */
   body.nav-lateral #menu .mi .pip{ position:absolute; top:5px; right:7px; }
-
-  /* la cuenta al fondo del lateral */
-  body.nav-lateral #menu .mi-cuenta{ display:flex; margin-top:auto; }
 
   /* ---- el contenido se corre a la derecha del lateral (sólo con partida) ---- */
   body.nav-lateral.con-juego #vista{ margin-left:var(--lat-w); margin-right:auto;

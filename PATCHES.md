@@ -2714,3 +2714,22 @@ El autor: pulir el partido en vivo. Momentum, VAR con pausa dramática, mentalid
 - **Hot-swap:** Autobús / Equilibrado / Ataque Total cambian mentalidad+bloque+presión sin pausar. El Plan completo (modal) sigue existiendo.
 - Tests T55. **No 8.00.** BTC hueco. Segunda = cantera.
 
+## 7.9004 · Arco profesional + Copa Argentina + Avanzar + barra
+- Penal y tiro libre: misma cancha de transmisión. La barrera tapa y el arquero no se tira. Zócalo GOL / ATAJADA / LA BARRERA / TRAVESAÑO / AFUERA.
+- Copa Argentina 2026 visible desde Chile (mundo simula los 32avos documentados).
+- Avanzar: recap al simular, cierre de temporada en modal. Editor: anterior/siguiente, salto a lo que falta, guardar al salir del campo.
+- Un solo botón Cuenta en la barra (con texto). Ajustes = solo el ⚙️, fuera del menú izquierdo.
+- Inglés y portugués en el selector (`T()`). Claude envuelve su UI.
+- Tests T56. **No 8.00.** BTC hueco. Segunda = cantera.
+
+## 7.9004b · Estadio nocturno + córner jugable + recap
+El autor: más diseño en penal/tiro libre, que el tiro libre no diga atajado, y “algo más de juego así”.
+- Cancha de transmisión nocturna (focos, tribuna, red, palos gruesos, arquero con los colores del rival). HUD PENAL / TIRO LIBRE / CÓRNER.
+- Tiro libre: mismos tres efectos (colocado/potente/picadita). Barrera salta, arquero NO se tira.
+- **Córner jugable** en dirigir: misma cancha, dibujás el centro (primer palo / penal / segundo). Centro bajo = DESPEJA, no atajada. `centroCorner` para “que salga solo”. Simular no pausa ni infla goles.
+- Avanzar recap: marcador grande, goles con tipo, amarillas, lesiones, posesión, siguiente rival.
+- Editor: Alt+← / Alt+→ entre clubes.
+- Claves `arco_*` en `T()` (neutro/cl/pt/en). Claude: seguir envolviendo su UI.
+- Tests T56 ampliados. **No 8.00.**
+
+
