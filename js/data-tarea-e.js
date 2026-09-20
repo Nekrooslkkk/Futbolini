@@ -658,34 +658,12 @@ const PRENSA_TAREA_E=[
   });
 })();
 
-/* E-1 · panel de situación en el Escritorio (2026), sin tocar 1925/2006 (epoca-intro). */
+/* E-1 · el panel "Tu situación" ya NO va en el Escritorio (era un párrafo genérico
+   con ventana propia). 7.9006: la situación del club se muestra en Historia →
+   capítulo 2026 "Hoy" (ver vistaHistoria en ui.js). Wrap neutralizado a propósito
+   para no reinsertarlo; el guard queda para no re-envolver. */
 (function wrapSit84(){
   if(typeof vistaEscritorio!=="function" || vistaEscritorio._sit84) return;
-  var orig=vistaEscritorio;
-  vistaEscritorio=function(){
-    orig();
-    try{
-      if(!E || (E.eraBase===1925 || E.eraBase===2006)) return;
-      var sit=SITUACION_CLUB[E.club]; if(!sit) return;
-      var v=document.getElementById("vista"); if(!v || v.querySelector(".sit-club")) return;
-      var p=panel("🎯 Tu situación","🎯","agua");
-      p.classList.add("sit-club");
-      p.cuerpo.appendChild(el("p","mini",sit));
-      var clas="";
-      if(typeof RIVALIDADES_2026!=="undefined"){
-        var pares=RIVALIDADES_2026.filter(function(par){ return par[0]===E.club||par[1]===E.club; });
-        if(pares.length){
-          clas=pares.map(function(par){
-            var o=par[0]===E.club?par[1]:par[0];
-            var n=(typeof clubMundo==="function"&&clubMundo(o)&&clubMundo(o).n)||o;
-            return n;
-          }).join(", ");
-          p.cuerpo.appendChild(el("p","mini","<b>Clásico(s):</b> "+clas));
-        }
-      }
-      v.insertBefore(p, v.firstChild);
-    }catch(e){}
-  };
   vistaEscritorio._sit84=true;
 })();
 
