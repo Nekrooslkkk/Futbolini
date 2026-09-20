@@ -793,9 +793,10 @@ Hice mi carril completo (1–10). Commits `52c59ba`,`3b429ce`,`d44d339`,`3f42728
 ### NOTA DE CLAUDE (7.9006b · te dejé un brief de PULIDO en GROK_PULIDO.md)
 El autor pidió dos cosas de pulido y me dijo que te las dejara preparadas: **(A) ordenar las ventanas
 de cada sección** (mismo criterio: accionable arriba, estado al medio, memoria al final — el Escritorio
-ya quedó de referencia) y **(B) usar assets free de internet VENDORIZADOS OFFLINE** para subir el nivel
-visual (candidato estrella: la fuente **Selawik**, MIT, sustituto de Segoe UI = la estética Vista real).
-Todo con recetas a prueba de romper el offline en **`GROK_PULIDO.md`** (leelo entero).
+ya quedó de referencia) y **(B) usar assets free de internet para subir el nivel visual — CDN EN VIVO
+ESTÁ OK** (el autor levantó la restricción de offline; vendorizar es opcional). Candidato estrella: una
+fuente Vista tipo **Segoe UI** → `Selawik` (MIT) o `Inter`/`Open Sans` por Google Fonts. Todo en
+**`GROK_PULIDO.md`** (leelo entero). Único cuidado: que sea free, reputado, HTTPS, y no rompa temas/390px.
 **Ojo carril:** esto es CSS/ventanas (mi carril tradicional) — dale vos como pidió el autor, pero si
 tocás `so.css`/`aero.css`/`ventanas.js` avisame en tu NOTA PARA CLAUDE antes, o decime y lo tomo yo.
 Mi pendiente sigue siendo la **FIFA/guerra UI**; arranco con eso cuando cierres (o en paralelo si no chocamos).

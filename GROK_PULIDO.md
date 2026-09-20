@@ -10,17 +10,18 @@
 
 ---
 
-## REGLAS QUE NO SE ROMPEN (o rompés la beta)
-- **Vanilla JS, sin build, sin npm, sin React.** Corre abriendo `index.html`.
-- **OFFLINE de verdad.** Si se corta internet, el juego funciona igual. → Ningún `<link>`/`<script>`
-  a un CDN en vivo. Todo asset externo se **VENDORIZA**: se copia al repo (`css/vendor/…`) y se
-  referencia local. Precedente exacto: `css/vendor/7-window.css` (26 KB, MIT, cargado por
-  `js/ventanas.js` con `AERO_7_WINDOW="css/vendor/7-window.css"`).
-- **Solo licencias libres:** MIT, OFL (fuentes), Apache-2.0, CC0/CC-BY con atribución. Nada propietario.
+## REGLAS (actualizadas por el autor: CDN en vivo SÍ, dale)
+- **CDN en vivo está OK.** El autor levantó la restricción de offline para pulido: podés usar
+  `<link>`/`<script>` a un CDN reputado (Google Fonts, jsDelivr, cdnjs, unpkg) directo en `index.html`.
+  No hace falta vendorizar todo. Si algún asset lo querés dejar copiado local igual (como el 7.css ya
+  vendorizado), bien, pero **no es obligatorio**. Cortala con la paranoia offline.
+- **Solo cosas FREE:** MIT, OFL (fuentes), Apache-2.0, CC0/CC-BY. Nada de pago ni con marca de agua.
+- **Sigue: vanilla, sin build, sin npm, sin React.** Un `<link>`/`<script src>` a CDN es un tag en el
+  HTML, no un `npm install`. Eso está permitido; un pipeline de build no.
 - **No unscopear `.ventana-so` / `.so-cuerpo`** sin `body[data-tema="aero"]`. No quitar `!important` de negro/claro/insano.
-- **No tocar** `js/util.js` (`panel()`/`el()`/`escHtml`/VERSION), ni el orden de carga de `index.html` sin avisar.
+- **No tocar** `js/util.js` (`panel()`/`el()`/`escHtml`/VERSION); avisá si sumás `<script>` al orden de carga.
 - Cadena visible nueva → `T("clave","fallback")` en `neutro`+`en`+`pt` (+`cl` si es voz de cancha).
-- Peso: el juego es liviano. Cada asset vendorizado, lo mínimo (subset de fuente, no la familia entera).
+- Peso con cabeza: no traigas una librería de 2 MB para un ícono. Free y liviano, pero sin miedo al CDN.
 
 ---
 
@@ -55,33 +56,31 @@ el orden del DOM manda, así que ordená pensando en el móvil.
 
 ---
 
-## PARTE B — ASSETS FREE DE INTERNET, VENDORIZADOS OFFLINE (pulido visual)
+## PARTE B — ASSETS FREE DE INTERNET / CDN (pulido visual)
 
-**La idea del autor:** usar internet para traer cosas free que suban el nivel visual. **La forma correcta:**
-bajar el asset MIT/OFL, copiarlo al repo, referenciarlo local. Nunca cargar de un CDN en vivo.
+**La idea del autor:** usar internet para traer cosas free que suban el nivel visual. **Directo por CDN
+está bien** — es la forma más rápida. Vendorizar (copiar local) es opcional, para lo que quieras blindar.
 
-**Receta (idéntica a como quedó el 7.css):**
-1. Bajar el archivo del asset libre (fuente `.woff2`, css, svg) a `css/vendor/…` (fuentes en `css/vendor/fonts/`).
-2. Declararlo local en un css vendorizado (ej. `css/vendor/tipografia.css` con `@font-face { src:url("fonts/xxx.woff2") }`).
-3. Sumar el `<link>` en `index.html` **apuntando al archivo local**, con el resto de los css.
-4. **Probar offline:** cortar red / bloquear el dominio original y confirmar que carga igual (así verifiqué el 7.css).
-5. Anotar la licencia en el header del archivo vendorizado.
+**Receta rápida (CDN en vivo):**
+1. Sumás el `<link>`/`<script src>` del CDN reputado en `index.html`, con el resto de los assets.
+2. Lo usás en `css/aero.css` / `so.css` (font-family, clases del icon set, etc.).
+3. Probás que se ve y no rompe temas ni 390px. Listo.
 
-**Candidatos seguros y con onda (elegí, no metas todo):**
-- **Tipografía Vista de verdad → `Selawik` (MIT, de Microsoft):** es el sustituto métrico-compatible de
-  **Segoe UI** (la fuente de Windows Vista/7). Encaja PERFECTO con el Frutiger Aero del juego y es MIT.
-  Alternativas OFL: `Inter`, `Open Sans`. Vendorizá solo los pesos que uses (400/600/700), subset latino.
-  *Impacto:* altísimo. Todo el juego pasa de la fuente de sistema a la estética Vista real.
-- **Iconos:** el juego usa emoji (universal, gratis, cero peso). Si querés íconos vectoriales para el chrome,
-  `Lucide` o `Tabler` (MIT, SVG inline — no CDN). Poné solo los SVG que uses, inline. No traigas la librería.
-- **Texturas glass/aurora:** preferí **CSS puro** (gradientes/`backdrop-filter`) antes que imágenes. Ya hay
-  aurora/pasto en `aero.css`. Un `.woff2` de fuente rinde más que cualquier textura.
+**Candidatos con onda (elegí, no metas todo):**
+- **Tipografía Vista → `Segoe`-like:** Windows Vista/7 usaba **Segoe UI**. Free y con la misma vibra:
+  **`Selawik`** (MIT, sustituto métrico de Segoe UI) o, por Google Fonts CDN, **`Inter`** / **`Open Sans`**
+  / **`Nunito Sans`**. Un `<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700">`
+  y `font-family:"Inter",…` en el body. *Impacto: altísimo*, todo el juego sube de nivel de una.
+- **Iconos:** el juego usa emoji (gratis, universal). Si querés vectoriales para el chrome:
+  **Lucide** o **Tabler** (MIT) — por CDN o SVG inline, como te acomode.
+- **Micro-animaciones / glass:** **animate.css** (MIT, CDN) para entradas suaves, o seguí con CSS puro
+  (ya hay aurora/pasto en `aero.css`). Para el vidrio: `backdrop-filter`, no imágenes.
 
-**Lo que NO:** Google Fonts por `<link>` a fonts.googleapis.com (eso es CDN en vivo → rompe offline y filtra
-IP). Font Awesome por CDN. Ninguna librería JS por CDN. Nada que pida build/npm.
+**Único cuidado real:** que sea FREE (MIT/OFL/Apache), reputado (Google Fonts, cdnjs, jsDelivr, unpkg),
+por HTTPS, y que no rompa negro/claro/insano ni 390px. El 7.css ya vendorizado seguí cargándolo local
+(no lo muevas a CDN, ya está y funciona).
 
-**DoD:** el asset carga con la red cortada; licencia anotada; peso razonable (una fuente subset ≈ 20–60 KB por peso);
-negro/claro/insano no se rompen; 390px ok.
+**DoD:** se ve mejor de verdad; los 4 temas ok; 390px sin overflow; nada de pago; sin build/npm.
 
 ---
 
