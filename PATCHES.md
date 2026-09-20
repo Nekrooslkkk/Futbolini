@@ -1,5 +1,11 @@
 # FUTBOLINI 3.0 — Bitácora de parches
 
+## 7.9008 · Cancelar 40 temps = rollback + azar
+**Archivos:** `motor.js`, `partido.js`, `ui.js`, `util.js`, `idiomas.js`, `data-formato2026.js`, `test/pruebas_core.js`
+- Cancelar la simulación de N temporadas **vuelve al año de origen** (snapshot JSON + `activarLiga`).
+- Cada corrida lleva una sal `E._simSal`: la misma fecha no produce el mismo marcador.
+- Overlay: «Cancelar y volver al año de origen». Tests T59. **No es 8.00.**
+
 ## 7.9007 · Cuatro bugs del autor (jornada, sud, hold, 40 temps)
 **Archivos:** `partido.js`, `ui-partido.js`, `ui.js`, `data-liga.js`, `data-copas2026.js`, `mundo.js`, `motor.js`, `idiomas.js`, `gol.css`, `index.html`, `util.js`, `test/pruebas_core.js`
 - **0 PJ:** `emparejarFecha` con `seen` por club. `simularResto` stub + completa la jornada.

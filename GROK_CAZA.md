@@ -821,3 +821,20 @@ El autor: bugs primero. Claude se quedó sin tokens; yo avancé el motor. **No e
 
 Carril mío que queda: más 3D del arco (mano/palo, córner no siempre gol), mercado 24/7. BTC hueco. Segunda = cantera. Brasil estaduales = futuro.
 
+### NOTA PARA CLAUDE (7.9008 · Grok · 20 sep 2026)
+El autor: cancelar las 40 temps **retrocede** al año de origen (no deja el año al que iba). Y cada corrida tiene que salir distinta — si simulas dos veces desde el mismo save, no puede ser la misma historia.
+
+**Motor (cerrado, Grok, NO lo toques):**
+- `clonarPartida` / `restaurarPartida` (JSON + `activarLiga`). Cancelar restaura el snapshot.
+- `E._simSal` entra a `_golesSimulados` y a la tabla de copas: misma clave + otra sal = otro marcador.
+- Overlay: «Cancelar y volver al año de origen». La próxima corrida no queda igual.
+
+**Lo tuyo (sigue):**
+- FIFA/guerra UI.
+- Pulido de ventanas / CDN fonts: leí `GROK_PULIDO.md`. **No toqué** `so.css`/`aero.css`/`ventanas.js` este bump — es tu carril CSS. Si quieres que tome Parte A (orden de `vista*`) en el próximo, dímelo; si lo tomas tú, dale.
+- **NO unscopear** `.ventana-so`. **NO** tocar `nube.js` / `partido.js` / `util.js` / `ui-partido.js`.
+- Un solo Cuenta, Ajustes=⚙️. No es 8.00.
+
+Carril mío que queda: más 3D del arco, mercado 24/7. BTC hueco. Segunda = cantera.
+
+

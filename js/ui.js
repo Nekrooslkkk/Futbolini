@@ -3504,6 +3504,7 @@ function simularTemporadasSync(nTemps){
   const tope=Math.max(1,Math.min(nTemps||1,60));
   const prevBulk=!!E._bulkSim;
   E._bulkSim=true;
+  if(!E._simSal) E._simSal=String(Date.now())+"-"+Math.floor(Math.random()*1e9);
   try{
     for(let s=0;s<tope;s++){
       if(E.carrera.fin){ freno="fin de la carrera"; break; }
@@ -3526,6 +3527,7 @@ function simularTemporadasSync(nTemps){
     }
   } finally {
     E._bulkSim=prevBulk;
+    if(!E._bulkSim) delete E._simSal;
   }
   if(!E._bulkSim){
     if(typeof mundoInit==="function"){ try{ mundoInit(); }catch(e){} }
@@ -3543,7 +3545,7 @@ function pintarSimOverlay(tit, sub, cancelable){
   o.classList.remove("oculto"); o.removeAttribute("hidden");
   const esc=(typeof escHtml==="function")?escHtml:function(s){ return String(s==null?"":s); };
   o.innerHTML='<div class="sim-box"><div class="sim-t">'+esc(tit)+'</div><div class="sim-d">'+esc(sub)+'</div>'
-    +(cancelable?'<button type="button" class="btn-aqua" id="simCancel">'+(typeof T==="function"?T("sim_cancel","Cancelar y dejar este año"):"Cancelar y dejar este año")+'</button>':'')
+    +(cancelable?'<button type="button" class="btn-aqua" id="simCancel">'+(typeof T==="function"?T("sim_cancel","Cancelar y volver al año de origen"):"Cancelar y volver al año de origen")+'</button>':'')
     +'</div>';
   const b=document.getElementById("simCancel");
   if(b) b.onclick=function(){ if(E) E._bulkCancel=true; };
@@ -3556,18 +3558,21 @@ function simularTemporadasAsync(nTemps){
   if(!E||E.carrera.fin){ if(typeof aviso==="function") aviso("No hay una partida activa"); return; }
   if(E._bulkSim){ if(typeof aviso==="function") aviso("Ya hay una simulación en curso"); return; }
   const tope=Math.max(1,Math.min(nTemps||1,60));
-  E._bulkSim=true; E._bulkCancel=false;
-  let temps=0, freno=null;
+  const snap=(typeof clonarPartida==="function")?clonarPartida(E):null;
   const anio0=E.anio;
+  E._bulkSim=true; E._bulkCancel=false;
+  E._simSal=String(Date.now())+"-"+Math.floor(Math.random()*1e9);
+  let temps=0, freno=null, cancelado=false;
   const Tfn=typeof T==="function"?T:function(k,d){ return d; };
   pintarSimOverlay(
     Tfn("sim_tit","Simulando temporadas"),
-    Tfn("sim_txt","El club sigue, no se trabó.")+" "+anio0+".",
+    Tfn("sim_txt","El club sigue, no se trabó.")+" "+Tfn("sim_backhint","Si cancelas, volvemos al año de origen.")+" "+anio0+".",
     true
   );
   function paso(){
     if(!E||E._bulkCancel){
-      freno="cancelaste: quedaste en "+(E&&E.anio);
+      cancelado=true;
+      freno="cancelaste";
       return fin();
     }
     if(E.carrera.fin){ freno="fin de la carrera"; return fin(); }
@@ -3602,12 +3607,21 @@ function simularTemporadasAsync(nTemps){
     }
   }
   function fin(){
-    if(E){ E._bulkSim=false; E._bulkCancel=false; }
+    if(cancelado && snap && typeof restaurarPartida==="function"){
+      restaurarPartida(snap);
+    }
+    if(E){ E._bulkSim=false; E._bulkCancel=false; delete E._simSal; }
     cerrarSimOverlay();
     if(typeof mundoInit==="function"){ try{ mundoInit(); }catch(e){} }
     if(typeof render==="function"){ SEC="escritorio"; render(); }
     if(typeof guardar==="function") guardar();
-    if(typeof aviso==="function") aviso("⏭️ "+temps+" temporada"+(temps!==1?"s":"")+" · ahora "+(E&&E.anio)+(freno?" · "+freno:""), 6500);
+    if(typeof aviso==="function"){
+      if(cancelado){
+        aviso(Tfn("sim_back","Volviste a ")+(E&&E.anio)+Tfn("sim_back2",". Esta corrida no quedó: la próxima va a ser distinta."), 6500);
+      } else {
+        aviso("⏭️ "+temps+" temporada"+(temps!==1?"s":"")+" · ahora "+(E&&E.anio)+(freno?" · "+freno:""), 6500);
+      }
+    }
   }
   setTimeout(paso, 30);
 }
@@ -3623,12 +3637,12 @@ function modalAvanceRapido(){
     const b2=el("button","btn-aqua ancho","⏭️ Simular hasta fin de temporada"); b2.style.marginTop="6px";
     b2.onclick=()=>{ if(confirm("Voy a simular todos los partidos que quedan de la temporada, delegando las decisiones. ¿Seguir?")) correr(true); };
     /* 7.9007 · 40 temporadas ya no traban: overlay + cancelar. */
-    cc.appendChild(el("p","mini",(typeof T==="function"?T("sim_ayuda","Para probar el juego a fondo: simulo temporadas enteras (cierre, ascensos, liguilla). Ves el año en pantalla; no se traba. Puedes cancelar y quedas en el año actual."):"Para probar el juego a fondo: simulo temporadas enteras (cierre, ascensos, liguilla). Ves el año en pantalla; no se traba. Puedes cancelar y quedas en el año actual.")));
+    cc.appendChild(el("p","mini",(typeof T==="function"?T("sim_ayuda","Para probar el juego a fondo: simulo temporadas enteras. Ves el año en pantalla; no se traba. Si cancelas, volvemos al año de origen — la próxima corrida sale distinta."):"Para probar el juego a fondo: simulo temporadas enteras. Ves el año en pantalla; no se traba. Si cancelas, volvemos al año de origen — la próxima corrida sale distinta.")));
     const correrN=(n,txt)=>{ if(!confirm(txt)) return; cerrarModal(); if(typeof simularTemporadasAsync==="function") simularTemporadasAsync(n); else simularTemporadas(n); };
     const b3=el("button","btn-aqua ancho","⏭️⏭️ Simular 5 temporadas"); b3.style.marginTop="6px";
-    b3.onclick=()=>correrN(5,(typeof T==="function"?T("sim_conf5","Voy a simular 5 temporadas. Vas a ver el progreso en pantalla; puedes cancelar. ¿Seguir?"):"Voy a simular 5 temporadas. Vas a ver el progreso en pantalla; puedes cancelar. ¿Seguir?"));
+    b3.onclick=()=>correrN(5,(typeof T==="function"?T("sim_conf5","Voy a simular 5 temporadas. Vas a ver el progreso; si cancelas, volvemos al año de origen. ¿Seguir?"):"Voy a simular 5 temporadas. Vas a ver el progreso; si cancelas, volvemos al año de origen. ¿Seguir?"));
     const b4=el("button","btn-aqua ancho","🏁 Simular hasta el final (máx 40)"); b4.style.marginTop="6px";
-    b4.onclick=()=>correrN(40,(typeof T==="function"?T("sim_conf40","Voy a simular hasta 40 temporadas. No se traba: ves cada año. Cancelar deja el año actual. ¿Seguir?"):"Voy a simular hasta 40 temporadas. No se traba: ves cada año. Cancelar deja el año actual. ¿Seguir?"));
+    b4.onclick=()=>correrN(40,(typeof T==="function"?T("sim_conf40","Voy a simular hasta 40 temporadas. No se traba. Cancelar te devuelve al año de origen; la próxima corrida no sale igual. ¿Seguir?"):"Voy a simular hasta 40 temporadas. No se traba. Cancelar te devuelve al año de origen; la próxima corrida no sale igual. ¿Seguir?"));
     const b5=el("button","btn-aqua ancho gris","Cancelar"); b5.style.marginTop="6px"; b5.onclick=cerrarModal;
     cc.appendChild(b1); cc.appendChild(b2); cc.appendChild(b3); cc.appendChild(b4); cc.appendChild(b5);
   });

@@ -124,7 +124,7 @@ function _marcadorEstable(idA, idB, localA, clave){
   var fa=(ca&&ca.fuerza)||50, fb=(cb&&cb.fuerza)||50;
   var rndFn=null;
   if(typeof azarFijo==="function"&&typeof semilla==="function"){
-    rndFn=azarFijo(semilla((clave||"tab")+"|"+idA+"|"+idB+"|"+(localA?"L":"V")+"|"+((typeof E!=="undefined"&&E&&E.anio)||0)));
+    rndFn=azarFijo(semilla((clave||"tab")+"|"+idA+"|"+idB+"|"+(localA?"L":"V")+"|"+((typeof E!=="undefined"&&E&&E.anio)||0)+"|"+(typeof salSim==="function"?salSim():"")));
   }
   function rr(a,b){
     if(rndFn) return a+rndFn()*(b-a);

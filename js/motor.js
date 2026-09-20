@@ -7,6 +7,29 @@
 
 let E=null;
 
+/* 7.9008 · snapshot de la partida para deshacer una simulación de N temporadas. */
+function clonarPartida(est){
+  est=est||E;
+  if(!est) return null;
+  try{ return JSON.parse(JSON.stringify(est)); }
+  catch(e){ return null; }
+}
+function restaurarPartida(snap){
+  if(!snap||typeof snap!=="object") return false;
+  try{
+    E=JSON.parse(JSON.stringify(snap));
+    if(typeof saneaEstado==="function") saneaEstado(E);
+    if(E){ delete E._bulkSim; delete E._bulkCancel; delete E._simSal; }
+    if(typeof initLigaMod==="function") initLigaMod();
+    if(typeof activarLiga==="function") activarLiga(E.eraBase);
+    return true;
+  }catch(e){ return false; }
+}
+function salSim(){
+  if(typeof E==="undefined"||!E) return "";
+  return E._simSal?String(E._simSal):"";
+}
+
 const IND=[
  {k:"plantel",  n:"Plantel",  c:"#4fbf3f", d:"Nivel futbolístico real del equipo."},
  {k:"moral",    n:"Moral",    c:"#39b7e0", d:"Cómo está el camarín. Pesa tanto como el nivel."},

@@ -107,10 +107,13 @@ var FRASES={
     sim_prog:"Temporada ",
     sim_de:" de ",
     sim_ok:"No se trabó; el juego sigue.",
-    sim_cancel:"Cancelar y dejar este año",
-    sim_ayuda:"Para probar el juego a fondo: simulo temporadas enteras (cierre, ascensos, liguilla). Ves el año en pantalla; no se traba. Puedes cancelar y quedas en el año actual.",
-    sim_conf5:"Voy a simular 5 temporadas. Vas a ver el progreso en pantalla; puedes cancelar. ¿Seguir?",
-    sim_conf40:"Voy a simular hasta 40 temporadas. No se traba: ves cada año. Cancelar deja el año actual. ¿Seguir?"
+    sim_cancel:"Cancelar y volver al año de origen",
+    sim_ayuda:"Para probar el juego a fondo: simulo temporadas enteras. Ves el año en pantalla; no se traba. Si cancelas, volvemos al año de origen — la próxima corrida sale distinta.",
+    sim_conf5:"Voy a simular 5 temporadas. Vas a ver el progreso; si cancelas, volvemos al año de origen. ¿Seguir?",
+    sim_conf40:"Voy a simular hasta 40 temporadas. No se traba. Cancelar te devuelve al año de origen; la próxima corrida no sale igual. ¿Seguir?",
+    sim_backhint:"Si cancelas, volvemos al año de origen.",
+    sim_back:"Volviste a ",
+    sim_back2:". Esta corrida no quedó: la próxima va a ser distinta."
   },
   /* --- CHILENSIS (de verdad): -ai/-ís, 'po', 'cachái', sin voseo argentino. --- */
   cl:{
@@ -174,10 +177,13 @@ var FRASES={
     sim_prog:"Temporada ",
     sim_de:" de ",
     sim_ok:"No se trabó; el juego sigue.",
-    sim_cancel:"Cancelar y dejar este año",
-    sim_ayuda:"Pa probar el juego a fondo: simulo temporadas enteras. Ves el año en pantalla; no se traba. Podís cancelar y quedái en el año actual.",
-    sim_conf5:"Voy a simular 5 temporadas. Vas a ver el progreso; podís cancelar. ¿Seguimos?",
-    sim_conf40:"Voy a simular hasta 40 temporadas. No se traba: ves cada año. Cancelar deja el año actual. ¿Seguimos?"
+    sim_cancel:"Cancelar y volver al año de origen",
+    sim_ayuda:"Pa probar el juego a fondo: simulo temporadas enteras. Veí el año en pantalla; no se traba. Si cancelai, volvemos al año de origen — la próxima corrida sale distinta.",
+    sim_conf5:"Voy a simular 5 temporadas. Vai a ver el progreso; si cancelai, volvemos al año de origen. ¿Seguimos?",
+    sim_conf40:"Voy a simular hasta 40 temporadas. No se traba. Cancelar te devuelve al año de origen; la próxima corrida no sale igual. ¿Seguimos?",
+    sim_backhint:"Si cancelai, volvemos al año de origen.",
+    sim_back:"Volviste a ",
+    sim_back2:". Esta corrida no quedó: la próxima va a ser distinta."
   },
   /* --- PORTUGUÊS (arranque; el usuario/Grok lo afinan). --- */
   pt:{
@@ -261,10 +267,13 @@ var FRASES={
     sim_prog:"Temporada ",
     sim_de:" de ",
     sim_ok:"Não travou; o jogo segue.",
-    sim_cancel:"Cancelar e ficar neste ano",
-    sim_ayuda:"Para testar o jogo: simulo temporadas inteiras. Você vê o ano na tela; não trava. Pode cancelar e fica no ano atual.",
-    sim_conf5:"Vou simular 5 temporadas. Você vê o progresso; pode cancelar. Seguir?",
-    sim_conf40:"Vou simular até 40 temporadas. Não trava: você vê cada ano. Cancelar deixa o ano atual. Seguir?"
+    sim_cancel:"Cancelar e voltar ao ano de origem",
+    sim_ayuda:"Para testar o jogo: simulo temporadas inteiras. Você vê o ano na tela; não trava. Se cancelar, voltamos ao ano de origem — a próxima corrida sai diferente.",
+    sim_conf5:"Vou simular 5 temporadas. Você vê o progresso; se cancelar, voltamos ao ano de origem. Seguir?",
+    sim_conf40:"Vou simular até 40 temporadas. Não trava. Cancelar te devolve ao ano de origem; a próxima corrida não sai igual. Seguir?",
+    sim_backhint:"Se cancelar, voltamos ao ano de origem.",
+    sim_back:"Você voltou a ",
+    sim_back2:". Esta corrida não ficou: a próxima vai ser diferente."
   },
   en:{
     ini_headline:"You don't run a team. You run an institution.",
@@ -347,10 +356,13 @@ var FRASES={
     sim_prog:"Season ",
     sim_de:" of ",
     sim_ok:"It didn't freeze; the game is running.",
-    sim_cancel:"Cancel and keep this year",
-    sim_ayuda:"To stress-test the game I simulate full seasons. You see the year on screen; it doesn't freeze. You can cancel and stay on the current year.",
-    sim_conf5:"I'll simulate 5 seasons. You'll see progress; you can cancel. Continue?",
-    sim_conf40:"I'll simulate up to 40 seasons. It won't freeze: you see each year. Cancel keeps the current year. Continue?"
+    sim_cancel:"Cancel and go back to the starting year",
+    sim_ayuda:"To stress-test the game I simulate full seasons. You see the year on screen; it doesn't freeze. Cancel restores the year you started from — the next run will be different.",
+    sim_conf5:"I'll simulate 5 seasons. You'll see progress; cancel restores the starting year. Continue?",
+    sim_conf40:"I'll simulate up to 40 seasons. It won't freeze. Cancel restores the starting year; the next run won't play out the same. Continue?",
+    sim_backhint:"If you cancel, we go back to the starting year.",
+    sim_back:"You're back in ",
+    sim_back2:". This run didn't stick: the next one will be different."
   }
 };
 

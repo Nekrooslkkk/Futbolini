@@ -2415,6 +2415,41 @@
       P_ACTUAL.cerrado=true; P_ACTUAL.terminado=true; P_ACTUAL=null;
     }, "hold del partido");
 
+    /* T59 · 7.9008 cancelar 40 temps = rollback + corridas distintas */
+    grupo("Grok 7.9008 (rollback + azar de verdad)");
+    safe(function(){
+      ok(VERSION==="7.9008" || /^7\.9/.test(VERSION), "VERSION 7.9008");
+      ok(typeof clonarPartida==="function" && typeof restaurarPartida==="function" && typeof salSim==="function", "API snapshot/restaurar");
+    }, "API 7.9008");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var anio0=E.anio, plat0=E.plata, club0=E.club, idx0=E.idx;
+      var s=clonarPartida(E);
+      ok(s && s.club===club0 && s.anio===anio0, "el snapshot copia el año de origen");
+      E.anio=2044; E.plata=7; E.club="UCH"; E.idx=99;
+      ok(restaurarPartida(s), "restaurarPartida no falla");
+      ok(E.anio===anio0 && E.club===club0 && E.idx===idx0, "volviste al año y al club de origen");
+      ok(E.plata===plat0, "la caja volvió");
+    }, "cancelar retrocede de verdad");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var nDiff=0, i, a, b;
+      for(i=0;i<12;i++){
+        E._simSal="runA";
+        a=_golesSimulados({fuerza:80,id:"CC"},{fuerza:62,id:"UCH"},"liga|"+i+"|CC|UCH");
+        E._simSal="runB";
+        b=_golesSimulados({fuerza:80,id:"CC"},{fuerza:62,id:"UCH"},"liga|"+i+"|CC|UCH");
+        if(a[0]!==b[0]||a[1]!==b[1]) nDiff++;
+      }
+      ok(nDiff>=1, "misma fecha, distinta sal → otro marcador ("+nDiff+"/12 fechas distintas)");
+      E._simSal="runA";
+      var g1=_golesSimulados({fuerza:80,id:"CC"},{fuerza:62,id:"UCH"},"liga|0|CC|UCH");
+      E._simSal="runA";
+      var g3=_golesSimulados({fuerza:80,id:"CC"},{fuerza:62,id:"UCH"},"liga|0|CC|UCH");
+      ok(g3[0]===g1[0] && g3[1]===g1[1], "la misma sal repite el marcador (control)");
+      delete E._simSal;
+    }, "dos corridas no salen iguales");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }

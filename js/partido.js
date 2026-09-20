@@ -1702,7 +1702,8 @@ function _golesSimulados(a,b,clave){
   const lamA=clamp(1.08-d*0.72, 0.35, 2.9);
   let rndFn=Math.random;
   if(clave && typeof azarFijo==="function" && typeof semilla==="function"){
-    rndFn=azarFijo(semilla(String(clave)+"|"+((typeof E!=="undefined"&&E&&E.anio)||0)));
+    const sal=(typeof salSim==="function"?salSim():((typeof E!=="undefined"&&E&&E._simSal)?String(E._simSal):""));
+    rndFn=azarFijo(semilla(String(clave)+"|"+((typeof E!=="undefined"&&E&&E.anio)||0)+"|"+sal));
   }
   return [_poissonGoles(lamH, rndFn), _poissonGoles(lamA, rndFn)];
 }
