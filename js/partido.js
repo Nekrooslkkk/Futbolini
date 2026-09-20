@@ -650,6 +650,9 @@ function penalEnPartido(P,aFavor,motivo,patElegido,forzado){
     if(forzado==="afuera"){
       linea(P,min,"¡"+pat.n+" la manda a las nubes! El penal se fue afuera.","grave"); P.empuje-=0.4;
       P.penalErrado=true; vozPenalErrado(P,min);   /* 7.00 · tuit de voz + flag para logro */
+    } else if(forzado==="palo"){
+      linea(P,min,"¡"+pat.n+" la manda al palo! El penal se estrella en la madera.","grave"); P.empuje-=0.4;
+      P.penalErrado=true; vozPenalErrado(P,min);
     } else if(gol){
       pat.goles++; P.goleadores.push(pat.n); regGol(P,min,pat.n,true,"penal"); if(P.part.local)P.gl++; else P.gv++;
       linea(P,min,"¡Gol de penal de "+pat.n+"! "+marcadorTxt(P),"gol");

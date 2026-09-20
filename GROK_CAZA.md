@@ -837,4 +837,23 @@ El autor: cancelar las 40 temps **retrocede** al año de origen (no deja el año
 
 Carril mío que queda: más 3D del arco, mercado 24/7. BTC hueco. Segunda = cantera.
 
+### NOTA PARA CLAUDE (7.9009 · Grok · 20 sep 2026)
+El autor: sigue avanzando, pensó que me había quedado pegado. Cerré córner/palo/mercado y arranqué el pulido de ventanas **sin tocar tu CSS**.
+
+**Motor (cerrado, Grok, NO lo toques):**
+- Córner aéreo: `cornerResolver` (0.06–0.30). Ya no `penResolver` + `iner*40`. El centro automático (`centroCorner`) no cambió.
+- Penal/tiro libre: `penResolver` puede devolver `palo`. La pelota rebota. El arquero tiene manos (`#arco-mano-izq/der`) que se estiran al atajar.
+- Mercado: `puedeFirmar()` siempre true. ene-feb / jun-jul = lluvia de ofertas, no candado. Copiaste «Comprás» rioplatense: lo saqué.
+- Pulido A (ui.js, sin so.css/aero.css/ventanas.js): Calendario abre con el próximo compromiso; Plantel abre con el once + botón a la previa/pizarra.
+
+**Lo tuyo (sigue):**
+- FIFA/guerra UI.
+- GROK_PULIDO Parte A del resto (finanzas, estadio, redes, historia, carrera) y Parte B (Inter/Selawik CDN). **No toqué** `so.css` / `aero.css` / `ventanas.js` — avísame si tomas la fuente, o la tomo yo en el próximo.
+- Envolver TUS ventanas con `T()`. Claves nuevas: `cal_prox`, `pla_once`, `merc_siempre`.
+- **NO unscopear** `.ventana-so`. **NO** tocar `nube.js` / `partido.js` / `util.js` / `ui-partido.js`.
+- Un solo Cuenta, Ajustes=⚙️. No es 8.00.
+
+Carril mío que queda: BTC hueco. Segunda = cantera. Brasil estaduales = futuro. Informe scouting sigue diciendo `$100 M`.
+
+
 

@@ -1618,6 +1618,22 @@ function cornerClasificar(aim){
   const zona = aim.cx<118?"primer":(aim.cx>242?"segundo":"penal");
   return {res:"aire", zona:zona};
 }
+/* 7.9009 · el minijuego de córner NO usa penResolver (eso daba gol ~siempre
+   porque sumaba iner*40 al nivel). Misma banda que centroCorner: 0.06–0.30. */
+function cornerResolver(zona, j, arq, iner){
+  zona=zona||"penal";
+  const aereoOk=j&&j.rasgos&&j.rasgos.indexOf("juego aéreo")>=0;
+  let p=0.10+((iner||0)*0.04)+(aereoOk?0.08:0)+(((j&&j.nivel)||70)-70)*0.003;
+  if(zona==="primer") p+=0.01;
+  else if(zona==="segundo") p+=(aereoOk?0.04:0);
+  p-=((((arq&&arq.nivel)||70)-70)*0.002);
+  p=clamp(p,0.06,0.30);
+  const r=Math.random();
+  if(r<p) return {res:"gol",p:p,zona:zona};
+  if(r<p+0.05) return {res:"palo",p:p,zona:zona};
+  if(r<p+0.18) return {res:"atajado",p:p,zona:zona};
+  return {res:"defensa",p:p,zona:zona};
+}
 function penArqueroTira(aim,arqNivel){
   const lee=clamp(0.12+(arqNivel-70)*0.006,0.05,0.32);
   if(Math.random()<lee) return aim.tercio;
@@ -1637,7 +1653,13 @@ function penResolver(aim,kdir,efecto,patNivel,arqNivel){
   }
   g+=(patNivel-70)*0.004-(arqNivel-70)*0.004;
   g=clamp(g,0.12,0.98);
-  return {res:(Math.random()<g)?"gol":"atajado",p:g};
+  const cx=aim.cx, cy=aim.cy;
+  const nearPalo=(cx!=null&&(cx<62||cx>298))||(aim.alt==="alto"&&cy!=null&&cy<52);
+  const r=Math.random();
+  if(nearPalo && r<0.10) return {res:"palo",p:g};
+  if(r<g) return {res:"gol",p:g};
+  if(nearPalo && r<g+0.12) return {res:"palo",p:g};
+  return {res:"atajado",p:g};
 }
 function penTween(el,attrs,ms,cb){
   const ini={}, fin={};
@@ -1670,6 +1692,18 @@ function _figJugador(x,y,kit,cls){
     '<circle cx="0" cy="-32" r="6" fill="#e8b896"/>'+
     '<rect x="-7" y="4" width="5" height="14" rx="2" fill="'+kit[1]+'"/>'+
     '<rect x="2" y="4" width="5" height="14" rx="2" fill="'+kit[1]+'"/>'+
+  '</g>';
+}
+function _figMano(lado){
+  const s=lado==="izq"?-1:1;
+  const id=lado==="izq"?"arco-mano-izq":"arco-mano-der";
+  return '<g id="'+id+'" class="arco-mano" transform="translate('+(s*17)+' -10)">'+
+    '<ellipse cx="0" cy="2" rx="7.5" ry="5.8" fill="#fff" stroke="#8a9aab" stroke-width=".7"/>'+
+    '<ellipse cx="'+(s*2)+'" cy="1" rx="5" ry="4" fill="#eef3f8" opacity=".85"/>'+
+    '<path d="M'+(s*-3)+',-2 L'+(s*-5)+',-15 L'+(s*-1)+',-15 L'+(s*1)+',-2" fill="#fff" stroke="#8a9aab" stroke-width=".55"/>'+
+    '<path d="M'+(s*0)+',-3 L'+(s*1)+',-17 L'+(s*4)+',-16 L'+(s*3)+',-2" fill="#fff" stroke="#8a9aab" stroke-width=".55"/>'+
+    '<path d="M'+(s*3)+',-1 L'+(s*7)+',-14 L'+(s*10)+',-12 L'+(s*5)+',0" fill="#fff" stroke="#8a9aab" stroke-width=".55"/>'+
+    '<path d="M'+(s*5)+',2 L'+(s*12)+',-6 L'+(s*13)+',-3 L'+(s*6)+',5" fill="#fff" stroke="#8a9aab" stroke-width=".55"/>'+
   '</g>';
 }
 function _animBola(bolaG, x0,y0, x1,y1, ms, cb){
@@ -1759,9 +1793,9 @@ function htmlArcoVivo(opts){
       '<line x1="268" y1="38" x2="268" y2="168"/>'+
       '<line x1="50" y1="78" x2="310" y2="78"/><line x1="50" y1="118" x2="310" y2="118"/>'+
     '</g>'+
-    '<rect x="46" y="34" width="8" height="138" rx="2" fill="#f7fbff"/>'+
-    '<rect x="306" y="34" width="8" height="138" rx="2" fill="#f7fbff"/>'+
-    '<rect x="46" y="32" width="268" height="9" rx="2" fill="#f7fbff"/>'+
+    '<rect id="arco-poste-izq" x="46" y="34" width="8" height="138" rx="2" fill="#f7fbff"/>'+
+    '<rect id="arco-poste-der" x="306" y="34" width="8" height="138" rx="2" fill="#f7fbff"/>'+
+    '<rect id="arco-travesano" x="46" y="32" width="268" height="9" rx="2" fill="#f7fbff"/>'+
     '<rect x="48" y="36" width="4" height="132" fill="#c9d6e4"/>'+
     '<rect x="308" y="36" width="4" height="132" fill="#c9d6e4"/>'+
     wall+
@@ -1770,8 +1804,8 @@ function htmlArcoVivo(opts){
       '<ellipse cx="0" cy="20" rx="16" ry="5" fill="rgba(0,0,0,.32)"/>'+
       '<rect x="-12" y="-30" width="24" height="34" rx="7" fill="'+kitArq[0]+'" stroke="#0b3d8c" stroke-width="1"/>'+
       '<circle cx="0" cy="-38" r="8" fill="#f2c9a0" stroke="#b98a63" stroke-width="1"/>'+
-      '<rect x="-20" y="-12" width="11" height="10" rx="3" fill="#fff" stroke="#c9d4e0"/>'+
-      '<rect x="9" y="-12" width="11" height="10" rx="3" fill="#fff" stroke="#c9d4e0"/>'+
+      _figMano("izq")+
+      _figMano("der")+
       '<rect x="-10" y="4" width="7" height="16" rx="2" fill="'+kitArq[1]+'"/>'+
       '<rect x="3" y="4" width="7" height="16" rx="2" fill="'+kitArq[1]+'"/>'+
     '</g>'+
@@ -1802,12 +1836,30 @@ function _hudArco(c, tipo, P){
   c.appendChild(hud);
   return hud;
 }
-function _animArq(arqEl, kdir, ms){
+function _animArq(arqEl, kdir, ms, opts){
+  if(!arqEl) return;
+  opts=opts||{};
   const dx=kdir==="izq"?-72:(kdir==="der"?72:0);
   const dy=kdir==="centro"?-10:18;
   const rot=kdir==="izq"?-38:(kdir==="der"?38:0);
   arqEl.style.transition="transform "+(ms/1000)+"s cubic-bezier(.15,.8,.25,1)";
   arqEl.style.transform="translate("+dx+"px,"+dy+"px) rotate("+rot+"deg)";
+  const izq=arqEl.querySelector("#arco-mano-izq");
+  const der=arqEl.querySelector("#arco-mano-der");
+  const st=opts.ataja?1.45:1.18;
+  const t="transform "+(ms/1000)+"s cubic-bezier(.12,.85,.2,1)";
+  if(izq){
+    izq.style.transition=t;
+    izq.style.transform=kdir==="izq"
+      ?("translate(-14px,-18px) scale("+st+") rotate(-28deg)")
+      :(kdir==="der"?"translate(4px,-8px) rotate(8deg)":("translate(-6px,-16px) scale("+st+")"));
+  }
+  if(der){
+    der.style.transition=t;
+    der.style.transform=kdir==="der"
+      ?("translate(14px,-18px) scale("+st+") rotate(28deg)")
+      :(kdir==="izq"?"translate(-4px,-8px) rotate(-8deg)":("translate(6px,-16px) scale("+st+")"));
+  }
 }
 function _botonesEfecto(c, inicial){
   let efecto=inicial||"colocado";
@@ -1866,20 +1918,32 @@ function minijuegoPenal(P,pateador,opts){
       if(!aim||tirado) return; tirado=true; bpat.disabled=true;
       const kdir=penArqueroTira(aim,arq.nivel||70);
       const out=penResolver(aim,kdir,getEf(),pateador.nivel||70,arq.nivel||70);
-      _animArq(arqEl, kdir, 420);
-      const destY=out.res==="afuera"?16:aim.cy, destX=aim.cx;
-      _animBola(bolaG,180,220,destX,destY,480,function(){
+      _animArq(arqEl, kdir, 420, {ataja:out.res==="atajado"});
+      const paloX=aim.tercio==="izq"?50:(aim.tercio==="der"?310:180);
+      const destY=out.res==="afuera"?16:(out.res==="palo"?38:aim.cy);
+      const destX=out.res==="palo"?paloX:aim.cx;
+      function fin(){
         const lab=_etiquetaArco(out.res);
         etiq.innerHTML="";
         const ban=el("div","arco-res "+lab.cls); ban.textContent=lab.t;
         c.insertBefore(ban, etiq);
         if(out.res==="gol" && svg) svg.classList.add("arco-golazo");
+        if(out.res==="palo" && svg) svg.classList.add("arco-alpalo");
         setTimeout(()=>{
           cerrarModal();
           if(typeof opts.onRes==="function"){ opts.onRes(out.res==="gol"); return; }
-          penalEnPartido(P,true,null,pateador,out.res==="gol"?true:(out.res==="afuera"?"afuera":false));
+          const forz=out.res==="gol"?true:(out.res==="afuera"?"afuera":(out.res==="palo"?"palo":false));
+          penalEnPartido(P,true,null,pateador,forz);
           pintarPartido(); reanudarPronto();
         },820);
+      }
+      _animBola(bolaG,180,220,destX,destY,480,function(){
+        if(out.res==="palo"){
+          const bx=destX+(aim.tercio==="izq"?-30:(aim.tercio==="der"?30:12));
+          _animBola(bolaG,destX,destY,bx,destY-20,260,fin);
+          return;
+        }
+        fin();
       });
     };
     c.appendChild(bpat);
@@ -1939,8 +2003,8 @@ function minijuegoTiroLibre(P){
         const spec=(j.rasgos&&j.rasgos.indexOf("tiro libre")>=0);
         const ef=getEf();
         const out=penResolver(aim,kdir,spec?"potente":ef,(j.nivel||70)+(spec?6:0),arq.nivel||70);
-        res=out.res==="gol"?"gol":(out.res==="afuera"?"afuera":"atajado");
-        _animArq(arqEl, kdir, 420);
+        res=out.res==="gol"?"gol":(out.res==="palo"?"palo":(out.res==="afuera"?"afuera":"atajado"));
+        _animArq(arqEl, kdir, 420, {ataja:res==="atajado"});
       } else if(res==="barrera"){
         if(wall){
           wall.querySelectorAll(".arco-muro").forEach(function(g,i){
@@ -1951,8 +2015,17 @@ function minijuegoTiroLibre(P){
         }
       }
       const destY=(res==="afuera"||res==="palo")?14:(res==="barrera"?aim.cy+28:aim.cy);
-      const destX=res==="barrera"?aim.cx+(aim.cx>180?-18:18):aim.cx;
+      const destX=res==="barrera"?aim.cx+(aim.cx>180?-18:18):(res==="palo"?(aim.tercio==="izq"?50:(aim.tercio==="der"?310:aim.cx)):aim.cx);
       _animBola(bolaG,180,220,destX,destY,460,function(){
+        if(res==="palo"){
+          svg.classList.add("arco-alpalo");
+          const bx=destX+(destX<180?-28:28);
+          _animBola(bolaG,destX,destY,bx,destY-18,240,function(){ pintarResTL(); });
+          return;
+        }
+        pintarResTL();
+      });
+      function pintarResTL(){
         const lab=_etiquetaArco(res);
         etiq.innerHTML="";
         const ban=el("div","arco-res "+lab.cls); ban.textContent=lab.t+(motivo?" · "+motivo.replace(/\.$/,""):"");
@@ -1974,7 +2047,7 @@ function minijuegoTiroLibre(P){
           }
           pintarPartido(); reanudarPronto();
         },820);
-      });
+      }
     };
     c.appendChild(bpat);
   },{cerrarFuera:false});
@@ -2036,11 +2109,10 @@ function minijuegoCorner(P){
       const arq=arqueroDe(P.rivalPlantel)||{n:"el arquero",nivel:70};
       if(res==="aire"){
         const kdir=penArqueroTira(aim,arq.nivel||70);
-        const spec=(j.rasgos&&j.rasgos.indexOf("juego aéreo")>=0);
-        const iner=((P.iner&&P.iner.cor)||0)*0.04;
-        const out=penResolver(aim,kdir,spec?"potente":"colocado",(j.nivel||70)+(spec?8:0)+(iner*40),arq.nivel||70);
-        res=out.res==="gol"?"gol":(out.res==="afuera"?"afuera":"atajado");
-        if(res!=="gol") _animArq(arqEl, kdir, 380);
+        const iner=((P.iner&&P.iner.cor)||0);
+        const out=cornerResolver(cl.zona, j, arq, iner);
+        res=out.res;
+        if(res==="atajado"||res==="palo") _animArq(arqEl, kdir, 380, {ataja:res==="atajado"});
         const atks=svg.querySelectorAll(".arco-atk");
         if(atks&&atks.length){
           const tgt=atks[cl.zona==="primer"?0:(cl.zona==="segundo"?1:2)]||atks[0];
@@ -2054,14 +2126,15 @@ function minijuegoCorner(P){
           defs[0].style.transform="translateY(-10px)";
         }
       }
-      const destY=(res==="afuera")?12:(res==="defensa"?aim.cy+20:aim.cy);
-      const destX=aim.cx;
-      _animBola(bolaG,bolaX,222,destX,destY,520,function(){
+      const destY=(res==="afuera")?12:(res==="defensa"?aim.cy+20:(res==="palo"?38:aim.cy));
+      const destX=res==="palo"?(cl.zona==="primer"?54:(cl.zona==="segundo"?306:aim.cx)):aim.cx;
+      function finCor(){
         const lab=_etiquetaArco(res);
         etiq.innerHTML="";
         const ban=el("div","arco-res "+lab.cls); ban.textContent=lab.t+(motivo?" · "+motivo.replace(/\.$/,""):"");
         c.insertBefore(ban, etiq);
         if(res==="gol") svg.classList.add("arco-golazo");
+        if(res==="palo") svg.classList.add("arco-alpalo");
         setTimeout(function(){
           cerrarModal();
           if(res==="gol"){
@@ -2072,11 +2145,20 @@ function minijuegoCorner(P){
           } else if(typeof linea==="function"){
             const txt=res==="defensa"?("Córner: el primero despeja el centro de "+j.n+".")
               :(res==="afuera"?("Córner de "+j.n+": el centro se fue largo.")
-              :("Córner de "+j.n+": el arquero se queda con la pelota."));
+              :(res==="palo"?("Córner de "+j.n+": el cabezazo se estrella en el palo.")
+              :("Córner de "+j.n+": el arquero se queda con la pelota.")));
             linea(P,P.min,txt);
           }
           pintarPartido(); reanudarPronto();
         },820);
+      }
+      _animBola(bolaG,bolaX,222,destX,destY,520,function(){
+        if(res==="palo"){
+          const bx=destX+(destX<180?-28:28);
+          _animBola(bolaG,destX,destY,bx,destY-18,240,finCor);
+          return;
+        }
+        finCor();
       });
     };
     c.appendChild(bpat);

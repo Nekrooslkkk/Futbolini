@@ -1426,6 +1426,35 @@ function charlaJugador(j,tipo){
 }
 function vistaPlantel(){
   const v=$("#vista");
+  const once=(typeof onceIdeal==="function")?onceIdeal():[];
+  const pOnce=panel((typeof T==="function"?T("pla_once","Once probable"):"Once probable"),"📋");
+  if(once&&once.length){
+    const form=(E.tactica&&E.tactica.form)||"4-4-2";
+    pOnce.cuerpo.appendChild(el("p","mini",(typeof T==="function"?T("pla_form","Formación"):"Formación")+" <b>"+form+"</b>. "+
+      (typeof T==="function"?T("pla_pizarra_hint","La pizarra se arma en la previa del partido."):"La pizarra se arma en la previa del partido.")));
+    const tOnce=el("table","tabla-plantel");
+    tOnce.innerHTML="<thead><tr><th>Jugador</th><th>Pos</th><th class='n'>Niv</th><th class='n'>For</th></tr></thead>";
+    const tbO=el("tbody");
+    once.forEach(j=>{
+      const tr=el("tr");
+      const nom=(j.real?"● ":"")+(typeof escHtml==="function"?escHtml(j.n):j.n)+(j.lesion>0?" 🩹":"");
+      tr.innerHTML="<td>"+nom+"</td><td>"+j.pos+"</td><td class='n'>"+j.nivel+"</td><td class='n'>"+Math.round(j.forma||0)+"</td>";
+      tr.style.cursor="pointer";
+      tr.onclick=()=>fichaJugador(j);
+      tbO.appendChild(tr);
+    });
+    tOnce.appendChild(tbO); pOnce.cuerpo.appendChild(tOnce);
+    const bp=el("button","btn-aqua ancho verde",(typeof T==="function"?T("pla_ir_pizarra","Ir a la previa / pizarra"):"Ir a la previa / pizarra"));
+    bp.onclick=()=>{
+      const part=typeof proximoPartido==="function"?proximoPartido():null;
+      if(part && typeof pantallaPrevia==="function") pantallaPrevia(part);
+      else if(typeof aviso==="function") aviso(typeof T==="function"?T("pla_sinpart","No hay partido para armar la pizarra."):"No hay partido para armar la pizarra.");
+    };
+    pOnce.cuerpo.appendChild(bp);
+  } else {
+    pOnce.cuerpo.appendChild(el("p","mini",(typeof T==="function"?T("pla_sinpart","No hay partido para armar la pizarra."):"No hay once disponible.")));
+  }
+  v.appendChild(pOnce);
   const p=panel("Plantel "+E.anio,"👥");
   p.cuerpo.appendChild(el("p","mini","● nombre documentado. Sin punto: cantera / relleno. Stats estimadas."));
   const f=el("div","fichas");
@@ -1818,6 +1847,21 @@ function panelCuadro2006(v, st, titulo){
 }
 function vistaCalendario(){
   const v=$("#vista");
+  const partProx=typeof proximoPartido==="function"?proximoPartido():null;
+  const px=panel((typeof T==="function"?T("cal_prox","Próximo compromiso"):"Próximo compromiso"),"📌",partProx&&partProx.tipo==="copa"?"agua":"");
+  if(partProx){
+    px.cuerpo.appendChild(el("h2","tit",(partProx.local?"":"@ ")+(partProx.rivalNombre||"—")));
+    px.cuerpo.appendChild(el("p","mini",(partProx.local?"De local":"De visita")+
+      " · "+(typeof etqCompromiso==="function"?etqCompromiso(partProx):(partProx.tipo==="copa"?(partProx.torneo||"Copa"):"fecha "+(partProx.fecha||"")))+
+      (typeof fechaTxt==="function"&&partProx.f?" · "+fechaTxt(partProx.f):"")+
+      (partProx.sede?" · "+partProx.sede:"")));
+    const b=el("button","btn-aqua ancho verde",(typeof T==="function"?T("cal_ir","Ir al partido"):"Ir al partido"));
+    b.onclick=()=>{ if(typeof bloqueoDecisiones==="function"&&bloqueoDecisiones()) return; if(typeof pantallaPrevia==="function") pantallaPrevia(partProx); };
+    px.cuerpo.appendChild(b);
+  } else {
+    px.cuerpo.appendChild(el("p","mini",(typeof T==="function"?T("cal_sinprox","No hay más partidos este año."):"No hay más partidos este año.")));
+  }
+  v.appendChild(px);
   if(E.eraBase===2006){
     const ape=panel("Calendario · Apertura 2006","📅");
     E.calendario.forEach((c,i)=>{ if(c.tipo==="liga"&&(c.fase==="apertura"||!c.fase)) ape.cuerpo.appendChild(filaCalendario(c,i)); });

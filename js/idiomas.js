@@ -113,7 +113,20 @@ var FRASES={
     sim_conf40:"Voy a simular hasta 40 temporadas. No se traba. Cancelar te devuelve al año de origen; la próxima corrida no sale igual. ¿Seguir?",
     sim_backhint:"Si cancelas, volvemos al año de origen.",
     sim_back:"Volviste a ",
-    sim_back2:". Esta corrida no quedó: la próxima va a ser distinta."
+    sim_back2:". Esta corrida no quedó: la próxima va a ser distinta.",
+    cal_prox:"Próximo compromiso",
+    cal_ir:"Ir al partido",
+    cal_sinprox:"No hay más partidos este año.",
+    pla_once:"Once probable",
+    pla_form:"Formación",
+    pla_pizarra_hint:"La pizarra se arma en la previa del partido.",
+    pla_ir_pizarra:"Ir a la previa / pizarra",
+    pla_sinpart:"No hay partido para armar la pizarra.",
+    merc_siempre:"Puedes firmar todo el año. En enero-febrero y junio-julio llueven ofertas; el resto, el mercado está más quieto.",
+    merc_lluvia:"Lluvia de ofertas",
+    merc_quieto:"Mercado más quieto",
+    merc_obj_lluvia:"Ventana alta: hay más movimiento, cierra ahora si te convence.",
+    merc_obj_quieto:"Fuera de la lluvia: menos ofertas, pero igual puedes firmar."
   },
   /* --- CHILENSIS (de verdad): -ai/-ís, 'po', 'cachái', sin voseo argentino. --- */
   cl:{
@@ -183,7 +196,20 @@ var FRASES={
     sim_conf40:"Voy a simular hasta 40 temporadas. No se traba. Cancelar te devuelve al año de origen; la próxima corrida no sale igual. ¿Seguimos?",
     sim_backhint:"Si cancelai, volvemos al año de origen.",
     sim_back:"Volviste a ",
-    sim_back2:". Esta corrida no quedó: la próxima va a ser distinta."
+    sim_back2:". Esta corrida no quedó: la próxima va a ser distinta.",
+    cal_prox:"Próximo compromiso",
+    cal_ir:"Ir al partido, po",
+    cal_sinprox:"No quedan más partidos este año.",
+    pla_once:"Once probable",
+    pla_form:"Formación",
+    pla_pizarra_hint:"La pizarra la armái en la previa del partido.",
+    pla_ir_pizarra:"Ir a la previa / pizarra",
+    pla_sinpart:"No hay partido pa' armar la pizarra.",
+    merc_siempre:"Podí firmar todo el año, po. En enero-febrero y junio-julio llueven ofertas; el resto el mercado está más quieto.",
+    merc_lluvia:"Lluvia de ofertas",
+    merc_quieto:"Mercado más quieto",
+    merc_obj_lluvia:"Ventana alta: hay más movimiento, cierra ahora si te convence.",
+    merc_obj_quieto:"Fuera de la lluvia: menos ofertas, pero igual podí firmar."
   },
   /* --- PORTUGUÊS (arranque; el usuario/Grok lo afinan). --- */
   pt:{
@@ -273,7 +299,20 @@ var FRASES={
     sim_conf40:"Vou simular até 40 temporadas. Não trava. Cancelar te devolve ao ano de origem; a próxima corrida não sai igual. Seguir?",
     sim_backhint:"Se cancelar, voltamos ao ano de origem.",
     sim_back:"Você voltou a ",
-    sim_back2:". Esta corrida não ficou: a próxima vai ser diferente."
+    sim_back2:". Esta corrida não ficou: a próxima vai ser diferente.",
+    cal_prox:"Próximo compromisso",
+    cal_ir:"Ir à partida",
+    cal_sinprox:"Não há mais partidas este ano.",
+    pla_once:"Onze provável",
+    pla_form:"Formação",
+    pla_pizarra_hint:"O quadro tático se arma na prévia da partida.",
+    pla_ir_pizarra:"Ir à prévia / quadro",
+    pla_sinpart:"Não há partida para armar o quadro.",
+    merc_siempre:"Você pode assinar o ano inteiro. Em janeiro-fevereiro e junho-julho chovem ofertas; no resto o mercado fica mais quieto.",
+    merc_lluvia:"Chuva de ofertas",
+    merc_quieto:"Mercado mais quieto",
+    merc_obj_lluvia:"Janela alta: tem mais movimento, feche agora se convencer.",
+    merc_obj_quieto:"Fora da chuva: menos ofertas, mas você ainda pode assinar."
   },
   en:{
     ini_headline:"You don't run a team. You run an institution.",
@@ -362,7 +401,20 @@ var FRASES={
     sim_conf40:"I'll simulate up to 40 seasons. It won't freeze. Cancel restores the starting year; the next run won't play out the same. Continue?",
     sim_backhint:"If you cancel, we go back to the starting year.",
     sim_back:"You're back in ",
-    sim_back2:". This run didn't stick: the next one will be different."
+    sim_back2:". This run didn't stick: the next one will be different.",
+    cal_prox:"Next fixture",
+    cal_ir:"Go to the match",
+    cal_sinprox:"No more matches this year.",
+    pla_once:"Probable XI",
+    pla_form:"Formation",
+    pla_pizarra_hint:"The tactics board is set in the match preview.",
+    pla_ir_pizarra:"Go to preview / board",
+    pla_sinpart:"No match to set the board.",
+    merc_siempre:"You can sign all year. Offers pour in January–February and June–July; the rest of the year the market is quieter.",
+    merc_lluvia:"Offer rush",
+    merc_quieto:"Quieter market",
+    merc_obj_lluvia:"High window: more movement — close now if it convinces you.",
+    merc_obj_quieto:"Off the rush: fewer offers, but you can still sign."
   }
 };
 

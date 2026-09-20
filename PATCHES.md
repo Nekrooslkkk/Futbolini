@@ -1,5 +1,13 @@
 # FUTBOLINI 3.0 — Bitácora de parches
 
+## 7.9009 · Córner no siempre gol + palo + mercado 24/7
+**Archivos:** `ui-partido.js`, `partido.js`, `mercado.js`, `ui.js`, `util.js`, `idiomas.js`, `gol.css`, `test/pruebas_core.js`
+- **Córner:** el minijuego aéreo ya no usa `penResolver` + `iner*40` (eso daba gol ~siempre). `cornerResolver` en banda 0.06–0.30, igual que `centroCorner`.
+- **Arco:** el arquero tiene manos SVG que se estiran al atajar. El palo existe de verdad (`penResolver` puede devolver `palo`) y la pelota rebota.
+- **Mercado:** `puedeFirmar()` siempre true. La ventana ene-feb / jun-jul solo cambia la lluvia de ofertas, no traba la firma.
+- **Pulido A (sin so.css/aero.css):** Calendario abre con el próximo compromiso; Plantel abre con el once probable.
+- Tests T60. **No es 8.00.**
+
 ## 7.9008 · Cancelar 40 temps = rollback + azar
 **Archivos:** `motor.js`, `partido.js`, `ui.js`, `util.js`, `idiomas.js`, `data-formato2026.js`, `test/pruebas_core.js`
 - Cancelar la simulación de N temporadas **vuelve al año de origen** (snapshot JSON + `activarLiga`).

@@ -16,6 +16,7 @@ function inflacionEra(){
 }
 function mesMercado(){ const p=proximoPartido(); return p&&p.f?p.f.m:12; }
 function mercadoAbierto(){ const m=mesMercado(); return m<=2||m===6||m===7; }
+function puedeFirmar(){ return true; } /* 7.9009 · firmas todo el año; la ventana solo cambia la lluvia de ofertas */
 function proximaVentana(){ const m=mesMercado(); return m<6?"junio":(m>7?"enero":"ahora"); }
 
 /* ---------- objetivos: jugadores de otros clubes para comprar ---------- */
@@ -429,10 +430,10 @@ function comisionRep(precio,j){ const pct=5+(semilla((j&&j.n)||"rep")%9); return
 function vistaMercado(){
   const v=$("#vista");
   const abierto=mercadoAbierto();
+  const firma=(typeof puedeFirmar==="function")?puedeFirmar():true;
   const cab=panel("Mercado de fichajes","🧳","agua");
-  cab.cuerpo.appendChild(el("p","mini","Ventana "+(abierto?"<b>abierta</b>":"<b>cerrada</b>")+
-    ". Comprás solo en pretemporada (enero-febrero) y a mitad de año (junio-julio)."+
-    (abierto?"":" Próxima apertura: "+proximaVentana()+". Las ofertas por tus jugadores igual las puedes responder.")+
+  cab.cuerpo.appendChild(el("p","mini",(typeof T==="function"?T("merc_siempre","Puedes firmar todo el año. En enero-febrero y junio-julio llueven ofertas; el resto, el mercado está más quieto."):"Puedes firmar todo el año. En enero-febrero y junio-julio llueven ofertas; el resto, el mercado está más quieto.")+
+    " "+(abierto?("<b>"+(typeof T==="function"?T("merc_lluvia","Lluvia de ofertas"):"Lluvia de ofertas")+"</b>."):("<b>"+(typeof T==="function"?T("merc_quieto","Mercado más quieto"):"Mercado más quieto")+"</b>."))+
     " Vender no es un botón: habla el jugador, el representante si tiene, la prensa y la hinchada. El ídolo puede plantarse."));
   cab.cuerpo.appendChild(fila("Caja disponible",plata(E.plata)));
   if(inflacionEra()!==1) cab.cuerpo.appendChild(fila("Inflación de la era","×"+inflacionEra().toFixed(2)));
@@ -449,7 +450,7 @@ function vistaMercado(){
     const cont=el("div"); cont.style.marginTop="6px";
     const nOf=()=>(E.notifs||[]).find(x=>x.acc&&x.acc.ofertaId===of.id&&!x.acc.resuelta);
     const ba=el("button","btn-aqua chico verde","Hablar / negociar");
-    ba.onclick=()=>modalVender(of,j,abierto);
+    ba.onclick=()=>modalVender(of,j,firma);
     const bc=el("button","btn-aqua chico","Pedir más"); bc.style.marginLeft="6px";
     bc.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"contra"); render(); };
     const br=el("button","btn-aqua chico gris","Rechazar"); br.style.marginLeft="6px";
@@ -499,7 +500,9 @@ function vistaMercado(){
 
   /* --- objetivos para comprar (con filtros) --- */
   const po=panel("Objetivos en el mercado","📤");
-  if(!abierto) po.cuerpo.appendChild(el("div","resul mal","La ventana está cerrada: puedes mirar y negociar, pero no cerrar compras hasta "+proximaVentana()+"."));
+  po.cuerpo.appendChild(el("p","mini",abierto
+    ?(typeof T==="function"?T("merc_obj_lluvia","Ventana alta: hay más movimiento, cierra ahora si te convence."):"Ventana alta: hay más movimiento, cierra ahora si te convence.")
+    :(typeof T==="function"?T("merc_obj_quieto","Fuera de la lluvia: menos ofertas, pero igual puedes firmar."):"Fuera de la lluvia: menos ofertas, pero igual puedes firmar.")));
   /* filtros */
   po.cuerpo.appendChild(el("label","lb","Posición"));
   const fp=el("div","fichas");
@@ -533,7 +536,7 @@ function vistaMercado(){
       bo.onclick=()=>ojear(j); cont.appendChild(bo);
     }
     const b=el("button","btn-aqua chico verde","Negociar / Comprar"); if(!oj) b.style.marginLeft="6px";
-    b.onclick=()=>modalComprar(j,abierto);
+    b.onclick=()=>modalComprar(j,firma);
     cont.appendChild(b); d.appendChild(cont);
     po.cuerpo.appendChild(d);
   });
@@ -544,6 +547,7 @@ var MERC_FILTRO={pos:"",joven:false,barato:false};
 /* Negociación de compra en 2-3 pasos: tu oferta → contraoferta → cierre.
    Insistir cuesta (suben lo que piden); a las 3 rondas se levantan de la mesa. */
 function modalComprar(j,abierto){
+  if(typeof puedeFirmar==="function") abierto=puedeFirmar();
   const oferta={ precio:j.precio, sueldo:j.pidesueldo, rol:"titular", comisionRebaja:false, comisionIntento:false };
   const minP=Math.max(1,Math.round(j.precio*0.5)), maxP=Math.round(j.precio*1.7);
   const minS=Math.max(1,Math.round(j.pidesueldo*0.7)), maxS=Math.round(j.pidesueldo*2);

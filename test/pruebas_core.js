@@ -2450,6 +2450,45 @@
       delete E._simSal;
     }, "dos corridas no salen iguales");
 
+    /* T60 · 7.9009 córner no siempre gol, palo, manos, mercado 24/7 */
+    grupo("Grok 7.9009 (córner + palo + mercado 24/7)");
+    safe(function(){
+      ok(VERSION==="7.9009" || /^7\.9/.test(VERSION), "VERSION 7.9009");
+      ok(typeof cornerResolver==="function" && typeof _figMano==="function" && typeof puedeFirmar==="function", "API 7.9009");
+    }, "API 7.9009");
+    safe(function(){
+      var outTope=cornerResolver("segundo",{n:"x",nivel:99,rasgos:["juego aéreo"]},{nivel:40},12);
+      ok(outTope.p<=0.30 && outTope.p>=0.06, "córner aéreo tope 0.30 (no iner*40) p="+outTope.p);
+      var oldR=Math.random, i, nGol=0;
+      Math.random=function(){ return 0.50; };
+      for(i=0;i<40;i++){ if(cornerResolver("penal",{n:"x",nivel:70,rasgos:[]},{nivel:70},0).res==="gol") nGol++; }
+      ok(nGol===0, "random 0.50: un centro normal no es gol ("+nGol+"/40)");
+      nGol=0;
+      Math.random=function(){ return 0.02; };
+      for(i=0;i<40;i++){ if(cornerResolver("penal",{n:"x",nivel:70,rasgos:[]},{nivel:70},0).res==="gol") nGol++; }
+      ok(nGol===40, "random 0.02: entra cuando toca ("+nGol+"/40)");
+      Math.random=oldR;
+    }, "córner no siempre gol");
+    safe(function(){
+      var oldR=Math.random;
+      Math.random=function(){ return 0.05; };
+      var palo=penResolver({fuera:false,tercio:"izq",alt:"alto",cx:54,cy:44},"der","colocado",70,70);
+      ok(palo.res==="palo", "cerca del palo con random bajo = palo");
+      Math.random=function(){ return 0.50; };
+      var gol=penResolver({fuera:false,tercio:"izq",alt:"bajo",cx:90,cy:120},"der","potente",90,50);
+      ok(gol.res==="gol", "tiro far from post sigue pudiendo ser gol");
+      Math.random=oldR;
+      var svg=htmlArcoVivo({modo:"penal"});
+      ok(/arco-mano-izq/.test(svg) && /arco-mano-der/.test(svg), "el arquero tiene manos que se tiran");
+      ok(/arco-poste-izq/.test(svg) && /arco-travesano/.test(svg), "los palos tienen id para el rebote");
+    }, "palo + manos 3D");
+    safe(function(){
+      ok(puedeFirmar()===true, "firmas todo el año");
+      nuevaPartida("CC",2026,"historico");
+      ok(puedeFirmar()===true, "con partida abierta también firmas");
+      ok(typeof mercadoAbierto==="function", "la lluvia de ofertas sigue siendo estacional");
+    }, "mercado 24/7");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }
