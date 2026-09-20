@@ -152,6 +152,10 @@ function celdaCans(j){
   return "<td class='"+cls+"'>"+c+"</td>";
 }
 function pantallaPrevia(part){
+  if(typeof partidoEnCurso==="function" && partidoEnCurso()){
+    if(typeof volverAlPartido==="function") volverAlPartido();
+    return;
+  }
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
   document.body.classList.remove("en-partido","hay-momento");
   const ligaTit=E.eraBase==="2026b"?"Liga de Ascenso · fecha "+part.fecha
@@ -768,8 +772,86 @@ function modalConferencia(part){
 function arrancarPartido(part,modo){
   P_ACTUAL=iniciarPartido(part,modo);
   PAUSADO=false; MOMENTO_OPS=[];
+  if(P_ACTUAL){ P_ACTUAL._holdUI=null; P_ACTUAL._holdKind=null; P_ACTUAL._holdEv=null; }
+  if(typeof quitarHoldBar==="function") quitarHoldBar();
   if(modo==="simular"){ correrHasta(P_ACTUAL,90); pintarPartido(); cerrarPartido(); return; }
   pintarPartido(); correrEnVivo();
+}
+/* 7.9007 · el partido NO se borra si tocás otra sección: se pausa y vuelve con las decisiones. */
+function partidoEnCurso(){
+  return !!(typeof P_ACTUAL!=="undefined" && P_ACTUAL && !P_ACTUAL.terminado && !P_ACTUAL.cerrado);
+}
+function pintarHoldBar(){
+  let bar=document.getElementById("partidoHold");
+  if(!bar){
+    bar=document.createElement("div");
+    bar.id="partidoHold";
+    bar.setAttribute("role","status");
+    bar.setAttribute("aria-live","polite");
+    const vista=document.getElementById("vista");
+    if(vista&&vista.parentNode) vista.parentNode.insertBefore(bar, vista);
+    else document.body.appendChild(bar);
+  }
+  if(!partidoEnCurso() || !P_ACTUAL._holdUI){
+    bar.classList.add("oculto"); bar.setAttribute("hidden",""); bar.innerHTML="";
+    return;
+  }
+  const P=P_ACTUAL;
+  const riv=(P.part&&P.part.rivalNombre)||"";
+  const Tfn=typeof T==="function"?T:function(k,d){ return d; };
+  const esc=(typeof escHtml==="function")?escHtml:function(s){ return String(s==null?"":s); };
+  bar.classList.remove("oculto"); bar.removeAttribute("hidden");
+  bar.innerHTML='<div class="hold-copy"><div class="hold-t">'+esc(Tfn("hold_tit","Partido en pausa"))+' · '+esc(String(P.min||0))+"' vs "+esc(riv)
+    +'</div><div class="hold-d">'+esc(Tfn("hold_txt","Las decisiones siguen ahí. Vuelve al partido cuando quieras."))+'</div></div>';
+  const b=document.createElement("button");
+  b.type="button"; b.className="btn-aqua verde hold-btn";
+  b.textContent=Tfn("hold_btn","Vuelve al partido");
+  b.onclick=function(){ volverAlPartido(); };
+  bar.appendChild(b);
+}
+function quitarHoldBar(){
+  const bar=document.getElementById("partidoHold");
+  if(bar){ bar.classList.add("oculto"); bar.setAttribute("hidden",""); bar.innerHTML=""; }
+}
+function pausarPartidoHold(){
+  if(!partidoEnCurso()) return;
+  const P=P_ACTUAL;
+  if(typeof TIMER!=="undefined" && TIMER){ try{ clearInterval(TIMER); }catch(e){} TIMER=null; }
+  PAUSADO=true;
+  if(!P._holdUI){
+    P._holdUI={
+      kind:P._holdKind||((typeof MOMENTO_OPS!=="undefined"&&MOMENTO_OPS&&MOMENTO_OPS.length)?"accion":"vivo"),
+      ev:P._holdEv||null,
+      pausado:true
+    };
+  }
+  const varEl=document.querySelector(".var-lt");
+  if(varEl&&varEl.parentNode) varEl.parentNode.removeChild(varEl);
+  document.body.classList.remove("en-partido","hay-momento");
+  pintarHoldBar();
+}
+function volverAlPartido(){
+  if(!partidoEnCurso()){ quitarHoldBar(); return; }
+  const P=P_ACTUAL;
+  const hold=P._holdUI||{};
+  P._holdUI=null;
+  quitarHoldBar();
+  PAUSADO=true;
+  if(typeof pintarPartido==="function") pintarPartido();
+  if(hold.kind==="accion" && hold.ev && typeof mostrarAccion==="function"){
+    mostrarAccion(hold.ev);
+  } else if(hold.kind==="momento" && typeof mostrarMomento==="function"){
+    mostrarMomento();
+  } else if(hold.kind==="var" && hold.ev && typeof mostrarVar==="function"){
+    mostrarVar(P, hold.ev);
+  } else if(hold.kind==="tanda" && typeof pasoTandaVivo==="function"){
+    pasoTandaVivo(P);
+  } else if(hold.kind==="ht" && typeof modalEntretiempo==="function"){
+    modalEntretiempo();
+  } else {
+    PAUSADO=false;
+    if(typeof correrEnVivo==="function") correrEnVivo();
+  }
 }
 /* 7.10 · MODO DEV: forzar un evento puntual en el partido en curso, para probarlo */
 function devForzarEvento(tipo){
@@ -874,6 +956,7 @@ function varDuracionMs(){
 }
 function mostrarVar(P, ev){
   if(!P||!ev) return;
+  P._holdKind="var"; P._holdEv=ev;
   P._varHold=true;
   if(typeof TIMER!=="undefined" && TIMER) clearInterval(TIMER);
   const viejo=document.querySelector(".var-lt");
@@ -1230,6 +1313,7 @@ function registrarTandaKick(P, aFavor, gol, pateador){
 }
 function pasoTandaVivo(P){
   P=P||P_ACTUAL;
+  if(P){ P._holdKind="tanda"; P._holdEv=null; }
   if(!P||!P.tanda){ if(P) cerrarPartido(); return; }
   if(P.tanda.done){ pintarPartido(); cerrarPartido(); return; }
   const t=P.tanda;
@@ -1313,6 +1397,7 @@ function modalPlanVivo(){
 /* 7.99952 · charla de entretiempo: pep talk + opción de cambiar el plan. */
 function modalEntretiempo(){
   const P=P_ACTUAL; if(!P) return;
+  P._holdKind="ht"; P._holdEv=null;
   PAUSADO=true; clearInterval(TIMER);
   const [yo,otro]=typeof miMarcador==="function"?miMarcador(P):[P.gl,P.gv];
   const diff=yo-otro;
@@ -1419,6 +1504,7 @@ function avanzarMomento(P){
 }
 function mostrarMomento(){
   const P=P_ACTUAL;
+  if(P){ P._holdKind="momento"; P._holdEv=null; }
   const m=momentoActual(P);
   const esTrivia=m.tipo==="trivia";
   const p=panel(m.t,esTrivia?"🧮":"🧠","alerta");
@@ -2016,6 +2102,7 @@ function centroTiroLibre(P){
 }
 function mostrarAccion(ev){
   const P=P_ACTUAL;
+  if(P){ P._holdKind="accion"; P._holdEv=ev; }
   let titulo="", opciones=[];
   if(ev.tipo==="penal"){
     titulo="¡Penal a favor! ¿Quién patea?";
@@ -2074,6 +2161,8 @@ function hitosPartido(res){
 function cerrarPartido(){
   const P=P_ACTUAL; if(!P||P.cerrado) return;
   P.cerrado=true; clearInterval(TIMER); MOMENTO_OPS=[];
+  P._holdUI=null; P._holdKind=null; P._holdEv=null;
+  if(typeof quitarHoldBar==="function") quitarHoldBar();
   document.body.classList.remove("hay-momento");
   if(typeof detenerCancha==="function") detenerCancha();
   const res=terminarPartido(P);

@@ -1620,7 +1620,8 @@ function terminarPartido(P){
     golesDetalle:(P.golesDetalle||[]),tarjetas:(P.tarjetas||[]),lesionados:(P.lesionados||[]),
     esLiga:part.tipo==="liga", penales:part.penales||null};
 }
-/* los otros 7 partidos de la fecha (se guardan para mostrarlos en el resumen) */
+/* los otros 7 partidos de la fecha (se guardan para mostrarlos en el resumen)
+   7.9007 · stub si falta el club + completa la jornada si alguien quedó afuera (0 PJ). */
 function simularResto(part){
   E.ultimaFecha=[];
   if(!part.jornada||!part.jornada.length){
@@ -1631,11 +1632,16 @@ function simularResto(part){
     }
   }
   if(!part.jornada) return;
-  part.jornada.forEach(par=>{
-    if(!par||par[0]==="__BYE__"||par[1]==="__BYE__") return;
-    if(par[0]===E.club||par[1]===E.club) return;
-    const a=(typeof CLUB_POR_ID!=="undefined"&&CLUB_POR_ID[par[0]])||(typeof clubLookup==="function"&&clubLookup(par[0]));
-    const b=(typeof CLUB_POR_ID!=="undefined"&&CLUB_POR_ID[par[1]])||(typeof clubLookup==="function"&&clubLookup(par[1]));
+  const stub=function(id){
+    if(!id||id==="__BYE__") return null;
+    const c=(typeof CLUB_POR_ID!=="undefined"&&CLUB_POR_ID[id])||(typeof clubLookup==="function"&&clubLookup(id));
+    if(c&&c.id) return c;
+    return {id:id,n:id,c:id,fuerza:60};
+  };
+  const aplicar=function(idA,idB){
+    if(!idA||!idB||idA==="__BYE__"||idB==="__BYE__"||idA===idB) return;
+    if(idA===E.club||idB===E.club) return;
+    const a=stub(idA), b=stub(idB);
     if(!a||!b||!a.id||!b.id) return;
     const clave=(part.torneo||"liga")+"|"+(part.fecha||part.fxRonda||0)+"|"+a.id+"|"+b.id;
     const [ga,gb]=_golesSimulados(a,b,clave);
@@ -1647,7 +1653,22 @@ function simularResto(part){
     if(ga>gb){ta.pg++;ta.pts+=pv;tb.pp++;} else if(ga<gb){tb.pg++;tb.pts+=pv;ta.pp++;}
     else {ta.pe++;tb.pe++;ta.pts++;tb.pts++;}
     E.ultimaFecha.push({a:a.c||a.n, b:b.c||b.n, ga:ga, gb:gb});
+  };
+  const played={};
+  if(E.club) played[E.club]=1;
+  part.jornada.forEach(par=>{
+    if(!par) return;
+    played[par[0]]=1; played[par[1]]=1;
+    aplicar(par[0], par[1]);
   });
+  if(part.tipo==="liga"){
+    const pool=(typeof clubesLigaActual==="function"?clubesLigaActual():(typeof LIGA_ACT!=="undefined"?LIGA_ACT:[]));
+    const miss=pool.map(c=>c.id).filter(id=>id&&!played[id]);
+    for(let i=0;i+1<miss.length;i+=2){
+      aplicar(miss[i], miss[i+1]);
+      if(part.jornada) part.jornada.push([miss[i], miss[i+1]]);
+    }
+  }
 }
 /* 7.72 · FORMA del club a partir de su tabla: en racha suma, en mala racha resta.
    Dampeado al inicio (con pocos partidos la forma pesa menos). Rango ~[-7,+7]. */

@@ -88,6 +88,11 @@ function _fxLiga(clubs){
 
 function mundoInit(){
   if(!E) return;
+  if(E._bulkSim){
+    if(!E.mundo) E.mundo={anio:E.anio||2026,ligas:{},copas:{chile:{},copaLiga:{},lib:{},sud:{},arg:{}},noticias:[],pais:[],tick:-1};
+    else E.mundo.anio=E.anio||E.mundo.anio;
+    return;
+  }
   const anio=E.anio||2026;
   const M={ anio:anio, ligas:{}, copas:{chile:{}, copaLiga:{}, lib:{}, sud:{}, arg:{}}, noticias:[], pais:[], tick:-1 };
   ["2026","2026b","2026cN","2026cS","arg2026A","arg2026B"].forEach(k=>{
@@ -162,6 +167,7 @@ function _nomLiga(k){
 
 function mundoTick(part){
   if(!E) return;
+  if(E._bulkSim) return;
   if(!E.mundo||E.mundo.anio!==E.anio) mundoInit();
   const n=(part&&part.fecha)?part.fecha:((E.idx||0)+1);
   const target=(part&&part.fxRonda!=null)?(part.fxRonda+1):n;
@@ -181,6 +187,7 @@ function mundoTick(part){
   }
   mundoSimCopas(part&&part.f, n);
   mundoArmarNoticias(part);
+  if(E.mundo.pais && E.mundo.pais.length>80) E.mundo.pais=E.mundo.pais.slice(-40);
 }
 function mundoAlcanzarRonda(target){
   if(!E||!E.mundo) return;
@@ -626,7 +633,7 @@ function panelMundoCalendario(v){
     }
     if(t==="conmebol"){
       const p=panel("CONMEBOL 2026 · Libertadores y Sudamericana","🌎","agua");
-      p.cuerpo.appendChild(el("p","mini","Grupos documentados (CONMEBOL / TyC 2026). Chile: Coquimbo B, Católica D; Sudamericana PAL F, AUD G, OHI C (tras Fase 3). Argentina: Estudiantes A, Independiente Rivadavia C, Boca D, Platense E. Se simulan; tus partidos valen."));
+      p.cuerpo.appendChild(el("p","mini","Grupos documentados (sorteo CONMEBOL 19 mar 2026). Libertadores A–E + Sudamericana A–H. Chile: Coquimbo B y Católica D (Lib); Sudamericana PAL F, AUD G, OHI C. Argentina: Tigre A, San Lorenzo D, Racing E, Riestra F, Barracas G, River H; Lib: Estudiantes A, Independiente Rivadavia C, Boca D, Platense E. Se simulan; tus partidos valen."));
       [["lib","Copa Libertadores"],["sud","Copa Sudamericana"]].forEach(([k,nom])=>{
         const pack=E.mundo.copas[k];
         if(!pack||!pack.grupos||!Object.keys(pack.grupos).length){

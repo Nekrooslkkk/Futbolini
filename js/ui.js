@@ -10,7 +10,12 @@ const SECCIONES=[
  ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["estadio","🏟️","Estadio"],["redes","📱","Redes"],["calendario","📅","Calendario"],["historia","📚","Historia"],
  ["carrera","🎖️","Carrera"],["vida","🪪","Vida"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
 ];
-function irA(s){ SEC=s; render(); const v=$("#vista"); if(v){ v.classList.remove("fx-in"); void v.offsetWidth; v.classList.add("fx-in"); } window.scrollTo(0,0); }
+function irA(s){
+  if(typeof partidoEnCurso==="function" && partidoEnCurso() && typeof pausarPartidoHold==="function"){
+    pausarPartidoHold();
+  }
+  SEC=s; render(); const v=$("#vista"); if(v){ v.classList.remove("fx-in"); void v.offsetWidth; v.classList.add("fx-in"); } window.scrollTo(0,0);
+}
 function esMovil(){ return !!(window.matchMedia&&window.matchMedia("(max-width:720px)").matches); }
 const DOCK_IDS=["escritorio","plantel","calendario","mercado"];
 function pintarDock(){
@@ -156,9 +161,14 @@ function pintarMenu(){
 /* ---------------- render ---------------- */
 function render(){
   if(typeof detenerPlopBots==="function") detenerPlopBots();
+  /* 7.9007 · cualquier render a mitad del partido lo pausa: las decisiones no desaparecen. */
+  if(typeof partidoEnCurso==="function" && partidoEnCurso() && P_ACTUAL && !P_ACTUAL._holdUI && typeof pausarPartidoHold==="function"){
+    pausarPartidoHold();
+  }
   document.body.classList.remove("en-partido","hay-momento");
   document.body.classList.toggle("con-juego", !!E);   /* 7.68 · lateral sólo corre el contenido si hay partida */
   pintarBarra(); pintarMenu();
+  if(typeof pintarHoldBar==="function") pintarHoldBar();
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="full";
   $("#btnAvanzar").classList.toggle("oculto",!E);
   { const br=document.getElementById("btnRapido"); if(br) br.classList.toggle("oculto",!E); }
@@ -177,6 +187,7 @@ function render(){
     mercado:vistaMercado,estadio:vistaEstadio,redes:vistaRedes,calendario:vistaCalendario,historia:vistaHistoria,carrera:vistaCarrera,
     vida:vistaVida,avisos:vistaAvisos,ajustes:vistaAjustes}[SEC]||vistaEscritorio)();
   if(typeof pintarDock==="function") pintarDock();
+  if(typeof pintarHoldBar==="function") pintarHoldBar();
 }
 /* ---------------- inicio ---------------- */
 /* 7.68 · picker de clubes: filtros por división + buscador + cards animadas.
@@ -3474,8 +3485,10 @@ function avanzarRapido(hastaFin){
     fechas++;
     if(!hastaFin) break;
   }
-  if(typeof render==="function"){ SEC="escritorio"; render(); }
-  if(typeof guardar==="function") guardar();
+  if(!E._bulkSim){
+    if(typeof render==="function"){ SEC="escritorio"; render(); }
+    if(typeof guardar==="function") guardar();
+  }
   return {fechas:fechas,partidos:partidos,ganados:ganados,freno:freno};
 }
 /* 7.67 · SIMULAR VARIAS TEMPORADAS (testeo hasta el final). Juega lo que queda de
@@ -3483,31 +3496,120 @@ function avanzarRapido(hastaFin){
    equilibrada), y si te echan toma un club de rescate para seguir. Deja el historial
    lleno "como si hubieras jugado" — el resultado lo decide el juego, no un truco. */
 function simularTemporadas(nTemps){
+  return simularTemporadasSync(nTemps);
+}
+function simularTemporadasSync(nTemps){
   if(!E||E.carrera.fin){ return {temps:0,freno:"sin partida activa",anio:E&&E.anio}; }
   let temps=0, freno=null;
   const tope=Math.max(1,Math.min(nTemps||1,60));
-  for(let s=0;s<tope;s++){
-    if(E.carrera.fin){ freno="fin de la carrera"; break; }
-    avanzarRapido(true);                    /* juega lo que quede de la temporada */
-    if(typeof proximoPartido==="function" && proximoPartido()){
-      freno="se frenó antes del cierre (crisis/sucesión: resolvela y seguí)"; break;
+  const prevBulk=!!E._bulkSim;
+  E._bulkSim=true;
+  try{
+    for(let s=0;s<tope;s++){
+      if(E.carrera.fin){ freno="fin de la carrera"; break; }
+      avanzarRapido(true);
+      if(typeof proximoPartido==="function" && proximoPartido()){
+        freno="se frenó antes del cierre (crisis/sucesión: resolvela y seguí)"; break;
+      }
+      if(typeof finDeTemporada==="function") finDeTemporada();
+      if(E.liguillaPend){
+        const sim=(typeof simularLiguilla==="function")?simularLiguilla(E.liguillaPend.rival,0):{gano:Math.random()<0.5};
+        if(typeof liguillaResolverAscenso==="function") liguillaResolverAscenso(sim.gano);
+      }
+      if(typeof riesgoDestitucion==="function" && riesgoDestitucion()){
+        if(typeof destituir==="function") destituir("Simulación: el directorio cerró el ciclo tras "+E.anio+".");
+        const of=(typeof ofertaDeRescate==="function")?ofertaDeRescate():[];
+        if(of.length && typeof aceptarClub==="function"){ aceptarClub(of[0].id, E.anio+1); }
+        else { if(typeof finDeCarrera==="function") finDeCarrera("Sin club para seguir dirigiendo."); else E.carrera.fin=true; freno="sin club para seguir"; break; }
+      } else if(typeof nuevoAnio==="function"){ nuevoAnio(); }
+      temps++;
     }
-    if(typeof finDeTemporada==="function") finDeTemporada();
-    if(E.liguillaPend){                     /* la liguilla se juega sola, equilibrada */
-      const sim=(typeof simularLiguilla==="function")?simularLiguilla(E.liguillaPend.rival,0):{gano:Math.random()<0.5};
-      if(typeof liguillaResolverAscenso==="function") liguillaResolverAscenso(sim.gano);
-    }
-    if(typeof riesgoDestitucion==="function" && riesgoDestitucion()){
-      if(typeof destituir==="function") destituir("Simulación: el directorio cerró el ciclo tras "+E.anio+".");
-      const of=(typeof ofertaDeRescate==="function")?ofertaDeRescate():[];
-      if(of.length && typeof aceptarClub==="function"){ aceptarClub(of[0].id, E.anio+1); }
-      else { if(typeof finDeCarrera==="function") finDeCarrera("Sin club para seguir dirigiendo."); else E.carrera.fin=true; freno="sin club para seguir"; break; }
-    } else if(typeof nuevoAnio==="function"){ nuevoAnio(); }
-    temps++;
+  } finally {
+    E._bulkSim=prevBulk;
   }
-  if(typeof render==="function"){ SEC="escritorio"; render(); }
-  if(typeof guardar==="function") guardar();
+  if(!E._bulkSim){
+    if(typeof mundoInit==="function"){ try{ mundoInit(); }catch(e){} }
+    if(typeof render==="function"){ SEC="escritorio"; render(); }
+    if(typeof guardar==="function") guardar();
+  }
   return {temps:temps, freno:freno, anio:E&&E.anio};
+}
+function pintarSimOverlay(tit, sub, cancelable){
+  let o=document.getElementById("simOverlay");
+  if(!o){
+    o=document.createElement("div"); o.id="simOverlay";
+    document.body.appendChild(o);
+  }
+  o.classList.remove("oculto"); o.removeAttribute("hidden");
+  const esc=(typeof escHtml==="function")?escHtml:function(s){ return String(s==null?"":s); };
+  o.innerHTML='<div class="sim-box"><div class="sim-t">'+esc(tit)+'</div><div class="sim-d">'+esc(sub)+'</div>'
+    +(cancelable?'<button type="button" class="btn-aqua" id="simCancel">'+(typeof T==="function"?T("sim_cancel","Cancelar y dejar este año"):"Cancelar y dejar este año")+'</button>':'')
+    +'</div>';
+  const b=document.getElementById("simCancel");
+  if(b) b.onclick=function(){ if(E) E._bulkCancel=true; };
+}
+function cerrarSimOverlay(){
+  const o=document.getElementById("simOverlay");
+  if(o){ o.classList.add("oculto"); o.setAttribute("hidden",""); o.innerHTML=""; }
+}
+function simularTemporadasAsync(nTemps){
+  if(!E||E.carrera.fin){ if(typeof aviso==="function") aviso("No hay una partida activa"); return; }
+  if(E._bulkSim){ if(typeof aviso==="function") aviso("Ya hay una simulación en curso"); return; }
+  const tope=Math.max(1,Math.min(nTemps||1,60));
+  E._bulkSim=true; E._bulkCancel=false;
+  let temps=0, freno=null;
+  const anio0=E.anio;
+  const Tfn=typeof T==="function"?T:function(k,d){ return d; };
+  pintarSimOverlay(
+    Tfn("sim_tit","Simulando temporadas"),
+    Tfn("sim_txt","El club sigue, no se trabó.")+" "+anio0+".",
+    true
+  );
+  function paso(){
+    if(!E||E._bulkCancel){
+      freno="cancelaste: quedaste en "+(E&&E.anio);
+      return fin();
+    }
+    if(E.carrera.fin){ freno="fin de la carrera"; return fin(); }
+    if(temps>=tope) return fin();
+    try{
+      avanzarRapido(true);
+      if(typeof proximoPartido==="function" && proximoPartido()){
+        freno="se frenó antes del cierre (crisis/sucesión: resolvela y seguí)";
+        return fin();
+      }
+      if(typeof finDeTemporada==="function") finDeTemporada();
+      if(E.liguillaPend){
+        const sim=(typeof simularLiguilla==="function")?simularLiguilla(E.liguillaPend.rival,0):{gano:Math.random()<0.5};
+        if(typeof liguillaResolverAscenso==="function") liguillaResolverAscenso(sim.gano);
+      }
+      if(typeof riesgoDestitucion==="function" && riesgoDestitucion()){
+        if(typeof destituir==="function") destituir("Simulación: el directorio cerró el ciclo tras "+E.anio+".");
+        const of=(typeof ofertaDeRescate==="function")?ofertaDeRescate():[];
+        if(of.length && typeof aceptarClub==="function"){ aceptarClub(of[0].id, E.anio+1); }
+        else { if(typeof finDeCarrera==="function") finDeCarrera("Sin club para seguir dirigiendo."); else E.carrera.fin=true; freno="sin club para seguir"; return fin(); }
+      } else if(typeof nuevoAnio==="function"){ nuevoAnio(); }
+      temps++;
+      pintarSimOverlay(
+        Tfn("sim_tit","Simulando temporadas"),
+        Tfn("sim_prog","Temporada ")+temps+Tfn("sim_de"," de ")+tope+" · "+E.anio+" · "+(E.clubNombre||E.club)+". "+Tfn("sim_ok","No se trabó; el juego sigue."),
+        true
+      );
+      setTimeout(paso, 0);
+    }catch(err){
+      freno="se cortó: "+(err&&err.message?err.message:"error");
+      return fin();
+    }
+  }
+  function fin(){
+    if(E){ E._bulkSim=false; E._bulkCancel=false; }
+    cerrarSimOverlay();
+    if(typeof mundoInit==="function"){ try{ mundoInit(); }catch(e){} }
+    if(typeof render==="function"){ SEC="escritorio"; render(); }
+    if(typeof guardar==="function") guardar();
+    if(typeof aviso==="function") aviso("⏭️ "+temps+" temporada"+(temps!==1?"s":"")+" · ahora "+(E&&E.anio)+(freno?" · "+freno:""), 6500);
+  }
+  setTimeout(paso, 30);
 }
 function modalAvanceRapido(){
   if(!E||E.carrera.fin||E.carrera.enParo){ aviso("No hay una partida activa"); return; }
@@ -3520,20 +3622,24 @@ function modalAvanceRapido(){
     const b1=el("button","btn-aqua ancho verde","⏩ Simular la próxima fecha"); b1.onclick=()=>correr(false);
     const b2=el("button","btn-aqua ancho","⏭️ Simular hasta fin de temporada"); b2.style.marginTop="6px";
     b2.onclick=()=>{ if(confirm("Voy a simular todos los partidos que quedan de la temporada, delegando las decisiones. ¿Seguir?")) correr(true); };
-    /* 7.67 · testeo: correr varias temporadas seguidas dejando el historial lleno */
-    cc.appendChild(el("p","mini","Para probar el juego a fondo: simulo temporadas enteras seguidas (cierre, ascensos/descensos, liguilla y hasta un club de rescate si te echan). El historial queda como si las hubieras jugado — el resultado lo decide el juego."));
-    const correrN=(n,txt)=>{ if(!confirm(txt)) return; cerrarModal(); const r=simularTemporadas(n);
-      aviso("⏭️ "+r.temps+" temporada"+(r.temps!==1?"s":"")+" simulada"+(r.temps!==1?"s":"")+" · ahora "+r.anio+(r.freno?" · "+r.freno:""),5000); };
+    /* 7.9007 · 40 temporadas ya no traban: overlay + cancelar. */
+    cc.appendChild(el("p","mini",(typeof T==="function"?T("sim_ayuda","Para probar el juego a fondo: simulo temporadas enteras (cierre, ascensos, liguilla). Ves el año en pantalla; no se traba. Puedes cancelar y quedas en el año actual."):"Para probar el juego a fondo: simulo temporadas enteras (cierre, ascensos, liguilla). Ves el año en pantalla; no se traba. Puedes cancelar y quedas en el año actual.")));
+    const correrN=(n,txt)=>{ if(!confirm(txt)) return; cerrarModal(); if(typeof simularTemporadasAsync==="function") simularTemporadasAsync(n); else simularTemporadas(n); };
     const b3=el("button","btn-aqua ancho","⏭️⏭️ Simular 5 temporadas"); b3.style.marginTop="6px";
-    b3.onclick=()=>correrN(5,"Voy a simular 5 temporadas completas seguidas (con cierres, ascensos y liguillas automáticas). ¿Seguir?");
+    b3.onclick=()=>correrN(5,(typeof T==="function"?T("sim_conf5","Voy a simular 5 temporadas. Vas a ver el progreso en pantalla; puedes cancelar. ¿Seguir?"):"Voy a simular 5 temporadas. Vas a ver el progreso en pantalla; puedes cancelar. ¿Seguir?"));
     const b4=el("button","btn-aqua ancho","🏁 Simular hasta el final (máx 40)"); b4.style.marginTop="6px";
-    b4.onclick=()=>correrN(40,"Voy a simular la carrera hasta el final (o 40 temporadas). Ideal para testear el juego completo. ¿Seguir?");
+    b4.onclick=()=>correrN(40,(typeof T==="function"?T("sim_conf40","Voy a simular hasta 40 temporadas. No se traba: ves cada año. Cancelar deja el año actual. ¿Seguir?"):"Voy a simular hasta 40 temporadas. No se traba: ves cada año. Cancelar deja el año actual. ¿Seguir?"));
     const b5=el("button","btn-aqua ancho gris","Cancelar"); b5.style.marginTop="6px"; b5.onclick=cerrarModal;
     cc.appendChild(b1); cc.appendChild(b2); cc.appendChild(b3); cc.appendChild(b4); cc.appendChild(b5);
   });
 }
 function avanzar(){
   if(!E||E.carrera.fin||E.carrera.enParo) return;
+  if(typeof partidoEnCurso==="function" && partidoEnCurso()){
+    if(typeof volverAlPartido==="function") volverAlPartido();
+    if(typeof aviso==="function") aviso(typeof T==="function"?T("hold_avanza","Hay un partido en curso. Vuelve a terminarlo."):"Hay un partido en curso. Vuelve a terminarlo.");
+    return;
+  }
   const cr=crisisActiva();
   if(cr){ abrirCrisis(cr); return; }
   if(bloqueoDecisiones()) return;

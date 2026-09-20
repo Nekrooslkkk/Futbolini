@@ -187,6 +187,51 @@ body[data-tema="claro"] .tanda-bar{ background:#f2f6fa; color:#12222f; border-co
 body[data-tema="claro"] .tanda-bar .tanda-row{ color:#12222f; }
 body.perf .tanda-bar{ backdrop-filter:none; }
 
+/* 7.9007 · partido en pausa (no se borra al tocar otra sección) + overlay de 40 temporadas */
+#partidoHold{
+  position:sticky; top:0; z-index:80;
+  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  margin:0 auto; max-width:1240px;
+  padding:8px 14px;
+  background:linear-gradient(180deg, rgba(180,230,255,.5), rgba(140,200,240,.32));
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.45);
+  border-radius:0 0 12px 12px;
+  color:#07324a;
+  font-family:var(--f-ui,system-ui);
+}
+#partidoHold.oculto, #partidoHold[hidden]{ display:none !important; }
+#partidoHold .hold-t{ font-weight:800; font-size:14px; }
+#partidoHold .hold-d{ font-size:12px; opacity:.9; margin-top:2px; }
+#partidoHold .hold-btn{ margin:0; white-space:nowrap; }
+body[data-tema="negro"] #partidoHold{ background:linear-gradient(180deg,#22354b,#162536); color:#eaf6ff; border-color:rgba(255,255,255,.12); }
+body[data-tema="claro"] #partidoHold{ background:#eef4fa; color:#12222f; border-color:rgba(20,50,80,.16); }
+body[data-tema="insano"] #partidoHold{ background:linear-gradient(90deg,#2a0a3a,#0a2a3a); color:#f4fbff; }
+#simOverlay{
+  position:fixed; inset:0; z-index:240;
+  display:grid; place-items:center;
+  background:rgba(6,24,40,.55);
+  backdrop-filter:blur(8px);
+}
+#simOverlay.oculto, #simOverlay[hidden]{ display:none !important; }
+#simOverlay .sim-box{
+  width:min(440px,92vw);
+  padding:22px 20px 18px;
+  border-radius:16px;
+  background:linear-gradient(180deg, rgba(220,245,255,.94), rgba(180,220,245,.9));
+  border:1px solid rgba(255,255,255,.6);
+  text-align:center;
+  color:#07324a;
+  font-family:var(--f-ui,system-ui);
+  box-shadow:0 18px 40px rgba(8,30,50,.28);
+}
+#simOverlay .sim-t{ font-weight:800; font-size:18px; margin-bottom:8px; }
+#simOverlay .sim-d{ font-size:14px; line-height:1.4; opacity:.92; margin-bottom:14px; }
+#simOverlay #simCancel{ min-height:40px; }
+body[data-tema="negro"] #simOverlay .sim-box{ background:#1a2a38; color:#eaf6ff; border-color:rgba(255,255,255,.12); }
+body[data-tema="claro"] #simOverlay .sim-box{ background:#fff; color:#12222f; }
+body.perf #partidoHold, body.perf #simOverlay{ backdrop-filter:none; }
+
 .arco-svg.arco-golazo{ animation:arcoFlash .7s ease-out; }
 @keyframes arcoFlash{
   0%{ filter:brightness(1.8) saturate(1.3); }

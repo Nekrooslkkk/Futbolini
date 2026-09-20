@@ -412,6 +412,10 @@ function guardarHistorial(pos,campeon,copaGanada){
    ============================================================ */
 function notificar(n){
   if(!E) return null;
+  if(E._bulkSim){
+    const t=(n&&n.t)||"";
+    if(!/CAMPEÓN|Destitu|sin club|descens|ascens|Balance /i.test(t)) return null;
+  }
   if(!E.notifs) E.notifs=[];
   const part=proximoPartido();
   const item={
@@ -1526,6 +1530,7 @@ function capitalAnual(){
 /* ---------------- guardado ---------------- */
 async function guardar(){
   if(!E) return;
+  if(E._bulkSim) return;
   E.saveVer=SAVE_VER;
   if(!E._slot) E._slot=nuevoSlotId();
   if(typeof saneaEstado==="function") saneaEstado(E);

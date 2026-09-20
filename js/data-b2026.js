@@ -542,7 +542,7 @@ const FORMAT_COPAS={
   copaChile2026:"32 clubes (16 Liga de Primera + 16 Liga de Ascenso). 8 grupos de 4, sembrados por zona (Norte/Sur), 2 de cada división por grupo. Ida y vuelta (6 fechas). Clasifican 1° y 2°. Octavos a semifinales ida/vuelta; final a partido único. El campeón (si está en Primera 2027) juega un repechaje con el 3° de liga por un cupo a Libertadores fase 2; el perdedor va a Sudamericana.",
   copaChile1991:"La Copa Chile 1991 (Digeder) se jugó en el primer semestre, con clubes de Primera y del ascenso en fases regionales y eliminación directa. Formato distinto al actual: no se copia 1:1 al 2026.",
   libertadores2026:"8 grupos de 4. Ida y vuelta. 1° y 2° a octavos. Chile 2026 entra por 2025: CH1 Coquimbo, CH2 Católica, CH3 O'Higgins, CH4 Huachipato. A grupos SOLO Coquimbo y Católica (fechas reales en data-copas2026.js). El resto no clasificó. 2027+ el grupo lo sortea el juego.",
-  sudamericana2026:"Primera fase 2026 (partido único): UCH 1-2 PAL (5 mar); COB 1-1 AUD (3 mar, Calama, Audax 3-2 penales). Grupos reales: PAL F, AUD G, OHI C (tras caer en Lib). Knockout ida/vuelta, final única.",
+  sudamericana2026:"Primera fase 2026 (partido único): UCH 1-2 PAL (5 mar); COB 1-1 AUD (3 mar, Calama, Audax 3-2 penales). Grupos reales (sorteo CONMEBOL 19 mar 2026, 8 zonas A–H): PAL F, AUD G, OHI C; Tigre A, San Lorenzo D, Racing E, Riestra F, Barracas G, River H. Knockout ida/vuelta, final única.",
   libertadores1991:"Formato 1991 (el que ganó Colo-Colo): grupos de 4 con ida/vuelta, octavos a final también ida/vuelta (sin final única). El camino real de Colo-Colo ya está en COPA91."
 };
 

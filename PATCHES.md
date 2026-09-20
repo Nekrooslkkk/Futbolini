@@ -1,5 +1,14 @@
 # FUTBOLINI 3.0 — Bitácora de parches
 
+## 7.9007 · Cuatro bugs del autor (jornada, sud, hold, 40 temps)
+**Archivos:** `partido.js`, `ui-partido.js`, `ui.js`, `data-liga.js`, `data-copas2026.js`, `mundo.js`, `motor.js`, `idiomas.js`, `gol.css`, `index.html`, `util.js`, `test/pruebas_core.js`
+- **0 PJ:** `emparejarFecha` con `seen` por club. `simularResto` stub + completa la jornada.
+- **Sudamericana:** 8 grupos A–H (CONMEBOL 19 mar 2026). Ya no 3.
+- **Partido:** `P._holdUI` + barra «Vuelve al partido». Tocar otra sección pausa, no borra las decisiones.
+- **40 temporadas:** overlay con año + cancelar. `E._bulkSim` salta mundo/guardar/notifs. No se pega.
+- Gancho Claude: `E.flags.fixtureHostil` voltea locales impares 1–10.
+- Tests T58. **No 8.00.**
+
 ## 7.99956 · En línea + login + voseo de datos
 **Archivos:** `nube.js`, `ui.js`, `css/base.css`, `servidor.js`, `ui-partido.js`, `data-formato2026.js`, `data-decisiones-plus.js`, `data-superprompt-83.js`, `pulido.js`
 - **Ajustes:** «Hay x personas jugando ahora» con botón verde que parpadea. Latido `/api/presencia`.

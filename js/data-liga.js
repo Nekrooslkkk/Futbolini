@@ -417,14 +417,30 @@ function shuffleSeed(arr,seed){
   }
   return a;
 }
-/* Arma los 8 partidos de una fecha: usa fixtures oficiales si hay, el resto se empareja con semilla fija. */
+/* Arma los 8 partidos de una fecha: usa fixtures oficiales si hay, el resto se empareja con semilla fija.
+   7.9007 · un club NO puede aparecer en dos pares (antes algunos quedaban con 0 PJ). */
+function aplicarFixtureHostil(cal){
+  if(!cal||!cal.length) return cal;
+  if(!(typeof E!=="undefined" && E && E.flags && E.flags.fixtureHostil)) return cal;
+  cal.forEach(p=>{
+    if(p.tipo!=="liga"||!p.local) return;
+    const n=p.fecha||0;
+    if(n && n<=10 && n%2===1){
+      p.local=false;
+      const riv=(typeof CLUB_POR_ID!=="undefined")?CLUB_POR_ID[p.rivalId]:null;
+      if(riv) p.sede=riv.est||p.sede;
+    }
+  });
+  return cal;
+}
 function emparejarFecha(anio,nFecha,clubId,rivalId){
-  const pares=[]; const used={};
+  const pares=[]; const used={}; const seen={};
   const add=(a,b)=>{
     if(!a||!b||a===b) return;
+    if(seen[a]||seen[b]) return;
     const k=a<b?a+"-"+b:b+"-"+a;
     if(used[k]) return;
-    used[k]=1; pares.push([a,b]);
+    used[k]=1; seen[a]=1; seen[b]=1; pares.push([a,b]);
   };
   if(clubId&&rivalId) add(clubId,rivalId);
   if(typeof FIXTURES_OFICIALES==="object"){
@@ -436,8 +452,11 @@ function emparejarFecha(anio,nFecha,clubId,rivalId){
       add(m.local?cid:m.rival, m.local?m.rival:cid);
     });
   }
-  const ids=(typeof LIGA_ACT!=="undefined"?LIGA_ACT:[]).map(c=>c.id).filter(id=>!pares.some(p=>p[0]===id||p[1]===id));
-  const rest=shuffleSeed(ids,(anio||0)*100+(nFecha||1)*17+3);
+  const pool=(typeof clubesLigaActual==="function"?clubesLigaActual()
+    :(typeof LIGA_ACT!=="undefined"?LIGA_ACT:[])).map(c=>c.id);
+  const ids=pool.filter(id=>!seen[id]);
+  const hostil=(typeof E!=="undefined"&&E&&E.flags&&E.flags.fixtureHostil)?7919:0;
+  const rest=shuffleSeed(ids,(anio||0)*100+(nFecha||1)*17+3+hostil);
   for(let i=0;i+1<rest.length;i+=2) add(rest[i],rest[i+1]);
   return pares;
 }
@@ -466,7 +485,7 @@ function construirCalendario(clubId, anio, conCopa){
         jornada:emparejarFecha(anio,p.fecha,clubId,p.rival)});
     });
     cal.sort((a,b)=>ordenFecha(a.f)-ordenFecha(b.f));
-    return cal;
+    return aplicarFixtureHostil(cal);
   }
   if(anio===2026 && typeof LIGA_CC_2026!=="undefined" && esEraPrimeraChile() && !((typeof eraCustomDeClub==="function")&&eraCustomDeClub(clubId))){
     LIGA_CC_2026.forEach(p=>{
@@ -482,7 +501,7 @@ function construirCalendario(clubId, anio, conCopa){
         jornada:pares});
     });
     cal.sort((a,b)=>ordenFecha(a.f)-ordenFecha(b.f));
-    return cal;
+    return aplicarFixtureHostil(cal);
   }
   /* 7.65 · Segunda División: se juega SOLO contra la propia zona (Norte/Sur, 7 clubes → 12 fechas
      ida y vuelta). El resto de la fecha que se simula (part.jornada) queda acotado a la zona. */
@@ -505,7 +524,7 @@ function construirCalendario(clubId, anio, conCopa){
           f:fechasZ[i], jugado:false, clima:climaDeFecha(fechasZ[i].m,"liga"+clubId+anio+i), jornada:limpia});
       });
       cal.sort((a,b)=>(a.f.m*100+(a.f.d||15))-(b.f.m*100+(b.f.d||15)));
-      return cal;
+      return aplicarFixtureHostil(cal);
     }
   }
   /* liga registrada / clonada: no es Primera Chile ni B/C/AFA/2006/1925 */
@@ -518,7 +537,7 @@ function construirCalendario(clubId, anio, conCopa){
     const fechasZ=(typeof fechasSemanales==="function")?fechasSemanales(2,1,nFechas,12):fechasTemporada();
     if(typeof calendarioZonal==="function"){
       const zonal=calendarioZonal(clubId, clubs, {torneo:nom, fechas:fechasZ, fase:"liga"});
-      if(zonal&&zonal.length) return zonal;
+      if(zonal&&zonal.length) return aplicarFixtureHostil(zonal);
     }
   }
   const fx=fixturesLiga(LIGA_ACT), fechas=fechasTemporada();
@@ -532,5 +551,5 @@ function construirCalendario(clubId, anio, conCopa){
       f:fechas[i], jugado:false, clima:climaDeFecha(fechas[i].m,"liga"+clubId+anio+i), jornada:jornada});
   });
   cal.sort((a,b)=>(a.f.m*100+(a.f.d||15))-(b.f.m*100+(b.f.d||15)));
-  return cal;
+  return aplicarFixtureHostil(cal);
 }

@@ -14,9 +14,9 @@ var LIB_GRUPOS_2026_CHILE={COQ:"B",UC:"D"};
 var LIB_FASE2_2026={HUA:1,OHI:1};
 var SUD_FASE1_2026={UCH:1,PAL:1,COB:1,AUD:1};
 
-/* Grupos CONMEBOL 2026 documentados (CONMEBOL / TyC / Sporting News, sep 2026).
-   Solo grupos con fuente. El juego simula los marcadores; no copia el fixture ajeno
-   como si fuera el resultado oficial, salvo el partido del jugador. */
+/* Grupos CONMEBOL 2026 documentados (sorteo 19 mar 2026, CONMEBOL / TyC / LA NACION).
+   Sudamericana: 8 grupos A–H. Libertadores: A–E con fuente; F–H se suman cuando hay lista cerrada.
+   El juego simula los marcadores; no copia el fixture ajeno como resultado, salvo el partido del jugador. */
 var CONMEBOL_GRUPOS_2026={
   lib:[
     {letra:"A", chile:[], arg:["ELP"],
@@ -41,10 +41,26 @@ var CONMEBOL_GRUPOS_2026={
       fue:{COR_BR:82,PLA:63,SFE_CO:74,PEN_UY:78}}
   ],
   sud:[
+    {letra:"A", chile:[], arg:["TIG"],
+      ids:["AME_CO","TIG","MAC_EC","ALI_PE"],
+      nom:{AME_CO:"América de Cali",TIG:"Tigre",MAC_EC:"Macará",ALI_PE:"Alianza Atlético"},
+      fue:{AME_CO:78,TIG:64,MAC_EC:62,ALI_PE:60}},
+    {letra:"B", chile:[], arg:[],
+      ids:["CAM_BR","CIE_PE","APC_VE","JUV_UY"],
+      nom:{CAM_BR:"Atlético Mineiro",CIE_PE:"Cienciano",APC_VE:"Academia Puerto Cabello",JUV_UY:"Juventud"},
+      fue:{CAM_BR:86,CIE_PE:70,APC_VE:64,JUV_UY:62}},
     {letra:"C", chile:["OHI"], arg:[],
       ids:["OHI","MIL_CO","SAO_BR","BOS_UY"],
       nom:{OHI:"O'Higgins",MIL_CO:"Millonarios",SAO_BR:"São Paulo",BOS_UY:"Boston River"},
       fue:{OHI:70,MIL_CO:76,SAO_BR:84,BOS_UY:68}},
+    {letra:"D", chile:[], arg:["SLO"],
+      ids:["SAN_BR","SLO","CUE_EC","REC_PY"],
+      nom:{SAN_BR:"Santos",SLO:"San Lorenzo",CUE_EC:"Deportivo Cuenca",REC_PY:"Recoleta"},
+      fue:{SAN_BR:80,SLO:76,CUE_EC:64,REC_PY:58}},
+    {letra:"E", chile:[], arg:["RAC"],
+      ids:["RAC","CAR_VE","IPE_BO","BOT_BR"],
+      nom:{RAC:"Racing Club",CAR_VE:"Caracas",IPE_BO:"Independiente Petrolero",BOT_BR:"Botafogo"},
+      fue:{RAC:80,CAR_VE:66,IPE_BO:62,BOT_BR:84}},
     {letra:"F", chile:["PAL"], arg:["RIE"],
       ids:["PAL","RIE","MCT_UY","GRE_BR"],
       nom:{PAL:"Palestino",RIE:"Deportivo Riestra",MCT_UY:"Montevideo City Torque",GRE_BR:"Grêmio"},
@@ -52,7 +68,11 @@ var CONMEBOL_GRUPOS_2026={
     {letra:"G", chile:["AUD"], arg:["BAR"],
       ids:["AUD","OLI_PY","VAS_BR","BAR"],
       nom:{AUD:"Audax Italiano",OLI_PY:"Olimpia",VAS_BR:"Vasco da Gama",BAR:"Barracas Central"},
-      fue:{AUD:68,OLI_PY:80,VAS_BR:82,BAR:57}}
+      fue:{AUD:68,OLI_PY:80,VAS_BR:82,BAR:57}},
+    {letra:"H", chile:[], arg:["RIV"],
+      ids:["RIV","RBB_BR","BLO_BO","CBO_VE"],
+      nom:{RIV:"River Plate",RBB_BR:"RB Bragantino",BLO_BO:"Blooming",CBO_VE:"Carabobo"},
+      fue:{RIV:86,RBB_BR:80,BLO_BO:66,CBO_VE:70}}
   ]
 };
 function conmebolGrupoDe(clubId, torneo){
@@ -693,7 +713,7 @@ function ajustarObjetivos33(objs){
 
 if(typeof FORMAT_COPAS==="object"){
   FORMAT_COPAS.libertadores2026="Chile 2026 entra por 2025: CH1 Coquimbo (campeón), CH2 Católica, CH3 O'Higgins, CH4 Huachipato. A grupos SOLO Coquimbo (B: Nacional, Universitario, Tolima) y Católica (D: Boca, Cruzeiro, Barcelona SC). Huachipato quedó en Fase 2 vs Carabobo; O'Higgins en Fase 3 vs Tolima y cayó a Sudamericana. Colo-Colo, la U y el resto NO clasificaron. 2027+ el grupo lo sortea el juego.";
-  FORMAT_COPAS.sudamericana2026="Primera fase 2026 (partido único): U. de Chile 1-2 Palestino (5 mar, Nacional); Cobresal 1-1 Audax (3 mar, Calama, Audax 3-2 penales). Grupos: PAL F (Gremio, Torque, Riestra), AUD G (Olimpia, Vasco, Barracas), OHI C (São Paulo, Millonarios, Boston River) tras caer en Libertadores.";
+  FORMAT_COPAS.sudamericana2026="Primera fase 2026 (partido único): U. de Chile 1-2 Palestino (5 mar, Nacional); Cobresal 1-1 Audax (3 mar, Calama, Audax 3-2 penales). Grupos (sorteo CONMEBOL 19 mar 2026, 8 zonas): A América Cali / Tigre / Macará / Alianza Atlético; B Mineiro / Cienciano / Puerto Cabello / Juventud; C São Paulo / Millonarios / Boston River / O'Higgins; D Santos / San Lorenzo / Cuenca / Recoleta; E Racing / Caracas / Independiente Petrolero / Botafogo; F Grêmio / Palestino / Torque / Riestra; G Olimpia / Vasco / Audax / Barracas; H River / Bragantino / Blooming / Carabobo.";
 }
 
 /* ---------- IA de pago, gratis: compositor local (tú chileno, 2–4 frases) ---------- */

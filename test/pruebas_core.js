@@ -2348,6 +2348,73 @@
       ok(ev.tipo==="fin" && !P.prorroga && !P.tanda, "un empate de liga se acaba al 90'+, no hay extra");
     }, "liga no tiene extra");
 
+    /* T58 · 7.9007 bugs: jornada 0 PJ, Sudamericana 8 grupos, partido hold, sim async */
+    grupo("Grok 7.9007 (jornada + sud 8 + hold + 40 temps)");
+    safe(function(){
+      ok(VERSION==="7.9007" || /^7\.9/.test(VERSION), "VERSION 7.9007");
+      ok(typeof partidoEnCurso==="function" && typeof pausarPartidoHold==="function" && typeof volverAlPartido==="function", "API hold del partido");
+      ok(typeof simularTemporadasAsync==="function" && typeof simularTemporadasSync==="function", "API simulación por temporadas");
+      ok(typeof aplicarFixtureHostil==="function", "gancho fixtureHostil");
+    }, "API 7.9007");
+    safe(function(){
+      ok(CONMEBOL_GRUPOS_2026.sud && CONMEBOL_GRUPOS_2026.sud.length===8, "Sudamericana 2026 tiene 8 grupos (era 3)");
+      var letras=CONMEBOL_GRUPOS_2026.sud.map(function(g){ return g.letra; }).join("");
+      ok(letras==="ABCDEFGH", "grupos A–H en orden: "+letras);
+      ok(CONMEBOL_GRUPOS_2026.sud.some(function(g){ return g.letra==="A"&&g.ids.indexOf("TIG")>=0; }), "Grupo A: Tigre");
+      ok(CONMEBOL_GRUPOS_2026.sud.some(function(g){ return g.letra==="H"&&g.ids.indexOf("RIV")>=0; }), "Grupo H: River");
+      ok(CONMEBOL_GRUPOS_2026.sud.some(function(g){ return g.letra==="C"&&g.ids.indexOf("OHI")>=0; }), "Grupo C: O'Higgins (se mantiene)");
+      nuevaPartida("CC",2026,"historico");
+      if(typeof mundoInit==="function") mundoInit();
+      ok(E.mundo && E.mundo.copas && E.mundo.copas.sud && Object.keys(E.mundo.copas.sud.grupos).length===8, "mundo sembró 8 grupos de Sudamericana");
+    }, "Sudamericana 8 grupos");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var pares=emparejarFecha(2026,1,"CC","LIM");
+      var seen={}, dup=false;
+      pares.forEach(function(p){
+        if(seen[p[0]]||seen[p[1]]) dup=true;
+        seen[p[0]]=1; seen[p[1]]=1;
+      });
+      ok(!dup, "emparejarFecha: nadie juega dos veces");
+      var ids=(LIGA_ACT||[]).map(function(c){ return c.id; });
+      var miss=ids.filter(function(id){ return !seen[id]; });
+      ok(miss.length<=1, "fecha 1 completa (bye a lo más 1): missing="+miss.join(","));
+      var p5=emparejarFecha(2026,5,"CC","UCH");
+      var s5={}, d5=false;
+      p5.forEach(function(p){ if(s5[p[0]]||s5[p[1]]) d5=true; s5[p[0]]=1; s5[p[1]]=1; });
+      ok(!d5, "fecha 5 (clásico) sin dobles");
+      var m5=ids.filter(function(id){ return !s5[id]; });
+      ok(m5.length<=1, "fecha 5 completa: missing="+m5.join(","));
+    }, "emparejarFecha sin 0 PJ");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var n=0, guard=0;
+      while(n<8 && guard++<80){
+        var p=(typeof proximoPartido==="function")?proximoPartido():null;
+        if(!p) break;
+        if(p.jugado){ E.idx++; continue; }
+        var P=iniciarPartido(p,"simular"); correrHasta(P,90);
+        if(typeof terminarPartido==="function") terminarPartido(P);
+        if(p.tipo==="liga") n++;
+      }
+      var tab=(typeof tablaOrdenada==="function")?tablaOrdenada():[];
+      var ceros=tab.filter(function(c){ return !c.pj; });
+      ok(n>=6, "se jugaron al menos 6 fechas de liga ("+n+")");
+      ok(ceros.length===0, "nadie con 0 PJ a las "+n+" fechas: "+ceros.map(function(c){ return c.id||c.n; }).join(","));
+    }, "tabla sin ceros tras 8 fechas");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var part=(E.calendario||[]).find(function(p){ return !p.jugado; })||E.calendario[0];
+      P_ACTUAL=iniciarPartido(part,"dirigir");
+      ok(partidoEnCurso(), "partido en curso detectado");
+      pausarPartidoHold();
+      ok(P_ACTUAL && P_ACTUAL._holdUI, "el hold guarda el partido");
+      ok(!document.body.classList.contains("en-partido"), "se puede navegar sin borrar el partido");
+      volverAlPartido();
+      ok(P_ACTUAL && !P_ACTUAL._holdUI, "volver restaura y suelta el hold");
+      P_ACTUAL.cerrado=true; P_ACTUAL.terminado=true; P_ACTUAL=null;
+    }, "hold del partido");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }

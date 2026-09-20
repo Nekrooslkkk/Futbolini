@@ -97,7 +97,20 @@ var FRASES={
     meta_ir:"Toca para ir a trabajar esta meta", meta_porque:"Por qué importa",
     meta_ok:"Meta cumplida. El directorio la da por buena.", meta_pregunta:"¿Qué hago con la meta",
     dec_elige:"Él elegiría esta", dec_elige_ya:"El ayudante ya marcó su opción", dec_elige_txt:"El ayudante se la jugaría acá. Decides tú.", dec_elige_badge:"él elegiría",
-    dec_g_partido:"⚽ Partido", dec_g_plata:"💰 Plata", dec_g_inst:"🏛️ Institución"
+    dec_g_partido:"⚽ Partido", dec_g_plata:"💰 Plata", dec_g_inst:"🏛️ Institución",
+    hold_tit:"Partido en pausa",
+    hold_txt:"Las decisiones siguen ahí. Vuelve al partido cuando quieras.",
+    hold_btn:"Vuelve al partido",
+    hold_avanza:"Hay un partido en curso. Vuelve a terminarlo.",
+    sim_tit:"Simulando temporadas",
+    sim_txt:"El club sigue, no se trabó.",
+    sim_prog:"Temporada ",
+    sim_de:" de ",
+    sim_ok:"No se trabó; el juego sigue.",
+    sim_cancel:"Cancelar y dejar este año",
+    sim_ayuda:"Para probar el juego a fondo: simulo temporadas enteras (cierre, ascensos, liguilla). Ves el año en pantalla; no se traba. Puedes cancelar y quedas en el año actual.",
+    sim_conf5:"Voy a simular 5 temporadas. Vas a ver el progreso en pantalla; puedes cancelar. ¿Seguir?",
+    sim_conf40:"Voy a simular hasta 40 temporadas. No se traba: ves cada año. Cancelar deja el año actual. ¿Seguir?"
   },
   /* --- CHILENSIS (de verdad): -ai/-ís, 'po', 'cachái', sin voseo argentino. --- */
   cl:{
@@ -151,7 +164,20 @@ var FRASES={
     arco_colocado:"Colocado",
     arco_potente:"Potente",
     arco_picadita:"Picadita",
-    tanda_tit:"Tanda · dibuja el penal, po"
+    tanda_tit:"Tanda · dibuja el penal, po",
+    hold_tit:"Partido en pausa",
+    hold_txt:"Las decisiones siguen ahí, po. Vuelve al partido cuando querái.",
+    hold_btn:"Vuelve al partido",
+    hold_avanza:"Hay un partido en curso. Vuelve a terminarlo.",
+    sim_tit:"Simulando temporadas",
+    sim_txt:"El club sigue, no se trabó.",
+    sim_prog:"Temporada ",
+    sim_de:" de ",
+    sim_ok:"No se trabó; el juego sigue.",
+    sim_cancel:"Cancelar y dejar este año",
+    sim_ayuda:"Pa probar el juego a fondo: simulo temporadas enteras. Ves el año en pantalla; no se traba. Podís cancelar y quedái en el año actual.",
+    sim_conf5:"Voy a simular 5 temporadas. Vas a ver el progreso; podís cancelar. ¿Seguimos?",
+    sim_conf40:"Voy a simular hasta 40 temporadas. No se traba: ves cada año. Cancelar deja el año actual. ¿Seguimos?"
   },
   /* --- PORTUGUÊS (arranque; el usuario/Grok lo afinan). --- */
   pt:{
@@ -225,7 +251,20 @@ var FRASES={
     meta_ir:"Toque para trabalhar esta meta", meta_porque:"Por que importa",
     meta_ok:"Meta cumprida. A diretoria aprova.", meta_pregunta:"O que faço com a meta",
     dec_elige:"Ele escolheria esta", dec_elige_ya:"O auxiliar já marcou a escolha", dec_elige_txt:"O auxiliar se arriscaria aqui. Você decide.", dec_elige_badge:"escolha dele",
-    dec_g_partido:"⚽ Partida", dec_g_plata:"💰 Dinheiro", dec_g_inst:"🏛️ Diretoria"
+    dec_g_partido:"⚽ Partida", dec_g_plata:"💰 Dinheiro", dec_g_inst:"🏛️ Diretoria",
+    hold_tit:"Partida em pausa",
+    hold_txt:"As decisões continuam aí. Volte ao jogo quando quiser.",
+    hold_btn:"Voltar à partida",
+    hold_avanza:"Há uma partida em curso. Volte para terminá-la.",
+    sim_tit:"Simulando temporadas",
+    sim_txt:"O clube segue, não travou.",
+    sim_prog:"Temporada ",
+    sim_de:" de ",
+    sim_ok:"Não travou; o jogo segue.",
+    sim_cancel:"Cancelar e ficar neste ano",
+    sim_ayuda:"Para testar o jogo: simulo temporadas inteiras. Você vê o ano na tela; não trava. Pode cancelar e fica no ano atual.",
+    sim_conf5:"Vou simular 5 temporadas. Você vê o progresso; pode cancelar. Seguir?",
+    sim_conf40:"Vou simular até 40 temporadas. Não trava: você vê cada ano. Cancelar deixa o ano atual. Seguir?"
   },
   en:{
     ini_headline:"You don't run a team. You run an institution.",
@@ -298,7 +337,20 @@ var FRASES={
     meta_ir:"Tap to go work on this target", meta_porque:"Why it matters",
     meta_ok:"Target met. The board signs off.", meta_pregunta:"What do I do about the target",
     dec_elige:"He'd pick this one", dec_elige_ya:"The assistant already marked his pick", dec_elige_txt:"The assistant would go for this. Your call.", dec_elige_badge:"his pick",
-    dec_g_partido:"⚽ Match", dec_g_plata:"💰 Money", dec_g_inst:"🏛️ Board"
+    dec_g_partido:"⚽ Match", dec_g_plata:"💰 Money", dec_g_inst:"🏛️ Board",
+    hold_tit:"Match paused",
+    hold_txt:"Your decisions are still there. Come back to the match when you want.",
+    hold_btn:"Back to the match",
+    hold_avanza:"There's a match in progress. Go finish it.",
+    sim_tit:"Simulating seasons",
+    sim_txt:"The club is still going. It didn't freeze.",
+    sim_prog:"Season ",
+    sim_de:" of ",
+    sim_ok:"It didn't freeze; the game is running.",
+    sim_cancel:"Cancel and keep this year",
+    sim_ayuda:"To stress-test the game I simulate full seasons. You see the year on screen; it doesn't freeze. You can cancel and stay on the current year.",
+    sim_conf5:"I'll simulate 5 seasons. You'll see progress; you can cancel. Continue?",
+    sim_conf40:"I'll simulate up to 40 seasons. It won't freeze: you see each year. Cancel keeps the current year. Continue?"
   }
 };
 
