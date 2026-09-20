@@ -171,6 +171,19 @@ function render(){
   if(typeof pintarHoldBar==="function") pintarHoldBar();
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="full";
   $("#btnAvanzar").classList.toggle("oculto",!E);
+  /* 7.9011 · el botón dice QUÉ va a pasar si lo apretás (jugar / semana / cierre). */
+  if(E){
+    const _bav=$("#btnAvanzar");
+    const _pa=(typeof proximoPartido==="function")?proximoPartido():null;
+    if(!_pa){ _bav.textContent="🏁 "+T("av_cierre","Cerrar temporada"); _bav.title=""; }
+    else if(!_pa.jugado){
+      _bav.textContent="⚽ "+T("av_jugar","Jugar")+" "+(_pa.local?"vs ":"@ ")+(_pa.rivalNombre||"");
+      _bav.title=(typeof etqCompromiso==="function"?etqCompromiso(_pa):"")+" · "+(typeof fechaTxt==="function"?fechaTxt(_pa.f):"");
+    } else {
+      _bav.textContent="⏩ "+T("av_semana","Avanzar semana");
+      _bav.title=(typeof fechaTxt==="function"?fechaTxt(_pa.f):"");
+    }
+  }
   { const br=document.getElementById("btnRapido"); if(br) br.classList.toggle("oculto",!E); }
   if(!E){
     /* 7.61 · Ajustes accesibles SIN partida activa: borrar guardados, tema,
@@ -1909,6 +1922,21 @@ function vistaCalendario(){
       pr.cuerpo.appendChild(el("div","fila","<span>"+x.a+" vs "+x.b+"</span><b>"+x.ga+"-"+x.gb+"</b>"));
     });
     pr.cuerpo.appendChild(el("p","mini","Se simula con la fuerza de cada club. Los cruce oficiales (CC/UCH/UC) se respetan; el resto es emparejamiento fijo de la fecha."));
+    /* 7.9011 · quién subió y quién bajó con esta fecha + repetirla en vivo */
+    const _mv=(E.ultimaJornada&&E.ultimaJornada.mov)||[];
+    if(_mv.length){
+      pr.cuerpo.appendChild(el("h3","sub",T("jor_tabla","Cómo quedó la tabla")));
+      _mv.slice(0,6).forEach(function(m){
+        const d=m.de-m.a;
+        pr.cuerpo.appendChild(el("div","fila mini","<span>"+escHtml(m.n)+"</span><b class='jor-mov "+(d>0?"sube":"baja")+"'>"+
+          (d>0?"▲":"▼")+" "+ordinal(m.de)+" → "+ordinal(m.a)+"</b>"));
+      });
+    }
+    if(typeof jornadaEnVivo==="function"&&E.ultimaJornada){
+      const brj=el("button","btn-aqua chico","📻 "+T("jor_repetir","Repetir la fecha"));
+      brj.onclick=function(){ jornadaEnVivo(function(){ irA("calendario"); }); };
+      pr.cuerpo.appendChild(brj);
+    }
     v.appendChild(pr);
   }
   /* 7.71 · Copa(s) del año con TODO el detalle: por torneo, ronda por ronda,
@@ -3387,9 +3415,20 @@ function simularDesdeAvance(part){
     if(bits.length) cuerpo.appendChild(el("p","mini",bits.join(" · ")));
     const prox=(typeof proximoPartido==="function")?proximoPartido():null;
     if(prox&&!prox.jugado) cuerpo.appendChild(el("p","mini","Siguiente: "+(prox.local?"vs ":"visita a ")+escHtml(prox.rivalNombre||"")+" · "+(typeof fechaTxt==="function"?fechaTxt(prox.f):"")));
-    const bx=el("button","btn-aqua ancho verde","Al escritorio");
-    bx.onclick=function(){ cerrarModal(); irA("escritorio"); };
+    /* 7.9011 · el partido tuyo no es todo: la fecha sigue y se ve. */
+    const nOtros=((E.ultimaJornada&&E.ultimaJornada.otros)||E.ultimaFecha||[]).length;
+    const bx=el("button","btn-aqua ancho verde",nOtros?("📻 "+T("jor_ver","Ver cómo se jugó la fecha")):T("jor_esc","Al escritorio"));
+    bx.onclick=function(){
+      if(nOtros&&typeof jornadaEnVivo==="function"){ cerrarModal(); jornadaEnVivo(function(){ irA("escritorio"); }); return; }
+      cerrarModal(); irA("escritorio");
+    };
     cuerpo.appendChild(bx);
+    if(nOtros){
+      const bs=el("button","btn-aqua ancho gris",T("jor_esc","Al escritorio"));
+      bs.style.marginTop="6px";
+      bs.onclick=function(){ cerrarModal(); irA("escritorio"); };
+      cuerpo.appendChild(bs);
+    }
   },{cerrarFuera:false,clase:"ventana-so"});
 }
 function modalCierreTemporada(){
@@ -3717,6 +3756,15 @@ function avanzar(){
   if(!part.jugado){ modalAvancePartido(part); return; }
   const r=procesarSemanaPostPartido();
   if(typeof chequearTinderMentira==="function") chequearTinderMentira();
+  /* 7.9011 · la semana deja un parte visible en el escritorio, no un toast que se va. */
+  if(typeof parteSemana==="function"){
+    const ln=[T("sem_caja","Caja de la semana")+": "+plata(r.neto)];
+    (r.ctx||[]).slice(0,2).forEach(function(t){ ln.push(t); });
+    if(r.ev&&r.ev.item&&r.ev.item.t) ln.push(r.ev.item.t);
+    const nj=((E.ultimaJornada&&E.ultimaJornada.otros)||[]).length;
+    if(nj) ln.push(T("sem_otros","Otros partidos de la fecha")+": "+nj);
+    parteSemana(ln);
+  }
   irA("escritorio");
   if(r.ctx&&r.ctx.length) aviso(r.ctx[0]);
   else if(r.ev) aviso(r.ev.item?r.ev.item.t:"");

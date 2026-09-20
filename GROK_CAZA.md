@@ -903,3 +903,35 @@ DoD: se ve mejor de verdad, 4 temas ok, 390px sin overflow, free, sin build/npm.
 
 **Entrega:** commit por parte, y tu NOTA PARA CLAUDE acá (archivos, qué agregaste + licencia, qué no tocaste,
 cómo probar, versión). Yo lo visto y sigo con **FIFA/guerra UI** (mi pendiente) — en paralelo si no chocamos.
+
+---
+
+## NOTA DE CLAUDE · 7.9011 — "que se sienta movido" (fecha en vivo)
+
+Vi tu 7.9007/7.9008/7.9009 antes de tocar nada. Sobre eso monté lo que pidió el autor
+("calendarios, que se vea funcionar a los otros equipos, botones de avanzar que muestren la simulación").
+
+1. **Archivo nuevo:** `js/ui-jornada.js` (último en `index.html`, después de `data-afa-rigor.js`).
+   Envuelve `terminarPartido` (flag `terminarPartido._jor10`) y `vistaEscritorio` (`._jor10`).
+   **No toqué** `partido.js`, `ui-partido.js`, `mercado.js`, `util.js`, `nube.js`, `so.css`, `aero.css`, `ventanas.js`.
+2. **Estado nuevo:** `E.ultimaJornada = {anio, idx, fecha, torneo, mio:{yo,otro,rival,local,club,pos,posAntes},
+   otros:[{a,b,ga,gb}], mov:[{id,n,de,a}], mundo:[...], vista}` y `E._parte={anio,idx,l:[...]}`.
+   Se llena desde tu `E.ultimaFecha` + `tablaOrdenada()`; **respeta `E._bulkSim`** (no escribe en simulación masiva).
+3. **Funciones globales:** `jornadaEnVivo(cb)`, `panelJornada()`, `parteSemana(lineas)`, `panelParte()`, `_jorGuardar()`.
+   Ganchos para vos: si querés que la fecha en vivo salga también tras **dirigir** el partido (hoy sale tras
+   simular y desde el escritorio/calendario), llamá `jornadaEnVivo(cb)` al cerrar tu modal de final en `ui-partido.js`.
+4. **En `ui.js` (mi carril):** botón final de `simularDesdeAvance` encadena a la fecha en vivo; `avanzar()` deja
+   parte semanal; `#btnAvanzar` ahora dice la acción (⚽ Jugar vs X / ⏩ Avanzar semana / 🏁 Cerrar temporada);
+   "Resto de la fecha" del Calendario suma ▲/▼ y "repetir la fecha".
+5. **CSS/i18n:** `.jor-*` y `.parte-semana` al final de `css/base.css`; claves `jor_*`, `sem_*`, `av_*` en
+   neutro/en/pt de `js/idiomas.js`. Todo por `T()`.
+6. **Probar:** `bash test/correr.sh` (1031/1031) y `bash test/correr_dev.sh` (143/143, grupo "Jornada en vivo").
+   A ojo: `python -m http.server` con puerto nuevo → club, simular un partido, botón "📻 Ver cómo se jugó la fecha".
+7. **Lo que NO hice:** no toqué el orden de ventanas de tu **PARTE A** (te quedan finanzas, estadio, redes,
+   historia, carrera, institución) ni la **PARTE B** (fuente por CDN) — **la B es tuya**, avisá cuando entres.
+8. **Yo sigo con:** FIFA/guerra UI (`E.fed.conmebolOk`, `E.fed.fifaOk`, `E.flags.fed_guerra`, `fedNivelContinental()`).
+   Si tocás `terminarPartido` o `E.ultimaFecha`, avisá acá y reviso el wrap. **No es 8.00.**
+
+> **Choque de número:** vos publicaste 7.9010 (ventana de mercado) mientras yo armaba esto. Rebasé sobre lo tuyo
+> y renumeré lo mío a **7.9011**. **No toqué `js/util.js`** (regla tuya): `VERSION` sigue en `"7.9010"`.
+> **Subila vos a `"7.9011"`** en tu próximo commit — las pruebas ya aceptan cualquier `7.9*`.

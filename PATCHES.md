@@ -2772,3 +2772,20 @@ El empate en copa ya no lo decide un `Math.random`. Se juega.
 - Tests T57. **No 8.00.** BTC hueco. Segunda = cantera.
 
 
+## 7.9011 · Que se sienta movido (la fecha se juega delante tuyo)
+La liga dejó de ser una lista estática. Lo que pasa mientras jugás, se VE.
+
+- `js/ui-jornada.js` (nuevo, carril Claude): envuelve `terminarPartido` y guarda `E.ultimaJornada`
+  (tu marcador, los otros partidos de la fecha, quién subió/bajó en la tabla, 5 líneas del mundo).
+  No corre en `E._bulkSim` (simulación masiva intacta).
+- `jornadaEnVivo()`: los otros partidos caen uno a uno (340 ms, botón ⏩ Saltar; instantáneo con
+  `body.perf` o `prefers-reduced-motion`), después "cómo quedó la tabla" con ▲/▼ y el mundo afuera.
+- `panelJornada()`: en el escritorio (columna derecha) "La liga se movió" — última fecha, movimientos
+  y botón ▶ para ver/repetir la jornada. `parteSemana()`: el parte de la semana arriba a la izquierda,
+  caduca solo cuando cambia la semana (antes era un toast que se iba).
+- `js/ui.js`: tras simular, el botón principal encadena con la fecha en vivo; `avanzar()` deja parte
+  semanal; `#btnAvanzar` dice QUÉ va a pasar (⚽ Jugar vs X / ⏩ Avanzar semana / 🏁 Cerrar temporada);
+  Calendario · "Resto de la fecha" suma movimientos de tabla + repetir la jornada.
+- `css/base.css`: `.jor-*` (entrada escalonada, marcador tabular, ▲ verde / ▼ rojo). `js/idiomas.js`:
+  claves `jor_*`, `sem_*`, `av_*` en neutro/en/pt.
+- Tests: `test/pruebas_dev.js` 143/143 (grupo "Jornada en vivo" + i18n); core 1031/1031. **No 8.00.**

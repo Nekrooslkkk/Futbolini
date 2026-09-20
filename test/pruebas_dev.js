@@ -336,6 +336,58 @@
       t(escHtml("<b>")==="&lt;b&gt;", "escHtml de Grok sigue funcionando (no se tocó su archivo)");
     }, "Seguridad texto");
 
+    grupo("Jornada en vivo · 7.9011 (que se sienta movido)");
+    safe(function(){
+      t(typeof jornadaEnVivo==="function","jornadaEnVivo existe");
+      t(typeof panelJornada==="function","panelJornada existe");
+      t(typeof parteSemana==="function","parteSemana existe");
+      t(terminarPartido._jor10===true,"terminarPartido queda envuelto (captura la tabla antes/después)");
+      t(vistaEscritorio._jor10===true,"vistaEscritorio queda envuelto (panel al escritorio)");
+      nuevaPartida("CC",2026,"historico");
+      var part=proximoPartido();
+      t(!!part,"hay próximo partido");
+      var P=iniciarPartido(part,"simular"); correrHasta(P,90);
+      var res=terminarPartido(P);
+      t(!!E.ultimaJornada,"tras el partido queda E.ultimaJornada");
+      t(E.ultimaJornada.mio && E.ultimaJornada.mio.yo===res.yo,"la jornada guarda TU marcador");
+      t(Array.isArray(E.ultimaJornada.otros) && E.ultimaJornada.otros.length>0,
+        "guarda los otros partidos de la fecha ("+(E.ultimaJornada.otros||[]).length+")");
+      t(Array.isArray(E.ultimaJornada.mov),"guarda el movimiento de la tabla");
+      t(E.ultimaJornada.vista===false,"arranca sin ver (el escritorio ofrece verla)");
+      t(E.ultimaJornada.mio.pos>0,"sabe en qué puesto quedaste ("+E.ultimaJornada.mio.pos+"°)");
+      var pj=panelJornada();
+      t(!!pj,"panelJornada devuelve panel con datos");
+      t(pj.textContent.indexOf("-")>=0,"el panel muestra marcadores");
+      /* el escritorio lo inserta de verdad */
+      SEC="escritorio"; render();
+      t(document.getElementById("vista").textContent.indexOf(T("jor_panel","La liga se movió"))>=0,
+        "el escritorio muestra 'la liga se movió'");
+      /* parte de la semana: aparece y caduca */
+      parteSemana(["Caja de la semana: $1 M","otra cosa"]);
+      SEC="escritorio"; render();
+      t(document.getElementById("vista").textContent.indexOf(T("sem_tit","Parte de la semana"))>=0,
+        "el parte de la semana se pinta en el escritorio");
+      E._parte.idx=E._parte.idx-5;
+      SEC="escritorio"; render();
+      t(document.getElementById("vista").textContent.indexOf(T("sem_tit","Parte de la semana"))<0,
+        "el parte viejo NO se queda pegado (caduca con la semana)");
+      /* el botón avanzar dice qué va a pasar */
+      var bav=document.getElementById("btnAvanzar");
+      t(bav && bav.textContent.length>3,"el botón Avanzar tiene texto vivo ("+(bav&&bav.textContent)+")");
+      /* nada de esto corre en simulación masiva */
+      E._bulkSim=true; var antes=JSON.stringify(E.ultimaJornada);
+      _jorGuardar(part,{yo:9,otro:9},{});
+      t(JSON.stringify(E.ultimaJornada)===antes,"en simulación masiva no se toca la jornada");
+      E._bulkSim=false;
+    },"Jornada");
+
+    grupo("Localización de la jornada");
+    safe(function(){
+      ["jor_tit","jor_panel","jor_ver","jor_saltar","jor_tabla","sem_tit","av_jugar","av_semana","av_cierre"].forEach(function(k){
+        t(FRASES.neutro[k] && FRASES.en[k] && FRASES.pt[k], "clave "+k+" está en neutro/en/pt");
+      });
+    },"i18n jornada");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

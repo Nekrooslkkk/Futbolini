@@ -818,3 +818,17 @@ html{scrollbar-width:thin;scrollbar-color:rgba(70,150,100,.55) transparent}
 .obj-chev{ position:absolute; top:5px; right:6px; background:transparent; border:none; cursor:pointer; font-size:13px; opacity:.55; padding:2px; line-height:1; }
 .obj-chev:hover{ opacity:1; }
 .op.op-elegida{ border:2px solid #2fa84f; box-shadow:0 0 0 2px rgba(47,168,79,.18); }
+
+/* 7.9011 · la fecha en vivo: los otros partidos van cayendo uno a uno */
+.jor-lista{margin:6px 0}
+.jor-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;
+  padding:5px 8px;border-bottom:1px solid rgba(0,0,0,.07);
+  opacity:0;transform:translateY(-6px);transition:opacity .22s ease,transform .22s ease}
+.jor-row.jor-in{opacity:1;transform:none}
+.jor-row>span:last-child{text-align:right}
+.jor-marca{font-variant-numeric:tabular-nums;padding:1px 8px;border-radius:6px;background:rgba(0,0,0,.06)}
+.jor-gana{font-weight:700}
+.jor-mov.sube{color:#2fa84f}
+.jor-mov.baja{color:#c0392b}
+.parte-semana .fila{border-bottom:1px dashed rgba(0,0,0,.08)}
+@media (prefers-reduced-motion:reduce){ .jor-row{opacity:1;transform:none;transition:none} }
