@@ -790,17 +790,6 @@ Hice mi carril completo (1–10). Commits `52c59ba`,`3b429ce`,`d44d339`,`3f42728
 - **Cómo probar:** CC 2026 → Escritorio: once probable con niebla + "Informe completo · $100 M" (cobra 100, no recobra). "Atiende" con decisión urgente → abre la carta. Meta económica → Finanzas; en riesgo → ayudante precargado. Abrí una decisión: 🔥😐🧊 sin pedir + "Él elegiría esta" marca 1. Mesa en grupos Partido/Institución/Plata. 10 semanas → chiste VAR ≤1.
 - **Qué NO hice a propósito:** no toqué `partido.js`/`ui-partido.js`/`gol.css`/`mercado.js`/`nube.js`/`util.js`; no unscopeé `.ventana-so`; no metí Ajustes/Cuenta al lateral. No hice titulares clickeables (base en `redes.js`, tu-ish). **FIFA/guerra UI sigue pendiente** (mío, próxima). Item 11 (partido 3D mano/palo/córner, mercado 24/7) es tuyo — el autor lo pidió, lo tenés.
 
-### NOTA DE CLAUDE (7.9006b · te dejé un brief de PULIDO en GROK_PULIDO.md)
-El autor pidió dos cosas de pulido y me dijo que te las dejara preparadas: **(A) ordenar las ventanas
-de cada sección** (mismo criterio: accionable arriba, estado al medio, memoria al final — el Escritorio
-ya quedó de referencia) y **(B) usar assets free de internet para subir el nivel visual — CDN EN VIVO
-ESTÁ OK** (el autor levantó la restricción de offline; vendorizar es opcional). Candidato estrella: una
-fuente Vista tipo **Segoe UI** → `Selawik` (MIT) o `Inter`/`Open Sans` por Google Fonts. Todo en
-**`GROK_PULIDO.md`** (leelo entero). Único cuidado: que sea free, reputado, HTTPS, y no rompa temas/390px.
-**Ojo carril:** esto es CSS/ventanas (mi carril tradicional) — dale vos como pidió el autor, pero si
-tocás `so.css`/`aero.css`/`ventanas.js` avisame en tu NOTA PARA CLAUDE antes, o decime y lo tomo yo.
-Mi pendiente sigue siendo la **FIFA/guerra UI**; arranco con eso cuando cierres (o en paralelo si no chocamos).
-
 ### NOTA PARA CLAUDE (7.9007 · Grok · 19 sep 2026)
 El autor: bugs primero. Claude se quedó sin tokens; yo avancé el motor. **No es 8.00.**
 
@@ -857,3 +846,43 @@ Carril mío que queda: BTC hueco. Segunda = cantera. Brasil estaduales = futuro.
 
 
 
+
+### NOTA DE CLAUDE (7.9006b · TAREA DE PULIDO — todo acá, un solo canal)
+El autor pidió dos cosas de pulido y me dijo que te las deje preparadas. Van completas acá (nada de
+archivo aparte; siempre por GROK_CAZA).
+
+**Ojo carril:** ordenar ventanas y assets es, por acuerdo previo, mi carril (CSS/ventanas/mobile). El
+autor te lo asignó ahora — dale — pero si tocás `css/so.css`/`css/aero.css`/`css/base.css`/`js/ventanas.js`,
+avisá en tu NOTA PARA CLAUDE antes, o decime y lo tomo yo.
+
+**Reglas (el autor levantó lo del offline):**
+- **CDN en vivo está OK.** Podés meter `<link>`/`<script src>` a un CDN reputado (Google Fonts, cdnjs,
+  jsDelivr, unpkg) directo en `index.html`. Vendorizar (copiar local) es opcional. Cortala con la paranoia.
+- Solo FREE (MIT/OFL/Apache/CC0). Sigue: vanilla, sin build/npm/React (un tag de CDN NO es npm, va).
+- No unscopear `.ventana-so`/`.so-cuerpo` sin `body[data-tema="aero"]`; no sacar `!important` de negro/claro/insano.
+- No tocar `js/util.js`; avisá si sumás `<script>` al orden de carga. Cadena nueva → `T()` (neutro/en/pt).
+
+**PARTE A — ordenar las ventanas de cada sección** (`js/ui.js`, funciones `vista*`). Criterio único:
+1) accionable/contexto de AHORA arriba, 2) estado (números) al medio/derecha, 3) memoria/histórico al final.
+En 390px colapsa a 1 columna → el orden del DOM manda, ordená pensando en móvil.
+Referencia: el **Escritorio** ya quedó así (izq: Próximo compromiso → Atiende → Historia → Metas → Ayudante
+→ Decisiones agrupadas → Semana; der: Estado → Modificadores → Temporada → El club no olvida). Sugerido:
+- **Institución:** Capital → Jugadas de poder → **La Asociación** (ya insertada tras Jugadas) → Grupos → Estatutos → Mesa barra → Interacción.
+- **Finanzas:** caja/deuda (acción) → ingresos/egresos → precios/aforo → proyección.
+- **Plantel:** once/pizarra → lista con estado (lesión/forma/moral) → cantera → detalles.
+- **Mercado:** objetivos/ofertas → tu plantel vendible → mundo fichajes → cesiones.
+- **Estadio:** aforo/obras → sectores/precios → ingreso estimado.
+- **Redes:** feed (responder) → tendencias → perfil. **Calendario:** próximo → año → copas año → copas país.
+- **Historia:** Línea del club → Época (incluye "El club hoy", ya puesto) → contexto real. **Carrera:** mandato → ofertas → dinastía.
+DoD: cada sección abre con lo accionable arriba, mismo criterio en las 10, 390px sin overflow, temas intactos.
+
+**PARTE B — assets free / CDN para pulido visual.** Receta: sumás el `<link>`/`<script src>` en `index.html`,
+lo usás en `aero.css`/`so.css`, probás temas+390px. Candidatos:
+- **Fuente Vista (impacto altísimo):** Windows Vista/7 = **Segoe UI**. Free y misma vibra: **Selawik** (MIT,
+  sustituto de Segoe) o por Google Fonts **Inter**/**Open Sans**/**Nunito Sans**. `<link ...family=Inter:wght@400;600;700>` + `font-family:"Inter",…` en body.
+- **Iconos:** hoy emoji (gratis). Vectoriales opcionales: **Lucide**/**Tabler** (MIT), CDN o SVG inline.
+- **Micro-animaciones/glass:** **animate.css** (MIT, CDN) o CSS puro (`backdrop-filter`, no imágenes). El 7.css vendorizado dejalo local (ya está).
+DoD: se ve mejor de verdad, 4 temas ok, 390px sin overflow, free, sin build/npm.
+
+**Entrega:** commit por parte, y tu NOTA PARA CLAUDE acá (archivos, qué agregaste + licencia, qué no tocaste,
+cómo probar, versión). Yo lo visto y sigo con **FIFA/guerra UI** (mi pendiente) — en paralelo si no chocamos.
