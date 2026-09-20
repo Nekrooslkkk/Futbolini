@@ -1634,6 +1634,20 @@ function cornerResolver(zona, j, arq, iner){
   if(r<p+0.18) return {res:"atajado",p:p,zona:zona};
   return {res:"defensa",p:p,zona:zona};
 }
+function paloEntra(aim, efecto){
+  let p=0.30;
+  if(efecto==="potente") p+=0.08;
+  if(aim && aim.alt==="alto") p+=0.06;
+  if(aim && aim.tercio==="centro") p+=0.04;
+  return Math.random()<clamp(p,0.18,0.50);
+}
+function _rebotePalo(svg, bolaG, destX, destY, aim, efecto, cb){
+  if(svg) svg.classList.add("arco-alpalo");
+  const entra=paloEntra(aim, efecto);
+  const bx=entra?(180*0.55+destX*0.45):destX+(destX<180?-36:36);
+  const by=entra?Math.min(150, destY+28):destY-22;
+  _animBola(bolaG, destX, destY, bx, by, 280, function(){ cb(entra); });
+}
 function penArqueroTira(aim,arqNivel){
   const lee=clamp(0.12+(arqNivel-70)*0.006,0.05,0.32);
   if(Math.random()<lee) return aim.tercio;
@@ -1822,6 +1836,7 @@ function htmlArcoVivo(opts){
 function _tt(k, fb){ return (typeof T==="function")?T(k,fb):fb; }
 function _etiquetaArco(res){
   if(res==="gol") return {t:_tt("arco_gol","⚽ GOL"), cls:"gol"};
+  if(res==="palo_in") return {t:_tt("arco_palo_in","⚽ PALO ADENTRO"), cls:"gol"};
   if(res==="palo") return {t:_tt("arco_palo","🪵 TRAVESAÑO"), cls:"palo"};
   if(res==="barrera") return {t:_tt("arco_barrera","🧱 LA BARRERA"), cls:"barrera"};
   if(res==="afuera") return {t:_tt("arco_afuera","↑ AFUERA"), cls:"afuera"};
@@ -1927,20 +1942,23 @@ function minijuegoPenal(P,pateador,opts){
         etiq.innerHTML="";
         const ban=el("div","arco-res "+lab.cls); ban.textContent=lab.t;
         c.insertBefore(ban, etiq);
-        if(out.res==="gol" && svg) svg.classList.add("arco-golazo");
+        if((out.res==="gol"||out.res==="palo_in") && svg) svg.classList.add("arco-golazo");
         if(out.res==="palo" && svg) svg.classList.add("arco-alpalo");
         setTimeout(()=>{
           cerrarModal();
-          if(typeof opts.onRes==="function"){ opts.onRes(out.res==="gol"); return; }
-          const forz=out.res==="gol"?true:(out.res==="afuera"?"afuera":(out.res==="palo"?"palo":false));
+          const esGol=out.res==="gol"||out.res==="palo_in";
+          if(typeof opts.onRes==="function"){ opts.onRes(esGol); return; }
+          const forz=esGol?true:(out.res==="afuera"?"afuera":(out.res==="palo"?"palo":false));
           penalEnPartido(P,true,null,pateador,forz);
           pintarPartido(); reanudarPronto();
         },820);
       }
       _animBola(bolaG,180,220,destX,destY,480,function(){
         if(out.res==="palo"){
-          const bx=destX+(aim.tercio==="izq"?-30:(aim.tercio==="der"?30:12));
-          _animBola(bolaG,destX,destY,bx,destY-20,260,fin);
+          _rebotePalo(svg, bolaG, destX, destY, aim, getEf(), function(entra){
+            if(entra) out.res="palo_in";
+            fin();
+          });
           return;
         }
         fin();
@@ -2018,9 +2036,10 @@ function minijuegoTiroLibre(P){
       const destX=res==="barrera"?aim.cx+(aim.cx>180?-18:18):(res==="palo"?(aim.tercio==="izq"?50:(aim.tercio==="der"?310:aim.cx)):aim.cx);
       _animBola(bolaG,180,220,destX,destY,460,function(){
         if(res==="palo"){
-          svg.classList.add("arco-alpalo");
-          const bx=destX+(destX<180?-28:28);
-          _animBola(bolaG,destX,destY,bx,destY-18,240,function(){ pintarResTL(); });
+          _rebotePalo(svg, bolaG, destX, destY, aim, (typeof getEf==="function"?getEf():"colocado"), function(entra){
+            if(entra){ res="palo_in"; motivo="El palo la manda adentro."; }
+            pintarResTL();
+          });
           return;
         }
         pintarResTL();
@@ -2030,14 +2049,14 @@ function minijuegoTiroLibre(P){
         etiq.innerHTML="";
         const ban=el("div","arco-res "+lab.cls); ban.textContent=lab.t+(motivo?" · "+motivo.replace(/\.$/,""):"");
         c.insertBefore(ban, etiq);
-        if(res==="gol") svg.classList.add("arco-golazo");
+        if(res==="gol"||res==="palo_in") svg.classList.add("arco-golazo");
         setTimeout(function(){
           cerrarModal();
-          if(res==="gol"){
+          if(res==="gol"||res==="palo_in"){
             j.goles++; P.goleadores.push(j.n);
             if(typeof regGol==="function") regGol(P,P.min,j.n,true,"tiro libre");
             if(P.part.local)P.gl++; else P.gv++;
-            if(typeof linea==="function") linea(P,P.min,"¡GOLAZO de tiro libre de "+j.n+"! "+((typeof marcadorTxt==="function")?marcadorTxt(P):""),"gol");
+            if(typeof linea==="function") linea(P,P.min,(res==="palo_in"?"¡PALO ADENTRO de ":"¡GOLAZO de tiro libre de ")+j.n+"! "+((typeof marcadorTxt==="function")?marcadorTxt(P):""),"gol");
           } else if(typeof linea==="function"){
             const txt=res==="barrera"?("Tiro libre de "+j.n+": la barrera la desvía.")
               :(res==="palo"?("Tiro libre de "+j.n+" al travesaño.")
@@ -2133,15 +2152,15 @@ function minijuegoCorner(P){
         etiq.innerHTML="";
         const ban=el("div","arco-res "+lab.cls); ban.textContent=lab.t+(motivo?" · "+motivo.replace(/\.$/,""):"");
         c.insertBefore(ban, etiq);
-        if(res==="gol") svg.classList.add("arco-golazo");
+        if(res==="gol"||res==="palo_in") svg.classList.add("arco-golazo");
         if(res==="palo") svg.classList.add("arco-alpalo");
         setTimeout(function(){
           cerrarModal();
-          if(res==="gol"){
+          if(res==="gol"||res==="palo_in"){
             j.goles=(j.goles||0)+1; P.goleadores.push(j.n);
             if(typeof regGol==="function") regGol(P,P.min,j.n,true,"cabeza");
             if(P.part.local)P.gl++; else P.gv++;
-            if(typeof linea==="function") linea(P,P.min,"¡GOL de cabeza de córner de "+j.n+"! "+((typeof marcadorTxt==="function")?marcadorTxt(P):""),"gol");
+            if(typeof linea==="function") linea(P,P.min,(res==="palo_in"?"¡PALO ADENTRO de cabeza de ":"¡GOL de cabeza de córner de ")+j.n+"! "+((typeof marcadorTxt==="function")?marcadorTxt(P):""),"gol");
           } else if(typeof linea==="function"){
             const txt=res==="defensa"?("Córner: el primero despeja el centro de "+j.n+".")
               :(res==="afuera"?("Córner de "+j.n+": el centro se fue largo.")
@@ -2154,8 +2173,10 @@ function minijuegoCorner(P){
       }
       _animBola(bolaG,bolaX,222,destX,destY,520,function(){
         if(res==="palo"){
-          const bx=destX+(destX<180?-28:28);
-          _animBola(bolaG,destX,destY,bx,destY-18,240,finCor);
+          _rebotePalo(svg, bolaG, destX, destY, aim, "colocado", function(entra){
+            if(entra){ res="palo_in"; motivo="El palo la manda adentro."; }
+            finCor();
+          });
           return;
         }
         finCor();

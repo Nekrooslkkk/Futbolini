@@ -64,6 +64,7 @@ var FRASES={
     arco_ataja:"🧤 ATAJADA",
     arco_barrera:"🧱 LA BARRERA",
     arco_palo:"🪵 TRAVESAÑO",
+    arco_palo_in:"⚽ PALO ADENTRO",
     arco_afuera:"↑ AFUERA",
     arco_defensa:"🛡️ DESPEJA",
     arco_hud_pen:"PENAL",
@@ -122,11 +123,16 @@ var FRASES={
     pla_pizarra_hint:"La pizarra se arma en la previa del partido.",
     pla_ir_pizarra:"Ir a la previa / pizarra",
     pla_sinpart:"No hay partido para armar la pizarra.",
-    merc_siempre:"Puedes firmar todo el año. En enero-febrero y junio-julio llueven ofertas; el resto, el mercado está más quieto.",
-    merc_lluvia:"Lluvia de ofertas",
-    merc_quieto:"Mercado más quieto",
-    merc_obj_lluvia:"Ventana alta: hay más movimiento, cierra ahora si te convence.",
-    merc_obj_quieto:"Fuera de la lluvia: menos ofertas, pero igual puedes firmar."
+    merc_siempre:"La ventana abre en enero-febrero y junio-julio. Fuera de eso negocias y dejas el trato hecho.",
+    merc_lluvia:"Ventana abierta",
+    merc_quieto:"Ventana cerrada",
+    merc_ventana:"La ventana abre en enero-febrero y junio-julio. Fuera de eso negocias y dejas el trato hecho; firmas cuando el mercado lo permite.",
+    merc_cerrada:"Ventana cerrada · próxima: ",
+    merc_pre:"Preacuerdos",
+    merc_obj_lluvia:"Ventana abierta: cierra ahora si te convence.",
+    merc_obj_quieto:"Ventana cerrada: puedes negociar y dejar el trato hecho.",
+    merc_obj_abierta:"Ventana abierta: cierra ahora si te convence. Son jugadores de los otros clubes, no inventados.",
+    merc_obj_cerrada:"Ventana cerrada: puedes negociar y dejar el trato hecho."
   },
   /* --- CHILENSIS (de verdad): -ai/-ís, 'po', 'cachái', sin voseo argentino. --- */
   cl:{
@@ -169,6 +175,7 @@ var FRASES={
     arco_ataja:"🧤 ATAJADA",
     arco_barrera:"🧱 LA BARRERA",
     arco_palo:"🪵 TRAVESAÑO",
+    arco_palo_in:"⚽ PALO ADENTRO",
     arco_afuera:"↑ AFUERA",
     arco_defensa:"🛡️ DESPEJA",
     arco_hud_pen:"PENAL",
@@ -205,11 +212,16 @@ var FRASES={
     pla_pizarra_hint:"La pizarra la armái en la previa del partido.",
     pla_ir_pizarra:"Ir a la previa / pizarra",
     pla_sinpart:"No hay partido pa' armar la pizarra.",
-    merc_siempre:"Podí firmar todo el año, po. En enero-febrero y junio-julio llueven ofertas; el resto el mercado está más quieto.",
-    merc_lluvia:"Lluvia de ofertas",
-    merc_quieto:"Mercado más quieto",
-    merc_obj_lluvia:"Ventana alta: hay más movimiento, cierra ahora si te convence.",
-    merc_obj_quieto:"Fuera de la lluvia: menos ofertas, pero igual podí firmar."
+    merc_siempre:"La ventana abre en enero-febrero y junio-julio. Fuera de eso negociái y dejái el trato hecho.",
+    merc_lluvia:"Ventana abierta",
+    merc_quieto:"Ventana cerrada",
+    merc_ventana:"La ventana abre en enero-febrero y junio-julio. Fuera de eso negociái y dejái el trato hecho; firmái cuando el mercado lo permita.",
+    merc_cerrada:"Ventana cerrada · próxima: ",
+    merc_pre:"Preacuerdos",
+    merc_obj_lluvia:"Ventana abierta: cierra ahora si te convence.",
+    merc_obj_quieto:"Ventana cerrada: podí negociar y dejar el trato hecho.",
+    merc_obj_abierta:"Ventana abierta: cierra ahora si te convence. Son jugadores de los otros clubes, no inventados.",
+    merc_obj_cerrada:"Ventana cerrada: podí negociar y dejar el trato hecho."
   },
   /* --- PORTUGUÊS (arranque; el usuario/Grok lo afinan). --- */
   pt:{
@@ -252,6 +264,7 @@ var FRASES={
     arco_ataja:"🧤 DEFESA",
     arco_barrera:"🧱 A BARREIRA",
     arco_palo:"🪵 TRAVE",
+    arco_palo_in:"⚽ TRAVE PRA DENTRO",
     arco_afuera:"↑ PRA FORA",
     arco_defensa:"🛡️ AFASTA",
     arco_hud_pen:"PÊNALTI",
@@ -308,11 +321,16 @@ var FRASES={
     pla_pizarra_hint:"O quadro tático se arma na prévia da partida.",
     pla_ir_pizarra:"Ir à prévia / quadro",
     pla_sinpart:"Não há partida para armar o quadro.",
-    merc_siempre:"Você pode assinar o ano inteiro. Em janeiro-fevereiro e junho-julho chovem ofertas; no resto o mercado fica mais quieto.",
-    merc_lluvia:"Chuva de ofertas",
-    merc_quieto:"Mercado mais quieto",
-    merc_obj_lluvia:"Janela alta: tem mais movimento, feche agora se convencer.",
-    merc_obj_quieto:"Fora da chuva: menos ofertas, mas você ainda pode assinar."
+    merc_siempre:"A janela abre em janeiro-fevereiro e junho-julho. Fora disso você negocia e deixa o trato feito.",
+    merc_lluvia:"Janela aberta",
+    merc_quieto:"Janela fechada",
+    merc_ventana:"A janela abre em janeiro-fevereiro e junho-julho. Fora disso você negocia e deixa o trato feito; assina quando o mercado permitir.",
+    merc_cerrada:"Janela fechada · próxima: ",
+    merc_pre:"Pré-acordos",
+    merc_obj_lluvia:"Janela aberta: feche agora se convencer.",
+    merc_obj_quieto:"Janela fechada: você pode negociar e deixar o trato feito.",
+    merc_obj_abierta:"Janela aberta: feche agora se convencer. São jogadores dos outros clubes, não inventados.",
+    merc_obj_cerrada:"Janela fechada: você pode negociar e deixar o trato feito."
   },
   en:{
     ini_headline:"You don't run a team. You run an institution.",
@@ -354,6 +372,7 @@ var FRASES={
     arco_ataja:"🧤 SAVED",
     arco_barrera:"🧱 THE WALL",
     arco_palo:"🪵 CROSSBAR",
+    arco_palo_in:"⚽ IN OFF THE POST",
     arco_afuera:"↑ WIDE",
     arco_defensa:"🛡️ CLEARED",
     arco_hud_pen:"PENALTY",
@@ -410,11 +429,16 @@ var FRASES={
     pla_pizarra_hint:"The tactics board is set in the match preview.",
     pla_ir_pizarra:"Go to preview / board",
     pla_sinpart:"No match to set the board.",
-    merc_siempre:"You can sign all year. Offers pour in January–February and June–July; the rest of the year the market is quieter.",
-    merc_lluvia:"Offer rush",
-    merc_quieto:"Quieter market",
-    merc_obj_lluvia:"High window: more movement — close now if it convinces you.",
-    merc_obj_quieto:"Off the rush: fewer offers, but you can still sign."
+    merc_siempre:"The window opens in January–February and June–July. Outside it you negotiate and leave the deal done.",
+    merc_lluvia:"Window open",
+    merc_quieto:"Window closed",
+    merc_ventana:"The window opens in January–February and June–July. Outside it you negotiate and leave the deal done; you sign when the market allows.",
+    merc_cerrada:"Window closed · next: ",
+    merc_pre:"Pre-agreements",
+    merc_obj_lluvia:"Window open: close now if it convinces you.",
+    merc_obj_quieto:"Window closed: you can negotiate and leave the deal done.",
+    merc_obj_abierta:"Window open: close now if it convinces you. These are real players from other clubs, not made up.",
+    merc_obj_cerrada:"Window closed: you can negotiate and leave the deal done."
   }
 };
 

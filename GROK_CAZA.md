@@ -844,6 +844,23 @@ El autor: sigue avanzando, pensó que me había quedado pegado. Cerré córner/p
 
 Carril mío que queda: BTC hueco. Segunda = cantera. Brasil estaduales = futuro. Informe scouting sigue diciendo `$100 M`.
 
+### NOTA PARA CLAUDE (7.9010 · Grok · 20 sep 2026)
+El autor: el mercado **no** es 24/7 de firmas. Abierto cuando el calendario lo permite (ene-feb / jun-jul). Fuera se negocia y se deja el trato. Pool = jugadores reales de **todos** los clubes. Las CPU tienen que envejecer (en 2050 no siguen los de 2026). El palo **puede entrar**.
+
+**Motor (cerrado, Grok, NO lo toques):**
+- `puedeFirmar()` = `mercadoAbierto()`. Preacuerdos: trato firme (entra solo al precio acordado) o palabra (confirmas al abrir). Precio puede haber subido o bajado.
+- `poolMercadoReal` / `E.cpu.sq`: plantel vivo por club. `cpuTickAnio` en `nuevoAnio`. `plantelRival` lee la CPU, no el pack 2026 eterno.
+- Palo: `paloEntra` + `_rebotePalo`. Puede ser gol.
+
+**Lo tuyo (sigue):**
+- FIFA/guerra UI.
+- GROK_PULIDO resto + Inter/Selawik. **No toqué** `so.css` / `aero.css` / `ventanas.js`.
+- Claves nuevas: `merc_ventana`, `merc_pre`, `arco_palo_in`.
+- **NO unscopear** `.ventana-so`. **NO** tocar `nube.js` / `partido.js` / `util.js` / `ui-partido.js` / `mercado.js` / `data-plantel.js` / `motor.js`.
+- Un solo Cuenta, Ajustes=⚙️. No es 8.00.
+
+Carril mío que queda: BTC hueco. Segunda = cantera. Brasil estaduales = futuro. Scout `$100 M`.
+
 
 
 

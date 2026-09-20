@@ -1511,6 +1511,12 @@ function nuevoAnio(){
   E.ind.plantel=clamp(Math.round(mediaPlantel()),0,100);
   E.ind.moral=clamp(Math.round(E.ind.moral+(55-E.ind.moral)*0.25),0,100);
   E.capital=Math.max(0,Math.round(E.capital+capitalAnual()));
+  /* 7.9010 · el resto de los clubes también envejece, se retira y se ficha */
+  if(typeof cpuTickAnio==="function"){
+    const mov=cpuTickAnio();
+    if(mov>0 && !E._bulkSim) notificar({t:"El mercado de la liga se movió",tipo:"neutro",bandeja:false,
+      d:mov+" pases entre clubes que no diriges. En "+E.anio+" ya no están los mismos de 2026."});
+  }
   /* el fútbol olvida: nadie te quiere ni te odia para siempre */
   for(const k in E.rep) E.rep[k]=Math.round(E.rep[k]+(50-E.rep[k])*0.12);
   GRUPOS.forEach(g=>{ const x=E.grupos[g.id]; x.aprob=Math.round(x.aprob*0.72); });

@@ -16,19 +16,37 @@ function inflacionEra(){
 }
 function mesMercado(){ const p=proximoPartido(); return p&&p.f?p.f.m:12; }
 function mercadoAbierto(){ const m=mesMercado(); return m<=2||m===6||m===7; }
-function puedeFirmar(){ return true; } /* 7.9009 · firmas todo el año; la ventana solo cambia la lluvia de ofertas */
+function puedeFirmar(){ return mercadoAbierto(); } /* 7.9010 · firmas solo con la ventana; fuera, preacuerdo */
 function proximaVentana(){ const m=mesMercado(); return m<6?"junio":(m>7?"enero":"ahora"); }
+function clubCompradorDe(rr){
+  rr=rr||Math.random;
+  let ids=[];
+  if(typeof idsClubesCpu==="function") ids=idsClubesCpu().filter(function(id){ return id!==(E&&E.club); });
+  if(ids.length){
+    const id=ids[Math.floor(rr()*ids.length)];
+    return {id:id, n:(typeof _nomClubCpu==="function"?_nomClubCpu(id):id)};
+  }
+  const n=(typeof CLUBES_COMPRADORES!=="undefined"&&CLUBES_COMPRADORES[Math.floor(rr()*CLUBES_COMPRADORES.length)])||"un club";
+  return {id:null, n:n};
+}
 
 /* ---------- objetivos: jugadores de otros clubes para comprar ---------- */
 function objetivosMercado(){
   const rr=azarFijo(semilla("mercObj"+E.club+E.anio+"-"+E.idx));
+  const pool=(typeof poolMercadoReal==="function")?poolMercadoReal():[];
+  if(pool.length){
+    const bag=pool.slice();
+    for(let i=bag.length-1;i>0;i--){ const k=Math.floor(rr()*(i+1)); const t=bag[i]; bag[i]=bag[k]; bag[k]=t; }
+    return bag.slice(0,16);
+  }
   const out=[];
   const posibles=["ARQ","DEF","DEF","VOL","VOL","DEL","DEL"];
   const n=4+Math.floor(rr()*3);
   for(let i=0;i<n;i++){
     const pos=posibles[Math.floor(rr()*posibles.length)];
     const j=generarJugador(rr, E.ind.plantel+(rr()*22-8), pos, 18+Math.floor(rr()*15));
-    j.club=CLUBES_COMPRADORES[Math.floor(rr()*CLUBES_COMPRADORES.length)];
+    const c=clubCompradorDe(rr);
+    j.club=c.n; j.clubId=c.id;
     j.precio=Math.round(j.valor*(0.9+rr()*0.6)*inflacionEra());
     j.pidesueldo=Math.max(j.sueldo, Math.round(j.sueldo*(1+rr()*0.4)));
     out.push(j);
@@ -52,11 +70,12 @@ function crearOfertaEntrante(rr){
   /* peso más plano: reciben ofertas más jugadores, no siempre el crack */
   const j=eligePeso(cand, x=>clamp(0.4+x.valor/700+(x.proy>x.nivel+4?0.35:0)+(x.edad<24?0.25:0),0.15,1.6));
   if(!j) return false;
-  const comprador=CLUBES_COMPRADORES[Math.floor(rr()*CLUBES_COMPRADORES.length)];
+  const c=clubCompradorDe(rr);
+  const comprador=c.n;
   const monto=Math.round(j.valor*(0.8+rr()*0.8)*inflacionEra());
   const claus=(typeof clausulaDe==="function")?clausulaDe(j):0;
   const pagaClau=claus>0 && monto>=claus;
-  const of={id:"of"+(E._ofid=(E._ofid||0)+1), jid:j.n, comprador:comprador, monto:monto, creada:E.idx, pagaClausula:pagaClau};
+  const of={id:"of"+(E._ofid=(E._ofid||0)+1), jid:j.n, comprador:comprador, compradorId:c.id, monto:monto, creada:E.idx, pagaClausula:pagaClau};
   E.ofertasPend.push(of);
   const sobre=monto-j.valor;
   notificar({
@@ -75,9 +94,14 @@ function crearOfertaEntrante(rr){
 function generarOfertasSemana(){
   if(!E.ofertasPend) E.ofertasPend=[];
   if(!E.mercadoLog) E.mercadoLog={rechazadas:{},vendidos:[]};
+  if(!E.preacuerdos) E.preacuerdos=[];
   caducarOfertas();
-  const rr=azarFijo(semilla("oferta"+E.club+E.anio+"-"+E.idx));
   const abierto=mercadoAbierto();
+  if(abierto && !E._mercadoEstabaAbierto){
+    if(typeof resolverPreacuerdosAlAbrir==="function") resolverPreacuerdosAlAbrir();
+  }
+  E._mercadoEstabaAbierto=abierto;
+  const rr=azarFijo(semilla("oferta"+E.club+E.anio+"-"+E.idx));
   let hechas=0;
   if(rr()<(abierto?0.62:0.18) && crearOfertaEntrante(rr)) hechas++;
   if(abierto && rr()<0.38 && crearOfertaEntrante(rr)) hechas++;   // segunda oferta en plena ventana
@@ -196,6 +220,7 @@ function responderOferta(notif, modo){
     E.ind.plantel=clamp(E.ind.plantel-Math.round(j.nivel/14),0,100);
     aplicarGrupos({hinchada:ref?-12:-2, directorio:8});
     E.mercadoLog.vendidos.push({n:j.n,monto:of.monto,anio:E.anio});
+    if(of.compradorId && typeof cpuSumar==="function") cpuSumar(of.compradorId, j);
     const clau=(typeof clausulaDe==="function")?clausulaDe(j):0;
     const pagoClau=of.pagaClausula||(clau>0&&of.monto>=clau);
     let txt;
@@ -240,12 +265,13 @@ function buscarComprador(j){
       d:"Moviste el teléfono para colocar a "+j.n+", pero por ahora no apareció ningún club interesado."});
     render(); return;
   }
-  const comprador=CLUBES_COMPRADORES[Math.floor(rr()*CLUBES_COMPRADORES.length)];
-  const monto=Math.round(j.valor*(0.7+rr()*0.7)*inflacionEra());  // ofrecen algo menos si sos vos el que ofrece
-  const of={id:"of"+(E._ofid=(E._ofid||0)+1), jid:j.n, comprador:comprador, monto:monto, creada:E.idx};
+  const c=clubCompradorDe(rr);
+  const comprador=c.n;
+  const monto=Math.round(j.valor*(0.7+rr()*0.7)*inflacionEra());  // ofrecen algo menos si eres vos el que ofrece
+  const of={id:"of"+(E._ofid=(E._ofid||0)+1), jid:j.n, comprador:comprador, compradorId:c.id, monto:monto, creada:E.idx};
   E.ofertasPend.push(of);
   notificar({t:comprador+" se interesa por "+j.n,tipo:"mercado",
-    d:"Tras ofrecerlo, "+comprador+" responde con "+plata(monto)+" por "+j.n+" (valor "+plata(j.valor)+"). Aceptás o rechazas desde acá.",
+    d:"Tras ofrecerlo, "+comprador+" responde con "+plata(monto)+" por "+j.n+" (valor "+plata(j.valor)+"). Aceptas o rechazas desde acá.",
     acc:{tipo:"ofertaJugador", ofertaId:of.id, resuelta:false}});
   render();
 }
@@ -381,13 +407,15 @@ function cerrarFichaje(j,oferta){
   const comision=oferta.comision||0;
   E.plata-=(oferta.precio+comision);
   const nuevo=Object.assign({}, j, {
-    sueldo:oferta.sueldo, rol:oferta.rol, real:false, forma:66, moral:70,
+    sueldo:oferta.sueldo, rol:oferta.rol, real:!!j.real, forma:66, moral:70,
     contrato:{hasta:E.anio+2+(oferta.rol==="promesa"?2:0), clausula:Math.max(30, Math.round((j.valor||80)*1.7))}, lesion:0, goles:0, partidos:0, tarjetas:0
   });
   delete nuevo.precio; delete nuevo.pidesueldo; delete nuevo.club;
+  if(j.clubId && typeof cpuQuitar==="function") cpuQuitar(j.clubId, j.n);
+  delete nuevo.clubId;
   E.plantel.push(nuevo);
   E.ind.plantel=clamp(Math.round(mediaPlantel()),0,100);
-  const m=mercadoSemana(); m.objetivos=m.objetivos.filter(x=>x!==j);
+  const m=mercadoSemana(); if(m&&m.objetivos) m.objetivos=m.objetivos.filter(x=>x!==j && !(x.n===j.n && x.clubId===j.clubId));
   notificar({t:"Fichaste a "+nuevo.n,tipo:"bueno",
     d:"Se incorpora "+nuevo.n+" ("+nuevo.pos+", nivel "+nuevo.nivel+") como "+oferta.rol+". Costó "+plata(oferta.precio)+
       (comision?" + "+plata(comision)+" de comisión al representante":"")+
@@ -395,6 +423,69 @@ function cerrarFichaje(j,oferta){
   if(typeof redesReaccion==="function") redesReaccion("ficha",{n:nuevo.n});
   guardar();
   return nuevo;
+}
+function dejarPreacuerdo(j, oferta, firme){
+  if(!E.preacuerdos) E.preacuerdos=[];
+  const pa={
+    id:"pa"+(E._paid=(E._paid||0)+1),
+    j:{n:j.n,pos:j.pos,edad:j.edad,nivel:j.nivel,proy:j.proy,valor:j.valor,sueldo:j.sueldo,real:!!j.real,rasgos:j.rasgos||[],club:j.club,clubId:j.clubId},
+    precio:oferta.precio, sueldo:oferta.sueldo, rol:oferta.rol||"titular",
+    comision:oferta.comision||(typeof comisionRep==="function"?comisionRep(oferta.precio,j):0),
+    firme:!!firme, anio:E.anio, idx:E.idx, precioMercado:j.precio||j.valor
+  };
+  E.preacuerdos.push(pa);
+  const m=mercadoSemana(); if(m&&m.objetivos) m.objetivos=m.objetivos.filter(x=>!(x.n===j.n && x.clubId===j.clubId));
+  notificar({
+    t:(firme?"Trato firme":"Palabra de fichaje")+" · "+j.n,
+    tipo:"mercado",
+    d:(firme
+      ?("Cerraste por "+plata(pa.precio)+" a "+j.n+". Cuando abra la ventana (próxima: "+proximaVentana()+") entra solo a ese precio — si sube, te conviene; si baja, es el trato.")
+      :("Dejaste la negociación de "+j.n+" en "+plata(pa.precio)+". Cuando abra la ventana (próxima: "+proximaVentana()+") confirmas o lo dejas caer. El mercado puede haber cambiado."))
+  });
+  guardar();
+  return pa;
+}
+function cotizarPreacuerdo(pa){
+  const rr=azarFijo(semilla("preCot"+(pa.id||"")+(E.anio||0)+(E.idx||0)));
+  const drift=(rr()-0.40)*0.36;
+  return Math.max(1, Math.round((pa.precioMercado||pa.precio)*(1+drift)));
+}
+function ejecutarPreacuerdo(pa){
+  if(!pa||!pa.j) return false;
+  const costo=(pa.precio||0)+(pa.comision||0);
+  if((E.plata||0)<costo){
+    notificar({t:"No te alcanza el trato de "+pa.j.n, tipo:"malo",
+      d:"El preacuerdo de "+pa.j.n+" pide "+plata(costo)+" y no está en la caja. Sigue vivo: junta plata o suéltalo."});
+    return false;
+  }
+  const j=Object.assign({}, pa.j, {precio:pa.precio, pidesueldo:pa.sueldo});
+  const oferta={precio:pa.precio, sueldo:pa.sueldo, rol:pa.rol, comision:pa.comision};
+  cerrarFichaje(j, oferta);
+  E.preacuerdos=(E.preacuerdos||[]).filter(function(x){ return x.id!==pa.id; });
+  guardar();
+  return true;
+}
+function resolverPreacuerdosAlAbrir(){
+  if(!mercadoAbierto()) return 0;
+  let n=0;
+  (E.preacuerdos||[]).slice().forEach(function(pa){
+    if(!pa || pa._listo) return;
+    const actual=cotizarPreacuerdo(pa);
+    pa.precioActual=actual;
+    if(pa.firme){
+      if(ejecutarPreacuerdo(pa)) n++;
+    } else {
+      pa._listo=true;
+      n++;
+      notificar({
+        t:"Ventana abierta: "+pa.j.n,
+        tipo:"mercado",
+        d:"Acordaron "+plata(pa.precio)+" por "+pa.j.n+". El mercado ahora pide "+plata(actual)+". Firma al precio del trato o déjalo caer — desde Mercado.",
+        acc:{tipo:"preacuerdo", id:pa.id, resuelta:false}
+      });
+    }
+  });
+  return n;
 }
 
 /* ---------- ojeo / informe de scout (revela lo que no dicen los números) ---------- */
@@ -430,14 +521,46 @@ function comisionRep(precio,j){ const pct=5+(semilla((j&&j.n)||"rep")%9); return
 function vistaMercado(){
   const v=$("#vista");
   const abierto=mercadoAbierto();
-  const firma=(typeof puedeFirmar==="function")?puedeFirmar():true;
+  const firma=(typeof puedeFirmar==="function")?puedeFirmar():abierto;
   const cab=panel("Mercado de fichajes","🧳","agua");
-  cab.cuerpo.appendChild(el("p","mini",(typeof T==="function"?T("merc_siempre","Puedes firmar todo el año. En enero-febrero y junio-julio llueven ofertas; el resto, el mercado está más quieto."):"Puedes firmar todo el año. En enero-febrero y junio-julio llueven ofertas; el resto, el mercado está más quieto.")+
-    " "+(abierto?("<b>"+(typeof T==="function"?T("merc_lluvia","Lluvia de ofertas"):"Lluvia de ofertas")+"</b>."):("<b>"+(typeof T==="function"?T("merc_quieto","Mercado más quieto"):"Mercado más quieto")+"</b>."))+
-    " Vender no es un botón: habla el jugador, el representante si tiene, la prensa y la hinchada. El ídolo puede plantarse."));
+  cab.cuerpo.appendChild(el("p","mini",(typeof T==="function"?T("merc_ventana",
+    "La ventana abre en enero-febrero y junio-julio. Fuera de eso negocias y dejas el trato hecho; firmas cuando el mercado lo permite."):
+    "La ventana abre en enero-febrero y junio-julio. Fuera de eso negocias y dejas el trato hecho; firmas cuando el mercado lo permite.")+
+    " "+(abierto?("<b>"+(typeof T==="function"?T("merc_lluvia","Ventana abierta"):"Ventana abierta")+"</b>."):
+      ("<b>"+(typeof T==="function"?T("merc_cerrada","Ventana cerrada · próxima: "):"Ventana cerrada · próxima: ")+proximaVentana()+"</b>."))+
+    " Los objetivos son jugadores de verdad de los otros clubes. Vender no es un botón: habla el jugador, el representante, la prensa y la hinchada."));
   cab.cuerpo.appendChild(fila("Caja disponible",plata(E.plata)));
   if(inflacionEra()!==1) cab.cuerpo.appendChild(fila("Inflación de la era","×"+inflacionEra().toFixed(2)));
   v.appendChild(cab);
+
+  const pres=(E.preacuerdos||[]);
+  if(pres.length){
+    const pp=panel((typeof T==="function"?T("merc_pre","Preacuerdos"):"Preacuerdos"),"📝","alerta");
+    pres.forEach(function(pa){
+      if(!pa||!pa.j) return;
+      const actual=(typeof cotizarPreacuerdo==="function")?cotizarPreacuerdo(pa):(pa.precioActual||pa.precio);
+      const d=el("div","resul mitad");
+      d.innerHTML="<b>"+pa.j.n+"</b> <span class='mini'>("+(pa.j.club||"—")+")</span><br>"+
+        (pa.firme?"Trato firme":"Palabra")+" · acordado <b>"+plata(pa.precio)+"</b> · el mercado ahora "+plata(actual);
+      const cont=el("div"); cont.style.marginTop="6px";
+      if(firma){
+        const bf=el("button","btn-aqua chico verde","Firmar a "+plata(pa.precio));
+        bf.onclick=function(){ ejecutarPreacuerdo(pa); render(); };
+        cont.appendChild(bf);
+      } else {
+        cont.appendChild(el("span","mini","Espera a "+proximaVentana()+" para firmar."));
+      }
+      const bx=el("button","btn-aqua chico gris","Soltar"); bx.style.marginLeft="6px";
+      bx.onclick=function(){
+        E.preacuerdos=(E.preacuerdos||[]).filter(function(x){ return x.id!==pa.id; });
+        guardar(); render();
+      };
+      cont.appendChild(bx);
+      d.appendChild(cont);
+      pp.cuerpo.appendChild(d);
+    });
+    v.appendChild(pp);
+  }
 
   /* --- ofertas entrantes (persistentes) --- */
   const pe=panel("Ofertas por tus jugadores","📥",(E.ofertasPend&&E.ofertasPend.length)?"alerta":"");
@@ -501,8 +624,8 @@ function vistaMercado(){
   /* --- objetivos para comprar (con filtros) --- */
   const po=panel("Objetivos en el mercado","📤");
   po.cuerpo.appendChild(el("p","mini",abierto
-    ?(typeof T==="function"?T("merc_obj_lluvia","Ventana alta: hay más movimiento, cierra ahora si te convence."):"Ventana alta: hay más movimiento, cierra ahora si te convence.")
-    :(typeof T==="function"?T("merc_obj_quieto","Fuera de la lluvia: menos ofertas, pero igual puedes firmar."):"Fuera de la lluvia: menos ofertas, pero igual puedes firmar.")));
+    ?(typeof T==="function"?T("merc_obj_abierta","Ventana abierta: cierra ahora si te convence. Son jugadores de los otros clubes, no inventados."):"Ventana abierta: cierra ahora si te convence. Son jugadores de los otros clubes, no inventados.")
+    :(typeof T==="function"?T("merc_obj_cerrada","Ventana cerrada: puedes negociar y dejar el trato hecho; firmas en "+proximaVentana()+"."):("Ventana cerrada: puedes negociar y dejar el trato hecho; firmas en "+proximaVentana()+"."))));
   /* filtros */
   po.cuerpo.appendChild(el("label","lb","Posición"));
   const fp=el("div","fichas");
@@ -517,15 +640,24 @@ function vistaMercado(){
     b.onclick=()=>{ MERC_FILTRO[k]=!MERC_FILTRO[k]; render(); }; fx.appendChild(b);
   });
   po.cuerpo.appendChild(fx);
+  const inp=el("input","pick-buscar"); inp.type="search"; inp.placeholder="Buscar jugador o club…"; inp.value=MERC_FILTRO.q||"";
+  inp.style.margin="6px 0";
+  inp.oninput=function(){ MERC_FILTRO.q=inp.value||""; };
+  inp.onchange=function(){ MERC_FILTRO.q=inp.value||""; render(); };
+  po.cuerpo.appendChild(inp);
   const merc=mercadoSemana();
-  const lista=merc.objetivos.filter(j=>
+  const q=(MERC_FILTRO.q||"").trim().toLowerCase();
+  const pool=q&&typeof poolMercadoReal==="function"?poolMercadoReal():(merc.objetivos||[]);
+  const lista=pool.filter(j=>
     (!MERC_FILTRO.pos||j.pos===MERC_FILTRO.pos) &&
     (!MERC_FILTRO.joven||j.edad<=23) &&
-    (!MERC_FILTRO.barato||j.precio<=E.plata));
-  if(!lista.length) po.cuerpo.appendChild(el("p","mini","Ningún objetivo cumple los filtros esta semana."));
+    (!MERC_FILTRO.barato||j.precio<=E.plata) &&
+    (!q || (j.n||"").toLowerCase().indexOf(q)>=0 || (j.club||"").toLowerCase().indexOf(q)>=0)
+  ).slice(0, q?40:16);
+  if(!lista.length) po.cuerpo.appendChild(el("p","mini",q?"Nadie con esa búsqueda.":"Ningún objetivo cumple los filtros esta semana."));
   lista.forEach(j=>{
     const d=el("div","resul mitad");
-    d.innerHTML="<b>"+j.n+" <span class='mini'>("+j.club+")</span></b><br>"+
+    d.innerHTML="<b>"+(j.real?"● ":"")+j.n+" <span class='mini'>("+(j.club||"—")+")</span></b><br>"+
       j.pos+" · "+j.edad+" años · nivel "+j.nivel+(j.proy>j.nivel+4?" · proy "+j.proy:"")+
       " · piden <b>"+plata(j.precio)+"</b> + sueldo "+plata(j.pidesueldo);
     const oj=E.ojeados&&E.ojeados[j.n];
@@ -535,14 +667,14 @@ function vistaMercado(){
       const bo=el("button","btn-aqua chico","Ojear ("+plata(costoOjeo(j))+")");
       bo.onclick=()=>ojear(j); cont.appendChild(bo);
     }
-    const b=el("button","btn-aqua chico verde","Negociar / Comprar"); if(!oj) b.style.marginLeft="6px";
+    const b=el("button","btn-aqua chico verde",firma?"Negociar / Comprar":"Negociar / dejar trato"); if(!oj) b.style.marginLeft="6px";
     b.onclick=()=>modalComprar(j,firma);
     cont.appendChild(b); d.appendChild(cont);
     po.cuerpo.appendChild(d);
   });
   v.appendChild(po);
 }
-var MERC_FILTRO={pos:"",joven:false,barato:false};
+var MERC_FILTRO={pos:"",joven:false,barato:false,q:""};
 
 /* Negociación de compra en 2-3 pasos: tu oferta → contraoferta → cierre.
    Insistir cuesta (suben lo que piden); a las 3 rondas se levantan de la mesa. */
@@ -555,7 +687,14 @@ function modalComprar(j,abierto){
   const comAct=()=>Math.round(comisionRep(oferta.precio,j)*(oferta.comisionRebaja?0.5:1));
   const costoTotal=()=>oferta.precio+comAct();
   modal(box=>{
+    const irPreacuerdo=()=>{ paso=4; pintar(); };
     const cerrar=()=>{ oferta.comision=comAct(); const nuevo=cerrarFichaje(j,oferta); cerrarModal(); render(); aviso("Fichaste a "+nuevo.n+" ("+oferta.rol+")"); };
+    const dejar=function(firme){
+      oferta.comision=comAct();
+      dejarPreacuerdo(j, oferta, firme);
+      cerrarModal(); render();
+      aviso(firme?("Trato firme con "+j.n):("Palabra dejada con "+j.n));
+    };
     const regatearComision=()=>{
       if(oferta.comisionIntento){ if(typeof aviso==="function") aviso("Ya le apretaste la mano al representante."); return; }
       oferta.comisionIntento=true;
@@ -568,7 +707,7 @@ function modalComprar(j,abierto){
       ronda++;
       const cok=oferta.precio>=exigePrecio, jok=jugadorAcepta(j,oferta);
       if(cok&&jok){
-        if(!abierto){ contra={cerrado:false,msg:"El acuerdo está, pero la ventana está cerrada: no se puede firmar hasta "+proximaVentana()+"."}; paso=2; pintar(); return; }
+        if(!abierto){ irPreacuerdo(); return; }
         if(E.plata<costoTotal()){ contra={cerrado:false,msg:"Se pusieron de acuerdo, pero no te alcanza la caja: precio "+plata(oferta.precio)+" + comisión "+plata(comAct())+"."}; paso=2; pintar(); return; }
         cerrar(); return;
       }
@@ -582,7 +721,8 @@ function modalComprar(j,abierto){
     const insistir=()=>{
       /* pequeña chance de que cedan; si no, suben la vara y vuelven a contraofertar */
       if(Math.random()<Math.max(0.05,0.28-ronda*0.08)){ // ceden a tu oferta actual
-        if(!abierto||E.plata<costoTotal()){ evaluar(); return; }
+        if(!abierto){ irPreacuerdo(); return; }
+        if(E.plata<costoTotal()){ evaluar(); return; }
         cerrar(); return;
       }
       exigePrecio=Math.round(exigePrecio*1.06);
@@ -593,7 +733,7 @@ function modalComprar(j,abierto){
       if(contra.precio) oferta.precio=contra.precio;
       if(contra.sueldo) oferta.sueldo=contra.sueldo;
       if(contra.rol) oferta.rol=contra.rol;
-      if(!abierto){ contra.msg="Trato cerrado en la palabra, pero la ventana está cerrada: firmas en "+proximaVentana()+"."; pintar(); return; }
+      if(!abierto){ irPreacuerdo(); return; }
       if(E.plata<costoTotal()){ contra.msg="Aceptaste, pero no te alcanza la caja: precio "+plata(oferta.precio)+" + comisión "+plata(comAct())+"."; pintar(); return; }
       cerrar();
     };
@@ -639,6 +779,15 @@ function modalComprar(j,abierto){
         } else {
           const bv=el("button","btn-aqua ancho"); bv.textContent="Volver a la mesa"; bv.onclick=()=>{ paso=1; pintar(); }; c.appendChild(bv);
         }
+      } else if(paso===4){
+        c.appendChild(el("div","resul bien","<b>El trato está.</b> La ventana abre en "+proximaVentana()+". Puedes dejarlo firme (entra solo a este precio, suba o baje el mercado) o dejar la palabra y confirmar cuando abra."));
+        c.appendChild(el("p","mini","Precio acordado: <b>"+plata(oferta.precio)+"</b> + comisión "+plata(comAct())+" · "+j.n+" de "+(j.club||"—")+"."));
+        const bf=el("button","btn-aqua ancho verde","Trato firme · este precio");
+        bf.onclick=function(){ dejar(true); };
+        c.appendChild(bf);
+        const bp=el("button","btn-aqua ancho"); bp.textContent="Dejar la palabra · confirmo cuando abra"; bp.style.marginTop="6px";
+        bp.onclick=function(){ dejar(false); };
+        c.appendChild(bp);
       } else { /* paso 3: se cayó */
         c.appendChild(el("div","resul mal","El club se levantó de la mesa: insististe demasiado y se enfriaron. Prueba con otro objetivo."));
       }
@@ -668,7 +817,7 @@ function modalVender(of,j,abierto){
         b.onclick=()=>{ const n=nOf(); if(n) responderOferta(n,"aceptar"); cerrarModal(); render(); };
         cuerpo.appendChild(b);
       } else if(of._jugadorDijoNo){
-        cuerpo.appendChild(el("div","resul mitad","Ya dijo que no. Podés convencerlo (a veces afloja) o dejarlo."));
+        cuerpo.appendChild(el("div","resul mitad","Ya dijo que no. Puedes convencerlo (a veces afloja) o dejarlo."));
         const cv=el("button","btn-aqua ancho verde","Convencerlo");
         cv.onclick=()=>{
           const ok=convencerSalida(j,of);

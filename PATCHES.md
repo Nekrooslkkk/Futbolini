@@ -1,10 +1,17 @@
 # FUTBOLINI 3.0 — Bitácora de parches
 
+## 7.9010 · Ventana real, pool de todos, CPUs que envejecen, palo adentro
+**Archivos:** `mercado.js`, `data-plantel.js`, `motor.js`, `ui-partido.js`, `idiomas.js`, `util.js`, `test/pruebas_core.js`
+- Firmar **solo con la ventana** (ene-feb / jun-jul). Fuera: negocias y dejas **preacuerdo** (trato firme a un precio, o palabra para confirmar al abrir). Si el mercado sube, el firme te cubre; si baja, es el trato.
+- Objetivos = jugadores **reales de todos los clubes** (CPU), no inventados. Buscador. Al fichar salen del plantel CPU; al vender, entran.
+- Cada club CPU envejece, se retira a los 37 y se mueve en el mercado. En 2050 ya no están los de 2026.
+- Palo: la pelota rebota y **puede entrar**. Tests T61. **No es 8.00.**
+
 ## 7.9009 · Córner no siempre gol + palo + mercado 24/7
 **Archivos:** `ui-partido.js`, `partido.js`, `mercado.js`, `ui.js`, `util.js`, `idiomas.js`, `gol.css`, `test/pruebas_core.js`
 - **Córner:** el minijuego aéreo ya no usa `penResolver` + `iner*40` (eso daba gol ~siempre). `cornerResolver` en banda 0.06–0.30, igual que `centroCorner`.
 - **Arco:** el arquero tiene manos SVG que se estiran al atajar. El palo existe de verdad (`penResolver` puede devolver `palo`) y la pelota rebota.
-- **Mercado:** `puedeFirmar()` siempre true. La ventana ene-feb / jun-jul solo cambia la lluvia de ofertas, no traba la firma.
+- **Mercado:** `puedeFirmar()` siempre true. La ventana ene-feb / jun-jul solo cambia la lluvia de ofertas, no traba la firma. **Revertido en 7.9010** (el autor: abierto cuando el mercado lo permite).
 - **Pulido A (sin so.css/aero.css):** Calendario abre con el próximo compromiso; Plantel abre con el once probable.
 - Tests T60. **No es 8.00.**
 

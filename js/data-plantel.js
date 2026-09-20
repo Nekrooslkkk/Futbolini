@@ -297,12 +297,31 @@ function idClubDe(idOrNombre){
     return c&&(c.n===idOrNombre||c.c===idOrNombre);
   })||null;
 }
-/* XI rival: plantel documentado si existe. Si no, apodos del club (no inventa nombres). */
+/* XI rival: plantel vivo de la CPU si existe. Si no, documentado. Nunca se queda pegado en 2026. */
 function plantelRival(idOrNombre,fuerza){
   const id=idClubDe(idOrNombre);
+  if(id && typeof cpuPlantel==="function"){
+    try{
+      const pl=cpuPlantel(id);
+      if(pl&&pl.length>=11){
+        const pick=function(pos,n){ return pl.filter(function(j){ return j.pos===pos && !j.vendido; }).sort(function(a,b){ return (b.nivel||0)-(a.nivel||0); }).slice(0,n); };
+        let xi=pick("ARQ",1).concat(pick("DEF",4),pick("VOL",4),pick("DEL",2));
+        if(xi.length<11){
+          const resto=pl.filter(function(j){ return xi.indexOf(j)<0 && !j.vendido; }).sort(function(a,b){ return (b.nivel||0)-(a.nivel||0); });
+          xi=xi.concat(resto.slice(0,11-xi.length));
+        }
+        return xi.slice(0,11);
+      }
+    }catch(e){}
+  }
   const anio=(typeof E!=="undefined"&&E&&E.anio)||2026;
   const pack=id&&PLANTELES_REALES[id];
-  const reales=pack&&(pack[anio]||(anio>=2024?pack[2026]:null));
+  let reales=pack&&(pack[anio]||null);
+  if(!reales && pack){
+    const ys=Object.keys(pack).map(Number).filter(function(n){ return !isNaN(n); }).sort(function(a,b){ return b-a; });
+    const y=ys.find(function(x){ return x<=anio; })||ys[0];
+    if(y!=null) reales=pack[y];
+  }
   if(reales&&reales.length>=11){
     const pick=(pos,n)=>reales.filter(a=>a[1]===pos).slice(0,n);
     const filas=pick("ARQ",1).concat(pick("DEF",4),pick("VOL",4),pick("DEL",2));
@@ -317,6 +336,189 @@ function plantelRival(idOrNombre,fuerza){
     proy:70, sueldo:40, valor:80, rasgos:[], forma:70, moral:70, real:false,
     contrato:{hasta:0}, lesion:0, goles:0, partidos:0, tarjetas:0, cansancio:0
   }));
+}
+/* ---------- CPUs: el resto de los clubes envejece, se retira y se ficha ----------
+   7.9010 · el mundo no se queda congelado en 2026. Cada club tiene plantel vivo
+   en E.cpu.sq[id]. Al pasar el año crecen, cuelgan los botines y se mueven. */
+function idsClubesCpu(){
+  const ids={};
+  if(typeof PLANTELES_REALES==="object") Object.keys(PLANTELES_REALES).forEach(function(id){ ids[id]=1; });
+  [typeof LIGA_2026!=="undefined"&&LIGA_2026, typeof LIGA_B_2026!=="undefined"&&LIGA_B_2026,
+   typeof LIGA_C_2026!=="undefined"&&LIGA_C_2026, typeof LIGA_ARG_2026!=="undefined"&&LIGA_ARG_2026,
+   typeof LIGA91!=="undefined"&&LIGA91].forEach(function(L){
+    if(Array.isArray(L)) L.forEach(function(c){ if(c&&c.id) ids[c.id]=1; });
+  });
+  if(typeof LIGAS==="object") Object.keys(LIGAS).forEach(function(era){
+    (LIGAS[era]||[]).forEach(function(c){ if(c&&c.id) ids[c.id]=1; });
+  });
+  return Object.keys(ids);
+}
+function _nomClubCpu(id){
+  try{
+    if(typeof clubMundo==="function"){ const c=clubMundo(id); if(c) return c.n||c.c||id; }
+    if(typeof clubLookup==="function"){ const c=clubLookup(id); if(c) return c.n||c.c||id; }
+    if(typeof CLUB_POR_ID==="object"&&CLUB_POR_ID[id]) return CLUB_POR_ID[id].n||CLUB_POR_ID[id].c||id;
+  }catch(e){}
+  return id;
+}
+function cpuSeedFromData(id, ySrc){
+  const pack=typeof PLANTELES_REALES==="object"&&PLANTELES_REALES[id];
+  if(pack){
+    let y=ySrc;
+    if(y==null || !pack[y]){
+      const years=Object.keys(pack).map(Number).filter(function(n){ return !isNaN(n); }).sort(function(a,b){ return b-a; });
+      const anio=(typeof E!=="undefined"&&E&&E.anio)||2026;
+      y=years.find(function(x){ return x<=anio; });
+      if(y==null) y=years[0];
+    }
+    if(y!=null && pack[y] && pack[y].length){
+      return pack[y].map(function(a){ return jugadorDesde(a); });
+    }
+  }
+  const c=(typeof clubMundo==="function"&&clubMundo(id))||(typeof CLUB_POR_ID==="object"&&CLUB_POR_ID[id])||{};
+  if(typeof armarPlantel==="function") return armarPlantel(id, (typeof E!=="undefined"&&E&&E.anio)||2026, c.fuerza||60);
+  return [];
+}
+function cpuAnioFuente(id){
+  const pack=typeof PLANTELES_REALES==="object"&&PLANTELES_REALES[id];
+  if(!pack) return (typeof E!=="undefined"&&E&&E.anio)||2026;
+  const years=Object.keys(pack).map(Number).filter(function(n){ return !isNaN(n); }).sort(function(a,b){ return b-a; });
+  const anio=(typeof E!=="undefined"&&E&&E.anio)||2026;
+  const y=years.find(function(x){ return x<=anio; });
+  return y!=null?y:(years[0]||anio);
+}
+function cpuEnvejecerUno(pl, id, anio, rr){
+  pl=(pl||[]).slice();
+  rr=rr||function(){ return Math.random(); };
+  pl.forEach(function(j){
+    j.edad=(j.edad||20)+1;
+    let delta=0;
+    if(j.edad<=23) delta=1+Math.floor(rr()*3);
+    else if(j.edad<=29) delta=Math.floor(rr()*3)-1;
+    else delta=-(1+Math.floor(rr()*3));
+    j.nivel=clamp((j.nivel||60)+delta, 20, 94);
+    if(j.edad<=24) j.proy=Math.max(j.proy||j.nivel, j.nivel+Math.floor(rr()*4));
+    j.goles=0; j.partidos=0; j.lesion=0; j.forma=66+Math.floor(rr()*12);
+  });
+  const vivos=pl.filter(function(j){ return (j.edad||0)<37; });
+  const nRet=pl.length-vivos.length;
+  const fuerza=((typeof clubMundo==="function"&&clubMundo(id))||{}).fuerza||58;
+  function meteJoven(pos){
+    if(typeof generarJugador!=="function") return;
+    const joven=generarJugador(rr, fuerza*0.7+8, pos, 17+Math.floor(rr()*3));
+    joven.rasgos=["cantera"]; joven.real=false;
+    joven.contrato={hasta:(anio||2026)+3+Math.floor(rr()*2)};
+    vivos.push(joven);
+  }
+  for(let i=0;i<nRet;i++) meteJoven(["ARQ","DEF","DEF","VOL","VOL","DEL"][i%6]);
+  while(vivos.length<18) meteJoven(["DEF","VOL","DEL","ARQ"][vivos.length%4]);
+  if(vivos.length>24){
+    vivos.sort(function(a,b){ return (a.nivel||0)-(b.nivel||0); });
+    vivos.splice(0, vivos.length-24);
+  }
+  return vivos;
+}
+function cpuAsegurar(id){
+  if(!id || typeof E==="undefined" || !E) return [];
+  if(!E.cpu) E.cpu={anio:null, sq:{}};
+  if(E.cpu.sq[id] && E.cpu.sq[id].length) return E.cpu.sq[id];
+  const ySrc=cpuAnioFuente(id);
+  let pl=cpuSeedFromData(id, ySrc);
+  const skip=Math.max(0, ((E.anio||2026)-(ySrc||2026)));
+  if(skip>0 && pl.length){
+    const rr=azarFijo(semilla("cpuSkip"+id+(E.anio||0)));
+    for(let k=0;k<skip;k++) pl=cpuEnvejecerUno(pl, id, (ySrc||2026)+k+1, rr);
+  }
+  E.cpu.sq[id]=pl;
+  if(E.cpu.anio==null) E.cpu.anio=(skip>0?(E.anio||ySrc):(ySrc||E.anio||2026));
+  return pl;
+}
+function cpuAsegurarTodos(){
+  if(typeof E==="undefined" || !E) return;
+  if(!E.cpu) E.cpu={anio:null, sq:{}};
+  idsClubesCpu().forEach(function(id){ if(id!==E.club) cpuAsegurar(id); });
+  if(E.cpu.anio==null) E.cpu.anio=E.anio;
+}
+function cpuPlantel(id){
+  if(!id) return [];
+  if(typeof E!=="undefined" && E && id===E.club && Array.isArray(E.plantel)) return E.plantel.filter(function(j){ return !j.vendido; });
+  return cpuAsegurar(id);
+}
+function cpuQuitar(clubId, nombre){
+  if(!clubId || !nombre || typeof E==="undefined" || !E || !E.cpu || !E.cpu.sq[clubId]) return;
+  E.cpu.sq[clubId]=E.cpu.sq[clubId].filter(function(j){ return j.n!==nombre; });
+}
+function cpuSumar(clubId, j){
+  if(!clubId || !j || typeof E==="undefined" || !E) return;
+  cpuAsegurar(clubId);
+  if(!E.cpu.sq[clubId]) E.cpu.sq[clubId]=[];
+  if(E.cpu.sq[clubId].some(function(x){ return x.n===j.n; })) return;
+  const copia=Object.assign({}, j, {vendido:false, cedido:null, goles:0, partidos:0});
+  delete copia.precio; delete copia.pidesueldo; delete copia.club; delete copia.clubId;
+  E.cpu.sq[clubId].push(copia);
+}
+function cpuMercadoAnio(rr){
+  if(typeof E==="undefined" || !E || !E.cpu || !E.cpu.sq) return 0;
+  rr=rr||Math.random;
+  const ids=Object.keys(E.cpu.sq).filter(function(id){ return id!==E.club; });
+  if(ids.length<2) return 0;
+  const n=6+Math.floor(rr()*8);
+  let hechas=0;
+  for(let i=0;i<n;i++){
+    const de=ids[Math.floor(rr()*ids.length)];
+    const a=ids[Math.floor(rr()*ids.length)];
+    if(!de||!a||de===a) continue;
+    const cand=(E.cpu.sq[de]||[]).filter(function(j){
+      const ras=j.rasgos||[];
+      return j.edad>=21 && j.edad<=33 && ras.indexOf("ídolo")<0 && ras.indexOf("capitán")<0;
+    });
+    if(!cand.length || (E.cpu.sq[de]||[]).length<16) continue;
+    const j=cand[Math.floor(rr()*cand.length)];
+    E.cpu.sq[de]=E.cpu.sq[de].filter(function(x){ return x!==j; });
+    E.cpu.sq[a].push(j);
+    hechas++;
+  }
+  return hechas;
+}
+function cpuTickAnio(){
+  if(typeof E==="undefined" || !E) return 0;
+  cpuAsegurarTodos();
+  if(E.cpu.anio===E.anio) return 0;
+  const from=E.cpu.anio!=null?E.cpu.anio:((E.anio||2026)-1);
+  const rr=azarFijo(semilla("cpuTick"+(E.club||"x")+(E.anio||0)));
+  let y=from, hechas=0;
+  while(y<E.anio){
+    y++;
+    Object.keys(E.cpu.sq).forEach(function(id){
+      if(id===E.club) return;
+      E.cpu.sq[id]=cpuEnvejecerUno(E.cpu.sq[id]||[], id, y, rr);
+    });
+    hechas+=cpuMercadoAnio(rr)||0;
+  }
+  E.cpu.anio=E.anio;
+  return hechas;
+}
+function poolMercadoReal(){
+  if(typeof E==="undefined" || !E) return [];
+  cpuAsegurarTodos();
+  const out=[];
+  const yo=E.club;
+  const pre=(E.preacuerdos||[]).reduce(function(s,pa){ if(pa&&pa.j&&pa.j.n) s[pa.j.n]=1; return s; },{});
+  Object.keys((E.cpu&&E.cpu.sq)||{}).forEach(function(id){
+    if(id===yo) return;
+    (E.cpu.sq[id]||[]).forEach(function(j){
+      if(!j || j.vendido || j.cedido || pre[j.n]) return;
+      const infl=(typeof inflacionEra==="function")?inflacionEra():1;
+      const precio=Math.max(1, Math.round((j.valor||80)*(0.85+((j.edad||25)<23?0.15:0))*infl));
+      out.push(Object.assign({}, j, {
+        club:_nomClubCpu(id),
+        clubId:id,
+        precio:precio,
+        pidesueldo:Math.max(j.sueldo||8, Math.round((j.sueldo||8)*1.08))
+      }));
+    });
+  });
+  return out;
 }
 /* ---------- tokens: las decisiones nombran jugadores de verdad ---------- */
 function resolverTokens(txt,E,extra){

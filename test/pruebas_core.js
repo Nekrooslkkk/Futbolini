@@ -2483,11 +2483,56 @@
       ok(/arco-poste-izq/.test(svg) && /arco-travesano/.test(svg), "los palos tienen id para el rebote");
     }, "palo + manos 3D");
     safe(function(){
-      ok(puedeFirmar()===true, "firmas todo el año");
       nuevaPartida("CC",2026,"historico");
-      ok(puedeFirmar()===true, "con partida abierta también firmas");
-      ok(typeof mercadoAbierto==="function", "la lluvia de ofertas sigue siendo estacional");
-    }, "mercado 24/7");
+      ok(typeof puedeFirmar==="function" && typeof mercadoAbierto==="function", "API mercado");
+      ok(puedeFirmar()===mercadoAbierto(), "firmar sigue la ventana del juego");
+    }, "mercado sigue la ventana");
+
+    /* T61 · 7.9010 palo adentro, pool real, CPU envejece, preacuerdo */
+    grupo("Grok 7.9010 (palo adentro + mercado real + CPU)");
+    safe(function(){
+      ok(VERSION==="7.9010" || /^7\.9/.test(VERSION), "VERSION 7.9010");
+      ok(typeof paloEntra==="function" && typeof _rebotePalo==="function", "API palo adentro");
+      ok(typeof cpuTickAnio==="function" && typeof poolMercadoReal==="function" && typeof dejarPreacuerdo==="function", "API cpu/mercado");
+      ok(typeof puedeFirmar==="function" && puedeFirmar()===mercadoAbierto(), "puedeFirmar = mercadoAbierto");
+    }, "API 7.9010");
+    safe(function(){
+      var oldR=Math.random;
+      Math.random=function(){ return 0.05; };
+      ok(paloEntra({alt:"alto",tercio:"centro"},"potente")===true, "random bajo = palo adentro");
+      Math.random=function(){ return 0.95; };
+      ok(paloEntra({alt:"bajo",tercio:"izq"},"colocado")===false, "random alto = el palo saca");
+      Math.random=oldR;
+    }, "palo puede entrar");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var pool=poolMercadoReal();
+      ok(pool.length>=16, "pool de otros clubes ("+pool.length+")");
+      ok(pool.some(function(j){ return j.clubId==="UCH" && /Vargas|Aránguiz|Castellón|Toselli/i.test(j.n); }), "salen jugadores reales de la U");
+      ok(!pool.some(function(j){ return j.clubId==="CC"; }), "no te vendes a ti mismo");
+      var j={n:"Prueba Pre",pos:"DEL",edad:24,nivel:70,proy:78,valor:100,sueldo:20,club:"U. de Chile",clubId:"UCH",precio:120,pidesueldo:22,real:true,rasgos:[]};
+      dejarPreacuerdo(j,{precio:100,sueldo:22,rol:"titular",comision:8},true);
+      ok((E.preacuerdos||[]).length>=1 && E.preacuerdos.some(function(p){ return p.firme && p.j && p.j.n==="Prueba Pre"; }), "trato firme queda guardado");
+    }, "pool real + preacuerdo");
+    safe(function(){
+      nuevaPartida("UCH",2026,"historico");
+      cpuAsegurar("CC");
+      ok((E.cpu.sq.CC||[]).some(function(j){ return /Vidal/i.test(j.n); }), "en 2026 Vidal está en Colo-Colo CPU");
+      E.anio=2027;
+      cpuTickAnio();
+      ok(!(E.cpu.sq.CC||[]).some(function(j){ return /Vidal/i.test(j.n); }), "al año siguiente el de 39 se retiró");
+      ok((E.cpu.sq.CC||[]).length>=11, "Colo-Colo CPU sigue teniendo plantel");
+      ok((E.cpu.sq.CC||[]).every(function(j){ return (j.edad||0)<37; }), "nadie con 37+ en el plantel CPU");
+    }, "CPU se retira");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      E.anio=2050;
+      cpuAsegurar("UCH");
+      var u=E.cpu.sq.UCH||[];
+      ok(u.length>=11, "la U en 2050 tiene plantel ("+u.length+")");
+      ok(u.every(function(j){ return (j.edad||0)<37; }), "la U 2050 sin veteranos congelados de 2026");
+      ok(!u.some(function(j){ return j.n==="Eduardo Vargas" && j.edad===36; }), "Vargas no sigue con 36 años en 2050");
+    }, "2050 ya no es 2026");
 
     /* Reporte */
     OUT.push("\n════════════════════════");
