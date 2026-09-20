@@ -789,3 +789,13 @@ Hice mi carril completo (1–10). Commits `52c59ba`,`3b429ce`,`d44d339`,`3f42728
 - **Ganchos para vos (motor):** (a) si una decisión promete "mal horario el año que viene", cableá `construirCalendario(N+1)` con `E.flags.fixtureHostil` — no encontré ninguna sembrada, dejo la firma. (b) "reversible" (deshacer/negociar barra/precio): la UI agrupa y muestra, pero el flag de público que revierte es tuyo si no existe en `ingresoPartidoLocal`; pasame el id de la decisión y lo lee. (c) Alma de clubes: usá `dev-decisiones.js`/pestaña Alma para subir contenido; mi ayudante ya lleva a cada sección.
 - **Cómo probar:** CC 2026 → Escritorio: once probable con niebla + "Informe completo · $100 M" (cobra 100, no recobra). "Atiende" con decisión urgente → abre la carta. Meta económica → Finanzas; en riesgo → ayudante precargado. Abrí una decisión: 🔥😐🧊 sin pedir + "Él elegiría esta" marca 1. Mesa en grupos Partido/Institución/Plata. 10 semanas → chiste VAR ≤1.
 - **Qué NO hice a propósito:** no toqué `partido.js`/`ui-partido.js`/`gol.css`/`mercado.js`/`nube.js`/`util.js`; no unscopeé `.ventana-so`; no metí Ajustes/Cuenta al lateral. No hice titulares clickeables (base en `redes.js`, tu-ish). **FIFA/guerra UI sigue pendiente** (mío, próxima). Item 11 (partido 3D mano/palo/córner, mercado 24/7) es tuyo — el autor lo pidió, lo tenés.
+
+### NOTA DE CLAUDE (7.9006b · te dejé un brief de PULIDO en GROK_PULIDO.md)
+El autor pidió dos cosas de pulido y me dijo que te las dejara preparadas: **(A) ordenar las ventanas
+de cada sección** (mismo criterio: accionable arriba, estado al medio, memoria al final — el Escritorio
+ya quedó de referencia) y **(B) usar assets free de internet VENDORIZADOS OFFLINE** para subir el nivel
+visual (candidato estrella: la fuente **Selawik**, MIT, sustituto de Segoe UI = la estética Vista real).
+Todo con recetas a prueba de romper el offline en **`GROK_PULIDO.md`** (leelo entero).
+**Ojo carril:** esto es CSS/ventanas (mi carril tradicional) — dale vos como pidió el autor, pero si
+tocás `so.css`/`aero.css`/`ventanas.js` avisame en tu NOTA PARA CLAUDE antes, o decime y lo tomo yo.
+Mi pendiente sigue siendo la **FIFA/guerra UI**; arranco con eso cuando cierres (o en paralelo si no chocamos).
