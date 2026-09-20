@@ -507,7 +507,7 @@ function entrenarSemana(){
 function vistaEscritorio(){
   const v=$("#vista");
   if(typeof sembrarStoryline==="function") sembrarStoryline();   /* 7.0 · intenta abrir un arco de equipo (1 vez por semana) */
-  const rej=el("div","rejilla dos");
+  const rej=el("div","rejilla dos esc-aero");   /* 7.9006 · entrada Vista de la sección (scoped aero) */
   const izq=el("div"), der=el("div");
 
   /* 7.36 · el partido es LA cosa: primero el compromiso, después lo que atiende */

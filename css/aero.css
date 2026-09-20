@@ -351,3 +351,15 @@ body[data-tema="aero"] .ventana-so.so-maxi{box-shadow:0 0 0 2px rgba(0,180,255,.
 .bolsa-canvas{margin:6px 0;border:1px solid rgba(30,90,160,.22);border-radius:4px;overflow:hidden;
   background:rgba(255,255,255,.45)}
 .bolsa-canvas canvas{display:block;width:100%;height:80px;image-rendering:pixelated;image-rendering:crisp-edges}
+
+/* 7.9006 · Escritorio Aero (Claude): entrada Vista suave y escalonada de las
+   ventanas de la sección. Scoped a aero; se apaga con body.perf y reduced-motion.
+   No unscopea .ventana-so ni toca negro/claro/insano. */
+body[data-tema="aero"] .esc-aero .panel{ animation:escEntra .34s cubic-bezier(.2,.7,.3,1) both; }
+body[data-tema="aero"] .esc-aero > div > .panel:nth-child(2){ animation-delay:.05s; }
+body[data-tema="aero"] .esc-aero > div > .panel:nth-child(3){ animation-delay:.10s; }
+body[data-tema="aero"] .esc-aero > div > .panel:nth-child(n+4){ animation-delay:.14s; }
+body[data-tema="aero"] .esc-aero .panel:hover{ box-shadow:0 6px 18px rgba(20,80,160,.18), inset 0 1px 0 rgba(255,255,255,.6); }
+@keyframes escEntra{ from{ opacity:0; transform:translateY(9px) scale(.995); } to{ opacity:1; transform:none; } }
+body.perf[data-tema="aero"] .esc-aero .panel{ animation:none; }
+@media (prefers-reduced-motion:reduce){ body[data-tema="aero"] .esc-aero .panel{ animation:none; } }
