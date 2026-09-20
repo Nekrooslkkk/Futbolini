@@ -545,6 +545,138 @@
       });
     },"i18n jornada");
 
+    grupo("Mundo por época · 7.9013 (nada anacrónico)");
+    safe(function(){
+      t(typeof mundoEpocaPodar==="function","mundoEpocaPodar existe");
+      t(typeof mundoEpocaLimitada==="function","mundoEpocaLimitada existe");
+      t(mundoInit._ep===true && mundoSimCopas._ep===true,"mundoInit y mundoSimCopas quedan envueltos");
+      t(mundoTick._mv===true,"el wrap de mundo-vivo sobrevive al de época (marcas heredadas)");
+      nuevaPartida("CC",1991,"historico");
+      for(var i=0;i<12;i++){ var p=proximoPartido(); if(!p) break;
+        var P=iniciarPartido(p,"simular"); correrHasta(P,90); terminarPartido(P);
+        try{ procesarSemanaPostPartido(); }catch(e){} }
+      t(mundoEpocaLimitada()===true,"1991 queda marcado como época sin mundo modelado");
+      var ligas=Object.keys(E.mundo.ligas||{});
+      t(ligas.length===1 && ligas[0]==="1991","en 1991 solo queda la liga de 1991 ("+ligas.join(",")+")");
+      var txt=JSON.stringify({p:E.mundo.pais||[],v:E.mundo.vida||[],j:(E.ultimaJornada&&E.ultimaJornada.mundo)||[],n:E.mundo.noticias||[]});
+      ["Sudamericana","Copa de la Liga","Bragantino","Cusco","Copa Argentina","Libertadores","Limache"].forEach(function(w){
+        t(txt.indexOf(w)<0,"1991 no nombra «"+w+"»");
+      });
+      t(typeof mundoEpocaTexto()==="string" && mundoEpocaTexto().length>20,"hay texto honesto para la época sin mundo");
+      /* 2026 sigue igual: el mundo moderno no se poda */
+      nuevaPartida("CC",2026,"historico");
+      var p2=proximoPartido(); var P2=iniciarPartido(p2,"simular"); correrHasta(P2,90); terminarPartido(P2);
+      t(mundoEpocaLimitada()===false,"2026 NO se poda");
+      t(Object.keys(E.mundo.ligas||{}).length>=5,"2026 mantiene sus ligas ("+Object.keys(E.mundo.ligas||{}).length+")");
+    },"Mundo época");
+
+    grupo("FIFA / guerra de federaciones · 7.9013 (la cara del motor)");
+    safe(function(){
+      ["fedEscalon","fedPeso","panelEscalera","panelGuerra","fedLineaEscritorio","fedTickAnio","fedElegirReforma","fedChequearSalto"]
+        .forEach(function(f){ t(typeof window[f]==="function","export "+f); });
+      nuevaPartida("CC",2026,"historico");
+      t(fedEscalon("conmebol")==="cerrado","sin peso, CONMEBOL está cerrado");
+      E.flags.fed_conmebol=3; aplicarSaltoFed();
+      t(E.fed.conmebolOk===true && fedNivelContinental()==="conmebol","con 3 jugadas se abre CONMEBOL");
+      t(fedEscalon("conmebol")==="ok" && fedEscalon("fifa")==="actual","la escalera lo refleja");
+      SEC="institucion"; render();
+      var v1=document.getElementById("vista").textContent;
+      t(v1.indexOf(T("fed_escalera","Escalera del poder"))>=0,"Institución muestra la escalera");
+      t(v1.indexOf("CONMEBOL")>=0,"Institución nombra el escalón CONMEBOL");
+      E.flags.fed_conmebol=6; aplicarSaltoFed();
+      t(E.fed.fifaOk===true && fedNivelContinental()==="fifa","con 6 jugadas se llega a FIFA");
+      E.flags.fed_guerra=1; aplicarGuerraFed();
+      SEC="institucion"; render();
+      var v2=document.getElementById("vista").textContent;
+      t(v2.indexOf(T("fed_guerra","Guerra de asociaciones"))>=0,"con guerra, aparece el panel de guerra");
+      t(v2.indexOf(T("fed_cupos","Cupos internacionales"))>=0,"la guerra muestra los cupos en números");
+      t(fedLineaEscritorio()===null,"sin presidir, no hay línea en el escritorio");
+      E.fed.presidente=true;
+      var ln=fedLineaEscritorio();
+      t(typeof ln==="string" && ln.indexOf("FIFA")>=0,"presidiendo, el escritorio dice el escalón ("+ln+")");
+    },"Federación UI");
+
+    grupo("El rival tiene pasado · 7.9013");
+    safe(function(){
+      t(typeof formaClub==="function" && typeof ultimoCruce==="function","formaClub y ultimoCruce existen");
+      t(typeof _pasadoRival==="function","_pasadoRival existe");
+      nuevaPartida("CC",2026,"historico");
+      var pr=proximoPartido();
+      var caja=_pasadoRival(pr);
+      t(caja && caja.textContent.length>10,"sin historial, igual dice algo");
+      t(caja.textContent.indexOf(T("riv_sin","Primera vez que se cruzan este año."))>=0 ||
+        caja.textContent.indexOf(T("riv_nuevo","Todavía no jugó esta temporada."))>=0,
+        "sin datos, lo DICE en vez de inventar");
+      for(var i=0;i<6;i++){ var p=proximoPartido(); if(!p) break;
+        var P=iniciarPartido(p,"simular"); correrHasta(P,90); terminarPartido(P);
+        try{ procesarSemanaPostPartido(); }catch(e){} }
+      var algun=Object.keys(E.forma||{}).filter(function(k){ return (E.forma[k]||[]).length>0; });
+      t(algun.length>0,"E.forma guarda racha de los clubes ("+algun.length+")");
+      var f=formaClub(algun[0]);
+      t(f.length>0 && f.length<=5,"formaClub devuelve hasta 5 ("+f.length+")");
+      t(["V","E","D"].indexOf(f[0].r)>=0,"cada resultado es V/E/D ("+f[0].r+")");
+      var prox=proximoPartido();
+      if(prox){ var c2=_pasadoRival(prox); t(c2.textContent.length>10,"con datos, la tira del rival se arma"); }
+      else t(true,"sin próximo partido, nada que armar");
+    },"Rival");
+
+    grupo("Calendario con pulso y botones vivos · 7.9013");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var P=iniciarPartido(proximoPartido(),"simular"); correrHasta(P,90); terminarPartido(P);
+      SEC="calendario"; render();
+      var v=document.getElementById("vista").textContent;
+      t(v.indexOf(T("cal_prog","Temporada"))>=0,"el calendario muestra el progreso de la temporada");
+      t(v.indexOf(T("cal_sig","Lo que viene"))>=0,"el calendario muestra lo que viene");
+      t(typeof _irAPanel==="function","_irAPanel existe (las 4 fichas de Finanzas ya no son mudas)");
+      SEC="finanzas"; render();
+      var chips=document.querySelectorAll("#vista .banco-cta");
+      t(chips.length===4,"hay 4 fichas de banco ("+chips.length+")");
+      var conAccion=0;
+      for(var i=0;i<chips.length;i++){ if(typeof chips[i].onclick==="function") conAccion++; }
+      t(conAccion===4,"las 4 tienen acción ("+conAccion+")");
+    },"Calendario/Finanzas");
+
+    grupo("Alma: ningún club pobre · 7.9013");
+    safe(function(){
+      /* OJO: los grupos de arriba clonan una liga de prueba; esos clones entran al
+         informe global. Se mide sobre los clubes REALES del juego, que es la vara. */
+      var reales=[];
+      [typeof LIGA_2026!=="undefined"?LIGA_2026:[], typeof LIGA_ARG_2026!=="undefined"?LIGA_ARG_2026:[],
+       typeof LIGA91!=="undefined"?LIGA91:[]].forEach(function(L){
+        (L||[]).forEach(function(c){ if(c&&c.id&&devEsJugable(c.id)&&reales.indexOf(c.id)<0) reales.push(c.id); });
+      });
+      var pobresReales=reales.filter(function(id){ return auditarContenido(id).nivel==="pobre"; });
+      t(pobresReales.length===0,"ningún club real queda pobre ("+pobresReales.join(",")+")");
+      t(reales.length>=45,"se midieron los clubes reales del juego ("+reales.length+")");
+      var pobresAfa=ALMA_ARG.filter(function(c){ return auditarContenido(c.id).nivel==="pobre"; });
+      t(pobresAfa.length===0,"los 23 de la AFA salieron de pobres");
+      t(typeof ALMA_ARG!=="undefined" && ALMA_ARG.length===23,"ALMA_ARG cubre los 23 ("+(typeof ALMA_ARG!=="undefined"?ALMA_ARG.length:-1)+")");
+      ALMA_ARG.forEach(function(c){
+        var a=(ARCOS_EQUIPO[c.id]||[]).filter(function(x){ return x.id==="alma_"+c.id.toLowerCase(); });
+        if(a.length!==1) t(false,"arco propio de "+c.id);
+        else if((a[0].capitulos||[]).length!==2) t(false,"2 capítulos en "+c.id);
+      });
+      t(true,"los 23 tienen su arco de 2 capítulos");
+      var decs=DECISIONES.filter(function(d){ return d.id && d.id.indexOf("alma26_")===0; });
+      t(decs.length===23,"23 decisiones propias nuevas ("+decs.length+")");
+      t(decs.every(function(d){ return d.club && d.anio===2026 && (d.op||[]).length===3; }),"cada decisión tiene club, año y 3 opciones");
+      /* integridad: el ancla es dato del propio repo, no inventado */
+      var anclaMal=ALMA_ARG.filter(function(c){
+        var real=(typeof LIGA_ARG_2026!=="undefined")&&LIGA_ARG_2026.filter(function(x){ return x.id===c.id; })[0];
+        return !(real && real.aforo===c.af && real.est===c.est);
+      }).map(function(c){ return c.id; });
+      t(anclaMal.length===0,"el estadio y el aforo salen tal cual de LIGA_ARG_2026 ("+anclaMal.join(",")+")");
+    },"Alma AFA");
+
+    grupo("Localización 7.9013");
+    safe(function(){
+      ["mep_solo","riv_racha","riv_sin","riv_puesto","cal_prog","cal_sig",
+       "fed_escalera","fed_guerra","fed_cupos","fed_sin","fed_subiste"].forEach(function(k){
+        t(FRASES.neutro[k] && FRASES.en[k] && FRASES.pt[k], "clave "+k+" está en neutro/en/pt");
+      });
+    },"i18n 7.9013");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

@@ -28,6 +28,51 @@ function _jorPosMapa(){
   return m;
 }
 
+/* 7.9013 · foto de la tabla completa, para saber qué le pasó a CADA club en la fecha */
+function _jorTablaSnap(){
+  const m={};
+  try{
+    Object.keys((E&&E.tabla)||{}).forEach(function(id){
+      const t=E.tabla[id]||{};
+      m[id]={pj:t.pj||0,pts:t.pts||0,gf:t.gf||0,gc:t.gc||0};
+    });
+  }catch(e){}
+  return m;
+}
+/* Racha real de cada club: se deduce del delta de su fila de tabla en esta fecha.
+   No hace falta tocar el motor ni guardar partido por partido. */
+function _jorForma(antesTab){
+  if(!E) return;
+  if(!E.forma||typeof E.forma!=="object") E.forma={};
+  const pv=(typeof puntosVictoria==="function")?puntosVictoria():3;
+  Object.keys(E.tabla||{}).forEach(function(id){
+    const t=E.tabla[id]||{}, a=antesTab[id];
+    if(!a) return;
+    if((t.pj||0)-(a.pj||0)!==1) return;                 /* no jugó esta fecha */
+    const dpts=(t.pts||0)-(a.pts||0);
+    const r=(dpts>=pv)?"V":(dpts===1?"E":"D");
+    const arr=E.forma[id]||(E.forma[id]=[]);
+    arr.push({r:r,gf:(t.gf||0)-(a.gf||0),gc:(t.gc||0)-(a.gc||0),anio:E.anio,f:E.idx||0});
+    if(arr.length>5) arr.splice(0,arr.length-5);
+  });
+}
+/* Últimos 5 de un club, del más nuevo al más viejo. */
+function formaClub(id){
+  const arr=(E&&E.forma&&E.forma[id])||[];
+  return arr.slice(-5).reverse();
+}
+/* ¿Cómo te fue la última vez contra este rival, este año? */
+function ultimoCruce(rivalId,rivalNombre){
+  const cal=(E&&E.calendario)||[];
+  for(let i=cal.length-1;i>=0;i--){
+    const c=cal[i];
+    if(!c||!c.jugado) continue;
+    const mismo=(rivalId&&c.rivalId===rivalId)||(rivalNombre&&c.rivalNombre===rivalNombre);
+    if(!mismo) continue;
+    return {gf:c.gf||0,gc:c.gc||0,local:!!c.local};
+  }
+  return null;
+}
 /* ---------- captura de la jornada ---------- */
 /* Corre alrededor de terminarPartido: antes anota dónde estaba cada club,
    después compara. Así sabemos QUIÉN subió y quién bajó por esta fecha. */
@@ -59,8 +104,10 @@ function _jorGuardar(part,res,antes){
   const orig=terminarPartido;
   window.terminarPartido=function(P){
     const antes=_jorPosMapa();
+    const antesTab=_jorTablaSnap();
     const res=orig.apply(this,arguments);
     try{ _jorGuardar((P&&P.part)||(P&&P.partido)||null,res,antes); }catch(e){}
+    try{ if(!E||!E._bulkSim) _jorForma(antesTab); }catch(e){}
     return res;
   };
   window.terminarPartido._jor10=true;
@@ -185,6 +232,11 @@ function panelJornada(){
     p.cuerpo.appendChild(el("div","fila mini","<span>"+escHtml(m.n)+"</span><b class='jor-mov "+(dif>0?"sube":"baja")+"'>"+
       (dif>0?"▲":"▼")+" "+(typeof ordinal==="function"?ordinal(m.a):m.a+"°")+"</b>"));
   });
+  /* 7.9013 · si mandas la asociación, el escritorio lo dice en una línea */
+  try{
+    const lnFed=(typeof fedLineaEscritorio==="function")?fedLineaEscritorio():null;
+    if(lnFed) p.cuerpo.appendChild(el("div","fila mini","<span>"+escHtml(lnFed)+"</span>"));
+  }catch(e){}
   const bc=el("button","btn-aqua chico",_jorT("jor_cal","Ir al calendario"));
   bc.onclick=function(){ if(typeof irA==="function") irA("calendario"); };
   p.cuerpo.appendChild(bc);

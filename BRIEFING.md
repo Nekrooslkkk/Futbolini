@@ -1,6 +1,11 @@
 # FUTBOLINI — Briefing para agentes de IA (memoria portátil)
 
-> Versión en juego: **7.9005** (prórroga + tanda de penales en copas). No es 8.00.
+> Versión en juego: **7.9013** (mundo de fondo por época, escalera FIFA/CONMEBOL visible,
+> pasado del rival, calendario con pulso y ningún club sin alma propia). No es 8.00.
+> `VERSION` en `js/util.js` va en `"7.9010"`: ese archivo lo toca solo Grok.
+>
+> Estado medido hoy: `test/correr.sh` 1047/1047 · `test/correr_dev.sh` 276/276 ·
+> cobertura de contenido 76 dirigibles, 1 rico, 75 medios, 0 pobres (ver `ANALISIS.md`).
 
 > Pegá este archivo COMPLETO al inicio de cualquier sesión con otra IA (Grok, Gemini, etc.)
 > junto con `PATCHES.md`. Es la memoria del proyecto: sin esto, la IA "olvida" y rompe el hilo.
@@ -10,7 +15,8 @@
 > *"No manejás un equipo. Manejás una institución."*
 El jugador es el mandamás del club: grupos de interés que empujan para lados distintos, plata que
 duele, estatutos que se pueden cambiar si tenés el poder, decisiones sin porcentajes a la vista, y
-partidos que se sienten. Dos épocas jugables: **1991** (histórico real) y **2026** (Primera actual).
+partidos que se sienten. Épocas jugables: **1925**, **1991**, **2006** y **2026** (Primera, B y Segunda), más la liga
+argentina **arg2026** y el recorrido histórico de Colo-Colo 1989→2008.
 
 ## 2. Regla de oro (INVIOLABLE)
 - **NUNCA reconstruir desde cero.** Se EXPANDE sobre los módulos existentes.

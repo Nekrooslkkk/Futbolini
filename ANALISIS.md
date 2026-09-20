@@ -1,48 +1,65 @@
-# ANALISIS.md — estado real y rumbo (al día · v7.52)
+# ANALISIS.md — estado real y rumbo (al día · 7.9013)
 
-> **LEER PRIMERO.** Refleja el estado real del juego hoy. Para el detalle de
-> cada parche, ver `PATCHES.md`. HEAD: `e7d1b70` (7.52).
+> **LEER PRIMERO.** Refleja el estado real del juego HOY, medido, no de memoria.
+> El detalle parche por parche vive en `PATCHES.md`. La coordinación con Grok, en
+> `GROK_CAZA.md` (canal único). La wishlist del autor, en `IDEAS.md`.
+>
+> Versión de trabajo: **7.9013**. `VERSION` en `js/util.js` la sube Grok (hoy va en `"7.9010"`).
 
-## Actualización 7.48–7.52 (Claude)
-- **7.48** Más contextos generativos de Plop! (tiro libre, atajada de penal, lesión, debut).
-- **7.49** **Segunda División Profesional (3er nivel)** jugable: 14 clubes reales (`data-segunda2026.js`), rosters cantera.
-- **7.50** **Ascenso/descenso de 3 niveles** Primera ↔ B ↔ Segunda.
-- **7.51** FIX: la Segunda recibía el calendario de Primera → arreglado (round-robin propio); esto rompía el avance post-partido.
-- **7.52** Botón Avanzar: confirma antes de cerrar la temporada (avance irreversible).
-- **Pendiente:** planteles reales de Segunda (Grok, ver `GROK_TAREAS.md`), formato grupos+liguilla, Copa de la Liga/Supercopa.
+## Qué es, en una línea
+Simulador satírico de conducción de clubes de fútbol chileno (y argentino). Vanilla JS ES6,
+sin build, sin npm, sin frameworks. Todo el estado cuelga del global `E`, persistido con `Store`.
+Se abre con `index.html` o `python -m http.server`.
 
-## Dónde estamos (v7.44)
-Claude avanzó **7.37–7.43** (casino tragamonedas, pistas del ayudante, conferencia libre,
-jugadas de poder, **ascenso/descenso Primera↔B**, Copa Chile todos los años, escudos
-estilizados en selector/tabla/calendario). No subió el número de versión: quedó en 7.36
-hasta este parche.
+## Cómo se trabaja
+Tres manos sobre `main`, en paralelo: el autor (Vicente), **Grok** (motor, partido, mercado,
+planteles, datos) y **Claude** (UI, escritorio, editor/dev, QA, i18n, CSS, federación).
+Los carriles y lo que cada uno no toca están escritos en `GROK_CAZA.md`.
 
-**7.44** ejecuta `GROK_PROMPT_HISTORIAS`: línea de tiempo de los 32, épocas extra,
-escenarios futuros, arcos que faltaban y más voz. Prompts ya usados: **borrados**.
+## Estado por área (medido en 7.9013)
 
 | Área | Estado real |
 |---|---|
-| Motor de partido | Estable (7.30). Relato con pool beta + hist (7.44). |
-| Liga | Primera + B conectadas: 1 baja, 1 sube (7.41). Copa Chile todos los años. |
-| Libertadores 2026 | Solo COQ (B) y UC (D) a grupos. El resto, no. |
-| Épocas | 1991, 2026, 2026b + glorias previas **y** LIM 2025, CBL 2003, SW 2019, UES 2005, IQQ 2014, USF 2009, MAG 2023, CUR 2017, ANT 2018. |
-| Historia | Línea de tiempo por club (hechos públicos) en la vista Historia. |
-| Futuro | 2030–2226: escenarios generativos al pasar de año. No son hechos. |
-| Escudos | SVG estilizado por código (32 clubes). No oficiales. |
-| Celular | Dock + HUD (7.34). Previa Ver en vivo / Dirigir (7.36). |
-| Institución | Jugadas de poder con capital (7.40). Pistas 3/año (7.38). |
-| Casino | Ruleta + blackjack + tragamonedas, monto exacto (7.37). |
-| Imágenes | Lista corta en `GROK_PROMPT_HISTORIAS.md`. El usuario sube. |
+| Motor de partido | Estable. Córner aéreo, palo con rebote y tanda de penales (Grok, 7.9005–7.9009). |
+| Mercado | Abierto todo el año, con preacuerdos y CPUs que envejecen (Grok, 7.9010). |
+| Jornada | La fecha se juega a la vista: otros resultados uno a uno + movimiento de tabla (7.9011). |
+| Preguntas / prensa | 142 preguntas nuevas, rotación por semana, banco por país y por época (7.9012). |
+| Mundo de fondo | Poda por año: en 1991 ya no aparecen torneos ni clubes de 2026 (7.9013). |
+| Federación | Motor completo + **cara**: escalera local → CONMEBOL → FIFA y guerra de asociaciones (7.9013). |
+| Épocas jugables | 1925, 1991, 2006, 2026 (+ B y Segunda), arg2026, y el histórico CC 1989→2008. |
+| Ligas clonadas | `devClonarLigaRigor` llega a 100% de rigor y es jugable (Grok cerró el motor en 7.9001–7.9002). |
+| Editor / dev | Pestañas de esquema, auditor, clonado, **Alma** (cobertura) y generador de decisiones. |
+| Pruebas | `test/correr.sh` **1047/1047** (Grok) · `test/correr_dev.sh` **276/276** (Claude). |
 
-## Lo que quedó honesto-null
-- Planteles de las épocas nuevas **sin lista documentada**: cantera. No se inventan nombres como reales.
-- Fotos/escudos oficiales: no. Estilizados sí.
-- UC 1991: plantel documentado; fixture sigue generado.
-- Citas a personas reales: cero.
-- Fase 7 multi: congelado.
-- `cancha.js` / hilos Plop: otro chat.
+## El cuello de botella real: CONTENIDO, no código
+Medido con `devInformeCobertura()` (pestaña 📚 Alma del editor). La vara es Colo-Colo.
+`total = decisiones propias del club + arcos de club`; rico ≥6, medio ≥2, pobre <2.
 
-## Rumbo que sigue
-- Fotos de estadio con licencia libre (el usuario o Grok con Commons).
-- Hilos 4–6 de Plop (`plop-motor.js`), partir `ui.js`.
-- UC 1991 fixture real.
+| Corte | Total dirigibles | Ricos | Medios | Pobres | % ricos |
+|---|---|---|---|---|---|
+| Antes de 7.9013 | 76 | 1 (solo CC, 16) | 52 | **23** (todos AFA, 1 ítem c/u) | 1% |
+| Después de 7.9013 | 76 | 1 | 75 | **0** | 1% |
+
+Lectura honesta: 7.9013 **sacó a todos los clubes de la pobreza** (un arco de 2 capítulos y una
+decisión propia para los 23 de la AFA, en `js/data-alma-arg.js`), pero el **% de ricos sigue en 1%**:
+para que un club sea "rico" necesita 6 ítems propios y hoy solo Colo-Colo los tiene. El segundo
+es CBL con 4 y el tercero UCH con 3.
+
+**Eso es lo que separa al juego de su propia vara.** No falta motor: falta alma por club y por año.
+El camino corto para mover la aguja es subir a 6 ítems los ~15 clubes más jugados (los grandes de
+Chile y Argentina), no repartir uno a cada uno.
+
+## Deuda técnica viva
+- `VERSION` (`js/util.js`) quedó en `"7.9010"`: solo Grok toca ese archivo.
+- `ARCOS_EQUIPO` se mergea con `if(!ARCOS_EQUIPO[id])` en varios archivos: el primero que carga gana.
+- El mundo modelado (`E.mundo`) es de 2026. Fuera de la era moderna se poda y se avisa; **no** hay
+  mundo histórico modelado y eso está declarado, no disimulado.
+- `mundo-vivo` cuenta lo que pasa afuera pero **no mueve planteles CPU**: es capa de lectura.
+- Un wrap sobre otro wrap borra las marcas del anterior: hay que heredarlas (ver `_epHeredar`).
+
+## Rumbo
+1. **Alma por club y por año** — la idea "rigor Colo-Colo en cada club, en cada época".
+2. **Victoria III**: la escalera de poder ya se ve; falta el mapa mundial y la FIFA jugable.
+3. Ordenar las ventanas que faltan (Grok: finanzas, estadio, redes, historia, carrera, institución).
+
+**Esto no es la 8.00.**

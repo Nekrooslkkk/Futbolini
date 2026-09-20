@@ -842,3 +842,23 @@ html{scrollbar-width:thin;scrollbar-color:rgba(70,150,100,.55) transparent}
   .mv-linea{flex-wrap:wrap}
   .mv-linea > b.mini{margin-left:22px}
 }
+
+/* 7.9013 · escalera del poder: asociación local → CONMEBOL → FIFA */
+.fed-escalera{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;margin:6px 0}
+.fed-paso{flex:1 1 30%;min-width:96px;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:8px 6px;border-radius:9px;border:1px solid rgba(0,0,0,.14);background:rgba(0,0,0,.04);text-align:center}
+.fed-paso .fed-ic{font-size:20px;line-height:1}
+.fed-paso .fed-n{font-size:12px;font-weight:600}
+.fed-paso .fed-num{font-size:11px;opacity:.8;font-variant-numeric:tabular-nums}
+.fed-paso.fed-ok{border-color:#2fa84f;background:rgba(47,168,79,.14)}
+.fed-paso.fed-actual{border-color:#d68a1f;background:rgba(214,138,31,.14)}
+.fed-paso.fed-cerrado{opacity:.55}
+.fed-flecha{align-self:center;opacity:.5;font-weight:700}
+@media (max-width:420px){ .fed-flecha{display:none} .fed-paso{flex:1 1 100%} }
+
+/* 7.9013 · pasado del próximo rival */
+.riv-pasado{margin:4px 0 8px}
+.riv-tira{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:3px}
+.riv-r{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+  border-radius:5px;font-size:11px;font-weight:700;color:#fff}
+.riv-V{background:#2fa84f}.riv-E{background:#9a9a9a}.riv-D{background:#c0392b}

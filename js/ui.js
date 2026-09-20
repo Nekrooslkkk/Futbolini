@@ -528,6 +528,35 @@ function entrenarSemana(){
   notificar({t:"Entrenamiento de la semana",tipo:tono,d:msg,bandeja:false});
   guardar(); render(); aviso("🏃 "+msg.slice(0,54));
 }
+/* 7.9013 · tira de pasado del próximo rival: V-E-D de los últimos 5, puesto en la
+   tabla y el último cruce del año. Sin inventar: si falta el dato, lo dice. */
+function _pasadoRival(part){
+  const caja=el("div","riv-pasado");
+  const id=part&&part.rivalId, nom=(part&&part.rivalNombre)||"";
+  const forma=(typeof formaClub==="function"&&id)?formaClub(id):[];
+  if(forma.length){
+    const tira=el("div","riv-tira");
+    tira.appendChild(el("span","mini",T("riv_racha","Cómo viene")+": "));
+    forma.forEach(function(x){
+      const b=el("span","riv-r riv-"+x.r,x.r);
+      b.title=x.gf+"-"+x.gc;
+      tira.appendChild(b);
+    });
+    caja.appendChild(tira);
+  } else {
+    caja.appendChild(el("p","mini",T("riv_nuevo","Todavía no jugó esta temporada.")));
+  }
+  if(id&&E.tabla&&E.tabla[id]&&(E.tabla[id].pj||0)>0&&typeof tablaOrdenada==="function"){
+    const arr=tablaOrdenada(), i=arr.findIndex(function(c){ return c.id===id; });
+    if(i>=0) caja.appendChild(el("p","mini",T("riv_puesto","En la tabla va")+" <b>"+ordinal(i+1)+"</b> · "+(arr[i].pts||0)+" pts."));
+  }
+  const ult=(typeof ultimoCruce==="function")?ultimoCruce(id,nom):null;
+  if(ult){
+    const t=ult.gf>ult.gc?T("riv_ult_yo","La última vez le ganaste."):(ult.gf<ult.gc?T("riv_ult","La última vez te ganó."):T("riv_ult_e","La última vez empataron."));
+    caja.appendChild(el("p","mini",t+" ("+ult.gf+"-"+ult.gc+")"));
+  } else caja.appendChild(el("p","mini",T("riv_sin","Primera vez que se cruzan este año.")));
+  return caja;
+}
 function vistaEscritorio(){
   const v=$("#vista");
   if(typeof sembrarStoryline==="function") sembrarStoryline();   /* 7.0 · intenta abrir un arco de equipo (1 vez por semana) */
@@ -541,6 +570,9 @@ function vistaEscritorio(){
     p.cuerpo.appendChild(el("h2","tit","Próximo partido con "+part.rivalNombre));
     p.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" · "+(typeof etqCompromiso==="function"?etqCompromiso(part):(part.tipo==="copa"?(part.torneo||"Copa")+" · "+part.ronda:"fecha "+part.fecha))+
       " · "+fechaTxt(part.f)+" · "+part.sede));
+    /* 7.9013 · el rival tiene pasado: racha, puesto y cómo terminó el último cruce.
+       Todo derivado (E.forma la arma ui-jornada.js). Si no hay dato, se dice. */
+    p.cuerpo.appendChild(_pasadoRival(part));
     const b=el("button","btn-aqua ancho verde cta-jugar","Ir al partido");
     b.onclick=()=>{ if(bloqueoDecisiones()) return; pantallaPrevia(part); };
     p.cuerpo.appendChild(b);
@@ -1144,16 +1176,18 @@ function vistaFinanzas(){
   /* 7.9991 · "banco": las cuentas de un vistazo, como ventanilla Aero */
   const banco=el("div","banco-cuentas");
   const accs=[
-    {k:"Caja del club", v:plata(E.plata), cls:"corriente", d:"Cuenta corriente del club. Con esto se pagan sueldos e intereses."},
-    {k:"Deuda", v:plata(E.deuda), cls:(E.deuda||0)>1500?"pasivo mal":"pasivo", d:"Pasivo. Cada semana come intereses."},
-    {k:"Tu bolsillo", v:plata((E.personal&&E.personal.bolsillo)||0), cls:"personal", d:"Plata tuya. No es de la tesorería."},
-    {k:"Acciones", v:(E.bolsa&&typeof valorTenencia==="function")?plata(Math.round(valorTenencia())):"—", cls:"inversion", d:"Lo que tienes en la sociedad anónima del club."}
+    {k:"Caja del club", ir:"Banco ·", v:plata(E.plata), cls:"corriente", d:"Cuenta corriente del club. Con esto se pagan sueldos e intereses."},
+    {k:"Deuda", ir:"Deuda", v:plata(E.deuda), cls:(E.deuda||0)>1500?"pasivo mal":"pasivo", d:"Pasivo. Cada semana come intereses."},
+    {k:"Tu bolsillo", ir:"Bolsa de valores", v:plata((E.personal&&E.personal.bolsillo)||0), cls:"personal", d:"Plata tuya. No es de la tesorería."},
+    {k:"Acciones", ir:"Bolsa de valores", v:(E.bolsa&&typeof valorTenencia==="function")?plata(Math.round(valorTenencia())):"—", cls:"inversion", d:"Lo que tienes en la sociedad anónima del club."}
   ];
+  /* 7.9013 · eran 4 <button> sin handler: ahora llevan al panel que explican. */
   accs.forEach(a=>{
     const chip=el("button","banco-cta "+a.cls);
     chip.type="button";
     chip.title=a.d;
     chip.innerHTML="<span class='k'>"+a.k+"</span><b class='v'>"+a.v+"</b>";
+    chip.onclick=()=>{ _irAPanel(a.ir); aviso(a.d); };
     banco.appendChild(chip);
   });
   v.appendChild(banco);
@@ -1873,6 +1907,24 @@ function vistaCalendario(){
     px.cuerpo.appendChild(b);
   } else {
     px.cuerpo.appendChild(el("p","mini",(typeof T==="function"?T("cal_sinprox","No hay más partidos este año."):"No hay más partidos este año.")));
+  }
+  /* 7.9013 · pulso de la temporada: cuánto llevas y qué se viene, con el puesto del rival */
+  const _jug=(E.calendario||[]).filter(c=>c.jugado).length, _tot=(E.calendario||[]).length;
+  if(_tot){
+    px.cuerpo.appendChild(el("p","mini",T("cal_prog","Temporada")+" "+E.anio+" · <b>"+_jug+"</b> "+T("cal_de","de")+" <b>"+_tot+"</b>"));
+    px.cuerpo.appendChild(el("div",null,barrita(_jug,"#2f7dd0",_tot)));
+  }
+  const _sig=(E.calendario||[]).filter(c=>!c.jugado).slice(0,3);
+  if(_sig.length){
+    px.cuerpo.appendChild(el("h3","sub",T("cal_sig","Lo que viene")));
+    const _ord=(typeof tablaOrdenada==="function")?tablaOrdenada():[];
+    _sig.forEach(function(c){
+      const i=c.rivalId?_ord.findIndex(function(x){ return x.id===c.rivalId; }):-1;
+      const pos=(i>=0&&E.tabla[c.rivalId]&&(E.tabla[c.rivalId].pj||0)>0)?(" · "+ordinal(i+1)):"";
+      px.cuerpo.appendChild(el("div","fila mini",
+        "<span>"+(c.local?"":"@ ")+escHtml(c.rivalNombre||"—")+pos+"</span><b>"+
+        (typeof fechaTxt==="function"&&c.f?fechaTxt(c.f):(c.fecha?("f "+c.fecha):""))+"</b>"));
+    });
   }
   v.appendChild(px);
   if(E.eraBase===2006){
@@ -3452,6 +3504,17 @@ function _resaltar(elm){
   try{ elm.scrollIntoView({behavior:"smooth",block:"center"}); }catch(e){ try{ elm.scrollIntoView(); }catch(e2){} }
   elm.classList.add("resaltado");
   setTimeout(function(){ try{ elm.classList.remove("resaltado"); }catch(e){} },2100);
+}
+/* 7.9013 · lleva la vista al panel cuya cabecera contiene `txt` y lo resalta. */
+function _irAPanel(txt){
+  if(!txt){ return; }
+  const t=String(txt).toLowerCase();
+  const ps=document.querySelectorAll("#vista .panel");
+  for(let i=0;i<ps.length;i++){
+    const cab=ps[i].querySelector(".cab");
+    if(cab && (cab.textContent||"").toLowerCase().indexOf(t)>=0){ _resaltar(ps[i]); return; }
+  }
+  if(ps.length) _resaltar(ps[0]);
 }
 function _buscarMarcar(sel,valor){
   setTimeout(function(){

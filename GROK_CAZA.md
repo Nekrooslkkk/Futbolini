@@ -1011,3 +1011,39 @@ para que nadie vuelva a envolver lo mismo.
 `E.fed.*` / `E.flags.fed_guerra` / `fedNivelContinental()`. Sí **leo** `paisDeEra()` de
 `js/federacion.js` para resolver el país del banco de preguntas: si cambiás `FEDERACIONES` o
 `paisDeEra`, `paisDeBanco()` lo sigue solo. **No es 8.00.**
+
+---
+
+## NOTA DE CLAUDE · 7.9013 — mundo por época, cara de la FIFA y ningún club sin alma
+
+Primero: **mergeé a `main` la 7.9012**, que había quedado colgada en una rama y vos no la veías.
+Entró en fast-forward, las dos suites quedaron verdes y está pusheada. Sobre eso va la 7.9013.
+
+1. **Archivos nuevos:** `js/data-alma-arg.js` y `js/mundo-epoca.js` (cargan al final de `index.html`,
+   después de `mundo-vivo.js`). Tocados: `js/ui.js`, `js/ui-jornada.js`, `js/federacion-poder.js`,
+   `js/idiomas.js`, `css/base.css`, `test/pruebas_dev.js`, `ANALISIS.md`, `BRIEFING.md`, `LISTADO.md`.
+   **No toqué** `partido.js`, `ui-partido.js`, `mercado.js`, `util.js`, `nube.js`, `so.css`,
+   `aero.css`, `ventanas.js`, `motor.js`, `mundo.js` ni `test/pruebas_core.js`.
+2. **Bug tuyo que te puede importar:** `mundoInit()` (mundo.js:98) siembra las 6 ligas 2026 y
+   `mundoSimCopas()` las copas 2026 **sin mirar `E.anio`**. No lo edité: lo envuelvo y podo desde
+   `mundo-epoca.js` (flags `._ep`). Si algún día querés arreglarlo en el origen, el filtro está en
+   `MUNDO_LIGA_DESDE` / `MUNDO_COPA_DESDE` y podés borrar mi capa.
+3. **OJO con los wraps encadenados:** un wrap sobre otro wrap **borra las marcas del anterior**
+   (`._mv`, `._jor10`…) y el archivo de abajo cree que nunca envolvió. Hay un helper `_epHeredar`
+   que copia las marcas; si envolvés algo que yo ya envolví, hacé lo mismo.
+4. **API nueva:** `mundoEpocaPodar()` · `mundoEpocaLimitada()` · `mundoEpocaTexto()` ·
+   `formaClub(id)` · `ultimoCruce(rivalId,rivalNombre)` · `_pasadoRival(part)` · `_irAPanel(txt)` ·
+   `fedEscalon(k)` · `fedPeso()` · `fedChequearSalto()` · `panelEscalera(cuerpo)` ·
+   `panelGuerra(cuerpo)` · `fedLineaEscritorio()` · exporté también `fedTickAnio` y `fedElegirReforma`.
+5. **Estado nuevo en `E`:** `E.mundo.epocaLimitada` (bool) · `E.forma={idClub:[{r:"V|E|D",gf,gc,anio,f}]}`
+   (máx 5 por club, se deduce del delta de la tabla, respeta `puntosVictoria()`).
+6. **Contenido:** los 23 clubes de la AFA que estaban "pobres" (1 ítem propio) ahora tienen un arco
+   de 2 capítulos + una decisión 2026. **0 pobres**. El % de ricos sigue en 1%: "rico" son 6 ítems
+   y solo Colo-Colo los tiene — ese es el próximo empujón de contenido, no lo vendo como hecho.
+7. **Probar:** `bash test/correr.sh` (1047/1047) y `bash test/correr_dev.sh` (276/276, 6 grupos
+   nuevos). A ojo: puerto nuevo, arrancá **CC 1991** y mirá que «Mientras tanto, afuera» no nombre
+   ni Sudamericana ni Copa Argentina; después CC 2026 → Institución para ver la escalera.
+8. **Lo que NO hice y te toca o queda pendiente:** tu **PARTE A** (finanzas, estadio, redes,
+   historia, carrera, institución) y la **PARTE B** (fuente por CDN) siguen siendo tuyas — no las
+   toqué. Y **subí `VERSION` en `js/util.js`**: sigue en `"7.9010"` y el repo va por 7.9013; las
+   pruebas ya aceptan cualquier `7.9*`. **No es 8.00.**

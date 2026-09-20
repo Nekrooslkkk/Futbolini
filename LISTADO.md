@@ -4,6 +4,8 @@ Orden: lo que hace que no se abandone, primero. Lo de vida/IA, después.
 
 Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 
+> Revisado en **7.9013**. Solo se mueve un ítem cuando se verificó jugando o con test.
+
 ## A. Temporada y datos (realismo)
 
 1. 🟨 Fixture oficial 2026: CC, UCH, UC. PAL/LIM usan fechas de CC (5.1l).
@@ -32,7 +34,9 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 18. 🟨 Grupos y estatutos existen. Falta que te llamen.
 19. 🟨 Asamblea si hinchada+socios < -45; a las 3 semanas destituye (5.1l).
 20. ✅ Prensa que filtra si un grupo está a menos de -45 (prensaFiltra).
-21. ⬜ Blanco / ANFP / TV como actores con agenda.
+21. 🟨 Blanco / ANFP / TV como actores con agenda. La **asociación ya es jugable**: elección,
+    jugadas de poder, reformas, sospecha y escalera local → CONMEBOL → FIFA con guerra de
+    asociaciones (7.9013). Falta la TV y Blanco como actores con agenda propia.
 22. ✅ Crisis de hinchada que cierra la popular (7.36).
 
 ## D. Economía
@@ -40,7 +44,8 @@ Estado rápido: ⬜ no · 🟨 a medias · ✅ ya se puede jugar
 23. 🟨 Flujo semanal + semanas de caja. Falta que duela más.
 24. ✅ Deuda con cuotas (7.19).
 25. 🟨 Cláusulas de salida con año (7.35). Faltan comisiones y atrasos que exploten.
-26. ⬜ Mercado: ofertas que no sean un solo botón.
+26. 🟨 Mercado: ofertas que no sean un solo botón. Grok abrió la ventana real con preacuerdos y
+    pool de todos los clubes (7.9010). Falta negociación con ida y vuelta de cláusulas.
 27. ⬜ Precio de entrada que llene o vacíe según ranking y momento.
 
 ## E. Redes (como red social de afuera)

@@ -149,6 +149,7 @@
     if(typeof notificar==="function") notificar({t:(p.corrupto?"🕵️ ":"🏛️ ")+p.n,tipo:p.corrupto?"neutro":"bueno",bandeja:false,d:msg});
     if(typeof aviso==="function") aviso((p.corrupto?"🕵️ ":"🏛️ ")+msg);
     if(p.corrupto) fedChequearEscandalo();
+    fedChequearSalto();                 /* 7.9013 · el escalón se ve al toque, no al año siguiente */
     if(typeof guardar==="function") guardar();
     if(typeof render==="function") render();
   }
@@ -237,6 +238,10 @@
       bp.onclick=function(){ fedPostular(); };
       p.cuerpo.appendChild(bp);
       if(faltan.length) p.cuerpo.appendChild(el("p","mini","Te falta: "+faltan.map(function(r){return r.n.toLowerCase();}).join(", ")+". Sube tu peso con las Jugadas de poder y ganando en la cancha."));
+      /* 7.9013 · la escalera se ve desde antes: es el mapa de a dónde vas */
+      panelEscalera(p.cuerpo);
+      panelGuerra(p.cuerpo);
+      p.cuerpo.appendChild(el("p","mini",_tf("fed_sin","Todavía no diriges la asociación. Gana la elección para abrir la escalera.")));
       _insertarPanel(v,p);
       return;
     }
@@ -260,12 +265,92 @@
       b.onclick=function(){ fedHacerPoder(pw); };
       p.cuerpo.appendChild(b);
     });
-    p.cuerpo.appendChild(el("p","mini","Fase 1 del <b>Modo Asociación</b>. Vienen: guerra abierta entre asociaciones, el salto a la <b>FIFA</b> y control del fútbol mundial."));
+    panelEscalera(p.cuerpo);
+    panelGuerra(p.cuerpo);
     _insertarPanel(v,p);
+  }
+
+  /* ---------- 7.9013 · la escalera del poder, visible ----------
+     El motor ya subía escalones (aplicarSaltoFed, fedNivelContinental) y el
+     jugador no veía nada. Acá se dibuja: asociación local → CONMEBOL → FIFA. */
+  var FED_ESCALONES=[
+    {k:"local",    n:function(){ return _tf("fed_anfp","Asociación local")+" ("+_sigla()+")"; }, ic:"🏛️", meta:0},
+    {k:"conmebol", n:function(){ return _tf("fed_conmebol","CONMEBOL"); },                      ic:"🌎", meta:3},
+    {k:"fifa",     n:function(){ return _tf("fed_fifa","FIFA"); },                              ic:"🌍", meta:6}
+  ];
+  function _tf(k,d){ return (typeof T==="function")?T(k,d):d; }
+  function fedPeso(){ return (E&&E.flags&&E.flags.fed_conmebol)||0; }
+  /* estado de cada escalón: "ok" | "actual" | "cerrado" */
+  function fedEscalon(k){
+    var n=fedPeso(), f=fedEstado()||{};
+    if(k==="local") return (f.presidente?"ok":"cerrado");
+    if(k==="conmebol") return (f.conmebolOk||n>=3)?"ok":(n>0?"actual":"cerrado");
+    if(k==="fifa") return (f.fifaOk||n>=6)?"ok":(n>=3?"actual":"cerrado");
+    return "cerrado";
+  }
+  function panelEscalera(cuerpo){
+    if(!cuerpo) return null;
+    var n=fedPeso();
+    cuerpo.appendChild(el("h3","sub","🪜 "+_tf("fed_escalera","Escalera del poder")));
+    var fila=el("div","fed-escalera");
+    FED_ESCALONES.forEach(function(e,i){
+      var st=fedEscalon(e.k);
+      var paso=el("div","fed-paso fed-"+st);
+      paso.innerHTML="<span class='fed-ic'>"+e.ic+"</span><span class='fed-n'>"+escHtml(e.n())+"</span>"+
+        (e.meta?("<span class='fed-num'>"+Math.min(n,e.meta)+"/"+e.meta+"</span>"):"<span class='fed-num'>—</span>");
+      fila.appendChild(paso);
+      if(i<FED_ESCALONES.length-1) fila.appendChild(el("span","fed-flecha","→"));
+    });
+    cuerpo.appendChild(fila);
+    if(typeof barrita==="function") cuerpo.appendChild(el("div",null,barrita(Math.min(n,6),n>=6?"#4fbf3f":"#2f7dd0",6)));
+    var sig=(n<3)?3:(n<6?6:null);
+    if(sig) cuerpo.appendChild(el("p","mini",_tf("fed_falta","Te faltan jugadas de poder para el próximo escalón")+": "+(sig-n)+" × 🌎."));
+    else cuerpo.appendChild(el("p","mini","🌍 "+_tf("fed_ok","Escalón conquistado")+"."));
+    return cuerpo;
+  }
+  /* ---------- guerra de asociaciones: qué te dio y qué te costó, en números ---------- */
+  function fedCuposBase(){
+    var era=(typeof eraDe==="function")?eraDe(E&&E.eraBase):null;
+    return (era&&era.cuposInternacional)||4;
+  }
+  function panelGuerra(cuerpo){
+    if(!cuerpo) return null;
+    var g=(E&&E.flags&&E.flags.fed_guerra)||0;
+    if(!g) return null;
+    var base=fedCuposBase();
+    var hoy=(E&&E.eraMod&&E.eraMod.cuposInternacional!=null)?E.eraMod.cuposInternacional:base;
+    cuerpo.appendChild(el("h3","sub","⚔️ "+_tf("fed_guerra","Guerra de asociaciones")));
+    cuerpo.appendChild(fila(_tf("fed_guerra","Guerra de asociaciones"),"×"+g));
+    cuerpo.appendChild(fila(_tf("fed_cupos","Cupos internacionales"),base+" → <b>"+hoy+"</b>"));
+    var rob=(E&&E.flags&&E.flags.fed_cupo_robado)||0;
+    if(rob) cuerpo.appendChild(fila(_tf("fed_robado","Cupo robado a la vecina"),"×"+rob));
+    return cuerpo;
+  }
+  /* una línea en el escritorio cuando mandas la asociación */
+  function fedLineaEscritorio(){
+    var f=fedEstado();
+    if(!f||!f.presidente) return null;
+    var niv=(typeof fedNivelContinental==="function")?fedNivelContinental():null;
+    var esc=niv==="fifa"?("🌍 "+_tf("fed_fifa","FIFA")):(niv==="conmebol"?("🌎 "+_tf("fed_conmebol","CONMEBOL")):("🏛️ "+_sigla()));
+    return "🏛️ "+_sigla()+" · "+esc+" · 🕵️ "+Math.round(f.sospecha||0)+"/100";
   }
 
   /* ---------- avance de año: sube el mandato, baja algo la sospecha ---------- */
   /* Se engancha a render de forma barata: si cambió el año, corre una vez. */
+  /* El motor sube el escalón en nuevoAnio(). Si esperas al año siguiente, haces la
+     jugada y no pasa nada visible: se chequea también al hacer el poder. */
+  function fedChequearSalto(){
+    if(typeof aplicarSaltoFed!=="function") return null;
+    var antes=(E&&E.fed)?[!!E.fed.conmebolOk,!!E.fed.fifaOk]:[false,false];
+    var sub=aplicarSaltoFed();
+    if(typeof aplicarGuerraFed==="function") try{ aplicarGuerraFed(); }catch(e){}
+    var desp=(E&&E.fed)?[!!E.fed.conmebolOk,!!E.fed.fifaOk]:[false,false];
+    if(sub && (antes[0]!==desp[0]||antes[1]!==desp[1]) && typeof aviso==="function"){
+      aviso("🪜 "+_tf("fed_subiste","Subiste un escalón en el poder del fútbol")+": "+
+        (sub==="fifa"?_tf("fed_fifa","FIFA"):_tf("fed_conmebol","CONMEBOL")));
+    }
+    return sub;
+  }
   function fedTickAnio(){
     var f=fedEstado(); if(!f||!f.presidente) return;
     if(f._ultAnio===undefined) f._ultAnio=E.anio;
@@ -301,4 +386,12 @@
   window.FED_PODERES=FED_PODERES;
   window.FED_REQ=FED_REQ;
   window.FED_REFORMAS=FED_REFORMAS;
+  window.fedTickAnio=fedTickAnio;
+  window.fedElegirReforma=fedElegirReforma;
+  window.fedChequearSalto=fedChequearSalto;
+  window.fedEscalon=fedEscalon;
+  window.fedPeso=fedPeso;
+  window.panelEscalera=panelEscalera;
+  window.panelGuerra=panelGuerra;
+  window.fedLineaEscritorio=fedLineaEscritorio;
 })();

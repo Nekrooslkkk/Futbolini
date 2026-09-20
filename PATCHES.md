@@ -2827,3 +2827,45 @@ siempre el mismo orden → **siempre las dos primeras**. Se arregla en la raíz,
 - **Barrido:** dos preguntas del banco viejo tenían voseo («¿Le pediste…») → neutro, como manda la regla.
 - **Tests:** `test/pruebas_dev.js` **210/210** (antes 143) con 6 grupos nuevos; core **1047/1047** intacto.
 - **VERSION la sube Grok** (`js/util.js` sigue en `"7.9010"`, no lo toco). **No es 8.00.**
+
+## 7.9013 · El mundo respeta el año, la FIFA tiene cara y ningún club queda sin alma
+Cuatro cosas que se notan al abrir el juego, más el barrido de deuda técnica.
+
+- **`js/mundo-epoca.js` (nuevo).** Bug de integridad: `mundoInit()` sembraba SIEMPRE el mundo 2026
+  (Copa de la Liga, Libertadores y Sudamericana con planteles 2026, Copa Argentina) jugaras el año
+  que jugaras. Verificado: en una partida **CC 1991** el bloque «Mientras tanto, afuera» mostraba
+  Cusco FC, Bragantino y Montevideo City Torque. Ahora se **poda por año** (`MUNDO_LIGA_DESDE`,
+  `MUNDO_COPA_DESDE`): fuera de la era moderna queda solo el torneo local y el panel **lo dice**
+  (`mep_solo`), no inventa un mundo que no está modelado. En 2026 no cambia nada. Wraps `._ep`
+  sobre `mundoInit`, `mundoSimCopas`, `mundoTick`, `panelJornada` y `_jorTabla`, heredando las
+  marcas del wrap anterior (`_epHeredar`) para no romper los de `mundo-vivo.js`.
+- **La cara de FIFA / guerra de asociaciones** (`js/federacion-poder.js`). El motor subía escalones
+  desde hacía parches y el jugador no veía nada. Ahora hay **escalera visible** asociación local →
+  CONMEBOL → FIFA sobre `E.flags.fed_conmebol` (umbrales 3 y 6), con barra, estado por escalón y
+  cuánto falta; **panel de guerra** con cupos internacionales en números (`base → actual`) y cupo
+  robado; aviso al cruzar un escalón (`fedChequearSalto`, enganchado a `fedHacerPoder`: ya no hay
+  que esperar al año siguiente); y una línea en el escritorio cuando presides. Se ve también
+  **antes** de ser presidente: es el mapa de a dónde vas.
+- **El próximo rival tiene pasado** (`js/ui.js`, `js/ui-jornada.js`). Racha real de los últimos 5
+  (V-E-D con color), puesto en la tabla y cómo terminó el último cruce del año. `E.forma` se deduce
+  del delta de la fila de tabla de cada club en cada fecha — sin tocar el motor y respetando
+  `puntosVictoria()` (sirve igual en 1991 con victoria = 2 puntos). Si no hay dato, lo dice.
+- **Calendario con pulso.** Progreso de la temporada (fecha X de Y con barra) y las próximas 3 con
+  el puesto actual del rival, arriba de lo que ya ordenó Grok en 7.9009.
+- **`js/data-alma-arg.js` (nuevo) · el juego sale del 1%.** Medido con `devInformeCobertura()`:
+  76 clubes dirigibles, 1 rico, 52 medios y **23 pobres** (los 23 de la AFA, con un solo ítem propio
+  cada uno). Cada uno recibe **un arco de club de 2 capítulos + una decisión propia 2026**:
+  quedan **0 pobres**. El `% de ricos sigue en 1%` y eso es honesto: "rico" son 6 ítems y solo
+  Colo-Colo los tiene. Integridad: ficción de dirigencia sobre **anclas reales** (ciudad, estadio y
+  aforo salen tal cual de `LIGA_ARG_2026`, y hay un test que lo verifica). Sin frases puestas en
+  boca de nadie, sin hechos históricos inventados, sin nombres de jugadores nuevos.
+- **Deuda técnica.** Las 4 fichas de Finanzas (Caja / Deuda / Tu bolsillo / Acciones) eran
+  `<button>` sin handler: ahora llevan al panel que explican (`_irAPanel`). `ANALISIS.md` estaba
+  en v7.52 (~40 parches atrás) y decía "LEER PRIMERO": reescrito al estado real y medido.
+  `BRIEFING.md` decía 7.9005: actualizado. `LISTADO.md`: se movieron los ítems 21 y 26, con nota.
+- **CSS/i18n:** `.fed-escalera`/`.fed-paso` y `.riv-tira`/`.riv-r` al final de `css/base.css`;
+  claves `mep_*`, `riv_*`, `cal_*`, `fed_*` en neutro/en/pt.
+- **Tests:** `test/pruebas_dev.js` **276/276** (antes 210; 66 checks nuevos en 6 grupos, incluido
+  "1991 no nombra Sudamericana/Libertadores/Copa Argentina"); core **1047/1047** intacto.
+  A ojo: 3 clubes × 2 épocas × 4 temas × 4 secciones a 390px, 0 de overflow.
+- **`VERSION` la sube Grok** (`js/util.js` sigue en `"7.9010"`, no lo toco). **No es 8.00.**
