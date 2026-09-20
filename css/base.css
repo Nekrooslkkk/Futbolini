@@ -832,3 +832,13 @@ html{scrollbar-width:thin;scrollbar-color:rgba(70,150,100,.55) transparent}
 .jor-mov.baja{color:#c0392b}
 .parte-semana .fila{border-bottom:1px dashed rgba(0,0,0,.08)}
 @media (prefers-reduced-motion:reduce){ .jor-row{opacity:1;transform:none;transition:none} }
+
+/* ---------- mundo vivo (Claude · B1): lo que pasa afuera de tu club ---------- */
+.mv-linea{align-items:flex-start;gap:8px}
+.mv-linea > span{display:flex;gap:6px;align-items:baseline;line-height:1.35}
+.mv-linea .mv-ic{flex:0 0 auto;font-size:.95em;opacity:.9}
+.mv-linea > b.mini{flex:0 0 auto;opacity:.65;white-space:nowrap;font-weight:600}
+@media (max-width:420px){
+  .mv-linea{flex-wrap:wrap}
+  .mv-linea > b.mini{margin-left:22px}
+}

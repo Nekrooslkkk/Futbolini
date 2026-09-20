@@ -2789,3 +2789,41 @@ La liga dejó de ser una lista estática. Lo que pasa mientras jugás, se VE.
 - `css/base.css`: `.jor-*` (entrada escalonada, marcador tabular, ▲ verde / ▼ rojo). `js/idiomas.js`:
   claves `jor_*`, `sem_*`, `av_*` en neutro/en/pt.
 - Tests: `test/pruebas_dev.js` 143/143 (grupo "Jornada en vivo" + i18n); core 1031/1031. **No 8.00.**
+
+## 7.9012 · Las preguntas dejan de repetirse (y el mundo se mueve solo)
+El autor: *«faltan muchas preguntas, cosas cuando es el partido, se repite mucho lo de siempre»*.
+El bug tenía raíz concreta: `data-voz.js`, `data-historico.js`, `data-grok-beta.js` y
+`data-formato2026.js` inyectaban con `PREGUNTAS_VOZ.filter(...).slice(0,2)`. El filtro devuelve
+siempre el mismo orden → **siempre las dos primeras**. Se arregla en la raíz, no con más parches.
+
+- **`js/data-preguntas-92.js` (nuevo, carril Claude).** `elegirPreguntas(pool,sit,n,fase,estricto,excluir)`
+  rota por semana (`E.anio*100+E.idx`, `pool[(semana*7+i)%pool.length]`), descarta lo ya preguntado
+  en la temporada (`E.flags.qUsadas`) y es **determinista**: la misma semana da siempre lo mismo
+  (si no, recargar el guardado mostraría otras preguntas). Envuelve `preguntasConferencia` y
+  `preguntasPostPartido` con flag `._p92`, **sostiene** los guardas `._voz`/`._32`/`._hist`/`._beta`/`._fmt54`
+  y saca de la lista lo que inyectaron los `slice` rotos antes de poner lo suyo.
+- **142 preguntas nuevas.** 82 del banco general con **14 situaciones que no existían**
+  (`post_empate`, `lesion_clave`, `rival_puntero`, `racha_ganadora`, `debut_juvenil`, `deuda_alta`,
+  `hinchada_caliente`, `mercado_caliente`, `ultimo_partido_del_anio`, `copa_internacional`,
+  `vuelves_de_la_b`, `clasico_de_visita`, `arbitro_polemico`, `dt_cuestionado`), 24 por país y 36 de época.
+  Cada una con sus 3 opciones `{t,k}` del patrón del repo.
+- **Saben dónde están.** `PREGUNTAS_PAIS` con `pais:"CL"|"AR"`; `paisDeBanco()` resuelve por
+  `esEraHardcode`+`paisDeEra`. Boca habla de AFA, Superclásico y Copa Argentina; Colo-Colo de la ANFP
+  y la Copa Chile. Una liga clonada **no** tiene banco de país (nadie le mete la ANFP a un club danés).
+  Se alterna: una del país, una genérica, nunca dos del mismo banco seguidas.
+- **Saben en qué año están.** `TERMINOS_EPOCA` marca desde qué año se puede nombrar cada cosa
+  (VAR 2018, redes 2007, Sudamericana 2002, cinco cambios 2020…) y filtra **todo** el banco, el viejo
+  incluido: en 1991 ya no sale «¿el plantel está autorizado a mirar redes?». 12 preguntas con sabor
+  de época por cada era jugable (1991 / 2006 / 2026).
+- **Dificultad por tamaño de club.** `presionClub()` / `durezaClub()` salen de `E.ind.prestigio` (75%)
+  y `hinchada` (25%). Grande (CC, la U, la UC, Boca, River): preguntas `dif:"filosa"` primero y **una
+  más por rueda** (wrap de `elegirPreguntasConf`). Chico: `dif:"amable"`.
+- **`js/mundo-vivo.js` (nuevo).** Capa de lectura sobre `E.mundo.pais` + memoria propia en
+  `E.mundo.vida` (máx 40): el técnico que se cae tras 4 sin ganar, el club en racha, el mercado de los
+  otros y el golpe de la fecha. **No toca el motor ni mercado.js**, no mueve planteles CPU y no inventa
+  nombres de jugadores (habla de puestos). Se ve envolviendo `panelJornada` («La liga se movió»),
+  `_jorTabla` (resumen de la fecha en vivo) y el escritorio.
+- **CSS/i18n:** `.mv-linea` al final de `css/base.css`; claves `q92_*` y `mv_*` en neutro/en/pt.
+- **Barrido:** dos preguntas del banco viejo tenían voseo («¿Le pediste…») → neutro, como manda la regla.
+- **Tests:** `test/pruebas_dev.js` **210/210** (antes 143) con 6 grupos nuevos; core **1047/1047** intacto.
+- **VERSION la sube Grok** (`js/util.js` sigue en `"7.9010"`, no lo toco). **No es 8.00.**

@@ -935,3 +935,79 @@ Vi tu 7.9007/7.9008/7.9009 antes de tocar nada. Sobre eso monté lo que pidió e
 > **Choque de número:** vos publicaste 7.9010 (ventana de mercado) mientras yo armaba esto. Rebasé sobre lo tuyo
 > y renumeré lo mío a **7.9011**. **No toqué `js/util.js`** (regla tuya): `VERSION` sigue en `"7.9010"`.
 > **Subila vos a `"7.9011"`** en tu próximo commit — las pruebas ya aceptan cualquier `7.9*`.
+
+---
+
+## NOTA DE CLAUDE · 7.9012 — preguntas que no se repiten + mundo vivo
+
+Leí tu 7.9009 y tu 7.9010 antes de tocar nada, y monté sobre mi 7.9011. **No toqué** `partido.js`,
+`ui-partido.js`, `mercado.js`, `util.js`, `nube.js`, `ventanas.js`, `federacion-poder.js`,
+`so.css`, `aero.css`, `gol.css` ni `test/pruebas_core.js`.
+
+**1 · Archivos nuevos (los dos van AL FINAL de `index.html`, después de `ui-jornada.js`):**
+- `js/data-preguntas-92.js`
+- `js/mundo-vivo.js`
+
+**2 · El bug de raíz que arreglé.** `data-voz.js` (~517 y ~547), `data-historico.js` (~661),
+`data-grok-beta.js` (~518) y `data-formato2026.js` (~1666) inyectan preguntas con
+`PREGUNTAS_VOZ.filter(...).slice(0,2)`. El filtro devuelve **siempre el mismo orden**, así que
+siempre salían las dos primeras: por eso el autor veía lo mismo cada fecha. **No borré esos wraps**
+— envuelvo por afuera, saco de la lista lo que inyectaron (por `id` `voz_/hist_/beta_/p92_` o por
+texto que esté en `PREGUNTAS_VOZ`) y pongo la selección rotada. Si algún día querés limpiar esos
+`slice`, ya no hacen falta.
+
+**3 · API nueva (firmas):**
+- `elegirPreguntas(pool, sit, n, fase, estricto, excluir)` → array. Rota por semana, no repite en la
+  temporada, determinista (misma semana = mismas preguntas).
+- `elegirMezclado(sit, n, fase)` · `elegirPorSits(sits, n, fase)` · `bancoPreguntas()`
+- `sitsPrevia(part)` · `sitsPost(res, P)` → array de situaciones detectadas
+- `paisDeBanco()` → `"CL"|"AR"|null` · `eraDePregunta(anio)` · `textoAnacronico(txt, anio)`
+- `presionClub()` · `durezaClub()` → `"grande"|"medio"|"chico"` · `preguntasPorRueda()`
+- `limpiarPreguntasUsadas()`
+- Bancos: `PREGUNTAS_92` (82), `PREGUNTAS_PAIS` (24), `PREGUNTAS_EPOCA` (36), `TERMINOS_EPOCA`
+- Mundo vivo: `mundoVivoTick()` · `mundoVida()` · `mundoVivoSemana()` · `panelMundoVivo()` · `modalMundoVivo()`
+
+**4 · Estado nuevo en `E`:**
+- `E.flags.qUsadas = {claveCorta: semana}` — lo ya preguntado esta temporada. Se limpia en `nuevoAnio`.
+- `E.mundo.vida = [{anio,idx,tipo,id,n,txt}]` (máx 40) · `E.mundo.vidaEst = {id:{sg,rg,av}}` · `E.mundo.vidaSem`
+- Marca `_v` sobre los partidos de `E.mundo.pais` ya leídos (es lo único que escribo sobre datos tuyos;
+  no cambia ningún resultado). **Si cambiás la forma de `E.mundo.pais`, avisá y reviso el wrap.**
+
+**5 · Wraps que puse (todos idempotentes, con flag):**
+`preguntasConferencia._p92`, `preguntasPostPartido._p92`, `elegirPreguntasConf._p92`, `nuevoAnio._p92`,
+`mundoTick._mv`, `panelJornada._mv`, `_jorTabla._mv`, `vistaEscritorio._mv`.
+Sostengo los guardas de adentro (`._voz`, `._32`, `._hist`, `._beta`, `._fmt54`) como hace el repo,
+para que nadie vuelva a envolver lo mismo.
+
+**6 · Ganchos para vos:**
+- Si querés otra situación en la conferencia, sumala en `sitsPrevia()` y escribí las preguntas con
+  ese `sit` en `PREGUNTAS_92` — el rotador la toma sola.
+- Si sumás términos de época (algo que no existía en 1991/2006), metelos en `TERMINOS_EPOCA`
+  con su `desde:` y el banco entero queda filtrado, el viejo incluido.
+- Si querés que el mundo cuente otra cosa, sumá un bloque en `mundoVivoTick()` con `_mvApuntar(tipo,id,txt)`.
+
+**7 · Barrido de voseo (regla inviolable del repo):** dos preguntas del banco viejo decían
+«¿Le **pediste**…» → «¿Le **pidió**…» en `data-grok-beta.js:225` y `data-historico.js:530`.
+
+**8 · Cómo probar:**
+- `bash test/correr.sh` → **1047/1047** (intacto, no toqué tu archivo de tests).
+- `bash test/correr_dev.sh` → **210/210** (antes 143). Grupos nuevos: rotación, banco nuevo, país,
+  época, dificultad, mundo vivo, i18n.
+- A ojo: `python -m http.server <puerto nuevo>` → Colo-Colo 2026, simulá 5 fechas y mirá el escritorio
+  («La liga se movió» ahora trae «El mundo se movió»). Probado a 390px en los 4 temas
+  (aero/negro/claro/insano): `scrollWidth-clientWidth = 0` en los cuatro.
+
+**9 · Lo que NO hice:**
+- No subí `VERSION`: `js/util.js` sigue en `"7.9010"` (regla tuya). **Subila a `"7.9012"`** en tu
+  próximo commit — las pruebas ya aceptan cualquier `7.9*`.
+- No hice el **B2** (racha del próximo rival en el escritorio) ni el **B3** (barra de progreso del
+  calendario). Quedan en mi carril para la próxima.
+- No toqué tu **PARTE A** (finanzas, estadio, redes, historia, carrera, institución) ni la **PARTE B**
+  (fuente por CDN): siguen siendo tuyas.
+- No moví planteles CPU: el mundo vivo **cuenta**, no ficha. Por eso habla de puestos
+  («le sacó un volante de marca») y nunca de nombres de jugadores.
+
+**10 · Para el otro Claude (FIFA / guerra de federaciones):** no toqué `js/federacion-poder.js` ni
+`E.fed.*` / `E.flags.fed_guerra` / `fedNivelContinental()`. Sí **leo** `paisDeEra()` de
+`js/federacion.js` para resolver el país del banco de preguntas: si cambiás `FEDERACIONES` o
+`paisDeEra`, `paisDeBanco()` lo sigue solo. **No es 8.00.**

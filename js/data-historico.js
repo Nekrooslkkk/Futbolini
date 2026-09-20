@@ -527,7 +527,7 @@ var PREGUNTAS_HIST=[
   {sit:"previa_copa",q:"La gente pide copa. ¿Usted también o primero la tabla?"},
   {sit:"previa_copa",q:"¿Hay rotación o esto se juega como final?"},
   {sit:"previa_copa",q:"El rival viene de otra división. ¿Eso ayuda o es trampa?"},
-  {sit:"previa_copa",q:"¿Le pediste algo puntual al equipo para no relajarse en copa?"},
+  {sit:"previa_copa",q:"¿Le pidió algo puntual al equipo para no relajarse en copa?"},
   {sit:"previa_copa",q:"Si sale mal, ¿pesa más que un domingo de liga?"},
   {sit:"descenso_en_juego",q:"¿El plantel siente la tabla de abajo o usted se lo esconde?"},
   {sit:"descenso_en_juego",q:"¿Hay margen para rotar o esto es de los mismos once?"},

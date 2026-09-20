@@ -381,6 +381,163 @@
       E._bulkSim=false;
     },"Jornada");
 
+    grupo("Preguntas 7.9012 · el banco rota (A1)");
+    safe(function(){
+      t(typeof elegirPreguntas==="function","elegirPreguntas(pool,sit,n) existe");
+      t(preguntasConferencia._p92===true,"preguntasConferencia queda envuelta con ._p92");
+      t(preguntasPostPartido._p92===true,"preguntasPostPartido queda envuelta con ._p92");
+      t(preguntasConferencia._voz===true,"el wrap ._voz de adentro NO se rompió");
+      t(preguntasPostPartido._beta===true,"el wrap ._beta de adentro NO se rompió");
+      nuevaPartida("CC",2026,"historico");
+      var part=proximoPartido();
+      /* misma semana = mismas preguntas (si no, el guardado mostraría otras) */
+      var a=preguntasConferencia(part).filter(function(x){return x._p92;}).map(function(x){return x.q;}).join("|");
+      var b=preguntasConferencia(part).filter(function(x){return x._p92;}).map(function(x){return x.q;}).join("|");
+      t(a===b && a.length>0,"la misma semana da SIEMPRE las mismas preguntas");
+      E.idx++;
+      var c=preguntasConferencia(part).filter(function(x){return x._p92;}).map(function(x){return x.q;}).join("|");
+      t(c!==a,"otra semana da preguntas distintas");
+      /* 6 fechas seguidas en la misma situación: ni una repetida */
+      nuevaPartida("CC",2026,"historico");
+      var vistas={}, rep=0, tot=0;
+      for(var w=0;w<6;w++){
+        preguntasConferencia(part).filter(function(x){return x._p92;}).forEach(function(x){
+          tot++; if(vistas[x.q]) rep++; vistas[x.q]=1;
+        });
+        E.idx++;
+      }
+      t(tot>=12,"en 6 fechas se inyectaron "+tot+" preguntas");
+      t(rep===0,"en 6 fechas seguidas NO se repite ninguna (repetidas: "+rep+")");
+      /* el registro vive en E.flags y se limpia al cerrar temporada */
+      t(E.flags.qUsadas && Object.keys(E.flags.qUsadas).length>0,"E.flags.qUsadas registra lo preguntado");
+      limpiarPreguntasUsadas();
+      t(Object.keys(E.flags.qUsadas).length===0,"limpiarPreguntasUsadas vacía el registro");
+      t(nuevoAnio._p92===true,"nuevoAnio limpia el banco al cerrar la temporada");
+    },"Rotación de preguntas");
+
+    grupo("Preguntas 7.9012 · banco nuevo (A2)");
+    safe(function(){
+      t(PREGUNTAS_92.length>=60,"hay al menos 60 preguntas nuevas ("+PREGUNTAS_92.length+")");
+      var sits=["post_empate","lesion_clave","rival_puntero","racha_ganadora","debut_juvenil",
+                "deuda_alta","hinchada_caliente","mercado_caliente","ultimo_partido_del_anio",
+                "copa_internacional","vuelves_de_la_b","clasico_de_visita","arbitro_polemico","dt_cuestionado"];
+      var faltan=sits.filter(function(x){ return !PREGUNTAS_92.some(function(p){ return p.sit===x; }); });
+      t(faltan.length===0,"están las 14 situaciones nuevas"+(faltan.length?" — faltan "+faltan.join(","):""));
+      var malas=PREGUNTAS_92.concat(PREGUNTAS_PAIS,PREGUNTAS_EPOCA).filter(function(p){
+        return !p.q || !Array.isArray(p.ops) || p.ops.length!==3 || p.ops.some(function(o){ return !o.t||!o.k; });
+      });
+      t(malas.length===0,"todas traen 3 opciones {t,k} del patrón del repo");
+      var voseo=/\b(pediste|ten[ée]s|quer[ée]s|pod[ée]s|sab[ée]s|jug[áa]s|decid[íi]s|bancás|vos)\b/i;
+      var conVoseo=PREGUNTAS_92.concat(PREGUNTAS_PAIS,PREGUNTAS_EPOCA).filter(function(p){ return voseo.test(p.q); });
+      t(conVoseo.length===0,"sin voseo en el banco nuevo (regla del repo)");
+    },"Banco nuevo");
+
+    grupo("Preguntas 7.9012 · el DT sabe dónde está (A3)");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      t(paisDeBanco()==="CL","Colo-Colo resuelve país CL");
+      var Lc=preguntasConferencia(proximoPartido()).map(function(x){return x.q;}).join(" ");
+      t(/ANFP|Copa Chile|chilen/i.test(Lc),"Colo-Colo recibe preguntas de Chile");
+      t(!/AFA|Superclásico|argentin/i.test(Lc),"a Colo-Colo no le preguntan por Argentina");
+      nuevaPartida("BOC",2026,"historico",{categoria:"ARG"});
+      t(paisDeBanco()==="AR","Boca resuelve país AR");
+      var Lb=preguntasConferencia({rivalNombre:"River Plate",fuerzaRival:80,local:true}).map(function(x){return x.q;}).join(" ");
+      t(/AFA|Superclásico|argentin/i.test(Lb),"Boca recibe preguntas de Argentina");
+      t(!/Copa Chile|ANFP/.test(Lb),"a Boca NO le preguntan por Copa Chile ni la ANFP");
+      /* liga clonada: no se le mete la ANFP a una liga que no es de Chile */
+      registrarLiga({eraKey:"tst_q92", baseEra:2026, nombre:"Liga Q92", clubs:[
+        {id:"QA",n:"Q Alfa",c:"Alfa",fuerza:70,aforo:20000,est:"Alfa Park",ciudad:"Alfa"},
+        {id:"QB",n:"Q Beta",c:"Beta",fuerza:66,aforo:18000,est:"Beta Park",ciudad:"Beta"},
+        {id:"QC",n:"Q Gama",c:"Gama",fuerza:62,aforo:15000,est:"Gama Park",ciudad:"Gama"},
+        {id:"QD",n:"Q Delta",c:"Delta",fuerza:58,aforo:12000,est:"Delta Park",ciudad:"Delta"}]});
+      nuevaPartida("QA",2026,"historico");
+      t(paisDeBanco()===null,"una liga clonada no tiene banco de país");
+      var Lq=preguntasConferencia(proximoPartido()).filter(function(x){return x._p92;}).map(function(x){return x.q;}).join(" ");
+      t(!/ANFP|Copa Chile|AFA/.test(Lq),"la liga clonada no recibe preguntas de la ANFP ni de la AFA");
+    },"País");
+
+    grupo("Preguntas 7.9012 · el DT sabe en qué año está (A4)");
+    safe(function(){
+      t(PREGUNTAS_EPOCA.filter(function(p){return p.era==="1991";}).length>=12,"12+ preguntas con sabor 1991");
+      t(PREGUNTAS_EPOCA.filter(function(p){return p.era==="2006";}).length>=12,"12+ preguntas con sabor 2006");
+      t(PREGUNTAS_EPOCA.filter(function(p){return p.era==="2026";}).length>=12,"12+ preguntas con sabor 2026");
+      t(eraDePregunta(1991)==="1991" && eraDePregunta(2006)==="2006" && eraDePregunta(2026)==="2026",
+        "eraDePregunta ubica las tres épocas jugables");
+      t(textoAnacronico("¿El plantel puede mirar redes sociales?",1991)===true,"«redes sociales» es anacrónico en 1991");
+      t(textoAnacronico("¿Vio la jugada del VAR?",1991)===true,"«VAR» es anacrónico en 1991");
+      t(textoAnacronico("¿Vio la jugada del VAR?",2026)===false,"«VAR» sí corre en 2026");
+      nuevaPartida("CC",1991,"historico");
+      var vistas91=[];
+      for(var w=0;w<6;w++){
+        preguntasConferencia(proximoPartido()).filter(function(x){return x._p92;}).forEach(function(x){
+          vistas91.push(x.q+" "+(x.ops||[]).map(function(o){return o.t;}).join(" "));
+        });
+        E.idx++;
+      }
+      var malos=TERMINOS_EPOCA.filter(function(term){
+        return term.desde>1991 && vistas91.some(function(txt){ return term.re.test(txt); });
+      });
+      t(vistas91.length>=10,"en 1991 se preguntó de verdad ("+vistas91.length+" preguntas)");
+      t(malos.length===0,"en 1991 NO sale nada posterior a 1991"+(malos.length?" — "+malos.map(function(m){return m.re.source;}).join(" , "):""));
+      var era91=PREGUNTAS_EPOCA.filter(function(p){ return p.era==="2026"; })[0];
+      t(_q92EraOk(era91,1991)===false,"una pregunta marcada era:2026 no entra en 1991");
+    },"Época");
+
+    grupo("Preguntas 7.9012 · dificultad por tamaño (A5)");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      t(durezaClub()==="grande","Colo-Colo es club grande ("+presionClub()+")");
+      t(preguntasPorRueda()===3,"al grande se le hace una pregunta más por rueda");
+      t(elegirPreguntasConf._p92===true,"la conferencia del grande pide una pregunta más");
+      nuevaPartida("LIM",2026,"historico");
+      t(durezaClub()==="chico","Limache es club chico ("+presionClub()+")");
+      t(preguntasPorRueda()===2,"al chico se le hacen 2 por rueda");
+      var P={once:E.plantel.slice(0,11),goleadores:[],part:{rivalNombre:"Audax Italiano",local:true},lineas:[]};
+      var Lp=preguntasPostPartido({yo:1,otro:1,lesionados:[]},P).filter(function(x){return x._p92;});
+      t(Lp.length===2,"el club chico recibe 2 preguntas en la sala ("+Lp.length+")");
+      var amables=Lp.filter(function(x){ return /un club como este|levanten la cabeza|de a poco/i.test(x.q+" "+x.ops.map(function(o){return o.t;}).join(" ")); });
+      t(amables.length>=1,"al club chico le llega tono amable");
+      t(sitsPost({yo:1,otro:1},P).indexOf("post_empate")>=0,"el empate se detecta como situación");
+    },"Dificultad");
+
+    grupo("Mundo vivo 7.9012 (B1)");
+    safe(function(){
+      t(typeof mundoVivoTick==="function","mundoVivoTick existe");
+      t(typeof panelMundoVivo==="function","panelMundoVivo existe");
+      t(mundoTick._mv===true,"mundoTick queda envuelto (capa de lectura)");
+      t(panelJornada._mv===true,"panelJornada queda envuelto, no reescrito");
+      t(_jorTabla._mv===true,"el resumen de la fecha en vivo también lo cuenta");
+      nuevaPartida("CC",2026,"historico");
+      for(var w=0;w<5;w++){
+        var part=proximoPartido(); if(!part) break;
+        var P=iniciarPartido(part,"simular"); correrHasta(P,90); terminarPartido(P);
+      }
+      var v=mundoVida();
+      t(v.length>=3,"en 5 fechas el mundo contó al menos 3 cosas ("+v.length+")");
+      var ajenas=v.filter(function(x){ return x.id!==E.club; });
+      t(ajenas.length>=3,"al menos 3 no tienen que ver con tu club ("+ajenas.length+")");
+      t(v.every(function(x){ return x.txt && x.tipo; }),"cada cosa tiene tipo y texto");
+      t(v.length<=40,"la memoria del mundo no crece sin freno ("+v.length+"/40)");
+      var pj=panelJornada();
+      t(pj && pj.textContent.indexOf(T("mv_tit","El mundo se movió"))>=0,"«La liga se movió» suma lo de afuera");
+      SEC="escritorio"; render();
+      t(document.getElementById("vista").textContent.indexOf(T("mv_tit","El mundo se movió"))>=0,
+        "el escritorio muestra el mundo vivo");
+      E._bulkSim=true;
+      var antes=mundoVida().length;
+      mundoVivoTick();
+      t(mundoVida().length===antes,"en simulación masiva el mundo vivo no escribe");
+      E._bulkSim=false;
+    },"Mundo vivo");
+
+    grupo("Localización de preguntas y mundo");
+    safe(function(){
+      ["q92_calma","q92_confianza","q92_palo","q92_humilde","q92_bancar","q92_palo2",
+       "mv_tit","mv_nada","mv_dt","mv_fichaje","mv_racha","mv_golpe","mv_ver"].forEach(function(k){
+        t(FRASES.neutro[k] && FRASES.en[k] && FRASES.pt[k], "clave "+k+" está en neutro/en/pt");
+      });
+    },"i18n 7.9012");
+
     grupo("Localización de la jornada");
     safe(function(){
       ["jor_tit","jor_panel","jor_ver","jor_saltar","jor_tabla","sem_tit","av_jugar","av_semana","av_cierre"].forEach(function(k){

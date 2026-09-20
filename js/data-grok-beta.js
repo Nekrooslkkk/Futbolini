@@ -222,7 +222,7 @@ function fraseCuerpoTecnico(part){
 const PREGUNTAS_BETA=[
   {sit:"previa_favorito",q:"¿Cómo evitas que el plantel se relaje siendo favorito?"},
   {sit:"previa_favorito",q:"El rival viene a cerrarse. ¿Tienes un plan B si no entra el primer gol?"},
-  {sit:"previa_favorito",q:"¿Le pediste algo puntual al 9 para partidos que se traban?"},
+  {sit:"previa_favorito",q:"¿Le pidió algo puntual al 9 para partidos que se traban?"},
   {sit:"previa_favorito",q:"La gente ya lo dio por ganado. ¿Eso ayuda o estorba?"},
   {sit:"previa_favorito",q:"¿Hay rotación o sales con el once de siempre?"},
   {sit:"previa_favorito",q:"¿Te preocupa que el rival te reciba de contra?"},
