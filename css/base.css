@@ -862,3 +862,6 @@ html{scrollbar-width:thin;scrollbar-color:rgba(70,150,100,.55) transparent}
 .riv-r{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
   border-radius:5px;font-size:11px;font-weight:700;color:#fff}
 .riv-V{background:#2fa84f}.riv-E{background:#9a9a9a}.riv-D{background:#c0392b}
+
+/* 7.9014 · el botón Avanzar no puede empujar la barra superior fuera de pantalla */
+#btnAvanzar{max-width:min(240px,27vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

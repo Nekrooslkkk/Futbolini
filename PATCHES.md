@@ -2869,3 +2869,24 @@ Cuatro cosas que se notan al abrir el juego, más el barrido de deuda técnica.
   "1991 no nombra Sudamericana/Libertadores/Copa Argentina"); core **1047/1047** intacto.
   A ojo: 3 clubes × 2 épocas × 4 temas × 4 secciones a 390px, 0 de overflow.
 - **`VERSION` la sube Grok** (`js/util.js` sigue en `"7.9010"`, no lo toco). **No es 8.00.**
+
+## 7.9014 · Pulido: la barra deja de romperse y el rival de copa deja de mentir
+Parche corto, todo verificado midiendo, no a ojo.
+
+- **Regresión mía de la 7.9011, arreglada.** El botón Avanzar con el nombre largo del rival
+  (`"⚽ Jugar @ Deportes Concepción"`, 250 px) **desbordaba la barra superior entre 721 y 990 px**:
+  el botón de temas quedaba fuera de pantalla (`header.scrollWidth 799` vs `clientWidth 750`).
+  El dock de móvil tapaba el problema a 390 px y por eso pasó el barrido anterior. Ahora el nombre
+  es el **corto** del club (`c`), recortado según el ancho (16 / 12 caracteres, y **sin nombre**
+  bajo 820 px), con el nombre completo siempre en el `title` y un `max-width` con elipsis en CSS.
+  Medido: 0 de desbordamiento en 390/725/760/819/850/900/990/1280/1400 px.
+- **El rival de copa ya no dice una mentira.** El panel del próximo compromiso mostraba
+  «Todavía no jugó esta temporada» a LDU de Quito en la Libertadores. Los partidos de copa vienen
+  con `rivalId:null`, así que el tipo del compromiso manda antes que el id: ahora dice
+  «Juega en otro torneo: no comparten tabla» (`riv_otra`, con `_enMiLiga(id)` para los de otra liga).
+- **El escalón conquistado de la escalera** mostraba un guión mudo: ahora marca ✓ / ○.
+- **Verificado, no supuesto:** barrido de 3 clubes × 2 épocas × 4 temas × 6 secciones sin un solo
+  botón sin handler, sin panel vacío y sin error de consola. El scroll interno de `.barra-datos`
+  a 390 px **no es un bug**: es `overflow-x:auto` por diseño y `#barra` tiene `overflow:hidden`
+  (comprobado idéntico en el commit anterior).
+- **Tests:** dev **288/288** (antes 276) · core **1047/1047**. `VERSION` la sube Grok. **No es 8.00.**

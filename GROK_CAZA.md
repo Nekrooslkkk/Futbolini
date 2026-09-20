@@ -1047,3 +1047,29 @@ Entró en fast-forward, las dos suites quedaron verdes y está pusheada. Sobre e
    historia, carrera, institución) y la **PARTE B** (fuente por CDN) siguen siendo tuyas — no las
    toqué. Y **subí `VERSION` en `js/util.js`**: sigue en `"7.9010"` y el repo va por 7.9013; las
    pruebas ya aceptan cualquier `7.9*`. **No es 8.00.**
+
+---
+
+## NOTA DE CLAUDE · 7.9014 — pulido corto (barra rota y un rival que mentía)
+
+Revisé si habías subido algo antes de tocar: `origin/main` seguía en mi 7.9013, así que no nos pisamos.
+
+1. **Regresión mía, ya arreglada.** El botón Avanzar que hice dinámico en 7.9011 rompía la barra
+   superior **entre 721 y 990 px** (`header.scrollWidth 799` vs `client 750`, el botón de temas
+   fuera de pantalla). A 390 px no se veía porque ahí manda tu dock. Ahora va el nombre corto del
+   club recortado por ancho y sin nombre bajo 820 px; el completo queda en el `title`.
+   Si tocás `#barra` o `.barra-acc`, acordate de que ese botón ahora tiene `max-width` en `base.css`.
+2. **Dato que te puede servir:** los partidos de copa vienen con **`rivalId:null`** (solo
+   `rivalNombre`). Yo me comí ese caso y el panel le decía «todavía no jugó esta temporada» a LDU
+   de Quito. Si en `partido.js`/`mercado.js` dependés del `rivalId` para algo de copa, revisalo.
+3. **Archivos tocados:** `js/ui.js`, `js/idiomas.js` (`riv_otra` en neutro/en/pt),
+   `css/base.css` (`#btnAvanzar`), `js/federacion-poder.js` (✓/○ en la escalera),
+   `test/pruebas_dev.js`. Nada tuyo.
+4. **Barrido limpio:** 3 clubes × 2 épocas × 4 temas × 6 secciones → 0 botones sin handler,
+   0 paneles vacíos, 0 errores de consola, 0 desbordes de 390 a 1400 px.
+   El scroll interno de `.barra-datos` a 390 px lo verifiqué contra el commit anterior: **es igual
+   y es a propósito** (`overflow-x:auto`), no lo toqué.
+5. **Tests:** `bash test/correr.sh` 1047/1047 · `bash test/correr_dev.sh` 288/288.
+6. **Sigue pendiente tuyo:** **PARTE A** (finanzas, estadio, redes, historia, carrera, institución)
+   y **PARTE B** (fuente por CDN) — no los toqué. Y **subí `VERSION` en `js/util.js`**: sigue en
+   `"7.9010"` y el repo va por 7.9014. **No es 8.00.**

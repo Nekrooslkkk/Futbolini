@@ -669,10 +669,40 @@
       t(anclaMal.length===0,"el estadio y el aforo salen tal cual de LIGA_ARG_2026 ("+anclaMal.join(",")+")");
     },"Alma AFA");
 
+    grupo("Pulido 7.9014");
+    safe(function(){
+      t(typeof _nomCortoRival==="function","_nomCortoRival existe");
+      nuevaPartida("CC",2026,"historico");
+      var pa=proximoPartido();
+      var corto=_nomCortoRival(pa);
+      t(corto.length<=16,"el nombre del rival en la barra nunca pasa de 16 ("+corto.length+")");
+      SEC="escritorio"; render();
+      var bav=document.getElementById("btnAvanzar");
+      t(bav.textContent.indexOf(T("av_jugar","Jugar"))>=0,"el botón dice la acción");
+      t((bav.title||"").indexOf(pa.rivalNombre)>=0,"el nombre completo del rival queda en el title");
+      t(document.documentElement.scrollWidth-document.documentElement.clientWidth===0,
+        "la barra superior no desborda la pantalla");
+      /* rival que no comparte tabla: se dice, no se finge */
+      t(typeof _enMiLiga==="function","_enMiLiga existe");
+      t(_enMiLiga(E.club)===true,"tu club está en tu liga");
+      t(_enMiLiga("__NO_EXISTE__")===false,"un club de otro torneo no está en tu liga");
+      var falso={rivalId:"__NO_EXISTE__",rivalNombre:"Rival de otra liga",local:true};
+      t(_pasadoRival(falso).textContent.indexOf(T("riv_otra","Juega en otro torneo: no comparten tabla."))>=0,
+        "un rival de otra liga lo dice en vez de inventar racha");
+      /* los partidos de copa vienen con rivalId:null — el tipo manda */
+      var copa={tipo:"copa",torneo:"Copa Libertadores",rivalId:null,rivalNombre:"LDU de Quito",local:false};
+      t(_pasadoRival(copa).textContent.indexOf(T("riv_otra","Juega en otro torneo: no comparten tabla."))>=0,
+        "un rival de copa (sin rivalId) también lo dice");
+      /* el escalón local ya no muestra un guión mudo */
+      E.fed=E.fed||{}; E.fed.presidente=true;
+      var cu=el("div"); panelEscalera(cu);
+      t(cu.textContent.indexOf("✓")>=0,"el escalón conquistado se marca con ✓");
+    },"Pulido");
+
     grupo("Localización 7.9013");
     safe(function(){
       ["mep_solo","riv_racha","riv_sin","riv_puesto","cal_prog","cal_sig",
-       "fed_escalera","fed_guerra","fed_cupos","fed_sin","fed_subiste"].forEach(function(k){
+       "fed_escalera","fed_guerra","fed_cupos","fed_sin","fed_subiste","riv_otra"].forEach(function(k){
         t(FRASES.neutro[k] && FRASES.en[k] && FRASES.pt[k], "clave "+k+" está en neutro/en/pt");
       });
     },"i18n 7.9013");

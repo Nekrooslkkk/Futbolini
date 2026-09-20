@@ -171,14 +171,21 @@ function render(){
   if(typeof pintarHoldBar==="function") pintarHoldBar();
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="full";
   $("#btnAvanzar").classList.toggle("oculto",!E);
-  /* 7.9011 · el botón dice QUÉ va a pasar si lo apretás (jugar / semana / cierre). */
+  /* 7.9011 · el botón dice QUÉ va a pasar si lo apretás (jugar / semana / cierre).
+     7.9014 · con el nombre largo del rival la barra se desbordaba entre 720 y 990 px
+     (el dock de móvil tapaba el problema): va el nombre CORTO y recortado, y el
+     nombre completo queda en el title. */
   if(E){
     const _bav=$("#btnAvanzar");
     const _pa=(typeof proximoPartido==="function")?proximoPartido():null;
     if(!_pa){ _bav.textContent="🏁 "+T("av_cierre","Cerrar temporada"); _bav.title=""; }
     else if(!_pa.jugado){
-      _bav.textContent="⚽ "+T("av_jugar","Jugar")+" "+(_pa.local?"vs ":"@ ")+(_pa.rivalNombre||"");
-      _bav.title=(typeof etqCompromiso==="function"?etqCompromiso(_pa):"")+" · "+(typeof fechaTxt==="function"?fechaTxt(_pa.f):"");
+      const _riv=_nomCortoRival(_pa);
+      /* barra angosta (721–819 px): el rival se lee en el escritorio y en el title;
+         acá solo estorba y empuja los datos fuera de pantalla. */
+      _bav.textContent=_riv?("⚽ "+T("av_jugar","Jugar")+" "+(_pa.local?"vs ":"@ ")+_riv):("⚽ "+T("av_jugar","Jugar"));
+      _bav.title=(_pa.local?"vs ":"@ ")+(_pa.rivalNombre||"")+" · "+
+        (typeof etqCompromiso==="function"?etqCompromiso(_pa):"")+" · "+(typeof fechaTxt==="function"?fechaTxt(_pa.f):"");
     } else {
       _bav.textContent="⏩ "+T("av_semana","Avanzar semana");
       _bav.title=(typeof fechaTxt==="function"?fechaTxt(_pa.f):"");
@@ -543,6 +550,9 @@ function _pasadoRival(part){
       tira.appendChild(b);
     });
     caja.appendChild(tira);
+  } else if((part&&part.tipo==="copa") || (id && !_enMiLiga(id))){
+    /* rival de copa o de otra categoría: no comparte torneo con vos. Se dice. */
+    caja.appendChild(el("p","mini",T("riv_otra","Juega en otro torneo: no comparten tabla.")));
   } else {
     caja.appendChild(el("p","mini",T("riv_nuevo","Todavía no jugó esta temporada.")));
   }
@@ -556,6 +566,34 @@ function _pasadoRival(part){
     caja.appendChild(el("p","mini",t+" ("+ult.gf+"-"+ult.gc+")"));
   } else caja.appendChild(el("p","mini",T("riv_sin","Primera vez que se cruzan este año.")));
   return caja;
+}
+/* 7.9014 · ¿el rival juega MI torneo? Para no decirle "todavía no jugó" a un
+   rival de copa que sí está jugando lo suyo en otra parte. */
+/* OJO: los partidos de copa vienen con `rivalId:null` (solo `rivalNombre`), así que
+   el tipo del compromiso manda antes que el id. */
+function _enMiLiga(id){
+  if(!id) return false;
+  try{
+    const pool=(typeof clubesLigaActual==="function")?clubesLigaActual():(typeof LIGA_ACT!=="undefined"?LIGA_ACT:[]);
+    return (pool||[]).some(function(c){ return c&&c.id===id; });
+  }catch(e){ return false; }
+}
+/* 7.9014 · nombre corto del rival para la barra: el `c` del club si existe, y
+   recortado según el ancho de la ventana (entre 720 y 990 px la barra es angosta
+   y un nombre largo la desbordaba). El nombre completo va siempre en el title. */
+function _nomCortoRival(part){
+  if(!part) return "";
+  let n="";
+  try{
+    const id=part.rivalId;
+    const c=id&&((typeof CLUB_POR_ID!=="undefined"&&CLUB_POR_ID[id])||(typeof clubLookup==="function"&&clubLookup(id))||(typeof clubMundo==="function"&&clubMundo(id)));
+    n=(c&&(c.c||c.n))||"";
+  }catch(e){}
+  if(!n) n=part.rivalNombre||"";
+  const w=(typeof window!=="undefined"&&window.innerWidth)||1280;
+  if(w<820) return "";                 /* sin nombre: no cabe sin romper la barra */
+  const tope=w<1000?12:16;
+  return n.length>tope?(n.slice(0,tope-1).trim()+"…"):n;
 }
 function vistaEscritorio(){
   const v=$("#vista");

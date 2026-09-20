@@ -297,7 +297,8 @@
       var st=fedEscalon(e.k);
       var paso=el("div","fed-paso fed-"+st);
       paso.innerHTML="<span class='fed-ic'>"+e.ic+"</span><span class='fed-n'>"+escHtml(e.n())+"</span>"+
-        (e.meta?("<span class='fed-num'>"+Math.min(n,e.meta)+"/"+e.meta+"</span>"):"<span class='fed-num'>—</span>");
+        (e.meta?("<span class='fed-num'>"+Math.min(n,e.meta)+"/"+e.meta+"</span>")
+               :("<span class='fed-num'>"+(st==="ok"?"✓":"○")+"</span>"));
       fila.appendChild(paso);
       if(i<FED_ESCALONES.length-1) fila.appendChild(el("span","fed-flecha","→"));
     });
