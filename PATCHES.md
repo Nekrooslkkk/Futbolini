@@ -2923,3 +2923,20 @@ Este parche salió de medir, no de suponer. El hallazgo vale más que el código
   cada entrada corresponde a una época real del repo.
 - **Tests:** dev **301/301** (antes 288), incluido "las 12 salen en la mesa al arrancar su época" y
   el caso Temuco. Core **1047/1047**. `VERSION` la sube Grok. **No es 8.00.**
+
+## 7.9016 · Las 60 épocas que faltaban de ALMA_EPOCA
+Producción de contenido sobre el molde de 7.9015. Ni una línea de código nueva: solo datos.
+
+- **`js/data-epocas-alma.js`:** 60 entradas nuevas en `ALMA_EPOCA` (llega a **72**). Cada una ancla
+  en `EPOCAS_CLUB[club]` (`anio`, `etq`, `desc`, ya escritos antes) y arma el dilema de dirigencia
+  sin agregar un hecho histórico nuevo — nada de frases en boca de personas reales, nada de nombres
+  de jugadores inventados (se habla de puestos cuando hace falta).
+- **Reparto por arquetipo:** 25 `gloria` (título, copa o subcampeonato), 32 `ascenso` (llega o vuelve
+  a la categoría / se afirma), 2 `ultimo` (Magallanes 2023 y Provincial Osorno 1991: el propio `desc`
+  ya insinúa que el ciclo es corto) y 1 `origen` (Deportes Linares 1956, se funda). 25 clubes chilenos,
+  23 argentinos — 48 de las 60 son clubes chicos o de Segunda/Tercera A/ANFA/torneos de interior.
+- **`epocasHuerfanas().length` pasó de 45 a 0.** Los 84 arranques (club, época) que ofrece
+  `EPOCAS_CLUB` tienen ahora una decisión propia de su año.
+- **Tests:** dev **301/301** (mismo número que 7.9015: el grupo "Épocas con alma" no agrega un check
+  por entrada, valida el conjunto — y ahora valida 72, no 12). Core **1047/1047** intacto.
+  `VERSION` la sube Grok. **No es 8.00.**

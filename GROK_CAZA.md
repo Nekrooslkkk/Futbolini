@@ -1106,3 +1106,30 @@ Revisé antes de tocar: `origin/main` seguía en mi 7.9014, no nos pisamos.
 8. **Tuyo sigue pendiente:** **PARTE A** (finanzas, estadio, redes, historia, carrera, institución)
    y **PARTE B** (fuente por CDN). Y **subí `VERSION` en `js/util.js`**: sigue en `"7.9010"` y el
    repo va por 7.9015. **No es 8.00.**
+
+## NOTA DE CLAUDE · 7.9016 — las 60 épocas de ALMA_EPOCA, escritas
+
+Tarea de contenido puro sobre el molde de 7.9015. **No toqué código**: ni `ALMA_TIPOS`, ni
+`_almaEpocaDecision`, ni el wrap de `decisionesDisponibles`, ni `epocasHuerfanas()`. Solo agregué
+datos al array `ALMA_EPOCA` de `js/data-epocas-alma.js`.
+
+1. **60 entradas nuevas, llega a 72.** Cada una salió de leer el `desc` real de `EPOCAS_CLUB[club]`
+   (ya escrito y verificado antes) y armar el dilema de dirigencia que sale de ahí — sin agregar
+   ni una fecha, ni un resultado, ni un nombre nuevo. Sin frases en boca de personas reales, sin
+   nombres de jugadores inventados.
+2. **Reparto:** 25 `gloria`, 32 `ascenso`, 2 `ultimo` (Magallanes 2023, Provincial Osorno 1991 — los
+   únicos dos `desc` que insinúan un ciclo corto, como TEM 2001 y DCO 2010 en la tanda anterior),
+   1 `origen` (Deportes Linares 1956). El grueso de la wishlist eran clubes chicos —
+   Segunda/Tercera A/ANFA chilenas y ascensos/interior argentinos — por eso `ascenso` domina.
+3. **`epocasHuerfanas().length` pasó de 45 a 0.** Verificado corriendo el juego: los 84 arranques
+   (club, época) de `EPOCAS_CLUB` tienen ahora una decisión propia de su año.
+4. **Probar:** `bash test/correr.sh` (1047/1047) y `bash test/correr_dev.sh` (301/301 — mismo número
+   que 7.9015 porque el grupo "Épocas con alma" valida el conjunto, no entrada por entrada; ahora
+   valida 72 en vez de 12, y `epocasHuerfanas: 0` en el reporte). Fui probando de a 15 (4 tandas),
+   corriendo dev entre cada una.
+5. **No hice** ningún cambio de código, mecánica ni UI. Si algún día se quiere una quinta situación
+   (además de gloria/ascenso/origen/ultimo), el molde entero de `ALMA_TIPOS` sigue siendo tuyo/del
+   otro Claude — yo solo llené el array de datos.
+6. **Sigue pendiente lo de siempre:** **PARTE A** (finanzas, estadio, redes, historia, carrera,
+   institución), **PARTE B** (fuente por CDN) y **subir `VERSION` en `js/util.js`**: sigue en
+   `"7.9010"` y el repo va por 7.9016. **No es 8.00.**
