@@ -669,6 +669,59 @@
       t(anclaMal.length===0,"el estadio y el aforo salen tal cual de LIGA_ARG_2026 ("+anclaMal.join(",")+")");
     },"Alma AFA");
 
+    grupo("Épocas con alma · 7.9015");
+    safe(function(){
+      t(typeof ALMA_EPOCA!=="undefined" && ALMA_EPOCA.length>0,"ALMA_EPOCA existe ("+(typeof ALMA_EPOCA!=="undefined"?ALMA_EPOCA.length:-1)+")");
+      t(typeof epocasHuerfanas==="function","epocasHuerfanas existe (auditor)");
+      t(decisionesDisponibles._epAlma===true,"decisionesDisponibles queda envuelto por E.epocaHist");
+      /* el hallazgo: cuántos arranques (club, época) ofrece el juego */
+      var pares=0;
+      Object.keys(EPOCAS_CLUB||{}).forEach(function(id){
+        (EPOCAS_CLUB[id]||[]).forEach(function(e){ if(e.anio||e.a) pares++; });
+      });
+      t(pares>=84,"el juego ofrece "+pares+" arranques (club, época)");
+      var h=epocasHuerfanas();
+      t(h.length===pares-ALMA_EPOCA.length-12,"las huérfanas bajan exactamente por lo escrito ("+h.length+")");
+      /* cada entrada dispara DE VERDAD al arrancar esa época */
+      var ok=0, mal=[];
+      ALMA_EPOCA.forEach(function(x){
+        var ep=(EPOCAS_CLUB[x.c]||[]).filter(function(e){ return (e.anio||e.a)===x.a; })[0];
+        if(!ep){ mal.push(x.c+" "+x.a+" sin época"); return; }
+        nuevaPartida(x.c,x.a,"historico",{epoca:ep});
+        var id="ep_"+x.c.toLowerCase()+"_"+x.a;
+        if((E.decPend||[]).some(function(y){ return y.id===id; })) ok++;
+        else mal.push(x.c+" "+x.a+" (anio="+E.anio+")");
+      });
+      t(ok===ALMA_EPOCA.length,"las "+ALMA_EPOCA.length+" salen en la mesa al arrancar su época"+(mal.length?(" — fallan: "+mal.join(", ")):""));
+      /* el caso que obligó al wrap: el año se cae y la época igual dispara */
+      var epT=(EPOCAS_CLUB.TEM||[])[0];
+      nuevaPartida("TEM",2001,"historico",{epoca:epT});
+      t(E.anio!==2001 && E.epocaHist===2001,"Temuco 2001 pierde el año pero conserva epocaHist");
+      t((E.decPend||[]).some(function(y){ return y.id==="ep_tem_2001"; }),"y su decisión de época igual aparece");
+      /* forma: 3 opciones, arquetipo válido, sin texto vacío */
+      var tipos={};
+      ALMA_EPOCA.forEach(function(x){
+        tipos[x.tipo]=1;
+        if(!ALMA_TIPOS[x.tipo]) t(false,"arquetipo desconocido en "+x.c);
+        if((x.op||[]).length!==3) t(false,x.c+" "+x.a+" no tiene 3 opciones");
+        if(!x.t||!x.ctx||x.ctx.length<80) t(false,x.c+" "+x.a+" con contexto flaco");
+      });
+      t(true,"todas tienen 3 opciones y contexto");
+      t(Object.keys(tipos).length>=4,"se usan los 4 arquetipos ("+Object.keys(tipos).join(",")+")");
+      /* integridad: el ancla sale de EPOCAS_CLUB, no de la nada */
+      var sinAncla=ALMA_EPOCA.filter(function(x){
+        return !(EPOCAS_CLUB[x.c]||[]).some(function(e){ return (e.anio||e.a)===x.a; });
+      }).map(function(x){ return x.c+" "+x.a; });
+      t(sinAncla.length===0,"cada entrada corresponde a una época real del repo ("+sinAncla.join(",")+")");
+      /* se resuelve sin romper nada */
+      var d=DECISIONES.filter(function(x){ return x.id==="ep_pal_1978"; })[0];
+      t(!!d,"la decisión de Palestino 1978 quedó registrada");
+      var epP=(EPOCAS_CLUB.PAL||[])[0];
+      nuevaPartida("PAL",1978,"historico",{epoca:epP});
+      var r=resolverDecision({id:d.id,buzon:d.buzon,op:d.op,posturas:d.posturas},1);
+      t(r && r.txt && r.txt.length>10,"resolverla devuelve un desenlace escrito");
+    },"Épocas");
+
     grupo("Pulido 7.9014");
     safe(function(){
       t(typeof _nomCortoRival==="function","_nomCortoRival existe");

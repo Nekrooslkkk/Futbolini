@@ -1073,3 +1073,36 @@ Revisé si habías subido algo antes de tocar: `origin/main` seguía en mi 7.901
 6. **Sigue pendiente tuyo:** **PARTE A** (finanzas, estadio, redes, historia, carrera, institución)
    y **PARTE B** (fuente por CDN) — no los toqué. Y **subí `VERSION` en `js/util.js`**: sigue en
    `"7.9010"` y el repo va por 7.9014. **No es 8.00.**
+
+---
+
+## NOTA DE CLAUDE · 7.9015 — 72 épocas arrancaban vacías (hallazgo + molde)
+
+Revisé antes de tocar: `origin/main` seguía en mi 7.9014, no nos pisamos.
+
+1. **El dato que importa, medido.** `EPOCAS_CLUB` ofrece **84 arranques (club, época)**. El motor
+   filtra las decisiones propias con `d.club===E.club && d.anio===E.anio` (motor.js:601, exacto).
+   **Solo 12 de 84 tenían decisión de su año: 72 arrancaban sin una línea propia.** Verificado
+   corriendo: Palestino 1978 → `E.anio=1978`, 0 propias. Es la vara del autor, cuantificada.
+2. **Ojo con esto si tocás `nuevaPartida`:** en **11 épocas el año no sobrevive**. Si el club no
+   jugó el Nacional de esa era, la liga se redirige y `E.anio` queda en 2026 (Temuco 2001,
+   Cobreloa 2003 y 1981, Colchagua 1957, Magallanes 1933, Santiago Morning 1942, Lota Schwager
+   1969, Rangers 1969, Linares 1956, Audax 2007, San Felipe 2009). `E.epocaHist` sí guarda el año
+   real — es el único gancho confiable para contenido de época.
+3. **Archivo nuevo:** `js/data-epocas-alma.js` (último, después de `data-alma-arg.js`).
+   Wrap con flag `._epAlma` sobre `decisionesDisponibles`, heredando marcas previas. **No toqué**
+   `motor.js`, `partido.js`, `ui-partido.js`, `mercado.js`, `util.js`, `nube.js` ni `pruebas_core.js`.
+4. **API nueva:** `ALMA_EPOCA` (las entradas) · `ALMA_TIPOS` (los 4 arquetipos) ·
+   `_almaEpocaDecision(e)` · `epocasHuerfanas()` → `[{club,anio,etq}]`, el auditor de cuánto falta.
+5. **Campo nuevo en las decisiones:** `epoca:<anio>`. Si vas a escribir contenido de época, usalo
+   junto con `anio` — con `anio` solo, las 11 de arriba no disparan. Y poné **`mes:1`**: con `mes:2`
+   la decisión queda retenida en las ligas que arrancan en enero (medido).
+6. **Probar:** `bash test/correr.sh` (1047/1047) y `bash test/correr_dev.sh` (301/301, grupo
+   "Épocas con alma"). A ojo: puerto nuevo → Palestino, época 1978 → la decisión está en la mesa
+   en la primera pantalla.
+7. **Quedan 60 épocas** por escribir con el mismo molde; el autor las va a producir aparte.
+   Si tocás `EPOCAS_CLUB` (agregar o cambiar una época), `epocasHuerfanas()` te dice al toque
+   qué quedó sin contenido.
+8. **Tuyo sigue pendiente:** **PARTE A** (finanzas, estadio, redes, historia, carrera, institución)
+   y **PARTE B** (fuente por CDN). Y **subí `VERSION` en `js/util.js`**: sigue en `"7.9010"` y el
+   repo va por 7.9015. **No es 8.00.**

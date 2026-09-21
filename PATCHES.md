@@ -2890,3 +2890,36 @@ Parche corto, todo verificado midiendo, no a ojo.
   a 390 px **no es un bug**: es `overflow-x:auto` por diseño y `#barra` tiene `overflow:hidden`
   (comprobado idéntico en el commit anterior).
 - **Tests:** dev **288/288** (antes 276) · core **1047/1047**. `VERSION` la sube Grok. **No es 8.00.**
+
+## 7.9015 · Las épocas dejan de arrancar vacías (72 arranques sin una línea propia)
+Este parche salió de medir, no de suponer. El hallazgo vale más que el código.
+
+- **El hallazgo.** El juego ofrece **84 arranques (club, época)** en `EPOCAS_CLUB`, y las decisiones
+  propias se filtran con `d.club===E.club && d.anio===E.anio` (motor.js:601, coincidencia EXACTA).
+  Cruzando ambas cosas: **solo 12 de los 84 tenían una decisión de su propio año. Los otros 72
+  empezaban sin una sola línea sobre ese club en ese año.** Comprobado arrancando el juego:
+  Palestino 1978 → `E.anio=1978`, 0 decisiones propias, 4 genéricas en la mesa. Esa es, literal,
+  la vara que pide el autor: *"si me meto a Santiago Wanderers 2001, ¿veré cosas de ese año?"*.
+- **Segundo hallazgo, dentro del primero.** En **11 de esas 84 épocas el año no se puede sostener**:
+  si el club no jugó el Nacional de esa era, `nuevaPartida` redirige la liga y `E.anio` termina en
+  2026 (medido: Temuco 2001, Cobreloa 2003/1981, Colchagua 1957, Magallanes 1933, Santiago Morning
+  1942, Lota Schwager 1969, Rangers 1969, Linares 1956, Audax 2007, San Felipe 2009). Ahí una
+  decisión marcada con ese año **no dispara nunca**. Pero `E.epocaHist` sí conserva el año real.
+- **`js/data-epocas-alma.js` (nuevo).** Cada decisión de época lleva `anio` **y** `epoca`, y un wrap
+  de `decisionesDisponibles` (flag `._epAlma`) la admite por `E.epocaHist`. Así sirve se caiga o no
+  el año. Además van con `mes:1`: con `mes:2` quedaban retenidas en las ligas que arrancan en enero
+  (medido en Cobreloa 2003 y Temuco 2001, que no la veían hasta febrero).
+- **Cuatro arquetipos, sacados de leer las 72 épocas**: `gloria` (estás en el año del título),
+  `ascenso` (recién llegaste, hay que afirmarse), `origen` (el logro es existir) y `ultimo` (es el
+  último ciclo bueno y el club no lo sabe). El arquetipo pone la mecánica (efectos, grupos,
+  desenlaces); cada entrada pone su contexto y sus 3 opciones. Orden fijo de opciones:
+  0 apostar · 1 sostener · 2 resguardar la caja.
+- **12 épocas escritas** (UCH 2011, UC 2019, PAL 1978, COQ 2025, HUA 2023, CBL 2003, LIM 2025,
+  SW 2019, SW 1968, TEM 2001, DCO 2010, CLC 1957). **Quedan 60** — van con el mismo molde.
+  `epocasHuerfanas()` audita cuántas faltan.
+- **Integridad:** el ancla de cada decisión es lo que ya vive en `EPOCAS_CLUB[id]` (`anio`, `etq`,
+  `dt`, `desc`), escrito y verificado antes que este archivo. **No se agrega ni un hecho histórico
+  nuevo**; lo escrito es el dilema de dirigencia que sale de ese hecho. Hay test que verifica que
+  cada entrada corresponde a una época real del repo.
+- **Tests:** dev **301/301** (antes 288), incluido "las 12 salen en la mesa al arrancar su época" y
+  el caso Temuco. Core **1047/1047**. `VERSION` la sube Grok. **No es 8.00.**
