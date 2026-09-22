@@ -629,6 +629,40 @@ devDoctorRegistrar({id:"calendario_vivo", area:"interfaz", n:"El Calendario mues
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("tabla del Calendario = tabla real; repeticiones sin datos inventados");
 }});
 
+/* 7.9032 · legibilidad: el vidrio Aero no puede tapar el texto */
+function _docLum(rgb){
+  var m=String(rgb).match(/[\d.]+/g); if(!m) return 1;
+  var c=m.slice(0,3).map(function(v){ v=+v/255; return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4); });
+  return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];
+}
+function _docContraste(a,b){ var x=_docLum(a), y=_docLum(b); return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05); }
+devDoctorRegistrar({id:"legibilidad_ui", area:"interfaz", n:"Los botones y menús se leen (el brillo no tapa el texto)", fn:function(){
+  if(typeof document==="undefined"||!document.body) return _dok("sin DOM");
+  var falta=[], det=[];
+  if(document.body.dataset.tema==="aero"){
+    ["", "verde", "rojo"].forEach(function(v){
+      var b=document.createElement("button"); b.className="btn-aqua"+(v?" "+v:""); b.textContent="x";
+      b.style.cssText="position:absolute;left:-9999px"; document.body.appendChild(b);
+      var cs=getComputedStyle(b), bg=cs.backgroundImage||"", m=bg.match(/rgba\(255,\s*255,\s*255,\s*([\d.]+)\)/);
+      var blanco=m?+m[1]:0, txt=cs.color;
+      if(_docLum(txt)>0.8 && blanco>0.55) falta.push("botón "+(v||"azul")+": texto blanco sobre brillo blanco al "+Math.round(blanco*100)+"%");
+      det.push("botón "+(v||"azul")+": brillo "+Math.round(blanco*100)+"%");
+      b.remove();
+    });
+  } else det.push("tema "+document.body.dataset.tema+": brillo de botones no aplica");
+  var act=document.querySelector('#menu .mi[aria-selected="true"], #menu .mi[aria-current="page"]');
+  if(act && document.body.classList.contains("nav-lateral")){
+    var k=_docContraste(getComputedStyle(act).color,"rgb(214,236,255)");
+    det.push("canal activo: contraste "+(Math.round(k*10)/10));
+    if(k<4.5) falta.push("el canal activo de la barra lateral no se lee (contraste "+(Math.round(k*10)/10)+", mínimo 4,5)");
+  }
+  var op=document.createElement("div"); op.className="op"; op.innerHTML='<div class="req">x</div>'; op.style.cssText="position:absolute;left:-9999px";
+  document.body.appendChild(op);
+  if(/mono|console|consolas/i.test(getComputedStyle(op.firstChild).fontFamily)) falta.push("las descripciones de las opciones van en monoespaciada");
+  op.remove();
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat(det)):_dok("se lee: "+det.join(" · "),det);
+}});
+
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){
   opts=opts||{};

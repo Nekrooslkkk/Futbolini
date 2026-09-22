@@ -3332,3 +3332,13 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   en cero). Verificado al revés. Roadmap §12 "historial de cada partido" marcado hecho.
 - IDEAS.md limpio: lo "bloqueado" que ya estaba resuelto (login, B, Copa Chile) pasó a resuelto.
 - **Tests:** dev **419/419** · core **1185/1185**.
+
+## 7.9032 · Legibilidad sin perder el vidrio
+- **Botones Aero:** el brillo superior (corte especular Vista) era blanco al 85% con texto blanco
+  encima: "Ir al partido", "Entrenar fuerte…" casi no se leían. Ahora ~40% y sombra de texto firme;
+  gris y amarillo (texto oscuro) conservan su brillo alto. El look Vista se mantiene.
+- **Canal activo de la barra lateral (PC):** blanco sobre celeste → azul oscuro (contraste ≥ 4,5).
+- **Descripciones de opciones** (`.op .req`) ya no van en monoespaciada: la mono queda para datos.
+- **Logo de la portada:** el degradé con text-shadow se veía gris sucio; ahora drop-shadow nítido.
+- **Doctor +1:** `legibilidad_ui` (brillo vs texto blanco en botones, contraste del canal activo,
+  frases sin mono). Verificado al revés (brillo al 85% → falla). **Tests:** dev 421/421 · core 1185/1185.

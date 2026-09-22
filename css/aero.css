@@ -363,3 +363,33 @@ body[data-tema="aero"] .esc-aero .panel:hover{ box-shadow:0 6px 18px rgba(20,80,
 @keyframes escEntra{ from{ opacity:0; transform:translateY(9px) scale(.995); } to{ opacity:1; transform:none; } }
 body.perf[data-tema="aero"] .esc-aero .panel{ animation:none; }
 @media (prefers-reduced-motion:reduce){ body[data-tema="aero"] .esc-aero .panel{ animation:none; } }
+
+/* ============================================================
+   7.9032 · Legibilidad sin perder el vidrio (Claude)
+   1. Botones: el corte especular Vista sigue, pero el brillo superior
+      baja de 85% a ~40% de blanco. Con 85% el texto blanco quedaba
+      blanco sobre blanco ("Ir al partido", "Escritorio" activo).
+   2. Las descripciones largas (.op .req) ya no van en monoespaciada:
+      la mono queda para números y datos, no para frases.
+   3. Logo de la portada: el texto con degradé (fill transparente) +
+      text-shadow se veía gris sucio; la sombra pasa a drop-shadow.
+   ============================================================ */
+body[data-tema="aero"] .btn-aqua{
+  text-shadow:0 1px 2px rgba(0,25,60,.75), 0 0 1px rgba(0,25,60,.6);
+  background:linear-gradient(to bottom,
+    rgba(255,255,255,.42) 0%, rgba(160,210,255,.28) 50%,
+    rgba(0,110,230,.9) 51%, rgba(0,74,168,.98) 100%), #0a5fc4;
+}
+body[data-tema="aero"] .btn-aqua.verde{
+  background:linear-gradient(to bottom,rgba(255,255,255,.42) 0%,rgba(200,255,180,.26) 50%,rgba(62,170,28,.92) 51%,rgba(30,112,14,.98) 100%), #2f8f1c; }
+body[data-tema="aero"] .btn-aqua.rojo{
+  background:linear-gradient(to bottom,rgba(255,255,255,.4) 0%,rgba(255,200,190,.26) 50%,rgba(214,72,44,.92) 51%,rgba(150,32,18,.98) 100%), #b33a22; }
+body[data-tema="aero"] .btn-aqua.morado{
+  background:linear-gradient(to bottom,rgba(255,255,255,.4) 0%,rgba(225,200,255,.26) 50%,rgba(140,62,210,.92) 51%,rgba(84,28,142,.98) 100%), #6a2fae; }
+body[data-tema="aero"] .btn-aqua::after{ background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0)); }
+/* los claros (gris, amarillo) llevan texto oscuro: ahí el brillo alto sí sirve */
+body[data-tema="aero"] .btn-aqua.gris, body[data-tema="aero"] .btn-aqua.amarillo{ text-shadow:0 1px 0 rgba(255,255,255,.6); }
+body[data-tema="aero"] .btn-aqua.gris::after, body[data-tema="aero"] .btn-aqua.amarillo::after{ background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,0)); }
+.op .req{ font-family:var(--f-ui,inherit); font-variant-numeric:tabular-nums; font-size:12px; line-height:1.4; letter-spacing:0; }
+.arr-logo{ text-shadow:none; }
+.arr-word{ filter:drop-shadow(0 2px 0 rgba(0,50,110,.55)) drop-shadow(0 6px 14px rgba(0,30,80,.45)); }

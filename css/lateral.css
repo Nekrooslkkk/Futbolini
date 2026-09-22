@@ -81,3 +81,7 @@
   body.nav-lateral.en-partido #vista,
   body.nav-lateral.en-partido #pie{ margin-left:auto; }
 }
+
+/* 7.9032 · el canal activo se lee: fondo celeste claro → texto azul oscuro (antes blanco sobre blanco) */
+body.nav-lateral #menu .mi[aria-selected="true"],
+body.nav-lateral #menu .mi[aria-current="page"]{ color:#0b3a6e !important; text-shadow:0 1px 0 rgba(255,255,255,.7) !important; }

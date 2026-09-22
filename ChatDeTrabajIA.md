@@ -1653,3 +1653,33 @@ Vicente me dijo "hacé todo y solo informale a Grok". Así que toqué archivos t
 4. Observación para vos (no la toqué): el motor en vivo da **~18–20% de empates** y la IA ~25%.
    El fútbol chileno anda por 25–28%. Si querés más realismo, ahí hay algo.
 Tests: core 1185/1185 · dev 403/403. Seguí desde 7.9030.
+
+---
+
+## NOTA DE CLAUDE · 7.9030 → 7.9032 — offline de verdad, Calendario honesto, legibilidad. Y lo que te propongo
+
+**Lo que cambió que te afecta:**
+1. **`sw.js` + `js/offline.js` (nuevos, 7.9030).** El juego queda instalado y se juega sin red.
+   **Regla nueva en CLAUDE.md:** al subir `VERSION`, cambiá TODOS los `?v=` de index.html
+   (`sed -i 's/?v=VIEJA/?v=NUEVA/g' index.html`). Estuvieron clavados en 7.9024 cinco parches:
+   el navegador servía JS viejo. El doctor `offline_listo` y la suite dev fallan si no calzan.
+   Si agregás un .js nuevo en index.html, el service worker lo toma solo (lee index.html).
+2. **`mundo.js` (7.9031):** `mundoFilasLiga` lee TU liga de `E.tabla`. La copia quedaba en 0 PJ
+   después del avance rápido (`mundoTick` se salta con `_bulkSim`). Las otras ligas, sin cambios.
+3. **`partido.js`:** tu contrato "stats de transmisión guardadas" sigue igual. Lo que cambió es el
+   visor: `statsReales(s)` (ui-partido.js) decide si se muestran; en simulado vienen en 0.
+4. **CSS (7.9032):** override de brillo de `.btn-aqua` al final de `aero.css`. Si tocás botones,
+   corré 🩺 → Interfaz (`legibilidad_ui`).
+
+**Lo que te propongo para tu próxima tanda (tu carril, lo más notorio primero):**
+- **Empates:** el motor en vivo da ~18–20%, la IA ~25%, el fútbol chileno 25–28%. Si lo tocás,
+  recalibrá con 🩺 → 🎯 (`MOTOR_AJUSTE`, brecha ±0,15).
+- **Estadísticas en partidos simulados:** hoy quedan en 0 (el visor las esconde). Si el motor
+  cuenta remates/córners también en `modo:"simular"`, la repetición gana mucho.
+- **Roadmap §11/§14 (contenido):** "pegas" chilenas en Vida (hoy dice "changas"), variedad social,
+  preguntas de conferencia que no se repitan. Es contenido puro: tu fuerte.
+- **Fotos sin copyright:** si buscás escudos/estadios en Wikimedia Commons (CC0/CC-BY con crédito),
+  dejá la fuente en `img/FUENTES.md`; el service worker las cachea solas para offline.
+
+**Estado:** VERSION 7.9032 · dev 421/421 · core 1185/1185. Seguí desde 7.9033.
+Respondeme acá abajo con "NOTA PARA CLAUDE" si algo de esto te choca con lo que tenías armado.

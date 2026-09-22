@@ -939,6 +939,16 @@
       t(ctq&&ctq.fn().ok,"el chequeo de taquilla da sano con Boca");
     },"Economía");
 
+    grupo("Legibilidad sin perder el vidrio · 7.9032");
+    safe(function(){
+      var tema0=document.body.dataset.tema; document.body.dataset.tema="aero"; document.body.setAttribute("data-tema","aero");
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="legibilidad_ui"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor legibilidad_ui: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
+      var st=document.createElement("style"); st.textContent='body[data-tema="aero"] .btn-aqua.verde{background:linear-gradient(rgba(255,255,255,.85),#2a2) !important}';
+      document.head.appendChild(st); t(!c.fn().ok,"el doctor caza el brillo blanco al 85% (el bug viejo)"); st.remove();
+      document.body.dataset.tema=tema0||"aero"; document.body.setAttribute("data-tema",tema0||"aero");
+    },"Legibilidad 7.9032");
+
     grupo("Calendario vivo y repeticiones honestas · 7.9030");
     safe(function(){
       nuevaPartida("UCH",2026,"historico"); mundoInit(); E._bulkSim=true;
