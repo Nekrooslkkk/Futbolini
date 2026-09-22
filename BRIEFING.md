@@ -1,11 +1,6 @@
 # FUTBOLINI — Briefing para agentes de IA (memoria portátil)
 
-> Versión en juego: **7.9013** (mundo de fondo por época, escalera FIFA/CONMEBOL visible,
-> pasado del rival, calendario con pulso y ningún club sin alma propia). No es 8.00.
-> `VERSION` en `js/util.js` va en `"7.9010"`: ese archivo lo toca solo Grok.
->
-> Estado medido hoy: `test/correr.sh` 1047/1047 · `test/correr_dev.sh` 276/276 ·
-> cobertura de contenido 76 dirigibles, 1 rico, 75 medios, 0 pobres (ver `ANALISIS.md`).
+> Versión en juego: **7.9019** (GitHub + celu al elegir club). No es 8.00.
 
 > Pegá este archivo COMPLETO al inicio de cualquier sesión con otra IA (Grok, Gemini, etc.)
 > junto con `PATCHES.md`. Es la memoria del proyecto: sin esto, la IA "olvida" y rompe el hilo.
@@ -15,8 +10,7 @@
 > *"No manejás un equipo. Manejás una institución."*
 El jugador es el mandamás del club: grupos de interés que empujan para lados distintos, plata que
 duele, estatutos que se pueden cambiar si tenés el poder, decisiones sin porcentajes a la vista, y
-partidos que se sienten. Épocas jugables: **1925**, **1991**, **2006** y **2026** (Primera, B y Segunda), más la liga
-argentina **arg2026** y el recorrido histórico de Colo-Colo 1989→2008.
+partidos que se sienten. Dos épocas jugables: **1991** (histórico real) y **2026** (Primera actual).
 
 ## 2. Regla de oro (INVIOLABLE)
 - **NUNCA reconstruir desde cero.** Se EXPANDE sobre los módulos existentes.
@@ -88,7 +82,7 @@ Estas reglas viven acá para que **Grok y Claude** las vean al arrancar. No se p
 
 1. **Preguntar siempre.** Cada tanda: `ask_user_question` (todas las preguntas juntas) para aumentar el poder de hacer. No asumir pasarela, perks, ni el salto a 8.00.
 2. **Al terminar una cosa, seguir.** No cerrar el turno en “listo, avisame”. Entregar, preguntar, y dejar el siguiente golpe en marcha.
-3. **Hablarse con Claude.** Grok no trabaja solo. Toda tanda deja una nota corta en `PATCHES.md` + `GROK_CAZA.md` titulada **NOTA PARA CLAUDE**: archivos tocados, qué no tocar, tests, versión. Claude lee eso antes de meter motor.
+3. **Hablarse con Claude.** Canal oficial: **`ChatGrokClaude.md`**. Toda tanda deja una nota **NOTA PARA CLAUDE** / **NOTA DE CLAUDE** ahí (archivos, qué no tocar, tests, versión). `GROK_CAZA.md` es la bitácora de bugs, no el chat. Claude lee el Chat antes de meter UI; Grok antes de meter motor.
 4. **8.00 está reservada** hasta que todos los clubes estén al listón Colo-Colo. Mientras: serie `7.999xx`. El usuario *quiere* 8.00; no se pisa el número hasta que la beta sea 100% jugable.
 5. **Donar.** Fuente única: `js/donar.js`. Bitcoin (`DONAR.btc` + `DONAR.libro` + explorer). El juego sigue gratis. No hay paywall. Mensaje de gracias del autor: destinado al juego, se reparte cuando haga falta.
 6. **Beta 100% jugable de ahora en adelante.** Cada tanda tapa huecos (bugs, historia, realismo, tweets, botones muertos). Nada a medias que se vea como muerto.

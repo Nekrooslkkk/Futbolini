@@ -56,26 +56,30 @@ const PLANTEL_BOC_2026=[
   _j87("Milton Giménez","DEL",29,76,[])
 ];
 
-/* Morning · Wikipedia squad 26 abr 2026. DT Esteban Paredes. */
+/* Morning · es.wikipedia Plantilla 2026 (act. 19 sep). DT Esteban Paredes. */
 const PLANTEL_SMO_2026=[
-  _j87("Juan Cruz Bolado","ARQ",28,62,["extranjero"]),
-  _j87("Benjamín Rebolledo","ARQ",22,54,[]),
-  _j87("Milovan Arredondo","ARQ",20,52,[]),
-  _j87("Nicolás Palomo","DEF",24,56,[]),
-  _j87("David Montoya","DEF",26,56,["extranjero"]),
-  _j87("Martín Delgado","DEF",25,56,[]),
-  _j87("Cristóbal Kuljis","DEF",24,54,[]),
+  _j87("Juan Bolado","ARQ",29,60,["extranjero"]),
+  _j87("Marco Villegas","ARQ",20,50,["canterano"]),
+  _j87("Nicolás Palomo","DEF",25,56,[]),
+  _j87("David Montoya","DEF",31,58,["extranjero"]),
+  _j87("Martín Delgado","DEF",24,56,[]),
   _j87("Marcelo Jorquera","DEF",33,58,["veterano"]),
-  _j87("Cristian Magaña","DEF",35,56,["veterano"]),
-  _j87("Fernando Manríquez","VOL",40,66,["capitán","ídolo","veterano"]),
-  _j87("Luis Valenzuela","VOL",35,60,["experiencia"]),
-  _j87("Sebastián Salazar","VOL",25,56,[]),
-  _j87("Diego Faúndez","VOL",24,54,[]),
-  _j87("Simón Arias","VOL",23,54,[]),
+  _j87("Cristián Magaña","DEF",35,56,["veterano"]),
+  _j87("Douglas Estay","DEF",34,56,["veterano"]),
+  _j87("Diego Álvarez","DEF",25,54,[]),
+  _j87("Sebastián Salazar","VOL",24,56,["canterano"]),
+  _j87("Joaquín Monje","VOL",23,54,["canterano"]),
+  _j87("Fernando Manríquez","VOL",42,66,["capitán","ídolo","veterano"]),
+  _j87("Lucas Massaccesi","VOL",20,52,["canterano","proyección"]),
+  _j87("Diego Faúndez","VOL",22,54,["canterano"]),
+  _j87("Edgardo Carreño","VOL",24,54,[]),
+  _j87("Patrick Lobos","VOL",20,50,["canterano"]),
+  _j87("Martín Arancibia","DEL",21,54,["canterano"]),
+  _j87("Gustavo Escobar","DEL",21,56,[]),
+  _j87("Kevin Rojas","DEL",25,56,[]),
   _j87("Carlos Muñoz","DEL",37,62,["veterano","goleador"]),
-  _j87("Gustavo Escobar","DEL",26,58,["extranjero"]),
-  _j87("Kevin Rojas","DEL",24,56,[]),
-  _j87("Martin Arancibia","DEL",23,54,[])
+  _j87("Matías Coronado","DEL",24,56,[]),
+  _j87("Joaquín Barrientos","DEL",21,52,["canterano"])
 ];
 
 /* Goleadores Segunda — 88/89 pisan con el plantel completo. */
@@ -110,19 +114,19 @@ const PLANTEL_LIN_2026=[["Diego Vallejos","DEL",36,62,66,16,32,["veterano"]]];
 
 const SPONSORS_CLUB_2026={
   SMO:{ausp:"Miami Outlet", kit:"KS7"},
-  SCI:{ausp:"Miami Outlet", kit:"KS7"},
-  BSA:{ausp:"Minera Los Pelambres", kit:"OneFit"},
-  TRA:{ausp:"PF Alimentos", kit:"OneFit"},
-  OSO:{ausp:"Colún", kit:"OneFit"},
-  LIN:{ausp:"PF Alimentos", kit:"KS7"},
-  CLC:{ausp:"PF Alimentos", kit:"KS7"},
-  REN:{ausp:"PF Alimentos", kit:"OneFit"},
-  GVE:{ausp:"PF Alimentos", kit:"KS7"},
-  CNA:{ausp:"Municipalidad de Concón", kit:"KS7"},
-  OVA:{ausp:"Municipalidad de Ovalle", kit:"OneFit"},
-  COL:{ausp:"Municipalidad de Colina", kit:"KS7"},
-  LSC:{ausp:"Carbonífera Lota", kit:"OneFit"},
-  RSJ:{ausp:"Municipalidad de San Joaquín", kit:"KS7"}
+  SCI:{ausp:"Bodega 12", kit:"OneFit"},
+  BSA:{ausp:"Los Pelambres", kit:"Vandix"},
+  TRA:{ausp:"Viracocha", kit:"Kelme"},
+  OSO:{ausp:"Ciudad Limpia", kit:"TDeportes"},
+  LIN:{ausp:"Meymaq", kit:"Givova"},
+  CLC:{ausp:"Super Gino", kit:"Deusport"},
+  REN:{ausp:"Pegsa", kit:"Infinity"},
+  GVE:{ausp:"Tacoha", kit:"Andrómeda"},
+  CNA:{ausp:"Grupo Belator", kit:"Claus-7"},
+  OVA:{ausp:"Super Los Italianos", kit:"Training"},
+  COL:{ausp:"Flesan", kit:"Macron"},
+  LSC:{ausp:"Único", kit:"Astro"},
+  RSJ:{ausp:"Carnes Bilbao", kit:"Pion"}
 };
 
 /* Clausura 2026 · 442.perfil / ESPN · 15 y 15 */
@@ -143,11 +147,11 @@ const AFORO_ARG_87={RIV:85018,BOC:54000,RAC:55000,IND:48069,VEL:49540,SLO:47964,
 const ARCOS_AFA_87={
   RIV:[{id:"riv_2026",t:"El Superclásico no se negocia",desc:"Gallardo se fue. Ponzio interino. Otamendi y Almada no alcanzan si el Monumental pide identidad.",
     capitulos:[{id:"riv_1",t:"¿Qué es River sin el Muñeco?",ctx:"La prensa pide un DT de estirpe. El vestuario pide silencio.",
-      ops:[{t:"Bancá a Ponzio",d:"Continuidad.",grupos:{plantel:8,hinchada:-4},mem:"bancaste a Ponzio",cierra:true},
+      ops:[{t:"Bancá a Ponzio",d:"Continuidad.",grupos:{camarin:8,hinchada:-4},mem:"bancaste a Ponzio",cierra:true},
            {t:"Buscá un nombre grande",d:"Ruido y esperanza.",grupos:{hinchada:10,directorio:-6},mem:"pediste un DT de cartel",cierra:true}]}]}],
   BOC:[{id:"boc_2026",t:"La Bombonera pide un ciclo",desc:"Arruabarrena volvió. Paredes manda el medio. El Superclásico define la semana.",
     capitulos:[{id:"boc_1",t:"¿El ciclo es de verdad?",ctx:"Un empate en el Monumental no se perdona.",
-      ops:[{t:"El estilo no se discute",d:"Identidad xeneize.",grupos:{hinchada:10,plantel:4},mem:"defendiste el estilo Boca",cierra:true},
+      ops:[{t:"El estilo no se discute",d:"Identidad xeneize.",grupos:{hinchada:10,camarin:4},mem:"defendiste el estilo Boca",cierra:true},
            {t:"Ajustar para sumar",d:"Pragmático.",grupos:{directorio:8,hinchada:-6},mem:"priorizaste la tabla",cierra:true}]}]}]
 };
 (function arcosAfa87(){

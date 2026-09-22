@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-const VERSION="7.9010";
+const VERSION="7.9019";
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
 function el(tag,cls,html){const n=document.createElement(tag);if(cls)n.className=cls;if(html!=null)n.innerHTML=html;return n;}
@@ -110,7 +110,11 @@ function aviso(txt,ms){
 /* ---------- modal ---------- */
 function modal(fn,opts){
   const capa=$("#capa-modal"); capa.innerHTML="";
+  if(!document.body.classList.contains("con-modal")){
+    document.body.dataset.scrollY=String(window.scrollY||0);
+  }
   document.body.classList.add("con-modal");
+  document.body.style.top=(-((+document.body.dataset.scrollY)||0))+"px";
   const fondo=el("div","modal-fondo");
   const caja=el("div","modal panel"+((opts&&opts.clase)?" "+opts.clase:""));
   fondo.appendChild(caja); capa.appendChild(fondo);
@@ -120,7 +124,14 @@ function modal(fn,opts){
   }
   return caja;
 }
-function cerrarModal(){ const c=$("#capa-modal"); if(c) c.innerHTML=""; document.body.classList.remove("con-modal"); }
+function cerrarModal(){
+  const c=$("#capa-modal"); if(c) c.innerHTML="";
+  const y=parseInt(document.body.dataset.scrollY||"0",10)||0;
+  document.body.classList.remove("con-modal");
+  document.body.style.top="";
+  delete document.body.dataset.scrollY;
+  try{ window.scrollTo(0,y); }catch(e){}
+}
 function panel(titulo,icono,clase){
   const p=el("section","panel"+(clase?" "+clase:""));
   if(titulo!=null) p.appendChild(el("div","cab",'<span class="ic">'+(icono||"")+'</span><span>'+titulo+'</span>'));

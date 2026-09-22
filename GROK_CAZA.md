@@ -1,6 +1,98 @@
 # GROK · caza de bugs de datos
 
-Hechos públicos. Si no está documentado, se marca.
+> **Canal Grok ↔ Claude:** [`ChatGrokClaude.md`](ChatGrokClaude.md) — el autor lo nombró así el 20 sep 2026.
+> Este archivo es la **bitácora de caza** (fixes, versión). Las notas entre IAs van al Chat.
+
+## 7.9019 · GitHub + elegir club en celu
+[OK] Push a Nekrooslkkk/Futbolini main. El GitHub vivo seguía en 7.9010 (util.js nunca se bumpeó).
+[FIX] Badge 7.9019 visible en celu. Cache-bust `?v=7.9019`.
+[FIX] Modal elegir club: cabe, scroll interno, Empezar en pie. Fondo trabado.
+[INFO] Crucé carril Claude (css/móvil, ventanas, ui.js). Avisado. No 8.00. BTC hueco.
+
+## 7.9018 · agua 2 post-merge
+[FIX] Rival: tira vacía («Cómo viene» sin V-E-D) y 1.º con 0 PJ. Una frase si todavía no jugó.
+[FIX] Celu: paneles/tablas/FIFA con aire. Dock ya no recorta Calendario/Institución.
+[FIX] Calendario: «Lo que viene» no repite el próximo.
+[INFO] Crucé carril Claude (css/móvil, ui.js paneles). Avisado en ChatGrokClaude. No 8.00. BTC hueco.
+
+## 7.9017 · pull GitHub (jornada + alma épocas) + celu intacto
+[OK] Traje 4fdbe30 (Claude 7.9011–7.9016). En el sandbox esos números eran el celu: uní como 7.9017.
+[OK] Nuevos: ui-jornada, data-preguntas-92, mundo-vivo, data-alma-arg, data-epocas-alma, mundo-epoca.
+[OK] federacion-poder.js de Claude (FIFA/guerra UI).
+[OK] Celu 7.9015/16 intacto. alma-9012/13/14 intactos. No 8.00. BTC hueco.
+
+## 7.9016 · agua celu
+[FIX] Scroll interno de verdad (`flex:1 1 0%` + `overflow-y:scroll`). En Android `flex:auto` no paneaba.
+[FIX] Épocas una por fila. Ligas = cinta de vidrio. Once probable ya no esconde Niv/For.
+[FIX] 1925 no pega el contexto «Colo-Colo 2026 es SAD».
+[INFO] `movil.css` último en index.html. No 8.00.
+
+## 7.9015 · ventana cabe en el celu + dock cinta
+[FIX] Elegir club: Empezar quedaba bajo la pantalla (`.panel{overflow:hidden}` Aero vs `.modal{overflow:auto}`). Ahora flex + cuerpo scrollea + pie sticky.
+[FIX] El fondo ya no se mueve detrás (`body.con-modal` + fondo `overflow:hidden`).
+[FIX] Ventana de inicio in-vista ya no mide 3 pantallas: max-height viewport, scroll interno.
+[FIX] Dock: cinta por defecto (todas las secciones). Más = opción en Ajustes → Navegación (mismo panel que PC).
+[INFO] Crucé carril Claude (`css/*`, `ventanas.js`). Avisado en ChatGrokClaude. No 8.00. BTC hueco.
+
+### NOTA PARA CLAUDE (7.9015)
+Ver `ChatGrokClaude.md`. Toqué tu carril CSS/mobile/ventanas porque el autor lo pidió ahora.
+
+---
+
+## 7.9014 · B al listón + aviso en Ajustes + ventanas CDN
+[FIX] Primera B 16/16 a rico (`data-alma-9014.js`). Picker: listones Primera → AFA → B → Segunda.
+[FIX] Aviso de anuncio (hueco a futuro, 6 s) vive en Ajustes. Sacado del inicio.
+[OK] Ventanas: unpkg 7.css@0.21.1/window.css. Fallback local. Pedido del autor.
+[INFO] No 8.00. BTC hueco.
+
+### NOTA PARA CLAUDE (7.9014)
+Ver `ChatGrokClaude.md`. Toqué `ventanas.js` (tu carril) porque el autor pidió CDN.
+
+---
+
+## 7.9013 · scout gratis + alma Primera + avisos
+[FIX] Scout **gratis** (costo 0). Útil (niebla→XI). Club chico puede pedirlo todas las semanas.
+[FIX] Alma Primera 2026: 15 clubes a rico (`data-alma-9013.js`). CC ya lo era.
+[FIX] Apoyar: aviso de 6 s sin plata (`donarVerAviso`). No es anuncio de marca. BTC hueco.
+[OK] FIFA/guerra UI: Claude. No 8.00.
+
+### NOTA PARA CLAUDE (7.9013)
+Ver `ChatGrokClaude.md`. Tocó Grok: util/ui/idiomas/donar/alma-9013/index/tests T64. NO toqué partido/nube/mercado/so.css.
+
+---
+
+## 7.9012 · scout barato + alma Segunda + Wiki Morning
+[FIX] Scout cobra 1 ($1 M), no 100. Autor: 100 millones es irreal.
+[FIX] PLANTEL_SMO_2026 vs Wikipedia 19 sep (Villegas, Estay, Álvarez, Manríquez 42…).
+[FIX] LSC +Cabrera/Chandía/Torres González; CLC +Pavez/Yáñez/Sánchez; TRA extras TM.
+[FIX] Sponsors Segunda = Wiki Liga de Segunda 2026. OVA DT Víctor Quintanilla.
+[FIX] Alma: SMO/LSC/OSO ricos. Resto Segunda +1 carta. 10 arcos AFA (ROS NEW HUR TAL LAN RAC IND SLO VEL ELP) → medio.
+[FIX] Plop Inicio: feed antes de comunidad. Menciones no vuelcan toda la prensa. Pools +7/+5.
+[FIX] «Movete/Scrolleá/publicá» → tuteo neutro.
+[OK] FIFA/guerra UI: Claude. BTC hueco. No 8.00. SCI/GVE plantel: no se inventó (ya 7.89).
+
+### NOTA PARA CLAUDE (7.9012)
+Ver `ChatGrokClaude.md`. Tocó Grok: util/ui/redes/idiomas/huecos-87/planteles/alma-9012/index/tests T63. NO toqué partido/nube/mercado/so.css.
+
+---
+
+## 7.9011 · ChatGrokClaude + huecos que mentían
+[OK] Canal de comunicación = `ChatGrokClaude.md`.
+[FIX] Scout: botón `$100.000` (autor). Cobra 100 de caja.
+[FIX] Picker/Historia AFA: ya no dice “29 fechas”. El motor Apertura/Clausura existía.
+[FIX] Arcos River/Boca: `grupos.camarin` (no `plantel`, que era no-op).
+[FIX] `POSTS_PREDEF` viven: borradores del DT en Plop.
+[FIX] Desfalco: Plop al abrir la auditoría, no al robar.
+[FIX] Tendencias: hashtag de ESA liga; tags clickeables.
+[OK] Inter (Google Fonts, OFL) + deuda/mandato/feed arriba.
+[INFO] 8.00 reservada. BTC hueco. Segunda = cantera.
+[INFO] FIFA/guerra **motor** listo; UI linda sigue de Claude.
+
+### NOTA PARA CLAUDE (7.9011)
+Ver `ChatGrokClaude.md` — nota completa ahí. Tocó Grok: ui/redes/casino/huecos-87/federacion-poder/idiomas/aero/temas/index (link Inter)/tests T62. NO toqué partido/nube/mercado. No 8.00.
+
+---
+
 
 ## Crítico
 (ninguno que rompa una partida chilena)

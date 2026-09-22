@@ -13,8 +13,9 @@
 
    Nombres de clubes/ciudades/estadios: reales documentados (Wikipedia /
    ANFP, sep 2026). DTs 2026: los de la ficha pública de la Liga de Segunda
-   (Paredes, Viale, Ramos, etc.). Planteles: cantera (armarPlantel rellena);
-   NUNCA se inventa un jugador como real.
+   (Paredes, Viale, Ramos, etc.). Planteles 2026: Wikipedia / Transfermarkt
+   (data-huecos-87.js + data-planteles.js). NUNCA se inventa un jugador como real.
+   7.9012: Morning actualizado vs Wiki 19 sep. SCI/GVE ya tenían plantel 7.89.
 
    IDs nuevos (no chocan con Primera ni Primera B):
    COL Atlético Colina · BSA Brujas de Salamanca · CNA Concón National ·
@@ -122,13 +123,7 @@ if(typeof ERA==="object" && ERA[2026]) ERA["2026c"]=ERA[2026];
 })();
 
 /* ============================================================
-   PEGAR plantel Segunda (cuando haya lista documentada).
-   NO inventar nombres. Si no llega a 18, el juego rellena cantera.
-   Un club = un array. Después, registrar en PLANTELES_REALES
-   igual que data-b2026.js (IIFE al final).
-
-   const PLANTEL_SMO_2026=[
-     ["Nombre Apellido","ARQ",32, 58, 58, 28, 90, ["ídolo"]],
-     ["Nombre Apellido","DEF",24, 52, 56, 18, 45, []],
-   ];
+   PEGAR plantel Segunda extra (cuando haya lista documentada).
+   Los 14 clubes YA tienen plantel en data-huecos-87.js / data-planteles.js.
+   NO inventar nombres. SCI/GVE: no se tocan sin fuente Wiki/TM.
    ============================================================ */

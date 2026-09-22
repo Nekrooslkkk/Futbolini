@@ -261,6 +261,28 @@ body[data-tema="aero"] .modal.ventana-so .window-body{
   min-height:220px;
   background:linear-gradient(180deg, rgba(252,254,255,.96), rgba(226,238,250,.9));
 }
+/* 7.9015 · pie de acción (Empezar, confirmar) pegado al marco, no al fondo del texto */
+.ventana-so .so-pie, .modal .modal-pie{
+  padding:8px 10px;
+}
+body[data-tema="aero"] .ventana-so .so-pie{
+  background:linear-gradient(180deg, rgba(232,242,252,.94), rgba(214,230,246,.96));
+  border:1px solid rgba(255,255,255,.55);
+  border-radius:2px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+  margin:0 6px 6px;
+}
+body[data-tema="aero"] .modal.ventana-so{
+  display:flex; flex-direction:column;
+  max-height:min(88vh, 920px);
+}
+body[data-tema="aero"] .modal.ventana-so .so-cuerpo,
+body[data-tema="aero"] .modal.ventana-so .window-body{
+  flex:1 1 auto; min-height:0; overflow-y:auto;
+}
+body[data-tema="aero"] .modal.ventana-so .so-pie{
+  flex:0 0 auto;
+}
 .tinder-cuerpo .tinder-stack{ min-height:200px; }
 .tinder-cuerpo .tinder-card:not(.tinder-back){ min-height:148px; }
 

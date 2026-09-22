@@ -49,7 +49,7 @@ function desviarFondos(monto){
   notificar({t:"Metiste mano a la caja",tipo:"malo",
     d:"Desviaste "+plata(monto)+" de la tesorería del club a tu bolsillo. Total desviado: "+plata(E.flags.desfalco)+
       ". Sube el riesgo institucional; si te auditan, se pudre. Puedes blanquearlo con el Proceso de Redención en Finanzas."});
-  if(typeof redesReaccion==="function"){}   // silencio en redes (por ahora nadie sabe)
+  if(typeof redesReaccion==="function"){}   // el desvío es secreto; Plop estalla al auditar
   guardar();
 }
 /* chequeo semanal: cuanto más desviaste y menos credibilidad, más chance de auditoría */
@@ -64,6 +64,7 @@ function chequearDesfalco(){
     }
     notificar({t:"Auditoría en marcha",tipo:"malo",
       d:"Saltaron irregularidades en la tesorería. Hay una investigación abierta sobre los fondos desviados. Tienes que responder."});
+    if(typeof redesReaccion==="function") redesReaccion("desfalco",{monto:E.flags.desfalco});
   }
 }
 /* ---------- redención ---------- */

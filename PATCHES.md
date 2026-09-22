@@ -1,5 +1,43 @@
 # FUTBOLINI 3.0 — Bitácora de parches
 
+## 7.9019 · GitHub de verdad + celu al elegir club
+**Archivos:** `js/util.js`, `js/ui.js`, `js/ventanas.js`, `css/movil.css`, `index.html`, tests, Chat
+- GitHub seguía en **7.9010** (el celu no tenía el arreglo). Subido a `main`.
+- Badge **7.9019** visible en el celu. CSS/JS con `?v=7.9019` para no quedar pegado al JS viejo.
+- Elegir club: la ventana cabe, el texto se recorre adentro, **Empezar** queda a mano. El fondo no se mueve.
+- Tests T70. **No es 8.00.**
+
+## 7.9018 · Agua 2 (rival honesto, FIFA, dock, tablas)
+**Archivos:** `css/movil.css`, `js/ui.js` (`_pasadoRival`, calendario, panel agua), `util.js`, `test/pruebas_core.js`
+- Racha: no muestra «Cómo viene» vacío ni 1.º con 0 partidos. Una sola frase si es temprano.
+- Celu: paneles con aire, FIFA en columna de vidrio, dock con el nombre entero, tablas con filas sueltas.
+- Calendario no duplica el próximo en «Lo que viene». Tests T69. **No es 8.00.**
+
+## 7.9017 · Pull GitHub (jornada viva + alma épocas) sin pisar el celu
+**Archivos:** `ui-jornada.js`, `data-preguntas-92.js`, `mundo-vivo.js`, `data-alma-arg.js`, `data-epocas-alma.js`, `mundo-epoca.js` (nuevos de Claude), `federacion-poder.js`, `ui.js`, `idiomas.js`, `css/base.css`, `index.html`, `util.js`, tests
+- Claude en GitHub ya había subido 7.9011–7.9016 (fecha en vivo, preguntas que no se repiten, mundo que respeta el año, FIFA con cara, 60 épocas de ALMA_EPOCA). En el sandbox esos números eran el celu.
+- Traje su repo (`4fdbe30`) y lo uní acá. **El celu de 7.9015/7.9016 sigue** (`movil.css` último, pie sticky, dock cinta, agua en ligas/tablas).
+- Avanzar dice Jugar / Avanzar semana / Cerrar temporada. El rival muestra racha. Después del partido se ve la fecha.
+- Tests T68 + pruebas_dev de Claude. **No es 8.00.**
+
+## 7.9016 · Agua en el celu (ligas, épocas, tablas, scroll)
+**Archivos:** `css/movil.css`, `index.html` (movil.css al final), `ui.js`, `util.js`, `test/pruebas_core.js`
+- El texto de la ventana **se recorre con el dedo** (flex 1 1 0% — en Android `auto` no paneaba).
+- Épocas: una por fila. Ligas: cinta de vidrio. Tablas con aire; el once ya no pierde Niv/For.
+- 1925 no muestra el contexto 2026. Tests T67. **No es 8.00.**
+
+## 7.9015 · Ventanas caben en el celu + dock cinta
+**Archivos:** `css/movil.css`, `css/so.css`, `css/base.css`, `js/ventanas.js`, `js/ui.js`, `js/idiomas.js`, `js/util.js`, `test/pruebas_core.js`
+- **Elegir club en el celu:** la ventana ya no se come el botón. Cabe en la pantalla (max 92dvh), el texto se mueve adentro, el fondo no. Empezar vive en un pie sticky (`montarPieSO`). Caption min/max escondidos: no hay que arrastrar.
+- **Dock:** cinta de todas las secciones (menos ⚙️), se recorre con el dedo. «Más» queda como opción en **el mismo** bloque Navegación de Ajustes (PC + celu juntos). No 3 ventanas.
+- Tests T66. **No es 8.00.**
+
+## 7.9014 · Primera B al listón, aviso en Ajustes, ventanas CDN
+**Archivos:** `data-alma-9014.js` (nuevo), `ventanas.js`, `ui.js`, `donar.js`, `idiomas.js`, `css/inicio.css`, `index.html`, `util.js`, `test/pruebas_core.js`
+- **Primera B al mismo listón que AFA:** 16/16 clubes de la B a rico (≥6 cartas+arcos). Picker: cinta Primera → Argentina/AFA → Primera B → Segunda, con listones Vista de igual peso.
+- **Aviso de anuncio:** hueco a futuro (apretás y un día sale uno). Hoy pausa de 6 s. Vive en **Ajustes**. Nadie te obliga. Sacado del inicio / Más / arranque.
+- **Ventanas del CDN:** `unpkg.com/7.css@0.21.1/dist/gui/window.css` (solo window.css). Si falla, `css/vendor/7-window.css`. `so.css` sigue de plan A. Tests T65. **No es 8.00.**
+
 ## 7.9010 · Ventana real, pool de todos, CPUs que envejecen, palo adentro
 **Archivos:** `mercado.js`, `data-plantel.js`, `motor.js`, `ui-partido.js`, `idiomas.js`, `util.js`, `test/pruebas_core.js`
 - Firmar **solo con la ventana** (ene-feb / jun-jul). Fuera: negocias y dejas **preacuerdo** (trato firme a un precio, o palabra para confirmar al abrir). Si el mercado sube, el firme te cubre; si baja, es el trato.

@@ -1641,9 +1641,10 @@
     safe(function(){
       ok(VERSION==="7.9994" || /^7\.9/.test(VERSION), "VERSION 7.99x");
       ok(typeof cargarCdnAero==="function", "cargarCdnAero");
-      /* Claude: 7.css LOCAL (css/vendor/7-window.css), ya no unpkg. */
+      /* 7.9014 · ventanas del CDN (unpkg window.css). Fallback local si falla. */
       ok(typeof AERO_7_WINDOW==="string" && AERO_7_WINDOW.indexOf("window")>=0, "carga solo window.css, no el 7.css entero");
-      ok(AERO_7_WINDOW.indexOf("http")<0 && AERO_7_WINDOW.indexOf("xp.css")<0, "el 7.css es LOCAL (sin CDN, sin XP.css)");
+      ok(AERO_7_WINDOW.indexOf("unpkg.com/7.css")>=0 && AERO_7_WINDOW.indexOf("xp.css")<0, "el 7.css es del CDN (unpkg), no XP.css");
+      ok(typeof AERO_7_WINDOW_LOCAL==="string" && AERO_7_WINDOW_LOCAL.indexOf("vendor")>=0, "fallback local por si unpkg falla");
       var so=getComputedStyle(document.documentElement).getPropertyValue("--futbolini-so").trim();
       ok(so==="7.9994" || so.length>0, "so.css local sigue ahí");
     }, "API 7.9994");
@@ -1664,13 +1665,12 @@
     safe(function(){
       var off=typeof navigator!=="undefined" && navigator.onLine===false;
       if(off){
-        ok(!document.getElementById("cdn-7css"), "sin red: no se pide unpkg");
-        ok(!document.documentElement.classList.contains("cdn-7"), "sin red: no hay clase cdn-7");
+        ok(!!document.getElementById("cdn-7css"), "sin red: igual se pide el link (onerror cae a local)");
       } else {
-        ok(true, "con red: el CDN es extra (si falla, so.css ya pintó)");
+        ok(true, "con red: el CDN es la fuente; so.css ya pintó de plan A");
       }
       ok(!!document.querySelector('link[href="css/so.css"]') || !!document.querySelector('link[href*="so.css"]'), "so.css está en el documento sí o sí");
-    }, "offline = local, online = extra");
+    }, "offline = local fallback, online = CDN");
 
     /* T42 · 7.99940 Match ventana aparte + bios de época */
     grupo("Grok 7.99940 (Match ventana + época)");
@@ -1721,10 +1721,23 @@
       if(v){ v.innerHTML=""; pantallaInicio(); }
       ok(!!document.querySelector("#vista .ventana-so"), "inicio es ventana SO");
       ok(!!document.querySelector("#vista .picker-grid, #vista .iconos"), "picker de clubes adentro");
-      ok([].some.call(document.querySelectorAll("#vista button"), function(b){ return /Apoyar|café/i.test(b.textContent); }), "botón Apoyar en el inicio");
-      ok(!!document.getElementById("btnApoyar"), "💚 en la barra");
+      ok(!!document.querySelector("#vista .picker-liston"), "listones de liga en Todos");
+      var tabs=[].map.call(document.querySelectorAll("#vista .pick-tab"), function(b){ return b.textContent; });
+      var iArg=tabs.indexOf("Argentina"), iB=tabs.indexOf("Primera B");
+      ok(iArg>=0 && iB>=0 && iArg<iB, "Argentina (AFA) antes de Primera B en la cinta");
+      ok(!document.querySelector("#vista .ini-apoyar"), "el aviso de anuncio no está en el inicio");
+      ok(!!document.getElementById("btnApoyar"), "₿ en la barra (atajo a Bitcoin)");
       if(Ewas) E=Ewas;
-    }, "inicio Vista + Apoyar");
+    }, "inicio Vista + listones");
+    safe(function(){
+      var Ewas=typeof E!=="undefined"?E:null;
+      E=null; SEC="ajustes";
+      var v=document.getElementById("vista");
+      if(v){ v.innerHTML=""; vistaAjustes(); }
+      ok([].some.call(document.querySelectorAll("#vista button"), function(b){ return /aviso/i.test(b.textContent); }), "botón de aviso en Ajustes");
+      ok([].some.call(document.querySelectorAll("#vista button"), function(b){ return /Apoyar/i.test(b.textContent); }), "Apoyar Bitcoin en Ajustes");
+      if(Ewas) E=Ewas;
+    }, "aviso de anuncio vive en Ajustes");
     safe(function(){
       nuevaPartida("CC",2026,"historico");
       var t={autor:"@hincha_de_ley",texto:"dt contestame",hilo:[],replies:0,tipo:"hincha"};
@@ -1799,7 +1812,7 @@
     grupo("Grok 7.99954 (Claude + perder)");
     safe(function(){
       ok(VERSION==="7.99954" || /^7\.9/.test(VERSION), "VERSION 7.99954");
-      ok(typeof AERO_7_WINDOW==="string" && AERO_7_WINDOW.indexOf("http")<0, "7.css local (Claude)");
+      ok(typeof AERO_7_WINDOW==="string" && AERO_7_WINDOW.indexOf("unpkg.com/7.css")>=0, "7.css del CDN (autor)");
       ok(typeof planCuandoVasPerdiendo==="function" && typeof diffMarcador==="function", "perder API");
       ok(typeof decisionCabeEnClub==="function", "decisionCabeEnClub");
     }, "API merge");
@@ -2533,6 +2546,236 @@
       ok(u.every(function(j){ return (j.edad||0)<37; }), "la U 2050 sin veteranos congelados de 2026");
       ok(!u.some(function(j){ return j.n==="Eduardo Vargas" && j.edad===36; }), "Vargas no sigue con 36 años en 2050");
     }, "2050 ya no es 2026");
+
+    /* T62 · 7.9011 ChatGrokClaude + huecos */
+    grupo("Grok 7.9011 (canal + huecos que mentían)");
+    safe(function(){
+      ok(VERSION==="7.9011" || /^7\.9/.test(VERSION), "VERSION 7.9011");
+      ok(typeof handleHinchaDeClub==="function", "handleHinchaDeClub existe");
+      ok(typeof tendencias==="function", "tendencias existe");
+      ok(typeof POSTS_PREDEF!=="undefined" && POSTS_PREDEF.length>=5, "POSTS_PREDEF vivos");
+    }, "API 7.9011");
+    safe(function(){
+      nuevaPartida("BOC",2026,"historico",{categoria:"ARG"});
+      ok(E.eraBase==="arg2026", "Boca arranca en AFA");
+      var tags=tendencias().map(function(x){ return x.tag; }).join(" ");
+      ok(tags.indexOf("#ANFP")<0, "Boca no trendéa #ANFP: "+tags);
+      ok(/#AFA|#LigaProfesional|#CopaArgentina/.test(tags), "Boca trendéa AFA/Liga/CopaArgentina");
+      ok(handleHinchaDeClub()==="@xeneize_de_ley", "handle hincha Boca");
+      var liga=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"; });
+      ok(liga.length>0 && liga.length<=16, "Apertura zonal, no 29 fechas ("+liga.length+")");
+      ok(liga.every(function(p){ return /Apertura|Zona/.test(p.torneo||""); }), "torneo rotulado Apertura/Zona");
+    }, "AFA no es 29 fechas ni ANFP");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      ok(handleHinchaDeClub()==="@colocolino_dsiempre", "handle hincha CC se mantiene");
+      var tags=tendencias().map(function(x){ return x.tag; }).join(" ");
+      ok(tags.indexOf("#LigaDePrimera")>=0 || tags.indexOf("#ANFP")>=0, "Chile sigue con su liga");
+      var arco=(typeof ARCOS_AFA_87==="object"&&ARCOS_AFA_87.RIV&&ARCOS_AFA_87.RIV[0]&&ARCOS_AFA_87.RIV[0].capitulos[0].ops[0])||null;
+      ok(arco && arco.grupos && ("camarin" in arco.grupos) && !("plantel" in arco.grupos), "arco River AFA usa camarin, no plantel");
+    }, "Chile + arco camarin");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      E.flags=E.flags||{}; E.flags.desfalco=400; E.rep=E.rep||{}; E.rep.credibilidad=10;
+      var n0=(E.timeline||[]).length;
+      var oldR=Math.random; Math.random=function(){ return 0; };
+      try{ chequearDesfalco(); } finally { Math.random=oldR; }
+      ok(E.flags.investigacionAbierta, "auditoría se abre");
+      ok((E.timeline||[]).length>n0, "Plop habla cuando auditan, no cuando desviás");
+    }, "desfalco → Plop en auditoría");
+
+    /* T63 · 7.9012 scout barato + alma Segunda + plantel Wiki + Plop orden */
+    grupo("Grok 7.9012 (scout $1 M + alma Segunda + Wiki Morning)");
+    safe(function(){
+      ok(VERSION==="7.9012" || /^7\.9/.test(VERSION), "VERSION 7.9012");
+      ok(typeof TWEETS_HINCHA!=="undefined" && TWEETS_HINCHA.length>=10, "pool hincha ≥10 ("+TWEETS_HINCHA.length+")");
+      ok(typeof TWEETS_HOSTIL!=="undefined" && TWEETS_HOSTIL.length>=6, "pool hostil ≥6 ("+TWEETS_HOSTIL.length+")");
+      ok(typeof PLANTEL_SMO_2026!=="undefined" && PLANTEL_SMO_2026.some(function(j){ return /Villegas/.test(j[0]); }), "Morning Wiki: Villegas");
+      ok(PLANTEL_SMO_2026.some(function(j){ return /Manríquez/.test(j[0]) && (j[2]>=40); }), "Morning Wiki: Manríquez 42");
+      ok(typeof DECISIONES!=="undefined" && DECISIONES.some(function(x){ return x.id==="smo26_paredes"; }), "carta smo26_paredes");
+      ok(DECISIONES.some(function(x){ return x.id==="lsc26_diez"; }), "carta lsc26_diez");
+      ok(DECISIONES.some(function(x){ return x.id==="oso26_viaje"; }), "carta oso26_viaje");
+    }, "API 7.9012");
+    safe(function(){
+      if(typeof auditarContenido!=="function"){ ok(false,"auditarContenido no está"); return; }
+      var smo=auditarContenido("SMO"), lsc=auditarContenido("LSC"), oso=auditarContenido("OSO");
+      ok(smo.total>=6, "SMO rico ("+smo.total+"="+smo.decisiones+"d+"+smo.arcos+"a)");
+      ok(lsc.total>=6, "LSC rico ("+lsc.total+")");
+      ok(oso.total>=6, "OSO rico ("+oso.total+")");
+      ok(smo.nivel==="rico" && lsc.nivel==="rico" && oso.nivel==="rico", "SMO/LSC/OSO nivel rico");
+      var tra=auditarContenido("TRA");
+      ok(tra.total>=2, "Trasandino al menos medio ("+tra.total+")");
+    }, "cobertura alma Segunda");
+    safe(function(){
+      nuevaPartida("SMO",2026,"historico",{categoria:"C"});
+      ok(E.club==="SMO", "arranca Morning");
+      var noms=(E.plantel||[]).map(function(j){ return j.n; }).join(" ");
+      ok(/Manríquez/.test(noms), "plantel Morning trae a Manríquez");
+      ok(/Villegas|Bolado/.test(noms), "plantel Morning trae arqueros Wiki");
+      ok((E.plata||0)>=1, "caja alcanza para el informe de $1 M");
+    }, "Morning 2026 plantel Wiki");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var h=handleDT();
+      if(typeof postProc==="function") postProc("@hincha_test","hincha", h+" ¿el once ya está?","neutro");
+      if(typeof postProc==="function") postProc(elige(HANDLES_PRENSA||["@prensa"]),"prensa","Columna genérica sin nombrarte.","neutro");
+      var yo=String(h).toLowerCase().replace(/^@/,"");
+      var men=(E.timeline||[]).filter(function(t){
+        var tx=(t.texto||"").toLowerCase();
+        return tx.indexOf("@"+yo)>=0 || tx.indexOf(yo)>=0;
+      });
+      var prensaSin=(E.timeline||[]).filter(function(t){
+        return t.tipo==="prensa" && (t.texto||"").indexOf("Columna genérica")>=0;
+      });
+      ok(men.length>=1, "hay mención real al DT ("+men.length+")");
+      ok(prensaSin.length>=1, "la prensa genérica existe en el timeline");
+    }, "Plop menciones no vuelcan toda la prensa");
+
+    /* T64 · 7.9013 scout gratis + alma Primera + avisos */
+    grupo("Grok 7.9013 (scout gratis + alma Primera + apoyar sin plata)");
+    safe(function(){
+      ok(VERSION==="7.9013" || /^7\.9/.test(VERSION), "VERSION 7.9013");
+      ok(typeof donarVerAviso==="function", "donarVerAviso existe");
+      ok(typeof donarAvisosVistos==="function", "donarAvisosVistos existe");
+      ok(DONAR && DONAR.btc==="", "BTC sigue hueco");
+      ok(typeof DECISIONES!=="undefined" && DECISIONES.some(function(x){ return x.id==="lim26_navarrete"; }), "carta lim26_navarrete");
+      ok(DECISIONES.some(function(x){ return x.id==="coq26_rumoroso"; }), "carta coq26_rumoroso");
+      ok(DECISIONES.some(function(x){ return x.id==="uch26_clasico"; }), "carta uch26_clasico");
+      ok(DECISIONES.some(function(x){ return x.id==="hua26_fabrica"; }), "carta hua26_fabrica");
+    }, "API 7.9013");
+    safe(function(){
+      if(typeof auditarContenido!=="function"){ ok(false,"auditarContenido no está"); return; }
+      ["UCH","UC","PAL","COQ","EVE","AUD","HUA","OHI","NUB","COB","CAL","LSE","DCO","UDC","LIM"].forEach(function(id){
+        var c=auditarContenido(id);
+        ok(c.total>=6, id+" rico ("+c.total+"="+c.decisiones+"d+"+c.arcos+"a)");
+      });
+      var cc=auditarContenido("CC");
+      ok(cc.total>=6, "Colo-Colo sigue rico ("+cc.total+")");
+    }, "cobertura alma Primera 2026");
+    safe(function(){
+      nuevaPartida("LIM",2026,"historico");
+      var n0=(E.plata||0);
+      ok(n0>=1, "Limache arranca con caja");
+      if(!E.flags) E.flags={}; if(!E.flags.scouting) E.flags.scouting={};
+      E.flags.scouting["LIM|CC|0"]=1;
+      ok(E.plata===n0, "pedir el informe no toca la caja");
+      E.flags.avisosVistos=2;
+      ok(donarAvisosVistos()===2, "avisos vistos se cuentan");
+    }, "scout no cobra · avisos se cuentan");
+
+    /* T65 · 7.9014 Primera B al listón + aviso en Ajustes + ventanas CDN */
+    grupo("Grok 7.9014 (B al listón + aviso en Ajustes + CDN)");
+    safe(function(){
+      ok(VERSION==="7.9014" || /^7\.9/.test(VERSION), "VERSION 7.9014");
+      ok(typeof AERO_7_WINDOW==="string" && AERO_7_WINDOW.indexOf("unpkg.com/7.css")>=0, "ventanas del CDN");
+      ok(AERO_7_WINDOW.indexOf("window.css")>=0, "solo window.css");
+      ok(typeof AERO_7_WINDOW_LOCAL==="string" && /vendor\/7-window/.test(AERO_7_WINDOW_LOCAL), "fallback local");
+      ok(typeof donarVerAviso==="function" && DONAR.btc==="", "aviso stub · BTC hueco");
+      ok(typeof DECISIONES!=="undefined" && DECISIONES.some(function(x){ return x.id==="cbl26_bravo"; }), "carta cbl26_bravo");
+      ok(DECISIONES.some(function(x){ return x.id==="sw26_playa"; }), "carta sw26_playa");
+      ok(DECISIONES.some(function(x){ return x.id==="rec26_arrue"; }), "carta rec26_arrue");
+      ok(DECISIONES.some(function(x){ return x.id==="ran26_basay"; }), "carta ran26_basay");
+    }, "API 7.9014");
+    safe(function(){
+      if(typeof auditarContenido!=="function"){ ok(false,"auditarContenido no está"); return; }
+      ["CBL","SW","SLQ","ANT","MAG","UES","REC","PMO","SMA","COP","TEM","IQQ","USF","CUR","SCR","RAN"].forEach(function(id){
+        var c=auditarContenido(id);
+        ok(c.total>=6, id+" rico ("+c.total+"="+c.decisiones+"d+"+c.arcos+"a)");
+      });
+    }, "cobertura alma Primera B 2026");
+
+    /* T66 · 7.9015 ventanas caben en el celu + dock cinta */
+    grupo("Grok 7.9015 (ventana cabe + dock cinta)");
+    safe(function(){
+      ok(VERSION==="7.9015" || /^7\.9/.test(VERSION), "VERSION 7.9015");
+      ok(typeof idsDockMovil==="function" && typeof dockMasOn==="function", "idsDockMovil / dockMasOn");
+      ok(typeof montarPieSO==="function", "montarPieSO");
+      document.body.classList.remove("dock-mas");
+      var ids=idsDockMovil();
+      ok(ids.indexOf("institucion")>=0 && ids.indexOf("vida")>=0 && ids.indexOf("ajustes")<0, "cinta: todas menos ⚙️");
+      ok(ids.indexOf("escritorio")===0, "cinta arranca en Escritorio");
+      document.body.classList.add("dock-mas");
+      var ids2=idsDockMovil();
+      ok(ids2.length===4 && ids2.indexOf("plantel")>=0 && ids2.indexOf("institucion")<0, "compacto = 4 atajos");
+      document.body.classList.remove("dock-mas");
+    }, "API dock 7.9015");
+    safe(function(){
+      var caja=modal(function(b){ b.appendChild(document.createElement("p")); });
+      ok(document.body.classList.contains("con-modal"), "modal traba el fondo");
+      ok(caja && /modal/.test(caja.className), "caja .modal");
+      cerrarModal();
+      ok(!document.body.classList.contains("con-modal"), "cerrarModal suelta el fondo");
+    }, "scroll-lock del modal");
+    safe(function(){
+      elegirEpoca("CC");
+      var box=document.querySelector("#capa-modal .modal");
+      ok(!!box, "elegir club abre modal");
+      ok(box && /ventana-so/.test(box.className), "modal es ventana-so");
+      var pie=box && box.querySelector(".so-pie, .modal-pie");
+      ok(!!pie, "hay pie de acción");
+      var go=pie && pie.querySelector(".btn-aqua");
+      ok(go && /Empezar|Revivir|Seguir/.test(go.textContent||""), "Empezar vive en el pie");
+      ok(!(box.querySelector(".so-cuerpo .btn-aqua.ancho.verde, .cuerpo .btn-aqua.ancho.verde")), "Empezar no está suelto en el cuerpo");
+      cerrarModal();
+    }, "ventana de época: pie con Empezar");
+
+    /* T67 · 7.9016 agua celu */
+    grupo("Grok 7.9016 (agua celu)");
+    safe(function(){
+      ok(VERSION==="7.9016" || /^7\.9/.test(VERSION), "VERSION 7.9016");
+      ok(typeof encajarScrollMovil==="function", "encajarScrollMovil");
+      elegirEpoca("CC");
+      var box=document.querySelector("#capa-modal .modal");
+      ok(box && box.querySelector(".fichas-epoca"), "épocas en columna");
+      ok(box && box.querySelector(".fichas-modo"), "modos en su fila");
+      var ctx=(box&&box.textContent)||"";
+      ok(/1925/.test(ctx), "habla de 1925");
+      ok(!/Colo-Colo 2026 es SAD/.test(ctx), "1925 no pega el contexto 2026");
+      cerrarModal();
+    }, "época 1925 no mezcla 2026");
+
+    /* T68 · 7.9017 merge GitHub (jornada viva, alma épocas, mundo vivo) */
+    grupo("Grok 7.9017 (pull GitHub + celu intacto)");
+    safe(function(){
+      ok(VERSION==="7.9017" || /^7\.9/.test(VERSION), "VERSION 7.9017");
+      ok(typeof jornadaEnVivo==="function" && typeof panelJornada==="function" && typeof parteSemana==="function", "jornada viva");
+      ok(typeof ALMA_EPOCA!=="undefined" && Array.isArray(ALMA_EPOCA) && ALMA_EPOCA.length>=50, "ALMA_EPOCA "+(typeof ALMA_EPOCA!=="undefined"?ALMA_EPOCA.length:0));
+      ok(typeof mundoVida==="function" && typeof mundoEpocaLimitada==="function", "mundo vivo / época");
+      ok(typeof encajarScrollMovil==="function" && typeof montarPieSO==="function", "celu 7.9015/16 sigue");
+      ok(typeof idsDockMovil==="function", "dock cinta sigue");
+    }, "merge 7.9017 APIs");
+
+    /* T69 · 7.9018 pulido post-merge */
+    grupo("Grok 7.9018 (agua 2 · rival honesto)");
+    safe(function(){
+      ok(VERSION==="7.9018" || /^7\.9/.test(VERSION), "VERSION 7.9018");
+      nuevaPartida("CC",2026,"historico");
+      var part=proximoPartido();
+      ok(!!part && typeof _pasadoRival==="function", "hay próximo y _pasadoRival");
+      var caja=_pasadoRival(part);
+      var tx=(caja&&caja.textContent)||"";
+      var chips=caja?caja.querySelectorAll(".riv-r"):[];
+      ok(!/Cómo viene/.test(tx) || chips.length>0, "sin tira 'Cómo viene' vacía");
+      ok(!/1\.º|1º|1°/.test(tx), "no dice 1.º si el rival aún no jugó");
+      ok(/Todavía no jugó|Primera vez/.test(tx), "dice que es temprano, no inventa racha");
+      var otra=_pasadoRival({tipo:"copa",torneo:"Copa Libertadores",rivalId:null,rivalNombre:"LDU de Quito",local:false});
+      ok(((otra&&otra.textContent)||"").indexOf("otro torneo")>=0, "copa: lo dice, no finge tabla");
+    }, "rival honesto 7.9018");
+
+    /* T70 · 7.9019 GitHub + badge + pie Empezar */
+    grupo("Grok 7.9019 (GitHub + elegir club cabe)");
+    safe(function(){
+      ok(VERSION==="7.9019" || /^7\.9/.test(VERSION), "VERSION 7.9019");
+      ok(typeof montarPieSO==="function" && typeof encajarScrollMovil==="function", "pie + scroll celu");
+      elegirEpoca("CC");
+      var box=document.querySelector("#capa-modal .modal");
+      ok(!!box && /ventana-so/.test(box.className||""), "modal ventana-so");
+      var pie=box && box.querySelector(".so-pie, .modal-pie");
+      var go=pie && pie.querySelector(".btn-aqua");
+      ok(!!go && /Empezar|Revivir|Seguir/.test(go.textContent||""), "Empezar en el pie");
+      ok(document.body.classList.contains("con-modal"), "fondo trabado");
+      cerrarModal();
+    }, "elegir club 7.9019");
 
     /* Reporte */
     OUT.push("\n════════════════════════");

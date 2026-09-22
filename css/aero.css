@@ -9,8 +9,8 @@ body[data-tema="aero"]{
   --celeste:#cdeeff; --hoja:#a9e84f;
   --tinta:#0c3318; --tinta-suave:#3e6b4a; --tinta-clara:#eafff0;
   --linea:rgba(20,90,45,.24); --resalte:rgba(255,232,140,.45);
-  --f-titulo:"Trebuchet MS","Segoe UI",Tahoma,sans-serif;
-  --f-cuerpo:"Segoe UI",Tahoma,Verdana,system-ui,sans-serif;
+  --f-titulo:"Inter","Trebuchet MS","Segoe UI",Tahoma,sans-serif;
+  --f-cuerpo:"Inter","Segoe UI",Tahoma,Verdana,system-ui,sans-serif;
   --f-dato:"Lucida Console",Consolas,monospace;
 }
 /* --- fondo en capas: cielo, aurora, destello, pasto, burbujas ---

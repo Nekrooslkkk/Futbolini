@@ -219,6 +219,10 @@ tr.yo td{font-weight:800;background:var(--resalte)}
 .modal-fondo{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-start;justify-content:center;
   padding:14px;overflow-y:auto;background:rgba(4,32,20,.5);backdrop-filter:blur(6px)}
 .modal{max-width:680px;width:100%;margin:auto 0;border-radius:6px;overflow:hidden}
+/* 7.9015 · el fondo no se mueve detrás del modal (JS pone top = -scrollY) */
+body.con-modal{
+  position:fixed;left:0;right:0;width:100%;overflow:hidden;
+}
 
 /* ---------- campana flotante de avisos ---------- */
 .campana{position:fixed;right:16px;bottom:16px;z-index:78;width:58px;height:58px;border-radius:50%;
@@ -865,3 +869,4 @@ html{scrollbar-width:thin;scrollbar-color:rgba(70,150,100,.55) transparent}
 
 /* 7.9014 · el botón Avanzar no puede empujar la barra superior fuera de pantalla */
 #btnAvanzar{max-width:min(240px,27vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+

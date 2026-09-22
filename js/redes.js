@@ -106,11 +106,25 @@ function tendencias(){
   if(part) t.push({tag:"#"+String(part.rivalNombre||"rival").replace(/\s+/g,""), n:ri(1200,18000)});
   t.push({tag:"#"+(E.clubNombre||"Club").replace(/\s+/g,""), n:ri(3000,40000)});
   var custom=typeof esEraHardcode==="function" && E && !esEraHardcode(E.eraBase);
+  var era=E&&E.eraBase;
   if(custom){
     var ln=(typeof ERA==="object"&&ERA[E.eraBase]&&ERA[E.eraBase].n)||String(E.eraBase||"");
     t.push({tag:"#"+String(ln).replace(/\s+/g,""), n:ri(800,12000)});
     var copaTag=(typeof nombreCopaDomestica==="function")?nombreCopaDomestica(E.eraBase):"";
     if(copaTag) t.push({tag:"#"+String(copaTag).replace(/\s+/g,""), n:ri(400,7000)});
+  } else if(era==="arg2026"){
+    t.push({tag:"#LigaProfesional", n:ri(8000,55000)});
+    t.push({tag:"#AFA", n:ri(400,7000)});
+    t.push({tag:"#CopaArgentina", n:ri(600,9000)});
+  } else if(era==="2026b"){
+    t.push({tag:"#PrimeraB", n:ri(4000,22000)});
+    t.push({tag:"#ANFP", n:ri(400,7000)});
+  } else if(era==="2026c"){
+    t.push({tag:"#SegundaDivision", n:ri(2000,12000)});
+    t.push({tag:"#ANFP", n:ri(400,7000)});
+  } else if(era===2006){
+    t.push({tag:"#Apertura2006", n:ri(5000,28000)});
+    t.push({tag:"#ANFP", n:ri(400,7000)});
   } else {
     t.push({tag:"#LigaDePrimera", n:ri(8000,55000)});
     if(E.anio===1991) t.push({tag:"#Libertadores91", n:ri(2000,22000)});
@@ -125,12 +139,24 @@ const TWEETS_HINCHA=[
   {x:"Si el equipo deja todo, nosotros dejamos la garganta. VAMOS.",t:"bueno"},
   {x:"Confío en el proceso. Paso a paso, pero para arriba.",t:"bueno"},
   {x:"Bancamos al DT hasta las últimas. El que se baja no es hincha.",t:"bueno"},
-  {x:"Otra vez a llenar el estadio. Que sepan lo que es jugar acá.",t:"bueno"}
+  {x:"Otra vez a llenar el estadio. Que sepan lo que es jugar acá.",t:"bueno"},
+  {x:"El domingo se llena. El que no va, que no hable.",t:"bueno"},
+  {x:"Este club es de pueblo, no de revista. Se banca.",t:"bueno"},
+  {x:"Si hay que sufrir, se sufre. Pero se banca el ciclo.",t:"bueno"},
+  {x:"La camiseta pesa más que la tabla. Siempre.",t:"bueno"},
+  {x:"Hoy juega el que deja todo, no el de la tele.",t:"bueno"},
+  {x:"Tres puntos feos valen más que un amistoso lindo.",t:"bueno"},
+  {x:"El DT tiene crédito. El que pide cabeza, que se vaya a otro lado.",t:"bueno"}
 ];
 const TWEETS_HOSTIL=[
   {x:"Este DT no sabe ni formar el equipo. Que se vaya YA. 🤡",t:"malo"},
   {x:"Con esta dirigencia no llegamos a ningún lado. Vendehúmos.",t:"malo"},
-  {x:"Los de la tele otra vez con los penales regalados. Vergüenza.",t:"malo"}
+  {x:"Los de la tele otra vez con los penales regalados. Vergüenza.",t:"malo"},
+  {x:"Otra vez lo mismo. Cambio de nombres, mismo resultado.",t:"malo"},
+  {x:"Plantel corto, ideas cortas. Así no se sube.",t:"malo"},
+  {x:"El técnico se quedó sin lecturas. Se nota el domingo.",t:"malo"},
+  {x:"Si esto es proceso, el proceso es eterno.",t:"malo"},
+  {x:"La dirigencia vende humo y el domingo se ve en la cancha.",t:"malo"}
 ];
 function sembrarRedes(){
   if(!E) return;
@@ -148,6 +174,8 @@ function sembrarRedes(){
   if(Math.random()<0.6){ const ho=elige(TWEETS_HOSTIL); postProc(elige(["@bancado_de_sillon","@el_verdadero_hincha","@critico_del_club"]),"hincha",ho.x,ho.t); }
   if(Math.random()<0.5){ const h2=elige(TWEETS_HINCHA); postProc(elige(HANDLES_HINCHA),"hincha",h2.x,h2.t); }
   if(part&&part.tipo==="copa") postProc(elige(HANDLES_PRENSA),"prensa","Copa de por medio. Un tropiezo y el año se pone cuesta arriba.","neutro");
+  /* 7.9012 · una mención de verdad al DT (el tab Menciones ya no traga toda la prensa) */
+  postProc(elige(HANDLES_HINCHA),"hincha", handleDT()+" ¿el once de "+riv+" ya está o seguimos adivinando?","neutro");
 }
 function moverSeguidores(n){
   E.seguidores=Math.max(0,Math.round((E.seguidores||0)+n));
@@ -275,7 +303,14 @@ function handleHinchaDeClub(){
   const m={CC:"@colocolino_dsiempre",UCH:"@chuncho_del_nacional",UC:"@cruzado_de_ley",
     COQ:"@pirata_coquimbo",EVE:"@ruletero_vina",PAL:"@arabe_tricolor",AUD:"@tano_dela_florida",
     HUA:"@acerero_talcahuano",OHI:"@celeste_rancagua",NUB:"@rojo_de_chillan",COB:"@minero_cobresal",
-    CAL:"@cementero_calera",LSE:"@granate_serena",DCO:"@leon_del_collao",UDC:"@campanil_udec",LIM:"@tomatero_limache"};
+    CAL:"@cementero_calera",LSE:"@granate_serena",DCO:"@leon_del_collao",UDC:"@campanil_udec",LIM:"@tomatero_limache",
+    CBL:"@loino_calama",SW:"@caturro_valpo",MAG:"@carabelero",UES:"@hispano_santa",USF:"@santo_aconcagua",
+    ANT:"@puma_pampa",IQQ:"@dragon_iquique",PMO:"@salmonero",TEM:"@araucano_temuco",CUR:"@albirrojo_curico",
+    RAN:"@piducano",SMA:"@brujo_arica",COP:"@leon_atacama",REC:"@albo_recoleta",SLQ:"@sancanuto",
+    RIV:"@millonario_river",BOC:"@xeneize_de_ley",RAC:"@academia_racing",IND:"@rojo_de_avellaneda",
+    VEL:"@fortin_velez",SLO:"@cuervo_boedo",ELP:"@pincharrata",ROS:"@canalla_arroyito",
+    TAL:"@matador_cordoba",HUR:"@globo_patricios",LAN:"@granate_sur",ARG:"@bicho_paternal",
+    NEW:"@lepra_parque",BEL:"@pirata_alberdi"};
   return (E&&m[E.club])||"@hincha_de_ley";
 }
 /* 6.19 · SOLO hechos que existen AHORA en el save (no un banco 2010) */
@@ -409,6 +444,20 @@ function redesReaccion(tipo,data){
       ]),"neutro");
       moverSeguidores(ri(-80,220));
     }
+    return;
+  }
+
+  if(tipo==="desfalco"){
+    const monto=data.monto;
+    const cifra=(typeof plata==="function"&&monto)?plata(monto):"plata del club";
+    postProc(elige(HANDLES_PRENSA),"prensa",
+      "Auditoría en "+(E.clubNombre||"el club")+": hay irregularidades en tesorería por "+cifra+". El entorno pide explicaciones.","malo");
+    postProc(elige(HANDLES_HINCHA),"hincha",elige([
+      "¿Se llevaron la plata del club? Si es cierto, que se vayan TODOS.",
+      "Esto no es un rumor de camarín. Si desviaron fondos, la hinchada no perdona.",
+      "Dirigencia ladrona. Queremos nombres y queremos la plata de vuelta."
+    ]),"malo");
+    moverSeguidores(-ri(400,1800));
     return;
   }
 

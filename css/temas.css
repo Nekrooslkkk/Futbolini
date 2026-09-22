@@ -9,8 +9,8 @@ body[data-tema="negro"]{
   --verde-alto:#2f9bff; --verde-medio:#1c5f9e; --verde-hondo:#0d3355;
   --aqua:#39e0c8; --tinta:#dbecff; --tinta-suave:#8fb2cf; --tinta-clara:#eaf6ff;
   --linea:rgba(120,190,255,.22); --resalte:rgba(60,120,190,.35);
-  --f-titulo:"Trebuchet MS","Segoe UI",Tahoma,sans-serif;
-  --f-cuerpo:"Segoe UI",Tahoma,Verdana,system-ui,sans-serif;
+  --f-titulo:"Inter","Trebuchet MS","Segoe UI",Tahoma,sans-serif;
+  --f-cuerpo:"Inter","Segoe UI",Tahoma,Verdana,system-ui,sans-serif;
   --f-dato:"Lucida Console",Consolas,monospace;
 }
 body[data-tema="negro"] .cielo{background:radial-gradient(120% 80% at 50% -10%,#16283d 0%,#0e1a2a 45%,#070d16 100%)}
@@ -45,8 +45,8 @@ body[data-tema="claro"]{
   --verde-alto:#4a90d9; --verde-medio:#2f6fb5; --verde-hondo:#1d4f88;
   --aqua:#63c8d8; --tinta:#12222f; --tinta-suave:#5b7386; --tinta-clara:#fff;
   --linea:rgba(20,50,80,.16); --resalte:rgba(255,226,140,.5);
-  --f-titulo:"Segoe UI","Trebuchet MS",sans-serif;
-  --f-cuerpo:"Segoe UI",Tahoma,Verdana,system-ui,sans-serif;
+  --f-titulo:"Inter","Segoe UI","Trebuchet MS",sans-serif;
+  --f-cuerpo:"Inter","Segoe UI",Tahoma,Verdana,system-ui,sans-serif;
   --f-dato:"Lucida Console",Consolas,monospace;
 }
 body[data-tema="claro"] .cielo{background:linear-gradient(180deg,#ffffff 0%,#f1f5f9 55%,#e2e9f0 100%)}

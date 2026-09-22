@@ -78,7 +78,10 @@ const PLANTEL_LSC_2026=[
   _pj("Fabián Neira","DEL",25,58,[]),
   _pj("Vicente Oñate","DEL",19,52,["préstamo","joven"]),
   _pj("Cristofer Salas","DEL",26,58,[]),
-  _pj("Luca Pontigo","DEL",31,58,["veterano"])
+  _pj("Luca Pontigo","DEL",31,58,["veterano"]),
+  _pj("Sebastián Torres González","DEL",24,54,[]),
+  _pj("Pablo Cabrera","DEF",25,54,[]),
+  _pj("Ignacio Chandía","VOL",24,54,[])
 ];
 
 /* Trasandino · en.wikipedia squad 16 ago 2026. Goleador Quiñones (Wiki Segunda). DT Fernando Gutiérrez (tabla 2026). */
@@ -105,7 +108,12 @@ const PLANTEL_TRA_FULL_2026=[
   _pj("Benjamín Araneda","DEL",21,54,["préstamo"]),
   _pj("Tomás San Martín","DEL",27,56,[]),
   _pj("Fabián Abarca","DEL",22,56,["préstamo"]),
-  _pj("Lucas Poza","DEL",21,52,[])
+  _pj("Lucas Poza","DEL",21,52,[]),
+  _pj("Agustín Rodríguez","DEF",21,54,[]),
+  _pj("Oliver Ramis","VOL",19,52,["joven"]),
+  _pj("Jordan Mella","DEL",23,54,[]),
+  _pj("Carlos Navarrete","DEL",22,54,[]),
+  _pj("Ignacio Parada","DEL",23,56,[])
 ];
 
 /* Colchagua · es.wikipedia Plantilla 2026 · DT Raúl González */
@@ -129,7 +137,10 @@ const PLANTEL_CLC_FULL_2026=[
   _pj("Jhon Alegría","DEL",29,56,["extranjero"]),
   _pj("Cristián Valenzuela","DEL",27,56,[]),
   _pj("Matías Belmar","DEL",24,56,[]),
-  _pj("Emilio Moreno","DEL",22,52,[])
+  _pj("Emilio Moreno","DEL",22,52,[]),
+  _pj("Claudio Pavez","VOL",21,52,["préstamo"]),
+  _pj("Cristián Yáñez","DEL",23,54,[]),
+  _pj("Juan José Sánchez","DEL",22,52,[])
 ];
 
 /* Racing · es.wikipedia Plantel 2026, act. 3 sep 2026 */
@@ -443,7 +454,7 @@ const PLANTEL_HUR_2026=[
   });
   if(typeof CLUB_INFO_2026==="object"){
     var dts={
-      COL:"Fernando Vergara", OVA:"Juan José Luvera", CNA:"Orlando Gutiérrez",
+      COL:"Fernando Vergara", OVA:"Víctor Quintanilla", CNA:"Orlando Gutiérrez",
       BSA:"Felipe Cornejo", RSJ:"Jaime Lizama", SCI:"Cristian Febre",
       LIN:"Rodrigo Meléndez", REN:"Víctor Fuentes", GVE:"Matías Garrido",
       NEW:"Frank Darío Kudelka", HUR:"Diego Martínez", ROS:"Jorge Almirón"
