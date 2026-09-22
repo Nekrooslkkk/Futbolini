@@ -799,7 +799,14 @@ const EPOCAS_86={
 (function estadios86(){
   if(typeof ESTADIOS_DATA!=="object") return;
   function gen(aforo){
-    var p=Math.max(4000, Math.round((aforo||10000)/15)*100);
+    /* 7.9025 · FIX de escala. Antes: `max(4000, round(aforo/15)*100)` = aforo × 6,67.
+       La Bombonera (54.000) daba 360.000 por entrada popular y el Monumental 554.600:
+       cada partido de local le dejaba a Boca ~51.700 contra ~480 de Colo-Colo (100×),
+       y en 5 temporadas terminaba con 2,6 millones de caja. La plata del juego va en
+       millones de pesos chilenos, así que el precio se ancla a los estadios chilenos
+       documentados en este mismo repo (popular 7–8 mil, tribuna 14–18 mil, palco
+       25–45 mil) y crece suave con el aforo: popular 5.000–9.000. */
+    var p=Math.min(9000, Math.max(5000, Math.round((5000+(aforo||10000)*0.07)/500)*500));
     return [
       {n:"Popular", tipo:"popular", cuota:0.40, precio:p},
       {n:"Tribuna", tipo:"tribuna", cuota:0.40, precio:p*2},

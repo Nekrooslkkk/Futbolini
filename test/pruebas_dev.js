@@ -900,6 +900,45 @@
       E._bulkCancel=true;   /* corta el lote programado (setTimeout) para no dejarlo corriendo suelto tras el test */
     },"Avance visible");
 
+    grupo("Calendario que no se pega · 7.9025");
+    safe(function(){
+      t(typeof _jorSaltarJugados==="function","existe la red _jorSaltarJugados");
+      t(DOCTOR_CHECKS.some(function(c){ return c.id==="idx_no_pegado"; }),"el doctor tiene el chequeo idx_no_pegado");
+      nuevaPartida("CC",2026,"historico");
+      /* el caso real: una inserción ordenada deja un partido YA jugado justo después */
+      var i0=E.idx;
+      E.calendario[i0+1].jugado=true; E.calendario[i0+1].gf=1; E.calendario[i0+1].gc=0;
+      var chk=DOCTOR_CHECKS.filter(function(c){ return c.id==="idx_no_pegado"; })[0];
+      t(!chk.fn().ok,"AL REVÉS: el doctor detecta el partido jugado mal ordenado");
+      var P=iniciarPartido(proximoPartido(),"simular"); correrHasta(P,90); terminarPartido(P);
+      t(E.idx===i0+2,"tras jugar, el índice salta el ya jugado ("+i0+" → "+E.idx+")");
+      t(!proximoPartido()||!proximoPartido().jugado,"el próximo partido NO está jugado");
+      t(chk.fn().ok,"y el doctor vuelve a dar sano");
+      /* forzado directo: índice clavado en un jugado */
+      E.calendario[E.idx].jugado=true;
+      t(!chk.fn().ok,"el doctor caza un índice clavado en un partido jugado");
+      _jorSaltarJugados();
+      t(chk.fn().ok,"la red lo destraba");
+    },"Calendario pegado");
+
+    grupo("Economía en escala · 7.9025");
+    safe(function(){
+      var chk=DOCTOR_CHECKS.filter(function(c){ return c.id==="precios_entrada"; })[0];
+      t(!!chk,"el doctor tiene el chequeo de precios de entrada");
+      t(chk.fn().ok,"hoy todos los precios están en escala");
+      /* AL REVÉS: el precio que tenía la Bombonera tiene que saltar */
+      var sec=ESTADIOS_DATA.BOC.sectores[0], viejo=sec.precio;
+      sec.precio=360000;
+      t(!chk.fn().ok,"el doctor caza la popular de Boca a 360.000");
+      sec.precio=viejo;
+      t(chk.fn().ok,"y vuelve a sano al restaurar");
+      nuevaPartida("CC",2026,"historico"); var tcc=taquilla({tipo:"liga",local:true}).ingreso;
+      nuevaPartida("BOC",2026,"historico",{categoria:"ARG"}); var tbo=taquilla({tipo:"liga",local:true}).ingreso;
+      t(tbo<tcc*4,"la taquilla de Boca ya no es 60× la de Colo-Colo ("+tbo+" vs "+tcc+")");
+      var ctq=DOCTOR_CHECKS.filter(function(c){ return c.id==="taquilla_escala"; })[0];
+      t(ctq&&ctq.fn().ok,"el chequeo de taquilla da sano con Boca");
+    },"Economía");
+
     grupo("Localización 7.9013");
     safe(function(){
       ["mep_solo","riv_racha","riv_sin","riv_puesto","cal_prog","cal_sig",

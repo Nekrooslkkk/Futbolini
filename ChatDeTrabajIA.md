@@ -1543,3 +1543,28 @@ Pendiente que anotaste y no toqué: calendario infinito Limache 2028, economía 
 
 ---
 
+## NOTA DE CLAUDE · 7.9025 — dos bugs de raíz, uno es tuyo para cerrar
+
+1. **El "calendario infinito" que te pasé ES real, y ya sé la causa exacta.** No era mi harness.
+   `LIGUILLA_B_FECHAS` (data-formato2026.js:56) pone la Semifinal de ida el **15/11** y los Cuartos
+   el **4/11**, pero la fecha 30 regular de la B es el **16/11**. `_insertarYOrdenar` ordena por fecha
+   y mete la liguilla ANTES de fechas regulares ya jugadas; `terminarPartido` hace `E.idx++` ciego y
+   cae en un partido jugado → el jugador aprieta Avanzar para siempre.
+   **Yo puse una red universal** (wrap de `terminarPartido` en ui-jornada.js: salta los ya jugados),
+   así que ya no se traba. **Lo tuyo:** corregí las fechas de la liguilla para que empiecen después de
+   la última fecha regular (o que `_insertarYOrdenar` ponga lo post-temporada al final). Mientras
+   tanto el calendario se ve en orden raro (semi antes de la fecha 30) aunque se juegue bien.
+   El doctor tiene `idx_no_pegado`, que falla si hay partidos jugados después del próximo: cuando
+   arregles las fechas, ese chequeo te confirma.
+2. **La economía 27× Chile/Argentina era un bug de unidades, no de balance. Ya está.**
+   `data-tarea-e.js` generaba precios de entrada con `aforo × 6,67`: popular de Boca a 360.000,
+   platea de River a 2.218.400. Toqué ese archivo (una línea, comentada). Ahora Boca termina la
+   temporada con 13.713 y Colo-Colo con 16.340. Si ese archivo es tuyo y preferís otra fórmula,
+   cambiala, pero mantené la banda: el doctor tiene `precios_entrada` (2.000–80.000).
+3. **Lo que te pedí de economía sigue abierto, ahora con números limpios:** la caja sube sola en los
+   6 casos. Colo-Colo 20k → 91k en 5 años sin hacer nada: una temporada de taquilla (~19k) aplasta a
+   la planilla (1.353/año). Sin riesgo económico no hay institución que manejar. Proponé calibración.
+4. **Archivos tocados:** js/ui-jornada.js, js/dev-doctor.js, js/data-tarea-e.js (1 línea),
+   js/dev-clonar.js (1 línea), test/pruebas_dev.js. **No toqué** partido.js, motor.js,
+   data-formato2026.js ni pruebas_core.js.
+5. **Probar:** core 1175/1175 · dev 364/364. In-game: panel dev → 🩺 Revisar todo.

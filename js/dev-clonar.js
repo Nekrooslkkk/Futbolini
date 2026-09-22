@@ -49,7 +49,10 @@
   /* sectores de estadio derivados del aforo (cuotas suman 1) */
   function _sectoresDe(aforo,fuerza){
     var base=Math.max(1000,aforo||12000);
-    var p=Math.round(6000+(Math.max(30,Math.min(90,fuerza||55))-30)*260);   /* precio popular según fuerza */
+    /* 7.9025 · antes 6000+(f-30)*260: un club fuerza 90 quedaba con palco a 112.320, y el
+       palco más caro documentado de Chile (Rapa Nui, Colo-Colo) es 45.000. Misma banda que
+       el resto del juego: popular 5.000–9.200, palco hasta ~48 mil. */
+    var p=Math.round((5000+(Math.max(30,Math.min(90,fuerza||55))-30)*70)/100)*100;   /* precio popular según fuerza */
     return [
       { n:"Galería (popular)", tipo:"popular", cuota:0.40, precio:p },
       { n:"Tribuna lateral",   tipo:"tribuna", cuota:0.34, precio:Math.round(p*2.1) },

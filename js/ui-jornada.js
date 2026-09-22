@@ -73,6 +73,19 @@ function ultimoCruce(rivalId,rivalNombre){
   }
   return null;
 }
+/* 7.9025 · INVARIANTE: `E.idx` apunta SIEMPRE al primer compromiso sin jugar.
+   `terminarPartido` hace un `E.idx++` ciego. Si una inserción ordenada por fecha
+   dejó un partido YA jugado justo después (caso real medido: la Liguilla de la B
+   tiene la semifinal el 15/11 y la fecha 30 regular es el 16/11, así que el sort
+   la mete antes), el índice aterriza en un partido jugado, `avanzar()` procesa
+   semanas sin moverse y el juego queda pegado PARA SIEMPRE. Esta red salta los ya
+   jugados. Corre también en simulación masiva: ahí el cuelgue era igual. */
+function _jorSaltarJugados(){
+  if(!E||!Array.isArray(E.calendario)) return 0;
+  let n=0;
+  while(E.idx<E.calendario.length && E.calendario[E.idx] && E.calendario[E.idx].jugado){ E.idx++; n++; }
+  return n;
+}
 /* ---------- captura de la jornada ---------- */
 /* Corre alrededor de terminarPartido: antes anota dónde estaba cada club,
    después compara. Así sabemos QUIÉN subió y quién bajó por esta fecha. */
@@ -106,6 +119,7 @@ function _jorGuardar(part,res,antes){
     const antes=_jorPosMapa();
     const antesTab=_jorTablaSnap();
     const res=orig.apply(this,arguments);
+    try{ _jorSaltarJugados(); }catch(e){}
     try{ _jorGuardar((P&&P.part)||(P&&P.partido)||null,res,antes); }catch(e){}
     try{ if(!E||!E._bulkSim) _jorForma(antesTab); }catch(e){}
     return res;

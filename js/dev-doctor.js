@@ -82,6 +82,19 @@ devDoctorRegistrar({id:"calendario_sano", area:"motor", n:"El calendario no tien
                      :_dok(E.calendario.length+" compromisos, "+E.calendario.filter(function(c){return c.jugado;}).length+" jugados");
 }});
 
+/* 7.9025 · el cuelgue de la Liguilla de la B: el índice apuntando a un partido ya
+   jugado deja al jugador apretando Avanzar para siempre. */
+devDoctorRegistrar({id:"idx_no_pegado", area:"motor", n:"El próximo partido no está ya jugado", fn:function(){
+  if(!E||!E.calendario) return _dok("sin partida");
+  var p=E.calendario[E.idx];
+  if(!p) return _dok("temporada terminada");
+  if(p.jugado) return _dmal("E.idx="+E.idx+" apunta a un partido YA jugado ("+(p.torneo||p.tipo)+" vs "+p.rivalNombre+"): Avanzar no avanza");
+  /* y el orden: ningún partido jugado después de uno sin jugar (salvo el propio idx) */
+  var desorden=[];
+  for(var i=E.idx+1;i<E.calendario.length;i++){ if(E.calendario[i].jugado) desorden.push(i+": "+(E.calendario[i].torneo||E.calendario[i].tipo)+" vs "+E.calendario[i].rivalNombre); }
+  return desorden.length?_dmal(desorden.length+" partido(s) jugados DESPUÉS del próximo (inserción mal fechada)",desorden)
+                        :_dok("apunta a "+(p.torneo||p.tipo)+" vs "+p.rivalNombre);
+}});
 /* la tabla ordenada tiene que ser consistente con los puntos */
 devDoctorRegistrar({id:"orden_tabla", area:"motor", n:"El orden de la tabla respeta los puntos", fn:function(){
   if(typeof tablaOrdenada!=="function") return _dok("sin tabla");
@@ -92,6 +105,29 @@ devDoctorRegistrar({id:"orden_tabla", area:"motor", n:"El orden de la tabla resp
   return malos.length?_dmal("la tabla está mal ordenada",malos):_dok(arr.length+" equipos en orden");
 }});
 
+/* 7.9025 · los precios de entrada de Argentina estaban en otra escala (aforo × 6,67:
+   popular de Boca a 360.000). Cualquier sector fuera de la banda de precios reales
+   chilenos del repo es sospechoso: la plata va en millones de pesos chilenos. */
+devDoctorRegistrar({id:"precios_entrada", area:"motor", n:"Precios de entrada en escala", fn:function(){
+  if(typeof ESTADIOS_DATA!=="object") return _dok("sin estadios");
+  var fuera=[];
+  Object.keys(ESTADIOS_DATA).forEach(function(id){
+    ((ESTADIOS_DATA[id]||{}).sectores||[]).forEach(function(s){
+      var pr=s.precio||0;
+      if(pr && (pr<2000 || pr>80000)) fuera.push(id+" · "+s.n+": "+pr);
+    });
+  });
+  return fuera.length?_dmal(fuera.length+" sector(es) con precio fuera de escala (2.000–80.000)",fuera.slice(0,20))
+                     :_dok(Object.keys(ESTADIOS_DATA).length+" estadios con precios en escala");
+}});
+/* y el efecto: ninguna taquilla de local puede ser 20× la mediana de la liga */
+devDoctorRegistrar({id:"taquilla_escala", area:"motor", n:"La taquilla del club no está desbocada", fn:function(){
+  if(!E||typeof taquilla!=="function") return _dok("sin partida");
+  var t=taquilla({tipo:"liga",local:true}).ingreso;
+  var sem=(typeof ingresoSemanal==="function")?ingresoSemanal():0;
+  if(t>40*Math.max(1,sem)) return _dmal("una taquilla de local ("+t+") vale más de 40 semanas de ingresos ("+sem+"/sem)");
+  return _dok("taquilla de local "+t+" · ingresos semanales "+sem);
+}});
 /* ============ ÁREA: SIMULACIÓN ============ */
 /* Corre temporadas COMPLETAS sobre una copia y revisa que al final todo cierre.
    Usa el snapshot de Grok (clonarPartida/restaurarPartida) para no tocar la
@@ -287,7 +323,7 @@ devDoctorRegistrar({id:"sim_progreso_visible", area:"interfaz", n:"Simular tempo
   return falta.length?_dmal(falta.length+" problema(s)",falta)
                      :_dok("el overlay puede mostrar fecha, posición y campeón anterior; la corrida cede el hilo entre lotes");
 }});
-/* 7.9024 · el penal no puede volver a ser un formulario de 3 botones */
+/* 7.9025 · el penal no puede volver a ser un formulario de 3 botones */
 devDoctorRegistrar({id:"arco_escena_3d", area:"interfaz", n:"Penal, tiro libre y córner se patean en la cancha", fn:function(){
   var falta=[];
   if(typeof _abrirEscenaArco!=="function") falta.push("_abrirEscenaArco no está");

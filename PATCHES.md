@@ -3162,3 +3162,37 @@ es hoy un formulario.** El autor pidió reconstruirlo y coincido. Vive en `js/ui
 `js/partido.js` y `css/gol.css` — carril de Grok, coordinado en `ChatDeTrabajIA.md`.
 
 - **Tests:** core **1175/1175** · dev **350/350** (Sonnet los subió de 321 en su 7.9022).
+
+## 7.9025 · Revisión completa: dos bugs graves de raíz (calendario pegado y economía 100×)
+Primera tanda con Opus 5.5. Revisión con la batería de simulaciones + el Doctor, persiguiendo cada
+anomalía hasta la línea que la causa.
+
+- **Calendario pegado para siempre (bug real, afectaba al jugador).** Un club en la B que llega a la
+  **Liguilla de Ascenso** quedaba trabado: `avanzar()` procesaba semanas sin moverse, eternamente.
+  Causa exacta: `LIGUILLA_B_FECHAS` pone la semifinal de ida el **15/11**, pero la fecha 30 regular
+  de la B es el **16/11**. `_insertarYOrdenar` reordena todo el calendario por fecha y mete la
+  semifinal ANTES de la fecha 30 ya jugada; `terminarPartido` hace un `E.idx++` ciego y aterriza
+  en un partido jugado. Como solo `terminarPartido` avanza el índice, no se sale nunca.
+  **Fix (red universal, sin tocar el motor):** el wrap de `terminarPartido` en `ui-jornada.js` salta
+  los ya jugados (`_jorSaltarJugados`). Invariante: `E.idx` apunta siempre al primer compromiso sin
+  jugar. Cubre esta inserción y cualquier otra mal fechada. **Causa raíz (las fechas) → Grok.**
+  Nota: esto corrige lo que yo le había reportado a Grok como "calendario infinito de Limache" —
+  verificado que NO era mi harness: el juego real hace lo mismo.
+- **Economía: precios de entrada en la escala equivocada.** La popular de Boca costaba **360.000** y
+  la preferencial **1.440.000** pesos; el Monumental, 2.218.400. Cada partido de local le dejaba a
+  Boca ~51.700 contra ~480 de Colo-Colo (100×): el famoso "desbalance 27× de caja" no era balance,
+  era un bug de unidades. Causa: `data-tarea-e.js` genera sectores para estadios sin datos propios
+  con `aforo × 6,67`. Ahora se ancla a los precios chilenos documentados del repo (popular
+  5.000–9.000, tribuna ×2, palco ×4). **Boca tras 1 temporada: de 512.925 a 13.713** (Colo-Colo:
+  16.340). La fórmula de clonado de ligas tenía el mismo defecto más leve (palco de 112.320 para un
+  club fuerte, cuando el más caro documentado es 45.000): corregida también.
+- **Doctor +3 chequeos** (regla permanente): `idx_no_pegado` (el próximo partido no puede estar
+  jugado, ni haber jugados después), `precios_entrada` (banda 2.000–80.000), `taquilla_escala`
+  (una taquilla no puede valer más de 40 semanas de ingresos). **Los tres verificados AL REVÉS**:
+  se reinyectó el bug y el doctor lo caza.
+- **Batería final (6 clubes × 5 temporadas):** los 6 limpios, ningún calendario pegado (máximo 49
+  vueltas, antes llegaba al tope de 250), 71–237 ms por 5 temporadas.
+- **Queda abierto (diseño, no bug):** la caja **sigue subiendo sola** en todos los casos (Colo-Colo
+  20k → 91k en 5 años sin hacer nada): la taquilla de una temporada (~19k) supera por mucho a la
+  planilla. Y Colo-Colo 1991 gana 5 de 5. Es calibración — decisión del autor/Grok.
+- **Tests:** dev **364/364** (antes 350) · core **1175/1175**. **No es 8.00.**
