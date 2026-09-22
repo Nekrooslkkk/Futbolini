@@ -3219,3 +3219,33 @@ anomalía hasta la línea que la causa.
   y a los chicos demasiado pobres. Arreglarlo es tocar sueldos del mercado.
 - **Doctor +1:** `taquilla_vs_costos` (falla si la taquilla estimada de la temporada paga 3+ años de
   costos; antes daba 7,4×, ahora ~1,6×). **Tests:** dev **376/376** · core **1185/1185**.
+
+## 7.9027 · El arco se reconstruye: penal, tiro libre y córner con arte de verdad
+- **Causa del "muy feo" en celu:** el SVG usaba `preserveAspectRatio="xMidYMax slice"` en un
+  escenario vertical: a 390px se veían ~160 de 360 unidades de ancho. **No se veían los palos**,
+  la mira quedaba fuera de cuadro y el arquero se salía de la pantalla al tirarse. Ahora
+  `_arcoMontarSvg` usa `meet` y `_arcoVista` ajusta el viewBox al escenario (en vertical acerca la
+  cámara a 300 de ancho; lo que sobra es tribuna). El dedo se traduce con `getScreenCTM`
+  (`_arcoPunto`), así que la mira cae donde tocás aunque cambie el encuadre. Se sacó el `rotateX`
+  CSS (descuadraba el toque); la perspectiva va dibujada.
+- **Arte nuevo, todo SVG propio (sin red, sin copyright ajeno):** figuras con proporción humana
+  (`_figPersona`: piernas, short, camiseta con volumen, cuello, cabeza, pelo; 5 tonos de piel y
+  pelo, con respeto), arquero ~80% del alto del arco, guantes, barrera de 4 con brazos cruzados,
+  atacantes de espalda con número en el córner. Arco con red en perspectiva (fondo, laterales,
+  techo; malla en patrón), palos con volumen, sombras en el pasto. Estadio: dos bandejas de
+  hinchas con los colores del local, lienzos, publicidad "FUTBOLINI", focos, viñeta.
+- **El arquero se tira de verdad** (`_animArq` → `_arqDestino` + `_arqPose`): gira desde la cadera,
+  levanta los brazos y **su guante va a la pelota** (geometría exacta con `_arqGuanteLocal`). Si
+  adivinó el lado pero es gol, queda a 18 unidades: se estiró y no llegó. La pelota se achica al
+  alejarse y su sombra queda en el pasto. Tribuna que salta (más fuerte en el gol) y arquero que
+  respira; ambos apagados en `body.perf` y `prefers-reduced-motion`.
+- **¡Patear! apagado ahora explica:** "Tocá el arco para apuntar" (`arco_apunta`, neutro/en/pt).
+- **Bug de paso:** la barrera y los cabeceadores saltaban con `style.transform` sobre el mismo
+  `<g>` que tenía `transform="translate(...)"`: el salto borraba la posición. Ahora la clase va en
+  un `<g>` interno.
+- **Doctor +1:** `arco_arte` mide en DOM real: proporción del arquero, que la cámara no recorte,
+  que el dedo use la matriz real, que el guante llegue (<12) cuando ataja y no toque (>10) cuando
+  es gol. Verificado al revés (reinyectando `slice` y un brazo corto: falla). Ojo técnico: Chromium
+  cachea `getCTM` si antes se llamó `getBBox`; por eso cada medición usa un SVG nuevo.
+- **Tests:** dev **384/384** (+8: los 4 rincones, cámara, botón, i18n) · core **1185/1185**.
+  `VERSION` al día (seguía en 7.9024).

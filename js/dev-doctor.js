@@ -355,6 +355,58 @@ devDoctorRegistrar({id:"arco_escena_3d", area:"interfaz", n:"Penal, tiro libre y
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("se abre la escena 3d con arco y arquero, no un listado");
 }});
 
+/* 7.9027 · el arco se ve como un arco: el arquero mide lo que mide una persona,
+   la cámara no recorta los palos y el guante llega a la pelota cuando ataja */
+function _docArcoSvg(){
+  var NS="http://www.w3.org/2000/svg", svg=document.createElementNS(NS,"svg");
+  svg.setAttribute("viewBox","0 0 360 240"); svg.setAttribute("width","360"); svg.setAttribute("height","240");
+  svg.style.cssText="position:absolute;left:-9999px;top:0;visibility:hidden";
+  svg.innerHTML=htmlArcoVivo({modo:"penal"});
+  document.body.appendChild(svg);
+  return svg;
+}
+/* cada medida en un SVG nuevo: Chromium cachea la matriz si ya se midió (getBBox) */
+function _docArcoGuante(aim, ataja){
+  var svg=_docArcoSvg(), arq=svg.querySelector("#arco-arq");
+  var D=_arqDestino(arq,"izq",{aim:aim,ataja:ataja});
+  _arqPose(arq, D.x0+D.dx, D.y0+D.dy, D.esc, D.rot, D.brazo);
+  var c=svg.querySelector("#arco-mano-izq").getCTM();
+  svg.remove();
+  return Math.hypot(c.e-aim.cx, c.f-aim.cy);
+}
+function _docArcoMedir(){
+  if(typeof document==="undefined"||!document.body||typeof htmlArcoVivo!=="function") return null;
+  var r={};
+  try{
+    var svg=_docArcoSvg();
+    r.altoArq=svg.querySelector("#arco-arq").getBBox().height; r.altoArco=168-38;
+    svg.remove();
+    var aim={cx:70,cy:60,tercio:"izq",alt:"alto",fuera:false};
+    r.distAtaja=_docArcoGuante(aim,true);
+    r.distGol=_docArcoGuante(aim,false);
+  }catch(e){ r.error=e.message; }
+  return r;
+}
+devDoctorRegistrar({id:"arco_arte", area:"interfaz", n:"El arco se ve como un arco (arquero, cámara, atajada)", fn:function(){
+  var falta=[];
+  var html=(typeof htmlArcoVivo==="function")?htmlArcoVivo({modo:"penal"}):"";
+  if(!/arco-brazo-izq/.test(html)||!/arco-brazo-der/.test(html)) falta.push("el arquero no tiene brazos que se estiren");
+  if(!/arcoMalla/.test(html)) falta.push("el arco no tiene red con fondo");
+  if(!/arco-bola-sombra/.test(html)) falta.push("la pelota no tiene sombra en el pasto");
+  if(typeof _arcoMontarSvg!=="function"||/slice/.test(String(_arcoMontarSvg))) falta.push("la cámara recorta (slice): en celu se pierden los palos");
+  if(typeof _arcoPunto!=="function"||String(_arcoPunto).indexOf("getScreenCTM")<0) falta.push("el dedo no se traduce con la matriz real del SVG");
+  var m=_docArcoMedir();
+  if(m&&m.error) falta.push("medición falló: "+m.error);
+  else if(m){
+    var prop=m.altoArq/m.altoArco;
+    if(!(prop>0.62&&prop<0.9)) falta.push("el arquero mide "+Math.round(prop*100)+"% del arco (una persona real: ~75%)");
+    if(!(m.distAtaja<12)) falta.push("cuando ataja, el guante queda a "+Math.round(m.distAtaja)+" de la pelota");
+    if(!(m.distGol>10)) falta.push("cuando es gol por su lado, el guante igual toca la pelota ("+Math.round(m.distGol)+")");
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta)
+    :_dok(m?("arquero "+Math.round(m.altoArq/m.altoArco*100)+"% del arco; guante a "+Math.round(m.distAtaja)+" cuando ataja, a "+Math.round(m.distGol)+" cuando no llega"):"arte presente (sin DOM para medir)");
+}});
+
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){
   opts=opts||{};

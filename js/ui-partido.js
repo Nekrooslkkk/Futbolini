@@ -1697,37 +1697,115 @@ function _kitDe(id, fb){
   }catch(e){}
   return fb;
 }
-function _figJugador(x,y,kit,cls){
+/* 7.9027 · el arco se reconstruye: gente con proporciones de gente,
+   arco con fondo (red en perspectiva), tribuna que se mueve.
+   Todo SVG propio, sin assets externos: se juega igual sin red.
+   Figuras con origen en los pies (0,0); escala 1 = ~100 de alto. */
+const ARCO_PIELES=["#f2c9a0","#e0ae84","#c68b5e","#9c6641","#6e4429"];
+const ARCO_PELOS=["#1b1410","#2e1f14","#4a3020","#0e0e10","#6b4a2a"];
+function _arcoHash(s){ s=String(s||""); let h=7; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return Math.abs(h); }
+function _figPersona(o){
+  o=o||{};
+  const kit=o.kit||["#c0392b","#1a1a28"], piel=o.piel||ARCO_PIELES[0], pelo=o.pelo||ARCO_PELOS[0];
+  const pose=o.pose||"parado", arq=pose==="arq";
+  /* pies, rodillas, cadera y brazos según la pose */
+  const P={
+    arq:{pie:12,rod:10,cad:6, codo:[24,-62], mano:[28,-50]},
+    muro:{pie:5,rod:5,cad:5, codo:[11,-60], mano:[3,-52]},
+    parado:{pie:7,rod:7,cad:5, codo:[17,-61], mano:[18,-47]}
+  }[pose]||{pie:7,rod:7,cad:5, codo:[17,-61], mano:[18,-47]};
+  const media=arq?kit[0]:(o.media||"#f4f4f4");
+  const botin="#15171c";
+  function pierna(s){
+    return '<path d="M'+(s*P.cad)+',-46 L'+(s*P.rod)+',-24" stroke="'+piel+'" stroke-width="8.5" stroke-linecap="round" fill="none"/>'+
+      '<path d="M'+(s*P.rod)+',-25 L'+(s*P.pie)+',-4" stroke="'+media+'" stroke-width="7" stroke-linecap="round" fill="none"/>'+
+      '<ellipse cx="'+(s*(P.pie+1.5))+'" cy="-2.2" rx="5" ry="2.6" fill="'+botin+'"/>';
+  }
+  function brazo(s, lado){
+    const manga=arq?kit[0]:kit[0], ante=arq?kit[0]:piel;
+    const id=arq?' id="arco-brazo-'+lado+'"':"";
+    const glove=arq?_figMano(lado, P.mano[0]*s, P.mano[1]):'<circle cx="'+(s*P.mano[0])+'" cy="'+P.mano[1]+'" r="2.9" fill="'+piel+'"/>';
+    return '<g'+id+' class="arco-brazo">'+
+      '<path d="M'+(s*14)+',-76 L'+(s*P.codo[0])+','+P.codo[1]+'" stroke="'+manga+'" stroke-width="6.4" stroke-linecap="round" fill="none"/>'+
+      '<path d="M'+(s*P.codo[0])+','+P.codo[1]+' L'+(s*P.mano[0])+','+P.mano[1]+'" stroke="'+ante+'" stroke-width="5.4" stroke-linecap="round" fill="none"/>'+
+      glove+'</g>';
+  }
+  const torso='M-14.5,-78 Q0,-82.5 14.5,-78 L12,-50 L-12,-50 Z';
+  const cabeza=o.espalda
+    ? '<ellipse cx="0" cy="-92" rx="7.4" ry="8.4" fill="'+pelo+'"/>'+
+      '<ellipse cx="-7" cy="-91" rx="1.6" ry="2.4" fill="'+piel+'"/><ellipse cx="7" cy="-91" rx="1.6" ry="2.4" fill="'+piel+'"/>'
+    : '<ellipse cx="0" cy="-92" rx="7.2" ry="8.4" fill="'+piel+'"/>'+
+      '<path d="M-7.3,-93 Q-7.6,-101.5 0,-101.2 Q7.6,-101.5 7.3,-93 Q4,-97.5 0,-97.4 Q-4,-97.5 -7.3,-93 Z" fill="'+pelo+'"/>'+
+      '<ellipse cx="0" cy="-88" rx="5.6" ry="4.2" fill="rgba(0,0,0,.08)"/>';
+  const numero=o.espalda&&o.num?'<text x="0" y="-58" text-anchor="middle" font-size="11" font-weight="800" font-family="system-ui,sans-serif" fill="'+kit[1]+'" opacity=".92">'+o.num+'</text>':"";
+  const escudo=(!o.espalda)?'<path d="M-5,-80 L0,-74 L5,-80" stroke="'+kit[1]+'" stroke-width="1.6" fill="none"/>':"";
+  const guantes=arq?'<rect x="-12" y="-50" width="24" height="3" fill="rgba(0,0,0,.18)"/>':"";
+  return ''+
+    '<ellipse cx="0" cy="0" rx="'+(arq?19:14)+'" ry="3.6" fill="rgba(0,0,0,.34)"/>'+
+    pierna(-1)+pierna(1)+
+    '<path d="M-12.5,-52 L12.5,-52 L13.5,-36 L2,-36 L0,-41 L-2,-36 L-13.5,-36 Z" fill="'+kit[1]+'"/>'+
+    '<path d="'+torso+'" fill="'+kit[0]+'"/>'+
+    '<path d="'+torso+'" fill="url(#arcoVolumen)"/>'+
+    escudo+numero+guantes+
+    '<rect x="-3" y="-86" width="6" height="7" rx="2" fill="'+piel+'"/>'+
+    cabeza+
+    brazo(-1,"izq")+brazo(1,"der");
+}
+function _figJugador(x,y,kit,cls,o){
+  o=o||{};
   kit=kit||["#c0392b","#1a1a28"];
   cls=cls||"arco-muro";
-  return '<g class="'+cls+'" transform="translate('+x+' '+y+')">'+
-    '<ellipse cx="0" cy="20" rx="11" ry="4" fill="rgba(0,0,0,.32)"/>'+
-    '<rect x="-8" y="-26" width="16" height="30" rx="5" fill="'+kit[0]+'" stroke="rgba(0,0,0,.25)" stroke-width=".6"/>'+
-    '<circle cx="0" cy="-32" r="6" fill="#e8b896"/>'+
-    '<rect x="-7" y="4" width="5" height="14" rx="2" fill="'+kit[1]+'"/>'+
-    '<rect x="2" y="4" width="5" height="14" rx="2" fill="'+kit[1]+'"/>'+
-  '</g>';
+  const esc=o.escala||0.72, i=o.i||0;
+  return '<g transform="translate('+x+' '+y+') scale('+esc+')">'+
+    '<g class="'+cls+'">'+
+      _figPersona({kit:kit, pose:o.pose||(cls==="arco-muro"?"muro":"parado"), espalda:!!o.espalda, num:o.num,
+        piel:ARCO_PIELES[(i*3+1)%ARCO_PIELES.length], pelo:ARCO_PELOS[i%ARCO_PELOS.length]})+
+    '</g></g>';
 }
-function _figMano(lado){
+function _figMano(lado, x, y){
   const s=lado==="izq"?-1:1;
   const id=lado==="izq"?"arco-mano-izq":"arco-mano-der";
-  return '<g id="'+id+'" class="arco-mano" transform="translate('+(s*17)+' -10)">'+
-    '<ellipse cx="0" cy="2" rx="7.5" ry="5.8" fill="#fff" stroke="#8a9aab" stroke-width=".7"/>'+
-    '<ellipse cx="'+(s*2)+'" cy="1" rx="5" ry="4" fill="#eef3f8" opacity=".85"/>'+
-    '<path d="M'+(s*-3)+',-2 L'+(s*-5)+',-15 L'+(s*-1)+',-15 L'+(s*1)+',-2" fill="#fff" stroke="#8a9aab" stroke-width=".55"/>'+
-    '<path d="M'+(s*0)+',-3 L'+(s*1)+',-17 L'+(s*4)+',-16 L'+(s*3)+',-2" fill="#fff" stroke="#8a9aab" stroke-width=".55"/>'+
-    '<path d="M'+(s*3)+',-1 L'+(s*7)+',-14 L'+(s*10)+',-12 L'+(s*5)+',0" fill="#fff" stroke="#8a9aab" stroke-width=".55"/>'+
-    '<path d="M'+(s*5)+',2 L'+(s*12)+',-6 L'+(s*13)+',-3 L'+(s*6)+',5" fill="#fff" stroke="#8a9aab" stroke-width=".55"/>'+
+  x=x!=null?x:s*28; y=y!=null?y:-50;
+  return '<g id="'+id+'" class="arco-mano" transform="translate('+x+' '+y+')">'+
+    '<rect x="-4.4" y="-3.4" width="8.8" height="9.6" rx="3.4" fill="#f4f7fb" stroke="#7d8da0" stroke-width=".6"/>'+
+    '<rect x="-4.4" y="3.6" width="8.8" height="2.6" rx="1" fill="#c6f13a"/>'+
+    '<ellipse cx="'+(s*-4.6)+'" cy="1.4" rx="1.9" ry="3.2" fill="#f4f7fb" stroke="#7d8da0" stroke-width=".5" transform="rotate('+(s*-24)+' '+(s*-4.6)+' 1.4)"/>'+
   '</g>';
 }
-function _animBola(bolaG, x0,y0, x1,y1, ms, cb){
+/* la pelota viaja hacia el arco y se achica (se aleja); la sombra queda en el pasto */
+function _animBola(bolaG, x0,y0, x1,y1, ms, cb, s1){
+  const s0=parseFloat(bolaG.getAttribute("data-s"))||1;
+  if(s1==null) s1=(y1<y0-40)?0.5:s0;
+  const svg=bolaG.ownerSVGElement, sombra=svg&&svg.querySelector("#arco-bola-sombra");
+  const piso0=s0<0.8?Math.min(170,y0+12):y0+7, piso1=s1<0.8?170:y1+7;
   const t0=performance.now();
   (function paso(t){
     const u=Math.min(1,(t-t0)/ms), e=1-Math.pow(1-u,3);
     const lift=Math.sin(u*Math.PI)*18;
-    bolaG.setAttribute("transform","translate("+(x0+(x1-x0)*e)+" "+(y0+(y1-y0)*e-lift)+") rotate("+(u*420)+")");
-    if(u<1) requestAnimationFrame(paso); else if(cb) cb();
+    const x=x0+(x1-x0)*e, s=s0+(s1-s0)*e;
+    bolaG.setAttribute("transform","translate("+x.toFixed(1)+" "+(y0+(y1-y0)*e-lift).toFixed(1)+") rotate("+(u*420).toFixed(0)+") scale("+s.toFixed(3)+")");
+    if(sombra){
+      sombra.setAttribute("cx",x.toFixed(1)); sombra.setAttribute("cy",(piso0+(piso1-piso0)*e).toFixed(1));
+      sombra.setAttribute("rx",(7*s).toFixed(1)); sombra.setAttribute("ry",(2.6*s).toFixed(1));
+    }
+    if(u<1) requestAnimationFrame(paso);
+    else { bolaG.setAttribute("data-s",s1); if(cb) cb(); }
   })(performance.now());
+}
+function _arcoHinchada(opts){
+  const cols=(opts.hinchada&&opts.hinchada.length)?opts.hinchada:["#c0392b","#f4f4f4","#1a4a9c"];
+  const pal=[cols[0],cols[1]||"#f4f4f4",cols[0],"#2a2f3a",cols[2]||cols[0],"#e8e2d0"];
+  function tile(id,w,h,r,sh){
+    let g='<pattern id="'+id+'" width="'+w+'" height="'+h+'" patternUnits="userSpaceOnUse">';
+    const n=5;
+    for(let i=0;i<n;i++){
+      const x=(i+0.5)*w/n, y=h*0.45+((i*7)%3)-1;
+      g+='<rect x="'+(x-r*1.3).toFixed(1)+'" y="'+(y+r*0.7).toFixed(1)+'" width="'+(r*2.6).toFixed(1)+'" height="'+(h*0.5).toFixed(1)+'" rx="'+r+'" fill="'+pal[(i*sh+1)%pal.length]+'"/>'+
+         '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r+'" fill="'+ARCO_PIELES[(i*2+sh)%ARCO_PIELES.length]+'"/>';
+    }
+    return g+'</pattern>';
+  }
+  return tile("arcoGenteLejos",20,7,1.3,1)+tile("arcoGenteCerca",30,11,2.1,2)+tile("arcoGenteCerca2",30,11,2.1,3);
 }
 function htmlArcoVivo(opts){
   opts=opts||{};
@@ -1739,99 +1817,207 @@ function htmlArcoVivo(opts){
   const kitAtk=opts.kitAtk||["#f4f4f4","#111111"];
   const bolaX=opts.bolaX!=null?opts.bolaX:180;
   const bolaY=opts.bolaY!=null?opts.bolaY:220;
+  const hc=opts.hinchada||[kitAtk[0],kitAtk[1]];
+  const sem=_arcoHash(opts.semilla||kitArq.join(""));
   let wall="";
   if(barrera){
-    const xs=[148,166,184,202];
-    wall='<g id="arco-wall">'+xs.map(function(x,i){
-      return _figJugador(x,148, i%2?[kitWall[1],kitWall[0]]:kitWall, "arco-muro");
+    wall='<g id="arco-wall">'+[151,169,187,205].map(function(x,i){
+      return _figJugador(x,182, i%2?[kitWall[0],kitWall[1]]:kitWall, "arco-muro", {escala:0.8, i:i+sem});
     }).join("")+'</g>';
   }
   let area="";
   if(modo==="corner"){
-    area='<g id="arco-area" opacity=".95">'+
-      _figJugador(96,150,kitAtk,"arco-atk")+
-      _figJugador(248,148,kitAtk,"arco-atk")+
-      _figJugador(168,156,kitAtk,"arco-atk")+
-      _figJugador(118,142,kitWall,"arco-def")+
-      _figJugador(210,140,kitWall,"arco-def")+
-      _figJugador(180,132,kitWall,"arco-def")+
+    const esc=function(fy){ return 0.76+(fy-150)*0.006; };
+    area='<g id="arco-area">'+
+      _figJugador(118,160,kitWall,"arco-def",{escala:esc(160),i:sem+1})+
+      _figJugador(210,158,kitWall,"arco-def",{escala:esc(158),i:sem+2})+
+      _figJugador(180,150,kitWall,"arco-def",{escala:esc(150),i:sem+3})+
+      _figJugador(96,168,kitAtk,"arco-atk",{escala:esc(168),i:sem+4,espalda:true,num:4})+
+      _figJugador(248,166,kitAtk,"arco-atk",{escala:esc(166),i:sem+5,espalda:true,num:2})+
+      _figJugador(168,174,kitAtk,"arco-atk",{escala:esc(174),i:sem+6,espalda:true,num:9})+
     '</g>'+
-    '<g id="arco-flag" transform="translate('+(opts.lado==="der"?348:12)+' 168)">'+
-      '<rect x="-1" y="-28" width="2" height="28" fill="#f4f4f4"/>'+
-      '<polygon points="1,-28 18,-22 1,-16" fill="#e8453a"/>'+
+    '<g id="arco-flag" transform="translate('+(opts.lado==="der"?326:34)+' 232)">'+
+      '<rect x="-1" y="-34" width="2" height="34" fill="#f4f4f4"/>'+
+      '<polygon points="1,-34 20,-28 1,-21" fill="#f0c419"/>'+
     '</g>';
   }
-  let crowd="";
-  for(let i=0;i<48;i++){
-    const x=10+(i%24)*14.4, y=6+Math.floor(i/24)*11+(i%3);
-    const col=i%4===0?"#c0392b":(i%4===1?"#f7f7f7":(i%4===2?"#1a4a9c":"#2d6a3a"));
-    crowd+='<circle cx="'+x+'" cy="'+y+'" r="3.1" fill="'+col+'" opacity=".72"/>';
-  }
-  const spot=(modo==="penal")
-    ?'<circle cx="180" cy="214" r="3.4" fill="none" stroke="#fff" stroke-width="1.2" opacity=".85"/>'
-    :"";
+  /* estadio: techo, dos bandejas, lienzos, publicidad, pasto de fondo */
+  const lienzos='<g opacity=".92">'+
+    '<rect x="22" y="84" width="74" height="20" fill="'+hc[0]+'"/><rect x="22" y="91" width="74" height="6" fill="'+(hc[1]||"#fff")+'"/>'+
+    '<rect x="252" y="80" width="88" height="22" fill="'+(hc[1]||"#fff")+'"/><rect x="252" y="80" width="88" height="7" fill="'+hc[0]+'"/><rect x="252" y="95" width="88" height="7" fill="'+hc[0]+'"/>'+
+  '</g>';
+  const publi='<g id="arco-publi">'+
+    '<rect x="-10" y="112" width="380" height="28" fill="#0b1220"/>'+
+    '<rect x="-10" y="112" width="380" height="2" fill="#2b3a55"/>'+
+    '<text x="180" y="131" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="900" font-size="12" letter-spacing="5" fill="#9fe7ff" opacity=".85">FUTBOLINI · FÚTBOL CHILENO · FUTBOLINI</text>'+
+  '</g>';
+  let pasto='';
+  [240,222,206,193,182,173,166,160,154,149,145].reduce(function(prev,y,i){
+    if(i%2) pasto+='<rect x="-10" y="'+y+'" width="380" height="'+(prev-y)+'" fill="#0d3d18" opacity=".17"/>';
+    return y;
+  });
+  const spot=(modo==="penal")?'<ellipse cx="180" cy="226" rx="5" ry="1.8" fill="#fff" opacity=".9"/>':"";
+  /* arco en perspectiva: marco adelante, fondo más chico hacia el punto de fuga */
+  const bx0=69.5, bx1=290.5, by0=43.8, by1=154;
+  const red=''+
+    '<polygon points="'+bx0+','+by0+' '+bx1+','+by0+' '+bx1+','+by1+' '+bx0+','+by1+'" fill="url(#arcoMalla)"/>'+
+    '<polygon points="50,38 '+bx0+','+by0+' '+bx0+','+by1+' 50,168" fill="url(#arcoMalla)" opacity=".85"/>'+
+    '<polygon points="310,38 '+bx1+','+by0+' '+bx1+','+by1+' 310,168" fill="url(#arcoMalla)" opacity=".85"/>'+
+    '<polygon points="50,38 310,38 '+bx1+','+by0+' '+bx0+','+by0+'" fill="url(#arcoMalla)" opacity=".7"/>'+
+    '<polygon points="50,168 310,168 '+bx1+','+by1+' '+bx0+','+by1+'" fill="rgba(0,0,0,.14)"/>'+
+    '<g stroke="rgba(200,212,226,.55)" stroke-width="1.1" fill="none">'+
+      '<path d="M50,38 L'+bx0+','+by0+' L'+bx0+','+by1+' L50,168"/>'+
+      '<path d="M310,38 L'+bx1+','+by0+' L'+bx1+','+by1+' L310,168"/>'+
+      '<path d="M'+bx0+','+by1+' L'+bx1+','+by1+'"/>'+
+    '</g>';
   return ''+
     '<defs>'+
       '<linearGradient id="arcoCielo" x1="0" y1="0" x2="0" y2="1">'+
-        '<stop offset="0" stop-color="#0b1c3a"/><stop offset=".55" stop-color="#16325c"/><stop offset="1" stop-color="#1e4a72"/>'+
+        '<stop offset="0" stop-color="#050b18"/><stop offset="1" stop-color="#0d1c34"/>'+
+      '</linearGradient>'+
+      '<linearGradient id="arcoTribuna" x1="0" y1="0" x2="0" y2="1">'+
+        '<stop offset="0" stop-color="#1a2233"/><stop offset="1" stop-color="#262e3c"/>'+
       '</linearGradient>'+
       '<linearGradient id="arcoPasto" x1="0" y1="0" x2="0" y2="1">'+
-        '<stop offset="0" stop-color="#4caf50"/><stop offset="1" stop-color="#1e7a32"/>'+
+        '<stop offset="0" stop-color="#1f6b2e"/><stop offset=".35" stop-color="#2f8a3c"/><stop offset="1" stop-color="#3f9f47"/>'+
       '</linearGradient>'+
-      '<linearGradient id="arcoRed" x1="0" y1="0" x2="0" y2="1">'+
-        '<stop offset="0" stop-color="rgba(220,240,255,.22)"/><stop offset="1" stop-color="rgba(180,210,240,.06)"/>'+
+      '<linearGradient id="arcoPalo" x1="0" y1="0" x2="1" y2="0">'+
+        '<stop offset="0" stop-color="#b9c6d4"/><stop offset=".35" stop-color="#ffffff"/><stop offset="1" stop-color="#8f9fb1"/>'+
       '</linearGradient>'+
-      '<radialGradient id="arcoFoco" cx=".5" cy="0" r="1">'+
-        '<stop offset="0" stop-color="rgba(255,245,200,.28)"/><stop offset="1" stop-color="rgba(255,245,200,0)"/>'+
+      '<linearGradient id="arcoPaloH" x1="0" y1="0" x2="0" y2="1">'+
+        '<stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e3eaf2"/><stop offset="1" stop-color="#8f9fb1"/>'+
+      '</linearGradient>'+
+      '<linearGradient id="arcoVolumen" x1="0" y1="0" x2="1" y2="0">'+
+        '<stop offset="0" stop-color="rgba(255,255,255,.2)"/><stop offset=".45" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(0,0,0,.28)"/>'+
+      '</linearGradient>'+
+      '<radialGradient id="arcoFoco" cx=".5" cy=".5" r=".5">'+
+        '<stop offset="0" stop-color="rgba(255,248,215,.55)"/><stop offset="1" stop-color="rgba(255,248,215,0)"/>'+
       '</radialGradient>'+
+      '<radialGradient id="arcoVineta" cx=".5" cy=".62" r=".75">'+
+        '<stop offset=".6" stop-color="rgba(0,0,0,0)"/><stop offset="1" stop-color="rgba(0,0,0,.42)"/>'+
+      '</radialGradient>'+
+      '<pattern id="arcoMalla" width="7" height="7" patternUnits="userSpaceOnUse">'+
+        '<rect width="7" height="7" fill="rgba(215,230,245,.05)"/>'+
+        '<path d="M0,3.5 L3.5,0 L7,3.5 L3.5,7 Z" fill="none" stroke="rgba(235,244,255,.42)" stroke-width=".55"/>'+
+      '</pattern>'+
+      _arcoHinchada({hinchada:hc})+
     '</defs>'+
-    '<rect x="0" y="0" width="360" height="168" fill="url(#arcoCielo)"/>'+
-    '<rect x="0" y="0" width="360" height="28" fill="#0a1528"/>'+
-    '<g id="arco-crowd">'+crowd+'</g>'+
-    '<polygon points="40,0 90,168 20,168" fill="url(#arcoFoco)"/>'+
-    '<polygon points="320,0 270,168 340,168" fill="url(#arcoFoco)"/>'+
-    '<rect x="18" y="0" width="8" height="12" fill="#f4e9b0" opacity=".9"/>'+
-    '<rect x="334" y="0" width="8" height="12" fill="#f4e9b0" opacity=".9"/>'+
-    '<rect x="0" y="168" width="360" height="72" fill="url(#arcoPasto)"/>'+
-    '<g opacity=".16" fill="#0d3d18">'+
-      '<rect x="0" y="168" width="360" height="9"/><rect x="0" y="186" width="360" height="9"/>'+
-      '<rect x="0" y="204" width="360" height="9"/><rect x="0" y="222" width="360" height="9"/>'+
+    '<rect x="-20" y="-420" width="400" height="300" fill="url(#arcoCielo)"/>'+
+    '<g id="arco-crowd">'+
+      '<rect x="-20" y="-84" width="400" height="106" fill="url(#arcoTribuna)"/>'+
+      '<rect class="arco-hinchas-a" x="-20" y="-80" width="400" height="98" fill="url(#arcoGenteLejos)" opacity=".62"/>'+
+      '<rect x="-20" y="18" width="400" height="12" fill="#39414f"/>'+
+      '<rect x="-20" y="28" width="400" height="84" fill="url(#arcoTribuna)"/>'+
+      '<rect class="arco-hinchas-b" x="-20" y="30" width="400" height="82" fill="url(#arcoGenteCerca)" opacity=".86"/>'+
+      '<rect class="arco-hinchas-c" x="-5" y="35" width="400" height="77" fill="url(#arcoGenteCerca2)" opacity=".5"/>'+
+      lienzos+
     '</g>'+
-    '<line x1="12" y1="168" x2="348" y2="168" stroke="#fff" stroke-width="2.2" opacity=".85"/>'+
-    '<rect x="118" y="168" width="124" height="36" fill="none" stroke="#fff" stroke-width="1.4" opacity=".55"/>'+
+    '<rect x="-20" y="-90" width="400" height="7" fill="#0a0f19"/>'+
+    '<circle cx="44" cy="-100" r="40" fill="url(#arcoFoco)"/><circle cx="316" cy="-100" r="40" fill="url(#arcoFoco)"/>'+
+    '<rect x="32" y="-104" width="24" height="8" rx="2" fill="#fff7d6"/><rect x="304" y="-104" width="24" height="8" rx="2" fill="#fff7d6"/>'+
+    publi+
+    '<rect x="-20" y="140" width="400" height="120" fill="url(#arcoPasto)"/>'+
+    '<g>'+pasto+'</g>'+
+    '<polygon points="50,168 310,168 350,196 10,196" fill="rgba(0,0,0,.10)"/>'+
+    '<line x1="-20" y1="168" x2="380" y2="168" stroke="#fff" stroke-width="2" opacity=".85"/>'+
+    '<line x1="-20" y1="195" x2="380" y2="195" stroke="#fff" stroke-width="2.2" opacity=".6"/>'+
     spot+
-    '<rect x="50" y="38" width="260" height="130" fill="url(#arcoRed)"/>'+
-    '<g stroke="rgba(210,230,255,.38)" stroke-width="1">'+
-      '<line x1="92" y1="38" x2="92" y2="168"/><line x1="134" y1="38" x2="134" y2="168"/>'+
-      '<line x1="180" y1="38" x2="180" y2="168"/><line x1="226" y1="38" x2="226" y2="168"/>'+
-      '<line x1="268" y1="38" x2="268" y2="168"/>'+
-      '<line x1="50" y1="78" x2="310" y2="78"/><line x1="50" y1="118" x2="310" y2="118"/>'+
+    red+
+    '<rect id="arco-poste-izq" x="46" y="34" width="8" height="136" fill="url(#arcoPalo)"/>'+
+    '<rect id="arco-poste-der" x="306" y="34" width="8" height="136" fill="url(#arcoPalo)"/>'+
+    '<rect id="arco-travesano" x="46" y="32" width="268" height="8" fill="url(#arcoPaloH)"/>'+
+    '<g id="arco-arq" transform="translate('+arqX+' 166) scale('+(modo==="penal"?1:0.86)+')" data-x="'+arqX+'" data-esc="'+(modo==="penal"?1:0.86)+'">'+
+      '<g class="arq-idle">'+
+        _figPersona({kit:kitArq, pose:"arq", piel:ARCO_PIELES[sem%ARCO_PIELES.length], pelo:ARCO_PELOS[(sem>>3)%ARCO_PELOS.length]})+
+      '</g>'+
     '</g>'+
-    '<rect id="arco-poste-izq" x="46" y="34" width="8" height="138" rx="2" fill="#f7fbff"/>'+
-    '<rect id="arco-poste-der" x="306" y="34" width="8" height="138" rx="2" fill="#f7fbff"/>'+
-    '<rect id="arco-travesano" x="46" y="32" width="268" height="9" rx="2" fill="#f7fbff"/>'+
-    '<rect x="48" y="36" width="4" height="132" fill="#c9d6e4"/>'+
-    '<rect x="308" y="36" width="4" height="132" fill="#c9d6e4"/>'+
     wall+
     area+
-    '<g id="arco-arq" transform="translate('+arqX+' 148)" data-base="translate('+arqX+' 148)">'+
-      '<ellipse cx="0" cy="20" rx="16" ry="5" fill="rgba(0,0,0,.32)"/>'+
-      '<rect x="-12" y="-30" width="24" height="34" rx="7" fill="'+kitArq[0]+'" stroke="#0b3d8c" stroke-width="1"/>'+
-      '<circle cx="0" cy="-38" r="8" fill="#f2c9a0" stroke="#b98a63" stroke-width="1"/>'+
-      _figMano("izq")+
-      _figMano("der")+
-      '<rect x="-10" y="4" width="7" height="16" rx="2" fill="'+kitArq[1]+'"/>'+
-      '<rect x="3" y="4" width="7" height="16" rx="2" fill="'+kitArq[1]+'"/>'+
+    '<rect x="-20" y="-420" width="400" height="680" fill="url(#arcoVineta)" pointer-events="none"/>'+
+    '<path id="arco-linea" d="M'+bolaX+','+bolaY+'" fill="none" stroke="#ffd54a" stroke-width="1.8" stroke-dasharray="5 5" stroke-linecap="round" opacity="0"/>'+
+    '<g id="arco-mira" opacity="0" transform="translate(180 90)">'+
+      '<circle r="5" fill="rgba(255,255,255,.35)" stroke="rgba(255,255,255,.7)" stroke-width=".8"/>'+
+      '<circle class="mira-aro" r="11" fill="none" stroke="#ffd54a" stroke-width="2.2"/>'+
+      '<path class="mira-aro" d="M-17,0 L-12,0 M12,0 L17,0 M0,-17 L0,-12 M0,12 L0,17" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>'+
     '</g>'+
-    '<line id="arco-linea" x1="'+bolaX+'" y1="'+bolaY+'" x2="'+bolaX+'" y2="'+bolaY+'" stroke="#ffd54a" stroke-width="2.4" stroke-dasharray="6 5" opacity="0"/>'+
-    '<circle id="arco-mira" cx="180" cy="90" r="9" fill="none" stroke="#ffd54a" stroke-width="2.6" opacity="0"/>'+
-    '<g id="arco-bola" transform="translate('+bolaX+' '+bolaY+')">'+
-      '<ellipse cx="2" cy="7" rx="7" ry="3" fill="rgba(0,0,0,.28)"/>'+
-      '<circle r="8" fill="#fff" stroke="#222" stroke-width="1.2"/>'+
-      '<path d="M-4,-2 Q0,-7 4,-2" stroke="#333" fill="none" stroke-width="1.1"/>'+
-      '<path d="M-3,3 Q0,1 3,3" stroke="#333" fill="none" stroke-width="1"/>'+
-      '<path d="M-5,1 Q-1,6 2,5" stroke="#333" fill="none" stroke-width=".9"/>'+
+    '<ellipse id="arco-bola-sombra" cx="'+bolaX+'" cy="'+(bolaY+7)+'" rx="7" ry="2.6" fill="rgba(0,0,0,.35)"/>'+
+    '<g id="arco-bola" data-s="1" transform="translate('+bolaX+' '+bolaY+')">'+
+      '<circle r="8" fill="#fff" stroke="#2a2a2a" stroke-width="1"/>'+
+      '<polygon points="0,-3.2 3,-1 1.9,2.6 -1.9,2.6 -3,-1" fill="#222"/>'+
+      '<path d="M0,-3.2 L0,-7.6 M3,-1 L7.2,-2.4 M1.9,2.6 L4.4,6.3 M-1.9,2.6 L-4.4,6.3 M-3,-1 L-7.2,-2.4" stroke="#333" stroke-width=".9"/>'+
+      '<circle r="8" fill="url(#arcoVolumen)"/>'+
     '</g>';
+}
+/* la tribuna es del que juega de local */
+function _arcoHinchadaDe(P){
+  const loc=P&&P.part&&P.part.local!==false;
+  const id=loc?(typeof E!=="undefined"&&E&&E.club):(P&&P.part&&P.part.rivalId);
+  return _kitDe(id, ["#c0392b","#f4f4f4"]);
+}
+/* el SVG ocupa todo el ancho siempre; lo que sobra de alto es tribuna */
+function _arcoVista(svg){
+  if(!svg||!svg.parentNode) return;
+  const r=svg.parentNode.getBoundingClientRect();
+  let W=360, H=240;
+  if(r.width>0&&r.height>0){
+    /* en celu (vertical) se acerca la cámara: el arco manda, no la tribuna */
+    if(r.height/r.width>0.9) W=300;
+    H=Math.max(240, Math.min(340, W*r.height/r.width));
+  }
+  svg.setAttribute("viewBox",((360-W)/2)+" "+(240-H).toFixed(1)+" "+W+" "+H.toFixed(1));
+}
+function _arcoMontarSvg(esc, html){
+  const NS="http://www.w3.org/2000/svg";
+  const svg=document.createElementNS(NS,"svg");
+  svg.setAttribute("viewBox","0 0 360 240"); svg.setAttribute("class","penal-svg arco-svg e3d-svg");
+  svg.setAttribute("preserveAspectRatio","xMidYMax meet");
+  svg.innerHTML=html;
+  esc.world.appendChild(svg);
+  _arcoVista(svg);
+  if(typeof ResizeObserver==="function"){
+    const ro=new ResizeObserver(function(){ if(!svg.isConnected){ ro.disconnect(); return; } _arcoVista(svg); });
+    ro.observe(esc.stage);
+  }
+  return svg;
+}
+/* del dedo a coordenadas del SVG, respetando viewBox y letterbox */
+function _arcoPunto(svg, ev){
+  const cx=ev.touches?ev.touches[0].clientX:ev.clientX, cy=ev.touches?ev.touches[0].clientY:ev.clientY;
+  const m=svg.getScreenCTM&&svg.getScreenCTM();
+  if(m&&svg.createSVGPoint){
+    const pt=svg.createSVGPoint(); pt.x=cx; pt.y=cy;
+    const q=pt.matrixTransform(m.inverse());
+    return {x:q.x, y:q.y};
+  }
+  const r=svg.getBoundingClientRect();
+  return {x:(cx-r.left)*360/r.width, y:(cy-r.top)*240/r.height};
+}
+/* mira + trayectoria curva desde la pelota */
+function _arcoMira(svg, aim, x0, y0){
+  const mira=svg.querySelector("#arco-mira"), tray=svg.querySelector("#arco-linea");
+  if(mira){
+    mira.setAttribute("transform","translate("+aim.cx.toFixed(1)+" "+aim.cy.toFixed(1)+")");
+    mira.setAttribute("opacity","1");
+    [].forEach.call(mira.querySelectorAll(".mira-aro"),function(a){ a.setAttribute("stroke",aim.fuera?"#ff8a3d":"#ffd54a"); });
+  }
+  if(tray){
+    const mx=(x0+aim.cx)/2, my=Math.min(y0,aim.cy)-34;
+    tray.setAttribute("d","M"+x0+","+y0+" Q"+mx.toFixed(1)+","+my.toFixed(1)+" "+aim.cx.toFixed(1)+","+aim.cy.toFixed(1));
+    tray.setAttribute("stroke",aim.fuera?"#ff8a3d":"#ffd54a");
+    tray.setAttribute("opacity",".85");
+  }
+}
+function _arcoOcultarMira(svg){
+  const mira=svg.querySelector("#arco-mira"), tray=svg.querySelector("#arco-linea");
+  if(mira) mira.setAttribute("opacity","0");
+  if(tray) tray.setAttribute("opacity","0");
+}
+/* ¡Patear! apagado dice por qué: primero se apunta */
+function _arcoBotonTiro(txt){
+  const b=el("button","btn-aqua ancho verde",_tt("arco_apunta","Tocá el arco para apuntar"));
+  b.disabled=true;
+  b._listo=function(){ if(b.disabled){ b.disabled=false; b.textContent=txt; } };
+  return b;
 }
 function _tt(k, fb){ return (typeof T==="function")?T(k,fb):fb; }
 function _etiquetaArco(res){
@@ -1851,30 +2037,58 @@ function _hudArco(c, tipo, P){
   c.appendChild(hud);
   return hud;
 }
+/* 7.9027 · el arquero se TIRA: gira desde la cadera, estira los brazos
+   por sobre la cabeza y busca un punto. Si acertó el lado pero no llega,
+   queda a centímetros (la pelota entra por el guante, no por magia). */
+function _arqPose(arqEl, x, y, esc, rot, brazo){
+  arqEl.setAttribute("transform","translate("+x.toFixed(1)+" "+y.toFixed(1)+") scale("+esc+") rotate("+rot.toFixed(1)+" 0 -46)");
+  const bi=arqEl.querySelector("#arco-brazo-izq"), bd=arqEl.querySelector("#arco-brazo-der");
+  if(bi) bi.setAttribute("transform","rotate("+brazo.toFixed(1)+" -14 -76)");
+  if(bd) bd.setAttribute("transform","rotate("+(-brazo).toFixed(1)+" 14 -76)");
+}
+/* dónde queda el guante (respecto de la cadera) con el brazo levantado */
+function _arqGuanteLocal(lado, brazo){
+  const s=lado==="izq"?-1:1, a=(lado==="izq"?brazo:-brazo)*Math.PI/180;
+  const hx=s*28-s*14, hy=-50+76;
+  return {x:s*14+hx*Math.cos(a)-hy*Math.sin(a), y:-76+hx*Math.sin(a)+hy*Math.cos(a)+46};
+}
+function _arqDestino(arqEl, kdir, opts){
+  const x0=parseFloat(arqEl.getAttribute("data-x"))||180, esc=parseFloat(arqEl.getAttribute("data-esc"))||1;
+  const aim=opts.aim, cad={x:x0, y:166-46*esc};
+  let tx, ty;
+  if(kdir==="centro"){
+    if(aim&&aim.tercio==="centro"){ tx=aim.cx; ty=aim.cy; }
+    else { tx=x0; ty=70; }
+  } else if(aim&&aim.tercio===kdir&&!aim.fuera){ tx=aim.cx; ty=aim.cy; }
+  else { tx=kdir==="izq"?64:296; ty=(aim&&aim.cy!=null)?aim.cy:(60+Math.random()*80); }
+  const brazo=kdir==="centro"?128:150;
+  const lado=kdir==="der"||(kdir==="centro"&&tx>x0)?"der":"izq";
+  const gl=_arqGuanteLocal(lado, brazo);
+  const vx=tx-cad.x, vy=ty-cad.y, d=Math.hypot(vx,vy)||1;
+  /* girar el cuerpo para que el guante (no la cabeza) apunte a la pelota */
+  let rot=(Math.atan2(vx,-vy)-Math.atan2(gl.x,-gl.y))*180/Math.PI;
+  if(rot>180) rot-=360; if(rot<-180) rot+=360;
+  const tope=kdir==="centro"?24:112;
+  rot=Math.max(-tope,Math.min(tope,rot));
+  const alcance=Math.hypot(gl.x,gl.y)*esc, corto=(!opts.ataja&&aim&&kdir===aim.tercio)?18:0;
+  const mov=Math.max(0,Math.min(kdir==="centro"?14:90, d-alcance-corto));
+  return {x0:x0, y0:166, esc:esc, dx:vx/d*mov, dy:vy/d*mov, rot:rot, brazo:brazo};
+}
 function _animArq(arqEl, kdir, ms, opts){
   if(!arqEl) return;
   opts=opts||{};
-  const dx=kdir==="izq"?-72:(kdir==="der"?72:0);
-  const dy=kdir==="centro"?-10:18;
-  const rot=kdir==="izq"?-38:(kdir==="der"?38:0);
-  arqEl.style.transition="transform "+(ms/1000)+"s cubic-bezier(.15,.8,.25,1)";
-  arqEl.style.transform="translate("+dx+"px,"+dy+"px) rotate("+rot+"deg)";
-  const izq=arqEl.querySelector("#arco-mano-izq");
-  const der=arqEl.querySelector("#arco-mano-der");
-  const st=opts.ataja?1.45:1.18;
-  const t="transform "+(ms/1000)+"s cubic-bezier(.12,.85,.2,1)";
-  if(izq){
-    izq.style.transition=t;
-    izq.style.transform=kdir==="izq"
-      ?("translate(-14px,-18px) scale("+st+") rotate(-28deg)")
-      :(kdir==="der"?"translate(4px,-8px) rotate(8deg)":("translate(-6px,-16px) scale("+st+")"));
-  }
-  if(der){
-    der.style.transition=t;
-    der.style.transform=kdir==="der"
-      ?("translate(14px,-18px) scale("+st+") rotate(28deg)")
-      :(kdir==="izq"?"translate(-4px,-8px) rotate(-8deg)":("translate(6px,-16px) scale("+st+")"));
-  }
+  const idle=arqEl.querySelector(".arq-idle");
+  if(idle) idle.classList.add("arq-vuela");
+  const D=_arqDestino(arqEl, kdir, opts);
+  const quieto=(typeof document!=="undefined")&&document.body&&document.body.classList.contains("perf");
+  if(quieto||typeof requestAnimationFrame!=="function"){ _arqPose(arqEl, D.x0+D.dx, D.y0+D.dy, D.esc, D.rot, D.brazo); return; }
+  const t0=performance.now();
+  (function paso(t){
+    const u=Math.min(1,(t-t0)/ms), e=1-Math.pow(1-u,2.6);
+    const salto=kdir==="centro"?0:-Math.sin(u*Math.PI)*10;
+    _arqPose(arqEl, D.x0+D.dx*e, D.y0+D.dy*e+salto, D.esc, D.rot*e, D.brazo*Math.min(1,u*1.6));
+    if(u<1) requestAnimationFrame(paso);
+  })(performance.now());
 }
 function _botonesEfecto(c, inicial){
   let efecto=inicial||"colocado";
@@ -1927,6 +2141,7 @@ function minijuegoPenal(P,pateador,opts){
   const arq=arqueroDe(P.rivalPlantel)||{n:"el arquero",nivel:70};
   const kit=_kitDe(P.part&&P.part.rivalId, ["#1a6ad4","#111827"]);
   let aim=null, tirado=false;
+  const hinchada=_arcoHinchadaDe(P);
   modal(box=>{
     const esc=_abrirEscenaArco(box, opts.tanda?_tt("tanda_tit","Tanda · tu penal"):_tt("arco_pen_tit","Penal"), "🥅");
     const c=esc.cuerpo;
@@ -1937,27 +2152,15 @@ function minijuegoPenal(P,pateador,opts){
     const etiq=el("p","mini e3d-etiq","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Arrastrá al arco y soltá. El centro flojo se ataja.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
-    const NS="http://www.w3.org/2000/svg";
-    const svg=document.createElementNS(NS,"svg");
-    svg.setAttribute("viewBox","0 0 360 240"); svg.setAttribute("class","penal-svg arco-svg e3d-svg");
-    svg.setAttribute("preserveAspectRatio","xMidYMax slice");
-    svg.innerHTML=htmlArcoVivo({arqX:180, modo:"penal", kitArq:kit});
-    esc.world.appendChild(svg);
-    const bolaG=svg.querySelector("#arco-bola"), mira=svg.querySelector("#arco-mira");
-    const linea2=svg.querySelector("#arco-linea"), arqEl=svg.querySelector("#arco-arq");
-    function aSVG(ev){
-      const r=svg.getBoundingClientRect();
-      const px=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
-      const py=(ev.touches?ev.touches[0].clientY:ev.clientY)-r.top;
-      return {x:px*360/r.width, y:py*240/r.height};
-    }
+    const svg=_arcoMontarSvg(esc, htmlArcoVivo({arqX:180, modo:"penal", kitArq:kit, hinchada:hinchada, semilla:P.part&&P.part.rivalId}));
+    const bolaG=svg.querySelector("#arco-bola");
+    const arqEl=svg.querySelector("#arco-arq");
+    function aSVG(ev){ return _arcoPunto(svg, ev); }
     function marcar(pt){
       if(tirado) return;
       aim=penZona(pt.x,pt.y);
-      mira.setAttribute("cx",aim.cx); mira.setAttribute("cy",aim.cy);
-      mira.setAttribute("stroke",aim.fuera?"#f0a500":"#ffd54a"); mira.setAttribute("opacity","1");
-      linea2.setAttribute("x2",aim.cx); linea2.setAttribute("y2",aim.cy); linea2.setAttribute("opacity",".9");
-      bpat.disabled=false;
+      _arcoMira(svg, aim, 180, 220);
+      bpat._listo();
       etiq.textContent=aim.fuera?"Cuidado: vas demasiado arriba o afuera.":
         ("Apuntas al "+(aim.alt==="alto"?"alto del ":"")+(aim.tercio==="centro"?"centro":"rincón "+aim.tercio)+".");
     }
@@ -1965,13 +2168,13 @@ function minijuegoPenal(P,pateador,opts){
     svg.addEventListener("pointermove",e=>{ if(e.buttons||e.pressure){ e.preventDefault(); marcar(aSVG(e)); } });
     const pie=(typeof montarPieSO==="function")?montarPieSO(box):c;
     const getEf=_botonesEfecto(c,"colocado");
-    const bpat=el("button","btn-aqua ancho verde","¡Patear!"); bpat.disabled=true;
+    const bpat=_arcoBotonTiro("¡Patear!");
     function disparar(){
       if(!aim||tirado) return; tirado=true; bpat.disabled=true;
       pateador=chips.get()||pat||pateador;
       const kdir=penArqueroTira(aim,arq.nivel||70);
       const out=penResolver(aim,kdir,getEf(),pateador.nivel||70,arq.nivel||70);
-      _animArq(arqEl, kdir, 420, {ataja:out.res==="atajado"});
+      _arcoOcultarMira(svg); _animArq(arqEl, kdir, 420, {ataja:out.res==="atajado", aim:aim});
       const paloX=aim.tercio==="izq"?50:(aim.tercio==="der"?310:180);
       const destY=out.res==="afuera"?16:(out.res==="palo"?38:aim.cy);
       const destX=out.res==="palo"?paloX:aim.cx;
@@ -2022,29 +2225,17 @@ function minijuegoTiroLibre(P){
     const etiq=el("p","mini e3d-etiq","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Arrastrá por arriba o al costado y soltá.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
-    const NS="http://www.w3.org/2000/svg";
-    const svg=document.createElementNS(NS,"svg");
-    svg.setAttribute("viewBox","0 0 360 240"); svg.setAttribute("class","penal-svg arco-svg e3d-svg");
-    svg.setAttribute("preserveAspectRatio","xMidYMax slice");
-    svg.innerHTML=htmlArcoVivo({barrera:true, arqX:arqX, modo:"tl", kitArq:kit, kitWall:kit, kitAtk:kitAtk});
-    esc.world.appendChild(svg);
-    const bolaG=svg.querySelector("#arco-bola"), mira=svg.querySelector("#arco-mira");
-    const linea2=svg.querySelector("#arco-linea"), arqEl=svg.querySelector("#arco-arq");
+    const svg=_arcoMontarSvg(esc, htmlArcoVivo({barrera:true, arqX:arqX, modo:"tl", kitArq:kit, kitWall:kit, kitAtk:kitAtk, hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
+    const bolaG=svg.querySelector("#arco-bola");
+    const arqEl=svg.querySelector("#arco-arq");
     const wall=svg.querySelector("#arco-wall");
-    function aSVG(ev){
-      const r=svg.getBoundingClientRect();
-      const px=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
-      const py=(ev.touches?ev.touches[0].clientY:ev.clientY)-r.top;
-      return {x:px*360/r.width, y:py*240/r.height};
-    }
+    function aSVG(ev){ return _arcoPunto(svg, ev); }
     function marcar(pt){
       if(tirado) return;
       const z=penZona(pt.x,pt.y);
       aim={x:z.cx,y:z.cy,cx:z.cx,cy:z.cy,fuera:z.fuera,tercio:z.tercio,alt:z.alt};
-      mira.setAttribute("cx",aim.cx); mira.setAttribute("cy",aim.cy);
-      mira.setAttribute("stroke",aim.fuera?"#f0a500":"#ffd54a"); mira.setAttribute("opacity","1");
-      linea2.setAttribute("x2",aim.cx); linea2.setAttribute("y2",aim.cy); linea2.setAttribute("opacity",".9");
-      bpat.disabled=false;
+      _arcoMira(svg, aim, 180, 220);
+      bpat._listo();
       const pre=tlClasificar(aim);
       etiq.textContent=pre.res==="barrera"?"Ahí te come la barrera.":(aim.fuera?"Vas afuera.":"Apuntas ahí. Dale a ¡Patear!");
     }
@@ -2052,11 +2243,11 @@ function minijuegoTiroLibre(P){
     svg.addEventListener("pointermove",e=>{ if(e.buttons||e.pressure){ e.preventDefault(); marcar(aSVG(e)); } });
     const pie=(typeof montarPieSO==="function")?montarPieSO(box):c;
     const getEf=_botonesEfecto(c,"colocado");
-    const bpat=el("button","btn-aqua ancho verde","¡Patear!"); bpat.disabled=true;
+    const bpat=_arcoBotonTiro("¡Patear!");
     const bcorto=el("button","btn-aqua chico gris","En corto");
     bcorto.onclick=function(){ if(tirado) return; tirado=true; cerrarModal(); if(typeof linea==="function") linea(P,P.min,"La juegan en corto y rearman con paciencia."); pintarPartido(); reanudarPronto(); };
     function dispararTL(){
-      if(!aim||tirado) return; tirado=true; bpat.disabled=true;
+      if(!aim||tirado) return; tirado=true; bpat.disabled=true; _arcoOcultarMira(svg);
       const cl=tlClasificar(aim);
       let res=cl.res, motivo=cl.motivo||"";
       const arq=arqueroDe(P.rivalPlantel)||{n:"el arquero",nivel:70};
@@ -2066,7 +2257,7 @@ function minijuegoTiroLibre(P){
         const ef=getEf();
         const out=penResolver(aim,kdir,spec?"potente":ef,(j.nivel||70)+(spec?6:0),arq.nivel||70);
         res=out.res==="gol"?"gol":(out.res==="palo"?"palo":(out.res==="afuera"?"afuera":"atajado"));
-        _animArq(arqEl, kdir, 420, {ataja:res==="atajado"});
+        _animArq(arqEl, kdir, 420, {ataja:res==="atajado", aim:aim});
       } else if(res==="barrera"){
         if(wall){
           wall.querySelectorAll(".arco-muro").forEach(function(g,i){
@@ -2126,7 +2317,7 @@ function minijuegoCorner(P){
     || (P.once&&P.once[0])
     || {n:"el cabeceador",nivel:70,rasgos:[]});
   const lado=Math.random()<0.5?"izq":"der";
-  const bolaX=lado==="izq"?22:338;
+  const bolaX=lado==="izq"?40:320;
   const kit=_kitDe(P.part&&P.part.rivalId, ["#c0392b","#1a1a28"]);
   const kitAtk=_kitDe(typeof E!=="undefined"&&E&&E.club, ["#f4f4f4","#111111"]);
   const arqX=lado==="izq"?236:124;
@@ -2138,29 +2329,16 @@ function minijuegoCorner(P){
     const etiq=el("p","mini e3d-etiq","Cobra <b>"+(j.n)+"</b>. Arrastrá el centro: primer palo, punto penal o segundo palo. Soltá para cobrar.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
-    const NS="http://www.w3.org/2000/svg";
-    const svg=document.createElementNS(NS,"svg");
-    svg.setAttribute("viewBox","0 0 360 240"); svg.setAttribute("class","penal-svg arco-svg e3d-svg");
-    svg.setAttribute("preserveAspectRatio","xMidYMax slice");
-    svg.innerHTML=htmlArcoVivo({modo:"corner", arqX:arqX, kitArq:kit, kitWall:kit, kitAtk:kitAtk, bolaX:bolaX, bolaY:222, lado:lado});
-    esc.world.appendChild(svg);
-    const bolaG=svg.querySelector("#arco-bola"), mira=svg.querySelector("#arco-mira");
-    const linea2=svg.querySelector("#arco-linea"), arqEl=svg.querySelector("#arco-arq");
-    function aSVG(ev){
-      const r=svg.getBoundingClientRect();
-      const px=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
-      const py=(ev.touches?ev.touches[0].clientY:ev.clientY)-r.top;
-      return {x:px*360/r.width, y:py*240/r.height};
-    }
+    const svg=_arcoMontarSvg(esc, htmlArcoVivo({modo:"corner", arqX:arqX, kitArq:kit, kitWall:kit, kitAtk:kitAtk, bolaX:bolaX, bolaY:222, lado:lado, hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
+    const bolaG=svg.querySelector("#arco-bola");
+    const arqEl=svg.querySelector("#arco-arq");
+    function aSVG(ev){ return _arcoPunto(svg, ev); }
     function marcar(pt){
       if(tirado) return;
       const z=penZona(pt.x,pt.y);
       aim={cx:z.cx,cy:z.cy,fuera:z.fuera,tercio:z.tercio,alt:z.alt};
-      mira.setAttribute("cx",aim.cx); mira.setAttribute("cy",aim.cy);
-      mira.setAttribute("stroke",aim.fuera?"#f0a500":"#ffd54a"); mira.setAttribute("opacity","1");
-      linea2.setAttribute("x1",bolaX); linea2.setAttribute("y1","222");
-      linea2.setAttribute("x2",aim.cx); linea2.setAttribute("y2",aim.cy); linea2.setAttribute("opacity",".9");
-      bpat.disabled=false;
+      _arcoMira(svg, aim, bolaX, 222);
+      bpat._listo();
       const pre=cornerClasificar(aim);
       etiq.textContent=pre.res==="defensa"?"Muy bajo: el primero la saca.":
         (pre.res==="afuera"?"Se va larga.":
@@ -2169,11 +2347,11 @@ function minijuegoCorner(P){
     svg.addEventListener("pointerdown",e=>{ e.preventDefault(); marcar(aSVG(e)); });
     svg.addEventListener("pointermove",e=>{ if(e.buttons||e.pressure){ e.preventDefault(); marcar(aSVG(e)); } });
     const pie=(typeof montarPieSO==="function")?montarPieSO(box):c;
-    const bpat=el("button","btn-aqua ancho verde","¡Cobrar!"); bpat.disabled=true;
+    const bpat=_arcoBotonTiro("¡Cobrar!");
     const bcorto=el("button","btn-aqua chico gris","En corto");
     bcorto.onclick=function(){ if(tirado) return; tirado=true; cerrarModal(); if(typeof linea==="function") linea(P,P.min,"Córner en corto. Rearman sin apuro."); pintarPartido(); reanudarPronto(); };
     function dispararCor(){
-      if(!aim||tirado) return; tirado=true; bpat.disabled=true;
+      if(!aim||tirado) return; tirado=true; bpat.disabled=true; _arcoOcultarMira(svg);
       const cl=cornerClasificar(aim);
       let res=cl.res, motivo=cl.motivo||"";
       const arq=arqueroDe(P.rivalPlantel)||{n:"el arquero",nivel:70};
@@ -2182,7 +2360,7 @@ function minijuegoCorner(P){
         const iner=((P.iner&&P.iner.cor)||0);
         const out=cornerResolver(cl.zona, j, arq, iner);
         res=out.res;
-        if(res==="atajado"||res==="palo") _animArq(arqEl, kdir, 380, {ataja:res==="atajado"});
+        if(res==="atajado"||res==="palo") _animArq(arqEl, kdir, 380, {ataja:res==="atajado", aim:aim});
         const atks=svg.querySelectorAll(".arco-atk");
         if(atks&&atks.length){
           const tgt=atks[cl.zona==="primer"?0:(cl.zona==="segundo"?1:2)]||atks[0];

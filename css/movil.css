@@ -518,7 +518,7 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
     backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
     display:flex !important; flex-direction:column !important;
   }
-  html body .modal.escena-3d .e3d-stage{ touch-action:none !important; min-height:220px !important; flex:1 1 auto !important; }
+  html body .modal.escena-3d .e3d-stage{ touch-action:none !important; min-height:220px !important; flex:0 1 auto !important; aspect-ratio:300/320; margin:0 0 auto !important; } /* 7.9027: el arco a su medida, sin cielo vacío */
   html body .modal.escena-3d .e3d-world{ transform:none !important; }
   html body .modal.escena-3d .arco-svg{ height:100% !important; }
   html body .modal.escena-3d .so-pie{

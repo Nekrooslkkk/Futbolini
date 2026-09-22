@@ -245,14 +245,12 @@ body[data-tema="aero"] .modal.escena-3d.window{
   perspective:920px; perspective-origin:50% 78%;
   overflow:hidden; border-radius:14px;
   touch-action:none; cursor:crosshair;
-  background:
-    radial-gradient(ellipse at 50% -10%, rgba(255,230,150,.22), transparent 42%),
-    linear-gradient(#071428 0 36%, #1a7a38 36.2%, #0c4a22 100%);
+  background:#070d1a;
   box-shadow:inset 0 0 48px rgba(0,0,0,.4);
 }
 .escena-3d .e3d-world{
   width:100%; height:100%;
-  transform: rotateX(10deg) translateY(2%) scale(1.02);
+  transform:none; /* 7.9027: la perspectiva va dibujada; el rotateX descuadraba el dedo */
   transform-origin:50% 100%;
   transform-style:preserve-3d;
 }
@@ -260,7 +258,6 @@ body[data-tema="aero"] .modal.escena-3d.window{
   width:100% !important; max-width:none !important;
   height:100%; display:block; margin:0 !important;
   background:transparent;
-  filter: drop-shadow(0 18px 16px rgba(0,0,0,.4));
 }
 .escena-3d .so-pie{
   flex:0 0 auto;
@@ -349,3 +346,21 @@ body.perf .arco-svg.arco-golazo, body.perf .arco-svg.arco-alpalo #arco-poste-izq
 }
 
 
+
+/* 7.9027 · arco reconstruido: la tribuna salta, el arquero respira */
+.arco-svg .arco-hinchas-b{ animation:hinchaSalta 1.1s ease-in-out infinite alternate; }
+.arco-svg .arco-hinchas-c{ animation:hinchaSalta .8s ease-in-out infinite alternate-reverse; }
+.arco-svg.arco-golazo .arco-hinchas-a,
+.arco-svg.arco-golazo .arco-hinchas-b,
+.arco-svg.arco-golazo .arco-hinchas-c{ animation:hinchaGol .22s ease-in-out infinite alternate; }
+@keyframes hinchaSalta{ from{ transform:translateY(0); } to{ transform:translateY(-1.4px); } }
+@keyframes hinchaGol{ from{ transform:translateY(0); } to{ transform:translateY(-4px); } }
+.arco-svg .arq-idle{ animation:arqRespira 1.6s ease-in-out infinite alternate; }
+.arco-svg .arq-idle.arq-vuela{ animation:none; }
+@keyframes arqRespira{ from{ transform:translate(0,0); } to{ transform:translate(0,-1.6px); } }
+.escena-3d .so-pie .btn-aqua[disabled]{ opacity:.78; font-size:14px; }
+body.perf .arco-svg .arco-hinchas-a, body.perf .arco-svg .arco-hinchas-b,
+body.perf .arco-svg .arco-hinchas-c, body.perf .arco-svg .arq-idle{ animation:none !important; }
+@media (prefers-reduced-motion:reduce){
+  .arco-svg .arco-hinchas-a, .arco-svg .arco-hinchas-b, .arco-svg .arco-hinchas-c, .arco-svg .arq-idle{ animation:none !important; }
+}

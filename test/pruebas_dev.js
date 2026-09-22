@@ -939,6 +939,35 @@
       t(ctq&&ctq.fn().ok,"el chequeo de taquilla da sano con Boca");
     },"Economía");
 
+    grupo("El arco se ve como un arco · 7.9027");
+    safe(function(){
+      var chk=DOCTOR_CHECKS.filter(function(c){ return c.id==="arco_arte"; })[0];
+      var r=chk&&chk.fn();
+      t(r&&r.ok,"doctor arco_arte: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
+      t(FRASES.neutro.arco_apunta&&FRASES.en.arco_apunta&&FRASES.pt.arco_apunta,"clave arco_apunta en neutro/en/pt");
+      /* el guante llega en los cuatro rincones cuando ataja */
+      [[70,60,"izq"],[70,150,"izq"],[290,60,"der"],[290,150,"der"]].forEach(function(q){
+        var aim={cx:q[0],cy:q[1],tercio:q[2],fuera:false};
+        var svg=_docArcoSvg(), arq=svg.querySelector("#arco-arq");
+        var D=_arqDestino(arq,q[2],{aim:aim,ataja:true});
+        _arqPose(arq, D.x0+D.dx, D.y0+D.dy, D.esc, D.rot, D.brazo);
+        var c=svg.querySelector(q[2]==="izq"?"#arco-mano-izq":"#arco-mano-der").getCTM();
+        svg.remove();
+        var dist=Math.hypot(c.e-q[0],c.f-q[1]);
+        t(dist<12,"rincón "+q[2]+" "+(q[1]<100?"alto":"bajo")+": el guante llega (a "+Math.round(dist)+")");
+      });
+      /* la escena real: no hay un svg que recorte y el botón explica qué falta */
+      nuevaPartida("CC",2026,"historico");
+      var once=(E.plantel||[]).filter(function(j){ return j&&j.pos!=="ARQ"; }).slice(0,11);
+      P_ACTUAL={modo:"dirigir", once:once, rivalPlantel:[{n:"Arquero rival",pos:"ARQ",nivel:72}], part:{rivalId:"UCH",local:true,sede:"Monumental"}, min:44, goleadores:[], gl:0,gv:0, lineas:[], iner:{cor:0}};
+      minijuegoPenal(P_ACTUAL, once[0], {cands:once.slice(0,3)});
+      var svg2=document.querySelector("#capa-modal .e3d-svg");
+      t(svg2&&svg2.getAttribute("preserveAspectRatio").indexOf("slice")<0,"la cámara no recorta los palos");
+      var b=[].slice.call(document.querySelectorAll("#capa-modal .so-pie button")).filter(function(x){ return x.disabled; })[0];
+      t(b&&b.textContent===T("arco_apunta","Tocá el arco para apuntar"),"¡Patear! apagado dice qué hacer");
+      cerrarModal(); P_ACTUAL=null;
+    },"Arco 7.9027");
+
     grupo("La semana se cierra también al simular · 7.9026");
     safe(function(){
       t(typeof _salirSemanaSimulada==="function","existe _salirSemanaSimulada");
