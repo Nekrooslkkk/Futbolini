@@ -939,6 +939,20 @@
       t(ctq&&ctq.fn().ok,"el chequeo de taquilla da sano con Boca");
     },"Economía");
 
+    grupo("Se juega sin internet · 7.9030");
+    safe(function(){
+      t(typeof offlineRegistrar==="function"&&typeof panelOffline==="function","offline.js cargado");
+      t(!!document.querySelector('link[rel=manifest]'),"manifiesto para instalar como app");
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="offline_listo"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor offline_listo: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
+      var s0=document.querySelector('script[src*="?v="]'), src0=s0&&s0.getAttribute("src");
+      if(s0){ s0.setAttribute("src",src0.replace(/\?v=.*/,"?v=0.0001")); var r2=c.fn(); t(!r2.ok,"el doctor caza un ?v= viejo"); s0.setAttribute("src",src0); }
+      ["off_tit","off_ok","off_txt","off_cayo"].forEach(function(k){ t(FRASES.neutro[k]&&FRASES.en[k]&&FRASES.pt[k],"clave "+k+" en neutro/en/pt"); });
+      nuevaPartida("CC",2026,"historico"); abrirAjustes();
+      t(!!document.querySelector(".ajustes-cuerpo .offline-caja"),"Ajustes muestra el panel Jugar sin internet");
+      cerrarModal();
+    },"Offline 7.9030");
+
     grupo("Equilibrio: fuerza, sueldos y motor · 7.9029");
     safe(function(){
       nuevaPartida("CC",2026,"historico");

@@ -3511,6 +3511,7 @@ function vistaAjustes(host){
   bCarg.onclick=()=>inp.click();
   pr.cuerpo.appendChild(bCarg); pr.cuerpo.appendChild(inp);
   v.appendChild(pr);
+  if(typeof panelOffline==="function") panelOffline(v);   /* 7.9030 · jugar sin internet */
   if(!E){
     const bv=el("button","btn-aqua ancho verde","← Volver al inicio");
     bv.onclick=()=>{ if(host){ cerrarModal(); return; } SEC="escritorio"; render(); };

@@ -3302,3 +3302,19 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   revés). Botones nuevos en 🩺: **💰 Radiografía económica** (`devEconomiaClubes`) y **🎯 Calibrar
   motor vs IA**. El desborde de 390px ya no se reproduce en ninguna de las 13 secciones.
 - **Tests:** dev **403/403** (+10) · core **1185/1185**.
+
+## 7.9030 · Se juega sin internet de verdad (instalable como app)
+- **`sw.js` (service worker, nuevo):** al instalarse lee `index.html` y guarda todos los archivos
+  que nombra (la lista nunca queda vieja). Archivos propios: red primero, caché si no hay red
+  (online nunca mezcla versiones). CDN (fuentes, 7.css): caché primero. La cuenta y el servidor
+  (`/api`, Supabase, Railway) nunca se cachean. Cada `VERSION` nueva instala caché nueva y borra
+  la vieja. **Probado:** con la red cortada, el juego recarga, crea partida y se juega (110 archivos).
+- **`js/offline.js` (nuevo):** registra el SW (solo https/localhost; con `file://` no molesta),
+  avisa cuando se cae o vuelve la red ("se degrada, no se rompe"), botón **📲 Instalar como app**
+  y panel **📴 Jugar sin internet** en Ajustes con el estado real y **💾 Descargar mi partida**.
+- **`manifest.webmanifest` + `img/icono.svg`**: ícono propio (esfera Aero con pelota, CC0).
+- **BUG: los `?v=` de `index.html` seguían en 7.9024** durante 7.9025–7.9029: el navegador podía
+  servir JS viejo tras cada parche. Ahora todos en 7.9030 y regla nueva en CLAUDE.md.
+- **Doctor +1:** `offline_listo` (versiones calzan, manifiesto, offline.js, copia offline = versión
+  actual). Verificado al revés en la suite (un `?v=` viejo → falla). i18n `off_*` en neutro/en/pt.
+- **Tests:** dev **412/412** (+9) · core **1185/1185**.

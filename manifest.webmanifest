@@ -1,0 +1,15 @@
+{
+  "name": "Futbolini",
+  "short_name": "Futbolini",
+  "description": "Conducción de clubes del fútbol chileno. Se juega con o sin internet.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b3d7a",
+  "theme_color": "#1f8fd6",
+  "lang": "es-CL",
+  "icons": [
+    { "src": "img/icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

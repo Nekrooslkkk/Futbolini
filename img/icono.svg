@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Futbolini · ícono propio (CC0). Esfera de vidrio Aero con pelota. -->
+  <defs>
+    <radialGradient id="f" cx=".5" cy=".38" r=".7"><stop offset="0" stop-color="#7fe0ff"/><stop offset=".55" stop-color="#1f8fd6"/><stop offset="1" stop-color="#0b3d7a"/></radialGradient>
+    <radialGradient id="p" cx=".42" cy=".36" r=".7"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#e9eef4"/><stop offset="1" stop-color="#aab6c4"/></radialGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(255,255,255,.85)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fd35f"/><stop offset="1" stop-color="#1c7a32"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#f)"/>
+  <path d="M0,360 Q256,300 512,360 L512,400 Q512,512 400,512 L112,512 Q0,512 0,400 Z" fill="url(#g)"/>
+  <circle cx="256" cy="262" r="132" fill="url(#p)" stroke="#2a3a4e" stroke-width="6"/>
+  <polygon points="256,200 314,242 292,310 220,310 198,242" fill="#1d2633"/>
+  <path d="M256,200 L256,132 M314,242 L380,220 M292,310 L332,368 M220,310 L180,368 M198,242 L132,220" stroke="#1d2633" stroke-width="12" stroke-linecap="round"/>
+  <ellipse cx="256" cy="120" rx="190" ry="84" fill="url(#b)" opacity=".7"/>
+</svg>

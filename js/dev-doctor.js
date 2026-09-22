@@ -592,6 +592,27 @@ devDoctorRegistrar({id:"motor_vs_ia", area:"simulacion", pesado:true, n:"Tus par
   return Math.abs(m)>0.2?_dmal(txt+(m>0?": el club del jugador saca ventaja":": el club del jugador queda castigado"),det):_dok(txt,det);
 }});
 
+/* 7.9030 · el juego tiene que poder vivir sin internet, y el navegador no puede
+   servir JS viejo: los ?v= de index.html tienen que ser la VERSION actual
+   (estuvieron clavados en 7.9024 durante 5 parches). */
+devDoctorRegistrar({id:"offline_listo", area:"interfaz", n:"Se juega sin internet y no se sirve código viejo", fn:function(){
+  if(typeof document==="undefined") return _dok("sin DOM");
+  var falta=[], det=[];
+  var v=(typeof VERSION!=="undefined")?VERSION:"?";
+  var viejos=[].slice.call(document.querySelectorAll("script[src],link[rel=stylesheet][href]")).map(function(n){ return n.getAttribute("src")||n.getAttribute("href"); })
+    .filter(function(u){ return u && !/^(https?:)?\/\//.test(u) && /\?v=/.test(u) && u.split("?v=")[1]!==v; });
+  if(viejos.length) falta.push(viejos.length+" archivo(s) con ?v= distinto de "+v+" (el navegador puede servir código viejo): "+viejos.slice(0,3).join(", "));
+  if(!document.querySelector('link[rel=manifest]')) falta.push("falta el manifiesto (no se puede instalar como app)");
+  if(typeof offlineRegistrar!=="function"||typeof panelOffline!=="function") falta.push("falta offline.js");
+  if(typeof offlineSoportado==="function"&&offlineSoportado()){
+    var ctl=navigator.serviceWorker&&navigator.serviceWorker.controller;
+    det.push(ctl?"service worker activo":"service worker todavía no controla la página (recargá una vez)");
+    if(typeof OFFLINE!=="undefined"&&OFFLINE.estado) det.push(OFFLINE.estado.archivos+" archivos guardados · v"+OFFLINE.estado.version);
+    if(typeof OFFLINE!=="undefined"&&OFFLINE.estado&&OFFLINE.estado.version!==v) falta.push("la copia offline es de v"+OFFLINE.estado.version+", el juego es v"+v);
+  } else det.push("abierto como archivo o sin soporte: el modo sin internet se activa al jugarlo desde la web");
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat(det)):_dok("versiones al día"+(det.length?" · "+det[0]:""),det);
+}});
+
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){
   opts=opts||{};
