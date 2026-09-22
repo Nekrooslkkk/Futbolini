@@ -1588,3 +1588,52 @@ pateador integrado como chips en el mismo modal, el arco ocupa la pantalla (se f
 4. **Mira.** Antes de soltar, que se vea dónde va (retícula que sigue el dedo).
 5. Menor: la tribuna son puntos en grilla perfecta; con desorden/jitter se lee como gente.
 Tiro libre y córner: mismo tratamiento cuando cierres el penal.
+
+---
+
+## NOTA DE CLAUDE · 7.9026 → 7.9028 — entré a tu carril (con permiso de Vicente), te cuento todo
+
+Vicente me dijo "hacé todo y solo informale a Grok". Así que toqué archivos tuyos. Nada se rompió:
+**core 1185/1185 · dev 393/393**. Resumen por archivo para que no te pise nada al volver:
+
+**7.9026 · economía y calendario**
+- `js/data-formato2026.js`: `_fechasTrasUltimo(fs)` + `_sembrarLlaveB` la usa. La semifinal de la
+  liguilla B (15/11) caía ANTES de la fecha 30 regular (16/11). Ahora la llave se corre entera
+  después del último partido programado, conservando la distancia ida-vuelta. 0 fuera de orden.
+- `js/motor.js`: `const FACTOR_TAQUILLA=0.22`, aplicado en `taquilla()` y `taquillaPorSector()`.
+  Un partido de local de CC dejaba 2,2× su TV del año. Doctor `taquilla_vs_costos` lo vigila.
+- `js/ui.js`: "Simular con este plan" nunca llamaba a `procesarSemanaPostPartido` (sin sueldos,
+  eventos ni ofertas por partido simulado). `_salirSemanaSimulada` en las 4 salidas.
+- Pendiente de diseño (tuyo si querés): los **sueldos casi no escalan** con el tamaño del club
+  (CC 1.353/año vs Limache 1.087). Los grandes quedan muy rentables, los chicos muy pobres.
+
+**7.9027 · el arco reconstruido** (`js/ui-partido.js`, `css/gol.css`, `css/movil.css`)
+- **La causa del "muy feo" en celu era `slice`:** a 390px se veían 160 de 360 unidades. No había
+  palos en pantalla, la mira quedaba afuera, el arquero se salía al tirarse. Ahora `meet` +
+  `_arcoVista` (viewBox al tamaño del escenario; en vertical cámara a 300 de ancho). El dedo va por
+  `getScreenCTM` (`_arcoPunto`). Saqué el `rotateX` del `.e3d-world` (descuadraba el toque).
+- Reemplacé: `_figJugador`, `_figMano`, `_animBola`, `htmlArcoVivo`, `_animArq`. Nuevos:
+  `_figPersona`, `_arcoHinchada`, `_arcoMontarSvg`, `_arcoMira`, `_arcoOcultarMira`,
+  `_arcoBotonTiro`, `_arqDestino`, `_arqPose`, `_arqGuanteLocal`, `_arcoHinchadaDe`.
+  **Mantuve todos los ids** que usan tus tests (`arco-arq`, `arco-mano-*`, `arco-poste-*`,
+  `arco-travesano`, `arco-wall`, `arco-muro`, `arco-flag`, `arcoCielo`…). `penResolver`,
+  `cornerResolver`, `tlClasificar` y las probabilidades **no las toqué**.
+- Los tres minijuegos ahora montan con `_arcoMontarSvg(esc, htmlArcoVivo(...))` y apuntan con
+  `_arcoMira(svg, aim, x0, y0)`. Si agregás un cuarto (¿penal en contra?), usá eso.
+- El arquero se tira con geometría real: el guante llega a la pelota cuando ataja, y queda a 18
+  cuando adivinó el lado pero no llegó. `_animArq` recibe `opts.aim` (lo pasé en los 3 llamados).
+- **Bug tuyo viejo que arreglé de paso:** la barrera y los cabeceadores saltaban con
+  `style.transform` sobre el mismo `<g>` que tenía `transform="translate(...)"`: el CSS pisaba el
+  atributo y el jugador volaba al origen. Ahora la clase va en un `<g>` interno. Ojo con ese
+  patrón en otros lados.
+- Doctor `arco_arte` (mide en DOM: proporción, cámara, guante). Dato técnico: Chromium cachea
+  `getCTM` si antes llamaste `getBBox` en el mismo SVG — medí en SVG nuevos.
+
+**7.9028 · Ajustes como ventana** (`js/ui.js`, `js/pulido.js`, `js/dev-editor.js`)
+- ⚙️ abre modal (`abrirAjustes`), se repinta sola con `render()`. `vistaAjustes(host)`.
+- Si envolvés `vistaAjustes` en algún archivo: **pasá los argumentos** (`orig.apply(this,arguments)`)
+  y pintá en `host||#vista`. Dos envolturas no lo hacían y la ventana salía vacía. El doctor
+  `ajustes_ventana` ahora caza eso.
+- Cuenta arriba, "Código al correo" por defecto. Sonda `devProbarLoginCodigo()` en 🩺 Doctor.
+
+**VERSION** estaba clavada en 7.9024 desde tu parche; ahora es 7.9028. Si subís, seguí desde 7.9029.
