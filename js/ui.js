@@ -628,7 +628,7 @@ function _pasadoRival(part){
   if(ult){
     const t=ult.gf>ult.gc?T("riv_ult_yo","La última vez le ganaste."):(ult.gf<ult.gc?T("riv_ult","La última vez te ganó."):T("riv_ult_e","La última vez empataron."));
     caja.appendChild(el("p","mini",t+" ("+ult.gf+"-"+ult.gc+")"));
-  } else if(!forma.length && !otra){
+  } else if(!forma.length && !otra && !(pj>0)){   /* 7.9032b: si ya jugó (pj>0), no decir que no jugó */
     caja.appendChild(el("p","mini",T("riv_nuevo","Todavía no jugó esta temporada.")));
   } else if(forma.length || pj>0){
     caja.appendChild(el("p","mini",T("riv_sin","Primera vez que se cruzan este año.")));
@@ -2241,7 +2241,7 @@ function _lineaHistoriaPropia(hid){
     const blob=((h&&h.txt)||"")+" "+((h&&h.hito)||"");
     if(typeof textoHistoriaAjeno==="function") return !textoHistoriaAjeno(blob, hid);
     return true;
-  });
+  }).slice().sort(function(a,b){ return ((a&&a.anio)||0)-((b&&b.anio)||0); });   /* 7.9032b: en orden (1994 salía después de 2011) */
 }
 function vistaHistoria(){
   const v=$("#vista");

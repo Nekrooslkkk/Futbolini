@@ -3342,3 +3342,20 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Logo de la portada:** el degradé con text-shadow se veía gris sucio; ahora drop-shadow nítido.
 - **Doctor +1:** `legibilidad_ui` (brillo vs texto blanco en botones, contraste del canal activo,
   frases sin mono). Verificado al revés (brillo al 85% → falla). **Tests:** dev 421/421 · core 1185/1185.
+
+## 7.9033 · El juego tiene vida (y tres "bugs de mierda" menos)
+- **Retrato del DT que envejece** (`js/retrato.js`, nuevo): SVG propio. La edad y los años en el
+  cargo traen canas y arrugas; el estrés (bienestar bajo, rachas sin ganar, riesgo, desfalco) trae
+  ojeras, ceño, barba de días, gota de sudor y la sonrisa que se apaga. Corbata con los colores del
+  club. Debajo, **el espejo** dice la verdad incómoda ("Dormís mal. En la casa ya no preguntan cómo
+  te fue."), con género respetado. Es el avatar por defecto; el orbe azul viejo migra al retrato
+  (tocándolo se vuelve a los orbes MSN). En celu el retrato va arriba y el formulario respira.
+  BUG de paso: una migración vieja convertía cualquier avatar desconocido en orbe azul.
+- **La plata se siente** (`js/vida-ui.js`, nuevo): cuando cambian caja, deuda o bolsillo, el número
+  cuenta hasta el valor nuevo, destella verde/rojo (deuda que sube = rojo) y aparece el delta
+  ("−$300 M"). Sobrevive a repintados de la barra; en modo liviano se ve fijo, sin animar.
+- **Bugs visibles:** la línea de historia salía desordenada (1994 después de 2011) → orden
+  cronológico; "En la tabla va 1°… Todavía no jugó esta temporada" (contradicción) → si ya jugó,
+  "Primera vez que se cruzan"; el 💡 de las metas se montaba sobre "En camino/Cumplido".
+- **Doctor +1:** `vida_visible` (el retrato cambia con el estrés, avatar válido, barra anima, historia
+  en orden). **Tests:** dev **430/430** (+9) · core **1185/1185**.

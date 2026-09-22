@@ -879,3 +879,5 @@ html{scrollbar-width:thin;scrollbar-color:rgba(70,150,100,.55) transparent}
 
 /* 7.9030 · en la repetición el relato se lee entero: la ventana ya tiene scroll (scroll dentro de scroll en celu escondía el final) */
 .relato-rep{max-height:none;overflow:visible}
+/* 7.9032b · el 💡 de las metas ya no se monta sobre "En camino"/"Cumplido" */
+.obj-mini .obj-top{ padding-right:24px; }

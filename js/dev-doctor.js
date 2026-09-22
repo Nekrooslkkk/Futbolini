@@ -663,6 +663,30 @@ devDoctorRegistrar({id:"legibilidad_ui", area:"interfaz", n:"Los botones y menú
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat(det)):_dok("se lee: "+det.join(" · "),det);
 }});
 
+/* 7.9033 · lo que da vida no se puede apagar sin que el doctor lo note */
+devDoctorRegistrar({id:"vida_visible", area:"interfaz", n:"El juego tiene vida: retrato que envejece, plata que se siente, historia en orden", fn:function(){
+  var falta=[], det=[];
+  if(typeof retratoSVG!=="function"||typeof estadoRetrato!=="function") falta.push("falta el retrato del DT (retrato.js)");
+  else if(E&&E.perfil){
+    var b0=E.perfil.bienestar, sg0=E.temporada&&E.temporada.sinGanar;
+    E.perfil.bienestar=90; if(E.temporada) E.temporada.sinGanar=0; var bien=estadoRetrato(), svgBien=retratoSVG();
+    E.perfil.bienestar=15; if(E.temporada) E.temporada.sinGanar=4; var mal=estadoRetrato(), svgMal=retratoSVG();
+    E.perfil.bienestar=b0; if(E.temporada) E.temporada.sinGanar=sg0;
+    det.push("estrés tranquilo "+bien.estres+" → al límite "+mal.estres);
+    if(mal.estres-bien.estres<40) falta.push("el retrato casi no cambia con el estrés ("+bien.estres+"→"+mal.estres+")");
+    if(svgBien===svgMal) falta.push("el dibujo es idéntico con o sin estrés");
+    if(typeof AVATARES!=="undefined"&&AVATARES.indexOf("retrato")<0) falta.push("el retrato no está entre los avatares");
+    if(E.perfil.avatar&&E.perfil.avatar!=="retrato"&&E.perfil.avatar!=="😎"&&String(E.perfil.avatar).indexOf("orb-")!==0) falta.push("avatar desconocido: "+E.perfil.avatar);
+  }
+  if(typeof pintarBarra!=="function"||!pintarBarra._vida) falta.push("la barra no anima los cambios de plata (vida-ui.js)");
+  if(typeof _lineaHistoriaPropia==="function"&&E){
+    var L=_lineaHistoriaPropia(typeof _idHistoriaClub==="function"?_idHistoriaClub():E.club);
+    for(var i=1;i<L.length;i++) if((L[i].anio||0)<(L[i-1].anio||0)){ falta.push("la línea de historia sale desordenada ("+L[i-1].anio+" antes que "+L[i].anio+")"); break; }
+    det.push(L.length+" hitos en la historia");
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat(det)):_dok(det.join(" · "),det);
+}});
+
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){
   opts=opts||{};

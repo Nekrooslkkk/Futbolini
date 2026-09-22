@@ -413,7 +413,11 @@ function vistaVida(){
   pintarAvatarBtn(av, E.perfil.avatar);
   if(E.perfil.avatarImg){ av.textContent=""; av.style.backgroundImage="url("+E.perfil.avatarImg+")"; av.style.backgroundSize="cover"; av.style.backgroundPosition="center"; }
   av.onclick=()=>{ if(E.perfil.avatarImg) return; const i=(AVATARES.indexOf(E.perfil.avatar)+1)%AVATARES.length; E.perfil.avatar=AVATARES[i]; guardar(); render(); };
-  win.appendChild(av);
+  if(E.perfil.avatar==="retrato" && !E.perfil.avatarImg && typeof espejoDT==="function"){
+    const col=el("div","retrato-col"); col.appendChild(av);
+    col.appendChild(el("p","retrato-espejo",espejoDT()));
+    win.appendChild(col);
+  } else win.appendChild(av);
   const info=el("div","aero-info");
   const inNombre=el("input"); inNombre.className="entrada"; inNombre.value=E.perfil.nombre; inNombre.style.width="100%"; inNombre.placeholder="Tu nombre";
   inNombre.onchange=()=>{ const val=(typeof textoLimpio==="function"?textoLimpio(inNombre.value,40):inNombre.value.trim())||"DT"; E.perfil.nombre=val; inNombre.value=val; if(E.dinastia.generacion<=1) E.dinastia.raiz=val; guardar(); };

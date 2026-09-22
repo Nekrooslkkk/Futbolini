@@ -939,6 +939,25 @@
       t(ctq&&ctq.fn().ok,"el chequeo de taquilla da sano con Boca");
     },"Economía");
 
+    grupo("Vida visible: retrato, plata, historia · 7.9033");
+    safe(function(){
+      nuevaPartida("UCH",2026,"historico");
+      t(E.perfil.avatar==="retrato","partida nueva arranca con el retrato del DT");
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="vida_visible"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor vida_visible: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
+      E.perfil.genero="F"; E.perfil.bienestar=70; E.temporada.sinGanar=0; E.ind.riesgo=10;
+      t(/Cansada|entera|reconoces/.test(espejoDT()),"el espejo respeta el género ("+espejoDT()+")");
+      E.perfil.avatar="algo-raro"; normalizarEstado();
+      t(E.perfil.avatar==="retrato","un avatar desconocido cae al retrato, no a un orbe");
+      var arr=_lineaHistoriaPropia(_idHistoriaClub()), ok=true; for(var i=1;i<arr.length;i++) if(arr[i].anio<arr[i-1].anio) ok=false;
+      t(ok,"la historia del club sale en orden cronológico");
+      /* la plata se siente */
+      render(); aplicarEfectos({plata:-250}); render();
+      var chip=[].slice.call(document.querySelectorAll("#barraDatos .bd")).filter(function(x){ return /caja/i.test(x.textContent); })[0];
+      t(chip&&chip.classList.contains("vida-baja")&&/−/.test(chip.textContent),"perder plata destella en rojo con el −$ en la barra");
+      ["esp_roto","esp_normal","esp_normal_f"].forEach(function(k){ t(FRASES.neutro[k]&&FRASES.en[k]&&FRASES.pt[k],"clave "+k+" en neutro/en/pt"); });
+    },"Vida 7.9033");
+
     grupo("Legibilidad sin perder el vidrio · 7.9032");
     safe(function(){
       var tema0=document.body.dataset.tema; document.body.dataset.tema="aero"; document.body.setAttribute("data-tema","aero");

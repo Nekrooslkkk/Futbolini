@@ -371,7 +371,7 @@ function normalizarEstado(){
   if(!Array.isArray(E.timeline)) E.timeline=[];
   if(E.seguidores===undefined) E.seguidores=Math.round((E.ind.hinchada+E.ind.prestigio)*280);
   /* 5.0 · Bloque 1 — perfil, vida social, dinastía y patrimonio personal */
-  if(!E.perfil) E.perfil={nombre:"DT",nacimiento:((E.anio||2026)-38)+"-05-12",avatar:"orb-azul",orientacion:"Libre",vidaSocial:{publica:true,agenda:[]}};
+  if(!E.perfil) E.perfil={nombre:"DT",nacimiento:((E.anio||2026)-38)+"-05-12",avatar:"retrato",orientacion:"Libre",vidaSocial:{publica:true,agenda:[]}};
   if(!E.perfil.vidaSocial) E.perfil.vidaSocial={publica:true,agenda:[]};
   if(!Array.isArray(E.perfil.vidaSocial.agenda)) E.perfil.vidaSocial.agenda=[];
   if(!E.dinastia) E.dinastia={generacion:1,linaje:"Tu linaje",limiteAnio:2100,historial:[],sucesionPendiente:false};
@@ -390,10 +390,12 @@ function normalizarEstado(){
   /* Vida 3.0: bienestar, familia y evolución de la relación */
   if(E.perfil.bienestar===undefined) E.perfil.bienestar=70;
   if(E.perfil.genero===undefined) E.perfil.genero="M";
+  /* 7.9033 · el orbe azul era el avatar por defecto: pasa al retrato que envejece (se vuelve al orbe tocándolo) */
+  if(E.perfil.avatar==="orb-azul" && !E.perfil._ret9033){ E.perfil.avatar="retrato"; E.perfil._ret9033=1; }
   if(["Hetero","Gay","Bi","Libre"].indexOf(E.perfil.orientacion)<0) E.perfil.orientacion="Libre";
   if(!Array.isArray(E.perfil.hijos)) E.perfil.hijos=[];
   if(E.perfil.pareja && E.perfil.pareja.nivel===undefined){ E.perfil.pareja.nivel=65; E.perfil.pareja.casades=!!E.perfil.pareja.casades; }
-  if(E.perfil.avatar && E.perfil.avatar!=="😎" && String(E.perfil.avatar).indexOf("orb-")!==0) E.perfil.avatar="orb-azul";
+  if(E.perfil.avatar && E.perfil.avatar!=="😎" && E.perfil.avatar!=="retrato" && String(E.perfil.avatar).indexOf("orb-")!==0) E.perfil.avatar="retrato";   /* 7.9033: lo desconocido cae al retrato, no al orbe */
   if(typeof clausulaDe==="function" && Array.isArray(E.plantel)) E.plantel.forEach(function(j){ if(j&&!j.vendido) clausulaDe(j); });
   /* 5.0 · bolsa de valores del club + finanzas avanzadas */
   if(typeof normalizarBolsa==="function") normalizarBolsa();
