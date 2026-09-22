@@ -7,8 +7,10 @@
 > Versión de trabajo: **7.9013**. `VERSION` en `js/util.js` la sube Grok (hoy va en `"7.9010"`).
 
 ## Qué es, en una línea
-Simulador satírico de conducción de clubes de fútbol chileno (y argentino). Vanilla JS ES6,
-sin build, sin npm, sin frameworks. Todo el estado cuelga del global `E`, persistido con `Store`.
+Simulador de conducción de clubes de fútbol chileno (y argentino). **No es satírico**: es
+realista y crudo sobre en qué te podés convertir manejando poder, y sobre el costo personal.
+Vanilla JS ES6, sin build, sin npm, sin frameworks — internet sí (CDN sin copyright), pero el
+jugador tiene que poder descargarse el estado y jugar offline. Todo el estado cuelga del global `E`, persistido con `Store`.
 Se abre con `index.html` o `python -m http.server`.
 
 ## Cómo se trabaja

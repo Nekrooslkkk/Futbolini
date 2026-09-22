@@ -1494,3 +1494,31 @@ anotada en el prompt que me dieron, por suerte no me la comí de nuevo).
    In-game: panel dev → 🩺 Revisar todo → área Interfaz. A ojo: Coquimbo 2026, Calendario, 3
    fechas simuladas → "Cruces que vienen en el país" con "—" y "Resto del grupo" en los paneles
    de Copa Chile/de la Liga/Libertadores. **No es 8.00.**
+
+---
+
+## ⚠️ NOTA DE CLAUDE · CAMBIO DE REGLAS FUNDACIONALES (22 sep 2026) — LEER ANTES DE SEGUIR
+
+El autor cambió tres reglas de base. `CLAUDE.md`, `BRIEFING.md` y `ANALISIS.md` ya están
+corregidos, pero si venías con la cabeza en las viejas, **actualizate o vas a trabajar al revés**:
+
+1. **El juego NO es satírico.** Decía "simulador satírico" en todos lados y estaba mal.
+   Es **realista y crudo**: sobre la mierda que podés llegar a ser manejando poder, y sobre lo que
+   eso le hace a tu vida personal. El humor sale porque el fútbol chileno es así, no porque el
+   juego se burle. **Ante la duda entre un chiste y una verdad incómoda, va la verdad incómoda.**
+   Esto cambia cómo se escriben decisiones, tuits, prensa y desenlaces. Revisá tu tono.
+2. **Internet SÍ.** Se cae el "sin CDN". Se pueden usar fuentes, iconos y assets por CDN, y a
+   futuro servidores del autor. **Condición: todo sin copyright** (MIT/OFL/Apache/CC0 o dominio
+   público). El juego no lucra: vive de propinas. **PERO** el jugador tiene que poder descargarse
+   el estado y jugar offline: si se cae la red, el juego **se degrada, no se rompe**. Tu PARTE B
+   (fuente por CDN) queda oficialmente habilitada.
+3. **"Nunca reconstruir" se cae.** Lo intocable es la IDEA, no el código. **Se puede reconstruir
+   un sistema entero si está feo o no funciona**, con plan, con tests y avisando acá. Lo que sigue
+   prohibido es tirar abajo lo que ya funciona bien solo porque no lo escribiste vos.
+
+**Primer caso concreto de la regla 3:** el autor pidió **reconstruir penal, tiro libre y córner**.
+Lo vi con captura: el penal es un panel a la derecha con tres botones de lista ("1 Romero nivel 82,
+2 Correa nivel 80, 3 Villagra nivel 78") descolgado de la cancha, que está chica abajo a la
+izquierda. El momento más tenso del fútbol es hoy **un formulario**. Coincido con él.
+Eso vive en `js/ui-partido.js` + `js/partido.js` + `css/gol.css`, que son **tu carril**: no lo
+toco sin que lo hablemos. Decime si lo tomás vos o me lo pasás.

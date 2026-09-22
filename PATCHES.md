@@ -3108,3 +3108,49 @@ Dos tareas del autor sobre el carril UI. Verificado con Playwright a 390px reale
   es una regresión. Queda anotado para quien toque `css/temas.css`.
 - **Tests:** dev **350/350** (antes 321, +29: grupos "Copas del país que se ven venir" y "Avance
   rápido que se ve"). Core **1175/1175** intacto. `VERSION` la sube Grok. **No es 8.00.**
+
+## 7.9023 · Cambio de reglas fundacionales + análisis del estado con simulaciones
+Parche de documentación y diagnóstico. No toca código de juego: corrige la constitución del
+proyecto (que estaba mintiéndole a las tres IA) y deja medido el estado real.
+
+### Las tres reglas que cambió el autor (22 sep 2026)
+1. **El juego NO es satírico.** Decía "simulador satírico" en `CLAUDE.md`, `BRIEFING.md` y
+   `ANALISIS.md`. Es **realista y crudo**: sobre en qué te podés convertir manejando poder y el
+   costo personal de eso. Ante la duda entre un chiste y una verdad incómoda, va la verdad.
+2. **Internet SÍ.** Se cae el "sin CDN". Fuentes, iconos y assets por CDN habilitados, con la
+   condición de que sean **sin copyright** (MIT/OFL/Apache/CC0 o dominio público). El juego no
+   lucra. **Pero** el jugador tiene que poder descargarse el estado y jugar offline: si se cae la
+   red, el juego se degrada, no se rompe.
+3. **"Nunca reconstruir" se cae.** Lo intocable es la IDEA, no el código: se puede reconstruir un
+   sistema entero si está feo o no funciona, con plan y tests. Sigue prohibido tirar abajo lo que
+   ya funciona solo por no haberlo escrito uno.
+
+### Estado medido (batería de simulaciones, 6 clubes × 5 temporadas)
+Corrida con el Doctor sobre Playwright. **Invariantes de motor limpios en 5 de 6 casos.**
+Velocidad buena: 11–33 ms por temporada.
+
+| Caso | Temp. | Invariantes | Hallazgo |
+|---|---|---|---|
+| Colo-Colo 2026 | 5 | ✅ | campeones variados (Everton, CC, Coquimbo, UC) |
+| Colo-Colo 1991 | 5 | ✅ | gana 4 de 5: **dominancia excesiva en la era vieja** |
+| Limache 2026 | 5 | ⚠️ | **"calendario infinito" en 2028 y 2029**; deuda 32.323; 159 ms/temp (5× lento) |
+| Boca 2026 | 5 | ✅ | **caja 2.631.006** contra 97.163 de Colo-Colo: 27× |
+| Riestra 2026 | 5 | ✅ | cae de 4° a 15°, coherente para club chico |
+| Colchagua (Segunda) | 5 | ✅ | campeón y sube; llega a Primera en 4 años (muy rápido) |
+
+**Los tres problemas reales que salieron:**
+- **Calendario infinito** con Limache en 2028/2029 (el loop corta a las 250 vueltas). Afecta a
+  clubes que cambian de categoría. Es el más grave.
+- **Economía inflacionaria**: la caja sube sola en los 6 casos y nadie se funde salvo Limache.
+  CC pasa de 21k a 97k sin esfuerzo; Boca a 2,6 millones. Sin riesgo económico no hay tensión, y
+  la idea del juego es justamente manejar una institución.
+- **Desbalance Chile/Argentina**: 27× de diferencia de caja entre ligas.
+
+### Diagnóstico del penal/córner (pedido del autor)
+Verificado con captura forzando el evento en un partido real: el penal es **un panel a la derecha
+con tres botones de lista** (jugador · nivel), descolgado de la cancha, que está chica abajo a la
+izquierda. No hay arco, ni arquero, ni decisión de dónde patear. **El momento más tenso del fútbol
+es hoy un formulario.** El autor pidió reconstruirlo y coincido. Vive en `js/ui-partido.js`,
+`js/partido.js` y `css/gol.css` — carril de Grok, coordinado en `ChatDeTrabajIA.md`.
+
+- **Tests:** core **1175/1175** · dev **350/350** (Sonnet los subió de 321 en su 7.9022).

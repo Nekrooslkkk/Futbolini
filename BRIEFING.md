@@ -6,7 +6,9 @@
 > junto con `PATCHES.md`. Es la memoria del proyecto: sin esto, la IA "olvida" y rompe el hilo.
 
 ## 1. Qué es
-**Futbolini** es un simulador de **conducción de clubes de fútbol chileno**. La idea fuerza:
+**Futbolini** es un simulador de **conducción de clubes de fútbol chileno**. **NO es satírico**
+(corrección del autor, 22 sep 2026): es realista y crudo sobre la mierda que podés llegar a ser
+manejando poder, y sobre lo que eso le hace a tu vida personal. La idea fuerza:
 > *"No manejás un equipo. Manejás una institución."*
 El jugador es el mandamás del club: grupos de interés que empujan para lados distintos, plata que
 duele, estatutos que se pueden cambiar si tenés el poder, decisiones sin porcentajes a la vista, y

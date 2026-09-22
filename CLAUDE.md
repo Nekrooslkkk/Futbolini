@@ -5,14 +5,33 @@
 > mirá `git log --oneline`, y ya sabés todo. Después seguí con lo que pida el usuario o con `IDEAS.md`.
 
 ## Qué es
-**Futbolini**: simulador satírico de conducción de clubes de fútbol chileno. Vanilla JS puro (ES6),
-sin frameworks, sin build, sin CDN. Corre abriendo `index.html` o `python -m http.server`. Todo el
-estado cuelga del objeto global `E` (localStorage vía `Store`). Épocas: 1991, 2026, e histórico CC 1989→2008.
+**Futbolini**: simulador de conducción de clubes de fútbol chileno. Vanilla JS puro (ES6),
+sin frameworks, sin build. Corre abriendo `index.html` o `python -m http.server`. Todo el estado
+cuelga del objeto global `E` (localStorage vía `Store`). Épocas: 1991, 2026, e histórico CC 1989→2008.
+
+> **NO es un juego satírico.** (Corrección del autor, 22 sep 2026 — decía "satírico" y estaba mal.)
+> Es **realista y crudo**: sobre la mierda que podés llegar a ser manejando poder, y sobre lo que
+> eso le hace a tu vida personal. El humor aparece porque el fútbol chileno es así, no porque el
+> juego se esté burlando. Si dudás entre un chiste y una verdad incómoda, **va la verdad incómoda**.
 
 ## Reglas inviolables
-- NUNCA reconstruir desde cero. Se EXPANDE sobre lo existente.
+- **Lo intocable es la IDEA, no el código.** (Cambio del autor, 22 sep 2026.) Antes acá decía
+  "NUNCA reconstruir desde cero". Ya no: **se puede reconstruir un sistema entero si está feo o
+  no funciona**, siempre que no se mate la idea principal (ver "Qué es" arriba) ni el diseño.
+  Reconstruir ≠ improvisar: se reconstruye con un plan, con tests, y se avisa en `ChatDeTrabajIA.md`.
+  Lo que sigue prohibido es tirar abajo lo que YA funciona bien solo porque no lo escribiste vos.
+- **Internet SÍ.** (Cambio del autor, 22 sep 2026.) Antes decía "sin CDN". El juego puede y debe
+  usar internet para dar el salto de calidad: CDN de fuentes, iconos, assets, y a futuro servidores
+  propios del autor. **Condición: todo asset sin copyright** (MIT/OFL/Apache/CC0 o dominio público);
+  hay de sobra. El juego **no lucra**: se mantiene con propinas y cariño.
+- **Pero tiene que poder vivir sin internet.** El "offline" no es una restricción de desarrollo:
+  es una **funcionalidad para el jugador**. Tiene que poder **descargarse el estado del juego tal
+  cual** y jugarlo tranquilo, sin depender de nadie. Un retiro, un viaje, un domingo sin señal.
+  Regla práctica: si se cae internet, el juego **sigue jugándose** — se degrada, no se rompe.
+- **Mantenimiento eterno.** Nada de dependencias que obliguen a migrar cada seis meses.
+  Vanilla, sin build, sin npm: eso se mantiene solo por años y es por eso que se eligió.
 - Estilo del repo: identificadores/comentarios en español, funciones cortas, `"use strict"`.
-- No romper el orden de carga de `index.html` ni globals. Sin dependencias externas.
+- No romper el orden de carga de `index.html` ni globals.
 - Integridad: nombres reales con stats estimadas y aviso "aproximado". Nada de frases inventadas como reales.
 - Diversidad sí, burla no (pool de citas escrito con respeto para todes).
 
