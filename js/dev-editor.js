@@ -18,7 +18,7 @@
 (function(){
   if(typeof vistaAjustes!=="function" || vistaAjustes._editor8) return;
   var orig=vistaAjustes;
-  vistaAjustes=function(){ orig(); try{ _pintarAccesoEditor(); }catch(e){ console.error("editor:",e); } };
+  vistaAjustes=function(host){ orig.apply(this,arguments); try{ _pintarAccesoEditor(host); }catch(e){ console.error("editor:",e); } }; /* 7.9027: respeta la ventana */
   vistaAjustes._editor8=true;
 
   var LLAVE_PARCHE="futbolini_dev_parche";
@@ -48,9 +48,9 @@
   }catch(e){}
 
   /* ---------- acceso desde Ajustes ---------- */
-  function _pintarAccesoEditor(){
+  function _pintarAccesoEditor(host){
     if(typeof devOn!=="function" || !devOn()) return;
-    var v=document.getElementById("vista"); if(!v) return;
+    var v=host||document.getElementById("vista"); if(!v) return;
     if(v.querySelector(".dev-editor-acceso")) return;
     var p=panel("Editor de contenido","🧱","agua");
     p.classList.add("dev-editor-acceso");

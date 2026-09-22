@@ -662,8 +662,8 @@ function pulirMercado74(){
     }
   });
 }
-function pulirAjustes74(){
-  const v=$("#vista"); if(!v) return;
+function pulirAjustes74(host){
+  const v=host||$("#vista"); if(!v) return;
   if(v.querySelector(".aj-anim-74")) return;
   const p=panel("Animaciones del escritorio","✨");
   p.classList.add("aj-anim-74");
@@ -740,7 +740,7 @@ function pulirCalendario75(){
   }
   if(typeof vistaAjustes==="function" && !vistaAjustes._p74){
     const orig=vistaAjustes;
-    vistaAjustes=function(){ orig.apply(this,arguments); try{ pulirAjustes74(); }catch(e){} };
+    vistaAjustes=function(host){ orig.apply(this,arguments); try{ pulirAjustes74(host); }catch(e){} };
     vistaAjustes._p74=true;
   }
   if(typeof abrirDecision==="function" && !abrirDecision._p74){

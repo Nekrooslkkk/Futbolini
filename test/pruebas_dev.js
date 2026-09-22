@@ -939,6 +939,26 @@
       t(ctq&&ctq.fn().ok,"el chequeo de taquilla da sano con Boca");
     },"Economía");
 
+    grupo("Ajustes es una ventana · 7.9027");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico"); SEC="escritorio"; render();
+      t(typeof abrirAjustes==="function","existe abrirAjustes");
+      abrirAjustes();
+      t(!!document.querySelector("#capa-modal .ajustes-ventana"),"⚙️ abre una ventana, no reemplaza el juego");
+      t(SEC==="escritorio","la sección de fondo no cambia");
+      t(ajustesAbiertos() && !!document.querySelector(".ajustes-cuerpo .panel"),"los paneles se pintan adentro de la ventana");
+      render();
+      t(ajustesAbiertos(),"un render() no la cierra: se repinta");
+      irA("ajustes");
+      t(SEC!=="ajustes" && ajustesAbiertos(),"irA('ajustes') (menú Más) también abre la ventana");
+      cerrarModal();
+      var chk=DOCTOR_CHECKS.filter(function(c){ return c.id==="ajustes_ventana"; })[0];
+      var r=chk&&chk.fn();
+      t(r&&r.ok,"doctor ajustes_ventana: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
+      t(typeof devProbarLoginCodigo==="function","la sonda del login por código está en el modo dev");
+      t(FRASES.neutro.aj_tit&&FRASES.en.aj_tit&&FRASES.pt.aj_tit,"clave aj_tit en neutro/en/pt");
+    },"Ajustes ventana 7.9027");
+
     grupo("El arco se ve como un arco · 7.9027");
     safe(function(){
       var chk=DOCTOR_CHECKS.filter(function(c){ return c.id==="arco_arte"; })[0];

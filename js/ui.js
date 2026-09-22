@@ -11,6 +11,7 @@ const SECCIONES=[
  ["carrera","🎖️","Carrera"],["vida","🪪","Vida"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
 ];
 function irA(s){
+  if(s==="ajustes" && typeof abrirAjustes==="function"){ abrirAjustes(); return; } /* 7.9027: ventana */
   if(typeof partidoEnCurso==="function" && partidoEnCurso() && typeof pausarPartidoHold==="function"){
     pausarPartidoHold();
   }
@@ -3221,10 +3222,10 @@ function pintarFormularioCuenta(cc, opts){
   let modo=opts.modo||"clave";
   const caja=el("div","nube-login");
   const estilo=_inpNubeCss();
-  caja.appendChild(el("p","mini","Correo y clave, o un código de 6 dígitos al mail. Es opcional: sin cuenta el juego sigue igual, en este navegador."));
+  caja.appendChild(el("p","mini","Un código de 6 dígitos a tu correo (sin clave), o correo y clave. Es opcional: sin cuenta el juego sigue igual, en este navegador."));
   const tabs=el("div","fichas");
   const bClave=el("button","ficha","Clave"); const bCod=el("button","ficha","Código al correo");
-  tabs.appendChild(bClave); tabs.appendChild(bCod); caja.appendChild(tabs);
+  tabs.appendChild(bCod); tabs.appendChild(bClave); caja.appendChild(tabs);
   caja.appendChild(el("label","lb","Correo"));
   const iMail=el("input"); iMail.type="email"; iMail.placeholder="tu@correo.com"; iMail.autocomplete="email"; iMail.style.cssText=estilo;
   if(typeof nubeMailRecordado==="function") iMail.value=nubeMailRecordado();
@@ -3325,11 +3326,91 @@ function pintarFormularioCuenta(cc, opts){
   iMail.onkeydown=function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); if(modo==="clave") iPass.focus(); else iCod.focus(); } };
   sync();
   cc.appendChild(caja);
-  setTimeout(function(){ try{ (iMail.value?(modo==="codigo"?iCod:iPass):iMail).focus(); }catch(e){} }, 40);
+  /* en la ventana de Ajustes no se roba el foco: en celu abriría el teclado y saltaría al fondo */
+  if(!opts.sinFoco) setTimeout(function(){ try{ (iMail.value?(modo==="codigo"?iCod:iPass):iMail).focus(); }catch(e){} }, 40);
 }
-function vistaAjustes(){
-  const v=$("#vista");
+/* 7.9027 · Ajustes es una VENTANA, no una sección que reemplaza el juego.
+   Se repinta sola cuando algo adentro llama render() (tema, login, respaldo). */
+let _ajVentana=null;
+function abrirAjustes(){
+  if(typeof montarBarraSO!=="function"){ SEC="ajustes"; render(); return; }
+  let cuerpo=null;
+  modal(function(box){
+    box.classList.add("ventana-so","ajustes-ventana");
+    cuerpo=montarBarraSO(box, T("aj_tit","Ajustes"), "⚙️", function(){ cerrarModal(); });
+  });
+  if(!cuerpo){ SEC="ajustes"; render(); return; }
+  cuerpo.classList.add("ajustes-cuerpo");
+  _ajVentana=cuerpo;
+  vistaAjustes(cuerpo);
+}
+function ajustesAbiertos(){ return !!(_ajVentana&&_ajVentana.isConnected); }
+function _ajRepintar(){
+  if(!ajustesAbiertos()) return;
+  const st=_ajVentana.scrollTop;
+  _ajVentana.innerHTML="";
+  vistaAjustes(_ajVentana);
+  _ajVentana.scrollTop=st;
+}
+/* ---- Cuenta en la nube (opcional) · 7.9027: función propia, arriba en Ajustes ---- */
+function panelCuentaNube(v, enVentana){
+  if(typeof nubeActiva==="function"){
+    const pn=panel("Cuenta en la nube","☁️");
+    if(!nubeActiva()){
+      /* aún sin configurar: formulario para pegar URL + anon key (admin) */
+      pn.cuerpo.appendChild(el("p","mini","Para prender el login (gratis, con Supabase) pega acá la <b>URL</b> y la <b>llave pública (anon)</b> de tu proyecto. Los pasos para crear el proyecto están en <b>SETUP_NUBE.md</b>. La llave anon es <b>pública a propósito</b>: es seguro dejarla acá. La que NUNCA se pega es la <i>service_role</i>."));
+      const estiloCfg="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid rgba(0,0,0,.15);font-size:13px";
+      const cfg0=(typeof nubeConfig==="function")?nubeConfig():{url:"",anonKey:""};
+      const iUrl=el("input"); iUrl.type="url"; iUrl.placeholder="https://xxxx.supabase.co"; iUrl.value=cfg0.url||""; iUrl.style.cssText=estiloCfg; iUrl.spellcheck=false;
+      const iKey=el("input"); iKey.type="text"; iKey.placeholder="anon key (empieza con eyJ...)"; iKey.value=cfg0.anonKey||""; iKey.style.cssText=estiloCfg; iKey.spellcheck=false;
+      pn.cuerpo.appendChild(iUrl); pn.cuerpo.appendChild(iKey);
+      const bProbar=el("button","btn-aqua chico","Probar conexión"); bProbar.style.marginTop="6px";
+      bProbar.onclick=async()=>{ bProbar.disabled=true; const r=await nubeProbar(iUrl.value,iKey.value); bProbar.disabled=false; aviso(r.ok?"✅ Conexión OK, ya puedes guardar":("❌ "+r.msg)); };
+      const bGuardar=el("button","btn-aqua chico verde","Guardar y activar"); bGuardar.style.marginLeft="6px";
+      bGuardar.onclick=async()=>{
+        const r=await nubeProbar(iUrl.value,iKey.value);
+        if(!r.ok){ if(!confirm("La prueba falló ("+r.msg+"). ¿Guardar igual?")) return; }
+        nubeGuardarConfig(iUrl.value,iKey.value); aviso("Nube configurada. Ya puedes crear tu cuenta."); render();
+      };
+      pn.cuerpo.appendChild(bProbar); pn.cuerpo.appendChild(bGuardar);
+      pn.cuerpo.appendChild(el("p","mini","Esto queda guardado en <b>este navegador</b> (no en el repo). Para que tus amigos tengan login en la página publicada, la llave anon va en <code>js/nube.js</code> — avisame y lo dejo listo."));
+    }else if(nubeLogueado()){
+      pintarSesionNube(pn.cuerpo, {});
+      /* auto-respaldo: solo sube, nunca baja ni pisa tu partida sin permiso */
+      const autoOn=(typeof nubeAutoActivo==="function")?nubeAutoActivo():false;
+      pn.cuerpo.appendChild(el("label","lb","Respaldo automático"));
+      const fa=el("div","fichas");
+      [["si","Automático (recomendado)"],["no","Solo manual"]].forEach(([k,n])=>{
+        const on=k==="si";
+        const b=el("button","ficha",n);
+        b.setAttribute("aria-pressed",autoOn===on?"true":"false");
+        b.onclick=()=>{ if(typeof nubeAutoSet==="function") nubeAutoSet(on); aviso(on?"Auto-respaldo activado":"Auto-respaldo desactivado"); render(); };
+        fa.appendChild(b);
+      });
+      pn.cuerpo.appendChild(fa);
+      const ult=(typeof nubeUltimoRespaldo==="function")?nubeUltimoRespaldo():0;
+      const cuando=ult?("Último respaldo: "+new Date(ult).toLocaleString("es-CL",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})):"Todavía sin respaldo automático";
+      pn.cuerpo.appendChild(el("p","mini",(autoOn
+        ? "Con auto-respaldo, tu partida se sube sola a la nube cada vez que el juego guarda: aunque limpies el navegador o cambies de equipo, no la pierdes. <span id=\"nubeAutoTxt\">"+cuando+"</span>."
+        : "Modo manual: sube después de jugar y baja al empezar en otro equipo. Bajar SIEMPRE es manual y con confirmación, para que nunca pierdas una partida sin querer.")));
+    }else{
+      pintarFormularioCuenta(pn.cuerpo, {modo:"codigo", sinFoco:enVentana});
+    }
+    /* si la config se pegó a mano en el juego, dejar reconfigurar/borrar */
+    if(nubeActiva() && typeof nubeConfigManual==="function" && nubeConfigManual()){
+      const bReconf=el("button","btn-aqua chico gris","Cambiar conexión a la nube"); bReconf.style.marginTop="8px";
+      bReconf.onclick=()=>{ if(confirm("¿Borrar la URL y la llave guardadas en este navegador? (No borra tu cuenta ni tu partida en la nube.)")){ if(typeof nubeSalir==="function") nubeSalir(); nubeGuardarConfig("",""); aviso("Conexión borrada"); render(); } };
+      pn.cuerpo.appendChild(bReconf);
+    }
+    v.appendChild(pn);
+  }
+
+}
+function vistaAjustes(host){
+  const v=host||$("#vista");
   panelEnLinea(v);
+  /* 7.9027 · la cuenta va arriba: es lo que la gente viene a buscar acá */
+  panelCuentaNube(v, !!host);
   const don=panel("El proyecto","💚");
   don.cuerpo.appendChild(el("p",null,"Futbolini es gratis y siempre lo va a ser. Corre 100% en tu navegador, sin servidor obligatorio: el ayudante es un compositor local (lee el club y arma frases), no una IA de pago."));
   don.cuerpo.appendChild(el("p","mini","Si quieres ayudar: comparte el juego, o invitale un café al autor. Nada se bloquea si no donas."));
@@ -3432,60 +3513,8 @@ function vistaAjustes(){
   v.appendChild(pr);
   if(!E){
     const bv=el("button","btn-aqua ancho verde","← Volver al inicio");
-    bv.onclick=()=>{ SEC="escritorio"; render(); };
+    bv.onclick=()=>{ if(host){ cerrarModal(); return; } SEC="escritorio"; render(); };
     v.appendChild(bv);
-  }
-
-  /* ---- Cuenta en la nube (opcional) ---- */
-  if(typeof nubeActiva==="function"){
-    const pn=panel("Cuenta en la nube","☁️");
-    if(!nubeActiva()){
-      /* aún sin configurar: formulario para pegar URL + anon key (admin) */
-      pn.cuerpo.appendChild(el("p","mini","Para prender el login (gratis, con Supabase) pega acá la <b>URL</b> y la <b>llave pública (anon)</b> de tu proyecto. Los pasos para crear el proyecto están en <b>SETUP_NUBE.md</b>. La llave anon es <b>pública a propósito</b>: es seguro dejarla acá. La que NUNCA se pega es la <i>service_role</i>."));
-      const estiloCfg="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid rgba(0,0,0,.15);font-size:13px";
-      const cfg0=(typeof nubeConfig==="function")?nubeConfig():{url:"",anonKey:""};
-      const iUrl=el("input"); iUrl.type="url"; iUrl.placeholder="https://xxxx.supabase.co"; iUrl.value=cfg0.url||""; iUrl.style.cssText=estiloCfg; iUrl.spellcheck=false;
-      const iKey=el("input"); iKey.type="text"; iKey.placeholder="anon key (empieza con eyJ...)"; iKey.value=cfg0.anonKey||""; iKey.style.cssText=estiloCfg; iKey.spellcheck=false;
-      pn.cuerpo.appendChild(iUrl); pn.cuerpo.appendChild(iKey);
-      const bProbar=el("button","btn-aqua chico","Probar conexión"); bProbar.style.marginTop="6px";
-      bProbar.onclick=async()=>{ bProbar.disabled=true; const r=await nubeProbar(iUrl.value,iKey.value); bProbar.disabled=false; aviso(r.ok?"✅ Conexión OK, ya puedes guardar":("❌ "+r.msg)); };
-      const bGuardar=el("button","btn-aqua chico verde","Guardar y activar"); bGuardar.style.marginLeft="6px";
-      bGuardar.onclick=async()=>{
-        const r=await nubeProbar(iUrl.value,iKey.value);
-        if(!r.ok){ if(!confirm("La prueba falló ("+r.msg+"). ¿Guardar igual?")) return; }
-        nubeGuardarConfig(iUrl.value,iKey.value); aviso("Nube configurada. Ya puedes crear tu cuenta."); render();
-      };
-      pn.cuerpo.appendChild(bProbar); pn.cuerpo.appendChild(bGuardar);
-      pn.cuerpo.appendChild(el("p","mini","Esto queda guardado en <b>este navegador</b> (no en el repo). Para que tus amigos tengan login en la página publicada, la llave anon va en <code>js/nube.js</code> — avisame y lo dejo listo."));
-    }else if(nubeLogueado()){
-      pintarSesionNube(pn.cuerpo, {});
-      /* auto-respaldo: solo sube, nunca baja ni pisa tu partida sin permiso */
-      const autoOn=(typeof nubeAutoActivo==="function")?nubeAutoActivo():false;
-      pn.cuerpo.appendChild(el("label","lb","Respaldo automático"));
-      const fa=el("div","fichas");
-      [["si","Automático (recomendado)"],["no","Solo manual"]].forEach(([k,n])=>{
-        const on=k==="si";
-        const b=el("button","ficha",n);
-        b.setAttribute("aria-pressed",autoOn===on?"true":"false");
-        b.onclick=()=>{ if(typeof nubeAutoSet==="function") nubeAutoSet(on); aviso(on?"Auto-respaldo activado":"Auto-respaldo desactivado"); render(); };
-        fa.appendChild(b);
-      });
-      pn.cuerpo.appendChild(fa);
-      const ult=(typeof nubeUltimoRespaldo==="function")?nubeUltimoRespaldo():0;
-      const cuando=ult?("último respaldo: "+new Date(ult).toLocaleString("es-CL",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})):"todavía sin respaldo automático";
-      pn.cuerpo.appendChild(el("p","mini",(autoOn
-        ? "Con auto-respaldo, tu partida se sube sola a la nube cada vez que el juego guarda: aunque limpies el navegador o cambies de equipo, no la pierdes. <span id=\"nubeAutoTxt\">"+cuando+"</span>."
-        : "Modo manual: sube después de jugar y baja al empezar en otro equipo. Bajar SIEMPRE es manual y con confirmación, para que nunca pierdas una partida sin querer.")));
-    }else{
-      pintarFormularioCuenta(pn.cuerpo, {});
-    }
-    /* si la config se pegó a mano en el juego, dejar reconfigurar/borrar */
-    if(nubeActiva() && typeof nubeConfigManual==="function" && nubeConfigManual()){
-      const bReconf=el("button","btn-aqua chico gris","Cambiar conexión a la nube"); bReconf.style.marginTop="8px";
-      bReconf.onclick=()=>{ if(confirm("¿Borrar la URL y la llave guardadas en este navegador? (No borra tu cuenta ni tu partida en la nube.)")){ if(typeof nubeSalir==="function") nubeSalir(); nubeGuardarConfig("",""); aviso("Conexión borrada"); render(); } };
-      pn.cuerpo.appendChild(bReconf);
-    }
-    v.appendChild(pn);
   }
 
   /* ---- Modo Dios y modo dev: solo con partida abierta ---- */
@@ -4327,8 +4356,7 @@ function pintarBtnCuenta(){
 }
 function modalCuenta(){
   if(typeof nubeActiva!=="function" || !nubeActiva()){
-    SEC="ajustes"; render();
-    aviso("La cuenta está en Ajustes. El ⚙️ de la barra te deja entrar o crear una.");
+    abrirAjustes();
     return;
   }
   modal(box=>{
@@ -4361,7 +4389,7 @@ $("#btnTemas").onclick=()=>{
   if(acc && !document.getElementById("btnAjustes")){
     const b=document.createElement("button");
     b.className="btn-aqua chico"; b.id="btnAjustes"; b.title="Ajustes"; b.setAttribute("aria-label","Ajustes"); b.textContent="⚙️";
-    b.onclick=()=>{ SEC="ajustes"; render(); };
+    b.onclick=()=>abrirAjustes();
     const temas=document.getElementById("btnTemas");
     if(temas) acc.insertBefore(b, temas); else acc.appendChild(b);
   }
@@ -4514,3 +4542,13 @@ if(window.matchMedia){
   if(mqMov.addEventListener) mqMov.addEventListener("change",onMov);
   else if(mqMov.addListener) mqMov.addListener(onMov);
 }
+
+/* 7.9027 · si Ajustes está abierto como ventana, cada render la refresca */
+(function(){
+  if(typeof render!=="function" || render._aj) return;
+  const orig=render;
+  const envuelta=function(){ const r=orig.apply(this,arguments); try{ _ajRepintar(); }catch(e){} return r; };
+  Object.keys(orig).forEach(function(k){ envuelta[k]=orig[k]; });
+  envuelta._aj=true;
+  render=envuelta;
+})();

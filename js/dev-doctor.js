@@ -407,6 +407,79 @@ devDoctorRegistrar({id:"arco_arte", area:"interfaz", n:"El arco se ve como un ar
     :_dok(m?("arquero "+Math.round(m.altoArq/m.altoArco*100)+"% del arco; guante a "+Math.round(m.distAtaja)+" cuando ataja, a "+Math.round(m.distGol)+" cuando no llega"):"arte presente (sin DOM para medir)");
 }});
 
+/* 7.9027 · Ajustes es una ventana: ⚙️ la abre, todo se pinta ADENTRO (las envolturas
+   de otros archivos no pueden tirarlo a #vista) y la cuenta ofrece el código al correo */
+devDoctorRegistrar({id:"ajustes_ventana", area:"interfaz", n:"Ajustes abre como ventana y trae el login por código", fn:function(){
+  var falta=[];
+  if(typeof abrirAjustes!=="function") falta.push("abrirAjustes no existe");
+  if(typeof document!=="undefined"){
+    var b=document.getElementById("btnAjustes");
+    if(b && String(b.onclick).indexOf("abrirAjustes")<0) falta.push("el ⚙️ no abre la ventana");
+    if(typeof vistaAjustes==="function"){
+      var vista=document.getElementById("vista"), antes=vista?vista.innerHTML.length:0;
+      var host=document.createElement("div");
+      try{ vistaAjustes(host); }catch(e){ falta.push("vistaAjustes explota: "+e.message); }
+      var despues=vista?vista.innerHTML.length:0;
+      if(!host.querySelector(".panel")) falta.push("vistaAjustes no pinta en la ventana");
+      if(despues!==antes) falta.push("algo de Ajustes se pintó en #vista en vez de la ventana (una envoltura sin host)");
+      if(typeof nubeActiva==="function"&&nubeActiva()&&!(typeof nubeLogueado==="function"&&nubeLogueado())){
+        if(!/Código al correo/.test(host.textContent)) falta.push("la cuenta no ofrece código al correo");
+        var foco=host.querySelector(".nube-login");
+        if(!foco) falta.push("no aparece el formulario de cuenta");
+      }
+    }
+  }
+  if(typeof nubePedirCodigo!=="function"||typeof nubeVerificarCodigo!=="function") falta.push("falta el flujo OTP en nube.js");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("⚙️ abre ventana; todo se pinta adentro; código al correo disponible");
+}});
+
+/* 7.9027 · prueba el login por código de punta a punta SIN red ni correos:
+   simula el servidor, pide código, prueba uno malo y uno bueno, y deja todo como estaba. */
+function devProbarLoginCodigo(){
+  var t0=Date.now(), falta=[];
+  if(typeof nubePedirCodigo!=="function"||typeof nubeVerificarCodigo!=="function")
+    return Promise.resolve({ok:false, txt:"falta el flujo OTP", detalle:["nubePedirCodigo/nubeVerificarCodigo"]});
+  var fetchOrig=window.fetch, sesion=null, llamadas=[];
+  try{ sesion=localStorage.getItem(NUBE_LLAVE_SESION); }catch(e){}
+  var hastaOrig=_nubeOtpHasta;
+  window.fetch=function(u,o){
+    u=String(u); llamadas.push(u);
+    function J(st,j){ return Promise.resolve(new Response(JSON.stringify(j),{status:st,headers:{"Content-Type":"application/json"}})); }
+    if(u.indexOf("/auth/v1/otp")>=0) return J(200,{});
+    if(u.indexOf("/auth/v1/verify")>=0){
+      var bd={}; try{ bd=JSON.parse(o.body); }catch(e){}
+      return bd.token==="424242"?J(200,{access_token:"t",refresh_token:"r",expires_in:3600,user:{id:"dev",email:bd.email}}):J(400,{msg:"Token has expired or is invalid"});
+    }
+    return J(200,[]);
+  };
+  _nubeOtpHasta=0;
+  var mail="doctor@futbolini.test";
+  function restaurar(){
+    window.fetch=fetchOrig; _nubeOtpHasta=hastaOrig;
+    try{ if(sesion) localStorage.setItem(NUBE_LLAVE_SESION,sesion); else localStorage.removeItem(NUBE_LLAVE_SESION); }catch(e){}
+  }
+  return nubePedirCodigo(mail).then(function(r){
+    if(!r.ok) falta.push("pedir código falla: "+r.msg);
+    if(!llamadas.some(function(u){ return u.indexOf("/auth/v1/otp")>=0; })) falta.push("no llama a /auth/v1/otp");
+    return nubePedirCodigo(mail);
+  }).then(function(r2){
+    if(r2.ok) falta.push("deja pedir otro código al tiro (sin espera de 60 s)");
+    return nubeVerificarCodigo(mail,"000000");
+  }).then(function(r3){
+    if(r3.ok) falta.push("acepta un código malo");
+    return nubeVerificarCodigo(mail,"424242");
+  }).then(function(r4){
+    if(!r4.ok) falta.push("rechaza el código bueno: "+r4.msg);
+    else if(!(typeof nubeLogueado==="function"&&nubeLogueado())) falta.push("verificó pero no quedó la sesión");
+    else if(nubeEmail()!==mail) falta.push("la sesión quedó con otro correo");
+  }).catch(function(e){ falta.push("explotó: "+(e&&e.message)); })
+  .then(function(){
+    restaurar();
+    return {ok:!falta.length, ms:Date.now()-t0, detalle:falta,
+      txt:falta.length?(falta.length+" problema(s)"):"pide, espera 60 s, rechaza el malo, entra con el bueno; sesión restaurada"};
+  });
+}
+
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){
   opts=opts||{};
@@ -496,6 +569,13 @@ function devPintarDoctor(cont){
       var r=devSimularYRevisar(5); r.id="sim5"; r.area="simulacion"; r.n="Simular 5 temporadas";
       pintarRes({ok:r.ok?1:0, mal:r.ok?0:1, total:1, ms:0, veredicto:r.ok?"sano":"roto", checks:[r]});
     },30);
+  });
+  btn("✉️ Probar login por código",function(){
+    salida.innerHTML=""; salida.appendChild(el("p","mini","⏳ probando el flujo con un servidor simulado (no manda correos)…"));
+    devProbarLoginCodigo().then(function(r){
+      pintarRes({ok:r.ok?1:0, mal:r.ok?0:1, total:1, ms:r.ms||0, veredicto:r.ok?"sano":"roto",
+        checks:[{id:"login_codigo", area:"interfaz", n:"Login por código al correo (simulado)", ok:r.ok, txt:r.txt, detalle:r.detalle||[]}]});
+    });
   });
   btn("📋 Copiar informe",function(){
     var t=devDoctorTexto();

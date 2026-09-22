@@ -3249,3 +3249,23 @@ anomalía hasta la línea que la causa.
   cachea `getCTM` si antes se llamó `getBBox`; por eso cada medición usa un SVG nuevo.
 - **Tests:** dev **384/384** (+8: los 4 rincones, cámara, botón, i18n) · core **1185/1185**.
   `VERSION` al día (seguía en 7.9024).
+
+## 7.9028 · Ajustes es una ventana, con el login por código al correo arriba
+- **⚙️ abre una ventana** (`abrirAjustes`, modal `ventana-so`) en vez de reemplazar la pantalla del
+  juego. También desde el menú Más (`irA("ajustes")`) y desde 👤 Cuenta cuando no hay nube.
+  Se repinta sola cuando algo adentro llama `render()` (tema, login, respaldo): `render` queda
+  envuelto con `_ajRepintar`, que conserva el scroll. `vistaAjustes(host)` pinta donde le digan;
+  el camino viejo (`SEC="ajustes"` sin partida) sigue funcionando.
+- **Bug encontrado al hacerlo:** dos envolturas (`dev-editor.js`, `pulido.js`) llamaban
+  `orig()` sin argumentos y pintaban en `#vista`: la ventana salía **vacía** y los paneles
+  aparecían detrás. Ahora pasan el `host`.
+- **Cuenta arriba** (`panelCuentaNube`), con **"Código al correo" como pestaña por defecto** (sin
+  clave). En la ventana no se roba el foco (en celu abría el teclado y saltaba al fondo).
+  Textos: "Último respaldo" / "Todavía sin respaldo" con mayúscula.
+- **Modo dev:** doctor `ajustes_ventana` (⚙️ abre ventana; `vistaAjustes` pinta adentro y NO toca
+  `#vista`; la cuenta ofrece código). Verificado al revés (envoltura sin host → falla). Nuevo botón
+  **✉️ Probar login por código** en 🩺 Doctor → `devProbarLoginCodigo()`: servidor simulado, pide
+  código, comprueba la espera de 60 s, rechaza uno malo, entra con el bueno y restaura la sesión.
+  No manda correos. (El servidor real no es alcanzable desde CI; el flujo real queda para probar
+  con un correo de verdad.)
+- **Tests:** dev **393/393** (+9) · core **1185/1185**.
