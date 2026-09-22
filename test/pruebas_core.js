@@ -1801,8 +1801,8 @@
     safe(function(){
       ok(VERSION==="7.99953" || /^7\.9/.test(VERSION), "VERSION 7.99953");
       var scripts=[].map.call(document.querySelectorAll("script[src]"), function(s){ return s.getAttribute("src")||""; });
-      ok(scripts.some(function(s){ return /js\/data-planteles\.js$/.test(s); }), "data-planteles.js cargado");
-      ok(scripts.some(function(s){ return /js\/data-planteles-epoca\.js$/.test(s); }), "data-planteles-epoca.js cargado");
+      ok(scripts.some(function(s){ return /js\/data-planteles\.js(\?|$)/.test(s); }), "data-planteles.js cargado");
+      ok(scripts.some(function(s){ return /js\/data-planteles-epoca\.js(\?|$)/.test(s); }), "data-planteles-epoca.js cargado");
       ok(!scripts.some(function(s){ return /data-planteles-8[89]|data-planteles-9[0-5]|data-planteles-99|data-planteles-80[012]/.test(s); }), "sin scripts huevo 88–802");
       ok(typeof PLANTEL_OSO_2026!=="undefined" && PLANTEL_OSO_2026.length>=18, "Osorno 2026 sigue pegado");
       ok(typeof PLANTEL_UCH_1994_FULL!=="undefined" && PLANTEL_UCH_1994_FULL.length>=18, "U 1994 sigue pegada");

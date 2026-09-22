@@ -211,6 +211,25 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   .chip-meta,.chip-arb{font-size:11px;padding:5px 8px;min-height:28px}
   .strip-cans{font-size:12.5px}
 
+  /* 7.9020 · LA BARRA DE ARRIBA SE DESLIZA.
+     Medido con Playwright a 390px reales: marca(101) + datos(298) + acciones(143)
+     = 542px dentro de una barra de 390 con `overflow:hidden`. Resultado: Cuenta,
+     Apoyar y ⚙️ Ajustes quedaban a 465/513/561px — fuera de pantalla y SIN forma
+     de llegar a ellos, porque Ajustes además está excluido del menú «Más».
+     Ahora la barra entera es una cinta que se recorre con el dedo. */
+  #barra{
+    overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+    scrollbar-width:none
+  }
+  #barra::-webkit-scrollbar{display:none}
+  /* los chips dejan de aplastarse: conservan su ancho y se recorren */
+  .barra-datos{flex:0 0 auto}
+  .bd{flex:0 0 auto;min-width:64px}
+  .barra-acc{flex:0 0 auto}
+  /* el brillo cubre toda la cinta, no solo el trozo visible */
+  .barra-brillo{min-width:100%}
+
   /* Dock */
   #dock{
     display:none;position:fixed;left:0;right:0;bottom:0;z-index:70;

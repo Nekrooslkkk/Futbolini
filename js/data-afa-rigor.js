@@ -13,7 +13,7 @@
    push a DECISIONES si el id no existe.
 
    Cargar DESPUÉS de data-rigor-801.js (de donde toma _d801/_o801).
-   Coordinado en GROK_CAZA.md. NO toca ningún archivo de Grok.
+   Coordinado en ChatDeTrabajIA.md. NO toca ningún archivo de Grok.
    ============================================================ */
 
 /* builder: usa el de Grok si existe (DRY); si no, uno equivalente mínimo */

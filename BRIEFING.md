@@ -82,7 +82,7 @@ Estas reglas viven acá para que **Grok y Claude** las vean al arrancar. No se p
 
 1. **Preguntar siempre.** Cada tanda: `ask_user_question` (todas las preguntas juntas) para aumentar el poder de hacer. No asumir pasarela, perks, ni el salto a 8.00.
 2. **Al terminar una cosa, seguir.** No cerrar el turno en “listo, avisame”. Entregar, preguntar, y dejar el siguiente golpe en marcha.
-3. **Hablarse con Claude.** Canal oficial: **`ChatGrokClaude.md`**. Toda tanda deja una nota **NOTA PARA CLAUDE** / **NOTA DE CLAUDE** ahí (archivos, qué no tocar, tests, versión). `GROK_CAZA.md` es la bitácora de bugs, no el chat. Claude lee el Chat antes de meter UI; Grok antes de meter motor.
+3. **Hablarse con Claude.** Canal ÚNICO: **`ChatDeTrabajIA.md`** (antes `GROK_CAZA.md`; el `ChatGrokClaude.md` paralelo se fusionó ahí el 22 sep 2026). Toda tanda deja una nota **NOTA PARA CLAUDE** / **NOTA DE CLAUDE** al final de ese archivo: archivos tocados, qué no tocar, cómo probar, versión. No se crean archivos de coordinación nuevos.
 4. **8.00 está reservada** hasta que todos los clubes estén al listón Colo-Colo. Mientras: serie `7.999xx`. El usuario *quiere* 8.00; no se pisa el número hasta que la beta sea 100% jugable.
 5. **Donar.** Fuente única: `js/donar.js`. Bitcoin (`DONAR.btc` + `DONAR.libro` + explorer). El juego sigue gratis. No hay paywall. Mensaje de gracias del autor: destinado al juego, se reparte cuando haga falta.
 6. **Beta 100% jugable de ahora en adelante.** Cada tanda tapa huecos (bugs, historia, realismo, tweets, botones muertos). Nada a medias que se vea como muerto.

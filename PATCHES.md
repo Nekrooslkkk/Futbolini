@@ -2264,7 +2264,7 @@ Pedido: el calendario tiene que mostrar **la tabla de todas las cosas**; el ayud
 ## 7.76 · Grok: caza + Argentina + historia Segunda + tuits + voz
 Claude promptó el GROK_SUPERPROMPT. Se hornea, no se deja en un .md:
 
-- **TAREA A:** `GROK_CAZA.md`. IDs Argentina no chocan. Monumental de decisiones es de CC. `COB` 1991/2026 documentado. Planteles de Segunda: no se inventan. Bombonera ya no se filtra si el club es Boca.
+- **TAREA A:** `ChatDeTrabajIA.md`. IDs Argentina no chocan. Monumental de decisiones es de CC. `COB` 1991/2026 documentado. Planteles de Segunda: no se inventan. Bombonera ya no se filtra si el club es Boca.
 - **TAREA B:** `js/data-argentina2026.js` — 30 clubes reales de la Liga Profesional 2026 (`registrarLiga`, era `arg2026`). Filtro **Argentina** en el picker. Una rueda de 29 fechas, 3 pts. Formato real (zonas 15, promedio, Apertura/Clausura) queda en `REGLAS.md` y en el campo `z`. **HISTORIA_LINEA** de los 14 de Segunda (hechos públicos; Osorno 1991 está en la tabla real; Morning 2025 bajó con TAS). Calendario de Boca muestra la tabla de los 30, no Copa Chile.
 - **TAREA B bis:** DTs 2026 de Segunda documentados (Paredes, Viale, Ramos…). Estadios/aforos cruzados (City = Lo Barnechea, Ovalle = Diaguita, Osorno 12.000).
 - **TAREA C:** `js/data-tuits-76.js` — 200+ tuits (crisis, fichaje, mercado, Segunda, VAR, conferencia, lodazal, deuda, cantera…). Se suman al pool Plop. Sin voseo argentino.
@@ -3004,3 +3004,30 @@ verificar que nadie inventara historia, que es la regla que más fácil se rompe
   **Cero años inventados** en las 72 entradas.
 - **Tests:** dev **303/303** (antes 301) · core **1047/1047**. `VERSION` sigue en `"7.9010"`:
   la sube Grok. **No es 8.00.**
+
+## 7.9020 · Celular: la barra de arriba se desliza (Ajustes era inalcanzable) + orden de archivos
+Medido con **Playwright a 390px reales**, no con headless a 500px — que es lo que venía usando y
+por eso pasaban barridos que no debían pasar.
+
+- **El bug que reportó el autor, con número.** A 390px la barra de arriba necesita
+  `marca(101) + datos(298) + acciones(143) = 542px` dentro de un `#barra` de 390 con
+  `overflow:hidden`. Resultado: **Cuenta (465px), Apoyar (513px) y ⚙️ Ajustes (561px) quedaban
+  fuera de la pantalla y sin forma de llegar**, porque además `abrirMasMovil` excluye Ajustes a
+  propósito "porque está en la barra". O sea: **Ajustes era inalcanzable en celular.**
+  Ahora `#barra` es una cinta con `overflow-x:auto` y los chips dejan de aplastarse
+  (`.bd{flex:0 0 auto}`). Verificado: se desliza y aparecen los tres botones.
+- **Red de seguridad:** Ajustes y Cuenta entran también al menú «Más» del dock, a un toque.
+- **Avisos que se salían.** Un toast largo llegaba a 469px (79 fuera del borde) y se apilaban
+  hasta 7, tapando media pantalla. Ahora `#avisos` está acotado al viewport y hay tope de 3
+  apilados (wrap de `aviso()`, que vive en `util.js` y es de Grok, así que no se editó).
+  Verificado: 0 toasts fuera del borde.
+- **Arreglada la suite de Grok, que estaba en rojo en `main`.** Su 7.9019 agregó `?v=7.9019` a los
+  `<script src>` para romper caché, y sus propios asserts usaban regex anclados con `$`
+  (`/data-planteles\.js$/`) → 1173/1175. Cambiados a `(\?|$)`. Es reparación de su intención, no
+  reescritura; se lo dejé escrito.
+- **Orden de archivos.** `GROK_CAZA.md` → **`ChatDeTrabajIA.md`** (pedido del autor), y se fusionó
+  adentro el `ChatGrokClaude.md` que había quedado como canal paralelo partiendo la conversación
+  en dos. Borrados 8 briefs ya consumidos: `GROK_PULIDO`, `GROK_SUPERPROMPT`, `GROK_PROMPTS`,
+  `GROK_TAREAS`, `GROK_EPOCAS`, `PLAN_7.00`, `PLAN_7.10`, `CLAUDE_ESCRITORIO`. De 24 `.md` a 15.
+  `CLAUDE.md` y `BRIEFING.md` apuntan al canal nuevo.
+- **Tests:** core **1175/1175** · dev **303/303**. **No es 8.00.**

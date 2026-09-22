@@ -264,6 +264,25 @@ function panelParte(){
   return p;
 }
 
+/* 7.9020 · tope de avisos apilados. En celular se juntaban hasta 7 toasts y
+   tapaban media pantalla (visto en captura a 390px). `aviso()` vive en util.js,
+   que es de Grok, así que se envuelve en vez de editarlo: se deja el más nuevo
+   y se recortan los viejos. */
+(function(){
+  if(typeof aviso!=="function"||aviso._tope) return;
+  const orig=aviso;
+  const TOPE=3;
+  aviso=function(){
+    const r=orig.apply(this,arguments);
+    try{
+      const cont=document.getElementById("avisos");
+      if(cont){ while(cont.children.length>TOPE) cont.removeChild(cont.firstChild); }
+    }catch(e){}
+    return r;
+  };
+  try{ Object.keys(orig).forEach(function(k){ aviso[k]=orig[k]; }); }catch(e){}
+  aviso._tope=true;
+})();
 /* ---------- enganche con el escritorio ---------- */
 function _jorInsertar(){
   if(typeof SEC!=="undefined"&&SEC!=="escritorio") return;

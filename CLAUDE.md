@@ -21,6 +21,8 @@ estado cuelga del objeto global `E` (localStorage vía `Store`). Épocas: 1991, 
 - `PATCHES.md` — qué hace cada parche, qué archivos toca, cómo editar planteles, cómo encender la IA.
 - `LISTADO.md` — checklist A–I (actualizar si cerrás un ítem).
 - `BRIEFING.md` — memoria portátil (para delegar a otras IA).
+- `ChatDeTrabajIA.md` — **canal único** de trabajo entre las IA (antes `GROK_CAZA.md`). Toda tanda
+  deja su nota al final. No se crean archivos de coordinación nuevos.
 - `IDEAS.md` — wishlist del usuario: pendientes por hacer. Trabajá de acá cuando te digan "seguí con IDEAS".
 
 ## Cómo probar (protocolo)

@@ -2,7 +2,7 @@
 
 > **LEER PRIMERO.** Refleja el estado real del juego HOY, medido, no de memoria.
 > El detalle parche por parche vive en `PATCHES.md`. La coordinación con Grok, en
-> `GROK_CAZA.md` (canal único). La wishlist del autor, en `IDEAS.md`.
+> `ChatDeTrabajIA.md` (canal único). La wishlist del autor, en `IDEAS.md`.
 >
 > Versión de trabajo: **7.9013**. `VERSION` en `js/util.js` la sube Grok (hoy va en `"7.9010"`).
 
@@ -14,7 +14,7 @@ Se abre con `index.html` o `python -m http.server`.
 ## Cómo se trabaja
 Tres manos sobre `main`, en paralelo: el autor (Vicente), **Grok** (motor, partido, mercado,
 planteles, datos) y **Claude** (UI, escritorio, editor/dev, QA, i18n, CSS, federación).
-Los carriles y lo que cada uno no toca están escritos en `GROK_CAZA.md`.
+Los carriles y lo que cada uno no toca están escritos en `ChatDeTrabajIA.md`.
 
 ## Estado por área (medido en 7.9013)
 

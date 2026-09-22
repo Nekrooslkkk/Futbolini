@@ -870,3 +870,9 @@ html{scrollbar-width:thin;scrollbar-color:rgba(70,150,100,.55) transparent}
 /* 7.9014 · el botón Avanzar no puede empujar la barra superior fuera de pantalla */
 #btnAvanzar{max-width:min(240px,27vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
+
+/* 7.9020 · los avisos no pueden salirse de la pantalla.
+   Medido a 390px: un toast largo llegaba a 469px, o sea 79px fuera del borde,
+   y se apilaban hasta 7 tapando media pantalla. */
+#avisos{max-width:100vw;box-sizing:border-box;padding:0 8px}
+.aviso{max-width:100%;box-sizing:border-box;text-align:center;overflow-wrap:anywhere}

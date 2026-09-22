@@ -97,7 +97,9 @@ function abrirMasMovil(){
     SECCIONES.forEach(function(s){
       const id=s[0], ic=s[1], n=s[2];
       if(DOCK_IDS.indexOf(id)>=0) return;
-      if(id==="ajustes") return; /* ⚙️ en la barra, no acá */
+      /* 7.9020 · Ajustes SÍ va acá. Estaba excluido "porque está en la barra",
+         pero a 390px la barra lo cortaba fuera de pantalla: quedaba inalcanzable
+         en celular. La cinta deslizable lo arregla; esto es la red de seguridad. */
       if(id==="redes"&&!redesDisponibles()) return;
       const b=el("button","mas-item"+(SEC===id?" on":""),'<span class="ic">'+ic+'</span><span>'+n+'</span>');
       b.type="button";
@@ -107,6 +109,10 @@ function abrirMasMovil(){
     });
     c.appendChild(g);
     const acc=el("div"); acc.style.marginTop="12px";
+    /* 7.9020 · Cuenta al alcance del pulgar (en la barra se cortaba en celular) */
+    const bcu=el("button","btn-aqua ancho","👤 "+T("mas_cuenta","Cuenta"));
+    bcu.onclick=function(){ cerrarModal(); const b=$("#btnCuenta"); if(b) b.click(); };
+    acc.appendChild(bcu);
     const br=el("button","btn-aqua ancho","⏩ Avance rápido");
     br.onclick=function(){ cerrarModal(); if(typeof modalAvanceRapido==="function") modalAvanceRapido(); };
     acc.appendChild(br);

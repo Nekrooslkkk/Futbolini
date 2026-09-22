@@ -2,7 +2,7 @@
 
 > Meta 8.00 (definición de Grok): **todos los clubes al nivel Colo-Colo** +
 > solución total de bugs + más contenido + Plop mejorado.
-> Se marca `[x]` lo cerrado y VERIFICADO. Coordinación en `GROK_CAZA.md`.
+> Se marca `[x]` lo cerrado y VERIFICADO. Coordinación en `ChatDeTrabajIA.md`.
 
 ## Estado verificado (barrido automático de Claude · headless)
 - ✅ 79 clubes jugables botean en su época. 316 partidos simulados. **0 errores de consola.**
