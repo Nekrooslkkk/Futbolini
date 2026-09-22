@@ -287,6 +287,26 @@ devDoctorRegistrar({id:"sim_progreso_visible", area:"interfaz", n:"Simular tempo
   return falta.length?_dmal(falta.length+" problema(s)",falta)
                      :_dok("el overlay puede mostrar fecha, posición y campeón anterior; la corrida cede el hilo entre lotes");
 }});
+/* 7.9024 · el penal no puede volver a ser un formulario de 3 botones */
+devDoctorRegistrar({id:"arco_escena_3d", area:"interfaz", n:"Penal, tiro libre y córner se patean en la cancha", fn:function(){
+  var falta=[];
+  if(typeof _abrirEscenaArco!=="function") falta.push("_abrirEscenaArco no está");
+  if(typeof minijuegoPenal!=="function"||String(minijuegoPenal).indexOf("_abrirEscenaArco")<0) falta.push("el penal no abre la escena");
+  if(typeof minijuegoTiroLibre!=="function"||String(minijuegoTiroLibre).indexOf("_abrirEscenaArco")<0) falta.push("el tiro libre no abre la escena");
+  if(typeof minijuegoCorner!=="function"||String(minijuegoCorner).indexOf("_abrirEscenaArco")<0) falta.push("el córner no abre la escena");
+  if(typeof mostrarAccion!=="function") falta.push("mostrarAccion no está");
+  else {
+    var src=String(mostrarAccion);
+    if(src.indexOf("minijuegoPenal")<0) falta.push("dirigir un penal no entra al minijuego");
+    var iDir=src.indexOf('P.modo==="dirigir"');
+    var iForm=src.indexOf("¿Quién patea");
+    if(iDir<0) falta.push("no hay atajo dirigir → escena");
+    if(iForm>=0 && iDir>=0 && iForm<iDir) falta.push("el formulario de 3 sale ANTES que la cancha");
+  }
+  var svg=(typeof htmlArcoVivo==="function")?htmlArcoVivo({modo:"penal"}):"";
+  if(!/arco-arq/.test(svg)) falta.push("el arco no trae arquero");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("se abre la escena 3d con arco y arquero, no un listado");
+}});
 
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){

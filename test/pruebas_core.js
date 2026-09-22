@@ -2777,6 +2777,28 @@
       cerrarModal();
     }, "elegir club 7.9019");
 
+    /* T71 · 7.9024 penal/córner en la cancha, no formulario */
+    grupo("Grok 7.9024 (escena 3d · penal en la cancha)");
+    safe(function(){
+      ok(VERSION==="7.9024" || /^7\.9/.test(VERSION), "VERSION 7.9024");
+      ok(typeof _abrirEscenaArco==="function" && typeof minijuegoPenal==="function", "API escena 3d");
+      ok(String(minijuegoPenal).indexOf("_abrirEscenaArco")>=0, "penal usa la escena");
+      ok(String(mostrarAccion).indexOf("minijuegoPenal")>=0, "dirigir abre el minijuego");
+      nuevaPartida("CC",2026,"historico");
+      var once=(E.plantel||[]).filter(function(j){ return j && j.pos!=="ARQ"; }).slice(0,11);
+      ok(once.length>=3, "hay 3 para patear");
+      P_ACTUAL={modo:"dirigir", once:once, rivalPlantel:[{n:"Arquero rival",pos:"ARQ",nivel:72}], part:{rivalId:"UCH",local:true,sede:"Monumental"}, min:44, goleadores:[], gl:0,gv:0, lineas:[], iner:{cor:0}};
+      mostrarAccion({tipo:"penal", min:44, aFavor:true});
+      var escena=document.querySelector("#capa-modal .escena-3d");
+      ok(!!escena, "abre escena-3d, no el panel de 3 botones");
+      ok(!!escena && escena.querySelector(".arco-svg, .e3d-svg"), "el arco está en la escena");
+      ok(!!escena && escena.querySelector("#arco-arq"), "hay arquero");
+      ok(!document.querySelector(".momento-vivo .ops-part"), "no hay formulario 1-2-3");
+      ok(!!escena && escena.querySelector(".so-pie .btn-aqua"), "Patear vive en el pie");
+      cerrarModal();
+      P_ACTUAL=null;
+    }, "escena 3d penal 7.9024");
+
     /* Reporte */
     OUT.push("\n════════════════════════");
     if(ERR.length){ OUT.push("Errores de consola ("+ERR.length+"):"); ERR.slice(0,15).forEach(function(x){ OUT.push("  ⚠ "+x); }); FAILS+=ERR.length; }

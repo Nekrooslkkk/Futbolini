@@ -78,7 +78,7 @@ body[data-tema="insano"]{
   --f-cuerpo:"Comic Sans MS","Segoe UI",cursive;
   --f-dato:"Lucida Console",Consolas,monospace;
 }
-body[data-tema="insano"]{animation:locura 8s linear infinite}
+body[data-tema="insano"]{animation:locura 8s linear infinite; overflow-x:hidden; max-width:100vw}
 @keyframes locura{to{filter:hue-rotate(360deg)}}
 body[data-tema="insano"] .cielo{background:linear-gradient(135deg,#ff00c8,#00ffe1 35%,#fff700 70%,#00ff62)}
 body[data-tema="insano"] .destello{background:radial-gradient(40% 30% at 30% 5%,rgba(255,255,255,.85),transparent 70%)}

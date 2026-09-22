@@ -1,6 +1,6 @@
 # FUTBOLINI — Briefing para agentes de IA (memoria portátil)
 
-> Versión en juego: **7.9019** (GitHub + celu al elegir club). No es 8.00.
+> Versión en juego: **7.9024** (penal en la cancha). No es 8.00.
 
 > Pegá este archivo COMPLETO al inicio de cualquier sesión con otra IA (Grok, Gemini, etc.)
 > junto con `PATCHES.md`. Es la memoria del proyecto: sin esto, la IA "olvida" y rompe el hilo.
@@ -15,9 +15,8 @@ duele, estatutos que se pueden cambiar si tenés el poder, decisiones sin porcen
 partidos que se sienten. Dos épocas jugables: **1991** (histórico real) y **2026** (Primera actual).
 
 ## 2. Regla de oro (INVIOLABLE)
-- **NUNCA reconstruir desde cero.** Se EXPANDE sobre los módulos existentes.
-- **Vanilla JS puro**, sin frameworks, sin librerías externas, sin build. Todo corre abriendo
-  `index.html` o con `python -m http.server`. Nada de npm/React/CDN.
+- **Lo intocable es la IDEA, no el código.** (22 sep 2026.) Se puede reconstruir un sistema entero si está feo o no funciona, con plan, tests y aviso en `ChatDeTrabajIA.md`. Sigue prohibido tirar abajo lo que ya funciona solo porque no lo escribiste vos.
+- **Vanilla JS puro**, sin frameworks, sin librerías de npm, sin build. Todo corre abriendo `index.html`. Internet SÍ (CDN sin copyright: MIT/OFL/Apache/CC0). Si se cae la red, el juego se degrada, no se rompe: el jugador tiene que poder bajarse el estado y jugar offline.
 - **Match del estilo del código**: identificadores en español, funciones cortas, `"use strict"`,
   comentarios escuetos. Mirá un archivo antes de escribir y copiá el tono.
 - **Estado global `E`** (un objeto). Se guarda en localStorage vía `Store`. Casi todo cuelga de `E`.

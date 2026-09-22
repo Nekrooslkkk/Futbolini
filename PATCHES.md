@@ -1,5 +1,13 @@
 # FUTBOLINI 3.0 — Bitácora de parches
 
+## 7.9024 · El penal se patea en la cancha (no es un formulario)
+**Archivos:** `js/ui-partido.js`, `css/gol.css`, `css/movil.css`, `css/temas.css`, `js/dev-doctor.js`, `js/util.js`, `index.html`, tests, Chat
+- Pedido del autor + nota de Claude 7.9023: el penal era **tres botones de lista** al costado de una cancha chica. El momento más tenso del fútbol no puede ser un formulario.
+- Dirigir un penal / tiro libre / córner **abre de una** la escena 3d: estadio, arco, arquero. Los pateadores son fichas sobre la cancha. Arrastrás al rincón y soltás (o apretás Patear en el pie).
+- El motor no se tocó: `penResolver` / `cornerResolver` / palo con rebote siguen. Solo cambió **cómo se siente**.
+- Tiro libre y córner traen «En corto» en el pie, no un menú de 3 antes.
+- Doctor: chequeo `arco_escena_3d`. Insano ya no desborda 8px a 390. Traje 7.9020–7.9023 (Ajustes alcanzable, Doctor, copas vivas). **No es 8.00.**
+
 ## 7.9019 · GitHub de verdad + celu al elegir club
 **Archivos:** `js/util.js`, `js/ui.js`, `js/ventanas.js`, `css/movil.css`, `index.html`, tests, Chat
 - GitHub seguía en **7.9010** (el celu no tenía el arreglo). Subido a `main`.

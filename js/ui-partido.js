@@ -1890,22 +1890,59 @@ function _botonesEfecto(c, inicial){
   c.appendChild(efRow);
   return function(){ return efecto; };
 }
+/* 7.9024 · la cancha ES la decisión. Sin formulario a un costado. */
+function _abrirEscenaArco(box, tit, ic){
+  box.classList.add("ventana-so","escena-3d");
+  const cuerpo=(typeof montarBarraSO==="function")
+    ? montarBarraSO(box, tit, ic, null)
+    : (function(){ box.appendChild(el("div","cab",'<span class="ic">'+ic+'</span><span>'+tit+'</span>')); const x=el("div","cuerpo"); box.appendChild(x); return x; })();
+  cuerpo.classList.add("penal-mini","arco-vivo","e3d-cuerpo");
+  const min=box.querySelector(".so-btn.min"), max=box.querySelector(".so-btn.max");
+  if(min) min.style.display="none";
+  if(max) max.style.display="none";
+  const stage=el("div","e3d-stage");
+  const world=el("div","e3d-world");
+  stage.appendChild(world);
+  return {cuerpo:cuerpo, stage:stage, world:world};
+}
+function _chipsPateador(host, lista, actual, onPick){
+  let cur=actual;
+  if(!lista||!lista.length) return {get:function(){ return cur; }};
+  const row=el("div","e3d-chips");
+  lista.forEach(function(j){
+    if(!j) return;
+    const spec=j.rasgos&&(j.rasgos.indexOf("penales")>=0||j.rasgos.indexOf("tiro libre")>=0||j.rasgos.indexOf("juego aéreo")>=0);
+    const ape=(j.n||"").split(" ").slice(-1)[0]||j.n;
+    const b=el("button","e3d-chip"+(cur&&j.n===cur.n?" on":""), ape+(spec?" ★":""));
+    b.type="button";
+    b.title=(j.n||"")+" · nivel "+(j.nivel||"?");
+    b.onclick=function(ev){ if(ev) ev.stopPropagation(); cur=j; [].forEach.call(row.querySelectorAll(".e3d-chip"),function(x){ x.classList.remove("on"); }); b.classList.add("on"); if(onPick) onPick(j); };
+    row.appendChild(b);
+  });
+  host.appendChild(row);
+  return {get:function(){ return cur; }};
+}
 function minijuegoPenal(P,pateador,opts){
   opts=opts||{};
   const arq=arqueroDe(P.rivalPlantel)||{n:"el arquero",nivel:70};
   const kit=_kitDe(P.part&&P.part.rivalId, ["#1a6ad4","#111827"]);
   let aim=null, tirado=false;
   modal(box=>{
-    box.appendChild(el("div","cab",'<span class="ic">🥅</span><span>'+(opts.tanda?_tt("tanda_tit","Tanda · dibuja tu penal"):_tt("arco_pen_tit","Penal · dibuja tu tiro"))+'</span>'));
-    const c=el("div","cuerpo penal-mini arco-vivo"); box.appendChild(c);
+    const esc=_abrirEscenaArco(box, opts.tanda?_tt("tanda_tit","Tanda · tu penal"):_tt("arco_pen_tit","Penal"), "🥅");
+    const c=esc.cuerpo;
     _hudArco(c,"penal",P);
-    c.appendChild(el("p","mini","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Toca el arco y aprieta <b>¡Patear!</b>. Los rincones casi no se atajan; al medio flojo, sí."));
+    let pat=pateador;
+    const cands=(opts.cands&&opts.cands.length)?opts.cands:[pateador];
+    const chips=_chipsPateador(c, cands, pateador, function(j){ pat=j; etiq.innerHTML="Patea <b>"+j.n+"</b>. Arrastrá al rincón y soltá."; });
+    const etiq=el("p","mini e3d-etiq","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Arrastrá al arco y soltá. El centro flojo se ataja.");
+    c.appendChild(etiq);
+    c.appendChild(esc.stage);
     const NS="http://www.w3.org/2000/svg";
     const svg=document.createElementNS(NS,"svg");
-    svg.setAttribute("viewBox","0 0 360 240"); svg.setAttribute("class","penal-svg arco-svg");
-    svg.style.cssText="width:100%;max-width:480px;display:block;margin:6px auto;touch-action:none;cursor:crosshair";
+    svg.setAttribute("viewBox","0 0 360 240"); svg.setAttribute("class","penal-svg arco-svg e3d-svg");
+    svg.setAttribute("preserveAspectRatio","xMidYMax slice");
     svg.innerHTML=htmlArcoVivo({arqX:180, modo:"penal", kitArq:kit});
-    c.appendChild(svg);
+    esc.world.appendChild(svg);
     const bolaG=svg.querySelector("#arco-bola"), mira=svg.querySelector("#arco-mira");
     const linea2=svg.querySelector("#arco-linea"), arqEl=svg.querySelector("#arco-arq");
     function aSVG(ev){
@@ -1926,11 +1963,12 @@ function minijuegoPenal(P,pateador,opts){
     }
     svg.addEventListener("pointerdown",e=>{ e.preventDefault(); marcar(aSVG(e)); });
     svg.addEventListener("pointermove",e=>{ if(e.buttons||e.pressure){ e.preventDefault(); marcar(aSVG(e)); } });
+    const pie=(typeof montarPieSO==="function")?montarPieSO(box):c;
     const getEf=_botonesEfecto(c,"colocado");
-    const etiq=el("p","mini","Toca el arco para elegir dónde ponerla."); c.appendChild(etiq);
     const bpat=el("button","btn-aqua ancho verde","¡Patear!"); bpat.disabled=true;
-    bpat.onclick=()=>{
+    function disparar(){
       if(!aim||tirado) return; tirado=true; bpat.disabled=true;
+      pateador=chips.get()||pat||pateador;
       const kdir=penArqueroTira(aim,arq.nivel||70);
       const out=penResolver(aim,kdir,getEf(),pateador.nivel||70,arq.nivel||70);
       _animArq(arqEl, kdir, 420, {ataja:out.res==="atajado"});
@@ -1963,8 +2001,10 @@ function minijuegoPenal(P,pateador,opts){
         }
         fin();
       });
-    };
-    c.appendChild(bpat);
+    }
+    svg.addEventListener("pointerup",function(e){ e.preventDefault(); if(aim&&!tirado) disparar(); });
+    bpat.onclick=disparar;
+    pie.appendChild(bpat);
   },{cerrarFuera:false});
   return true;
 }
@@ -1976,16 +2016,18 @@ function minijuegoTiroLibre(P){
   const kitAtk=_kitDe(typeof E!=="undefined"&&E&&E.club, ["#f4f4f4","#111111"]);
   let aim=null, tirado=false;
   modal(box=>{
-    box.appendChild(el("div","cab",'<span class="ic">🎯</span><span>'+_tt("arco_tl_tit","Tiro libre · dibuja tu remate")+'</span>'));
-    const c=el("div","cuerpo penal-mini arco-vivo"); box.appendChild(c);
+    const esc=_abrirEscenaArco(box, _tt("arco_tl_tit","Tiro libre"), "🎯");
+    const c=esc.cuerpo;
     _hudArco(c,"tl",P);
-    c.appendChild(el("p","mini","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Pásala por arriba o por el costado y busca el rincón lejos del arquero."));
+    const etiq=el("p","mini e3d-etiq","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Arrastrá por arriba o al costado y soltá.");
+    c.appendChild(etiq);
+    c.appendChild(esc.stage);
     const NS="http://www.w3.org/2000/svg";
     const svg=document.createElementNS(NS,"svg");
-    svg.setAttribute("viewBox","0 0 360 240"); svg.setAttribute("class","penal-svg arco-svg");
-    svg.style.cssText="width:100%;max-width:480px;display:block;margin:6px auto;touch-action:none;cursor:crosshair";
+    svg.setAttribute("viewBox","0 0 360 240"); svg.setAttribute("class","penal-svg arco-svg e3d-svg");
+    svg.setAttribute("preserveAspectRatio","xMidYMax slice");
     svg.innerHTML=htmlArcoVivo({barrera:true, arqX:arqX, modo:"tl", kitArq:kit, kitWall:kit, kitAtk:kitAtk});
-    c.appendChild(svg);
+    esc.world.appendChild(svg);
     const bolaG=svg.querySelector("#arco-bola"), mira=svg.querySelector("#arco-mira");
     const linea2=svg.querySelector("#arco-linea"), arqEl=svg.querySelector("#arco-arq");
     const wall=svg.querySelector("#arco-wall");
@@ -2008,10 +2050,12 @@ function minijuegoTiroLibre(P){
     }
     svg.addEventListener("pointerdown",e=>{ e.preventDefault(); marcar(aSVG(e)); });
     svg.addEventListener("pointermove",e=>{ if(e.buttons||e.pressure){ e.preventDefault(); marcar(aSVG(e)); } });
+    const pie=(typeof montarPieSO==="function")?montarPieSO(box):c;
     const getEf=_botonesEfecto(c,"colocado");
-    const etiq=el("p","mini","Toca el arco: por encima o al costado de la barrera."); c.appendChild(etiq);
     const bpat=el("button","btn-aqua ancho verde","¡Patear!"); bpat.disabled=true;
-    bpat.onclick=()=>{
+    const bcorto=el("button","btn-aqua chico gris","En corto");
+    bcorto.onclick=function(){ if(tirado) return; tirado=true; cerrarModal(); if(typeof linea==="function") linea(P,P.min,"La juegan en corto y rearman con paciencia."); pintarPartido(); reanudarPronto(); };
+    function dispararTL(){
       if(!aim||tirado) return; tirado=true; bpat.disabled=true;
       const cl=tlClasificar(aim);
       let res=cl.res, motivo=cl.motivo||"";
@@ -2067,8 +2111,11 @@ function minijuegoTiroLibre(P){
           pintarPartido(); reanudarPronto();
         },820);
       }
-    };
-    c.appendChild(bpat);
+    }
+    svg.addEventListener("pointerup",function(e){ e.preventDefault(); if(aim&&!tirado) dispararTL(); });
+    bpat.onclick=dispararTL;
+    pie.appendChild(bcorto);
+    pie.appendChild(bpat);
   },{cerrarFuera:false});
   return true;
 }
@@ -2085,16 +2132,18 @@ function minijuegoCorner(P){
   const arqX=lado==="izq"?236:124;
   let aim=null, tirado=false;
   modal(box=>{
-    box.appendChild(el("div","cab",'<span class="ic">🚩</span><span>'+_tt("arco_cor_tit","Córner · dibuja el centro")+'</span>'));
-    const c=el("div","cuerpo penal-mini arco-vivo"); box.appendChild(c);
+    const esc=_abrirEscenaArco(box, _tt("arco_cor_tit","Córner"), "🚩");
+    const c=esc.cuerpo;
     _hudArco(c,"corner",P);
-    c.appendChild(el("p","mini","Cobra <b>"+(j.n)+"</b>. Toca el área: primer palo, punto penal o segundo palo. El cabeceador salta ahí."));
+    const etiq=el("p","mini e3d-etiq","Cobra <b>"+(j.n)+"</b>. Arrastrá el centro: primer palo, punto penal o segundo palo. Soltá para cobrar.");
+    c.appendChild(etiq);
+    c.appendChild(esc.stage);
     const NS="http://www.w3.org/2000/svg";
     const svg=document.createElementNS(NS,"svg");
-    svg.setAttribute("viewBox","0 0 360 240"); svg.setAttribute("class","penal-svg arco-svg");
-    svg.style.cssText="width:100%;max-width:480px;display:block;margin:6px auto;touch-action:none;cursor:crosshair";
+    svg.setAttribute("viewBox","0 0 360 240"); svg.setAttribute("class","penal-svg arco-svg e3d-svg");
+    svg.setAttribute("preserveAspectRatio","xMidYMax slice");
     svg.innerHTML=htmlArcoVivo({modo:"corner", arqX:arqX, kitArq:kit, kitWall:kit, kitAtk:kitAtk, bolaX:bolaX, bolaY:222, lado:lado});
-    c.appendChild(svg);
+    esc.world.appendChild(svg);
     const bolaG=svg.querySelector("#arco-bola"), mira=svg.querySelector("#arco-mira");
     const linea2=svg.querySelector("#arco-linea"), arqEl=svg.querySelector("#arco-arq");
     function aSVG(ev){
@@ -2119,9 +2168,11 @@ function minijuegoCorner(P){
     }
     svg.addEventListener("pointerdown",e=>{ e.preventDefault(); marcar(aSVG(e)); });
     svg.addEventListener("pointermove",e=>{ if(e.buttons||e.pressure){ e.preventDefault(); marcar(aSVG(e)); } });
-    const etiq=el("p","mini","Toca dónde va el centro."); c.appendChild(etiq);
+    const pie=(typeof montarPieSO==="function")?montarPieSO(box):c;
     const bpat=el("button","btn-aqua ancho verde","¡Cobrar!"); bpat.disabled=true;
-    bpat.onclick=()=>{
+    const bcorto=el("button","btn-aqua chico gris","En corto");
+    bcorto.onclick=function(){ if(tirado) return; tirado=true; cerrarModal(); if(typeof linea==="function") linea(P,P.min,"Córner en corto. Rearman sin apuro."); pintarPartido(); reanudarPronto(); };
+    function dispararCor(){
       if(!aim||tirado) return; tirado=true; bpat.disabled=true;
       const cl=cornerClasificar(aim);
       let res=cl.res, motivo=cl.motivo||"";
@@ -2181,8 +2232,11 @@ function minijuegoCorner(P){
         }
         finCor();
       });
-    };
-    c.appendChild(bpat);
+    }
+    svg.addEventListener("pointerup",function(e){ e.preventDefault(); if(aim&&!tirado) dispararCor(); });
+    bpat.onclick=dispararCor;
+    pie.appendChild(bcorto);
+    pie.appendChild(bpat);
   },{cerrarFuera:false});
   return true;
 }
@@ -2208,11 +2262,16 @@ function mostrarAccion(ev){
   if(P){ P._holdKind="accion"; P._holdEv=ev; }
   let titulo="", opciones=[];
   if(ev.tipo==="penal"){
-    titulo="¡Penal a favor! ¿Quién patea?";
     if(P){ P._penalCancha=1; P._penalSeq=(P._penalSeq||0)+1; }
+    if(P && P.modo==="dirigir"){
+      const lista=candidatosPenal(P);
+      return minijuegoPenal(P, (lista&&lista[0])||{n:"el pateador",nivel:70}, {cands:lista});
+    }
+    titulo="¡Penal a favor! ¿Quién patea?";
     opciones=candidatosPenal(P).map(j=>({t:j.n+" · "+((j.rasgos&&j.rasgos.includes("penales"))?"especialista":"nivel "+j.nivel),
       run:()=> P.modo==="dirigir" ? minijuegoPenal(P,j) : penalEnPartido(P,true,null,j)}));
   } else if(ev.tipo==="tiroLibre"){
+    if(P && P.modo==="dirigir") return minijuegoTiroLibre(P);
     titulo="Tiro libre peligroso";
     opciones=[
       {t:"⚽ Pegarle yo (dibujar el remate)",run:()=> P.modo==="dirigir" ? minijuegoTiroLibre(P) : tiroLibreAuto(P)},
@@ -2221,6 +2280,7 @@ function mostrarAccion(ev){
       {t:"Jugarla en corto, sin riesgo",run:()=>linea(P,P.min,"La juegan en corto y rearman con paciencia.")}
     ];
   } else if(ev.tipo==="corner"){
+    if(P && P.modo==="dirigir") return minijuegoCorner(P);
     titulo="Córner a favor";
     opciones=[
       {t:"🚩 Cobrar yo (dibujar el centro)",run:()=> P.modo==="dirigir" ? minijuegoCorner(P) : (typeof centroCorner==="function"?centroCorner(P):null)},

@@ -908,6 +908,18 @@
       });
     },"i18n 7.9013");
 
+    grupo("Grok 7.9024 escena 3d (penal en la cancha)");
+    safe(function(){
+      t(typeof _abrirEscenaArco==="function","_abrirEscenaArco existe");
+      t(typeof minijuegoPenal==="function" && String(minijuegoPenal).indexOf("_abrirEscenaArco")>=0,"el penal abre la escena");
+      t(typeof minijuegoTiroLibre==="function" && String(minijuegoTiroLibre).indexOf("_abrirEscenaArco")>=0,"el tiro libre abre la escena");
+      t(typeof minijuegoCorner==="function" && String(minijuegoCorner).indexOf("_abrirEscenaArco")>=0,"el córner abre la escena");
+      t(DOCTOR_CHECKS.some(function(c){ return c.id==="arco_escena_3d"; }),"el Doctor registra arco_escena_3d");
+      var rd=devDoctor({area:"interfaz"});
+      var chk=rd.checks.find(function(c){ return c.id==="arco_escena_3d"; });
+      t(chk && chk.ok, "el chequeo del penal sale sano"+(chk&&!chk.ok?(" — "+chk.txt):""));
+    },"escena 3d");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));
