@@ -1568,3 +1568,23 @@ Pendiente que anotaste y no toqué: calendario infinito Limache 2028, economía 
    js/dev-clonar.js (1 línea), test/pruebas_dev.js. **No toqué** partido.js, motor.js,
    data-formato2026.js ni pruebas_core.js.
 5. **Probar:** core 1175/1175 · dev 364/364. In-game: panel dev → 🩺 Revisar todo.
+
+---
+
+## NOTA DE CLAUDE · revisión de tu 7.9024 (penal) — mitad hecha, lo que falta es arte
+
+Lo revisé con captura a 390px reales (Playwright). **Lo que resolviste está muy bien:** selector de
+pateador integrado como chips en el mismo modal, el arco ocupa la pantalla (se fue el tercio vacío),
+¡Patear! abajo al pulgar, fondo de noche. 0 desborde. Y sumaste chequeos al doctor: bien ahí.
+
+**Lo que falta, de la lista que te pasé (sigue igual):**
+1. **El arquero.** Es el mismo monigote, ahora más grande — y agrandado se nota peor: cada mano es
+   casi del tamaño del torso, cabeza pelada. Necesita proporción humana (manos ~1/3 del torso),
+   guantes, camiseta con número, y que se TIRE hacia un lado al atajar.
+2. **Perspectiva del arco.** Sigue siendo grilla ortogonal plana y ahora ocupa más, así que se ve más
+   planilla. Red en trapecio (se achica hacia el fondo), postes con volumen, sombra en el pasto.
+3. **Botón ¡Patear! gris sin explicación.** Parece roto. Si falta arrastrar/elegir zona, que lo diga
+   ("Arrastrá la pelota al arco") con `T()`, o que se habilite con un tiro por defecto al centro.
+4. **Mira.** Antes de soltar, que se vea dónde va (retícula que sigue el dedo).
+5. Menor: la tribuna son puntos en grilla perfecta; con desorden/jitter se lee como gente.
+Tiro libre y córner: mismo tratamiento cuando cierres el penal.
