@@ -543,6 +543,16 @@ function resolverTokens(txt,E,extra){
     ANIO:E.anio
   };
   if(extra&&typeof extra==="object") Object.keys(extra).forEach(function(k){ if(extra[k]!=null) val[k]=extra[k]; });
+  /* 7.9033 · "al {IDOLO}" con nombre completo sonaba mal ("infiltrar al Charles Aránguiz"):
+     con personas, el artículo se va ("a Charles Aránguiz", "de…", sin "el"). */
+  const PERSONAS=["CAPITAN","GOLEADOR","ARQUERO","IDOLO","JOVEN","VETERANO","DEFENSA_JOVEN","CRACK","JUGADOR","FIGURA"];
+  txt=txt.replace(/\b(al|del|el|Al|Del|El) \{([A-Z_]+)\}/g,function(m,art,k){
+    if(PERSONAS.indexOf(k)<0||val[k]==null) return m;
+    const a=art.toLowerCase();
+    if(a==="al") return (art[0]==="A"?"A ":"a ")+"{"+k+"}";
+    if(a==="del") return (art[0]==="D"?"De ":"de ")+"{"+k+"}";
+    return "{"+k+"}";
+  });
   return txt.replace(/\{([A-Z_]+)\}/g,(m,k)=> val[k]!=null?val[k]:m);
 }
 function jugadorPorToken(token,E){

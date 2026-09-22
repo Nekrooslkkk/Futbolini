@@ -1008,7 +1008,7 @@ function abrirDecision(d,enModal){
       let idxElige=-1, mejor=-Infinity;
       d.op.forEach((o,i)=>{ if(requisitoCumplido(o).ok && scores[i]>mejor){ mejor=scores[i]; idxElige=i; } });
       const bp=el("button","btn-aqua chico"+(pistaOn?" gris":""));
-      bp.textContent="🧑‍🏫 "+(pistaOn?T("dec_elige_ya","El ayudante ya marcó su opción"):T("dec_elige","Él elegiría esta"));
+      bp.textContent="🧑‍🏫 "+(pistaOn?T("dec_elige_ya","El ayudante ya marcó su opción"):T("dec_elige","Tu ayudante elegiría esta"));
       bp.disabled=pistaOn || idxElige<0;
       bp.onclick=()=>{ pistaOn=true; pintar(cont); };
       p.cuerpo.appendChild(bp);

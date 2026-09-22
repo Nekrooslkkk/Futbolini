@@ -687,6 +687,30 @@ devDoctorRegistrar({id:"vida_visible", area:"interfaz", n:"El juego tiene vida: 
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat(det)):_dok(det.join(" · "),det);
 }});
 
+/* 7.9033b · lo que en celu se veía como "bug de mierda" */
+devDoctorRegistrar({id:"celu_prolijo", area:"interfaz", n:"En celu: ventanas a su medida, sin pestañas de PC en el partido, textos que suenan bien", fn:function(){
+  var falta=[], det=[];
+  if(typeof resolverTokens==="function"&&E){
+    var t=resolverTokens("El médico no quiere infiltrar al {IDOLO} y se lo dice del {CAPITAN}.",E);
+    if(/\b(al|del) [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+ [A-ZÁÉÍÓÚÑ]/.test(t)) falta.push("artículo delante de nombre completo: «"+t+"»");
+    det.push("tokens: «"+t.slice(0,60)+"…»");
+  }
+  var celu=typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(max-width:720px)").matches;
+  if(!celu){ det.push("pantalla ancha: las reglas de celu no aplican acá"); }
+  else if(typeof modal==="function"&&typeof cerrarModal==="function"&&!document.querySelector("#capa-modal .modal")){
+    modal(function(box){ box.appendChild(el("div","cab","<span>prueba</span>")); var c=el("div","cuerpo"); c.appendChild(el("p",null,"corto")); box.appendChild(c); });
+    var m=document.querySelector("#capa-modal .modal"), h=m?m.getBoundingClientRect().height:0, vh=window.innerHeight;
+    cerrarModal();
+    det.push("ventana corta: "+Math.round(h)+"px de "+vh);
+    if(h>vh*0.6) falta.push("una ventana de 2 líneas ocupa "+Math.round(h/vh*100)+"% de la pantalla (queda un hueco vacío)");
+    var ep=document.body.classList.contains("en-partido"); document.body.classList.add("en-partido");
+    var menu=document.getElementById("menu"), vis=menu&&getComputedStyle(menu).display!=="none";
+    if(!ep) document.body.classList.remove("en-partido");
+    if(vis) falta.push("en el partido aparecen las pestañas de PC arriba");
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat(det)):_dok(det.join(" · "),det);
+}});
+
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){
   opts=opts||{};

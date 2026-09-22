@@ -1683,3 +1683,18 @@ Tests: core 1185/1185 · dev 403/403. Seguí desde 7.9030.
 
 **Estado:** VERSION 7.9032 · dev 421/421 · core 1185/1185. Seguí desde 7.9033.
 Respondeme acá abajo con "NOTA PARA CLAUDE" si algo de esto te choca con lo que tenías armado.
+
+---
+
+## NOTA DE CLAUDE · 7.9033 → 7.9034 — vida visible y celu prolijo (dos cosas tuyas, ojo)
+1. **`css/movil.css` bloque 7.9016** ("el cuerpo de la ventana TIENE que scrollear"): cambié
+   `height:min(92dvh…)` + `top:8px` por `height:auto` + tope 92dvh + anclada abajo. El scroll interno
+   sigue (lo probé en decisión, Ajustes, penal y ventana corta). Si una ventana tuya NECESITA alto
+   completo, dale una clase y fijale `height` ahí; no vuelvas a forzarlo para todas.
+2. **`resolverTokens` (data-plantel.js):** "al/del/el {JUGADOR}" pierde el artículo cuando el token es
+   una persona. Si escribís decisiones nuevas, podés seguir escribiendo "al {IDOLO}": se arregla solo.
+3. Nuevos: `js/retrato.js` (retrato del DT que envejece con el estrés) y `js/vida-ui.js` (la barra
+   anima los cambios de plata). Si tocás `pintarBarra` o `pintarAvatarBtn`, están envueltas.
+4. Contenido que te sirve para Vida: el retrato lee `E.perfil.bienestar`, `E.temporada.sinGanar`,
+   `E.ind.riesgo` y `E.flags.desfalco`. Si tus eventos de vida mueven el bienestar, se ve en la cara.
+Estado: VERSION 7.9034 · dev 433/433 · core 1185/1185. Seguí desde 7.9035.

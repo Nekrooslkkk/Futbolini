@@ -3359,3 +3359,15 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   "Primera vez que se cruzan"; el 💡 de las metas se montaba sobre "En camino/Cumplido".
 - **Doctor +1:** `vida_visible` (el retrato cambia con el estrés, avatar válido, barra anima, historia
   en orden). **Tests:** dev **430/430** (+9) · core **1185/1185**.
+
+## 7.9034 · Celu prolijo: lo que se veía como "bug de mierda"
+- **Ventanas del celu a su medida.** Desde 7.9016 toda ventana se forzaba a 92% de alto (para
+  asegurar el scroll): una decisión corta dejaba medio celular vacío. Ahora alto según contenido
+  (tope 92%, el scroll sigue igual) y anclada abajo, como hoja al pulgar.
+- **En el partido, en celu, ya no aparecen las pestañas de PC** ("Escritorio · Institución ·
+  Finanzas" cortadas arriba). Para salir sigue el escudo (va al Escritorio, partido en pausa).
+- **Textos:** "infiltrar al Charles Aránguiz" → "infiltrar a Charles Aránguiz" (`resolverTokens`
+  saca el artículo delante de un nombre completo, en todas las decisiones y eventos). "Él elegiría
+  esta" → "Tu ayudante elegiría esta" (neutro/en/pt).
+- **Doctor +1:** `celu_prolijo` (ventana corta < 60% de la pantalla, sin pestañas en el partido,
+  sin artículo + nombre completo). Verificado al revés a 390px. **Tests:** dev 433/433 · core 1185/1185.

@@ -344,12 +344,14 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   html body[data-tema="aero"] .modal.panel,
   html body[data-tema="aero"] .modal.ventana-so,
   html.cdn-7 body[data-tema="aero"] .modal.ventana-so{
-    height:min(92dvh, calc(100dvh - env(safe-area-inset-top,0px))) !important;
-    max-height:min(92dvh, calc(100dvh - env(safe-area-inset-top,0px))) !important;
+    /* 7.9033: alto según el contenido (tope 92dvh, el scroll sigue igual). Forzar 92dvh
+       dejaba las ventanas cortas con medio celular vacío. Anclada abajo: hoja al pulgar. */
+    height:auto !important;
+    max-height:min(92dvh, calc(100dvh - env(safe-area-inset-top,0px) - 8px)) !important;
     position:fixed !important;
     left:8px !important; right:8px !important;
-    top:max(8px, env(safe-area-inset-top,0px)) !important;
-    bottom:auto !important;
+    top:auto !important;
+    bottom:max(8px, env(safe-area-inset-bottom,0px)) !important;
     width:auto !important; max-width:calc(100vw - 16px) !important;
     display:flex !important; flex-direction:column !important;
     overflow:hidden !important; min-height:0 !important;
@@ -530,4 +532,10 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
 
   /* 7.9022 hallazgo: insano desborda 8px a 390 */
   body[data-tema="insano"]{ overflow-x:hidden; max-width:100vw; }
+}
+
+/* 7.9033 · en el partido, en celu, no aparecen las pestañas de PC: el partido manda.
+   Para salir: el escudo de arriba (va al Escritorio y el partido queda en pausa). */
+@media (max-width:720px){
+  body.en-partido #menu{ display:none !important; }
 }

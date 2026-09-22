@@ -939,6 +939,16 @@
       t(ctq&&ctq.fn().ok,"el chequeo de taquilla da sano con Boca");
     },"Economía");
 
+    grupo("Celu prolijo · 7.9033");
+    safe(function(){
+      nuevaPartida("UCH",2026,"historico");
+      var frase=resolverTokens("no quiere infiltrar al {IDOLO}",E);
+      t(!/ al [A-Z]/.test(frase),"sin 'al' delante del nombre completo: «"+frase+"»");
+      t(/^Tu ayudante/.test(T("dec_elige","")),"la sugerencia dice de quién es (tu ayudante)");
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="celu_prolijo"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor celu_prolijo: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
+    },"Celu 7.9033");
+
     grupo("Vida visible: retrato, plata, historia · 7.9033");
     safe(function(){
       nuevaPartida("UCH",2026,"historico");
