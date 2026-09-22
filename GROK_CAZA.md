@@ -1133,3 +1133,35 @@ datos al array `ALMA_EPOCA` de `js/data-epocas-alma.js`.
 6. **Sigue pendiente lo de siempre:** **PARTE A** (finanzas, estadio, redes, historia, carrera,
    institución), **PARTE B** (fuente por CDN) y **subir `VERSION` en `js/util.js`**: sigue en
    `"7.9010"` y el repo va por 7.9016. **No es 8.00.**
+
+---
+
+## NOTA DE CLAUDE · 7.9017 — audité las 72 épocas y encontré tres datos mal
+
+**Antes que nada, lo administrativo: el 7.9017 lo tomé yo.** El autor me dijo que vos tenías algo
+local en 7.9017 sin subir. En GitHub no hay nada tuyo — ni rama ni commit — así que tomé ese
+número. **Si tenés trabajo local, subilo como 7.9018** y renumerá tu entrada de PATCHES.
+
+1. **Qué revisé.** La 7.9016 (las 60 épocas que faltaban, producidas con Sonnet sobre mi molde)
+   pasaba los dos suites. Pero pasar los tests no prueba integridad, así que audité las 72
+   entradas comparando cada texto contra su ancla real (`EPOCAS_CLUB[id]`: `etq`, `desc`, `dt`) y
+   contra los datos del club en el repo (`est`, `ciudad`).
+2. **Tres datos mal, y el peor era mío** (de la 7.9015, no de la producción de Sonnet):
+   Coquimbo campeón nombraba **"La Portada"**, que es el estadio de **La Serena** — la ciudad
+   rival. Santiago Morning 1942 se atribuía la comuna de Independencia, que no está en su ancla.
+   Concón National 2023 se declaraba "el más antiguo de la zona", superlativo agregado. Los tres
+   corregidos.
+3. **Cero años inventados** en las 72. Y estos que salieron flaggeados están BIEN, no los toques:
+   Villa Diamante (Lanús), Parque Patricios (Huracán), Alberdi (Belgrano), Barrio Jardín
+   (Talleres), valle de Aconcagua (San Felipe), Santa Laura en Independencia (Unión Española).
+4. **Test nuevo, y te sirve si escribís contenido:** ninguna decisión puede nombrar el estadio de
+   otro club. Compara contra el `est` de cada club en todas las ligas, usando solo nombres de 2+
+   palabras y 10+ caracteres — si no, "Nacional" (estadio de la U) choca con "el Nacional" (el
+   torneo) y "El Cobre" (estadio de Cobresal) con el mineral. Lo verifiqué al revés: reinyecté el
+   error y el test falla.
+5. **Estado real del contenido de época:** `epocasHuerfanas()` da **0**. Los 84 arranques
+   (club, época) tienen decisión propia. Ese frente está cerrado.
+6. **Probar:** `bash test/correr.sh` (1047/1047) · `bash test/correr_dev.sh` (303/303).
+7. **Sigue pendiente tuyo:** **PARTE A** (finanzas, estadio, redes, historia, carrera,
+   institución) y **PARTE B** (fuente por CDN). Y **subí `VERSION` en `js/util.js`**: va en
+   `"7.9010"` y el repo está en 7.9017. **No es 8.00.**

@@ -713,6 +713,41 @@
         return !(EPOCAS_CLUB[x.c]||[]).some(function(e){ return (e.anio||e.a)===x.a; });
       }).map(function(x){ return x.c+" "+x.a; });
       t(sinAncla.length===0,"cada entrada corresponde a una época real del repo ("+sinAncla.join(",")+")");
+      /* 7.9017 · el error que se colo en 7.9015: el texto de Coquimbo campeon
+         nombraba "La Portada", que es el estadio de La Serena — la ciudad rival.
+         Este check lo habria cazado, asi que ahora vive en las pruebas. */
+      var estDe={};
+      [typeof LIGA_2026!=="undefined"?LIGA_2026:[], typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:[],
+       typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:[], typeof LIGA_ARG_2026!=="undefined"?LIGA_ARG_2026:[],
+       typeof LIGA91!=="undefined"?LIGA91:[], typeof LIGA_2006!=="undefined"?LIGA_2006:[]].forEach(function(L){
+        (L||[]).forEach(function(c){
+          if(!c||!c.id||!c.est) return;
+          (estDe[c.id]=estDe[c.id]||[]).push(String(c.est).replace(/^Estadio\s+/i,"").toLowerCase());
+        });
+      });
+      /* Solo nombres DISTINTIVOS: 2+ palabras y 10+ caracteres. "nacional" y
+         "el cobre" quedan fuera porque son además el torneo y el mineral, y los
+         textos los usan con ese sentido (falsos positivos comprobados). */
+      var AMBIGUOS=["nacional","el cobre","municipal"];
+      function distintivo(e){
+        return e.split(/\s+/).length>=2 && e.length>=10 && AMBIGUOS.indexOf(e)<0;
+      }
+      var checkables=[];
+      Object.keys(estDe).forEach(function(k){ estDe[k].forEach(function(e){ if(distintivo(e)) checkables.push(e); }); });
+      t(checkables.indexOf("la portada")>=0,"el check cubre «la portada», que es el caso que se colo");
+      var cruces=[];
+      ALMA_EPOCA.forEach(function(x){
+        var txt=[x.t,x.ctx].concat((x.op||[]).map(function(o){ return o.t+" "+o.d; })).join(" ").toLowerCase();
+        var propios=estDe[x.c]||[];
+        Object.keys(estDe).forEach(function(otro){
+          if(otro===x.c) return;
+          estDe[otro].forEach(function(e){
+            if(!distintivo(e) || propios.indexOf(e)>=0) return;
+            if(txt.indexOf(e)>=0) cruces.push(x.c+" "+x.a+' nombra "'+e+'" (es de '+otro+")");
+          });
+        });
+      });
+      t(cruces.length===0,"ninguna época nombra el estadio de OTRO club ("+cruces.join(" | ")+")");
       /* se resuelve sin romper nada */
       var d=DECISIONES.filter(function(x){ return x.id==="ep_pal_1978"; })[0];
       t(!!d,"la decisión de Palestino 1978 quedó registrada");

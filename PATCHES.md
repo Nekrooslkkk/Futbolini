@@ -2940,3 +2940,29 @@ Producción de contenido sobre el molde de 7.9015. Ni una línea de código nuev
 - **Tests:** dev **301/301** (mismo número que 7.9015: el grupo "Épocas con alma" no agrega un check
   por entrada, valida el conjunto — y ahora valida 72, no 12). Core **1047/1047** intacto.
   `VERSION` la sube Grok. **No es 8.00.**
+
+## 7.9017 · Auditoría de las 72 épocas: tres datos mal, uno era mío
+Revisión del contenido que entró en 7.9016. No alcanza con que los tests pasen: había que
+verificar que nadie inventara historia, que es la regla que más fácil se rompe sin que nada avise.
+
+- **El error más grave era mío, de la 7.9015.** El texto de *Coquimbo campeón 2025* decía
+  «una presión que en **La Portada** no se conocía». La Portada es el estadio de **Deportes
+  La Serena** — la ciudad rival. Corregido a "en Coquimbo". El repo ya tenía el dato correcto
+  (`est:"Estadio Municipal de Coquimbo"`); no lo miré cuando escribí esa línea.
+- **Santiago Morning 1942** decía «el club más chico de **Independencia**». El ancla
+  (`EPOCAS_CLUB.SMO`) no menciona esa comuna y el repo lo ubica en Santiago / La Pintana.
+  Se quitó la afirmación geográfica y quedó «por una vez el más chico».
+- **Concón National 2023** decía «el club **más antiguo de la zona**». El ancla solo dice
+  "Fundado en 1914": el superlativo era agregado. Se quitó. ("más de un siglo" sí se sostiene:
+  2023 − 1914 = 109 años.)
+- **Test nuevo que caza esta clase de error**: ninguna época puede nombrar el estadio de OTRO
+  club. Se compara contra el `est` real de cada club en todas las ligas del repo, usando solo
+  nombres distintivos (2+ palabras, 10+ caracteres) para no confundir "Nacional" el estadio con
+  "el Nacional" el torneo, ni "El Cobre" el estadio con el mineral. **Verificado a la inversa**:
+  se reinyectó el error de La Portada y el test falla; se corrigió y pasa.
+- Lo que se revisó y **está bien**: Villa Diamante (Lanús), Parque Patricios (Huracán), Alberdi
+  (Belgrano), Barrio Jardín (Talleres), valle de Aconcagua (San Felipe), Santa Laura en
+  Independencia (Unión Española), Florencio Varela (Defensa). Son hechos públicos y correctos.
+  **Cero años inventados** en las 72 entradas.
+- **Tests:** dev **303/303** (antes 301) · core **1047/1047**. `VERSION` sigue en `"7.9010"`:
+  la sube Grok. **No es 8.00.**
