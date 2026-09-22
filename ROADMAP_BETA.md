@@ -122,7 +122,7 @@
       parezca un Twitter** (pero sigue siendo Futbolini).
 
 ## 12 · CALENDARIO / HISTORIA / CARRERA
-- [ ] **[MOTOR]** Calendario: en cada partido ver el **historial** (relato completo, chats, etc.).
+- [x] **[MOTOR]** Calendario: en cada partido ver el **historial** (relato completo, chats, etc.). *(7.9031: tocás un partido jugado → repetición con relato entero, goles, tarjetas y Plop; tabla viva.)*
 - [ ] **[GROK]** Modo historia mejorado con **info real** (verificada por club/época).
 - [ ] **[MOTOR]** Modo carrera: **integrar todo lo que pasa** ahí.
 

@@ -939,6 +939,26 @@
       t(ctq&&ctq.fn().ok,"el chequeo de taquilla da sano con Boca");
     },"Economía");
 
+    grupo("Calendario vivo y repeticiones honestas · 7.9030");
+    safe(function(){
+      nuevaPartida("UCH",2026,"historico"); mundoInit(); E._bulkSim=true;
+      for(var i=0;i<3;i++){ var pp=proximoPartido(); if(!pp) break; if(pp.jugado){ procesarSemanaRapido(); continue; } var P=iniciarPartido(pp,"simular"); correrHasta(P,90); terminarPartido(P); procesarSemanaRapido(); }
+      E._bulkSim=false;
+      var fila=mundoFilasLiga(_ligaKeyJugador()).filter(function(f){ return f.id===E.club; })[0];
+      t(fila&&fila.pj===E.tabla[E.club].pj&&fila.pj>0,"tras avance masivo, el Calendario muestra tus PJ reales ("+(fila&&fila.pj)+")");
+      var jug=E.calendario.filter(function(p){ return p.jugado&&p.tipo!=="amistoso"; })[0];
+      t(jug&&(!jug.stats||!statsReales(jug.stats)),"un partido simulado no tiene estadísticas reales");
+      modalRepeticion(jug);
+      t(!document.querySelector("#capa-modal .stat-part"),"y la repetición no muestra el bloque en cero");
+      cerrarModal();
+      t(jug&&(jug.lineas||[]).length>5,"la repetición trae relato");
+      t(_nomCortoStats("UCH","Universidad de Chile")==="U. de Chile","la posesión dice 'U. de Chile', no 'Chile'");
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="calendario_vivo"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor calendario_vivo: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
+      var mr=modalRepeticion; modalRepeticion=function(){ /* sin filtro */ };
+      t(!c.fn().ok,"el doctor caza una repetición que no filtra las stats en cero"); modalRepeticion=mr;
+    },"Calendario 7.9030");
+
     grupo("Se juega sin internet · 7.9030");
     safe(function(){
       t(typeof offlineRegistrar==="function"&&typeof panelOffline==="function","offline.js cargado");

@@ -893,13 +893,21 @@ function modalDevPartido(){
   });
 }
 /* 7.10 · panel de estadísticas de transmisión (posesión, remates, al arco, córners) */
+/* 7.9030 · "U. de Chile", no "Chile"; "Audax", no "Italiano" */
+function _nomCortoStats(id,nombre){
+  const c=(typeof clubMundo==="function"&&id)?clubMundo(id):null;
+  const n=(c&&c.c)||nombre||"";
+  return n.length>14?apodoJug(n):n;
+}
+/* ¿hay estadísticas de verdad? Los partidos simulados no las registran */
+function statsReales(s){ return !!(s&&((s.remMio||0)+(s.remRiv||0)+(s.arcMio||0)+(s.arcRiv||0)+(s.corMio||0)+(s.corRiv||0))>0); }
 function bloqueStats(P){
   const s=P.stats||{pos:0.5,remMio:0,remRiv:0,arcMio:0,arcRiv:0,corMio:0,corRiv:0};
   const posYo=Math.round(clamp(s.pos,0,1)*100), posRiv=100-posYo;
   const cont=el("div","stat-part");
   cont.innerHTML=
     "<div class='stat-pos'><b>"+posYo+"%</b><div class='pos-bar'><i style='width:"+posYo+"%'></i></div><b>"+posRiv+"%</b></div>"+
-    "<div class='stat-pos-lb'><span>"+apodoJug(E.clubNombre)+"</span><span class='mini'>posesión</span><span>"+apodoJug(P.part.rivalNombre)+"</span></div>"+
+    "<div class='stat-pos-lb'><span>"+escHtml(_nomCortoStats(E.club,E.clubNombre))+"</span><span class='mini'>posesión</span><span>"+escHtml(_nomCortoStats(P.part.rivalId,P.part.rivalNombre))+"</span></div>"+
     "<div class='stat-grid'>"+
       "<div class='stn'>"+s.remMio+"</div><div class='stk'>Remates</div><div class='stn'>"+s.remRiv+"</div>"+
       "<div class='stn'>"+s.arcMio+"</div><div class='stk'>Al arco</div><div class='stn'>"+s.arcRiv+"</div>"+

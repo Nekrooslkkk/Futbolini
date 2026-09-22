@@ -876,3 +876,6 @@ html{scrollbar-width:thin;scrollbar-color:rgba(70,150,100,.55) transparent}
    y se apilaban hasta 7 tapando media pantalla. */
 #avisos{max-width:100vw;box-sizing:border-box;padding:0 8px}
 .aviso{max-width:100%;box-sizing:border-box;text-align:center;overflow-wrap:anywhere}
+
+/* 7.9030 · en la repetición el relato se lee entero: la ventana ya tiene scroll (scroll dentro de scroll en celu escondía el final) */
+.relato-rep{max-height:none;overflow:visible}

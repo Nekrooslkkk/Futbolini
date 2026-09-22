@@ -20,14 +20,20 @@
 - [ ] **Chilenización de docs .md** (no user-facing, baja prioridad).
 
 ## 🔒 Bloqueadas (necesito algo tuyo)
-- [ ] **Login + saves en la nube**: encender Supabase (gratis) → pegar 2 llaves en `nube.js` (ver `SETUP_NUBE.md`). *(Necesito que crees el proyecto Supabase.)*
-- [ ] **Fotos**: caras / escudos / estadios / noticias → van a `img/`, WebP livianas. *(Necesito los archivos.)*
-- [ ] **Primera B**: equipos + fixture. *(Necesito confirmar qué clubes y de qué año.)*
-- [ ] **Copa Chile**: formato + calendario (da cupo internacional). *(Investigo yo, pero confirmá el año.)*
-- [ ] **"Copa de la Liga"**: aclarar qué es (Chile no tiene una tradicional). *(Necesito tu definición.)*
+- [ ] **Fotos**: caras / escudos / estadios / noticias → van a `img/`, WebP livianas, **sin copyright**
+  (CC0/CC-BY con crédito o propias). *(Necesito los archivos o el OK para buscarlas en Wikimedia Commons.)*
 - [ ] **Planteles reales**: Limache 2026, correcciones a los grandes. *(Si subís datos, a `data/`.)*
+- [ ] **Probar el login por código con un correo real** (desde CI no llega a Supabase). *(Solo vos.)*
+
+## 🧹 Desbloqueadas / ya resueltas (22 sep 2026, revisión de Claude)
+- [x] Login + nube: Supabase encendido en `nube.js`; login por código al correo (7.9028).
+- [x] Primera B, Copa Chile, Copa de la Liga: existen y se simulan (tablas en Calendario).
+- [x] Jugar sin internet: service worker + instalable como app (7.9030).
 
 ## ✅ Hecho (reciente)
+- [x] Calendario vivo + repetición completa de cada partido (7.9031).
+- [x] Equilibrio: el club del jugador ya no tiene ventaja; sueldos por mercado (7.9029).
+- [x] Penal/tiro libre/córner reconstruidos (7.9027) · Ajustes ventana (7.9028).
 - [x] Economía explicativa (semáforo + pasos) — commit 95e4d0d.
 - [x] Cancha pixel-art — commit efb6cca.
 - [x] Backend propio + guía Hetzner + cliente — commit 320e2c5.

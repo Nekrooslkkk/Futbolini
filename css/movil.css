@@ -132,7 +132,7 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   /* Avisos encima del dock / HUD */
   body.con-dock #avisos{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
   body.en-partido #avisos{bottom:calc(118px + env(safe-area-inset-bottom,0px))}
-  body.con-modal:not(.en-partido) #avisos{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+  body.con-modal:not(.en-partido) #avisos{bottom:auto;top:calc(8px + env(safe-area-inset-top,0px))} /* 7.9030: con ventana abierta los avisos van arriba; abajo tapaban Cerrar */
   #avisos{width:min(94vw,440px)}
   .aviso{font-size:13px;padding:10px 14px}
 

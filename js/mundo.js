@@ -446,6 +446,14 @@ function mundoNoticias(){ return (E&&E.mundo&&E.mundo.noticias)||[]; }
 function mundoFilasLiga(key){
   const L=E&&E.mundo&&E.mundo.ligas&&E.mundo.ligas[key];
   if(!L) return [];
+  /* 7.9030 · TU liga se lee de la tabla real, no de una copia: la copia solo se
+     sincronizaba en mundoTick, que se salta en simulaciones masivas, y el
+     Calendario mostraba 0 PJ después de jugar. */
+  if(key===_ligaKeyJugador() && E.tabla){
+    const tab={};
+    L.ids.forEach(id=>{ const t=E.tabla[id]; tab[id]=t?{pj:t.pj,pg:t.pg,pe:t.pe,pp:t.pp,gf:t.gf,gc:t.gc,pts:t.pts}:(L.tab[id]||_fila0()); });
+    return _ordTabla(tab, L.ids);
+  }
   return _ordTabla(L.tab, L.ids);
 }
 function mundoFilasCopa(torneo, letra){

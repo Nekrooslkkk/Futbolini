@@ -3318,3 +3318,17 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor +1:** `offline_listo` (versiones calzan, manifiesto, offline.js, copia offline = versión
   actual). Verificado al revés en la suite (un `?v=` viejo → falla). i18n `off_*` en neutro/en/pt.
 - **Tests:** dev **412/412** (+9) · core **1185/1185**.
+
+## 7.9031 · El Calendario dice la verdad
+- **BUG: la tabla de TU liga en el Calendario quedaba en 0 PJ / 0 pts** tras el avance rápido. Era
+  una copia de `E.tabla` que solo se sincronizaba en `mundoTick`, y `mundoTick` se salta con
+  `_bulkSim` (lo usa el avance rápido). Ahora `mundoFilasLiga` lee tu liga directo de `E.tabla`.
+- **Repetición de cada partido** (tocás un partido jugado): el relato se lee entero (antes una caja
+  con scroll propio de 220px escondía el final en celu, incluidos goles); las estadísticas de un
+  partido simulado (todo en 0, posesión 50/50) ya no se muestran como si fueran reales
+  (`statsReales`); la posesión dice "U. de Chile"/"Audax Italiano", no "Chile"/"Italiano".
+- Con una ventana abierta en celu, los avisos (logros) van arriba: abajo tapaban **Cerrar**.
+- **Doctor +1:** `calendario_vivo` (tu fila del Calendario = tabla real; la repetición filtra stats
+  en cero). Verificado al revés. Roadmap §12 "historial de cada partido" marcado hecho.
+- IDEAS.md limpio: lo "bloqueado" que ya estaba resuelto (login, B, Copa Chile) pasó a resuelto.
+- **Tests:** dev **419/419** · core **1185/1185**.

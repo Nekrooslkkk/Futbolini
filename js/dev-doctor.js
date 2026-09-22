@@ -613,6 +613,22 @@ devDoctorRegistrar({id:"offline_listo", area:"interfaz", n:"Se juega sin interne
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat(det)):_dok("versiones al día"+(det.length?" · "+det[0]:""),det);
 }});
 
+/* 7.9030 · el Calendario dice la verdad: tu liga = tabla real (no una copia que el
+   avance rápido dejaba en 0) y las repeticiones no inventan estadísticas en cero */
+devDoctorRegistrar({id:"calendario_vivo", area:"interfaz", n:"El Calendario muestra tu tabla real y repeticiones honestas", fn:function(){
+  if(!E||typeof mundoFilasLiga!=="function"||typeof _ligaKeyJugador!=="function") return _dok("sin partida");
+  if(!E.mundo&&typeof mundoInit==="function") mundoInit();
+  var k=_ligaKeyJugador(), falta=[];
+  if(k&&E.mundo&&E.mundo.ligas&&E.mundo.ligas[k]&&E.tabla&&E.tabla[E.club]){
+    var fila=mundoFilasLiga(k).filter(function(f){ return f.id===E.club; })[0], t=E.tabla[E.club];
+    if(!fila) falta.push("tu club no aparece en la tabla del Calendario");
+    else if(fila.pj!==t.pj||fila.pts!==t.pts) falta.push("el Calendario dice "+fila.pj+" PJ / "+fila.pts+" pts y la tabla real "+t.pj+" / "+t.pts);
+  }
+  if(typeof modalRepeticion==="function"&&String(modalRepeticion).indexOf("statsReales")<0)
+    falta.push("la repetición muestra estadísticas aunque estén en cero (se ven rotas en partidos simulados)");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("tabla del Calendario = tabla real; repeticiones sin datos inventados");
+}});
+
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){
   opts=opts||{};

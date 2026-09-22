@@ -1713,7 +1713,8 @@ function modalRepeticion(c){
       (gano?"Victoria":(emp?"Empate":"Derrota"))+
       (c.torneo?" · "+c.torneo:"")+
       (c.arbitro&&c.arbitro.n?" · Árbitro: "+c.arbitro.n+(c.arbitro.estilo?" ("+c.arbitro.estilo+")":""):"")+"."));
-    if(c.stats && typeof bloqueStats==="function"){
+    /* 7.9030 · stats en 0 y posesión 50/50 parecían rotas: si el partido se simuló, no se muestran */
+    if(c.stats && typeof bloqueStats==="function" && (typeof statsReales!=="function"||statsReales(c.stats))){
       cc.appendChild(bloqueStats({stats:c.stats, part:c}));
     }
     const gd=(c.golesDetalle||[]).slice().sort((a,b)=>(a.min||0)-(b.min||0));
