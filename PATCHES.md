@@ -3196,3 +3196,26 @@ anomalía hasta la línea que la causa.
   20k → 91k en 5 años sin hacer nada): la taquilla de una temporada (~19k) supera por mucho a la
   planilla. Y Colo-Colo 1991 gana 5 de 5. Es calibración — decisión del autor/Grok.
 - **Tests:** dev **364/364** (antes 350) · core **1175/1175**. **No es 8.00.**
+
+## 7.9026 · La plata vuelve a importar: tres arreglos de raíz + liguilla en su lugar
+- **Liguilla de la B, causa raíz.** `_sembrarLlaveB` ahora corre la llave entera si su fecha cae
+  antes del último partido ya programado (`_fechasTrasUltimo`), conservando la distancia ida-vuelta.
+  Antes la semifinal (15/11) caía antes de la fecha 30 regular (16/11). Verificado en SW, CBL, UES:
+  la liga termina el 16/11, la liguilla empieza el 19/11, **0 partidos fuera de orden**.
+- **BUG: "Simular con este plan" se salteaba la semana entera.** `simularDesdeAvance` llamaba a
+  `terminarPartido` y nunca a `procesarSemanaPostPartido`: sin sueldos, costos, decisiones, eventos
+  ni ofertas por cada partido simulado. Dirigir sí la procesaba. Por eso la caja subía sola en
+  partidas reales. Ahora las 4 salidas del modal de resultado pasan por `_salirSemanaSimulada`, que
+  cierra la semana una sola vez por partido (guarda `_semanaOk`) y deja que un evento con decisión
+  mande, igual que en dirigir. El avance rápido ya la procesaba (`procesarSemanaRapido`).
+- **Calibración de taquilla (`FACTOR_TAQUILLA=0.22`, motor.js).** Un partido de local de Colo-Colo
+  dejaba 818 = 2,2× su contrato de TV de todo el año; la taquilla de la temporada cubría 7× sus
+  costos. Aplicado también al desglose por sector que muestra la UI (si no, la pantalla mentiría).
+- **Resultado medido (5 temporadas, flujo real):** grandes de +15/18 mil por año a ~+3 mil; los
+  chicos ahora se endeudan (Limache recién ascendido: deuda 1.248 → 9.217 sin nadie que lo maneje).
+  La plata negativa pasa a deuda con 20% de recargo y sube el riesgo: la presión es real.
+- **Queda como decisión de diseño:** los sueldos casi no escalan con el tamaño del club (Colo-Colo
+  1.353/año, Limache 1.087: +25%) mientras la taquilla sí. Eso hace a los grandes demasiado rentables
+  y a los chicos demasiado pobres. Arreglarlo es tocar sueldos del mercado.
+- **Doctor +1:** `taquilla_vs_costos` (falla si la taquilla estimada de la temporada paga 3+ años de
+  costos; antes daba 7,4×, ahora ~1,6×). **Tests:** dev **376/376** · core **1185/1185**.

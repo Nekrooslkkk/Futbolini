@@ -789,8 +789,30 @@ function _rivalFinalB(tabIds, semiRival){
   other.sort(function(a,b){ return _fuerzaId(b)-_fuerzaId(a); });
   return other[0]||tabIds[2];
 }
+/* 7.9026 · la liguilla SIEMPRE después de lo ya programado. Antes la Semifinal (15/11)
+   caía antes de la fecha 30 regular (16/11): el sort por fecha la metía entre partidos
+   jugados y el calendario quedaba desordenado (y hasta 7.9025, pegado para siempre).
+   Si la fecha de tabla choca, se corre la llave entera conservando la distancia ida-vuelta. */
+function _fechaNum(f){ return (typeof ordenFecha==="function")?ordenFecha(f):(f.m*100+(f.d||1)); }
+function _sumarDias(f, n){
+  var d=new Date(2026, (f.m||1)-1, (f.d||1)+n);
+  return {m:d.getMonth()+1, d:d.getDate()};
+}
+function _fechasTrasUltimo(fs){
+  var cal=(E&&E.calendario)||[], tope=null;
+  cal.forEach(function(p){
+    if(!p||!p.f) return;
+    if(!(p.jugado || (p.tipo==="liga"&&!p.fase))) return;
+    if(!tope || _fechaNum(p.f)>_fechaNum(tope)) tope=p.f;
+  });
+  if(!tope || _fechaNum(fs[0])>_fechaNum(tope)) return fs;
+  var gap=Math.max(3, Math.round((new Date(2026,fs[1].m-1,fs[1].d)-new Date(2026,fs[0].m-1,fs[0].d))/86400000));
+  var ida=_sumarDias(tope,3);
+  return [ida, _sumarDias(ida,gap)];
+}
 function _sembrarLlaveB(ronda, rivalId, fs){
   if(!rivalId) return;
+  fs=_fechasTrasUltimo(fs);
   var yoPeor=_posRegularB(E.club)>_posRegularB(rivalId);
   _insertarYOrdenar([
     _mkCopaPart({

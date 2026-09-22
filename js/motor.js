@@ -866,6 +866,15 @@ function clausuraFactor(){
   return f;
 }
 function tribunaCerrada(){ return !!(E&&E.flags&&E.flags.tribunaCerrada); }
+/* 7.9026 · CALIBRACIÓN DE TAQUILLA. Medido en una temporada simulada: un partido de local
+   de Colo-Colo dejaba 818 (2,2× su contrato de TV de TODO el año) y la taquilla de la
+   temporada cubría 7× sus costos totales. Resultado: la caja subía sola (20k → 91k en 5
+   años sin hacer nada) y la plata dejaba de importar. El resto de la economía (TV,
+   sponsors, socios, planilla) está en otra escala; la taquilla era la que se salía.
+   Con 0.22: un grande con resultados normales cierra el año algo arriba (+500 a +1.500),
+   uno chico estructuralmente abajo (−400 a −800) y tiene que vender o endeudarse. O sea:
+   manejar la institución vuelve a doler. Un solo número para recalibrar si hace falta. */
+const FACTOR_TAQUILLA=0.22;
 function taquilla(part){
   const aforo=aforoActual();
   const base=ocupBase(part);
@@ -881,7 +890,7 @@ function taquilla(part){
     const g=Math.round(cap*ocup);
     gente+=g; ingreso+=g*precio;
   });
-  return {gente:gente, ingreso:Math.round(ingreso/1000000)};
+  return {gente:gente, ingreso:Math.round(ingreso*FACTOR_TAQUILLA/1000000)};
 }
 /* 6.3 · desglose por butaca (para documentar aforo, precio y ganancia estimada de cada sector) */
 function taquillaPorSector(part){
@@ -897,7 +906,7 @@ function taquillaPorSector(part){
     const ocup=clamp(base*factorPrecio, 0.04, 0.99);
     const g=Math.round(cap*ocup);
     return {id:s.id, n:s.n, ic:s.ic, cap:cap, precio:precio, gente:g, ocup:Math.round(ocup*100),
-      ingreso:Math.round(g*precio/1000000)};
+      ingreso:Math.round(g*precio*FACTOR_TAQUILLA/1000000)};
   });
 }
 function ingresoPartidoLocal(part){ return taquilla(part); }

@@ -3645,6 +3645,28 @@ function modalAvancePartido(part){
     cuerpo.appendChild(b1); cuerpo.appendChild(b2); cuerpo.appendChild(b3);
   },{cerrarFuera:false,clase:"ventana-so"});
 }
+/* 7.9026 · BUG DE FONDO DE LA ECONOMÍA. "Simular con este plan" (el camino que más se
+   usa) llamaba a terminarPartido y nunca a procesarSemanaPostPartido: cada partido
+   simulado se salteaba la semana entera — sin sueldos ni costos, sin decisiones, eventos
+   ni ofertas. Dirigir sí la procesaba ("Cerrar y seguir la semana"). Por eso la caja
+   subía sola en partidas reales. Ahora las dos rutas cierran la semana igual, una sola
+   vez por partido (guarda `_semanaOk`, que viaja en el guardado). */
+function _salirSemanaSimulada(part){
+  if(part && !part._semanaOk && !part.amistoso && typeof procesarSemanaPostPartido==="function"){
+    part._semanaOk=true;
+    let r=null;
+    try{ r=procesarSemanaPostPartido(); }catch(e){ if(window.console) console.error("semana simulada:",e); }
+    if(typeof chequearTinderMentira==="function") try{ chequearTinderMentira(); }catch(e){}
+    if(r && typeof parteSemana==="function"){
+      const ln=[T("sem_caja","Caja de la semana")+": "+plata(r.neto||0)];
+      (r.ctx||[]).slice(0,2).forEach(function(t){ ln.push(t); });
+      if(r.ev&&r.ev.item&&r.ev.item.t) ln.push(r.ev.item.t);
+      parteSemana(ln);
+    }
+    if(r&&r.ev&&r.ev.tipo==="decision") return;   /* el modal del evento manda, como en dirigir */
+  }
+  irA("escritorio");
+}
 function simularDesdeAvance(part){
   if(!part||typeof iniciarPartido!=="function") return;
   const P=iniciarPartido(part,"simular");
@@ -3656,7 +3678,7 @@ function simularDesdeAvance(part){
     const gano=res.yo>res.otro;
     const empate=res.yo===res.otro;
     const cuerpo=(typeof montarBarraSO==="function")
-      ? montarBarraSO(box,"Final · simulado",gano?"⚽":"📄",function(){ cerrarModal(); irA("escritorio"); })
+      ? montarBarraSO(box,"Final · simulado",gano?"⚽":"📄",function(){ cerrarModal(); _salirSemanaSimulada(part); })
       : (function(){ box.appendChild(el("div","cab",'<span class="ic">📄</span><span>Final del partido</span>')); const c=el("div","cuerpo"); box.appendChild(c); return c; })();
     const yoN=(typeof E!=="undefined"&&E&&E.clubNombre)||"Tú";
     const rivN=part.rivalNombre||"rival";
@@ -3681,14 +3703,14 @@ function simularDesdeAvance(part){
     const nOtros=((E.ultimaJornada&&E.ultimaJornada.otros)||E.ultimaFecha||[]).length;
     const bx=el("button","btn-aqua ancho verde",nOtros?("📻 "+T("jor_ver","Ver cómo se jugó la fecha")):T("jor_esc","Al escritorio"));
     bx.onclick=function(){
-      if(nOtros&&typeof jornadaEnVivo==="function"){ cerrarModal(); jornadaEnVivo(function(){ irA("escritorio"); }); return; }
-      cerrarModal(); irA("escritorio");
+      if(nOtros&&typeof jornadaEnVivo==="function"){ cerrarModal(); jornadaEnVivo(function(){ _salirSemanaSimulada(part); }); return; }
+      cerrarModal(); _salirSemanaSimulada(part);
     };
     cuerpo.appendChild(bx);
     if(nOtros){
       const bs=el("button","btn-aqua ancho gris",T("jor_esc","Al escritorio"));
       bs.style.marginTop="6px";
-      bs.onclick=function(){ cerrarModal(); irA("escritorio"); };
+      bs.onclick=function(){ cerrarModal(); _salirSemanaSimulada(part); };
       cuerpo.appendChild(bs);
     }
   },{cerrarFuera:false,clase:"ventana-so"});

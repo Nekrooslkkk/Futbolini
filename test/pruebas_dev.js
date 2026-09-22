@@ -939,6 +939,29 @@
       t(ctq&&ctq.fn().ok,"el chequeo de taquilla da sano con Boca");
     },"Economía");
 
+    grupo("La semana se cierra también al simular · 7.9026");
+    safe(function(){
+      t(typeof _salirSemanaSimulada==="function","existe _salirSemanaSimulada");
+      nuevaPartida("CC",2026,"historico");
+      var part=proximoPartido(), idx0=E.idx;
+      var dec0=(E.decPend||[]).length, dia0=E.plata;
+      /* se simula por la UI real: el modal de resultado y su botón de salida */
+      simularDesdeAvance(part);
+      var bs=[].slice.call(document.querySelectorAll("#capa-modal button"));
+      var salir=bs.filter(function(b){ return /escritorio/i.test(b.textContent||""); })[0];
+      t(!!salir,"el modal de resultado tiene salida al escritorio");
+      if(salir) salir.click();
+      t(part._semanaOk===true,"al salir, la semana del partido simulado quedó procesada");
+      /* no se cobra dos veces */
+      var antes=E.plata; _salirSemanaSimulada(part);
+      t(E.plata===antes,"volver a salir no procesa la semana de nuevo");
+      cerrarModal();
+      /* calibración */
+      var chk=DOCTOR_CHECKS.filter(function(c){ return c.id==="taquilla_vs_costos"; })[0];
+      t(chk&&chk.fn().ok,"la taquilla ya no aplasta a los costos: "+(chk&&chk.fn().txt));
+      t(typeof FACTOR_TAQUILLA==="number" && FACTOR_TAQUILLA>0 && FACTOR_TAQUILLA<1,"la calibración es un solo número ("+FACTOR_TAQUILLA+")");
+    },"Semana simulada");
+
     grupo("Localización 7.9013");
     safe(function(){
       ["mep_solo","riv_racha","riv_sin","riv_puesto","cal_prog","cal_sig",

@@ -128,6 +128,17 @@ devDoctorRegistrar({id:"taquilla_escala", area:"motor", n:"La taquilla del club 
   if(t>40*Math.max(1,sem)) return _dmal("una taquilla de local ("+t+") vale más de 40 semanas de ingresos ("+sem+"/sem)");
   return _dok("taquilla de local "+t+" · ingresos semanales "+sem);
 }});
+/* 7.9026 · la taquilla de una temporada cubría 7× los costos anuales de Colo-Colo: la
+   caja subía sola y la plata dejaba de importar. Con la calibración queda en ~1,6×. */
+devDoctorRegistrar({id:"taquilla_vs_costos", area:"motor", n:"La taquilla no aplasta al resto de la economía", fn:function(){
+  if(!E||typeof taquilla!=="function"||typeof egresosAnuales!=="function") return _dok("sin partida");
+  var locales=(E.calendario||[]).filter(function(p){ return p.local && !p.amistoso; }).length;
+  var tq=taquilla({tipo:"liga",local:true}).ingreso*locales;
+  var eg=egresosAnuales(), costos=0; Object.keys(eg).forEach(function(k){ costos+=eg[k]||0; });
+  var ratio=costos?tq/costos:0;
+  var txt="taquilla estimada "+Math.round(tq)+" ("+locales+" de local) · costos "+Math.round(costos)+" · ×"+(Math.round(ratio*10)/10);
+  return ratio>3?_dmal(txt+": la taquilla sola paga 3+ años de costos, la plata deja de importar"):_dok(txt);
+}});
 /* ============ ÁREA: SIMULACIÓN ============ */
 /* Corre temporadas COMPLETAS sobre una copia y revisa que al final todo cierre.
    Usa el snapshot de Grok (clonarPartida/restaurarPartida) para no tocar la
