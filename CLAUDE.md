@@ -16,6 +16,20 @@ estado cuelga del objeto global `E` (localStorage vía `Store`). Épocas: 1991, 
 - Integridad: nombres reales con stats estimadas y aviso "aproximado". Nada de frases inventadas como reales.
 - Diversidad sí, burla no (pool de citas escrito con respeto para todes).
 
+## Regla permanente: el MODO DESARROLLADOR crece en cada parche
+> Pedido explícito del autor (22 sep 2026): **"es algo que quiero que SIEMPRE hagas"**.
+
+En **todo** parche, además de lo que se pida, hay que dejar el modo dev mejor que como estaba.
+No es opcional ni hay que preguntarlo. Concretamente:
+- Si arreglás un bug, **dejá el chequeo que lo habría cazado** dentro del doctor (`devDoctor()`),
+  no solo en los tests. Los tests corren en CI; el doctor corre sobre la partida real del jugador.
+- Si agregás contenido o un sistema, agregá su auditoría (cuánto hay, qué falta, qué está roto).
+- Todo lo que hagas "a mano" para verificar algo (una sonda, una medición, un conteo) **se
+  automatiza y se deja adentro**: si lo necesitaste una vez, lo vas a necesitar de nuevo.
+- Herramientas: `devDoctor()` (diagnóstico completo con veredicto), `devPintarDoctor(cont)`
+  (pestaña 🩺 Doctor del editor), `auditarTodo()`, `devInformeCobertura()`, `epocasHuerfanas()`.
+- La clave del modo dev y cómo se abre están en `PATCHES.md`.
+
 ## Fuentes de verdad (LEER antes de tocar)
 - `ANALISIS.md` — diagnóstico 5.1l y qué falta para la beta. LEER PRIMERO.
 - `PATCHES.md` — qué hace cada parche, qué archivos toca, cómo editar planteles, cómo encender la IA.

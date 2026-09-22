@@ -117,7 +117,7 @@
       DEV_ON=true; if(!E.flags)E.flags={}; E.flags.dev=true;
       abrirEditorContenido();
       var tabs=document.querySelectorAll(".dev-tabs .ficha");
-      t(tabs.length===6, "el editor tiene 6 pestañas (Rigor/Club/Nuevo/Liga/Alma/Exportar)");
+      t(tabs.length===7, "el editor tiene 7 pestañas (Rigor/Club/Nuevo/Liga/Alma/Doctor/Exportar)");
       tabs[3].click(); // Liga
       var m=document.querySelector(".modal.dev-editor");
       t(!!m && !!m.querySelector(".dev-liga-nueva"), "la pestaña Liga ofrece 'Liga nueva — generar .js'");
@@ -786,6 +786,47 @@
       var cu=el("div"); panelEscalera(cu);
       t(cu.textContent.indexOf("✓")>=0,"el escalón conquistado se marca con ✓");
     },"Pulido");
+
+    grupo("Modo desarrollador · Doctor 7.9021");
+    safe(function(){
+      t(typeof devDoctor==="function","devDoctor existe");
+      t(typeof devDoctorRegistrar==="function","se le pueden registrar chequeos nuevos");
+      t(typeof devPintarDoctor==="function","tiene cara (pestaña 🩺)");
+      t(typeof devDoctorTexto==="function","exporta informe en texto");
+      t(typeof devSimularYRevisar==="function","puede simular y revisar");
+      t(DOCTOR_CHECKS.length>=12,"hay "+DOCTOR_CHECKS.length+" chequeos registrados");
+      ["motor","simulacion","contenido","interfaz"].forEach(function(a){
+        t(DOCTOR_CHECKS.some(function(c){ return c.area===a; }),"cubre el área "+a);
+      });
+      nuevaPartida("CC",2026,"historico");
+      for(var i=0;i<6;i++){ var p=proximoPartido(); if(!p) break;
+        var P=iniciarPartido(p,"simular"); correrHasta(P,90); terminarPartido(P); }
+      var r=devDoctor({soloRapidos:true});
+      t(r.total>0 && r.ok+r.mal===r.total,"corre y suma bien ("+r.ok+"/"+r.total+")");
+      t(["sano","con detalles","roto"].indexOf(r.veredicto)>=0,"da un veredicto ("+r.veredicto+")");
+      /* OJO: el área "contenido" NO se puede exigir limpia acá. Los grupos de
+         arriba clonan una liga de prueba y esos clones entran al informe global
+         como clubes pobres. El doctor mide bien; es la sesión de tests la que
+         está poblada. Se exige limpieza en motor, que es lo que este grupo prueba. */
+      var rm=devDoctor({area:"motor"});
+      t(rm.mal===0,"la partida de prueba sale sana en MOTOR"+(rm.mal?(" — falla: "+rm.checks.filter(function(c){return !c.ok;}).map(function(c){return c.n+": "+c.txt;}).join(" | ")):""));
+      /* los invariantes tienen que CAZAR una tabla rota, no solo aprobar */
+      var snap=clonarPartida(E);
+      E.tabla[E.club].pts=E.tabla[E.club].pts+7;   /* puntos que no corresponden */
+      var r2=devDoctor({area:"motor"});
+      t(r2.mal>0,"el doctor caza una tabla adulterada");
+      t(r2.checks.some(function(c){ return c.id==="tabla_coherente" && !c.ok; }),"y dice cuál invariante se rompió");
+      restaurarPartida(snap);
+      var r3=devDoctor({area:"motor"});
+      t(r3.mal===0,"tras restaurar, vuelve a estar sano");
+      /* el informe en texto sirve para pegar */
+      var txt=devDoctorTexto(r3);
+      t(txt.indexOf("FUTBOLINI · DOCTOR")===0 && txt.length>80,"el informe en texto se arma");
+      /* no puede destruir la partida del jugador */
+      var club=E.club, anio=E.anio;
+      devSimularYRevisar(1);
+      t(E.club===club && E.anio===anio,"simular y revisar NO altera la partida abierta");
+    },"Doctor");
 
     grupo("Localización 7.9013");
     safe(function(){

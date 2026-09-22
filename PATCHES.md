@@ -3031,3 +3031,37 @@ por eso pasaban barridos que no debían pasar.
   `GROK_TAREAS`, `GROK_EPOCAS`, `PLAN_7.00`, `PLAN_7.10`, `CLAUDE_ESCRITORIO`. De 24 `.md` a 15.
   `CLAUDE.md` y `BRIEFING.md` apuntan al canal nuevo.
 - **Tests:** core **1175/1175** · dev **303/303**. **No es 8.00.**
+
+## 7.9021 · El modo desarrollador deja de ser solo trampas: nace el Doctor
+Pedido del autor: *"todo lo que puedas añadirle al modo desarrollador, hazlo... comprobar que está
+al nivel top que queremos llegar, que funcione bien el motor"*. Y además: **"es algo que quiero que
+SIEMPRE hagas"** → quedó como **regla permanente en `CLAUDE.md`**: cada parche deja el doctor mejor
+que como estaba, y todo chequeo hecho a mano se automatiza y se deja adentro.
+
+- **`js/dev-doctor.js` (nuevo).** El panel dev tenía botones para HACER cosas (dar plata, lesionar,
+  saltar año) y ninguno para COMPROBAR que el juego está sano. Ahora corre **12 chequeos** sobre la
+  partida real, en cuatro áreas, y da un veredicto (sano / con detalles / roto).
+- **Motor y tablas** — los invariantes que siempre tienen que cumplirse: `pj = pg+pe+pp`,
+  `pts = pg×puntosVictoria + pe`, **GF de la liga = GC de la liga**, nadie atrasado 2+ fechas,
+  la tabla ordenada respeta los puntos, el calendario sin huecos ni rivales fantasma.
+- **Simulación** — corre temporadas completas **sobre una copia** (`clonarPartida`/`restaurarPartida`
+  de Grok) y revisa el cierre; restaura sola. La partida del jugador no se toca (hay test que lo
+  verifica). Mide también el tiempo por temporada y avisa si va lento.
+- **Contenido** — cobertura por club, épocas huérfanas, cruces de estadio (el error "La Portada"),
+  anacronismos del mundo de fondo. Son las auditorías que ya existían, ahora en un solo lugar.
+- **Interfaz** — barre las 10 secciones buscando botones sin acción, paneles vacíos y desborde
+  horizontal; y verifica que nada de la barra quede inalcanzable (el bug de 7.9020).
+- **Dónde se usa:** pestaña **🩺 Doctor** en el editor de contenido y botón **"🩺 Revisar todo"**
+  arriba del panel dev. Hay "Copiar informe" para pegarlo en `ChatDeTrabajIA.md`.
+- **Se puede extender en una línea:** `devDoctorRegistrar({id, area, n, fn})`.
+- **Lo que encontró en su primera corrida, y la corrección honesta.** Reportó "GF ≠ GC por 46
+  goles" y "cerrar no avanzó el año" al simular temporadas. **Era un bug del doctor, no del motor**:
+  llamaba a `cerrarTemporada()`, que hace `finDeTemporada()` y abre un **modal** — el año avanza
+  recién cuando el jugador aprieta el botón, que es quien llama a `nuevoAnio()` → `reiniciarTabla()`.
+  Desde un harness el estado queda a mitad de camino. Verificado por separado: jugando una
+  temporada entera **GF=GC=655, diferencia 0**. Corregido para usar el camino sin UI, y quedó el
+  comentario explicando la trampa. Ahora da **12/12 sano en 375 ms**, con 2 temporadas simuladas.
+- **Dato que salió de paso:** la cobertura subió de **1 club rico a 35** (de 76), gracias a las 60
+  épocas de 7.9016. El `pctRico` pasó de 1% a 46%.
+- **Tests:** dev **321/321** (antes 303; incluyen que el doctor CAZA una tabla adulterada, no solo
+  que aprueba) · core **1175/1175**. **No es 8.00.**

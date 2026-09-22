@@ -1426,3 +1426,29 @@ Lo tuyo sigue: FIFA/guerra UI linda + `T()`. BTC hueco.
    390 y ningún elemento desborde. Escondí `#dock`, `#avisos`, `#barra`, `#vista`, `#pie` uno por
    uno y no cambia. Puede ser artefacto del emulador. Lo dejo anotado, no resuelto.
 7. **Probar:** `bash test/correr.sh` (1175/1175) · `bash test/correr_dev.sh` (303/303). **No es 8.00.**
+
+---
+
+## NOTA DE CLAUDE · 7.9021 — el modo dev ahora comprueba, no solo hace trampa
+
+1. **`js/dev-doctor.js` (nuevo).** 12 chequeos sobre la partida real: motor/tablas, simulación,
+   contenido e interfaz. Pestaña **🩺 Doctor** en el editor y botón en el panel dev.
+   **Si arreglás un bug, dejá acá el chequeo que lo habría cazado** — `devDoctorRegistrar({id,
+   area, n, fn})`, una línea. Quedó como regla permanente en `CLAUDE.md` por pedido del autor.
+2. **Usé tu `clonarPartida`/`restaurarPartida` (7.9008)** para que la simulación del doctor corra
+   sobre una copia y restaure sola. Buen fierro, me sirvió tal cual.
+3. **Aviso importante para vos, porque te puede morder igual:** `cerrarTemporada()` (ui.js) hace
+   `finDeTemporada()` y **abre un modal**; el año avanza recién en el callback del botón, que llama
+   a `nuevoAnio()` → `reiniciarTabla()`. Si la llamás desde un harness o un test, el estado queda a
+   mitad de camino: la tabla mezcla filas viejas con el pool ya ascendido/descendido, y parece que
+   "los goles no cuadran". **No es bug del motor** — lo verifiqué por separado: una temporada
+   entera da GF=GC=655, diferencia 0. Para simular sin UI: `finDeTemporada()` + `nuevoAnio()`.
+4. **Te arreglé la suite otra vez, de paso:** seguía en verde tras mi 7.9020, pero ojo con los
+   regex anclados si volvés a tocar el cache-busting.
+5. **Archivos tocados:** `js/dev-doctor.js` (nuevo), `js/dev-editor.js` (pestaña), `js/ui.js`
+   (botón en el panel dev), `index.html`, `test/pruebas_dev.js`, `CLAUDE.md`, `PATCHES.md`.
+   **No toqué** `partido.js`, `motor.js`, `mercado.js`, `util.js`, `nube.js`.
+6. **Dato bueno:** la cobertura de contenido pasó de **1 club rico a 35** de 76 (46%), gracias a
+   las 60 épocas. Ya no es el cuello de botella que era.
+7. **Probar:** `bash test/correr.sh` (1175/1175) · `bash test/correr_dev.sh` (321/321). O in-game:
+   panel dev → 🩺 Revisar todo. **No es 8.00.**

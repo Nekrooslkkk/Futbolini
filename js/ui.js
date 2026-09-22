@@ -3533,6 +3533,21 @@ function vistaAjustes(){
     };
     pdev.cuerpo.appendChild(bp);
     const cheatd=(label,fn)=>{ const b=el("button","btn-aqua chico"); b.textContent=label; b.style.margin="4px 4px 0 0"; b.onclick=()=>{ fn(); guardar(); render(); }; pdev.cuerpo.appendChild(b); };
+    /* 7.9021 · lo primero del panel: COMPROBAR, no hacer trampa. */
+    pdev.cuerpo.appendChild(el("h3","sub","🩺 Doctor · revisar que todo esté sano"));
+    pdev.cuerpo.appendChild(el("p","mini","Corre los invariantes del motor, la tabla, el contenido y la interfaz sobre esta partida. Los pesados simulan sobre una copia y la restauran."));
+    const bdoc=el("button","btn-aqua ancho verde","🩺 Revisar todo (doctor)");
+    bdoc.onclick=function(){
+      if(typeof devDoctor!=="function"){ aviso("El doctor no cargó."); return; }
+      const res=devDoctor();
+      modal(function(box){
+        const cu=(typeof montarBarraSO==="function")
+          ? montarBarraSO(box,"🩺 Doctor · "+res.veredicto,"🩺",cerrarModal)
+          : (function(){ box.appendChild(el("div","cab",'<span class="ic">🩺</span><span>Doctor</span>')); const c=el("div","cuerpo"); box.appendChild(c); return c; })();
+        if(typeof devPintarDoctor==="function") devPintarDoctor(cu);
+      },{clase:"ventana-so dev-editor"});
+    };
+    pdev.cuerpo.appendChild(bdoc);
     pdev.cuerpo.appendChild(el("h3","sub","Avanzar / simular"));
     cheatd("Avanzar semana",()=>{ if(typeof avanzar==="function") avanzar(); });
     cheatd("Simular 5 fechas",()=>{ if(typeof avanzarRapido==="function"){ for(let i=0;i<5;i++) avanzarRapido(false); } });
