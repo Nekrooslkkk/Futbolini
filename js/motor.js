@@ -212,7 +212,58 @@ function nuevaPartida(clubId,anio,modo,extra){
   if(extra&&extra.corte&&anio===2026) aplicarCorte2026();
   if(typeof rellenarPlantelLista==="function") rellenarPlantelLista();
   if(typeof sembrarRedes==="function") sembrarRedes();
+  E._fuerzaV=2;
+  calibrarPlantelALaTabla();
+  ajustarSueldosAlMercado();
   guardar();
+}
+/* 7.9029 · tu once rinde lo que la liga dice que es tu club. Los planteles
+   (reales con stats estimadas, o generados) no calzaban con la fuerza que usa
+   el resto del torneo: Wanderers 1991 jugaba 19 puntos arriba de lo que era.
+   Se corre el nivel de todos por igual (tope ±15), así la jerarquía interna
+   del plantel no cambia: sigue siendo "aproximado", pero coherente. */
+function fuerzaTablaPropia(){
+  const c=(typeof LIGA_ACT!=="undefined"&&LIGA_ACT)?LIGA_ACT.find(x=>x.id===E.club):null;
+  return c&&typeof c.fuerza==="number"?c.fuerza:null;
+}
+function calibrarPlantelALaTabla(){
+  if(!E||!E.plantel||!E.plantel.length||typeof onceIdeal!=="function"||typeof fuerzaEquipo!=="function") return 0;
+  const obj=fuerzaTablaPropia(); if(obj==null) return 0;
+  /* se calibra la fuerza EFECTIVA con la táctica de arranque: el punto neutro.
+     Desde acá, decidir bien la táctica suma y decidir mal resta. */
+  const fz=fuerzaEquipo(onceIdeal());
+  const d=Math.round(clamp(obj-(fz.ataque+fz.orden)/2,-15,15));
+  if(!d) return 0;
+  E.plantel.forEach(j=>{
+    const n0=j.nivel||60, n1=clamp(n0+d,30,95);
+    j.nivel=n1; j.proy=clamp((j.proy||n0)+d,30,97);
+    if(j.sueldo) j.sueldo=Math.max(1,Math.round(j.sueldo*(n1*n1)/(n0*n0)));
+    if(j.valor) j.valor=Math.max(1,Math.round(j.valor*(n1*n1)/(n0*n0)));
+  });
+  if(typeof mediaPlantel==="function") E.ind.plantel=clamp(Math.round(mediaPlantel()),0,100);
+  E.calibracion={delta:d, objetivo:obj};
+  return d;
+}
+/* 7.9029 · los sueldos los pone el mercado del club, no solo el nivel.
+   Un jugador nivel 70 cobra más en Colo-Colo que en Limache, y los clubes
+   gastan en planilla más o menos dos tercios de lo que les entra. Sin esto
+   la taquilla de un grande (300× la de un chico) lo hacía rico sin gestionar. */
+const SUELDO_CUOTA=0.64;
+function factorMercado(){ return (typeof E!=="undefined"&&E&&E.factorMercado)||1; }
+function potencialIngresos(){
+  const ing=ingresosAnuales();
+  const locales=(E.calendario||[]).filter(p=>p.local&&!p.amistoso).length;
+  const taq=taquilla({tipo:"liga",local:true}).ingreso*locales;
+  return ing.tv+ing.sponsors+ing.socios+(ing.digital||0)+taq;
+}
+function ajustarSueldosAlMercado(){
+  if(!E||!E.plantel||!E.plantel.length) return 1;
+  const base=planillaAnual();
+  if(!base) return 1;
+  const f=clamp(SUELDO_CUOTA*potencialIngresos()/base, 0.7, 2.3);
+  E.plantel.forEach(j=>{ j.sueldo=Math.max(1,Math.round(j.sueldo*f)); });
+  E.factorMercado=Math.round(f*100)/100;
+  return E.factorMercado;
 }
 function reiniciarTabla(){
   E.tabla={};
@@ -923,7 +974,10 @@ function precioPromedioRatio(){
   return den?num/den:1;
 }
 function ingresosAnuales(){
-  const tv=(120+E.ind.prestigio*3)*(1+(modSuma("tv")||0));
+  /* 7.9029 · la TV se reparte parejo dentro de la división (como el CDF):
+     el prestigio suma, pero no decide quién vive y quién muere */
+  const tvBase=E.eraBase==="2026b"?150:(E.eraBase==="2026c"?60:260);
+  const tv=(tvBase+E.ind.prestigio*1.5)*(1+(modSuma("tv")||0));
   const spo=(90+E.ind.prestigio*3.5)*(1+(modSuma("sponsor")||0));
   const soc=(E.ind.socios*10)*(1+(modSuma("ingresoSocios")||0));
   const dig=(typeof ingresoDigital==="function")?ingresoDigital():0;

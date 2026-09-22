@@ -514,7 +514,7 @@ function poolMercadoReal(){
         club:_nomClubCpu(id),
         clubId:id,
         precio:precio,
-        pidesueldo:Math.max(j.sueldo||8, Math.round((j.sueldo||8)*1.08))
+        pidesueldo:Math.max(j.sueldo||8, Math.round((j.sueldo||8)*1.08*((typeof factorMercado==="function")?factorMercado():1)))
       }));
     });
   });

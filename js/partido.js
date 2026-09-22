@@ -360,7 +360,13 @@ function esClasico(part){
 }
 function fuerzaEquipo(once){
   if(!once.length) return 40;
-  const base=once.reduce((s,j)=>s+j.nivel*0.68+j.forma*0.16+j.moral*0.10-(j.cansancio||0)*0.22,0)/once.length;
+  /* 7.9029 · escala 1:1 con el nivel (la misma de fuerzaRival). La vieja
+     (nivel×0,68 + constantes) aplastaba todo a ~70: con un chico eras grande y
+     con un grande eras del montón. Las partidas viejas siguen con la vieja. */
+  const v2=(typeof E!=="undefined"&&E&&E._fuerzaV===2);
+  const base=v2
+    ? once.reduce((s,j)=>s+j.nivel+((j.forma||70)-70)*0.16+((j.moral||70)-70)*0.10-(j.cansancio||0)*0.22,0)/once.length
+    : once.reduce((s,j)=>s+j.nivel*0.68+j.forma*0.16+j.moral*0.10-(j.cansancio||0)*0.22,0)/once.length;
   const f=FORMACIONES[E.tactica.form]||FORMACIONES["4-4-2"];
   const es=ESTILOS[E.tactica.estilo]||ESTILOS["Equilibrado"];
   const pr=PRESIONES[E.tactica.presion]||PRESIONES["Media"];
@@ -505,6 +511,7 @@ function aplicarBonoRasgos(P){
   if(aer){ P.ataque+=Math.min(1.6,aer*0.4); P.orden+=Math.min(1.4,aer*0.35); }
   P.rasgoBono={vel:vel,aereo:aer,gol:gol,cont:con};
 }
+var MOTOR_AJUSTE={c:5,s:0.5}; /* medido con devCalibrarMotor: brecha ≈ 0 en CC, UCH, AUD, LIM */
 function iniciarPartido(part,modo){
   const once=onceIdeal();
   const lista=listaIdeal(once);
@@ -513,7 +520,15 @@ function iniciarPartido(part,modo){
   let bonoLocal=part.local?4.5+modSuma("local"):-2;
   let bonoTorneo=part.tipo==="copa"?modSuma("copa"):modSuma("liga");
   const arb=modSuma("arbitraje");
-  const rivalBase=part.fuerzaRival+(part.local?0:3);
+  let rivalBase=part.fuerzaRival+(part.local?0:3);
+  /* 7.9029 · el motor en vivo amplificaba la diferencia de fuerza respecto del
+     modelo con que la IA juega entre sí (medido con devCalibrarMotor): el club
+     del jugador sacaba hasta +0,7 pts por partido de más. Se corrige en la
+     entrada, no en la lógica del partido. Solo partidas nuevas (escala v2). */
+  if(typeof E!=="undefined"&&E&&E._fuerzaV===2&&typeof MOTOR_AJUSTE!=="undefined"&&MOTOR_AJUSTE){
+    const mioEff=(fz.ataque+fz.orden)/2;
+    rivalBase+=MOTOR_AJUSTE.c+(mioEff-rivalBase)*MOTOR_AJUSTE.s;
+  }
   const cl=(typeof CLIMAS!=="undefined"&&CLIMAS[part.clima])||{desgaste:0,precision:1};
   const pr=PRESIONES[E.tactica.presion]||PRESIONES["Media"];
   const me=MENTALIDADES[E.tactica.mentalidad]||MENTALIDADES["Equilibrado"];

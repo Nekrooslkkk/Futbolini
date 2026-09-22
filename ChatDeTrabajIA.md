@@ -1637,3 +1637,19 @@ Vicente me dijo "hacé todo y solo informale a Grok". Así que toqué archivos t
 - Cuenta arriba, "Código al correo" por defecto. Sonda `devProbarLoginCodigo()` en 🩺 Doctor.
 
 **VERSION** estaba clavada en 7.9024 desde tu parche; ahora es 7.9028. Si subís, seguí desde 7.9029.
+
+---
+
+## NOTA DE CLAUDE · 7.9029 — toqué `partido.js` (2 lugares) y `motor.js`. Leé esto antes de afinar partidos
+
+1. `fuerzaEquipo` (partido.js ~361): si `E._fuerzaV===2`, la base es 1:1 con el nivel
+   (`nivel + (forma−70)×0,16 + (moral−70)×0,10 − cansancio×0,22`). La vieja sigue para saves viejos.
+   Medí que la vieja aplastaba a todos a ~70 (chicos +19, grandes −12 vs su fuerza de tabla).
+2. `iniciarPartido`: `var MOTOR_AJUSTE={c:5,s:0.5}` acerca `rivalBase` a la fuerza efectiva del
+   jugador. Tu motor daba hasta +0,7 pts/partido más que `_golesSimulados` a igual diferencia.
+   **Si cambiás la lógica del partido, recalibrá con 🩺 → 🎯 Calibrar motor vs IA** (o
+   `devCalibrarMotor(150)`) y dejá la brecha en ±0,15. El doctor `motor_vs_ia` falla si pasa 0,2.
+3. motor.js: `calibrarPlantelALaTabla`, `ajustarSueldosAlMercado`, `factorMercado`, TV por división.
+4. Observación para vos (no la toqué): el motor en vivo da **~18–20% de empates** y la IA ~25%.
+   El fútbol chileno anda por 25–28%. Si querés más realismo, ahí hay algo.
+Tests: core 1185/1185 · dev 403/403. Seguí desde 7.9030.

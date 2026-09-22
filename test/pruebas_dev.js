@@ -939,6 +939,31 @@
       t(ctq&&ctq.fn().ok,"el chequeo de taquilla da sano con Boca");
     },"Economía");
 
+    grupo("Equilibrio: fuerza, sueldos y motor · 7.9029");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      t(E._fuerzaV===2,"partida nueva usa la escala de fuerza 1:1");
+      var fz=fuerzaEquipo(onceIdeal()), ef=(fz.ataque+fz.orden)/2;
+      t(Math.abs(ef-fuerzaTablaPropia())<=2,"Colo-Colo rinde lo que dice la tabla ("+Math.round(ef)+" vs "+fuerzaTablaPropia()+")");
+      var fCC=E.factorMercado;
+      nuevaPartida("LIM",2026,"historico");
+      var fz2=fuerzaEquipo(onceIdeal()), ef2=(fz2.ataque+fz2.orden)/2;
+      t(Math.abs(ef2-fuerzaTablaPropia())<=2,"Limache rinde lo que dice la tabla ("+Math.round(ef2)+" vs "+fuerzaTablaPropia()+")");
+      t(fCC>E.factorMercado,"el mercado de sueldos de Colo-Colo ("+fCC+") es más caro que el de Limache ("+E.factorMercado+")");
+      /* una partida vieja (sin _fuerzaV) conserva la fórmula de antes */
+      var n0=E._fuerzaV; delete E._fuerzaV;
+      var viejo=fuerzaEquipo(onceIdeal()).base; E._fuerzaV=n0;
+      var nuevo=fuerzaEquipo(onceIdeal()).base;
+      t(Math.abs(viejo-nuevo)>0.5,"las partidas viejas no cambian de fórmula de golpe");
+      t(typeof MOTOR_AJUSTE==="object"&&MOTOR_AJUSTE.s>0&&MOTOR_AJUSTE.s<1,"el ajuste del motor es un par de números medidos");
+      ["fuerza_calibrada","economia_escala","motor_vs_ia"].forEach(function(id){
+        var c=DOCTOR_CHECKS.filter(function(x){ return x.id===id; })[0];
+        var r=c&&c.fn();
+        t(r&&r.ok,"doctor "+id+": "+(r&&r.txt));
+      });
+      t(typeof devEconomiaClubes==="function"&&typeof devCalibrarMotor==="function","radiografía económica y calibrador del motor en el modo dev");
+    },"Equilibrio 7.9029");
+
     grupo("Ajustes es una ventana · 7.9027");
     safe(function(){
       nuevaPartida("CC",2026,"historico"); SEC="escritorio"; render();

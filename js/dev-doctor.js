@@ -143,7 +143,7 @@ devDoctorRegistrar({id:"taquilla_vs_costos", area:"motor", n:"La taquilla no apl
 /* Corre temporadas COMPLETAS sobre una copia y revisa que al final todo cierre.
    Usa el snapshot de Grok (clonarPartida/restaurarPartida) para no tocar la
    partida real del jugador. Es el chequeo pesado. */
-function devSimularYRevisar(temporadas){
+function devSimularYRevisar(temporadas, opts2){
   temporadas=Math.max(1,Math.min(10,temporadas||2));
   if(!E) return _dmal("no hay partida abierta");
   var snap=(typeof clonarPartida==="function")?clonarPartida(E):null;
@@ -159,6 +159,9 @@ function devSimularYRevisar(temporadas){
           var P=iniciarPartido(p,"simular");
           if(typeof correrHasta==="function") correrHasta(P,90);
           terminarPartido(P);
+          /* 7.9029 · cerrar la semana como el avance rápido real: sin esto el
+             harness no cobraba sueldos ni costos y todo club "se hacía rico" */
+          if(!P.amistoso && typeof procesarSemanaRapido==="function"){ try{ procesarSemanaRapido(); }catch(e){ problemas.push("procesarSemanaRapido explotó: "+e.message); } }
         } else if(typeof procesarSemanaPostPartido==="function"){ procesarSemanaPostPartido(); }
         vueltas++;
       }
@@ -171,7 +174,11 @@ function devSimularYRevisar(temporadas){
         if(!r.ok) problemas.push("temporada "+anio+" · "+c.n+": "+r.txt);
       });
       var camp=(typeof tablaOrdenada==="function")?tablaOrdenada()[0]:null;
-      detalle.push("temporada "+anio+": "+vueltas+" compromisos · puntero "+((camp&&camp.n)||"?")+" ("+((camp&&camp.pts)||0)+" pts)");
+      var tOrd=(typeof tablaOrdenada==="function")?tablaOrdenada():[];
+      var miPos=tOrd.findIndex(function(f){ return f.id===E.club; })+1;
+      detalle.push("temporada "+anio+": "+vueltas+" compromisos · puntero "+((camp&&camp.n)||"?")+" ("+((camp&&camp.pts)||0)+" pts)"+
+        " · tu club "+(miPos||"?")+"° · caja "+Math.round(E.plata||0)+" · deuda "+Math.round(E.deuda||0));
+      if(opts2&&opts2.registro) opts2.registro.push({anio:anio, campeon:camp&&camp.id, pos:miPos, plata:Math.round(E.plata||0), deuda:Math.round(E.deuda||0)});
       /* OJO (aprendido a los golpes): NO se llama `cerrarTemporada()` acá.
          Esa función hace `finDeTemporada()` y después abre un MODAL; el año
          avanza recién cuando el jugador aprieta el botón (ui.js `_seguir`),
@@ -187,7 +194,10 @@ function devSimularYRevisar(temporadas){
       /* tras reiniciarTabla, el pool y las filas tienen que corresponderse */
       var pool2=(typeof clubesLigaActual==="function")?clubesLigaActual():[];
       var sinFila=(pool2||[]).filter(function(c){ return !E.tabla[c.id]; }).map(function(c){ return c.id; });
-      var sobran=Object.keys(E.tabla||{}).filter(function(id){ return !(pool2||[]).some(function(c){ return c.id===id; }); });
+      /* en ligas zonales (Segunda, Argentina) la tabla trae las dos zonas a propósito:
+         lo que sobra se mide contra la liga entera, no contra tu zona (7.9029) */
+      var ligaEntera=(typeof LIGA_ACT!=="undefined"&&LIGA_ACT)?LIGA_ACT:pool2;
+      var sobran=Object.keys(E.tabla||{}).filter(function(id){ return !(ligaEntera||[]).some(function(c){ return c.id===id; }); });
       if(sinFila.length) problemas.push("temporada "+anio+": tras cerrar, "+sinFila.length+" club(es) del torneo sin fila ("+sinFila.slice(0,6).join(",")+")");
       if(sobran.length) problemas.push("temporada "+anio+": tras cerrar, "+sobran.length+" fila(s) de clubes que ya no están ("+sobran.slice(0,6).join(",")+")");
     }
@@ -480,6 +490,108 @@ function devProbarLoginCodigo(){
   });
 }
 
+/* 7.9029 · radiografía económica: abre cada club de una época (sobre una copia)
+   y mide planilla, ingresos fijos, taquilla estimada y el balance del año.
+   Sirve para calibrar: si todos ganan plata sin hacer nada, no hay juego. */
+function devEconomiaClubes(anio, base){
+  anio=anio||2026;
+  var snap=(typeof E!=="undefined"&&E&&typeof clonarPartida==="function")?clonarPartida(E):null;
+  var out=[];
+  try{
+    activarLiga(base||baseEra(anio));
+    var D=datosEra(base||baseEra(anio)), ids=Object.keys(D.info||{});
+    ids.forEach(function(id){
+      try{
+        if(nuevaPartida(id,anio,"historico")===false) return;
+        var ing=ingresosAnuales(), eg=egresosAnuales();
+        var locales=(E.calendario||[]).filter(function(p){ return p.local&&!p.amistoso; }).length;
+        var taq=taquilla({tipo:"liga",local:true}).ingreso*locales;
+        var fijos=ing.tv+ing.sponsors+ing.socios+(ing.digital||0);
+        var nivel=(typeof mediaPlantel==="function")?Math.round(mediaPlantel()):0;
+        out.push({id:id, n:E.clubNombre, nivel:nivel, planilla:eg.planilla, operacion:eg.operacion,
+          fijos:Math.round(fijos), taquilla:Math.round(taq), balance:Math.round(fijos+taq-eg.planilla-eg.operacion-eg.intereses)});
+      }catch(e){ out.push({id:id, error:e.message}); }
+    });
+  } finally {
+    if(snap&&typeof restaurarPartida==="function") restaurarPartida(snap);
+  }
+  return out.sort(function(a,b){ return (b.nivel||0)-(a.nivel||0); });
+}
+
+/* 7.9029 · ¿tus partidos responden a la fuerza igual que los de la IA?
+   Juega N partidos del motor del jugador (sin tocar la partida: copia y
+   restaura) contra rivales con diferencia de fuerza controlada, y compara
+   ganados/empates/perdidos contra el modelo de la IA (_golesSimulados).
+   Si el motor amplifica diferencias, el club que controlás gana todo o se hunde. */
+function devCalibrarMotor(n, difs){
+  n=n||120; difs=difs||[-12,-6,0,6,12];
+  if(!E||typeof iniciarPartido!=="function") return null;
+  var snap=clonarPartida(E), out=[];
+  var molde=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"; })[0];
+  try{
+    E._bulkSim=true;
+    var fz=fuerzaEquipo(onceIdeal()), mio=(fz.ataque+fz.orden)/2;
+    difs.forEach(function(d){
+      [true,false].forEach(function(local){
+        var w=0,e=0,l=0, wi=0,ei=0,li=0;
+        for(var i=0;i<n;i++){
+          var E0=clonarPartida(E);
+          var part=Object.assign({},molde,{local:local, fuerzaRival:Math.round(mio-d), jugado:false, tipo:"liga"});
+          var P=iniciarPartido(part,"simular"); correrHasta(P,90);
+          var gm=local?P.gl:P.gv, gr=local?P.gv:P.gl;
+          if(gm>gr) w++; else if(gm===gr) e++; else l++;
+          restaurarPartida(E0);
+          var a={id:"_a",fuerza:mio}, b={id:"_b",fuerza:mio-d};
+          var g=local?_golesSimulados(a,b):_golesSimulados(b,a);
+          var ga=local?g[0]:g[1], gb=local?g[1]:g[0];
+          if(ga>gb) wi++; else if(ga===gb) ei++; else li++;
+        }
+        var ptsM=(3*w+e)/n, ptsI=(3*wi+ei)/n;
+        out.push({dif:d, local:local, motor:[w,e,l], ia:[wi,ei,li], ptsMotor:Math.round(ptsM*100)/100, ptsIA:Math.round(ptsI*100)/100, brecha:Math.round((ptsM-ptsI)*100)/100});
+      });
+    });
+  } finally { restaurarPartida(snap); }
+  return out;
+}
+
+/* 7.9029 · tres chequeos del equilibrio. Todos corren sobre copias y restauran. */
+devDoctorRegistrar({id:"fuerza_calibrada", area:"motor", pesado:true, n:"Tu once rinde lo que dice la tabla (no hay ventaja por ser el jugador)", fn:function(){
+  if(typeof nuevaPartida!=="function"||typeof fuerzaEquipo!=="function") return _dok("sin motor");
+  var snap=(E&&typeof clonarPartida==="function")?clonarPartida(E):null, falta=[], det=[];
+  try{
+    ["CC","AUD","LIM"].forEach(function(id){
+      if(nuevaPartida(id,2026,"historico")===false) return;
+      var fz=fuerzaEquipo(onceIdeal()), ef=(fz.ataque+fz.orden)/2, t=fuerzaTablaPropia();
+      var dif=Math.round((ef-t)*10)/10;
+      det.push(id+": tabla "+t+" · tu once "+Math.round(ef*10)/10+" · dif "+dif);
+      if(Math.abs(dif)>2) falta.push(id+" juega "+dif+" puntos distinto de lo que es en la tabla");
+    });
+  } finally { if(snap) restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" club(es) descalibrados",falta.concat(det)):_dok("tu once = fuerza de tabla (±2)",det);
+}});
+devDoctorRegistrar({id:"economia_escala", area:"motor", pesado:true, n:"Nadie se hace rico (ni quiebra) solo por ser grande o chico", fn:function(){
+  if(typeof devEconomiaClubes!=="function") return _dok("sin radiografía");
+  var r=devEconomiaClubes(2026).filter(function(x){ return !x.error; });
+  if(!r.length) return _dmal("no se pudo medir ningún club");
+  var bal=r.map(function(x){ return x.balance; }), max=Math.max.apply(null,bal), min=Math.min.apply(null,bal);
+  var top=r.filter(function(x){ return x.balance===max; })[0], bot=r.filter(function(x){ return x.balance===min; })[0];
+  var txt="balance anual sin gestionar: de "+min+" ("+bot.id+") a +"+max+" ("+top.id+")";
+  var falta=[];
+  if(max>1200) falta.push(top.id+" gana "+max+" al año sin hacer nada: la plata deja de importar");
+  if(min<-900) falta.push(bot.id+" pierde "+(-min)+" al año hagas lo que hagas");
+  if(max-min>2000) falta.push("la brecha entre clubes ("+(max-min)+") hace el juego trivial arriba e imposible abajo");
+  return falta.length?_dmal(txt,falta):_dok(txt);
+}});
+devDoctorRegistrar({id:"motor_vs_ia", area:"simulacion", pesado:true, n:"Tus partidos responden a la fuerza igual que los de la IA", fn:function(){
+  if(typeof devCalibrarMotor!=="function"||!E) return _dok("sin partida");
+  if(E._fuerzaV!==2) return _dok("partida con escala vieja (anterior a 7.9029): no aplica");
+  var r=devCalibrarMotor(120,[-10,0,10]);
+  var m=r.reduce(function(s,x){ return s+x.brecha; },0)/r.length;
+  var det=r.map(function(x){ return "dif "+x.dif+(x.local?" L":" V")+": motor "+x.ptsMotor+" pts vs IA "+x.ptsIA; });
+  var txt="brecha media "+(Math.round(m*100)/100)+" pts/partido";
+  return Math.abs(m)>0.2?_dmal(txt+(m>0?": el club del jugador saca ventaja":": el club del jugador queda castigado"),det):_dok(txt,det);
+}});
+
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){
   opts=opts||{};
@@ -568,6 +680,29 @@ function devPintarDoctor(cont){
     setTimeout(function(){
       var r=devSimularYRevisar(5); r.id="sim5"; r.area="simulacion"; r.n="Simular 5 temporadas";
       pintarRes({ok:r.ok?1:0, mal:r.ok?0:1, total:1, ms:0, veredicto:r.ok?"sano":"roto", checks:[r]});
+    },30);
+  });
+  btn("💰 Radiografía económica",function(){
+    salida.innerHTML=""; salida.appendChild(el("p","mini","⏳ abriendo cada club sobre una copia…"));
+    setTimeout(function(){
+      var r=devEconomiaClubes(E&&E.anio>=2010?2026:(E?E.anio:2026));
+      salida.innerHTML="";
+      salida.appendChild(el("p","mini","Balance de un año <b>sin gestionar</b> (TV+sponsors+socios+taquilla − planilla − operación − intereses). Sirve para calibrar: arriba debe sobrar para ambición; abajo, tener que vender."));
+      r.forEach(function(x){
+        if(x.error){ salida.appendChild(el("div","fila mal","<span>"+escHtml(x.id)+"</span><b class='mini'>"+escHtml(x.error)+"</b>")); return; }
+        salida.appendChild(el("div","fila"+(x.balance<-500?" mal":""),"<span>"+escHtml(x.n||x.id)+" · nivel "+x.nivel+"</span><b class='mini'>planilla "+x.planilla+" · taquilla "+x.taquilla+" · balance "+(x.balance>0?"+":"")+x.balance+"</b>"));
+      });
+    },30);
+  });
+  btn("🎯 Calibrar motor vs IA",function(){
+    salida.innerHTML=""; salida.appendChild(el("p","mini","⏳ jugando partidos de prueba sobre una copia…"));
+    setTimeout(function(){
+      var r=devCalibrarMotor(150);
+      salida.innerHTML="";
+      salida.appendChild(el("p","mini","Puntos por partido de TU motor vs el modelo de la IA, a igual diferencia de fuerza. Brecha cerca de 0 = nadie tiene ventaja por ser el jugador. Ajuste actual: c="+(MOTOR_AJUSTE&&MOTOR_AJUSTE.c)+" · s="+(MOTOR_AJUSTE&&MOTOR_AJUSTE.s)+"."));
+      (r||[]).forEach(function(x){
+        salida.appendChild(el("div","fila"+(Math.abs(x.brecha)>0.35?" mal":""),"<span>dif "+x.dif+(x.local?" · local":" · visita")+"</span><b class='mini'>motor "+x.ptsMotor+" · IA "+x.ptsIA+" · brecha "+x.brecha+"</b>"));
+      });
     },30);
   });
   btn("✉️ Probar login por código",function(){

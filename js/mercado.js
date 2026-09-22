@@ -48,7 +48,7 @@ function objetivosMercado(){
     const c=clubCompradorDe(rr);
     j.club=c.n; j.clubId=c.id;
     j.precio=Math.round(j.valor*(0.9+rr()*0.6)*inflacionEra());
-    j.pidesueldo=Math.max(j.sueldo, Math.round(j.sueldo*(1+rr()*0.4)));
+    j.pidesueldo=Math.max(j.sueldo, Math.round(j.sueldo*(1+rr()*0.4)*((typeof factorMercado==="function")?factorMercado():1))); /* 7.9029: pide lo que paga TU mercado */
     out.push(j);
   }
   return out;

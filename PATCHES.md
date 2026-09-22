@@ -3269,3 +3269,36 @@ anomalía hasta la línea que la causa.
   No manda correos. (El servidor real no es alcanzable desde CI; el flujo real queda para probar
   con un correo de verdad.)
 - **Tests:** dev **393/393** (+9) · core **1185/1185**.
+
+## 7.9029 · Equilibrio de verdad: ser el jugador ya no te hace ganar, y la plata vuelve a apretar
+Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de raíz, medido después.
+- **BUG de fondo: el club que controlás tenía ventaja o castigo según su tamaño.** `fuerzaEquipo`
+  usaba `nivel×0,68 + forma×0,16 + moral×0,10`: comprimía todo a ~70. Wanderers 1991 (tabla 50)
+  jugaba como 69 (+19); la U 1991 +17,5; Colo-Colo 2026 (tabla 86) como 74 (−12). Con un chico eras
+  grande; con un grande, del montón. Ahora la escala es 1:1 con el nivel (forma y moral como desvíos
+  de 70), la misma de `fuerzaRival`. **Solo partidas nuevas** (`E._fuerzaV=2`); las guardadas siguen
+  con la fórmula vieja para no cambiarles el juego de golpe.
+- **Calibración del plantel** (`calibrarPlantelALaTabla`): al crear la partida se corre el nivel de
+  todo el plantel por igual (tope ±15) para que tu once, con la táctica de arranque, rinda lo que la
+  liga dice que es tu club. La jerarquía interna no cambia. Desde ese punto neutro, decidir bien suma.
+- **El motor en vivo amplificaba diferencias** respecto del modelo con que la IA juega entre sí:
+  hasta +0,7 pts/partido para el club del jugador cuando era más fuerte. Nueva sonda
+  `devCalibrarMotor(n)` (motor vs `_golesSimulados` a igual diferencia). Corregido en la ENTRADA
+  del partido, sin tocar su lógica: `MOTOR_AJUSTE={c:5,s:0.5}` acerca el rival efectivo a tu
+  fuerza. Brecha medida ≈ 0 (±0,1) en CC, U, Audax y Limache.
+- **Sueldos según el mercado del club** (`ajustarSueldosAlMercado`, `factorMercado`): la taquilla
+  variaba 300× entre clubes y la planilla solo 2×. Ahora la planilla ronda el 64% de lo que el club
+  puede ingresar (tope 0,7×–2,3×): un nivel 70 cobra más en Colo-Colo que en Limache. Los fichajes
+  piden según TU mercado. **TV más pareja por división** (como el CDF): base 260 Primera, 150 B,
+  60 Segunda, + prestigio×1,5.
+- **Resultado (5 temporadas quieto, flujo real):** CC 1991 sale 2 veces campeón y siempre top 2
+  (antes 5/5); La U 2026: 11°, 16°, 3°, 1°, 6°; Audax 15°, 10°, 4°, 7°, 3°; Limache abajo y
+  endeudándose. Economía sin gestionar: de ~−300 (chicos) a ~+500/+800 (grandes). Antes: −750 a +2.300.
+- **BUG del harness:** `devSimularYRevisar` no cerraba la semana tras cada partido (no cobraba
+  sueldos ni costos): toda simulación "se hacía rica". Ahora llama a `procesarSemanaRapido`. Registra
+  caja, deuda y posición por temporada. Falso positivo corregido: en ligas zonales la tabla trae las
+  dos zonas a propósito.
+- **Modo dev:** doctor `fuerza_calibrada`, `economia_escala`, `motor_vs_ia` (los tres verificados al
+  revés). Botones nuevos en 🩺: **💰 Radiografía económica** (`devEconomiaClubes`) y **🎯 Calibrar
+  motor vs IA**. El desborde de 390px ya no se reproduce en ninguna de las 13 secciones.
+- **Tests:** dev **403/403** (+10) · core **1185/1185**.
