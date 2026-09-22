@@ -1452,3 +1452,45 @@ Lo tuyo sigue: FIFA/guerra UI linda + `T()`. BTC hueco.
    las 60 épocas. Ya no es el cuello de botella que era.
 7. **Probar:** `bash test/correr.sh` (1175/1175) · `bash test/correr_dev.sh` (321/321). O in-game:
    panel dev → 🩺 Revisar todo. **No es 8.00.**
+
+---
+
+## NOTA DE CLAUDE · 7.9022 — las copas se ven venir + el avance rápido se ve
+
+Carril UI, dos pedidos concretos del autor. Todo medido con **Playwright real a 390px**
+(el chromium headless con `--window-size` miente: da 500px de viewport — la trampa está
+anotada en el prompt que me dieron, por suerte no me la comí de nuevo).
+
+1. **Archivo nuevo: `js/copas-vivas.js`.** Wrap sobre `mundoSimCopas` (flag `_cvivas`, hereda
+   marcas anteriores — respeta el wrap de `mundo-epoca.js`, cargado DESPUÉS del mío en
+   `index.html` así el gatekeeper de época queda afuera). **No toqué** `mundo.js` ni `motor.js`.
+   `copaGrupoFixture(torneo,letra)` y `copasPaisProximos(n)` / `copasPaisConPendientes()` nuevas
+   y globales.
+2. **`js/ui.js`:** `panelCopasPais` suma "Cruces que vienen en el país" (hasta 6, con "—").
+   `panelCopas` suma "Resto del grupo" dentro del bloque `/^Grupo /` (sin repetir tus propios
+   partidos, que ya se ven arriba). Si el autor no le gusta el texto, la clave es `cop_viene` /
+   `cop_resto_grupo` / `cop_sorteo_pendiente` en `idiomas.js` (las 4 lenguas).
+3. **`avanzarRapidoLote(onProgreso,onListo)` (nueva, `js/ui.js`).** Versión en lotes de 4 fechas
+   de `avanzarRapido(true)`, cede el hilo con `setTimeout` entre lotes. `avanzarRapido()` **queda
+   intacto** — lo siguen usando los botones de 1 fecha / 1 temporada, no lo toqué.
+   `simularTemporadasAsync` ahora la usa para el overlay de "Simular N temporadas": se ve fecha,
+   posición real y el campeón del año que acaba de cerrar (`_simTextoProgreso`, una sola función
+   que usan la UI y el Doctor). Cancelar sigue devolviendo al año de origen — no lo rompí.
+4. **El Doctor creció (regla del repo, `CLAUDE.md`):** 3 chequeos nuevos en área `interfaz`:
+   `copas_proximos`, `copas_grupo_partidos`, `sim_progreso_visible`. Los probé al revés (rotos a
+   propósito, confirmé que el Doctor los caza) antes de darlos por buenos.
+5. **Bug que me comí y arreglé antes de que llegara a nadie:** `_rrGrupo(ids)` de tu `mundo.js`
+   devuelve RONDAS (cada una con 2 pares simultáneos), no pares sueltos. Al buscar el resultado de
+   MI partido solo por `rivalId`, la ida y la vuelta contra el mismo rival encontraban el MISMO
+   resultado jugado (doble conteo). Se arregló marcando cada entrada del calendario como "usada"
+   apenas se le asigna a una fila. Lo cazaron mis propios tests (`pruebas_dev.js`), antes de tocar
+   nada del juego real.
+6. **Encontrado de paso, no arreglado:** tema **insano** desborda 8px a 390px. Verificado que ya
+   pasaba en 7.9021 (no es mío). Queda para quien toque `css/temas.css` — no es mi carril.
+7. **No toqué:** `partido.js`, `ui-partido.js`, `mercado.js`, `util.js`, `nube.js`, `motor.js`,
+   `mundo.js`, `css/gol.css`, `test/pruebas_core.js`. Tampoco `VERSION` en `util.js` (sigue en
+   `"7.9019"`, la sube Grok).
+8. **Probar:** `bash test/correr.sh` (1175/1175) · `bash test/correr_dev.sh` (350/350, antes 321).
+   In-game: panel dev → 🩺 Revisar todo → área Interfaz. A ojo: Coquimbo 2026, Calendario, 3
+   fechas simuladas → "Cruces que vienen en el país" con "—" y "Resto del grupo" en los paneles
+   de Copa Chile/de la Liga/Libertadores. **No es 8.00.**

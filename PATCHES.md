@@ -3065,3 +3065,46 @@ que como estaba, y todo chequeo hecho a mano se automatiza y se deja adentro.
   épocas de 7.9016. El `pctRico` pasó de 1% a 46%.
 - **Tests:** dev **321/321** (antes 303; incluyen que el doctor CAZA una tabla adulterada, no solo
   que aprueba) · core **1175/1175**. **No es 8.00.**
+
+## 7.9022 · Las copas dejan de mentir por omisión + el avance rápido se ve
+Dos tareas del autor sobre el carril UI. Verificado con Playwright a 390px reales — el
+`--window-size` de chromium headless MIENTE (da 500px), Playwright respeta el viewport.
+
+- **Bug A: las copas del país solo mostraban lo YA jugado.** Medido: panel "🌎 Copas del país"
+  con 20 filas, las 20 con marcador, 0 con "—". Los sub-paneles "Grupo X" de Copa Chile/CONMEBOL
+  dibujaban la tabla del grupo con CERO filas de partidos. Causa raíz (leída en `mundo.js`, sin
+  tocarlo): Libertadores/Sudamericana guardan cada partido para siempre (`pack.partidos`); Copa
+  Chile y Copa de la Liga NO — solo empujan al log compartido `E.mundo.pais`, que se poda a 40.
+- **`js/copas-vivas.js` (nuevo).** Wrap sobre `mundoSimCopas` (flag `_cvivas`, hereda marcas
+  anteriores) que copia los partidos nuevos de los 4 tipos de copa a un mapa propio por grupo
+  (`g._real`, nunca se poda) ANTES de que `mundoTick` recorte el log. `copaGrupoFixture(torneo,
+  letra)` arma la lista completa (jugado con marcador real + pendiente con "—"), usando
+  `_rrGrupo(ids)` de `mundo.js` para el pareo determinista — se LEE, no se reinventa. Ojo con el
+  bug que me comí yo: `_rrGrupo` devuelve RONDAS (cada una con 2 pares simultáneos), no pares
+  sueltos — y buscar solo por `rivalId` asignaba el único resultado jugado a la ida Y a la vuelta
+  (doble conteo); se arregló marcando cada entrada del calendario como "usada".
+- **`js/ui.js`:** `panelCopasPais` suma "Cruces que vienen en el país" (hasta 6, con "—") y, si
+  los grupos ya cerraron su fase, lo dice (`cop_sorteo_pendiente`: la fase eliminatoria del resto
+  del país no está modelada). `panelCopas` suma "Resto del grupo" (los partidos de los otros 3
+  clubes, sin repetir los tuyos que ya se ven arriba).
+- **Bug B: avance rápido de varias temporadas — pedido del autor.** `avanzarRapido(true)` jugaba
+  una temporada ENTERA de un tirón (hasta 400 fechas), bloqueando el hilo; el overlay solo podía
+  repintar ENTRE temporadas. `avanzarRapidoLote()` (nueva, `js/ui.js`) hace lo mismo en lotes de 4
+  fechas que ceden el hilo con `setTimeout` — mismo `E._bulkSim`, mismas condiciones de freno.
+  `avanzarRapido()` queda intacto (lo siguen usando los botones de 1 fecha / 1 temporada).
+- **`_simTextoProgreso(ctx)`:** una sola función arma el texto del overlay — la usa la pantalla
+  real y el chequeo del Doctor, para que no haya dos versiones que se puedan desalinear. Ahora se
+  ve fecha a fecha: *"Temporada 2 de 3 · 2027 · Colo-Colo · fecha 4/50 · posición 1° · último
+  campeón: Colo-Colo (66 pts)"*. El campeón se captura de `tablaOrdenada()[0]` ANTES de
+  `nuevoAnio()`→`reiniciarTabla()` (si no, se pierde). Cancelar sigue devolviendo al año de origen.
+- **El Doctor crece (regla del repo):** 3 chequeos nuevos en área `interfaz` —
+  `copas_proximos` (el país muestra lo que viene), `copas_grupo_partidos` (los grupos tienen su
+  lista de partidos), `sim_progreso_visible` (el overlay puede mostrar fecha/posición/campeón y
+  `avanzarRapidoLote` cede el hilo). Los tres se probaron al revés: rotos a propósito primero
+  (devuelven `pobres`/`_real` vacíos, o pisando la función con una que no usa `setTimeout`),
+  confirmado que el Doctor los caza, recién ahí quedaron.
+- **Encontrado de paso, no arreglado (fuera de carril):** en el tema **insano**, a 390px hay 8px
+  de desborde horizontal — verificado que existe igual en la versión sin este parche (7.9021), no
+  es una regresión. Queda anotado para quien toque `css/temas.css`.
+- **Tests:** dev **350/350** (antes 321, +29: grupos "Copas del país que se ven venir" y "Avance
+  rápido que se ve"). Core **1175/1175** intacto. `VERSION` la sube Grok. **No es 8.00.**

@@ -1811,6 +1811,7 @@ function panelCopas(v){
       if(/^Grupo /.test(r)){
         const letra=r.replace(/^Grupo\s+/i,"");
         let tabG=null;
+        const torKey=/Sudamericana/i.test(t)?"sud":(/Libertadores/i.test(t)?"lib":(/Copa Chile/i.test(t)?"chile":(/Copa de la Liga/i.test(t)?"copaLiga":null)));
         if(/Libertadores|Sudamericana/i.test(t) && typeof tablaGrupoContinental==="function")
           tabG=tablaGrupoContinental(t, r, E.club);
         else if(/Copa Chile/i.test(t) && typeof tablaGrupoCopaChile==="function")
@@ -1829,6 +1830,21 @@ function panelCopas(v){
           tg.appendChild(tgb);
           pc.cuerpo.appendChild(tg);
           pc.cuerpo.appendChild(el("p","mini","Tabla viva: solo lo jugado. El resto del grupo se llena ronda a ronda con la misma física Poisson. Nadie aparece con 6 PJ cuando tú tienes 1."));
+        }
+        /* 7.9022 · el otro hueco reportado: la tabla estaba, los partidos no.
+           Se agrega el resto del grupo (sin repetir los tuyos, ya listados arriba). */
+        if(torKey && typeof copaGrupoFixture==="function"){
+          const fix=copaGrupoFixture(torKey, letra);
+          const resto=fix.filas.filter(function(f){ return !f.mia; });
+          if(resto.length){
+            pc.cuerpo.appendChild(el("h3","sub",T("cop_resto_grupo","Resto del grupo")));
+            resto.forEach(function(f){
+              const marc=f.jugado?(f.ga+"-"+f.gb):"—";
+              const est=f.jugado?(f.ga>f.gb?"ok":(f.ga<f.gb?"mal":"neu")):"neu";
+              pc.cuerpo.appendChild(el("div","fila mini","<span>"+escHtml(f.nA)+" vs "+escHtml(f.nB)+"</span><b class='etq "+est+"'>"+marc+"</b>"));
+            });
+            if(fix.cerrado) pc.cuerpo.appendChild(el("p","mini",T("cop_sorteo_pendiente","Los grupos del país ya terminaron su fase. La fase eliminatoria del resto del país no está modelada; seguí las tablas de arriba.")));
+          }
         }
       }
     });
@@ -1866,6 +1882,19 @@ function panelCopasPais(v){
     });
   } else {
     pc.cuerpo.appendChild(el("p","mini","Todavía no se jugó una fecha de copa en el país. Avanzá o jugá la tuya y acá se llena."));
+  }
+  /* 7.9022 · el hueco que reportó el autor: acá SOLO se veía lo jugado.
+     Ahora también se ve lo que viene, con "—" como ya hace panelCopas. */
+  if(typeof copasPaisProximos==="function"){
+    const viene=copasPaisProximos(6);
+    if(viene.length){
+      pc.cuerpo.appendChild(el("h3","sub",T("cop_viene","Cruces que vienen en el país")));
+      viene.forEach(function(x){
+        pc.cuerpo.appendChild(el("div","fila","<span><span class='mini'>"+escHtml(x.liga)+" · </span>"+escHtml(x.a)+" vs "+escHtml(x.b)+"</span><b class='etq neu'>—</b>"));
+      });
+    } else if(typeof copasPaisConPendientes==="function" && !copasPaisConPendientes()){
+      pc.cuerpo.appendChild(el("p","mini",T("cop_sorteo_pendiente","Los grupos del país ya terminaron su fase. La fase eliminatoria del resto del país no está modelada; seguí las tablas de arriba.")));
+    }
   }
   if(E.mundo&&E.mundo.copas){
     const bits=[];
@@ -3818,6 +3847,56 @@ function avanzarRapido(hastaFin){
   }
   return {fechas:fechas,partidos:partidos,ganados:ganados,freno:freno};
 }
+/* 7.9022 · avanzarRapido(true) juega una temporada ENTERA de un tirón (hasta
+   400 fechas), bloqueando el hilo: el overlay de "Simular N temporadas" solo
+   podía pintar ENTRE temporadas, nunca fecha a fecha (pedido del autor: "que
+   se vea qué está pasando... que no se ralentice, se pueda ver incluso").
+   Misma lógica de avanzarRapido, en lotes chicos que ceden el hilo con
+   setTimeout: el navegador puede repintar entre lotes sin frenar la corrida
+   real (mismo E._bulkSim, mismas condiciones de freno). avanzarRapido() queda
+   intacto: lo siguen usando los botones de una sola fecha / una temporada. */
+function avanzarRapidoLote(onProgreso, onListo){
+  if(!E||E.carrera.fin||E.carrera.enParo){ onListo({fechas:0,partidos:0,ganados:0}); return; }
+  let fechas=0, partidos=0, ganados=0;
+  const LOTE=4;
+  function paso(){
+    if(!E||E._bulkCancel){ onListo({fechas:fechas,partidos:partidos,ganados:ganados}); return; }
+    let enLote=0;
+    while(enLote<LOTE){
+      if(E.carrera.fin||E.carrera.enParo) return onListo({fechas:fechas,partidos:partidos,ganados:ganados});
+      if(E.dinastia&&E.dinastia.sucesionPendiente) return onListo({fechas:fechas,partidos:partidos,ganados:ganados});
+      if(typeof crisisActiva==="function" && crisisActiva()) return onListo({fechas:fechas,partidos:partidos,ganados:ganados});
+      delegarDecisionesPendientes();
+      const part=proximoPartido();
+      if(!part) return onListo({fechas:fechas,partidos:partidos,ganados:ganados});   /* temporada completa */
+      if(!part.jugado){
+        const antes=(E.temporada&&E.temporada.pg)||0;
+        const P=iniciarPartido(part,"simular");
+        correrHasta(P,90);
+        terminarPartido(P);
+        partidos++;
+        if(((E.temporada&&E.temporada.pg)||0)>antes) ganados++;
+      }
+      procesarSemanaRapido();
+      fechas++; enLote++;
+    }
+    if(onProgreso) onProgreso({fechas:fechas,partidos:partidos,ganados:ganados});
+    setTimeout(paso,0);
+  }
+  setTimeout(paso,0);
+}
+/* Texto del overlay de simulación: UNA sola función, la usa la UI real y el
+   Doctor (chequeo "sim_progreso_visible") para no tener dos versiones que
+   puedan desalinearse. ctx: {temp,tope,anio,club,fecha,totFechas,pos,campeonAnterior}. */
+function _simTextoProgreso(ctx){
+  ctx=ctx||{};
+  const Tf=typeof T==="function"?T:function(k,d){ return d; };
+  const partes=[Tf("sim_prog","Temporada ")+ctx.temp+Tf("sim_de"," de ")+ctx.tope+" · "+ctx.anio+" · "+(ctx.club||"")];
+  if(ctx.fecha!=null) partes.push(Tf("sim_fecha","fecha")+" "+ctx.fecha+(ctx.totFechas?"/"+ctx.totFechas:""));
+  if(ctx.pos) partes.push(Tf("sim_pos","posición")+" "+(typeof ordinal==="function"?ordinal(ctx.pos):ctx.pos+"°"));
+  if(ctx.campeonAnterior) partes.push(Tf("sim_ultcamp","último campeón")+": "+ctx.campeonAnterior);
+  return partes.join(" · ");
+}
 /* 7.67 · SIMULAR VARIAS TEMPORADAS (testeo hasta el final). Juega lo que queda de
    la temporada, la cierra sola (finDeTemporada), juega la liguilla si toca (postura
    equilibrada), y si te echan toma un club de rescate para seguir. Deja el historial
@@ -3889,14 +3968,26 @@ function simularTemporadasAsync(nTemps){
   const anio0=E.anio;
   E._bulkSim=true; E._bulkCancel=false;
   E._simSal=String(Date.now())+"-"+Math.floor(Math.random()*1e9);
-  let temps=0, freno=null, cancelado=false;
+  let temps=0, freno=null, cancelado=false, ultimoCampeon=null;
   const Tfn=typeof T==="function"?T:function(k,d){ return d; };
   pintarSimOverlay(
     Tfn("sim_tit","Simulando temporadas"),
     Tfn("sim_txt","El club sigue, no se trabó.")+" "+Tfn("sim_backhint","Si cancelas, volvemos al año de origen.")+" "+anio0+".",
     true
   );
-  function paso(){
+  /* 7.9022 · se ve fecha a fecha (año, fecha, posición), no solo el año entre
+     temporadas. avanzarRapidoLote cede el hilo cada 4 fechas: el overlay
+     repinta de verdad, la corrida no se ralentiza. */
+  function progresoFecha(r){
+    const pos=(typeof posicionEnTabla==="function")?posicionEnTabla():0;
+    pintarSimOverlay(
+      Tfn("sim_tit","Simulando temporadas"),
+      _simTextoProgreso({temp:temps+1,tope:tope,anio:E.anio,club:E.clubNombre||E.club,
+        fecha:r.fechas,totFechas:(E.calendario||[]).length,pos:pos,campeonAnterior:ultimoCampeon}),
+      true
+    );
+  }
+  function pasoTemporada(){
     if(!E||E._bulkCancel){
       cancelado=true;
       freno="cancelaste";
@@ -3905,11 +3996,18 @@ function simularTemporadasAsync(nTemps){
     if(E.carrera.fin){ freno="fin de la carrera"; return fin(); }
     if(temps>=tope) return fin();
     try{
-      avanzarRapido(true);
+      avanzarRapidoLote(progresoFecha, function(){
+      if(E._bulkCancel){ cancelado=true; freno="cancelaste"; return fin(); }
       if(typeof proximoPartido==="function" && proximoPartido()){
         freno="se frenó antes del cierre (crisis/sucesión: resolvela y seguí)";
         return fin();
       }
+      /* el campeón del año que CIERRA, antes de reiniciar la tabla (si no,
+         se pierde: nuevoAnio()→reiniciarTabla() la deja en cero) */
+      try{
+        const tabla=(typeof tablaOrdenada==="function")?tablaOrdenada():[];
+        if(tabla[0]) ultimoCampeon=(tabla[0].n||tabla[0].id)+" ("+(tabla[0].pts||0)+" pts)";
+      }catch(e){}
       if(typeof finDeTemporada==="function") finDeTemporada();
       if(E.liguillaPend){
         const sim=(typeof simularLiguilla==="function")?simularLiguilla(E.liguillaPend.rival,0):{gano:Math.random()<0.5};
@@ -3924,10 +4022,12 @@ function simularTemporadasAsync(nTemps){
       temps++;
       pintarSimOverlay(
         Tfn("sim_tit","Simulando temporadas"),
-        Tfn("sim_prog","Temporada ")+temps+Tfn("sim_de"," de ")+tope+" · "+E.anio+" · "+(E.clubNombre||E.club)+". "+Tfn("sim_ok","No se trabó; el juego sigue."),
+        _simTextoProgreso({temp:temps,tope:tope,anio:E.anio,club:E.clubNombre||E.club,campeonAnterior:ultimoCampeon})+
+          ". "+Tfn("sim_ok","No se trabó; el juego sigue."),
         true
       );
-      setTimeout(paso, 0);
+      setTimeout(pasoTemporada, 0);
+      });
     }catch(err){
       freno="se cortó: "+(err&&err.message?err.message:"error");
       return fin();
@@ -3950,7 +4050,7 @@ function simularTemporadasAsync(nTemps){
       }
     }
   }
-  setTimeout(paso, 30);
+  setTimeout(pasoTemporada, 30);
 }
 function modalAvanceRapido(){
   if(!E||E.carrera.fin||E.carrera.enParo){ aviso("No hay una partida activa"); return; }

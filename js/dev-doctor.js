@@ -243,6 +243,50 @@ devDoctorRegistrar({id:"barra_alcanzable", area:"interfaz", n:"Todo lo de la bar
   if(cs.overflowX==="auto"||cs.overflowX==="scroll") return _dok("sobran "+desborda+"px pero la barra se desliza");
   return _dmal("sobran "+desborda+"px y la barra NO se desliza (overflow-x:"+cs.overflowX+"): hay botones inalcanzables");
 }});
+/* 7.9022 · bug reportado por el autor: las copas del país solo mostraban lo
+   YA jugado (20 filas, 0 con "—"). El jugador nunca veía qué se venía. */
+devDoctorRegistrar({id:"copas_proximos", area:"interfaz", n:"Las copas del país muestran lo que viene, no solo lo jugado", fn:function(){
+  if(!E||!E.mundo||!E.mundo.copas) return _dok("sin mundo de copas");
+  if(typeof copasPaisProximos!=="function"||typeof copasPaisConPendientes!=="function") return _dmal("copas-vivas.js no está cargado");
+  if(!copasPaisConPendientes()) return _dok("todas las copas de grupo ya terminaron su fase; nada pendiente que mostrar");
+  var prox=copasPaisProximos(20);
+  return prox.length?_dok(prox.length+' cruce(s) pendiente(s) listados, con "—"'):
+    _dmal("hay copas con rondas por jugar pero el panel no muestra ningún cruce sin jugar");
+}});
+/* los sub-paneles "Grupo X" (Copa Chile / CONMEBOL) dibujaban la tabla del
+   grupo con CERO filas de partidos: no se veía quién jugaba contra quién. */
+devDoctorRegistrar({id:"copas_grupo_partidos", area:"interfaz", n:"Los paneles de grupo muestran sus partidos", fn:function(){
+  if(!E||!E.mundo||!E.mundo.copas) return _dok("sin mundo de copas");
+  if(typeof copaGrupoFixture!=="function") return _dmal("copaGrupoFixture no está cargado");
+  var vacios=[], grupos=0;
+  ["chile","copaLiga","lib","sud"].forEach(function(tk){
+    var pack=E.mundo.copas[tk]; if(!pack||!pack.grupos) return;
+    Object.keys(pack.grupos).forEach(function(L){
+      grupos++;
+      var r=copaGrupoFixture(tk,L);
+      if(!r||!r.filas||!r.filas.length) vacios.push(tk+" "+L);
+    });
+  });
+  if(!grupos) return _dok("sin grupos de copa este año");
+  return vacios.length?_dmal(vacios.length+" de "+grupos+" grupo(s) sin ningún partido listado",vacios)
+                      :_dok("los "+grupos+" grupos de copa tienen su lista de partidos");
+}});
+/* 7.9022 · pedido del autor: que se VEA qué está pasando al simular varias
+   temporadas (fecha, posición, campeón anterior), no solo el año; y que la
+   corrida ceda el hilo (no trabe la UI). Se prueba la MISMA función que usa
+   la pantalla real (_simTextoProgreso), no una copia que se puede desalinear. */
+devDoctorRegistrar({id:"sim_progreso_visible", area:"interfaz", n:"Simular temporadas muestra fecha, posición y campeón anterior", fn:function(){
+  if(typeof _simTextoProgreso!=="function") return _dmal("_simTextoProgreso no está cargado");
+  var txt=_simTextoProgreso({temp:2,tope:5,anio:2027,club:"Club de Prueba",fecha:8,totFechas:30,pos:3,campeonAnterior:"Otro Club (60 pts)"});
+  var falta=[];
+  if(txt.indexOf("8")<0||txt.indexOf("30")<0) falta.push("el texto no muestra la fecha (8/30)");
+  if(txt.indexOf(typeof ordinal==="function"?ordinal(3):"3°")<0) falta.push("el texto no muestra la posición");
+  if(txt.indexOf("Otro Club")<0) falta.push("el texto no muestra el campeón anterior");
+  if(typeof avanzarRapidoLote!=="function") falta.push("avanzarRapidoLote no existe (la corrida quedaría bloqueante)");
+  else if(avanzarRapidoLote.toString().indexOf("setTimeout")<0) falta.push("avanzarRapidoLote no cede el hilo (no usa setTimeout): volvería a trabar la UI");
+  return falta.length?_dmal(falta.length+" problema(s)",falta)
+                     :_dok("el overlay puede mostrar fecha, posición y campeón anterior; la corrida cede el hilo entre lotes");
+}});
 
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){

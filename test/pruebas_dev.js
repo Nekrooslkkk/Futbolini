@@ -828,6 +828,78 @@
       t(E.club===club && E.anio===anio,"simular y revisar NO altera la partida abierta");
     },"Doctor");
 
+    grupo("Copas del país que se ven venir · 7.9022");
+    safe(function(){
+      /* bug reportado por el autor, verificado a 390px reales con Playwright:
+         panelCopasPais solo dibujaba lo YA jugado (20 filas, 0 con "—"), y
+         los sub-paneles "Grupo X" dibujaban la tabla pero CERO partidos. */
+      t(typeof copaGrupoFixture==="function","copaGrupoFixture existe");
+      t(typeof copasPaisProximos==="function","copasPaisProximos existe");
+      t(typeof copasPaisConPendientes==="function","copasPaisConPendientes existe");
+      t(typeof mundoSimCopas==="function" && mundoSimCopas._cvivas===true,"mundoSimCopas queda envuelto (captura, no reescribe)");
+      nuevaPartida("COQ",2026,"historico");   /* COQ: Copa Chile grupo A */
+      if(typeof mundoInit==="function") mundoInit();
+      for(var i=0;i<3;i++){
+        var p=proximoPartido(); if(!p) break;
+        var P=iniciarPartido(p,"simular"); correrHasta(P,90); terminarPartido(P);
+      }
+      var ch=E.mundo&&E.mundo.copas&&E.mundo.copas.chile;
+      t(ch&&ch.grupos&&Object.keys(ch.grupos).length===8,"Copa Chile arranca con 8 grupos");
+      var letraA=null; Object.keys(ch.grupos).forEach(function(L){ if((ch.grupos[L].ids||[]).indexOf("COQ")>=0) letraA=L; });
+      var fx=copaGrupoFixture("chile",letraA);
+      /* 4 equipos, ida y vuelta: C(4,2)=6 duelos × 2 = 12 partidos totales del grupo */
+      t(fx.filas.length===12,"un grupo de 4 tiene 12 partidos (ida+vuelta) — dio "+fx.filas.length);
+      t(fx.filas.filter(function(f){ return f.mia; }).length===6,"de esos, 6 son míos (3 rivales × ida y vuelta)");
+      t(fx.filas.some(function(f){ return f.jugado; }),"al menos un partido ya jugado, con marcador real");
+      t(fx.filas.some(function(f){ return !f.jugado; }),"al menos un partido sin jugar (será \"—\" en pantalla)");
+      t(fx.filas.some(function(f){ return f.mia; }),"reconoce cuáles partidos son los míos");
+      /* mis partidos jugados en la fixture tienen que calzar con mi calendario real:
+         ida y vuelta contra el mismo rival NO se pueden contar como el mismo partido */
+      var miosCal=(E.calendario||[]).filter(function(x){ return x.tipo==="copa"&&x.torneo==="Copa Chile"&&x.jugado; });
+      var miosFix=fx.filas.filter(function(f){ return f.mia&&f.jugado; });
+      t(miosFix.length===miosCal.length,"mis resultados de la fixture calzan con mi calendario, sin doble conteo ("+miosFix.length+"="+miosCal.length+")");
+      /* lo que aún no se jugó, en NINGÚN caso trae marcador inventado */
+      t(fx.filas.every(function(f){ return f.jugado || (f.ga===null&&f.gb===null); }),"nada sin jugar trae marcador (nada inventado)");
+      var prox=copasPaisProximos(20);
+      t(prox.length>0,"hay cruces pendientes listados para el país ("+prox.length+")");
+      t(prox.every(function(x){ return x.a&&x.b&&x.liga; }),"cada cruce trae rival y torneo, listo para pintar con \"—\"");
+      t(copasPaisConPendientes()===true,"copasPaisConPendientes detecta que faltan partidos");
+      /* el doctor tiene que estar al tanto de este arreglo */
+      ["copas_proximos","copas_grupo_partidos"].forEach(function(id){
+        t(DOCTOR_CHECKS.some(function(c){ return c.id===id; }),"el Doctor registra "+id);
+      });
+      var rd=devDoctor({area:"interfaz"});
+      t(rd.checks.filter(function(c){ return c.id==="copas_proximos"||c.id==="copas_grupo_partidos"; }).every(function(c){ return c.ok; }),
+        "ambos chequeos de copas salen sanos con esta partida");
+    },"Copas vivas");
+
+    grupo("Avance rápido que se ve · 7.9022");
+    safe(function(){
+      /* pedido del autor: "mejora las que hay fuera (las originales), que no
+         se ralentice, se pueda ver incluso" — fecha a fecha, no solo el año. */
+      t(typeof avanzarRapidoLote==="function","avanzarRapidoLote existe (versión por lotes de avanzarRapido)");
+      t(avanzarRapidoLote.toString().indexOf("setTimeout")>=0,"cede el hilo entre lotes (no bloquea la UI)");
+      t(typeof avanzarRapido==="function","avanzarRapido original sigue intacto (lo usan los botones de 1 fecha)");
+      t(typeof _simTextoProgreso==="function","_simTextoProgreso existe (misma función que pinta el overlay real)");
+      var txt=_simTextoProgreso({temp:2,tope:5,anio:2027,club:"Club de Prueba",fecha:8,totFechas:30,pos:3,campeonAnterior:"Otro Club (60 pts)"});
+      t(txt.indexOf("8")>=0 && txt.indexOf("30")>=0,"el overlay muestra la fecha (8/30)");
+      t(txt.indexOf(ordinal(3))>=0,"el overlay muestra la posición real");
+      t(txt.indexOf("Otro Club")>=0,"el overlay muestra el campeón del año que acaba de cerrar");
+      var txtSinDatos=_simTextoProgreso({temp:1,tope:5,anio:2026,club:"Club"});
+      t(txtSinDatos.indexOf("Temporada")>=0,"sin datos de fecha/posición igual arma el texto base (no rompe)");
+      t(DOCTOR_CHECKS.some(function(c){ return c.id==="sim_progreso_visible"; }),"el Doctor registra sim_progreso_visible");
+      var rd=devDoctor({area:"interfaz"});
+      t(rd.checks.find(function(c){ return c.id==="sim_progreso_visible"; }).ok,"el chequeo sale sano");
+      /* función avanzarRapidoLote real: corre un lote y llama onListo (síncrono
+         hasta el primer setTimeout, que en este entorno de test se puede
+         inspeccionar sin esperar: alcanza con que no explote al armarse). */
+      nuevaPartida("CC",2026,"historico");
+      var err=null;
+      try{ avanzarRapidoLote(function(){}, function(){}); }catch(e){ err=e; }
+      t(!err,"avanzarRapidoLote arranca sin explotar"+(err?(" — "+err.message):""));
+      E._bulkCancel=true;   /* corta el lote programado (setTimeout) para no dejarlo corriendo suelto tras el test */
+    },"Avance visible");
+
     grupo("Localización 7.9013");
     safe(function(){
       ["mep_solo","riv_racha","riv_sin","riv_puesto","cal_prog","cal_sig",
