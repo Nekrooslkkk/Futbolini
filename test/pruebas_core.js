@@ -1322,7 +1322,9 @@
       ok(rivAud.some(function(j){ return j.n==="Carlos Villanueva"; }), "el XI rival de Audax 2006 es el plantel 2006, no el 2026");
       var rivRan=plantelRival("RAN",62);
       ok(rivRan.every(function(j){ return !j.real; }), "Rangers 2006 sin plantel: apodos, no hereda 2026 ni 1991");
-      ok(rivRan.some(function(j){ return /Rangers|RAN/.test(j.n); }), "los apodos dicen Rangers");
+      /* 7.9035 · pedido del autor: nada de "el 7 de Rangers". Sin plantel documentado, once del
+         juego con nombre (sin ● en pantalla = no es real). */
+      ok(rivRan.every(function(j){ return !/^el \d+ de /i.test(j.n); }), "sin plantel documentado: once del juego con nombre, no \"el 7 de Rangers\"");
     }, "partida 2006 + XI rival sin anacronismo");
     safe(function(){
       nuevaPartida("CC",2006,"historico");

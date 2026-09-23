@@ -129,18 +129,9 @@ const PLANTEL_UC_2006=[
     var same=pack&&pack[anio];
     if(same&&same.length>=11) return orig(idOrNombre,fuerza);
     if(anio>=2024) return orig(idOrNombre,fuerza);
-    var tag, pos, rol;
-    if(id&&typeof CLUB_POR_ID==="object"&&CLUB_POR_ID[id]) tag=CLUB_POR_ID[id].c||CLUB_POR_ID[id].n;
-    else tag=String(idOrNombre||"rival");
-    pos=["ARQ","DEF","DEF","DEF","DEF","VOL","VOL","VOL","DEL","DEL","DEL"];
-    rol=["el 1","el 2","el 3","el 4","el 5","el 6","el 8","el 10","el 7","el 9","el 11"];
-    return pos.map(function(p,i){
-      return {
-        n:rol[i]+" de "+tag, pos:p, edad:25, nivel:typeof clamp==="function"?clamp((fuerza||60)-4,40,86):(fuerza||60),
-        proy:70, sueldo:40, valor:80, rasgos:[], forma:70, moral:70, real:false,
-        contrato:{hasta:0}, lesion:0, goles:0, partidos:0, tarjetas:0, cansancio:0
-      };
-    });
+    /* 7.9035 · año sin plantel documentado: once del juego (sin ●), no "el 1 de X" */
+    if(typeof plantelGenerado==="function") return plantelGenerado(id||String(idOrNombre||"rival"), fuerza, (typeof paisDeRival==="function")?paisDeRival(idOrNombre,id):null);
+    return orig(idOrNombre,fuerza);
   };
   plantelRival._p996=true;
 })();

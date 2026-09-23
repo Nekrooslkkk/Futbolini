@@ -708,7 +708,9 @@ function vistaEscritorio(){
         });
         t.appendChild(tb); det.appendChild(t);
         if(pagado){
-          det.appendChild(el("p","mini","● "+T("scout_real","jugador real documentado")+". "+T("scout_estim","Es una lectura estimada: la formación final puede cambiar.")));
+          det.appendChild(el("p","mini","● "+T("scout_real","jugador real documentado")+". "+
+            (xi.some(j=>!j.real)?T("scout_juego","Sin ●: jugador del juego (no hay plantel documentado de ese club o de ese año).")+" ":"")+
+            T("scout_estim","Es una lectura estimada: la formación final puede cambiar.")));
         } else {
           det.appendChild(el("p","mini",T("scout_niebla","Ves a los conocidos; el resto es niebla. Pide el informe y ves el once completo — no cuesta caja.")));
           const bi=el("button","btn-aqua chico verde");

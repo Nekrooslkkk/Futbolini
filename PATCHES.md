@@ -3403,3 +3403,17 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - Wraps de `data-2006` y `liga-registrar` ahora heredan las marcas de los de abajo (se perdía `._uni`).
 - **Doctor +5:** `universo_ligas`, `universo_copas_jugador`, `universo_liguilla`, `llave_global`,
   `calendario_sin_saltos` — cada uno verificado al revés. **Tests:** dev **466/466** (+33) · core **1185/1185**.
+
+## 7.9036 · Todos los rivales con nombre (chao "el 1 de NUB")
+**Archivos:** `js/data-plantel.js`, `js/data-996.js`, `js/partido.js`, `js/ui.js`, `js/idiomas.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`, tests
+- **El bug (jugando con Rangers):** el "Once probable" de Ñublense decía "el 1 de NUB" y en el partido
+  la UdeC salía "el 7 de…". Causa: el buscador de club del rival (`idClubDe`) miraba SOLO tu liga, así
+  que un rival de otra división (Copa Chile, liguilla) no se encontraba y caía al relleno. Además el
+  partido le pasaba el nombre largo en vez del id.
+- Ahora se busca en todos los clubes conocidos, y el partido pasa el id. Revisado con todos los
+  clubes (87) y todos los partidos de 8 partidas (Primera, B, Segunda, Argentina, 1991, 2006).
+- **Extranjeros y años sin plantel documentado:** once del juego con nombres comunes del país
+  (Colombia, Brasil, Perú, Uruguay, Ecuador, Paraguay, Bolivia, Venezuela, Argentina, Serbia), sin
+  apellidos repetidos. En el "Once probable" se aclara: sin ● = jugador del juego, no real.
+- **Doctor +1:** `rivales_con_nombre` (revisa el once de cada rival de tu calendario), verificado al
+  revés. Test core de 2006 actualizado al pedido nuevo. **Tests:** dev **474/474** · core **1185/1185**.

@@ -288,14 +288,87 @@ function armarPlantel(clubId,anio,nivelBase){
   });
   return out;
 }
+/* 7.9035 · el rival puede ser de OTRA división (Copa Chile, liguilla, amistoso): antes solo
+   se buscaba en tu liga (CLUB_POR_ID) y Ñublense, para Rangers, salía "el 1 de NUB". */
 function idClubDe(idOrNombre){
   if(!idOrNombre) return null;
   if(typeof CLUB_POR_ID==="object" && CLUB_POR_ID[idOrNombre]) return idOrNombre;
-  const keys=typeof CLUB_POR_ID==="object"?Object.keys(CLUB_POR_ID):[];
-  return keys.find(k=>{
-    const c=CLUB_POR_ID[k];
-    return c&&(c.n===idOrNombre||c.c===idOrNombre);
-  })||null;
+  if(typeof clubLookup==="function"){ const c=clubLookup(idOrNombre); if(c&&c.id) return c.id; }
+  const mapas=[typeof CLUB_POR_ID==="object"?CLUB_POR_ID:{}, (typeof clubMapaTodos==="function")?clubMapaTodos():{}];
+  for(let i=0;i<mapas.length;i++){
+    const m=mapas[i];
+    const k=Object.keys(m).find(function(x){ const c=m[x]; return c&&(c.n===idOrNombre||c.c===idOrNombre); });
+    if(k) return k;
+  }
+  return null;
+}
+/* nombre corto de un club para textos (nunca el id pelado) */
+function nombreCortoClub(id, fallback){
+  const c=id&&((typeof clubLookup==="function"&&clubLookup(id))||(typeof CLUB_POR_ID==="object"&&CLUB_POR_ID[id]));
+  return (c&&(c.c||c.n))||String(fallback||id||"rival");
+}
+/* 7.9035 · rival sin plantel documentado (club extranjero o año sin datos): once del juego
+   con nombres comunes del país, nunca "el 1 de X". En la pantalla, sin ● = no es un jugador
+   real (el ● ya marcaba los documentados). Apellidos comunes, no de figuras conocidas. */
+const NOMBRES_PAIS={
+  ar:{p:["Juan","Lucas","Matías","Nicolás","Facundo","Gonzalo","Leandro","Emiliano","Franco","Ezequiel","Agustín","Santiago","Federico","Hernán","Gastón","Tomás"],
+      a:["González","Rodríguez","Gómez","Fernández","López","Martínez","Pérez","Romero","Sosa","Álvarez","Ruiz","Ramírez","Benítez","Acosta","Medina","Herrera","Aguirre","Pereyra","Giménez","Molina","Ledesma","Vega","Ojeda","Correa"]},
+  br:{p:["João","Pedro","Lucas","Gabriel","Rafael","Thiago","Matheus","Bruno","Felipe","Gustavo","Igor","Caio","Rodrigo","Leandro","Eduardo","André"],
+      a:["Silva","Santos","Oliveira","Souza","Pereira","Lima","Costa","Ferreira","Rodrigues","Almeida","Nascimento","Carvalho","Araújo","Ribeiro","Gomes","Martins","Rocha","Barbosa","Cardoso","Teixeira"]},
+  pe:{p:["José","Luis","Carlos","Miguel","Jorge","Renzo","Piero","Christian","Aldair","Edison","Kevin","Diego","Jean","Víctor"],
+      a:["Quispe","Flores","García","Huamán","Mendoza","Chávez","Vásquez","Castillo","Gonzales","Sánchez","Díaz","Ramos","Salazar","Paredes","Ríos","Cárdenas"]},
+  co:{p:["Juan","Andrés","Carlos","Jhon","Luis","Jorge","Daniel","Camilo","Jefferson","Wilmar","Sebastián","Felipe","Stiven","Brayan"],
+      a:["Rodríguez","Gómez","Martínez","García","Hernández","Ramírez","Moreno","Muñoz","Rojas","Mosquera","Córdoba","Palacios","Rentería","Ospina","Cárdenas","Zapata"]},
+  ec:{p:["Byron","Jefferson","Carlos","Luis","Pedro","Ángel","Michael","Xavier","José","Alan","Willian","Jordy","Anthony"],
+      a:["Mena","Caicedo","Valencia","Preciado","Arboleda","Plata","Torres","Castillo","Reasco","Quiñónez","Cortez","Méndez","Angulo","Ayoví","Bone"]},
+  uy:{p:["Nicolás","Federico","Martín","Diego","Matías","Facundo","Rodrigo","Gastón","Sebastián","Agustín","Brian","Emiliano","Joaquín","Mathías"],
+      a:["Rodríguez","González","Fernández","Pérez","Martínez","Silva","Sosa","Cabrera","Pereira","Núñez","Méndez","Acosta","Olivera","Castro","Techera","Píriz"]},
+  py:{p:["Óscar","Miguel","Gustavo","Richard","Ángel","Julio","Blas","Omar","Robert","Iván","Fabián","Hernán","Braian","Derlis"],
+      a:["Benítez","Martínez","Giménez","Villalba","Ortiz","Cáceres","Romero","Ayala","Duarte","Cardozo","Sanabria","Espínola","Aquino","Riveros","Bogado"]},
+  bo:{p:["Marcelo","Juan Carlos","Luis","Diego","Carlos","Ramiro","Henry","Jaime","Erwin","Leonardo","Boris","Rodrigo"],
+      a:["Mamani","Quispe","Flores","Vargas","Rojas","Gutiérrez","Arce","Justiniano","Vaca","Saavedra","Chávez","Suárez","Cuéllar","Aguilar"]},
+  ve:{p:["José","Luis","Yeferson","Darwin","Jhon","Eduard","Tomás","Josef","Yangel","Christian","Ronald","Wilker"],
+      a:["Herrera","Martínez","Hernández","Aramburu","Cádiz","Osorio","González","Rivas","Blanco","Mendoza","Villanueva","Castellanos"]},
+  rs:{p:["Nikola","Marko","Stefan","Luka","Miloš","Dušan","Aleksandar","Nemanja","Filip","Vladimir"],
+      a:["Jovanović","Petrović","Nikolić","Marković","Đorđević","Stojanović","Ilić","Pavlović","Popović","Kostić"]}
+};
+const PAIS_RIVAL={"Boca Juniors":"ar","Estudiantes de La Plata":"ar","Estudiantes (LP)":"ar","Platense":"ar","Deportivo Riestra":"ar","Barracas Central":"ar",
+  "Barcelona SC":"ec","LDU de Quito":"ec","Olimpia":"py","Nacional":"uy","Peñarol":"uy","Montevideo City Torque":"uy","Boston River":"uy",
+  "Universitario":"pe","Cusco FC":"pe","Deportes Tolima":"co","Millonarios":"co","Independiente Santa Fe":"co","Independiente Medellín":"co",
+  "Cruzeiro":"br","Vasco da Gama":"br","São Paulo":"br","Grêmio":"br","Fluminense":"br","Flamengo":"br","Corinthians":"br","Bahia":"br",
+  "Deportivo La Guaira":"ve","Carabobo":"ve","Bolívar":"bo","Estrella Roja":"rs"};
+function paisDeRival(idOrNombre, id){
+  const s=String(idOrNombre||"");
+  if(PAIS_RIVAL[s]) return PAIS_RIVAL[s];
+  let m=s.match(/_([A-Z]{2})$/);
+  if(m) return m[1].toLowerCase();
+  if(typeof CONMEBOL_GRUPOS_2026==="object"){
+    let suf=null;
+    ["lib","sud"].forEach(function(t){ (CONMEBOL_GRUPOS_2026[t]||[]).forEach(function(g){
+      Object.keys(g.nom||{}).forEach(function(k){ if(!suf&&g.nom[k]===s){ const mm=k.match(/_([A-Z]{2})$/); if(mm) suf=mm[1].toLowerCase(); } });
+    }); });
+    if(suf) return suf;
+  }
+  if(id && typeof LIGA_ARG_2026!=="undefined" && LIGA_ARG_2026.some(function(c){ return c.id===id; })) return "ar";
+  if(!id && typeof E!=="undefined" && E && E.eraBase==="arg2026") return "ar";
+  return null;                                   /* chileno: el pool de siempre */
+}
+function plantelGenerado(clave, fuerza, pais){
+  const anio=(typeof E!=="undefined"&&E&&E.anio)||2026;
+  const rr=azarFijo(semilla("xi|"+clave+"|"+anio));
+  const pool=(pais&&NOMBRES_PAIS[pais])||{p:NOMBRES_PILA, a:APELLIDOS};
+  const pos=["ARQ","DEF","DEF","DEF","DEF","VOL","VOL","VOL","DEL","DEL","DEL"];
+  const apes={};
+  return pos.map(function(p){
+    const j=generarJugador(rr, (fuerza||60)-4, p, 21+Math.floor(rr()*12));
+    /* apellido que no se repita en el once (con 11 jugadores y pools de 12+ alcanza) */
+    let ape=pool.a[Math.floor(rr()*pool.a.length)], k=0;
+    while(apes[ape] && k++<12) ape=pool.a[Math.floor(rr()*pool.a.length)];
+    apes[ape]=1;
+    j.n=pool.p[Math.floor(rr()*pool.p.length)]+" "+ape;
+    j.real=false; j.generado=true; j.rasgos=[];
+    return j;
+  });
 }
 /* XI rival: plantel vivo de la CPU si existe. Si no, documentado. Nunca se queda pegado en 2026. */
 function plantelRival(idOrNombre,fuerza){
@@ -328,14 +401,7 @@ function plantelRival(idOrNombre,fuerza){
     while(filas.length<11) filas.push(reales[filas.length%reales.length]);
     return filas.slice(0,11).map(a=>jugadorDesde(a));
   }
-  const tag=(id&&CLUB_POR_ID[id]&&(CLUB_POR_ID[id].c||CLUB_POR_ID[id].n))||String(idOrNombre||"rival");
-  const pos=["ARQ","DEF","DEF","DEF","DEF","VOL","VOL","VOL","DEL","DEL","DEL"];
-  const rol=["el 1","el 2","el 3","el 4","el 5","el 6","el 8","el 10","el 7","el 9","el 11"];
-  return pos.map((p,i)=>({
-    n:rol[i]+" de "+tag, pos:p, edad:25, nivel:clamp((fuerza||60)-4,40,86),
-    proy:70, sueldo:40, valor:80, rasgos:[], forma:70, moral:70, real:false,
-    contrato:{hasta:0}, lesion:0, goles:0, partidos:0, tarjetas:0, cansancio:0
-  }));
+  return plantelGenerado(id||String(idOrNombre||"rival"), fuerza, paisDeRival(idOrNombre, id));
 }
 /* ---------- CPUs: el resto de los clubes envejece, se retira y se ficha ----------
    7.9010 · el mundo no se queda congelado en 2026. Cada club tiene plantel vivo

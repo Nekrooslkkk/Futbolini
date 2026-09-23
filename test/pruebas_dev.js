@@ -1254,6 +1254,26 @@
       var res=simularTemporadas(1);
       t(res.temps===1,"con una crisis encima, simular 1 temporada igual la completa ("+res.temps+", "+(res.freno||"sin freno")+")");
     },"Crisis delegada");
+    safe(function(){
+      /* "el 1 de NUB" (once probable) y "el 7 de UdeC" (partido) jugando con Rangers */
+      nuevaPartida("RAN",2026,"historico");
+      var relleno=/^el \d+ de /i;
+      t(idClubDe("NUB")==="NUB" && idClubDe("Universidad de Concepción")==="UDC","el rival se encuentra aunque sea de otra división (por id y por nombre)");
+      var xi=plantelRival("NUB",70);
+      t(xi.length===11 && !xi.some(function(j){ return relleno.test(j.n); }),"Ñublense sale con su once real para Rangers ("+xi[0].n+"…)");
+      var xi2=plantelRival("Universidad de Concepción",65);
+      t(!xi2.some(function(j){ return relleno.test(j.n); }),"la UdeC por nombre (como la pasa el partido) también");
+      var tol=plantelRival("Deportes Tolima",76);
+      t(!tol.some(function(j){ return relleno.test(j.n)||j.real; }),"un extranjero sin plantel documentado: once del juego, sin ● ("+tol[0].n+")");
+      var apes=tol.map(function(j){ return j.n.split(" ").slice(-1)[0]; });
+      t(apes.filter(function(a,i){ return apes.indexOf(a)!==i; }).length===0,"sin apellidos repetidos en el mismo once");
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="rivales_con_nombre"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor rivales_con_nombre: "+(r&&r.txt));
+      var pr=plantelRival; plantelRival=function(id){ return ["ARQ","DEF","DEF","DEF","DEF","VOL","VOL","VOL","DEL","DEL","DEL"].map(function(p,i){ return {n:"el "+(i+1)+" de "+id,pos:p}; }); };
+      t(!c.fn().ok,"el Doctor caza un once de relleno (el bug viejo)"); plantelRival=pr;
+      nuevaPartida("CC",1991,"historico");
+      var r91=c.fn(); t(r91.ok,"1991 (sin planteles documentados de muchos rivales): "+r91.txt);
+    },"Rivales con nombre");
 
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");

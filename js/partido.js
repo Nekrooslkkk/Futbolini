@@ -534,7 +534,7 @@ function iniciarPartido(part,modo){
   const me=MENTALIDADES[E.tactica.mentalidad]||MENTALIDADES["Equilibrado"];
   const bl=(typeof BLOQUES!=="undefined"&&BLOQUES[E.tactica.bloque])||{recup:0,expo:0};
   const P={
-    part:part, modo:modo||"simular", min:0, gl:0, gv:0, once:once, lista:lista, rivalPlantel:plantelRival(part.rivalNombre||part.rivalId,part.fuerzaRival),
+    part:part, modo:modo||"simular", min:0, gl:0, gv:0, once:once, lista:lista, rivalPlantel:plantelRival(part.rivalId||part.rivalNombre,part.fuerzaRival),
     ataque:fz.ataque+bonoLocal+bonoTorneo+arb, orden:fz.orden+bonoLocal*0.6+bonoTorneo+arb,
     desgaste:fz.desgaste+(cl.desgaste||0), cansancio:0, rival:rivalBase, empuje:0, riesgoPlan:0,
     recup:(pr.recup||0)+(me.recup||0)+(bl.recup||0), expo:(pr.expo||0)+(me.expo||0)+(bl.expo||0),

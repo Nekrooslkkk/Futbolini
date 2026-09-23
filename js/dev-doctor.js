@@ -692,6 +692,25 @@ devDoctorRegistrar({id:"universo_liguilla", area:"motor", n:"La liguilla de la B
     falta.push(((typeof _nomClub==="function")?_nomClub(lb.campeon):lb.campeon)+" ganó la liguilla pero no subió");
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("cuadro completo"+(lb.campeon?"; campeón "+((typeof _nomClub==="function")?_nomClub(lb.campeon):lb.campeon):""));
 }});
+/* 7.9035 · "el 1 de NUB" en el once probable y "el 7 de UdeC" en el partido: el rival de
+   otra división (o extranjero, o de un año sin plantel) salía con nombres de relleno */
+devDoctorRegistrar({id:"rivales_con_nombre", area:"motor", n:"Todos tus rivales salen con jugadores con nombre", fn:function(){
+  if(!E||!E.calendario||typeof plantelRival!=="function") return _dok("sin partida");
+  var relleno=/^el \d+ de /i, malos={}, n=0;
+  var snap=(typeof clonarPartida==="function")?clonarPartida(E):null;
+  try{
+    E.calendario.forEach(function(p){
+      if(!p||(!p.rivalId&&!p.rivalNombre)) return;
+      n++;
+      [p.rivalId||p.rivalNombre, p.rivalNombre||p.rivalId].forEach(function(q){
+        var xi=plantelRival(q, p.fuerzaRival)||[];
+        if(xi.length<11||xi.some(function(j){ return !j||!j.n||relleno.test(j.n); })) malos[(p.torneo||(p.tipo==="liga"?"liga":p.tipo))+" vs "+(p.rivalNombre||p.rivalId)]=1;
+      });
+    });
+  } finally { if(snap&&typeof restaurarPartida==="function") restaurarPartida(snap); }
+  var lista=Object.keys(malos);
+  return lista.length?_dmal(lista.length+" rival(es) con once de relleno",lista.slice(0,8)):_dok("los rivales de tus "+n+" partidos tienen once con nombre");
+}});
 /* 7.9035 · un partido salteado: clasificar a una llave durante terminarPartido movía el
    puntero al próximo sin jugar y el idx++ se comía uno (quedaba sin jugar para siempre) */
 devDoctorRegistrar({id:"calendario_sin_saltos", area:"motor", n:"Ningún partido queda salteado en tu calendario", fn:function(){

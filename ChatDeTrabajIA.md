@@ -1719,3 +1719,8 @@ Regla nueva del autor: se puede reconstruir si está feo o no funciona, con plan
    `terminarPartido` se salteaba el partido siguiente. Ya está arreglado y el Doctor lo vigila
    (`calendario_sin_saltos`).
 Estado: VERSION 7.9035 · dev 466/466 · core 1185/1185. Seguí desde 7.9036.
+
+**7.9036 (Claude):** `idClubDe` busca en todos los clubes (no solo tu liga) y el rival sin plantel
+documentado sale con `plantelGenerado(clave, fuerza, pais)` (nombres comunes del país, `real:false`).
+Cambié tu test de 2006 "los apodos dicen Rangers": el autor pidió que no haya "el 7 de X". Ahora el
+test exige que NO haya nombres de relleno. Estado: dev 474/474 · core 1185/1185.
