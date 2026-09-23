@@ -563,6 +563,7 @@ function _hookFase2006(){
       try{ avanzarFase2006(P&&P.part); }catch(e){}
       return res;
     };
+    try{ Object.keys(orig).forEach(function(k){ if(!(k in terminarPartido)) terminarPartido[k]=orig[k]; }); }catch(e){}
     terminarPartido._e06fase=true;
   }
   if(typeof resolverCopa==="function" && !resolverCopa._e06po){
@@ -574,6 +575,10 @@ function _hookFase2006(){
       }
       return origC.apply(this, arguments);
     };
+    /* 7.9035 · este gancho corre tarde (lo llama data-996): hereda las marcas de los
+       envoltorios anteriores (._uni del universo único, ._fmt54, ._32…) para que nadie
+       crea que no envolvió y lo vuelva a hacer */
+    try{ Object.keys(origC).forEach(function(k){ resolverCopa[k]=origC[k]; }); }catch(e){}
     resolverCopa._e06po=true;
   }
   return typeof terminarPartido==="function" && !!terminarPartido._e06fase;

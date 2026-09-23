@@ -184,6 +184,7 @@ function sacarCopaChilePendiente(){
 }
 function insertarCopaChileYOrdenar(nuevos){
   if(!E||!nuevos||!nuevos.length) return;
+  if(typeof _insertarYOrdenar==="function") return _insertarYOrdenar(nuevos);   /* 7.9035 · una sola regla de puntero */
   var actual=(E.calendario||[])[E.idx];
   nuevos.forEach(function(p){ E.calendario.push(p); });
   E.calendario.sort(function(a,b){
@@ -295,7 +296,76 @@ function sembrarSiguienteCopaChile(ronda){
   if(next&&rival) sembrarLlaveCopaChile(next, rival, pos);
 }
 
+/* 7.9035 · Copa Chile sobre el registro único (mundo.js). Antes la tabla de tu grupo
+   era la del país pero los rivales de octavos a la final se "estimaban" con otra tabla
+   (distinta en cada consulta). Ahora el cuadro es uno: tu rival es el que ganó su llave. */
 function resolverCopaChile32(part, yo, otro){
+  var uni=(typeof _uniCopaOK==="function")&&_uniCopaOK("chile");
+  if(!uni) return _resolverCopaChile32Viejo(part, yo, otro);
+  var ronda=part.ronda||"";
+  if(ronda.indexOf("Grupo ")===0){
+    var letra=ronda.replace("Grupo ","");
+    var g=E.mundo.copas.chile.grupos[letra];
+    if(!g||g.ids.indexOf(E.club)<0) return _resolverCopaChile32Viejo(part, yo, otro);
+    var mios=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"&&p.torneo==="Copa Chile"&&p.ronda===ronda; });
+    if(mios.some(function(p){ return !p.jugado; })) return;
+    mundoForzarGrupos("chile");
+    var tab=mundoFilasCopa("chile", letra), pos=0, i;
+    for(i=0;i<tab.length;i++) if(tab[i].id===E.club) pos=i+1;
+    var etq=(typeof _etqTablaCopa==="function")?_etqTablaCopa(tab):"";
+    if(pos>2||pos<1){
+      sacarCopaChilePendiente();
+      notificar({t:"Eliminado de la Copa Chile",tipo:"malo",
+        d:"Grupo "+letra+" terminado: "+etq+". Quedaste "+pos+"° y no clasificas. La Copa Chile se acaba acá."});
+      aplicarEfectos({moral:-3,prestigio:-1});
+      return;
+    }
+    E.flags.copaChileGrupo=letra;
+    E.flags.copaChilePos=pos;
+    var t=mundoLlaveJugador("chile","Octavos");
+    var riv=t?(t.a===E.club?t.b:t.a):null;
+    notificar({t:"Clasificado a octavos de Copa Chile",tipo:"bueno",
+      d:"Saliste "+pos+"° del grupo "+letra+": "+etq+". Octavos"+(riv?" contra "+_nomClub(riv):"")+": 1° de un grupo contra el 2° de su grupo pareja (A↔C, B↔D, E↔G, F↔H)."});
+    aplicarEfectos({moral:4,prestigio:2,plata:40});
+    if(t) mundoInsertarLlaveJugador("chile", t, "Copa Chile", "Octavos ida y vuelta. La ida es en casa del peor clasificado. Cuadro del juego con las tablas del país.");
+    return;
+  }
+  var R=mundoDefinirLlaveJugador(part);
+  if(!R) return _resolverCopaChile32Viejo(part, yo, otro);
+  E.flags.copaAcum=E.flags.copaAcum||{};
+  var acc=E.flags.copaAcum["CC-"+ronda]||{gf:0,gc:0,j:0};
+  acc.gf+=yo; acc.gc+=otro; acc.j++; E.flags.copaAcum["CC-"+ronda]=acc;
+  if(!R.listo) return;
+  var penalTxt=R.pens?(part&&part.penales?(" Tanda "+part.penales.yo+"-"+part.penales.el+"."):" Se definió en penales."):"";
+  var marc=ronda==="FINAL"?(yo+"-"+otro):(R.gf+"-"+R.gc+" en la llave");
+  if(!R.pasa){
+    sacarCopaChilePendiente();
+    notificar({t:ronda==="FINAL"?"Subcampeón de la Copa Chile":"Eliminado de la Copa Chile",tipo:ronda==="FINAL"?"neutro":"malo",
+      d:"Fuera en "+ronda+" ante "+_nomClub(R.riv)+" ("+marc+")."+penalTxt});
+    aplicarEfectos({moral:-4,prestigio:-2});
+    return;
+  }
+  if(ronda==="FINAL"){
+    E.flags.copaChileCampeon=true;
+    notificar({t:"Campeón de Copa Chile",tipo:"bueno",
+      d:"El club gana la Copa Chile "+E.anio+" ("+marc+" ante "+_nomClub(R.riv)+"). No es Libertadores: es la copa local. Estalla la hinchada y entra un premio."+penalTxt});
+    aplicarEfectos({moral:8,prestigio:6,plata:180});
+    if(typeof aplicarGrupos==="function") aplicarGrupos({hinchada:16,camarin:12,directorio:12,sponsors:10});
+    return;
+  }
+  var sig={Octavos:"Cuartos",Cuartos:"Semifinal",Semifinal:"FINAL"}[ronda];
+  mundoCerrarRonda("chile", ronda);
+  var t2=sig?mundoLlaveJugador("chile", sig):null;
+  var riv2=t2?(t2.a===E.club?t2.b:t2.a):null;
+  aplicarEfectos({plata:60,moral:4,prestigio:2});
+  notificar({t:"Avanza en la Copa Chile",tipo:"bueno",
+    d:"Superas "+ronda+" ante "+_nomClub(R.riv)+" ("+marc+")."+penalTxt+" Entran "+(typeof plata==="function"?plata(60):"$60")+"."+
+      (riv2?" "+(sig==="FINAL"?"Final":sig)+" contra "+_nomClub(riv2)+", que ganó su llave.":"")});
+  if(t2) mundoInsertarLlaveJugador("chile", t2, "Copa Chile", sig==="FINAL"
+    ?"Final a partido único. Sede típica de Copa Chile (Nacional); no es un dato confirmado del 2026 real."
+    :("Llave de "+sig+" ida y vuelta: la ida en casa del peor sembrado."));
+}
+function _resolverCopaChile32Viejo(part, yo, otro){
   var ronda=part.ronda||"";
   if(ronda.indexOf("Grupo ")===0){
     var letra=ronda.replace("Grupo ","");

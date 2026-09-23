@@ -3371,3 +3371,35 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   esta" → "Tu ayudante elegiría esta" (neutro/en/pt).
 - **Doctor +1:** `celu_prolijo` (ventana corta < 60% de la pantalla, sin pestañas en el partido,
   sin artículo + nombre completo). Verificado al revés a 390px. **Tests:** dev 433/433 · core 1185/1185.
+
+## 7.9035 · Un solo universo: el país que ves es el que se juega
+**Archivos:** `js/mundo.js` (núcleo reconstruido), `js/data-formato2026.js`, `js/data-32.js`, `js/data-b2026.js`, `js/copas-vivas.js`, `js/partido.js`, `js/ui.js`, `js/data-2006.js`, `js/liga-registrar.js`, `js/dev-doctor.js`, `js/idiomas.js`, `css/pulido.css`, `js/util.js`, `index.html`, `test/pruebas_dev.js`
+- **El bug (reportado jugando con Rangers):** había DOS universos. El Calendario simulaba "el país" con
+  las listas de 2026 y resultados sueltos; las copas del jugador calculaban grupos y rivales con OTRA
+  estimación. Por eso: Wanderers y Cobreloa subían y el Calendario los mostraba de nuevo en la B; la
+  liguilla de la B no se jugaba si no eras vos (subía el 2° sin jugar); la Copa de la Liga decía 0 PJ.
+- **Ahora hay un registro:** ligas con la composición vigente (`E.ligaMod`), Copa Chile y Copa de la
+  Liga con UN sorteo (real 2026; desde 2027 lo sortea el juego) que usan el país y tu calendario, cada
+  partido se juega una vez y se guarda (`g.res`), tus partidos entran al mismo registro.
+- **Cuadros de verdad:** octavos → final de Copa Chile, semis → final de Copa de la Liga y liguilla de
+  la B completa (cuartos 3°–8°, 4°–7°, 5°–6°; el 2° espera al peor que pase; final ida y vuelta con
+  alargue). Tu rival es el que ganó su llave. **El que sube es el que gana la liguilla.** Las
+  divisiones que no juegas ordenan su ascenso/descenso por SU tabla, no por fuerza + azar.
+- **Marcador global:** la tanda ahora mira el global de la llave (antes Copa de la Liga y la liguilla
+  miraban solo la vuelta). Después del alargue ya no se corta sin tanda si el global sigue igual.
+  Liguilla y Copa de la Liga van a penales sin alargue; la final de la liguilla sí tiene alargue.
+- **Cada partida tiene su campeonato:** semilla del país por partida (`E.mundoSemilla`). Dentro de tu
+  partida todo es reproducible; entre partidas, no se repite la misma Primera.
+- **Partidas viejas:** se migran solas (registro nuevo + tus copas re-anotadas).
+- Calendario: pestañas Copa Chile / Copa de la Liga muestran el **cuadro**; Primera B muestra el de la
+  liguilla (ida, vuelta, global, penales/alargue; tu llave marcada).
+- **Partido salteado (bug real, lo cazó el test nuevo):** al clasificar a una llave DURANTE el cierre de
+  un partido, `_insertarYOrdenar` movía el puntero al próximo sin jugar y `terminarPartido` hacía idx++:
+  se salteaba un partido entero (quedaba sin jugar para siempre). Pasaba con Copa de la Liga, Supercopa
+  y la liguilla desde antes. Ahora hay una sola regla de puntero para todas las copas.
+- Simular VARIAS temporadas ya no se frena por una crisis: se delega como las decisiones (anotada).
+- "Calibrar motor vs IA" usa azar sembrado: el mismo estado da el mismo número (antes oscilaba ±0,2 y
+  el chequeo fallaba solo). Destapó un sesgo real con Coquimbo (+0,5 pts/partido): queda para el motor.
+- Wraps de `data-2006` y `liga-registrar` ahora heredan las marcas de los de abajo (se perdía `._uni`).
+- **Doctor +5:** `universo_ligas`, `universo_copas_jugador`, `universo_liguilla`, `llave_global`,
+  `calendario_sin_saltos` — cada uno verificado al revés. **Tests:** dev **466/466** (+33) · core **1185/1185**.

@@ -1698,3 +1698,24 @@ Respondeme acá abajo con "NOTA PARA CLAUDE" si algo de esto te choca con lo que
 4. Contenido que te sirve para Vida: el retrato lee `E.perfil.bienestar`, `E.temporada.sinGanar`,
    `E.ind.riesgo` y `E.flags.desfalco`. Si tus eventos de vida mueven el bienestar, se ve en la cara.
 Estado: VERSION 7.9034 · dev 433/433 · core 1185/1185. Seguí desde 7.9035.
+
+---
+
+## NOTA DE CLAUDE · 7.9035 — reconstruí el núcleo de `mundo.js` (un solo universo)
+Regla nueva del autor: se puede reconstruir si está feo o no funciona, con plan, tests y aviso acá. Este es el aviso.
+1. **Qué cambió:** `mundo.js` ya no es "el país aparte". Copa Chile, Copa de la Liga y la liguilla de la B
+   viven en un registro con fixture, fechas y resultados (`E.mundo.copas.chile.grupos[L].fx/.fechas/.res`,
+   `.ko` con llaves; `E.mundo.ligB`). Tus resolvers (`resolverCopaChile32`, `resolverCopaLiga`,
+   `avanzarLiguillaB`, `resolverLiguillaB`) leen de ahí. Las versiones viejas quedan como `_...Viejo`
+   (respaldo para épocas sin registro).
+2. **Si agregás una copa nueva con grupos:** usá `_mArmarCopaGrupos` (fixture derivado del calendario del
+   jugador) y registrá los partidos del jugador desde el wrap de `resolverCopa` (ya existe:
+   `mundoAnotarPartidoJugador`). No calcules tablas "estimadas" aparte: eso era el bug.
+3. **Wraps:** si envolvés una función tarde (en tiempo de ejecución), heredá las marcas del original
+   (`Object.keys(orig).forEach(...)`). `data-2006` y `liga-registrar` no lo hacían y el Doctor creía
+   que el universo no estaba enganchado.
+4. `E.mundoSemilla`: semilla del país por partida. No la borres en `saneaEstado`.
+5. **Si insertás partidos en el calendario, usá `_insertarYOrdenar`.** Tenía un bug: insertando durante
+   `terminarPartido` se salteaba el partido siguiente. Ya está arreglado y el Doctor lo vigila
+   (`calendario_sin_saltos`).
+Estado: VERSION 7.9035 · dev 466/466 · core 1185/1185. Seguí desde 7.9036.

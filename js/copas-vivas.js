@@ -29,41 +29,9 @@
    se marca como pendiente en vez de fabricar un marcador.
    ============================================================ */
 
-/* ---------- captura: Copa Chile y Copa de la Liga se ponen al nivel de CONMEBOL ---------- */
-function _cvCapturarGrupo(pack, ligaTxt, letra){
-  if(!pack||!pack.grupos||!pack.grupos[letra]) return;
-  const g=pack.grupos[letra];
-  if(!g._real) g._real={};
-  ((E.mundo&&E.mundo.pais)||[]).forEach(function(x){
-    if(!x||x.liga!==ligaTxt||x.idA==null||x.idB==null) return;
-    const k=x.idA+">"+x.idB;
-    if(g._real[k]) return;
-    g._real[k]={a:x.a,b:x.b,ga:x.ga,gb:x.gb};
-  });
-}
-(function wrapMundoSimCopasVivas(){
-  if(typeof mundoSimCopas!=="function"||mundoSimCopas._cvivas) return;
-  const orig=mundoSimCopas;
-  mundoSimCopas=function(f,n){
-    const r=orig.apply(this,arguments);
-    try{
-      if(E&&E.mundo&&E.mundo.copas){
-        const ch=E.mundo.copas.chile;
-        if(ch&&ch.grupos) Object.keys(ch.grupos).forEach(function(L){ _cvCapturarGrupo(ch,"Copa Chile · Grupo "+L,L); });
-        const cl=E.mundo.copas.copaLiga;
-        if(cl&&cl.grupos) Object.keys(cl.grupos).forEach(function(L){ _cvCapturarGrupo(cl,"Copa de la Liga · Grupo "+L,L); });
-        const lib=E.mundo.copas.lib;
-        if(lib&&lib.grupos) Object.keys(lib.grupos).forEach(function(L){ _cvCapturarGrupo(lib,"Libertadores · Grupo "+L,L); });
-        const sud=E.mundo.copas.sud;
-        if(sud&&sud.grupos) Object.keys(sud.grupos).forEach(function(L){ _cvCapturarGrupo(sud,"Sudamericana · Grupo "+L,L); });
-      }
-    }catch(e){}
-    return r;
-  };
-  /* hereda las marcas de wraps anteriores (patrón del repo) */
-  try{ Object.keys(orig).forEach(function(k){ mundoSimCopas[k]=orig[k]; }); }catch(e){}
-  mundoSimCopas._cvivas=true;
-})();
+/* 7.9035 · ya no hace falta "capturar" nada: desde el universo único (mundo.js) cada
+   grupo guarda su fixture con fechas (g.fx / g.fechas) y TODOS sus resultados (g.res,
+   los tuyos incluidos). Acá solo se lee ese registro. */
 
 /* ---------- nombre de un id dentro de un grupo (CONMEBOL trae nombres propios) ---------- */
 function _cvNombre(g,id){
@@ -79,34 +47,22 @@ function copaGrupoFixture(torneo, letra){
   const pack=E&&E.mundo&&E.mundo.copas&&E.mundo.copas[torneo];
   if(!pack||!pack.grupos||!pack.grupos[letra]) return {filas:[],cerrado:false,total:0};
   const g=pack.grupos[letra], ids=g.ids||[];
-  if(ids.length<2||typeof _rrGrupo!=="function") return {filas:[],cerrado:false,total:0};
-  const fx=_rrGrupo(ids);           /* fx = rondas; cada ronda trae 2 pares simultáneos */
-  const real=g._real||{};
-  const torNom=CV_TOR_NOM[torneo];
-  const filas=[];
-  /* ida y vuelta contra el mismo rival son DOS filas distintas. Buscar solo
-     por rivalId asignaba el único partido jugado a las dos (doble conteo).
-     Se marca cada entrada de E.calendario como "usada" apenas se asigna. */
-  const usados=new Set();
-  fx.forEach(function(fecha){
-    (fecha||[]).forEach(function(par){
-      const a=par[0], b=par[1];
-      const esMia=E.club&&(a===E.club||b===E.club);
-      const row={idA:a,idB:b,nA:_cvNombre(g,a),nB:_cvNombre(g,b),jugado:false,ga:null,gb:null,mia:!!esMia};
-      if(esMia){
-        const otro=a===E.club?b:a;
-        const mio=(E.calendario||[]).find(function(p){
-          return p.tipo==="copa"&&p.jugado&&p.ronda==="Grupo "+letra&&p.rivalId===otro&&(!torNom||p.torneo===torNom)&&!usados.has(p);
-        });
-        if(mio){ usados.add(mio); row.jugado=true; if(a===E.club){ row.ga=mio.gf; row.gb=mio.gc; } else { row.ga=mio.gc; row.gb=mio.gf; } }
-      } else {
-        const r=real[a+">"+b];
-        if(r){ row.jugado=true; row.ga=r.ga; row.gb=r.gb; }
-      }
+  if(ids.length<2) return {filas:[],cerrado:false,total:0};
+  const fx=g.fx||((typeof _fxGrupo4==="function")?_fxGrupo4(ids):[]);
+  const res=g.res||{}, filas=[];
+  fx.forEach(function(md,i){
+    (md||[]).forEach(function(par){
+      const a=par[0], b=par[1], esMia=!!(E.club&&(a===E.club||b===E.club));
+      const row={idA:a,idB:b,nA:_cvNombre(g,a),nB:_cvNombre(g,b),jugado:false,ga:null,gb:null,mia:esMia,
+        f:(g.fechas&&g.fechas[i])||null, fecha:i+1};
+      let r=res[i+"|"+a+"|"+b];
+      /* CONMEBOL: tus partidos se guardan aparte (g.mios), una vez cada uno */
+      if(!r && esMia && g.mios){ const m=g.mios.find(function(x){ return x.a===a&&x.b===b; }); if(m) r=[m.ga,m.gb]; }
+      if(r){ row.jugado=true; row.ga=r[0]; row.gb=r[1]; }
       filas.push(row);
     });
   });
-  return {filas:filas, cerrado:(pack.ronda||0)>=fx.length, total:fx.length};
+  return {filas:filas, cerrado:filas.length>0&&filas.every(function(f){ return f.jugado; }), total:fx.length};
 }
 
 /* ---------- próximos cruces del país (el hueco original: solo se veía lo jugado) ---------- */
@@ -130,9 +86,7 @@ function copasPaisConPendientes(){
   return ["chile","copaLiga","lib","sud"].some(function(tor){
     const pack=E.mundo.copas[tor]; if(!pack||!pack.grupos) return false;
     return Object.keys(pack.grupos).some(function(letra){
-      const g=pack.grupos[letra], ids=g.ids||[];
-      if(ids.length<2) return false;
-      return (pack.ronda||0)<(ids.length-1)*2;
+      return copaGrupoFixture(tor,letra).filas.some(function(f){ return !f.jugado; });
     });
   });
 }

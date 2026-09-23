@@ -836,7 +836,8 @@
       t(typeof copaGrupoFixture==="function","copaGrupoFixture existe");
       t(typeof copasPaisProximos==="function","copasPaisProximos existe");
       t(typeof copasPaisConPendientes==="function","copasPaisConPendientes existe");
-      t(typeof mundoSimCopas==="function" && mundoSimCopas._cvivas===true,"mundoSimCopas queda envuelto (captura, no reescribe)");
+      /* 7.9035 · ya no hay captura aparte: el universo único guarda cada resultado en g.res */
+      t(String(copaGrupoFixture).indexOf("g.res")>=0 && String(copaGrupoFixture).indexOf("_real")<0,"copaGrupoFixture lee el registro único (g.res), sin copias capturadas");
       nuevaPartida("COQ",2026,"historico");   /* COQ: Copa Chile grupo A */
       if(typeof mundoInit==="function") mundoInit();
       for(var i=0;i<3;i++){
@@ -1128,6 +1129,131 @@
       var chk=rd.checks.find(function(c){ return c.id==="arco_escena_3d"; });
       t(chk && chk.ok, "el chequeo del penal sale sano"+(chk&&!chk.ok?(" — "+chk.txt):""));
     },"escena 3d");
+
+    grupo("Un solo universo · 7.9035 (liguilla, ascensos, copas)");
+    safe(function(){
+      /* el bug del autor con Rangers: 3° de la B, la liguilla no lo dejó seguir, subió
+         otro "nada que ver" y el Calendario mostraba a los que subieron de nuevo en la B */
+      nuevaPartida("RAN",2026,"historico");
+      t(E.mundo&&E.mundo.ver===2,"la partida arranca con el registro único (ver 2)");
+      t(!!E.mundoSemilla,"la partida tiene su propia semilla de país");
+      var guard=0, forzado=false;
+      while(proximoPartido() && guard++<200){
+        var pp=proximoPartido();
+        if(pp.jugado){ procesarSemanaRapido(); continue; }
+        var rest=E.calendario.filter(function(x){ return x.tipo==="liga"&&!x.fase&&!x.jugado; }).length;
+        if(!forzado && rest===1 && pp.tipo==="liga"){
+          var tab=tablaOrdenada(), obj=tab[4], yo=E.tabla[E.club];   /* 5° antes de la última: cae en cuartos */
+          if(obj.id!==E.club){ var tmp=Object.assign({},yo); Object.assign(yo,E.tabla[obj.id]); Object.assign(E.tabla[obj.id],tmp); }
+          forzado=true;
+        }
+        /* la liga con Modo Dios: sin eso, a veces una racha mala termina en moción de censura a
+           mitad de año y el test pierde el club (no es lo que se prueba acá) */
+        var P=iniciarPartido(pp,"simular"); if(pp.tipo==="liga"&&!forzado) P.diosForzar=true; correrHasta(P,90); terminarPartido(P); procesarSemanaRapido();
+      }
+      t(E.club==="RAN" && !E.carrera.enParo,"sigues en Rangers al final del año");
+      var lb=E.mundo.ligB;
+      t(!!lb,"al terminar la fase regular existe el cuadro de la liguilla");
+      var pos=E.flags.ligaBPos;
+      var liguilla=E.calendario.filter(function(x){ return x.torneo==="Liguilla de Ascenso"; });
+      if(pos>=3&&pos<=8){
+        var cruce={3:8,4:7,5:6,6:5,7:4,8:3}[pos];
+        t(liguilla.length>=2 && liguilla[0].rivalId===lb.tabla[cruce-1],"tus cuartos son contra el "+cruce+"° ("+(liguilla[0]&&liguilla[0].rivalId)+")");
+      }
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="universo_copas_jugador"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor universo_copas_jugador: "+(r&&r.txt)+" "+(r&&r.detalle.slice(0,3).join(" · ")));
+      var c2=DOCTOR_CHECKS.filter(function(x){ return x.id==="universo_liguilla"; })[0], r2=c2&&c2.fn();
+      t(r2&&r2.ok,"doctor universo_liguilla antes del cierre: "+(r2&&r2.txt));
+      finDeTemporada();
+      t(!!lb.campeon,"el cierre juega la liguilla entera (campeón: "+lb.campeon+")");
+      var suben=(E.ascensoMsg&&E.ascensoMsg.suben)||[];
+      t(suben.indexOf(lb.campeon)>=0,"sube el que GANÓ la liguilla ("+lb.campeon+" ∈ "+suben.join(",")+")");
+      t(E.ligaMod[2026].indexOf(lb.campeon)>=0,"el campeón de la liguilla quedó en Primera");
+      r2=c2.fn(); t(r2.ok,"doctor universo_liguilla después del cierre: "+r2.txt);
+      /* al revés: si el campeón no hubiera subido, el Doctor lo caza */
+      var real=lb.campeon, otroB=E.ligaMod["2026b"].filter(function(id){ return id!==E.club; })[0];
+      lb.campeon=otroB; t(!c2.fn().ok,"el Doctor caza un campeón de liguilla que no subió"); lb.campeon=real;
+      nuevoAnio();
+      var M=E.mundo.ligas;
+      t(_docMismo(M["2026"].ids,E.ligaMod[2026]),"el año siguiente, la Primera del Calendario = la Primera vigente");
+      t(_docMismo(M["2026b"].ids,E.ligaMod["2026b"]),"y la B del Calendario = la B vigente (los que subieron no aparecen de nuevo en la B)");
+      var c3=DOCTOR_CHECKS.filter(function(x){ return x.id==="universo_ligas"; })[0], r3=c3&&c3.fn();
+      t(r3&&r3.ok,"doctor universo_ligas: "+(r3&&r3.txt)+" "+(r3&&r3.detalle.join(" · ")));
+      var id0=M["2026"].ids[0]; M["2026"].ids[0]="ZZZ";
+      t(!c3.fn().ok,"el Doctor caza un Calendario que no calza con la división vigente (el bug viejo)"); M["2026"].ids[0]=id0;
+      /* 2027: tu grupo de Copa Chile es EL del país, con tu fixture */
+      var gcc=mundoGrupoDe("chile",E.club,E.anio);
+      var mios=E.calendario.filter(function(x){ return x.torneo==="Copa Chile"&&/^Grupo /.test(x.ronda||""); });
+      t(gcc && mios.length===6 && mios.every(function(x){ return gcc.ids.indexOf(x.rivalId)>=0 && x.ronda==="Grupo "+gcc.letra; }),"Copa Chile "+E.anio+": tus 6 partidos son contra tu grupo del sorteo del país ("+(gcc&&gcc.letra)+")");
+      var gU=E.mundo.copas.chile.grupos[gcc.letra];
+      t(gU&&gU.derivado,"y el fixture del grupo sale de tu calendario (mismas fechas y localía)");
+      /* el partido salteado: Rangers clasificaba a octavos de Copa Chile el 12/8 y el partido
+         de liga del 17/8 quedaba sin jugar para siempre (idx++ después de insertar la llave) */
+      var cs=DOCTOR_CHECKS.filter(function(x){ return x.id==="calendario_sin_saltos"; })[0];
+      t(cs&&cs.fn().ok,"doctor calendario_sin_saltos: "+(cs&&cs.fn().txt));
+      var viejoIns=_insertarYOrdenar;
+      _insertarYOrdenar=function(nuevos){
+        var actual=E.calendario[E.idx]; nuevos.forEach(function(p){ E.calendario.push(p); });
+        E.calendario.sort(function(a,b){ return ordenFecha(a.f)-ordenFecha(b.f); });
+        if(actual&&!actual.jugado){ E.idx=E.calendario.indexOf(actual); }
+        else { for(var j=0;j<E.calendario.length;j++) if(!E.calendario[j].jugado){ E.idx=j; break; } }
+      };
+      t(!cs.fn().ok,"el Doctor caza la regla vieja que se salteaba un partido");
+      _insertarYOrdenar=viejoIns;
+    },"Universo Rangers");
+    safe(function(){
+      /* Copa de la Liga con la U: antes decía 0 PJ y eliminaba del grupo que ganaste */
+      nuevaPartida("UCH",2026,"historico");
+      var guard=0;
+      while(proximoPartido() && guard++<200){
+        var pp=proximoPartido();
+        if(pp.jugado){ procesarSemanaRapido(); continue; }
+        if(pp.torneo==="Copa de la Liga"&&!/^Grupo/.test(pp.ronda||"")) break;
+        var P=iniciarPartido(pp,"simular"); P.diosForzar=true; correrHasta(P,90); terminarPartido(P); procesarSemanaRapido();
+        if(E.calendario.filter(function(x){ return x.torneo==="Copa de la Liga"&&x.jugado; }).length>=6) break;
+      }
+      var letra=(grupoCopaLigaDe("UCH",2026)||{}).letra;
+      var fila=mundoFilasCopa("copaLiga",letra).filter(function(f){ return f.id==="UCH"; })[0];
+      t(fila&&fila.pj===6&&fila.pts===18,"tu grupo de Copa de la Liga cuenta tus 6 partidos ("+(fila&&fila.pj)+" PJ, "+(fila&&fila.pts)+" pts)");
+      var semi=E.calendario.filter(function(x){ return x.torneo==="Copa de la Liga"&&x.ronda==="Semifinal"; });
+      var pareja=COPA_LIGA_PAREJA[letra], primero=mundoFilasCopa("copaLiga",pareja)[0];
+      t(semi.length===2 && semi[0].rivalId===primero.id,"tu semi es contra el 1° REAL del grupo "+pareja+" ("+(semi[0]&&semi[0].rivalId)+" = "+primero.id+")");
+      /* la tanda mira el GLOBAL: ida 2-1 a favor y vuelta 0-1 → 2-2 → hay tanda */
+      var ida=semi[0], vuelta=semi[1];
+      var tt=mundoLlaveJugador("copaLiga","Semifinal");
+      var iIda=(ida.local===(tt.a===E.club))?0:1, locIda=iIda===0?tt.a:tt.b;
+      tt.legs[iIda]=(locIda===E.club)?{ga:2,gb:1}:{ga:1,gb:2};
+      var Pv=iniciarPartido(vuelta,"simular"); Pv.min=90;
+      if(vuelta.local){ Pv.gl=0; Pv.gv=1; } else { Pv.gl=1; Pv.gv=0; }
+      var d=marcadorDefine(Pv);
+      t(d.necesita===true,"ida 2-1 y vuelta 0-1: el global 2-2 manda a penales");
+      if(vuelta.local){ Pv.gl=1; Pv.gv=1; } else { Pv.gl=1; Pv.gv=1; }
+      t(marcadorDefine(Pv).necesita===false,"ida 2-1 y vuelta 1-1: pasas por global, sin tanda (antes miraba solo la vuelta)");
+      t(pideProrroga(vuelta)===false,"Copa de la Liga: empate en el global va directo a penales (sin alargue)");
+      tt.legs[iIda]=null;
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="llave_global"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor llave_global: "+(r&&r.txt));
+      var md=marcadorDefine; marcadorDefine=function(P){ return md.apply(this,arguments); };
+      t(!c.fn().ok,"el Doctor caza una tanda que no mira el global"); marcadorDefine=md;
+      /* al revés del registro: si tu partido no está en la tabla del país, el Doctor lo ve */
+      var c2=DOCTOR_CHECKS.filter(function(x){ return x.id==="universo_copas_jugador"; })[0];
+      t(c2.fn().ok,"doctor universo_copas_jugador sano con la U");
+      var g=E.mundo.copas.copaLiga.grupos[letra], k=Object.keys(g.res).filter(function(x){ return x.split("|").indexOf("UCH")>0; })[0], v=g.res[k];
+      delete g.res[k]; t(!c2.fn().ok,"el Doctor caza un partido tuyo que no cuenta en el país"); g.res[k]=v;
+      /* partida guardada con el registro viejo: se rearma y tus partidos vuelven a contar */
+      delete E.mundo.ver; mundoTick(proximoPartido());
+      t(E.mundo.ver===2 && c2.fn().ok,"una partida vieja se migra: registro nuevo y tus copas re-anotadas ("+c2.fn().txt+")");
+      var fila2=mundoFilasCopa("copaLiga",letra).filter(function(f){ return f.id==="UCH"; })[0];
+      t(fila2&&fila2.pj===6,"tras migrar, tu grupo sigue con 6 PJ");
+    },"Universo copas");
+    safe(function(){
+      /* simular varias temporadas es "hasta el final": una crisis se delega, no corta */
+      nuevaPartida("CC",2026,"historico");
+      t(typeof delegarCrisis==="function","delegarCrisis existe");
+      E.ind.riesgo=95;
+      var res=simularTemporadas(1);
+      t(res.temps===1,"con una crisis encima, simular 1 temporada igual la completa ("+res.temps+", "+(res.freno||"sin freno")+")");
+    },"Crisis delegada");
 
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");

@@ -90,6 +90,13 @@ function _mkCopaPart(spec){
     fase:spec.fase||null
   };
 }
+/* 7.9035 · inserta partidos nuevos (llaves de copa, liguillas) y deja el puntero bien.
+   BUG que se arregla acá: si se insertaba DURANTE terminarPartido (el partido actual ya
+   está jugado), el puntero saltaba al próximo sin jugar y después terminarPartido hacía
+   idx++ → se salteaba un partido entero (quedaba sin jugar para siempre). Pasaba al
+   clasificar a una llave de Copa de la Liga / Supercopa / liguilla, y ahora también en
+   Copa Chile (universo único). Regla: si el actual está jugado, el puntero queda en él
+   (el que llamó avanza); si no, al primero entre el actual y lo recién insertado. */
 function _insertarYOrdenar(nuevos){
   if(!E||!nuevos||!nuevos.length) return;
   var actual=(E.calendario||[])[E.idx];
@@ -99,13 +106,16 @@ function _insertarYOrdenar(nuevos){
     var ob=(typeof ordenFecha==="function")?ordenFecha(b.f):(b.f.m*100+(b.f.d||1));
     return oa-ob;
   });
-  if(actual && !actual.jugado){
-    var i=E.calendario.indexOf(actual);
-    if(i>=0) E.idx=i;
-  } else {
-    var j;
-    for(j=0;j<E.calendario.length;j++) if(!E.calendario[j].jugado){ E.idx=j; break; }
+  var i=actual?E.calendario.indexOf(actual):-1;
+  if(i>=0 && actual.jugado){ E.idx=i; return; }
+  if(i>=0){
+    var iNuevo=Math.min.apply(null, nuevos.map(function(p){ var k=E.calendario.indexOf(p); return k<0?Infinity:k; }));
+    E.idx=Math.min(i, iNuevo);
+    return;
   }
+  var j;
+  for(j=0;j<E.calendario.length;j++) if(!E.calendario[j].jugado){ E.idx=j; return; }
+  E.idx=E.calendario.length;
 }
 function _sacarTorneoPendiente(torneo){
   if(!E||!E.calendario) return;
@@ -228,6 +238,12 @@ function _simularRondasLiguillaHasta(hastaRonda){
 
 /* ---------- Copa de la Liga ---------- */
 function grupoCopaLigaDe(clubId, anio){
+  /* 7.9035 · desde 2027 el grupo sale del MISMO sorteo que usa el país (mundo.js):
+     antes cada club armaba su grupo aparte y el tuyo no existía en ninguna tabla */
+  if(anio!==2026 && typeof mundoGrupoDe==="function"){
+    var gU=mundoGrupoDe("copaLiga", clubId, anio);
+    if(gU) return gU;
+  }
   if(anio===2026){
     var g, arr, i;
     for(g in COPA_LIGA_GRUPOS_2026){
@@ -312,7 +328,83 @@ function _mejorDeGrupoCL(letra, skip){
   });
   return pool[0]||null;
 }
+/* 7.9035 · Copa de la Liga sobre el registro único (mundo.js): tu grupo es la tabla del
+   país con TUS partidos adentro (antes decía 0 PJ y te eliminaba del grupo que ganaste);
+   tu rival de semis es el 1° real del grupo pareja; la final, el que ganó la otra semi. */
+function _etqTablaCopa(tab){
+  return tab.map(function(x,n){
+    var c=(typeof clubLookup==="function"&&clubLookup(x.id))||{};
+    return (n+1)+". "+(c.c||c.n||x.id)+" "+x.pts+" pts ("+x.pj+" PJ)";
+  }).join(" · ");
+}
+function _uniCopaOK(tor){
+  return typeof mundoDefinirLlaveJugador==="function" && typeof E!=="undefined" && E && E.mundo && E.mundo.ver===2 &&
+    E.mundo.copas && E.mundo.copas[tor] && E.mundo.copas[tor].grupos && Object.keys(E.mundo.copas[tor].grupos).length>0;
+}
 function resolverCopaLiga(part, yo, otro){
+  if(!_uniCopaOK("copaLiga")) return _resolverCopaLigaViejo(part, yo, otro);
+  var ronda=part.ronda||"";
+  if(ronda.indexOf("Grupo ")===0){
+    var letra=ronda.replace("Grupo ","");
+    var pack=E.mundo.copas.copaLiga, g=pack.grupos[letra];
+    if(!g||g.ids.indexOf(E.club)<0) return _resolverCopaLigaViejo(part, yo, otro);
+    var mios=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"&&p.torneo==="Copa de la Liga"&&p.ronda===ronda; });
+    if(mios.some(function(p){ return !p.jugado; })) return;
+    mundoForzarGrupos("copaLiga");
+    var tab=mundoFilasCopa("copaLiga", letra), pos=0, i;
+    for(i=0;i<tab.length;i++) if(tab[i].id===E.club) pos=i+1;
+    var etq=_etqTablaCopa(tab);
+    if(pos!==1){
+      _sacarTorneoPendiente("Copa de la Liga");
+      notificar({t:"Eliminado de la Copa de la Liga",tipo:"malo",
+        d:"Grupo "+letra+" terminado: "+etq+". Quedaste "+pos+"° y en este torneo solo pasa el 1°."});
+      if(typeof aplicarEfectos==="function") aplicarEfectos({moral:-2,prestigio:-1});
+      return;
+    }
+    E.flags.copaLigaGrupo=letra;
+    var t=mundoLlaveJugador("copaLiga","Semifinal");
+    var rivN=t?_nomClub(t.a===E.club?t.b:t.a):"el 1° del grupo "+(COPA_LIGA_PAREJA[letra]||"?");
+    notificar({t:"1° de grupo · Copa de la Liga",tipo:"bueno",
+      d:"Ganaste el grupo "+letra+": "+etq+". Semifinal ida y vuelta contra "+rivN+", 1° del grupo "+(COPA_LIGA_PAREJA[letra]||"?")+"."});
+    if(typeof aplicarEfectos==="function") aplicarEfectos({moral:5,prestigio:2,plata:50});
+    if(t) mundoInsertarLlaveJugador("copaLiga", t, "Copa de la Liga", "Semifinal ida y vuelta. La ida es en casa del peor clasificado. Empate en el global: penales, sin alargue.");
+    return;
+  }
+  var R=mundoDefinirLlaveJugador(part);
+  if(!R) return _resolverCopaLigaViejo(part, yo, otro);
+  E.flags.copaAcum=E.flags.copaAcum||{};
+  var acc=E.flags.copaAcum["CL-"+ronda]||{gf:0,gc:0,j:0};
+  acc.gf+=yo; acc.gc+=otro; acc.j++; E.flags.copaAcum["CL-"+ronda]=acc;
+  if(!R.listo) return;
+  var penalTxt=R.pens?(part.penales?(" Tanda "+part.penales.yo+"-"+part.penales.el+"."):" Se definió en penales."):"";
+  var marc=ronda==="FINAL"?(yo+"-"+otro):(R.gf+"-"+R.gc+" en el global");
+  if(!R.pasa){
+    if(ronda==="FINAL") E.flags.copaLigaCampeonClub=R.riv;
+    _sacarTorneoPendiente("Copa de la Liga");
+    notificar({t:ronda==="FINAL"?"Subcampeón de la Copa de la Liga":"Eliminado de la Copa de la Liga",tipo:ronda==="FINAL"?"neutro":"malo",
+      d:"Fuera en "+ronda+" ante "+_nomClub(R.riv)+" ("+marc+")."+penalTxt+(ronda==="FINAL"?" Si el campeón ya tiene Libertadores, el Chile 3 lo hereda el siguiente de la tabla.":"")});
+    if(typeof aplicarEfectos==="function") aplicarEfectos({moral:-4,prestigio:-2});
+    return;
+  }
+  if(ronda==="FINAL"){
+    E.flags.copaLigaCampeon=true;
+    if(E.club) E.flags.copaLigaCampeonClub=E.club;
+    notificar({t:"Campeón de la Copa de la Liga",tipo:"bueno",
+      d:"El club gana la Copa de la Liga "+E.anio+" ("+marc+" ante "+_nomClub(R.riv)+"). Es un torneo de Primera (no Copa Chile). El campeón se lleva el cupo Chile 3 a Libertadores, salvo que ya tenga Libertadores (liga o CONMEBOL): entonces el Chile 3 lo hereda el siguiente de la tabla."+penalTxt});
+    if(typeof aplicarEfectos==="function") aplicarEfectos({moral:8,prestigio:6,plata:220});
+    if(typeof aplicarGrupos==="function") aplicarGrupos({hinchada:12,camarin:10,directorio:10,sponsors:8});
+    if(E.titulos&&E.titulos.indexOf(E.anio+" · Copa de la Liga")<0) E.titulos.push(E.anio+" · Copa de la Liga");
+    return;
+  }
+  if(typeof aplicarEfectos==="function") aplicarEfectos({plata:70,moral:4,prestigio:2});
+  mundoCerrarRonda("copaLiga", ronda);
+  var tf=mundoLlaveJugador("copaLiga","FINAL");
+  var rivF=tf?_nomClub(tf.a===E.club?tf.b:tf.a):"el ganador de la otra semi";
+  notificar({t:"Final de Copa de la Liga",tipo:"bueno",
+    d:"Superas la semifinal ante "+_nomClub(R.riv)+" ("+marc+")."+penalTxt+" La final es a partido único en el Elías Figueroa, contra "+rivF+"."});
+  if(tf) mundoInsertarLlaveJugador("copaLiga", tf, "Copa de la Liga", "Final a partido único. Sede 2026: Elías Figueroa, Valparaíso (ANFP). Empate: penales.");
+}
+function _resolverCopaLigaViejo(part, yo, otro){
   var ronda=part.ronda||"";
   if(ronda.indexOf("Grupo ")===0){
     var letra=ronda.replace("Grupo ","");
@@ -733,6 +825,7 @@ function avanzarFaseSegunda(part){
           d:"1° de la liguilla de ascenso. "+etqL+". Subís a Primera B. La liguilla se jugó partido a partido (12 PJ, se partió de 0)."});
         if(typeof aplicarEfectos==="function") aplicarEfectos({moral:8,prestigio:5,plata:120});
       } else {
+        if(tabL[0]&&tabL[0].id!==E.club) E.flags.ligaCSube=tabL[0].id;   /* 7.9035 · sube el que la ganó, no uno al azar */
         notificar({t:"Se acabó la liguilla de ascenso",tipo:"neutro",
           d:"Cerraste "+posL+"° de la liguilla. "+etqL+". No alcanzaste el 1°. Te quedás en Segunda."});
       }
@@ -827,7 +920,120 @@ function _sembrarLlaveB(ronda, rivalId, fs){
     })
   ]);
 }
+/* 7.9035 · liguilla de la B sobre el registro único (mundo.js). Antes: si no la
+   jugabas vos, nunca se jugaba (subía el 2° de la tabla sin jugar) y tus rivales de
+   semis/final se "estimaban" por fuerza. Ahora hay UN cuadro: cuartos 3°–8°, 4°–7°,
+   5°–6°; el 2° espera en semis al peor que pase; final ida y vuelta con alargue.
+   Tu rival siempre es el que ganó su llave, y el que sube es el campeón del cuadro. */
+function _ligBUni(){ return typeof mundoCrearLiguillaB==="function" && E && E.mundo && E.mundo.ver===2; }
+function _ligBResumenRonda(ronda){
+  var lb=E.mundo&&E.mundo.ligB; if(!lb||!lb.rondas[ronda]) return "";
+  return lb.rondas[ronda].filter(function(t){ return t.gana && !(t.a===E.club||t.b===E.club); }).map(function(t){
+    var g=_mGlobal(t), perd=t.gana===t.a?t.b:t.a;
+    return _nomClub(t.gana)+" eliminó a "+_nomClub(perd)+" ("+(t.gana===t.a?g[0]+"-"+g[1]:g[1]+"-"+g[0])+(t.pens?", penales":"")+")";
+  }).join("; ");
+}
 function avanzarLiguillaB(part){
+  if(!E||E.eraBase!=="2026b") return;
+  if(!_ligBUni()) return _avanzarLiguillaBViejo(part);
+  E.flags=E.flags||{};
+  if(part&&part.torneo==="Liguilla de Ascenso") return;
+  if(E.flags.liguillaBListo) return;
+  if(!part||part.tipo!=="liga") return;
+  var liga=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"&&!p.fase; });
+  if(!liga.length) return;
+  if(liga.filter(function(p){ return p.jugado; }).length<liga.length) return;
+  var tab=(typeof tablaOrdenada==="function")?tablaOrdenada():[];
+  if(!tab.length) return;
+  var ids=tab.map(function(x){ return x.id; });
+  var pos=ids.indexOf(E.club)+1;
+  E.flags.liguillaBListo=true;
+  E.flags.ligaBPos=pos;
+  E.flags.liguillaBTabla=ids;
+  var ult=null;
+  liga.forEach(function(p){ if(p.f&&(!ult||_fechaNum(p.f)>_fechaNum(ult))) ult=p.f; });
+  mundoCrearLiguillaB(ids, ult);
+  var etq=tab.slice(0,8).map(function(x,n){
+    var c=(typeof clubLookup==="function"&&clubLookup(x.id))||{};
+    return (n+1)+". "+(c.c||c.n||x.id)+" "+(x.pts||0)+" pts";
+  }).join(" · ");
+  if(pos===1){
+    E.flags.ligaBCampeon=true;
+    notificar({t:"Campeón de la B · ASCENSO DIRECTO",tipo:"bueno",
+      d:"1° de la fase regular. "+etq+". Subes directo a Primera. El segundo cupo lo define la liguilla (2°–8°)."});
+    if(typeof aplicarEfectos==="function") aplicarEfectos({moral:8,prestigio:6,plata:200});
+    return;
+  }
+  if(pos===ids.length){
+    E.flags.ligaBBaja=true;
+    notificar({t:"Descenso a Segunda",tipo:"malo",
+      d:"Último de la Liga de Ascenso. Bajas a Segunda División. El que gana la Segunda sube a la B."});
+    return;
+  }
+  if(pos>=9){
+    notificar({t:"Fuera de la liguilla",tipo:"neutro",
+      d:"Terminaste "+pos+"°. "+etq+". A la liguilla entran 2° a 8°. El 1° ya subió; el último baja. Te quedas en la B."});
+    return;
+  }
+  E.flags.liguillaBFase=true;
+  var nota="Liguilla de la B (bases ANFP 2026). Ida: local el peor de la fase regular. Sin gol de visita. Cuartos/semis empatados: penales, sin alargue. Final: alargue y si sigue, penales.";
+  if(pos===2){
+    mundoLigBCerrarRonda("Cuartos");
+    var ts=mundoLlaveLigB("Semifinal");
+    var rivS=ts?(ts.a===E.club?ts.b:ts.a):null;
+    var res=_ligBResumenRonda("Cuartos");
+    notificar({t:"Liguilla: esperaste en semis",tipo:"bueno",
+      d:"2° de la regular. "+etq+". Mientras esperabas se jugaron los cuartos"+(res?": "+res:"")+". "+
+        (rivS?"Te toca "+_nomClub(rivS)+", el peor clasificado de los que pasaron.":"")});
+    if(ts) mundoInsertarLlaveJugador("ligB", ts, "Liguilla de Ascenso", nota);
+    return;
+  }
+  var tq=mundoLlaveLigB("Cuartos");
+  var rivQ=tq?(tq.a===E.club?tq.b:tq.a):null;
+  notificar({t:"Liguilla de ascenso",tipo:"bueno",
+    d:pos+"° de la regular. "+etq+". Cuartos ida y vuelta"+(rivQ?" contra "+_nomClub(rivQ)+" ("+(ids.indexOf(rivQ)+1)+"°)":"")+". Local primero el peor. El 2° espera en semis."});
+  if(tq) mundoInsertarLlaveJugador("ligB", tq, "Liguilla de Ascenso", nota);
+}
+function resolverLiguillaB(part, yo, otro){
+  var R=(_ligBUni()&&E.mundo.ligB&&typeof mundoDefinirLlaveJugador==="function")?mundoDefinirLlaveJugador(part):null;
+  if(!R) return _resolverLiguillaBViejo(part, yo, otro);
+  var ronda=part.ronda||"";
+  E.flags=E.flags||{};
+  E.flags.copaAcum=E.flags.copaAcum||{};
+  var acc=E.flags.copaAcum["LB-"+ronda]||{gf:0,gc:0,j:0};
+  acc.gf+=yo; acc.gc+=otro; acc.j++; E.flags.copaAcum["LB-"+ronda]=acc;
+  if(!R.listo) return;
+  var penalTxt="";
+  if(R.pens) penalTxt=(ronda==="FINAL"?" Global igualado también después del alargue:":" Global igualado:")+" penales"+(part.penales?(" "+part.penales.yo+"-"+part.penales.el):"")+".";
+  var marc=R.gf+"-"+R.gc+" en el global";
+  if(!R.pasa){
+    _sacarTorneoPendiente("Liguilla de Ascenso");
+    notificar({t:"Fuera de la liguilla de ascenso",tipo:"malo",
+      d:"Caíste en "+ronda+" ante "+_nomClub(R.riv)+" ("+marc+")."+penalTxt+" La liguilla sigue sin ti: sube el que gane el cuadro. Te quedas en la B."});
+    if(typeof aplicarEfectos==="function") aplicarEfectos({moral:-4,prestigio:-2});
+    return;
+  }
+  if(ronda==="FINAL"){
+    E.flags.ligaBLiguilla=true;
+    notificar({t:"¡ASCENSO por liguilla!",tipo:"bueno",
+      d:"Ganaste la liguilla de la B ante "+_nomClub(R.riv)+" ("+marc+")."+penalTxt+" El campeón de la fase regular ya tenía el primer cupo; tú eres el segundo a Primera."});
+    if(typeof aplicarEfectos==="function") aplicarEfectos({moral:8,prestigio:6,plata:180});
+    if(typeof aplicarGrupos==="function") aplicarGrupos({hinchada:14,camarin:12,directorio:12});
+    if(E.titulos&&E.titulos.indexOf(E.anio+" · Liguilla de Ascenso")<0) E.titulos.push(E.anio+" · Liguilla de Ascenso");
+    return;
+  }
+  var nota="Liguilla de la B (bases ANFP 2026). Ida: local el peor de la fase regular.";
+  var sig=ronda==="Cuartos"?"Semifinal":"FINAL";
+  mundoLigBCerrarRonda(ronda);
+  var tn=mundoLlaveLigB(sig);
+  var rivN=tn?(tn.a===E.club?tn.b:tn.a):null;
+  if(typeof aplicarEfectos==="function") aplicarEfectos(ronda==="Cuartos"?{moral:3,plata:30}:{moral:4,plata:50});
+  notificar({t:ronda==="Cuartos"?"Semifinal de la liguilla":"Final de la liguilla",tipo:"bueno",
+    d:"Superas "+(ronda==="Cuartos"?"cuartos":"semifinal")+" ante "+_nomClub(R.riv)+" ("+marc+")."+penalTxt+
+      (rivN?" Viene "+_nomClub(rivN)+"":"")+(sig==="FINAL"?". La final es ida y vuelta; si el global empata, alargue y penales.":", que ganó su llave.")});
+  if(tn) mundoInsertarLlaveJugador("ligB", tn, "Liguilla de Ascenso", nota);
+}
+function _avanzarLiguillaBViejo(part){
   if(!E||E.eraBase!=="2026b") return;
   E.flags=E.flags||{};
   if(part&&part.torneo==="Liguilla de Ascenso") return;
@@ -880,7 +1086,7 @@ function avanzarLiguillaB(part){
     _sembrarLlaveB("Cuartos", rivQ, LIGUILLA_B_FECHAS.Cuartos);
   }
 }
-function resolverLiguillaB(part, yo, otro){
+function _resolverLiguillaBViejo(part, yo, otro){
   var ronda=part.ronda||"";
   E.flags=E.flags||{};
   E.flags.copaAcum=E.flags.copaAcum||{};
@@ -931,6 +1137,8 @@ function resolverLiguillaB(part, yo, otro){
   _sembrarLlaveB("Semifinal", rivS, LIGUILLA_B_FECHAS.Semifinal);
 }
 function _estimarGanadorLiguillaB(ids){
+  var lb=(typeof E!=="undefined"&&E&&E.mundo&&E.mundo.ligB)||null;
+  if(lb&&lb.anio===E.anio&&lb.campeon) return lb.campeon;
   var pool=(ids||[]).slice(0,8);
   pool.sort(function(a,b){ return _fuerzaId(b)-_fuerzaId(a); });
   return pool[0]||null;
@@ -1113,20 +1321,23 @@ function filasTablaActual(){
     var c=orden["2026c"]||[];
     var baja1=pr[pr.length-1], baja2=pr[pr.length-2];
     var sube1, sube2;
+    /* 7.9035 · el segundo cupo es del que GANA la liguilla (cuadro del registro único),
+       juegues o no en la B. Antes subía el 2° de la tabla sin jugar nada. */
+    var lbU=(E.mundo&&E.mundo.ligB&&E.mundo.ligB.anio===E.anio&&E.mundo.ligB.campeon)||null;
     if(E.eraBase==="2026b"){
       if(E.flags&&E.flags.ligaBCampeon){
         sube1=E.club;
-        sube2=_estimarGanadorLiguillaB(b.filter(function(id){ return id!==E.club; }).slice(0,7));
+        sube2=(lbU&&lbU!==E.club)?lbU:_estimarGanadorLiguillaB(b.filter(function(id){ return id!==E.club; }).slice(0,7));
       } else if(E.flags&&E.flags.ligaBLiguilla){
         sube1=(b[0]===E.club)?b[1]:b[0];
         sube2=E.club;
       } else {
         sube1=b[0];
-        sube2=(b[1]===E.club)?b[2]:b[1];
+        sube2=(lbU&&lbU!==sube1)?lbU:((b[1]===E.club)?b[2]:b[1]);
       }
     } else {
       sube1=b[0];
-      sube2=b[1];
+      sube2=(lbU&&lbU!==sube1)?lbU:b[1];
     }
     if(sube1===sube2) sube2=b.filter(function(id){ return id!==sube1; })[0]||sube2;
     var cambios=[];
@@ -1143,6 +1354,7 @@ function filasTablaActual(){
       /* 7.993 · la liguilla de 7 ES el torneo. El 1° de esa tabla sube.
          Ya no hay final de 3 botones contra el campeón de la otra zona. */
       if(E.eraBase==="2026c"&&E.flags&&E.flags.ligaCCampeon) subeC=E.club;
+      else if(E.eraBase==="2026c"&&E.flags&&E.flags.ligaCSube) subeC=E.flags.ligaCSube;   /* 7.9035 · el 1° de TU liguilla */
       else {
         var poolC=(c||[]).filter(function(id){ return id!==E.club; });
         subeC=(typeof _ordenSimDiv==="function")?_ordenSimDiv(poolC)[0]:poolC[0];
@@ -1366,7 +1578,7 @@ function cuposChileDesde(pos, copaChile, b){
     var keepLib=E.flags.cupoLib, keepSud=E.flags.cupoSud;
     [
       "ligaBCampeon","ligaBLiguilla","ligaBBaja","liguillaBListo","liguillaBFase","ligaBPos","liguillaBTabla",
-      "ligaCCampeon","ligaCBaja","segundaFase","segundaZona","segundaPosZonal","segundaGanoPlayoff",
+      "ligaCCampeon","ligaCBaja","ligaCSube","segundaFase","segundaZona","segundaPosZonal","segundaGanoPlayoff",
       "liguillaCIds","zonaCSim","liguillaCSim",
       "copaLigaCampeon","copaLigaGrupo","copaLigaRivales","copaLigaCampeonClub",
       "superCopaCampeon","copaAcum","copaChileSubcampeon","copaChileCampeonClub",

@@ -293,6 +293,8 @@ function resolverCopaDomestica(part, yo, otro){
         }catch(e){}
         return origR.apply(this, arguments);
       };
+      /* 7.9035 · hereda las marcas de los envoltorios de abajo (._uni, ._fmt54…) */
+      try{ Object.keys(origR).forEach(function(k){ resolverCopa[k]=origR[k]; }); }catch(e){}
       resolverCopa._copaDom=true;
     }
     var cal=orig(clubId, anio, conCopa)||[];

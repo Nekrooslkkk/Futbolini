@@ -3861,6 +3861,22 @@ function delegarDecisionesPendientes(){
   });
   return n;
 }
+/* 7.9035 · simular VARIAS temporadas es "testeo hasta el final": una crisis ya no frena
+   la corrida (antes, un equipo que no ganaba cortaba la simulación en la primera
+   temporada). Se delega igual que las decisiones: primera opción que se pueda pagar,
+   y queda anotada para que se vea qué se eligió. Avanzar UNA temporada sigue frenando. */
+function delegarCrisis(){
+  const cr=(typeof crisisActiva==="function")?crisisActiva():null;
+  if(!cr||!cr.op||!cr.op.length) return null;
+  let idx=0;
+  for(let i=0;i<cr.op.length;i++){ const ok=(typeof requisitoCumplido==="function")?requisitoCumplido(cr.op[i]).ok:true; if(ok){ idx=i; break; } }
+  let r=null;
+  try{ r=resolverDecision({id:"crisis_"+cr.id,buzon:"institucional",op:cr.op,posturas:{}}, idx); }catch(e){}
+  E.flags["crisis_"+cr.id]=true;
+  notificar({t:"CRISIS (delegada): "+cr.t,tipo:r&&r.tier==="bien"?"bueno":"malo",bandeja:false,
+    d:"La simulación eligió «"+cr.op[idx].t+"»."+(r&&r.txt?" "+r.txt:"")});
+  return cr;
+}
 function procesarSemanaRapido(){
   const neto=tickSemana();
   if(typeof chequearDesfalco==="function") chequearDesfalco();
@@ -3968,8 +3984,9 @@ function simularTemporadasSync(nTemps){
     for(let s=0;s<tope;s++){
       if(E.carrera.fin){ freno="fin de la carrera"; break; }
       avanzarRapido(true);
+      for(let k=0;k<6 && typeof proximoPartido==="function" && proximoPartido() && delegarCrisis();k++) avanzarRapido(true);
       if(typeof proximoPartido==="function" && proximoPartido()){
-        freno="se frenó antes del cierre (crisis/sucesión: resolvela y seguí)"; break;
+        freno="se frenó antes del cierre (sucesión: resolvela y seguí)"; break;
       }
       if(typeof finDeTemporada==="function") finDeTemporada();
       if(E.liguillaPend){
@@ -4049,10 +4066,14 @@ function simularTemporadasAsync(nTemps){
     if(E.carrera.fin){ freno="fin de la carrera"; return fin(); }
     if(temps>=tope) return fin();
     try{
-      avanzarRapidoLote(progresoFecha, function(){
+      let delegadas=0;
+      avanzarRapidoLote(progresoFecha, function listo(){
       if(E._bulkCancel){ cancelado=true; freno="cancelaste"; return fin(); }
+      if(typeof proximoPartido==="function" && proximoPartido() && delegadas<6 && delegarCrisis()){
+        delegadas++; return avanzarRapidoLote(progresoFecha, listo);
+      }
       if(typeof proximoPartido==="function" && proximoPartido()){
-        freno="se frenó antes del cierre (crisis/sucesión: resolvela y seguí)";
+        freno="se frenó antes del cierre (sucesión: resolvela y seguí)";
         return fin();
       }
       /* el campeón del año que CIERRA, antes de reiniciar la tabla (si no,

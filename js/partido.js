@@ -270,8 +270,8 @@ function intentarDesempate(P){
     return {tipo:"prorrogaHT", min:105};
   }
   if(P.prorroga===2 && P.min>=120){
-    const m=miMarcador(P);
-    if(m[0]!==m[1]) return {tipo:"fin", min:P.min};
+    /* 7.9035 · d.necesita ya mira el GLOBAL: en una llave a dos partidos el marcador
+       de la vuelta puede no estar empatado y el global sí (antes se cortaba sin tanda) */
     return iniciarTanda(P);
   }
   if(!pideProrroga(P.part)) return iniciarTanda(P);

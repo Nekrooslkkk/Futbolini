@@ -573,6 +573,8 @@ function grupoCopaChileDe(clubId){
    2026 usa los grupos reales; 2027+ (o un club sin grupo fijo, ej. un ascendido) los sortea el juego. */
 function copaChileRivales(clubId, anio){
   if(anio===2026){ var g0=grupoCopaChileDe(clubId); if(g0) return {rivales:g0.ids.filter(function(id){return id!==clubId;}), letra:g0.letra}; }
+  /* 7.9035 · desde 2027: el MISMO sorteo del país (mundo.js), no un grupo propio que nadie más jugaba */
+  if(typeof mundoGrupoDe==="function"){ var gU=mundoGrupoDe("chile", clubId, anio); if(gU) return {rivales:gU.ids.filter(function(id){return id!==clubId;}), letra:gU.letra}; }
   var pr=(typeof E!=="undefined"&&E&&E.ligaMod&&E.ligaMod[2026])?E.ligaMod[2026].slice():((typeof LIGA_2026!=="undefined")?LIGA_2026.map(function(c){return c.id;}):[]);
   var b =(typeof E!=="undefined"&&E&&E.ligaMod&&E.ligaMod["2026b"])?E.ligaMod["2026b"].slice():((typeof LIGA_B_2026!=="undefined")?LIGA_B_2026.map(function(c){return c.id;}):[]);
   var soyPrimera=pr.indexOf(clubId)>=0;

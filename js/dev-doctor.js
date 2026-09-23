@@ -528,6 +528,11 @@ function devCalibrarMotor(n, difs){
   if(!E||typeof iniciarPartido!=="function") return null;
   var snap=clonarPartida(E), out=[];
   var molde=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"; })[0];
+  /* 7.9035 · azar sembrado mientras se calibra: el mismo estado da el mismo número.
+     Antes el chequeo del Doctor oscilaba ±0,2 entre corridas (ruido, no sesgo) y a veces
+     "fallaba" solo. Así se pueden comparar dos versiones del motor de verdad. */
+  var mathR=Math.random;
+  if(typeof azarFijo==="function"&&typeof semilla==="function") Math.random=azarFijo(semilla("calibrar|"+(E.club||"")+"|"+n+"|"+difs.join(",")));
   try{
     E._bulkSim=true;
     var fz=fuerzaEquipo(onceIdeal()), mio=(fz.ataque+fz.orden)/2;
@@ -550,7 +555,7 @@ function devCalibrarMotor(n, difs){
         out.push({dif:d, local:local, motor:[w,e,l], ia:[wi,ei,li], ptsMotor:Math.round(ptsM*100)/100, ptsIA:Math.round(ptsI*100)/100, brecha:Math.round((ptsM-ptsI)*100)/100});
       });
     });
-  } finally { restaurarPartida(snap); }
+  } finally { Math.random=mathR; restaurarPartida(snap); }
   return out;
 }
 
@@ -627,6 +632,91 @@ devDoctorRegistrar({id:"calendario_vivo", area:"interfaz", n:"El Calendario mues
   if(typeof modalRepeticion==="function"&&String(modalRepeticion).indexOf("statsReales")<0)
     falta.push("la repetición muestra estadísticas aunque estén en cero (se ven rotas en partidos simulados)");
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("tabla del Calendario = tabla real; repeticiones sin datos inventados");
+}});
+
+/* 7.9035 · UN SOLO UNIVERSO. Bug reportado por el autor jugando con Rangers: ascendían
+   Wanderers y Cobreloa y el Calendario los mostraba de nuevo en la B; la liguilla de la B
+   no se jugaba si no eras vos (subía el 2° sin jugar); la Copa de la Liga decía 0 PJ. */
+function _docMismo(a,b){ a=(a||[]).slice().sort(); b=(b||[]).slice().sort(); return a.length===b.length&&a.every(function(x,i){ return x===b[i]; }); }
+devDoctorRegistrar({id:"universo_ligas", area:"motor", n:"El país del Calendario es el que se juega (ascensos incluidos)", fn:function(){
+  if(!E||!E.mundo) return _dok("sin partida");
+  if(!(E.eraBase===2026||E.eraBase==="2026"||E.eraBase==="2026b"||E.eraBase==="2026c")) return _dok("esta época no usa ascensos entre divisiones");
+  if(E.mundo.ver!==2) return _dmal("el registro del país es el viejo (dos universos): se rearma al jugar la próxima fecha");
+  var falta=[], L=E.mundo.ligas||{}, M=E.ligaMod||{};
+  if(L["2026"]&&M[2026]&&!_docMismo(L["2026"].ids,M[2026])) falta.push("Primera del Calendario ≠ Primera vigente ("+L["2026"].ids.filter(function(id){ return M[2026].indexOf(id)<0; }).join(",")+" sobran)");
+  if(L["2026b"]&&M["2026b"]&&!_docMismo(L["2026b"].ids,M["2026b"])) falta.push("la B del Calendario ≠ la B vigente ("+L["2026b"].ids.filter(function(id){ return M["2026b"].indexOf(id)<0; }).join(",")+" sobran)");
+  if(M["2026c"]&&(L["2026cN"]||L["2026cS"])){
+    var c=((L["2026cN"]||{}).ids||[]).concat((L["2026cS"]||{}).ids||[]);
+    if(!_docMismo(c,M["2026c"])) falta.push("la Segunda del Calendario ≠ la Segunda vigente");
+  }
+  var w=[["resolverCopa",typeof resolverCopa==="function"&&resolverCopa._uni],["finDeTemporada",typeof finDeTemporada==="function"&&finDeTemporada._uni],
+    ["procesarAscensoDescenso",typeof procesarAscensoDescenso==="function"&&procesarAscensoDescenso._uni],["_ordenSimDiv",typeof _ordenSimDiv==="function"&&_ordenSimDiv._uni]];
+  w.forEach(function(x){ if(!x[1]) falta.push(x[0]+" no está enganchado al registro único"); });
+  return falta.length?_dmal(falta.length+" descuadre(s)",falta):_dok("ligas del Calendario = divisiones vigentes; copas y cierre enganchados");
+}});
+devDoctorRegistrar({id:"universo_copas_jugador", area:"motor", n:"Tus partidos de copa están en las tablas y cuadros del país", fn:function(){
+  if(!E||!E.mundo||E.mundo.ver!==2||!E.calendario) return _dok("sin registro único todavía");
+  var falta=[], n=0;
+  E.calendario.forEach(function(p){
+    if(!p||!p.jugado||p.tipo!=="copa") return;
+    var tor=p.torneo==="Copa Chile"?"chile":(p.torneo==="Copa de la Liga"?"copaLiga":(p.torneo==="Liguilla de Ascenso"?"ligB":null));
+    if(!tor) return;
+    n++;
+    var a=p.local?E.club:p.rivalId, b=p.local?p.rivalId:E.club, ok=false;
+    if(/^Grupo /.test(p.ronda||"")){
+      var g=E.mundo.copas[tor]&&E.mundo.copas[tor].grupos&&E.mundo.copas[tor].grupos[(p.ronda||"").replace(/^Grupo\s+/,"")];
+      if(!g){ falta.push(p.torneo+" "+p.ronda+": el grupo no existe en el país"); return; }
+      ok=Object.keys(g.res||{}).some(function(k){ var x=k.split("|"); return x[1]===a&&x[2]===b; });
+    } else {
+      var L=(typeof mundoLlaveDe==="function")?mundoLlaveDe(p):null;
+      ok=!!(L&&L.t.legs[L.i]);
+    }
+    if(!ok) falta.push(p.torneo+" "+p.ronda+" vs "+(p.rivalNombre||p.rivalId)+" ("+(p.f?p.f.d+"/"+p.f.m:"")+") no está en el registro");
+  });
+  if(!n) return _dok("todavía no jugaste copa este año");
+  return falta.length?_dmal(falta.length+" de "+n+" partido(s) tuyos no cuentan en el país",falta):_dok("tus "+n+" partido(s) de copa cuentan en las tablas y cuadros");
+}});
+devDoctorRegistrar({id:"universo_liguilla", area:"motor", n:"La liguilla de la B tiene cuadro y sube el que la gana", fn:function(){
+  if(!E||!E.mundo||E.mundo.ver!==2) return _dok("sin registro único todavía");
+  var lb=E.mundo.ligB;
+  if(!lb) return _dok("la B todavía no termina su fase regular");
+  var falta=[];
+  if(!lb.rondas||!lb.rondas.Cuartos||lb.rondas.Cuartos.length!==3) falta.push("cuartos incompletos (deben ser 3: 3°–8°, 4°–7°, 5°–6°)");
+  if(lb.rondas.Semifinal&&lb.rondas.Semifinal.every(function(t){ return t.a!==lb.tabla[1]&&t.b!==lb.tabla[1]; })) falta.push("el 2° de la fase regular no está en semis");
+  (E.calendario||[]).forEach(function(p){
+    if(!p||p.torneo!=="Liguilla de Ascenso") return;
+    var L=(typeof mundoLlaveDe==="function")?mundoLlaveDe(p):null;
+    if(!L) falta.push("tu partido de "+p.ronda+" vs "+(p.rivalNombre||p.rivalId)+" no es una llave del cuadro");
+  });
+  if(lb.campeon&&E.ascensoAnio===E.anio&&E.ligaMod&&(E.ligaMod[2026]||[]).indexOf(lb.campeon)<0)
+    falta.push(((typeof _nomClub==="function")?_nomClub(lb.campeon):lb.campeon)+" ganó la liguilla pero no subió");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("cuadro completo"+(lb.campeon?"; campeón "+((typeof _nomClub==="function")?_nomClub(lb.campeon):lb.campeon):""));
+}});
+/* 7.9035 · un partido salteado: clasificar a una llave durante terminarPartido movía el
+   puntero al próximo sin jugar y el idx++ se comía uno (quedaba sin jugar para siempre) */
+devDoctorRegistrar({id:"calendario_sin_saltos", area:"motor", n:"Ningún partido queda salteado en tu calendario", fn:function(){
+  if(!E||!E.calendario) return _dok("sin partida");
+  var salt=E.calendario.slice(0,Math.min(E.idx||0,E.calendario.length)).filter(function(p){ return p&&!p.jugado; });
+  var falta=salt.map(function(p){ return (p.torneo||(p.tipo==="liga"?"liga":p.tipo))+(p.ronda?" "+p.ronda:"")+" vs "+(p.rivalNombre||p.rivalId)+" ("+(p.f?p.f.d+"/"+p.f.m:"")+")"; });
+  /* prueba sin tocar tu partida: insertar una llave con el partido actual ya jugado */
+  if(typeof _insertarYOrdenar==="function"){
+    var E0=E, prueba={calendario:[{f:{m:3,d:1},jugado:true},{f:{m:3,d:8},jugado:false},{f:{m:3,d:15},jugado:false}], idx:0};
+    try{
+      E=prueba; _insertarYOrdenar([{f:{m:4,d:1},jugado:false}]); E.idx++;
+      if(E.calendario[E.idx]!==prueba.calendario[1]) falta.push("insertar una llave durante un partido se saltea el siguiente (prueba: quedó en el "+(E.idx+1)+"° en vez del 2°)");
+    }finally{ E=E0; }
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sin partidos salteados; insertar llaves no mueve el puntero de más");
+}});
+devDoctorRegistrar({id:"llave_global", area:"motor", n:"Las llaves se definen por el global (y la tanda también)", fn:function(){
+  var falta=[];
+  if(typeof _mGlobal!=="function") return _dmal("mundo.js sin cuadros");
+  var g=_mGlobal({unica:false, legs:[{ga:2,gb:1},{ga:1,gb:0}]});
+  if(g[0]!==2||g[1]!==2) falta.push("ida 2-1 y vuelta 1-0 (local el otro) debería dar 2-2 en el global y da "+g.join("-"));
+  if(typeof marcadorDefine!=="function"||!marcadorDefine._uni) falta.push("la tanda no mira el global del cuadro (miraba solo el partido de vuelta)");
+  if(typeof intentarDesempate==="function"&&String(intentarDesempate).indexOf("m[0]!==m[1]")>=0) falta.push("después del alargue se corta sin tanda si la vuelta no está empatada aunque el global sí");
+  if(typeof pideProrroga==="function"&&pideProrroga({tipo:"copa",torneo:"Liguilla de Ascenso",ronda:"Cuartos"})) falta.push("los cuartos de la liguilla tienen alargue (las bases dicen penales directo)");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("global bien sumado; tanda y alargue según las bases");
 }});
 
 /* 7.9032 · legibilidad: el vidrio Aero no puede tapar el texto */
