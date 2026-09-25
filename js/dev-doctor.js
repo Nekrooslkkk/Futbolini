@@ -523,40 +523,68 @@ function devEconomiaClubes(anio, base){
    restaura) contra rivales con diferencia de fuerza controlada, y compara
    ganados/empates/perdidos contra el modelo de la IA (_golesSimulados).
    Si el motor amplifica diferencias, el club que controlás gana todo o se hunde. */
-function devCalibrarMotor(n, difs){
+/* 7.9037 · "Calibrar motor vs IA" congelaba la página: 1.500 partidos y, antes de cada uno, se
+   clonaba el juego entero (200+ KB de JSON). Un partido simulado solo toca plantel, indicadores y
+   memoria: se guarda y restaura eso. El botón corre por tandas (progreso y cancelar). Azar
+   sembrado: el mismo estado da el mismo número (antes oscilaba ±0,2 y el chequeo fallaba solo). */
+var _CAL_CLAVES=["plantel","ind","memoria","logros","_memId"];
+function _calFoto(){ var f={}; _CAL_CLAVES.forEach(function(k){ f[k]=(k in E)?JSON.stringify(E[k]):undefined; }); return f; }
+function _calVolver(f){ _CAL_CLAVES.forEach(function(k){ if(f[k]===undefined) delete E[k]; else E[k]=JSON.parse(f[k]); }); }
+function _calNuevo(n, difs){
   n=n||120; difs=difs||[-12,-6,0,6,12];
   if(!E||typeof iniciarPartido!=="function") return null;
-  var snap=clonarPartida(E), out=[];
-  var molde=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"; })[0];
-  /* 7.9035 · azar sembrado mientras se calibra: el mismo estado da el mismo número.
-     Antes el chequeo del Doctor oscilaba ±0,2 entre corridas (ruido, no sesgo) y a veces
-     "fallaba" solo. Así se pueden comparar dos versiones del motor de verdad. */
-  var mathR=Math.random;
-  if(typeof azarFijo==="function"&&typeof semilla==="function") Math.random=azarFijo(semilla("calibrar|"+(E.club||"")+"|"+n+"|"+difs.join(",")));
+  var st={n:n, difs:difs, out:[], esc:[], i:0, j:0, hechos:0, total:n*difs.length*2, snap:clonarPartida(E), mathR:Math.random, rnd:null};
+  if(typeof azarFijo==="function"&&typeof semilla==="function") st.rnd=azarFijo(semilla("calibrar|"+(E.club||"")+"|"+n+"|"+difs.join(",")));
+  st.molde=(E.calendario||[]).filter(function(p){ return p.tipo==="liga"; })[0];
+  E._bulkSim=true;
+  var fz=fuerzaEquipo(onceIdeal()); st.mio=(fz.ataque+fz.orden)/2;
+  difs.forEach(function(d){ [true,false].forEach(function(local){ st.esc.push({d:d,local:local,w:0,e:0,l:0,wi:0,ei:0,li:0}); }); });
+  st.foto=_calFoto();
+  return st;
+}
+function _calPaso(st, cuantos){
+  if(st.rnd) Math.random=st.rnd;
   try{
-    E._bulkSim=true;
-    var fz=fuerzaEquipo(onceIdeal()), mio=(fz.ataque+fz.orden)/2;
-    difs.forEach(function(d){
-      [true,false].forEach(function(local){
-        var w=0,e=0,l=0, wi=0,ei=0,li=0;
-        for(var i=0;i<n;i++){
-          var E0=clonarPartida(E);
-          var part=Object.assign({},molde,{local:local, fuerzaRival:Math.round(mio-d), jugado:false, tipo:"liga"});
-          var P=iniciarPartido(part,"simular"); correrHasta(P,90);
-          var gm=local?P.gl:P.gv, gr=local?P.gv:P.gl;
-          if(gm>gr) w++; else if(gm===gr) e++; else l++;
-          restaurarPartida(E0);
-          var a={id:"_a",fuerza:mio}, b={id:"_b",fuerza:mio-d};
-          var g=local?_golesSimulados(a,b):_golesSimulados(b,a);
-          var ga=local?g[0]:g[1], gb=local?g[1]:g[0];
-          if(ga>gb) wi++; else if(ga===gb) ei++; else li++;
-        }
-        var ptsM=(3*w+e)/n, ptsI=(3*wi+ei)/n;
-        out.push({dif:d, local:local, motor:[w,e,l], ia:[wi,ei,li], ptsMotor:Math.round(ptsM*100)/100, ptsIA:Math.round(ptsI*100)/100, brecha:Math.round((ptsM-ptsI)*100)/100});
-      });
-    });
-  } finally { Math.random=mathR; restaurarPartida(snap); }
-  return out;
+    while(cuantos-- > 0 && st.i<st.esc.length){
+      var s=st.esc[st.i], d=s.d, local=s.local;
+      var part=Object.assign({},st.molde,{local:local, fuerzaRival:Math.round(st.mio-d), jugado:false, tipo:"liga"});
+      var P=iniciarPartido(part,"simular"); correrHasta(P,90);
+      var gm=local?P.gl:P.gv, gr=local?P.gv:P.gl;
+      if(gm>gr) s.w++; else if(gm===gr) s.e++; else s.l++;
+      _calVolver(st.foto);
+      var a={id:"_a",fuerza:st.mio}, b={id:"_b",fuerza:st.mio-d};
+      var g=local?_golesSimulados(a,b):_golesSimulados(b,a);
+      var ga=local?g[0]:g[1], gb=local?g[1]:g[0];
+      if(ga>gb) s.wi++; else if(ga===gb) s.ei++; else s.li++;
+      st.hechos++;
+      if(++st.j>=st.n){
+        var ptsM=(3*s.w+s.e)/st.n, ptsI=(3*s.wi+s.ei)/st.n;
+        st.out.push({dif:d, local:local, motor:[s.w,s.e,s.l], ia:[s.wi,s.ei,s.li], ptsMotor:Math.round(ptsM*100)/100, ptsIA:Math.round(ptsI*100)/100, brecha:Math.round((ptsM-ptsI)*100)/100});
+        st.i++; st.j=0;
+      }
+    }
+  } finally { Math.random=st.mathR; }
+  return st.i>=st.esc.length;
+}
+function _calCerrar(st){ Math.random=st.mathR; restaurarPartida(st.snap); }
+function devCalibrarMotor(n, difs){
+  var st=_calNuevo(n, difs); if(!st) return null;
+  try{ _calPaso(st, Infinity); } finally { _calCerrar(st); }
+  return st.out;
+}
+function devCalibrarMotorAsync(n, difs, onProgreso, onListo){
+  var st=_calNuevo(n, difs); if(!st){ if(onListo) onListo(null); return null; }
+  var ctl={cancelar:false};
+  function paso(){
+    var fin=false;
+    try{ fin=ctl.cancelar||(E&&E._bulkCancel)||_calPaso(st, 40); }
+    catch(e){ _calCerrar(st); if(onListo) onListo(null, e); return; }
+    if(onProgreso) onProgreso(st.hechos, st.total);
+    if(fin){ var canc=ctl.cancelar||(E&&E._bulkCancel); _calCerrar(st); if(E) delete E._bulkCancel; if(onListo) onListo(canc?null:st.out); return; }
+    setTimeout(paso, 0);
+  }
+  setTimeout(paso, 0);
+  return ctl;
 }
 
 /* 7.9029 · tres chequeos del equilibrio. Todos corren sobre copias y restauran. */
@@ -736,6 +764,36 @@ devDoctorRegistrar({id:"llave_global", area:"motor", n:"Las llaves se definen po
   if(typeof intentarDesempate==="function"&&String(intentarDesempate).indexOf("m[0]!==m[1]")>=0) falta.push("después del alargue se corta sin tanda si la vuelta no está empatada aunque el global sí");
   if(typeof pideProrroga==="function"&&pideProrroga({tipo:"copa",torneo:"Liguilla de Ascenso",ronda:"Cuartos"})) falta.push("los cuartos de la liguilla tienen alargue (las bases dicen penales directo)");
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("global bien sumado; tanda y alargue según las bases");
+}});
+
+/* 7.9037 · rendimiento: la escena del penal crecía sola en PC y el fondo animado obligaba a
+   re-desenfocar todos los paneles de vidrio en cada cuadro */
+devDoctorRegistrar({id:"rendimiento_ui", area:"interfaz", n:"La escena del penal no crece sola y el fondo no gasta de más", fn:function(){
+  if(typeof document==="undefined"||!document.body) return _dok("sin DOM");
+  var falta=[];
+  if(typeof _arcoVista==="function"){
+    /* el bug: cada recálculo subía una décima y el escenario seguía al dibujo. Un escenario que
+       mide un pelo más que el dibujo NO puede mover el viewBox (si no, crece sin fin). */
+    var NS="http://www.w3.org/2000/svg", box=document.createElement("div"), svg=document.createElementNS(NS,"svg");
+    box.style.cssText="position:absolute;left:-9999px;top:0;width:632px;height:425px;visibility:hidden";
+    svg.setAttribute("viewBox","0 -1 360 241"); box.appendChild(svg); document.body.appendChild(box);
+    try{
+      _arcoVista(svg); var v1=svg.getAttribute("viewBox");
+      if(v1!=="0 -1 360 241") falta.push("la escena del penal se re-escala por un pelo ("+v1+"): en PC crece sola");
+    } finally { box.remove(); }
+    var st=document.createElement("div"); st.className="modal escena-3d"; st.innerHTML='<div class="e3d-stage"></div>';
+    st.style.cssText="position:absolute;left:-9999px;visibility:hidden"; document.body.appendChild(st);
+    var ar=getComputedStyle(st.firstChild).aspectRatio; st.remove();
+    if(!ar||ar==="auto") falta.push("el escenario del penal toma el alto del dibujo (sin aspect-ratio)");
+  }
+  var cj=document.body.classList.contains("con-juego"), au=document.querySelector("#fondo .aurora");
+  if(au){
+    if(!cj) document.body.classList.add("con-juego");
+    var ps=getComputedStyle(au).animationPlayState;
+    if(!cj) document.body.classList.remove("con-juego");
+    if(ps!=="paused") falta.push("el fondo aurora se sigue moviendo dentro del juego (re-desenfoca el vidrio en cada cuadro)");
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("escena estable; fondo quieto dentro del juego");
 }});
 
 /* 7.9032 · legibilidad: el vidrio Aero no puede tapar el texto */
@@ -924,14 +982,19 @@ function devPintarDoctor(cont){
   });
   btn("🎯 Calibrar motor vs IA",function(){
     salida.innerHTML=""; salida.appendChild(el("p","mini","⏳ jugando partidos de prueba sobre una copia…"));
-    setTimeout(function(){
-      var r=devCalibrarMotor(150);
+    var pinta=(typeof pintarSimOverlay==="function")?pintarSimOverlay:function(){};
+    pinta("🎯 Calibrando motor vs IA","Arrancando…",true);
+    devCalibrarMotorAsync(150, null, function(h,t){
+      pinta("🎯 Calibrando motor vs IA",h+" de "+t+" partidos de prueba ("+Math.round(100*h/t)+"%). La página sigue viva: puedes cancelar.",true);
+    }, function(r){
+      if(typeof cerrarSimOverlay==="function") cerrarSimOverlay();
       salida.innerHTML="";
+      if(!r){ salida.appendChild(el("p","mini","Calibración cancelada: tu partida quedó como estaba.")); return; }
       salida.appendChild(el("p","mini","Puntos por partido de TU motor vs el modelo de la IA, a igual diferencia de fuerza. Brecha cerca de 0 = nadie tiene ventaja por ser el jugador. Ajuste actual: c="+(MOTOR_AJUSTE&&MOTOR_AJUSTE.c)+" · s="+(MOTOR_AJUSTE&&MOTOR_AJUSTE.s)+"."));
       (r||[]).forEach(function(x){
         salida.appendChild(el("div","fila"+(Math.abs(x.brecha)>0.35?" mal":""),"<span>dif "+x.dif+(x.local?" · local":" · visita")+"</span><b class='mini'>motor "+x.ptsMotor+" · IA "+x.ptsIA+" · brecha "+x.brecha+"</b>"));
       });
-    },30);
+    });
   });
   btn("✉️ Probar login por código",function(){
     salida.innerHTML=""; salida.appendChild(el("p","mini","⏳ probando el flujo con un servidor simulado (no manda correos)…"));

@@ -198,3 +198,23 @@ body.anim-off .barrita i::after{ display:none; }
   .barrita{ height:12px; }
   .tablas-pais, .tablas-copa{ grid-template-columns:1fr; }
 }
+
+/* 7.9037 · LAG EN PC. Con el modo liviano apagado, el Escritorio tenía 62 animaciones infinitas:
+   el fondo aurora (blur de 34–40 px y mezcla de color) y las burbujas se movían DETRÁS de 12
+   paneles de vidrio (backdrop-filter): el navegador re-desenfocaba cada panel en cada cuadro.
+   Dentro del juego el fondo queda quieto (mismo dibujo); se mueve en la pantalla de inicio.
+   Las barras brillan unos segundos al aparecer, no para siempre. */
+body.con-juego #fondo .aurora,
+body.con-juego #fondo .aurora::before,
+body.con-juego #fondo .aurora::after,
+body.con-juego .burbujas i{ animation-play-state:paused !important; }
+.barrita i{ animation-iteration-count:3; }
+.barrita i::after{ animation-iteration-count:1; }
+/* 7.9037 · secciones plegadas del Calendario (se dibujan al abrir) */
+.mundo-plegable{ margin:8px 0; border-radius:10px; border:1px solid rgba(20,70,120,.18);
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(226,240,252,.25)); }
+.mundo-plegable > summary{ cursor:pointer; padding:10px 12px; font-weight:800; font-size:13px; list-style:none; }
+.mundo-plegable > summary::-webkit-details-marker{ display:none; }
+.mundo-plegable > summary::after{ content:"▸"; float:right; opacity:.6; }
+.mundo-plegable[open] > summary::after{ content:"▾"; }
+.mundo-plegable > .panel{ margin:0 6px 8px; }

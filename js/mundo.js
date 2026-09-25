@@ -1242,6 +1242,18 @@ function mundoPanelLiguillaB(){
   return p;
 }
 
+/* 7.9037 · el resumen de Tablas pintaba ~1.000 nodos de copas que casi nadie abre (medio
+   segundo en un celular). Van plegados, se dibujan al abrir y se recuerda cuáles abriste. */
+const _M_ABIERTOS={};
+function _mPlegable(clave, titulo, pintarFn){
+  const d=el("details","mundo-plegable");
+  d.appendChild(el("summary","",titulo));
+  let listo=false;
+  const pintarYa=()=>{ if(listo) return; listo=true; try{ pintarFn(d); }catch(e){ d.appendChild(el("p","mini","No se pudo dibujar: "+e.message)); } };
+  d.addEventListener("toggle",()=>{ _M_ABIERTOS[clave]=d.open; if(d.open) pintarYa(); });
+  if(_M_ABIERTOS[clave]){ d.open=true; pintarYa(); }
+  return d;
+}
 function panelMundoCalendario(v){
   if(!E||!E.mundo) return;
   if(!mundoEra2026()) return;
@@ -1291,22 +1303,23 @@ function panelMundoCalendario(v){
         ?("Punteros ahora · "+bits.join(" · ")+". Ligas y copas, todas. La tuya va marcada.")
         :"Tablas del país entero. Se llenan al avanzar: Primera, B, las dos zonas de Segunda, Copa Chile, Copa Argentina, Copa de la Liga y CONMEBOL.";
       cont.appendChild(intro);
-      const grid=el("div","tablas-pais");
-      [
-        ["2026","Liga de Primera","📊"],
-        ["2026b","Liga de Ascenso (B)","📊"],
-        ["2026cN","Segunda · Zona Norte","📊"],
-        ["2026cS","Segunda · Zona Sur","📊"]
-      ].forEach(([k,nom,ic])=>{
+      /* tu liga abierta; las otras plegadas */
+      const grid=el("div","tablas-pais tablas-pais-1"), otras=[];
+      [["2026","Liga de Primera","📊"],["2026b","Liga de Ascenso (B)","📊"],["2026cN","Segunda · Zona Norte","📊"],["2026cS","Segunda · Zona Sur","📊"]].forEach(([k,nom,ic])=>{
         if(!E.mundo.ligas[k]) return;
-        const propia=_ligaKeyJugador()===k;
-        grid.appendChild(cabTabla(nom+(propia?" · la tuya":""), ic, mundoFilasLiga(k),
-          propia?"Tus puntos + el resto de la fecha, misma física.":"No la juegas: se simula igual que un partido tuyo.", false));
+        if(_ligaKeyJugador()===k) grid.appendChild(cabTabla(nom+" · la tuya", ic, mundoFilasLiga(k), "Tus puntos + el resto de la fecha, misma física.", false));
+        else otras.push([k,nom,ic]);
       });
       cont.appendChild(grid);
+      otras.forEach(([k,nom,ic])=>{
+        const pu=mundoPuntero(k);
+        cont.appendChild(_mPlegable("tab-"+k, ic+" "+nom+(pu&&pu.pj>0?" · puntero "+_nomClub(pu.id)+" ("+pu.pts+")":""), function(d){
+          d.appendChild(cabTabla(nom, ic, mundoFilasLiga(k), "No la juegas: se simula igual que un partido tuyo.", false));
+        }));
+      });
       const plb=mundoPanelLiguillaB(); if(plb) cont.appendChild(plb);
       const ch=E.mundo.copas.chile;
-      if(ch&&ch.grupos&&Object.keys(ch.grupos).length){
+      if(ch&&ch.grupos&&Object.keys(ch.grupos).length) cont.appendChild(_mPlegable("tab-cch","🏆 Copa Chile · grupos"+(ch.ko?" y cuadro":""),function(cont){
         const pc=panel("Copa Chile · grupos","🏆","agua");
         pc.cuerpo.appendChild(el("p","mini","8 grupos (Primera + B). Clasifican 1° y 2°. Segunda no entra. Tus partidos cuentan con tu marcador; el resto se juega en las mismas fechas."));
         const ggrid=el("div","tablas-copa");
@@ -1319,9 +1332,9 @@ function panelMundoCalendario(v){
         pc.cuerpo.appendChild(ggrid);
         cont.appendChild(pc);
         const k1=mundoPanelLlaves("chile"); if(k1&&ch.ko) cont.appendChild(k1);
-      }
+      }));
       const cl=E.mundo.copas.copaLiga;
-      if(cl&&cl.grupos&&Object.keys(cl.grupos).length){
+      if(cl&&cl.grupos&&Object.keys(cl.grupos).length) cont.appendChild(_mPlegable("tab-cli","🏆 Copa de la Liga · grupos"+(cl.ko?" y cuadro":""),function(cont){
         const pc=panel("Copa de la Liga · grupos","🏆","agua");
         pc.cuerpo.appendChild(el("p","mini","Solo Primera. 4 grupos de 4, clasifica únicamente el 1°. El campeón es Chile 3 a Libertadores."));
         const ggrid=el("div","tablas-copa");
@@ -1334,10 +1347,10 @@ function panelMundoCalendario(v){
         pc.cuerpo.appendChild(ggrid);
         cont.appendChild(pc);
         const k2=mundoPanelLlaves("copaLiga"); if(k2&&cl.ko) cont.appendChild(k2);
-      }
+      }));
       const lib=E.mundo.copas.lib||{};
       const sud=E.mundo.copas.sud||{};
-      if((lib.grupos&&Object.keys(lib.grupos).length)||(sud.grupos&&Object.keys(sud.grupos).length)){
+      if((lib.grupos&&Object.keys(lib.grupos).length)||(sud.grupos&&Object.keys(sud.grupos).length)) cont.appendChild(_mPlegable("tab-cnm","🌎 CONMEBOL · grupos 2026",function(cont){
         const p=panel("CONMEBOL · grupos 2026","🌎","agua");
         p.cuerpo.appendChild(el("p","mini","Grupos reales 2026. Se simulan con la misma física Poisson. Si lo juegas tú, vale tu marcador. Sudamericana también tiene tabla."));
         [["lib","Libertadores"],["sud","Sudamericana"]].forEach(([k,nom])=>{
@@ -1351,7 +1364,7 @@ function panelMundoCalendario(v){
           });
         });
         cont.appendChild(p);
-      }
+      }));
       return;
     }
     if(t==="pais"){

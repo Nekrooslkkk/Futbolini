@@ -71,10 +71,13 @@ function escudoSVG(id, px){
     '</svg>';
 }
 /* HTML listo para el glifo: archivo Commons/estilizado si hay, si no SVG inline, si no emoji */
+/* 7.9037 · escudo que ya falló (sin internet, archivo que falta): la próxima vez va el dibujo
+   directo, sin <img> que falla de nuevo en cada tabla. */
+var _ESC_FALLO={};
 function escudoHTML(id, px, fallbackEmoji){
   px=px||28;
   var f=typeof ESCUDOS_FOTOS!=="undefined" && ESCUDOS_FOTOS[id];
-  if(f&&f.src){
+  if(f&&f.src&&!_ESC_FALLO[id]){
     /* si el archivo no carga, NO desaparece: cae al escudo estilizado (o emoji). */
     return '<img class="esc-img" src="'+f.src+'" width="'+px+'" height="'+px+'" alt="" '+
       'style="width:'+px+'px;height:'+px+'px;object-fit:contain;display:block" '+
@@ -86,6 +89,7 @@ function escudoHTML(id, px, fallbackEmoji){
 /* fallback cuando el archivo de escudo (Commons/footylogos) no carga: reemplaza el <img>
    por el escudo estilizado inline; si el club no tiene estilizado, deja el emoji o lo esconde. */
 function _escFall(img, id, px, emoji){
+  _ESC_FALLO[id]=1;
   try{
     var s=(typeof escudoSVG==="function")?escudoSVG(id, px):"";
     if(s){ var w=document.createElement("span"); w.innerHTML=s; if(w.firstChild) img.parentNode.replaceChild(w.firstChild, img); else img.style.display="none"; }

@@ -1275,6 +1275,21 @@
       var r91=c.fn(); t(r91.ok,"1991 (sin planteles documentados de muchos rivales): "+r91.txt);
     },"Rivales con nombre");
 
+    grupo("Rendimiento · 7.9037");
+    safe(function(){
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="rendimiento_ui"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor rendimiento_ui: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
+      var av=_arcoVista;
+      _arcoVista=function(svg){ var q=svg.parentNode.getBoundingClientRect(); var H=Math.max(240,Math.min(340,360*q.height/q.width)); svg.setAttribute("viewBox","0 "+(240-H).toFixed(1)+" 360 "+H.toFixed(1)); };
+      t(!c.fn().ok,"el Doctor caza la escena que crece (el bug viejo)"); _arcoVista=av;
+      nuevaPartida("UCH",2026,"historico");
+      var antes=JSON.stringify(E), t0=performance.now(), rc=devCalibrarMotor(30,[0]), ms=performance.now()-t0;
+      t(rc&&rc.length===2 && JSON.stringify(E)===antes,"calibrar deja la partida intacta ("+Math.round(ms)+" ms para 60 partidos)");
+      t(typeof devCalibrarMotorAsync==="function","hay versión por tandas que no congela la página");
+      var r2=devCalibrarMotor(30,[0]), r3=devCalibrarMotor(30,[0]);
+      t(JSON.stringify(r2)===JSON.stringify(r3),"calibrar da el mismo número para el mismo estado");
+    },"Rendimiento");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

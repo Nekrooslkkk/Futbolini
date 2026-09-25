@@ -434,8 +434,10 @@
       if(typeof render==="function") render();
       ok(E.uiMundoTab==="tablas", "tab default = tablas");
       ok(document.querySelector(".tablas-pais"), "grid tablas-pais en Calendario");
-      ok(document.querySelectorAll(".tablas-pais .tabla-liga").length>=4, "4 tablas de liga en el grid ("+document.querySelectorAll(".tablas-pais .tabla-liga").length+")");
-      ok(document.querySelector(".tablas-copa"), "grupos de copa en Tablas");
+      /* 7.9037 · rendimiento: tu liga abierta; el resto de ligas y las copas plegadas (se dibujan al abrir) */
+      var nLig=document.querySelectorAll(".tablas-pais .tabla-liga").length, pleg=[].slice.call(document.querySelectorAll(".mundo-plegable > summary")).map(function(s){ return s.textContent; });
+      ok(nLig>=1 && nLig+pleg.filter(function(t){ return /Liga|Segunda/.test(t); }).length>=4, "las 4 ligas en Tablas (tu liga abierta + "+pleg.length+" plegadas)");
+      ok(pleg.some(function(t){ return /Copa Chile/.test(t); }), "grupos de copa en Tablas (plegados)");
       var dups=Array.prototype.filter.call(document.querySelectorAll("#vista .panel .cab span:last-child"), function(s){ return /^Tabla de posiciones/.test(s.textContent||""); });
       ok(dups.length===0, "no queda la tabla suelta de una sola liga ("+dups.length+")");
     }, "Calendario tablas + chips");

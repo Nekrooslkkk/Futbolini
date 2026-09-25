@@ -1972,6 +1972,11 @@ function _arcoVista(svg){
     if(r.height/r.width>0.9) W=300;
     H=Math.max(240, Math.min(340, W*r.height/r.width));
   }
+  /* 7.9037 · en PC la escena crecía sola (~1 px cada 250 ms): el alto del escenario seguía al
+     dibujo y el dibujo se recalculaba con ese alto; el redondeo subía una décima por vuelta.
+     El escenario toma el alto de su ancho (CSS) y acá se ignoran cambios chicos. */
+  const vb=(svg.getAttribute("viewBox")||"").split(/\s+/).map(Number);
+  if(vb.length===4 && vb[2]===W && Math.abs(vb[3]-H)<1.5) return;
   svg.setAttribute("viewBox",((360-W)/2)+" "+(240-H).toFixed(1)+" "+W+" "+H.toFixed(1));
 }
 function _arcoMontarSvg(esc, html){

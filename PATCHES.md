@@ -3417,3 +3417,18 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   apellidos repetidos. En el "Once probable" se aclara: sin ● = jugador del juego, no real.
 - **Doctor +1:** `rivales_con_nombre` (revisa el once de cada rival de tu calendario), verificado al
   revés. Test core de 2006 actualizado al pedido nuevo. **Tests:** dev **474/474** · core **1185/1185**.
+
+## 7.9037 · Menos lag: fondo quieto, penal que no crece, calibrar sin congelar
+**Archivos:** `css/pulido.css`, `css/gol.css`, `js/ui-partido.js`, `js/mundo.js`, `js/data-escudos.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`, tests
+- **Lag en PC:** con el modo liviano apagado el Escritorio tenía 62 animaciones infinitas; el fondo aurora
+  (blur grande + mezcla de color) y las burbujas se movían detrás de 12 paneles de vidrio, que se
+  re-desenfocaban en cada cuadro. Dentro del juego el fondo queda quieto (mismo dibujo); en reposo: 0
+  animaciones. Las barras brillan al aparecer, no para siempre.
+- **El penal crecía solo en PC** (~1 px cada 250 ms): el escenario seguía al dibujo y el dibujo al
+  escenario. Ahora el alto sale del ancho y se ignoran re-escalas mínimas.
+- **"Calibrar motor vs IA" congelaba:** clonaba el juego entero antes de cada uno de 1.500 partidos. Ahora
+  guarda solo lo que un partido toca (≈10× más rápido), corre por tandas con progreso y cancelar, y da
+  el mismo número para el mismo estado.
+- **Calendario:** en el resumen, tu liga abierta; las otras ligas y las copas plegadas (se dibujan al
+  abrir): ~2.400 → ~1.000 nodos. Escudos que fallan una vez (sin internet) van directo al dibujo.
+- **Doctor +1:** `rendimiento_ui`, verificado al revés. **Tests:** dev 479/479 · core 1185/1185.

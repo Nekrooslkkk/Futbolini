@@ -241,7 +241,9 @@ body[data-tema="aero"] .modal.escena-3d.window{
 }
 .escena-3d .e3d-stage{
   position:relative;
-  flex:1 1 auto !important; min-height:240px !important;
+  /* 7.9037 · el alto sale del ancho (no del dibujo): antes crecía sola en PC */
+  flex:0 1 auto !important; min-height:240px !important;
+  aspect-ratio:360/250; max-height:calc(100dvh - 300px);
   perspective:920px; perspective-origin:50% 78%;
   overflow:hidden; border-radius:14px;
   touch-action:none; cursor:crosshair;
