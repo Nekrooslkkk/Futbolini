@@ -1741,3 +1741,8 @@ Estado: dev 509/509 · core 1185/1185.
   - gráfico de dominio al final del partido;
   - cuartos de la liguilla en vivo.
 - Estado: dev 519/519 · core 1185/1185.
+
+**Tarea para Grok (pedido del autor, 26 sep 2026):** sumar frases a `PISTAS_CHAT` en `js/redes.js`, con el
+mismo tono de hincha chileno que el resto del chat. Categorías: ataque, aguantar, equilibrio, riesgo. Tienen
+que empujar una dirección sin decir la respuesta obvia y entenderse. Máximo ~70 caracteres cada una. Después
+de agregarlas, correr `bash test/correr_dev.sh`.

@@ -733,8 +733,43 @@ function tickerAmbiente(P){
     else if(dif>0) ops=["Vamos ganando pero hay que cerrarlo, "+m+"'","Dominamos, falta la sentencia "+m+"'","Cuando queremos, jugamos lindo 😍 "+m+"'"];
     else ops=["Nos pasan por arriba, "+m+"' 😤","El técnico tiene que mover algo YA, "+m+"'","Contra "+rival+" siempre lo mismo, "+m+"'"];
   } else return;
-  P.ticker.unshift({m:m, autor:elige(HANDLES_HINCHA), texto:elige(ops), tono:dif>0?"bueno":(dif<0?"malo":"neutro")});
+  /* 7.9056 · cada mensaje lleva hacia dónde empuja (el panel de decisiones marca los últimos del chat) */
+  const dir=dif<0?"ataque":((dif>0&&m>=70)?"aguantar":"equilibrio");
+  P.ticker.unshift({m:m, autor:elige(HANDLES_HINCHA), texto:elige(ops), tono:dif>0?"bueno":(dif<0?"malo":"neutro"), dir:dir});
   if(P.ticker.length>18) P.ticker.length=18;
+}
+/* mensajes del chat en vivo que empujan una dirección (misma voz que el resto del chat).
+   Grok puede sumar frases acá (pedido del autor): que se entiendan, sin decir la respuesta obvia. */
+const PISTAS_CHAT={
+  ataque:["Hay que meter otro de arriba, así no llegamos nunca","Menos toque para atrás y más pelotas al área","Si no arriesgamos ahora, ¿cuándo?","El nueve está solo allá arriba, mándenle gente","Con este ritmo no le hacemos cosquillas al arquero"],
+  aguantar:["Cierren esto, no regalen nada","Paren la pelota, que el rival se desespera","Un volante más atrás y a cuidar lo que hay","El que se apura ahora la caga, tranquilos atrás"],
+  equilibrio:["Tranquilos, sin volverse locos, el gol llega","Paciencia, que el partido está para nosotros","Ni tan atrás ni tan adelante, que se juegue en el medio","Así está bien, falta afinar el último pase"],
+  riesgo:["A todo o nada ya, no hay nada que perder","Todos arriba, hasta el arquero si hace falta"]
+};
+function tickerPista(P,dir){
+  if(!P) return null;
+  P.ticker=P.ticker||[];
+  const pool=PISTAS_CHAT[dir]||PISTAS_CHAT.equilibrio;
+  const usados=P.ticker.map(x=>x.texto);
+  const libres=pool.filter(t=>usados.every(u=>u.indexOf(t)<0));
+  const it={m:P.min||0, autor:elige(HANDLES_HINCHA), texto:elige(libres.length?libres:pool)+", "+(P.min||0)+"'", tono:"neutro", dir:dir};
+  P.ticker.unshift(it);
+  if(P.ticker.length>18) P.ticker.length=18;
+  return it;
+}
+/* los últimos 3 del chat que dicen qué hacer: 2 con lo que pide la mayoría y 1 que disiente */
+function plopPistas(P,rec){
+  if(!P) return [];
+  P.ticker=P.ticker||[];
+  let alineados=P.ticker.slice(0,8).filter(x=>x.dir===rec).length;
+  while(alineados<2){ tickerPista(P,rec); alineados++; }
+  const recientes=P.ticker.slice(0,8).filter(x=>x.dir);
+  if(!recientes.some(x=>x.dir!==rec)){ const otros=Object.keys(PISTAS_CHAT).filter(k=>k!==rec&&k!=="riesgo"); tickerPista(P,elige(otros)); }
+  const ult=P.ticker.slice(0,10).filter(x=>x.dir);
+  const a=ult.filter(x=>x.dir===rec).slice(0,2), d=ult.filter(x=>x.dir!==rec).slice(0,1);
+  const tres=a.concat(d).sort((x,y)=>P.ticker.indexOf(x)-P.ticker.indexOf(y));
+  P.ticker.forEach(x=>{ x.pista=false; }); tres.forEach(x=>{ x.pista=true; });
+  return tres;
 }
 
 /* ============================================================

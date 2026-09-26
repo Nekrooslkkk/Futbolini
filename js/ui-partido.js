@@ -1309,13 +1309,13 @@ function _pintarPartidoCuerpo(P){
   p.cuerpo.appendChild(rel);
   /* ticker de redes en vivo (FutbolGram) */
   if(P.modo!=="simular" && P.ticker && P.ticker.length){
+    /* 7.9056 · Plop ocupaba demasiado: los últimos 4 a la vista, el resto plegado */
     p.cuerpo.appendChild(el("h3","sub","📱 Plop! · en vivo"));
     const tk=el("div","ticker");
-    P.ticker.slice(0,10).forEach(t=>{
-      const d=el("div","tk "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":"")));
-      d.innerHTML="<b>"+((typeof escHtml==="function")?escHtml(t.autor):t.autor)+"</b> <span class='mini'>"+(t.m||"?")+"'</span><br>"+((typeof escHtml==="function")?escHtml(t.texto):t.texto);
-      tk.appendChild(d);
-    });
+    const fila=t=>{ const d=el("div","tk "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":""))+(t.pista?" pista":""));
+      d.innerHTML="<b>"+escHtml(t.autor)+"</b> <span class='mini'>"+(t.m||"?")+"'</span> "+escHtml(t.texto); return d; };
+    P.ticker.slice(0,4).forEach(t=>tk.appendChild(fila(t)));
+    if(P.ticker.length>4){ const mas=el("details","tk-mas"); mas.appendChild(el("summary",null,"Ver más ("+(Math.min(10,P.ticker.length)-4)+")")); P.ticker.slice(4,10).forEach(t=>mas.appendChild(fila(t))); tk.appendChild(mas); }
     p.cuerpo.appendChild(tk);
   }
   const wrap=el("div","partido-wrap"); wrap.appendChild(p); v.appendChild(wrap);
@@ -1583,32 +1583,32 @@ function mostrarMomento(){
   document.body.classList.add("hay-momento");
   p.cuerpo.appendChild(el("p",null,m.d));
   if(esTrivia) p.cuerpo.appendChild(el("p",null,"<b>"+m.q+"</b>"));
-  /* 7.10 · en decisiones tácticas, FutbolGram opina como PISTA (leé el consenso) */
+  /* 7.9056 · la pista son los últimos mensajes del MISMO chat en vivo (no un texto aparte obvio) */
   let rec=null;
   if(!esTrivia && typeof direccionRecomendada==="function"){
     rec=direccionRecomendada(P);
-    const opin=(typeof opinionesTactica==="function")?opinionesTactica(rec):[];
-    if(opin.length){
+    const pistas=(typeof plopPistas==="function")?plopPistas(P,rec):[];
+    if(pistas.length){
       const fg=el("div","fg-opina");
-      const PIDE={ataque:"ir a buscarlo",aguantar:"cerrar y cuidar lo que hay",equilibrio:"paciencia, sin locuras",riesgo:"todo o nada"};
-      fg.appendChild(el("div","fg-cab","📱 Plop! · la gente pide <b>"+(PIDE[rec]||rec)+"</b>"));
-      fg.appendChild(el("div","fg-ayuda mini","Si eliges una opción marcada con 📣, el equipo siente el respaldo (más empuje y moral). No es obligatorio: a veces la gente se equivoca."));
-      const handles=(typeof HANDLES_HINCHA!=="undefined"&&HANDLES_HINCHA.length)?HANDLES_HINCHA:["@hincha_de_ley","@barra_del_fondo","@pibe_popular23"];
-      opin.forEach(op=>{
-        const h=elige(handles);
-        fg.appendChild(el("div","fg-op","<b>"+h+"</b> "+((typeof escHtml==="function")?escHtml(op.t):op.t)));
-        if(P.ticker) P.ticker.unshift({autor:h, texto:op.t, tono:"neutro", m:P.min||0});
-      });
+      fg.appendChild(el("div","fg-cab","📱 Lo último en el chat de Plop"));
+      pistas.forEach(t=>fg.appendChild(el("div","fg-op"+(t.dir===rec?" pide":""),"<b>"+escHtml(t.autor)+"</b> <span class='mini'>"+(t.m||0)+"'</span> "+escHtml(t.texto))));
+      fg.appendChild(el("div","fg-ayuda mini","Dos de tres van para el mismo lado: las opciones con 📣 van en esa línea. Si les haces caso, el equipo siente el respaldo; a veces la gente se equivoca."));
       p.cuerpo.appendChild(fg);
     }
   }
   const ops=el("div","ops ops-part"); MOMENTO_OPS=[];
-  m.op.forEach((o,i)=>{
+  /* 7.9056 · agrupadas por intención: ir a buscarlo / equilibrar / cerrar (se entiende qué es cada una) */
+  const GRUPO={ataque:0,riesgo:0,equilibrio:1,aguantar:2}, NOMG=["⚔ Ir a buscarlo","⚖ Equilibrar","🛡 Cerrar"];
+  const dirDe=o=>(o.doping||esTrivia||typeof direccionOpcion!=="function")?"equilibrio":direccionOpcion(o.ef);
+  const orden=esTrivia?m.op.slice():m.op.slice().sort((a,b)=>(GRUPO[dirDe(a)]-GRUPO[dirDe(b)])||(a.doping?1:0)-(b.doping?1:0));
+  let gAnt=-1;
+  orden.forEach((o,i)=>{
+    if(!esTrivia){ const g=o.doping?3:GRUPO[dirDe(o)]; if(g!==gAnt){ gAnt=g; if(g<3) ops.appendChild(el("div","op-grupo",NOMG[g])); } }
     const b=el("button","op"+(o.doping?" op-doping":""));
     /* 7.9042 · cada alternativa dice qué hace y si es lo que pide la gente */
     const pide=!esTrivia && !o.doping && rec && typeof direccionOpcion==="function" && direccionOpcion(o.ef)===rec;
     const chips=(!esTrivia && !o.doping && typeof efectoLegible==="function")
-      ? '<div class="ef-chips">'+efectoLegible(o.ef).map(c=>'<span class="ef-chip '+(c.tono||"")+'">'+c.ic+' '+c.t+'</span>').join("")+(pide?'<span class="ef-chip pide">📣 lo pide la gente</span>':'')+'</div>' : "";
+      ? '<div class="ef-linea">'+efectoLegible(o.ef).map(c=>'<span class="ef-l '+(c.tono||"")+'">'+c.ic+' '+c.t+'</span>').join(" · ")+(pide?' <span class="ef-l pide">· 📣</span>':'')+'</div>' : "";
     b.innerHTML='<div class="t"><span class="tecla">'+(i+1)+'</span> '+o.t+'</div>'+(o.d?'<div class="d">'+o.d+'</div>':"")+chips;
     b.onclick=()=>{
       MOMENTO_OPS=[];

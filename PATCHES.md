@@ -3783,3 +3783,24 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `economia_real`:** revisa la escala, la no linealidad, que precio y valor calcen, compradores
   realistas, libres sin pase y el préstamo de ida y vuelta. Al revés, con la inflación duplicada, falla.
   **Tests:** dev 523/523 · core 1185/1185.
+
+### 7.9057 — partido: hoja inferior en celular, pistas del mismo chat, Plop compacto, cancha de transmisión
+**Archivos:** `js/ui-partido.js`, `js/redes.js`, `js/cancha.js`, `js/dev-doctor.js`, `css/pulido.css`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Celular ("se bugea y se hace chico"):** el panel de decisión ocupaba la pantalla entera y el partido
+  desaparecía. Ahora sale como hoja inferior (máx. 62 % del alto, con scroll propio) y el marcador y la
+  cancha siguen a la vista.
+- **Decisiones menos confusas:**
+  - agrupadas por intención (⚔ Ir a buscarlo · ⚖ Equilibrar · 🛡 Cerrar);
+  - el efecto en una sola línea legible, en vez de tres chips apilados;
+  - las teclas siguen el orden en pantalla.
+- **Pistas del chat:** ya no hay textos aparte y obvios. Son los últimos 3 mensajes del mismo chat en vivo (2
+  van para el mismo lado y 1 disiente) y quedan marcados en el feed. Los mensajes del chat llevan hacia dónde
+  empujan (`dir`). Si faltan, se suman al chat mensajes con la misma voz (`PISTAS_CHAT`, `plopPistas`).
+- **Plop en el partido:** muestra los últimos 4 mensajes; el resto va plegado en "Ver más".
+- **Cancha de transmisión:** cámara desde la tribuna (el lado lejano más angosto), tribuna con gente,
+  carteles LED, franjas de pasto en perspectiva, arcos con alto y red, y jugadores como figuritas (piernas,
+  camiseta con número, cabeza, sombra) que se achican al fondo. Se dibujan de atrás hacia adelante. Cuesta
+  0,19 ms por cuadro.
+- **Pedido del autor, sin tocar:** el VAR y el reloj quedan como están ("lo mejor del juego").
+- **Doctor `plop_vivo`:** ahora también exige que las pistas sean mensajes del chat y marquen a la mayoría.
+  **Tests:** dev 525/525 · core 1185/1185.

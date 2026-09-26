@@ -1122,6 +1122,10 @@ devDoctorRegistrar({id:"plop_vivo", area:"interfaz", n:"PLOP!: sin repetidos, li
     if(!P.ticker.some(function(x){ return /📊/.test(x.texto); })) falta.push("el análisis en vivo no sale a los 30'"); }
   else falta.push("Plop en vivo sin análisis");
   if(typeof logoPlop!=="function") falta.push("PLOP! no se abre como ventana de navegador");
+  if(typeof plopPistas==="function"){ var Q={min:40,ticker:[],part:{},gl:0,gv:0}; var pi=plopPistas(Q,"ataque");
+    if(pi.length!==3||pi.some(function(x){ return Q.ticker.indexOf(x)<0; })) falta.push("las pistas de las decisiones no son mensajes del chat en vivo");
+    else if(pi.filter(function(x){ return x.dir==="ataque"; }).length<2) falta.push("las pistas no marcan lo que pide la mayoría"); }
+  else falta.push("las decisiones muestran pistas aparte del chat (texto obvio)");
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sin repetidos · cuenta correcta · «cf» confunde · análisis 30/60/80 · ventana plop.com");
 }});
 devDoctorRegistrar({id:"economia_real", area:"motor", n:"Mercado a escala chilena real: precios por nivel y edad, compradores que pueden pagar, libres y préstamos", fn:function(){

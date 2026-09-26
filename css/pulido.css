@@ -329,3 +329,19 @@ body[data-tema="negro"] .merc-porque{color:#8fd0ff}
 .plop-ie-prog i{display:block;height:100%;width:40%;background:repeating-linear-gradient(90deg,#3cb33c 0 8px,transparent 8px 10px);animation:plopProg .9s linear infinite}
 @keyframes plopProg{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
 body.perf .plop-ie-prog i{animation:none;width:100%}
+
+/* 7.9056 · decisiones en vivo: agrupadas, efecto en una línea, y en celular como hoja inferior */
+.op-grupo{grid-column:1/-1;font:800 11px/1.2 system-ui,sans-serif;letter-spacing:.6px;text-transform:uppercase;color:#1d5f9e;margin:6px 2px 0}
+.ef-linea{margin-top:4px;font-size:12px;line-height:1.35;color:#2a3542}
+.ef-l.bueno{color:#16693a;font-weight:600} .ef-l.malo{color:#9c2a16;font-weight:600} .ef-l.pide{color:#174f8a;font-weight:700}
+.fg-op.pide{border-left:3px solid #4fb0ff;padding-left:6px}
+.ticker .tk.pista{outline:2px solid #4fb0ff;outline-offset:-2px;border-radius:6px}
+.tk-mas summary{cursor:pointer;font-size:12px;opacity:.8;margin:4px 0}
+@media (max-width:700px){
+  .momento-vivo{position:fixed !important;left:0;right:0;bottom:0;z-index:150;max-height:62vh;overflow-y:auto;margin:0 !important;
+    border-radius:14px 14px 0 0 !important;box-shadow:0 -10px 30px rgba(0,0,0,.35);-webkit-overflow-scrolling:touch}
+  .momento-vivo .ops-part .op{padding:8px 10px}
+  .momento-vivo .ops-part .op .t{font-size:15px}
+  .momento-vivo .fg-opina{margin:4px 0}
+  body.hay-momento .partido-wrap{padding-bottom:62vh}
+}

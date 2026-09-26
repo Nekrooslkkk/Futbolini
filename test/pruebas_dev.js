@@ -1375,8 +1375,11 @@
       var ch=efectoLegible({ataque:5,riesgoPlan:3,desgaste:2});
       t(ch.some(function(c){ return /llegadas/.test(c.t); }) && ch.some(function(c){ return c.tono==="malo"; }),"«tirarse encima» dice qué gana y qué arriesga");
       P_ACTUAL=P; P._triviaReciente=true; mostrarMomento();
-      var ops=document.querySelectorAll(".momento-vivo .op"), chips=document.querySelectorAll(".momento-vivo .ef-chips");
+      var ops=document.querySelectorAll(".momento-vivo .op"), chips=document.querySelectorAll(".momento-vivo .ef-linea");
       t(ops.length>=6 && chips.length>=5,"el panel muestra las alternativas con sus efectos ("+ops.length+" / "+chips.length+")");
+      t(document.querySelectorAll(".momento-vivo .op-grupo").length>=2,"las alternativas vienen agrupadas (ir a buscarlo / equilibrar / cerrar)");
+      var pistas=[].slice.call(document.querySelectorAll(".momento-vivo .fg-op")).map(function(x){ return x.textContent; });
+      t(pistas.length===3 && P.ticker.filter(function(x){ return x.pista; }).length===3,"la pista son 3 mensajes del mismo chat en vivo (marcados en el feed)");
       document.querySelectorAll(".momento-vivo").forEach(function(x){ x.remove(); }); MOMENTO_OPS=[]; document.body.classList.remove("hay-momento");
       var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="correcciones_pesan"; })[0].fn();
       t(r.ok,"doctor correcciones_pesan: "+r.txt);
