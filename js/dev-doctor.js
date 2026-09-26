@@ -1088,6 +1088,24 @@ devDoctorRegistrar({id:"mercado_busqueda", area:"motor", n:"Mercado: se busca en
   }
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
 }});
+devDoctorRegistrar({id:"estadio_dibujado", area:"interfaz", n:"Estadio dibujado que sube obra por obra; butacas que calzan con el aforo real", fn:function(){
+  var falta=[];
+  if(typeof etapaEstadio!=="function"||typeof svgEstadio!=="function") return _dmal("sin estadio dibujado");
+  var snap=clonarPartida(E), det="";
+  try{
+    E.obrasHechas=[]; E.ind.estadio=50; var e0=etapaEstadio();
+    E.obras={tipo:"remodelacion",semanas:1,resta:1}; var nOrig=window.notificar; window.notificar=function(){};
+    try{ avanzarObras(); } finally { window.notificar=nOrig; }
+    var e1=etapaEstadio();
+    if(!(e1>e0)) falta.push("terminar una obra no sube el estadio dibujado (etapa "+e0+" → "+e1+")");
+    var a=svgEstadio({etapa:2,ocup:0.5,completo:false}), c=svgEstadio({etapa:5,ocup:0.9,completo:true});
+    if(c.length<a.length*1.2) falta.push("el estadio completo casi no se distingue del intermedio");
+    if(typeof taquillaPorSector==="function"){ var sec=taquillaPorSector(null), tot=0; sec.forEach(function(x){ tot+=x.cap; });
+      if(tot>aforoActual()) falta.push("se venden "+tot+" butacas en un estadio de "+aforoActual());
+      det="etapa "+e0+"→"+e1+" con una obra · butacas "+tot+" de "+aforoActual(); }
+  } finally { restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

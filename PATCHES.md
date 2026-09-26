@@ -3717,3 +3717,25 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Pendiente para el autor:** los precios del mercado (`j.valor`) son altos para la caja de un club chico. Se
   pregunta al cierre de la etapa.
   **Tests:** dev 519/519 · core 1185/1185.
+
+### 7.9054 — estadio dibujado que crece obra por obra; butacas que calzan con el aforo real
+**Archivos:** `js/estadio-dibujo.js` (nuevo, antes de `ayudante.js`), `js/motor.js`, `js/ui.js`, `js/dev-doctor.js`, `css/pulido.css`, `js/util.js`, `index.html`
+- Pedido del autor: un estadio visual que mejore obra por obra hasta quedar completo, y que completo se note
+  mucho.
+- **SVG propio (funciona sin internet)**, arriba de la sección Estadio.
+- **Etapas 0–5 (`etapaEstadio`):** salen del estado del recinto más las obras terminadas (`E.obrasHechas`, que
+  ahora se registra); la ampliación cuenta doble.
+  - Etapa 0: cemento gris, grietas y un sector clausurado con cinta.
+  - Etapa 1+: graderías con los colores del club.
+  - Etapa 2+: techo en la tribuna principal.
+  - Etapa 3+: torres de luz.
+  - Etapa 4+: segunda bandeja.
+  - **Completo** (etapa 5 y estado 80+): partido de noche, luces encendidas, techo entero, pantalla gigante
+    con el nombre del club, banderas y marco dorado.
+- **Detalles:** durante una obra se ven andamios y grúa con el % de avance. El público en la tribuna sigue la
+  proyección de taquilla. El azar es fijo por club (no "baila" al repintar) y los ids del SVG son únicos.
+- **Butacas:** la tabla suma las habilitadas y dice "X de Y (aforo real)". La diferencia son los sectores que el
+  estado o la clausura no dejan vender, y las obras los recuperan.
+- **Doctor `estadio_dibujado`:** una obra terminada sube la etapa, el completo se distingue y no se venden más
+  butacas que el aforo.
+  **Tests:** dev 519/519 · core 1185/1185.

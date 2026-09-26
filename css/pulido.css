@@ -300,3 +300,14 @@ body.perf .ll-marc.ll-gol{animation:none}
 /* 7.9053 · mercado: el porqué del ayudante */
 .merc-porque{margin-top:3px;color:#1d5f9e}
 body[data-tema="negro"] .merc-porque{color:#8fd0ff}
+
+/* 7.9054 · estadio dibujado */
+.estadio-dibujo{margin:0 0 10px;border-radius:12px;overflow:hidden;background:#0b1733;border:1px solid rgba(255,255,255,.2)}
+.estadio-svg{display:block;width:100%;height:auto;max-height:340px}
+.estadio-dibujo.completo{box-shadow:0 0 0 2px #f0b429,0 0 24px rgba(240,180,41,.35)}
+.ed-pie{padding:8px 10px;background:rgba(8,20,36,.85);color:#e6eef7;font-size:14px}
+.ed-pie .mini{display:block;color:#c9d5e2;margin-top:2px}
+.ed-pasos{display:inline-flex;gap:4px;margin-left:8px;vertical-align:middle}
+.ed-paso{width:18px;height:6px;border-radius:3px;background:rgba(255,255,255,.2)}
+.ed-paso.hecho{background:#38d66a}
+.ed-paso.actual{box-shadow:0 0 0 2px #fff}

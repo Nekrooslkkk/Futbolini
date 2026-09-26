@@ -1148,6 +1148,8 @@ function avanzarObras(){
       notificar({t:"Obra terminada",tipo:"bueno",bandeja:true,
         d:"Se terminó la obra: "+plan.n+". El estadio quedó mejor"+(plan.gAforo?(" y suma ~"+plan.gAforo+" de aforo"):"")+"."});
       if(typeof recordar==="function") recordar("estadio","terminaste una obra en el estadio ("+plan.n+")",{peso:"medio",tono:"bueno"});
+      /* 7.9054 · el estadio dibujado avanza obra por obra */
+      E.obrasHechas=(E.obrasHechas||[]).concat([{tipo:E.obras.tipo,anio:E.anio}]);
     }
     E.obras=null;
   }

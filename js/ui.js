@@ -3176,6 +3176,8 @@ function vistaEstadio(){
   const aforo=(typeof aforoActual==="function")?aforoActual():((CLUB_POR_ID[E.club]||{aforo:0}).aforo);
   /* --- cabecera: recinto y estado --- */
   const ph=panel(nom,"🏟️");
+  /* 7.9054 · el estadio dibujado: mejora obra por obra hasta quedar completo */
+  if(typeof panelEstadioDibujo==="function") ph.cuerpo.appendChild(panelEstadioDibujo());
   const foto=(typeof fotoEstadioDe==="function")?fotoEstadioDe(E.club):null;
   if(foto&&foto.src){
     const fig=el("figure","foto-est-wrap");
@@ -3239,10 +3241,13 @@ function vistaEstadio(){
       const sec=taquillaPorSector(proximoPartido());
       let html="<h3 class='sub'>Butacas del estadio · ganancia estimada por partido</h3>"+
         "<table class='butacas'><thead><tr><th>Sector</th><th class='n'>Butacas</th><th class='n'>Precio</th><th class='n'>Ocup.</th><th class='n'>Gana ~</th></tr></thead><tbody>";
-      let tot=0;
-      sec.forEach(x=>{ tot+=x.ingreso;
+      let tot=0, butT=0;
+      sec.forEach(x=>{ tot+=x.ingreso; butT+=x.cap;
         html+="<tr><td>"+x.ic+" "+x.n+"</td><td class='n'>"+x.cap.toLocaleString("es-CL")+"</td><td class='n'>$"+x.precio.toLocaleString("es-CL")+"</td><td class='n'>"+x.ocup+"%</td><td class='n'>"+plata(x.ingreso)+"</td></tr>"; });
-      html+="</tbody><tfoot><tr><td>Total taquilla</td><td class='n'></td><td class='n'></td><td class='n'></td><td class='n'>"+plata(tot)+"</td></tr></tfoot></table>"+
+      html+="</tbody><tfoot><tr><td>Total taquilla</td><td class='n'>"+butT.toLocaleString("es-CL")+"</td><td class='n'></td><td class='n'></td><td class='n'>"+plata(tot)+"</td></tr></tfoot></table>"+
+        /* 7.9054 · las butacas calzan con el estadio real: se dice cuántas están habilitadas y por qué */
+        "<p class='mini'><b>Butacas habilitadas: "+butT.toLocaleString("es-CL")+" de "+aforo.toLocaleString("es-CL")+"</b> (aforo real del recinto"+((E.aforoExtra||0)>0?", con tus ampliaciones":"")+"). "+
+        (butT<aforo?"La diferencia son sectores que el estado del recinto ("+E.ind.estadio+"/100)"+(E.flags&&E.flags.clausura?" y la clausura":"")+" no deja vender. Las obras los recuperan.":"Todo el recinto está habilitado.")+"</p>"+
         "<p class='mini'>Los sectores populares son los más baratos y los que más llenan; los premium rinden más por entrada pero son chicos. Subir precios sube la ganancia por cabeza pero baja la ocupación — y enoja a la hinchada.</p>";
       doc.innerHTML=html;
     }
