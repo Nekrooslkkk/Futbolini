@@ -47,7 +47,7 @@ function objetivosMercado(){
     const j=generarJugador(rr, E.ind.plantel+(rr()*22-8), pos, 18+Math.floor(rr()*15));
     const c=clubCompradorDe(rr);
     j.club=c.n; j.clubId=c.id;
-    j.precio=Math.round(j.valor*(0.9+rr()*0.6)*inflacionEra());
+    j.precio=Math.round(j.valor*(0.9+rr()*0.6)*10)/10;
     j.pidesueldo=Math.max(j.sueldo, Math.round(j.sueldo*(1+rr()*0.4)*((typeof factorMercado==="function")?factorMercado():1))); /* 7.9029: pide lo que paga TU mercado */
     out.push(j);
   }
@@ -70,9 +70,10 @@ function crearOfertaEntrante(rr){
   /* peso más plano: reciben ofertas más jugadores, no siempre el crack */
   const j=eligePeso(cand, x=>clamp(0.4+x.valor/700+(x.proy>x.nivel+4?0.35:0)+(x.edad<24?0.25:0),0.15,1.6));
   if(!j) return false;
-  const c=clubCompradorDe(rr);
+  /* 7.9056 · j.valor ya está en plata de la época; el comprador tiene que poder pagarlo */
+  const monto=Math.max(0.5,Math.round(j.valor*(0.8+rr()*0.8)*10)/10);
+  const c=(typeof compradorPara==="function")?compradorPara(j,rr,monto):clubCompradorDe(rr);
   const comprador=c.n;
-  const monto=Math.round(j.valor*(0.8+rr()*0.8)*inflacionEra());
   const claus=(typeof clausulaDe==="function")?clausulaDe(j):0;
   const pagaClau=claus>0 && monto>=claus;
   const of={id:"of"+(E._ofid=(E._ofid||0)+1), jid:j.n, comprador:comprador, compradorId:c.id, monto:monto, creada:E.idx, pagaClausula:pagaClau};
@@ -265,9 +266,9 @@ function buscarComprador(j){
       d:"Moviste el teléfono para colocar a "+j.n+", pero por ahora no apareció ningún club interesado."});
     render(); return;
   }
-  const c=clubCompradorDe(rr);
+  const monto=Math.max(0.5,Math.round(j.valor*(0.7+rr()*0.7)*10)/10);  // ofrecen algo menos si eres vos el que ofrece
+  const c=(typeof compradorPara==="function")?compradorPara(j,rr,monto):clubCompradorDe(rr);
   const comprador=c.n;
-  const monto=Math.round(j.valor*(0.7+rr()*0.7)*inflacionEra());  // ofrecen algo menos si eres vos el que ofrece
   const of={id:"of"+(E._ofid=(E._ofid||0)+1), jid:j.n, comprador:comprador, compradorId:c.id, monto:monto, creada:E.idx};
   E.ofertasPend.push(of);
   notificar({t:comprador+" se interesa por "+j.n,tipo:"mercado",

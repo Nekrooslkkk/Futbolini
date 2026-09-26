@@ -1124,6 +1124,33 @@ devDoctorRegistrar({id:"plop_vivo", area:"interfaz", n:"PLOP!: sin repetidos, li
   if(typeof logoPlop!=="function") falta.push("PLOP! no se abre como ventana de navegador");
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sin repetidos · cuenta correcta · «cf» confunde · análisis 30/60/80 · ventana plop.com");
 }});
+devDoctorRegistrar({id:"economia_real", area:"motor", n:"Mercado a escala chilena real: precios por nivel y edad, compradores que pueden pagar, libres y préstamos", fn:function(){
+  var falta=[];
+  if(typeof valorMercado!=="function") return _dmal("sin economía real (economia-real.js)");
+  var infl=(typeof inflacionEra==="function")?inflacionEra():1, k=infl/1.4;
+  var v62=valorMercado({nivel:62,edad:25,proy:62,contrato:{hasta:(E.anio||2026)+2}}), v80=valorMercado({nivel:80,edad:25,proy:80,contrato:{hasta:(E.anio||2026)+2}});
+  if(v62<25*k||v62>60*k) falta.push("un nivel 62 vale "+plata(v62)+" (esperado ~40 M de 2026)");
+  if(v80<400*k||v80>1000*k) falta.push("un nivel 80 vale "+plata(v80)+" (esperado ~650 M de 2026)");
+  if(v80<v62*8) falta.push("la figura (80) vale apenas "+(v80/v62).toFixed(1)+"× un suplente (62): los precios son casi lineales");
+  var pool=(typeof poolMercadoReal==="function")?poolMercadoReal():[];
+  var raros=pool.filter(function(j){ return j.valor>0 && (j.precio/j.valor>1.25||j.precio/j.valor<0.8); }).length;
+  if(raros>pool.length*0.05) falta.push(raros+" precios de compra no calzan con el valor (¿inflación contada dos veces?)");
+  if(typeof compradorPara==="function"){ var cmp=compradorPara({nivel:85,edad:26},Math.random,1400*k);
+    if(cmp.id && divisionDe(cmp.id)>1) falta.push("un club de "+(divisionDe(cmp.id)===2?"la B":"Segunda")+" compra una figura de "+plata(1400*k)); }
+  var lib=(typeof jugadoresLibres==="function")?jugadoresLibres():[];
+  if(lib.length<10) falta.push("hay "+lib.length+" jugadores libres");
+  if(lib.some(function(j){ return j.precio>0; })) falta.push("un libre pide pase");
+  if(typeof pedirPrestamo==="function"&&typeof devolverPrestamos==="function"){
+    var snap=clonarPartida(E), pf=window.puedeFirmar, gu=window.guardar, nt=window.notificar;
+    window.puedeFirmar=function(){ return true; }; window.guardar=function(){}; window.notificar=function(){};
+    try{ E.plata=Math.max(E.plata||0,500); var cand=prestables()[0];
+      if(cand){ var r=pedirPrestamo(cand); if(!r.ok) falta.push("pedir a préstamo falla: "+r.msg);
+        else { E.anio=(E.anio||2026); devolverPrestamos(); var vuelve=(E.cpu.sq[cand.clubId]||[]).some(function(x){ return x.n===cand.n; });
+          if(!vuelve) falta.push("el prestado no vuelve a su club al cierre"); } }
+    } finally { window.puedeFirmar=pf; window.guardar=gu; window.notificar=nt; restaurarPartida(snap); }
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("niv 62 "+plata(v62)+" · niv 80 "+plata(v80)+" · "+lib.length+" libres · préstamos ida y vuelta");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

@@ -3758,3 +3758,28 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   casi nunca salía.
 - **Doctor `plop_vivo`** y dev test "PLOP 7.9055".
   **Tests:** dev 523/523 · core 1185/1185.
+
+### 7.9056 — economía de mercado a escala chilena real, compradores que pueden pagar, libres y préstamos
+**Archivos:** `js/economia-real.js` (nuevo, antes de `ayudante.js`), `js/mercado.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`
+- Respuesta del autor: "Rebalancea todo, con los precios a escala real chilena, por edad y nivel… equipos
+  chicos no pueden comprarte grandes cosas, además agrega libres y préstamos".
+- **Precios (`valorMercado`):** crecen de forma exponencial con el nivel. En pesos de 2026: nivel 62 ≈ 40 M,
+  70 ≈ 132 M, 80 ≈ 650 M, 85 ≈ 1.400 M. Antes la figura valía apenas 1,5× el suplente. La edad pesa
+  (≤20 ×1,5; 33+ ×0,3), igual que la proyección y el contrato que queda. Se recalcula cada semana para todos
+  (tu plantel y la CPU), al cargar y al empezar la partida.
+- **Una sola escala:** `j.valor` queda en plata de la época y se quitó la inflación contada dos veces (pool,
+  ofertas, "buscar comprador"). Comprar y vender usan la misma escala: no hay trampa de comprar barato y
+  vender caro.
+- **Compradores con presupuesto (`presupuestoCompra`):** según división y fuerza (los grandes ×3, Argentina
+  ×1,6). Si nadie en Chile puede pagar a tu figura, compra un club de afuera (MLS, Brasil, México, Arabia…).
+  Un club de la B no te compra a la figura.
+- **Libres:** 24 por temporada, sin pase: prima de firma (~5 % del valor) y sueldo; se firman con la ventana
+  abierta.
+- **Préstamos:** te prestan juveniles (≤23) o jugadores que no son titulares en su club. Pagas un 8 % del valor
+  y la mitad del sueldo, y vuelven a su club al cierre de la temporada (`devolverPrestamos`).
+- **Mercado:** panel "Libres y préstamos" con pestañas.
+- **Medido en una temporada simulada:** Rangers y Colo-Colo terminan igual o mejor que con 7.9055 (la versión
+  anterior también dejaba a Rangers sin caja). Rangers ahora tiene 10 mejoras que le alcanzan.
+- **Doctor `economia_real`:** revisa la escala, la no linealidad, que precio y valor calcen, compradores
+  realistas, libres sin pase y el préstamo de ida y vuelta. Al revés, con la inflación duplicada, falla.
+  **Tests:** dev 523/523 · core 1185/1185.
