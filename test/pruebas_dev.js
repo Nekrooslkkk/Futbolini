@@ -1365,6 +1365,28 @@
       t((E.decPend||[]).length===n1,"apagada no toca nada");
     },"Syntergia");
 
+    grupo("Partido en vivo · decisiones que pesan · 7.9042");
+    safe(function(){
+      nuevaPartida("RAN",2026,"historico");
+      var pp=proximoPartido(), P=iniciarPartido(pp,"dirigir");
+      P.min=30; P._triviaReciente=true;
+      var m=momentoActual(P);
+      t(m.op.length>=6,"un momento ofrece 6 alternativas ("+m.op.length+")");
+      var ch=efectoLegible({ataque:5,riesgoPlan:3,desgaste:2});
+      t(ch.some(function(c){ return /llegadas/.test(c.t); }) && ch.some(function(c){ return c.tono==="malo"; }),"«tirarse encima» dice qué gana y qué arriesga");
+      P_ACTUAL=P; P._triviaReciente=true; mostrarMomento();
+      var ops=document.querySelectorAll(".momento-vivo .op"), chips=document.querySelectorAll(".momento-vivo .ef-chips");
+      t(ops.length>=6 && chips.length>=5,"el panel muestra las alternativas con sus efectos ("+ops.length+" / "+chips.length+")");
+      document.querySelectorAll(".momento-vivo").forEach(function(x){ x.remove(); }); MOMENTO_OPS=[]; document.body.classList.remove("hay-momento");
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="correcciones_pesan"; })[0].fn();
+      t(r.ok,"doctor correcciones_pesan: "+r.txt);
+      var h0=E.ind.hinchada; P.apoyo=null;
+      t(arengarBarra(P) && !arengarBarra(P),"la barra se arenga una sola vez por partido");
+      t(E.ind.hinchada===Math.min(100,h0+1),"arengar suma +1 de hinchada");
+      t(VAR_REVISION.gol<0.3,"el VAR no revisa todos los goles");
+      P_ACTUAL=null; clearInterval(TIMER);
+    },"Partido 7.9042");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

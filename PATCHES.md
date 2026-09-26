@@ -3496,3 +3496,26 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   goles, 15 %+ de empates y un máximo de 8 % de goleadas. También vigila que el VAR no revise todo y que los
   córners no sean penales. Verificado al revés: con los valores viejos da 4 problemas.
   **Tests:** dev 509/509 · core 1185/1185.
+
+### 7.9043 — decisiones en vivo que pesan, barras que se entienden, la barra canta
+**Archivos:** `js/partido.js`, `js/ui-partido.js`, `js/dev-doctor.js`, `css/pulido.css`, `js/util.js`, `index.html`, `test/pruebas_dev.js`
+- **Correcciones:** antes "tirarse encima" casi no hacía nada, porque el riesgo restaba del mismo lado que el
+  ataque. Ahora el riesgo abre el partido (+llegadas propias, bastantes más del rival) y pedir orden cierra de
+  verdad (`P.cierre`). Además, `MOMENTO_PESO` 1,6. Medido del 60' al 90' (`devMedirCorreccion`):
+  - ir a buscarlo: +20–34 % de goles a favor y +8–12 % en contra;
+  - cerrarse: −16–26 % de goles en contra.
+- **Alternativas:** 6 por momento (antes 4). Cada una muestra chips de qué hace (`efectoLegible`), por ejemplo
+  "más llegadas", "quedas expuesto de contra", "cansa mucho". Las teclas van del 1 al 6.
+- **Plop:** dice qué pide la gente y marca con 📣 las opciones que lo cumplen. Se explica qué pasa si le haces
+  caso. La presión con riesgo ya no cuenta como "paciencia".
+- **Barras de apoyo:** ahora tienen efecto chico y visible (`efectoApoyo`). Hinchada alta empuja; plantel alto
+  aguanta y bajo se desarma; el criterio escala cuánto pesan tus correcciones (0,85× a 1,2×). Cada barra dice
+  qué está haciendo, y hay un desplegable "¿Qué son estas barras?".
+- **Botón «📣 Arengar a la barra»:** una vez por partido, +ánimo, empujón y +1 de hinchada (`arengarBarra`).
+- Quitado el aviso "Ya retocaste N veces".
+- **Goles de pelota parada:** la trivia acertada ya no da gol en el 20–42 % de los casos (ahora 5–12 %). El
+  tiro libre directo del especialista baja de 16–30 % a 4–16 %. El minijuego de córner usa la banda de
+  `MOTOR_GOL`.
+- **Doctor `correcciones_pesan`:** determinista, mide `peligro()` antes y después de cada una de las 32
+  consignas. También vigila las barras y el botón de la barra. Al revés, con el modelo viejo, da 7 problemas.
+  **Tests:** dev 516/516 · core 1185/1185.

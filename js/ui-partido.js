@@ -1256,14 +1256,29 @@ function _pintarPartidoCuerpo(P){
     if(P.apoyo){
       const ap=el("div","apoyo-live");
       const col=v=>v>=60?"#4fbf3f":(v>=35?"#e0a92a":"#c9392c");
-      [["🎪 Ánimo hinchada",P.apoyo.hinchada,"Cómo está la gente: silba, empuja o se cae según el marcador y lo que haces."],
-       ["👥 Confianza plantel",P.apoyo.plantel,"Si el camarín te cree. Baja con derrota o cambios raros; sube si el plan funciona."],
-       ["🧠 Criterio DT",P.apoyo.criterio,"Tu lectura táctica en vivo. Sube cuando aciertas un momento; baja si improvisas al revés."]].forEach(([n,val,tip])=>{
+      const efa=(typeof efectoApoyo==="function")?efectoApoyo(P).txt:{};
+      /* 7.9042 · cada barra dice qué está haciendo AHORA, no solo un número */
+      [["🎪 Ánimo hinchada",P.apoyo.hinchada,"Cómo está la gente. Sube con goles y con el botón de la barra; baja si vas perdiendo tarde. Arriba de 70 empuja al equipo.","hinchada"],
+       ["👥 Confianza plantel",P.apoyo.plantel,"Si el camarín te cree. Sale de la moral y el marcador; baja con el cansancio. Arriba de 70 defienden mejor; bajo 35 se desarman.","plantel"],
+       ["🧠 Criterio DT",P.apoyo.criterio,"Tu lectura en vivo. Sube cada vez que decides en un momento. Alto: tus correcciones pesan más; bajo: el equipo no las entiende.","criterio"]].forEach(([n,val,tip,k])=>{
         const row=el("div","apoyo-row");
         row.title=tip;
-        row.innerHTML="<span class='apoyo-n' title='"+tip.replace(/'/g,"")+"'>"+n+"</span>"+barrita(val,col(val))+"<span class='apoyo-v'>"+Math.round(val)+"</span>";
+        row.innerHTML="<span class='apoyo-n' title='"+tip.replace(/'/g,"")+"'>"+n+"</span>"+barrita(val,col(val))+"<span class='apoyo-v'>"+Math.round(val)+"</span>"+
+          (efa[k]?"<span class='apoyo-ef mini'>→ "+efa[k]+"</span>":"");
         ap.appendChild(row);
       });
+      const ay=el("details","apoyo-ayuda");
+      ay.innerHTML="<summary>¿Qué son estas barras?</summary><p class='mini'><b>Ánimo hinchada</b>: la gente. Arriba de 70 empuja (+llegadas, más de local). "+
+        "<b>Confianza plantel</b>: si el camarín te cree. Alta, aguantan mejor atrás; baja, se desarman. "+
+        "<b>Criterio DT</b>: tu lectura del partido. Sube cada vez que tomas una decisión en vivo y hace que tus correcciones pesen más.</p>";
+      ap.appendChild(ay);
+      if(!P.terminado){
+        const bb=el("button","btn-aqua chico"+(P._arengo?" gris":" verde"),P._arengo?"📣 La barra ya está a full":"📣 Arengar a la barra (1 vez)");
+        bb.disabled=!!P._arengo;
+        bb.title="Una vez por partido: la barra canta más fuerte. +ánimo en vivo, un empujón al equipo y +1 de hinchada para el club.";
+        bb.onclick=()=>{ if(typeof arengarBarra==="function"&&arengarBarra(P)){ aviso("📣 ¡La barra canta más fuerte! +1 hinchada"); if(typeof guardar==="function") guardar(); pintarPartido(); } };
+        ap.appendChild(bb);
+      }
       p.cuerpo.appendChild(ap);
     }
   }
@@ -1419,8 +1434,6 @@ function modalPlanVivo(){
         });
         cuerpo.appendChild(f);
       });
-      const n=P._ajustes||0;
-      if(n>=2) cuerpo.appendChild(el("p","mini","⚠ Ya retocaste "+n+" veces. El camarín empieza a no entender."));
       const x=el("button","btn-aqua ancho verde","Seguir con este plan");
       x.style.marginTop="8px";
       x.onclick=reanudar;
@@ -1555,7 +1568,9 @@ function mostrarMomento(){
     const opin=(typeof opinionesTactica==="function")?opinionesTactica(rec):[];
     if(opin.length){
       const fg=el("div","fg-opina");
-      fg.appendChild(el("div","fg-cab","📱 Plop! opina · lee a la gente"));
+      const PIDE={ataque:"ir a buscarlo",aguantar:"cerrar y cuidar lo que hay",equilibrio:"paciencia, sin locuras",riesgo:"todo o nada"};
+      fg.appendChild(el("div","fg-cab","📱 Plop! · la gente pide <b>"+(PIDE[rec]||rec)+"</b>"));
+      fg.appendChild(el("div","fg-ayuda mini","Si eliges una opción marcada con 📣, el equipo siente el respaldo (más empuje y moral). No es obligatorio: a veces la gente se equivoca."));
       const handles=(typeof HANDLES_HINCHA!=="undefined"&&HANDLES_HINCHA.length)?HANDLES_HINCHA:["@hincha_de_ley","@barra_del_fondo","@pibe_popular23"];
       opin.forEach(op=>{
         const h=elige(handles);
@@ -1568,14 +1583,18 @@ function mostrarMomento(){
   const ops=el("div","ops ops-part"); MOMENTO_OPS=[];
   m.op.forEach((o,i)=>{
     const b=el("button","op"+(o.doping?" op-doping":""));
-    b.innerHTML='<div class="t"><span class="tecla">'+(i+1)+'</span> '+o.t+'</div>'+(o.d?'<div class="d">'+o.d+'</div>':"");
+    /* 7.9042 · cada alternativa dice qué hace y si es lo que pide la gente */
+    const pide=!esTrivia && !o.doping && rec && typeof direccionOpcion==="function" && direccionOpcion(o.ef)===rec;
+    const chips=(!esTrivia && !o.doping && typeof efectoLegible==="function")
+      ? '<div class="ef-chips">'+efectoLegible(o.ef).map(c=>'<span class="ef-chip '+(c.tono||"")+'">'+c.ic+' '+c.t+'</span>').join("")+(pide?'<span class="ef-chip pide">📣 lo pide la gente</span>':'')+'</div>' : "";
+    b.innerHTML='<div class="t"><span class="tecla">'+(i+1)+'</span> '+o.t+'</div>'+(o.d?'<div class="d">'+o.d+'</div>':"")+chips;
     b.onclick=()=>{
       MOMENTO_OPS=[];
       if(esTrivia){
         const fac=m.factor||1;
         if(o.ok){
           P.empuje+=1.2*fac; P.ataque+=1*fac; P.orden+=0.5;
-          if(Math.random()<clamp(0.20+fac*0.08,0.2,0.42) && typeof anotaPropio==="function"){ anotaPropio(P,P.min); aviso("¡Correcto! Y encima cayó el gol 🎯"); }
+          if(Math.random()<clamp(0.04+fac*0.03,0.05,0.12) && typeof anotaPropio==="function")   /* 7.9042 · antes 20–42 %: la trivia era una fábrica de goles */{ anotaPropio(P,P.min); aviso("¡Correcto! Y encima cayó el gol 🎯"); }
           else aviso("¡Correcto! Se soltaron 🎯");
         } else { P.empuje-=0.8; P.orden-=0.5; aviso("Nada que ver… se pusieron nerviosos 😬"); }
         avanzarMomento(P); return;
@@ -1591,7 +1610,7 @@ function mostrarMomento(){
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);
-  p.cuerpo.appendChild(el("p","mini hint-teclado",esTrivia?"Elige la respuesta con 1 / 2 / 3.":"Elige con 1 / 2 / 3 / 4 · flechas y Enter."));
+  p.cuerpo.appendChild(el("p","mini hint-teclado",esTrivia?"Elige la respuesta con 1 / 2 / 3.":"Elige con las teclas 1 a "+m.op.length+" · flechas y Enter."));
   (document.querySelector(".partido-wrap")||$("#vista")).appendChild(p);
   try{ p.scrollIntoView({block:"end",behavior:"instant"}); }catch(e){ try{ p.scrollIntoView(false); }catch(e2){} }
 }
@@ -1659,11 +1678,13 @@ function cornerClasificar(aim){
 function cornerResolver(zona, j, arq, iner){
   zona=zona||"penal";
   const aereoOk=j&&j.rasgos&&j.rasgos.indexOf("juego aéreo")>=0;
-  let p=0.10+((iner||0)*0.04)+(aereoOk?0.08:0)+(((j&&j.nivel)||70)-70)*0.003;
+  /* 7.9042 · misma banda que centroCorner (MOTOR_GOL.corner); apuntar bien suma un poco más. */
+  const c=(typeof MOTOR_GOL!=="undefined")?MOTOR_GOL.corner:{base:0.035,iner:0.015,aereo:0.03,min:0.02,max:0.11};
+  let p=c.base+((iner||0)*c.iner)+(aereoOk?c.aereo:0)+(((j&&j.nivel)||70)-70)*0.0015;
   if(zona==="primer") p+=0.01;
-  else if(zona==="segundo") p+=(aereoOk?0.04:0);
-  p-=((((arq&&arq.nivel)||70)-70)*0.002);
-  p=clamp(p,0.06,0.30);
+  else if(zona==="segundo") p+=(aereoOk?0.03:0);
+  p-=((((arq&&arq.nivel)||70)-70)*0.001);
+  p=clamp(p,c.min,c.max+0.04);
   const r=Math.random();
   if(r<p) return {res:"gol",p:p,zona:zona};
   if(r<p+0.05) return {res:"palo",p:p,zona:zona};
@@ -2466,7 +2487,7 @@ function centroTiroLibre(P){
   const aereo=P.once.filter(j=>j.rasgos&&j.rasgos.includes("juego aéreo"))[0]||elige(P.once.filter(j=>j.pos==="DEF"||j.pos==="DEL"))||P.once[0];
   if(ejecuta&&ejecuta.rasgos&&ejecuta.rasgos.includes("tiro libre")){
     linea(P,P.min,"Tiro libre para "+ejecuta.n+", especialista, se para sobre la pelota…");
-    const pd=clamp(0.16+(ejecuta.nivel-70)/200,0.08,0.30);
+    const pd=clamp(0.08+(ejecuta.nivel-70)/300,0.04,0.16);   /* 7.9042 · real ≈ 6–10 % */
     if(Math.random()<pd){ ejecuta.goles++; P.goleadores.push(ejecuta.n); regGol(P,P.min,ejecuta.n,true,"tiro libre"); if(P.part.local)P.gl++;else P.gv++;
       linea(P,P.min,"¡GOLAZO de tiro libre de "+ejecuta.n+"! "+marcadorTxt(P),"gol"); return; }
   }

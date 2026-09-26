@@ -785,6 +785,70 @@ function devMedirGoles(n){
   } finally { restaurarPartida(snap); E._bulkSim=bulk; }
   return { n:n, goles:g/n, empates:emp/n, goleadas:g4/n };
 }
+/* 7.9042 · ¿las correcciones en vivo se notan? Del 60' al 90', goles a favor y en contra
+   con cada tipo de consigna vs no tocar nada. */
+function devMedirCorreccion(n){
+  n=n||150;
+  if(!E||!E.calendario||typeof aplicarMomento!=="function") return null;
+  var molde=E.calendario.filter(function(p){ return p&&p.tipo==="liga"; });
+  if(!molde.length) return null;
+  var snap=clonarPartida(E), bulk=E._bulkSim;
+  var casos={nada:{}, ataque:{ataque:5,riesgoPlan:3,desgaste:2}, cerrar:{orden:4,ataque:-3,riesgoPlan:-1}}, out={};
+  try{
+    Object.keys(casos).forEach(function(k){
+      var gf=0, gc=0;
+      for(var i=0;i<n;i++){
+        E._bulkSim=true;
+        var pp=Object.assign({},molde[i%molde.length],{jugado:false});
+        var P=iniciarPartido(pp,"simular"); correrHasta(P,60);
+        var m0=miMarcador(P); aplicarMomento(P,casos[k]); correrHasta(P,90);
+        var m1=miMarcador(P); gf+=m1[0]-m0[0]; gc+=m1[1]-m0[1];
+        restaurarPartida(snap);
+      }
+      out[k]={gf:gf/n, gc:gc/n};
+    });
+  } finally { restaurarPartida(snap); E._bulkSim=bulk; }
+  return out;
+}
+devDoctorRegistrar({id:"correcciones_pesan", area:"motor", n:"Las decisiones en vivo se notan (y cada una dice qué hace)", fn:function(){
+  var falta=[];
+  if(typeof aplicarMomento!=="function"||typeof peligro!=="function"||typeof iniciarPartido!=="function") return _dmal("sin motor de partido");
+  var molde=(E&&E.calendario||[]).filter(function(p){ return p&&p.tipo==="liga"; })[0];
+  if(!molde) return _dok("sin partida para medir");
+  var snap=clonarPartida(E), bulk=E._bulkSim, det="";
+  try{
+    E._bulkSim=true;
+    var base=iniciarPartido(Object.assign({},molde,{jugado:false}),"simular");
+    base.min=60; base.iner={cor:0,ataj:0,falta:0};
+    var copia=function(){ var q=Object.assign({},base); q.iner={cor:0,ataj:0,falta:0}; return q; };
+    var p0=peligro(copia());
+    var todas=[].concat(TACTICAS_INICIO,TACTICAS_ABAJO,TACTICAS_ARRIBA,TACTICAS_EMPATE);
+    todas.forEach(function(o){
+      var q=copia(); aplicarMomento(q,o.ef); var p1=peligro(q), ef=o.ef||{};
+      if((ef.ataque||0)>=4 && p1.yo<p0.yo*1.10) falta.push("«"+o.t+"» casi no suma llegadas ("+Math.round((p1.yo/p0.yo-1)*100)+" %)");
+      if((ef.orden||0)>=3 && p1.el>p0.el*0.92) falta.push("«"+o.t+"» casi no cierra ("+Math.round((p1.el/p0.el-1)*100)+" % de llegadas del rival)");
+    });
+    if(typeof efectoLegible!=="function") falta.push("las alternativas no dicen qué hacen (sin efectoLegible)");
+    if(typeof MOMENTO_OPCIONES==="undefined"||MOMENTO_OPCIONES<5) falta.push("hay 4 alternativas o menos por momento");
+    /* las barras de apoyo hacen algo, y la barra se arenga UNA vez (+1 hinchada) */
+    if(typeof efectoApoyo!=="function") falta.push("las barras de ánimo/confianza/criterio son adorno (sin efectoApoyo)");
+    else {
+      var qh=copia(); qh.apoyo={hinchada:90,plantel:90,criterio:50,momentos:0}; var ph=peligro(qh);
+      if(!(ph.yo>p0.yo && ph.el<p0.el)) falta.push("hinchada y plantel altos no cambian el partido");
+    }
+    if(typeof arengarBarra!=="function") falta.push("sin botón de la barra");
+    else {
+      var h0=E.ind.hinchada, qb=copia(); qb.apoyo={hinchada:50,plantel:50,criterio:50,momentos:0}; qb.lineas=[];
+      var r1=arengarBarra(qb), r2=arengarBarra(qb);
+      if(!r1||r2) falta.push("la barra se puede arengar "+(r1?"más de una vez":"cero veces")+" por partido");
+      if(E.ind.hinchada!==Math.min(100,h0+1)) falta.push("arengar a la barra no suma +1 de hinchada ("+h0+" → "+E.ind.hinchada+")");
+    }
+    var qa=copia(); aplicarMomento(qa,{ataque:5,riesgoPlan:3}); var pa=peligro(qa);
+    var qc=copia(); aplicarMomento(qc,{orden:4,ataque:-3,riesgoPlan:-1}); var pc=peligro(qc);
+    det="ir a buscarlo: llegadas propias "+(pa.yo/p0.yo*100-100).toFixed(0)+" %, del rival +"+(pa.el/p0.el*100-100).toFixed(0)+" % · cerrarse: rival "+(pc.el/p0.el*100-100).toFixed(0)+" %";
+  } finally { restaurarPartida(snap); E._bulkSim=bulk; }
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

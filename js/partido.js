@@ -799,6 +799,41 @@ function actualizarApoyo(P){
   a.criterio+=(tCri-a.criterio)*0.20;
 }
 
+/* 7.9042 · las tres barras ahora HACEN algo (antes eran adorno y nadie las entendía).
+   Efecto chico y a la vista: cada barra dice en palabras qué está provocando. */
+function efectoApoyo(P){
+  const a=P&&P.apoyo, out={yo:1,el:1,txt:{}};
+  if(!a) return out;
+  const loc=!!(P.part&&P.part.local);
+  if(a.hinchada>=70){ const k=loc?1.05:1.03; out.yo*=k; out.txt.hinchada="empuja: +"+Math.round((k-1)*100)+" % de llegadas"; }
+  else if(a.hinchada<35){ out.yo*=0.97; out.txt.hinchada="impaciente: el equipo se apura (−3 % de llegadas)"; }
+  else out.txt.hinchada="acompaña, sin mover la aguja";
+  if(a.plantel>=70){ out.el*=0.96; out.txt.plantel="te creen: aguantan mejor atrás (−4 % de llegadas del rival)"; }
+  else if(a.plantel<35){ out.el*=1.05; out.txt.plantel="dudan: se desarman atrás (+5 % de llegadas del rival)"; }
+  else out.txt.plantel="neutral: ni suma ni resta";
+  if(a.criterio>=65) out.txt.criterio="tus correcciones pegan más fuerte (+"+Math.round((pesoCriterio(P)-1)*100)+" %)";
+  else if(a.criterio<35) out.txt.criterio="el equipo no entiende tus cambios (−"+Math.round((1-pesoCriterio(P))*100)+" % de efecto)";
+  else out.txt.criterio="tus correcciones pesan lo normal";
+  return out;
+}
+/* el criterio escala cuánto pesan las decisiones en vivo: 0,85× a 1,2× */
+function pesoCriterio(P){
+  const c=P&&P.apoyo?P.apoyo.criterio:50;
+  return clamp(0.85+(c-35)*(0.35/40),0.85,1.2);
+}
+/* 7.9042 · botón de la barra: una vez por partido, canta más fuerte. */
+function arengarBarra(P){
+  if(!P||P._arengo||P.terminado) return false;
+  P._arengo=true;
+  if(typeof actualizarApoyo==="function" && !P.apoyo) actualizarApoyo(P);
+  if(P.apoyo) P.apoyo.hinchada=clamp(P.apoyo.hinchada+18,0,99);
+  P.empuje+=(P.part&&P.part.local)?0.8:0.4;
+  if(typeof aplicarEfectos==="function") aplicarEfectos({hinchada:1});
+  linea(P,P.min,(P.part&&P.part.local)
+    ?"El DT se da vuelta y levanta los brazos: la barra revienta el estadio. Se canta más fuerte que nunca."
+    :"El DT mira a los que viajaron y les pide más. El rincón visitante se hace escuchar.","gol");
+  return true;
+}
 /* avanza el reloj hasta 'hasta' generando eventos.
    Modelo: se calcula cuánto peligro genera cada lado por partido
    (algo parecido a goles esperados) y se reparte minuto a minuto. */
@@ -808,7 +843,9 @@ function actualizarApoyo(P){
 const MOTOR_GOL={ N:42, dom:36, aho:38, pend:0.38, corner:{base:0.035,iner:0.015,aereo:0.03,min:0.02,max:0.11} };
 function peligro(P){
   const mio=P.ataque+P.empuje-P.cansancio*1.6;
-  const suyo=P.rival+P.riesgoPlan*1.4-(P.orden-P.rival)*0.16;
+  /* 7.9042 · el riesgo ya no resta del mismo lado que el ataque (se anulaban y "tirarse
+     encima" no hacía nada): ahora ABRE el partido, más llegadas tuyas y bastantes más del rival. */
+  const suyo=P.rival+P.riesgoPlan*0.5-(P.orden-P.rival)*0.16;
   const d=clamp((mio-suyo)/11,-2.1,2.1);
   /* la presión se aplica FUERA del clamp para que pese aun contra rivales
      saturados: recuperar arriba (se apaga con el cansancio) sube tu peligro;
@@ -817,6 +854,12 @@ function peligro(P){
   const expo=(P.expo||0)*(0.3+P.cansancio*0.06);
   let yo=Math.max(0.20,1.30+d*MOTOR_GOL.pend+recup*0.06);
   let el=Math.max(0.20,1.30-d*MOTOR_GOL.pend+expo*0.06);
+  /* 7.9042 · el orden pedido en vivo cierra de verdad: menos llegadas del rival (antes no bajaba nada). */
+  const ci=P.cierre||0;
+  if(ci){ el*=clamp(1-ci*0.05,0.55,1.25); }
+  const ap=efectoApoyo(P); yo*=ap.yo; el*=ap.el;
+  const rp=P.riesgoPlan||0;
+  if(rp){ yo*=clamp(1+rp*0.02,0.9,1.2); el*=clamp(1+rp*0.07,0.85,1.6); }
   /* 7.99954 · si vas perdiendo, la pizarra se siente: atacar abre el partido. */
   if(diffMarcador(P)<0){
     const k=planCuandoVasPerdiendo(P);
@@ -1423,6 +1466,7 @@ function opcionDoping(P){
   return {t:"💉 Repartir un «preparado especial»", doping:true, costo:costo,
     d:"Muy caro ("+plata(costo)+") y muy turbio: los agranda un montón por lo que queda, pero si estalla, estalla feo."};
 }
+const MOMENTO_OPCIONES=6;
 function momentoActual(P){
   const [yo,otro]=miMarcador(P);
   const dif=yo-otro;
@@ -1434,8 +1478,8 @@ function momentoActual(P){
   else if(dif<0){ t="Vas abajo en el marcador"; d="Minuto "+P.min+". El partido se está yendo y en la tribuna ya hay murmullo."; pool=TACTICAS_ABAJO; }
   else if(dif>0){ t="Vas arriba"; d="Minuto "+P.min+". Hay ventaja, pero el rival empujó los últimos minutos."; pool=TACTICAS_ARRIBA; }
   else { t="Está empatado"; d="Minuto "+P.min+". El partido está para cualquiera."; pool=TACTICAS_EMPATE; }
-  const op=mezcla(pool).slice(0,4);
-  if(momentoCritico(P) && (E.plata||0)>=60){ op[3]=opcionDoping(P); }   /* 4ª opción: dopar en momento clave */
+  const op=mezcla(pool).slice(0,MOMENTO_OPCIONES);   /* 7.9042 · 6 alternativas, no 4 */
+  if(momentoCritico(P) && (E.plata||0)>=60){ op[op.length-1]=opcionDoping(P); }   /* última opción: dopar en momento clave */
   return {t:t, d:d, op:op};
 }
 /* aplica el doping: efecto fuerte por lo que queda, cobra caro, siembra el riesgo */
@@ -1451,6 +1495,7 @@ function direccionOpcion(ef){
   if(!ef) return "equilibrio";
   if((ef.riesgoPlan||0)>=3.5) return "riesgo";
   if((ef.ataque||0)>=4) return "ataque";
+  if((ef.ataque||0)>=2 && (ef.riesgoPlan||0)>=1.5) return "ataque";   /* 7.9042 · presión con riesgo no es "paciencia" */
   if((ef.orden||0)>0 && (ef.ataque||0)<=1.5) return "aguantar";
   return "equilibrio";
 }
@@ -1475,11 +1520,32 @@ function opinionesTactica(dir){
   const dis={t:elige(disPool),consenso:false};
   return mezcla(consenso.concat(dis));
 }
+/* 7.9042 · las correcciones pesan más: el autor pedía que apretar las alternativas se note. */
+const MOMENTO_PESO=1.6;
 function aplicarMomento(P,ef){
   if(!ef) return;
-  P.ataque+=ef.ataque||0; P.orden+=ef.orden||0;
-  P.riesgoPlan+=ef.riesgoPlan||0; P.desgaste+=ef.desgaste||0;
-  P.empuje+=(ef.ataque||0)*0.3;
+  const k=MOMENTO_PESO*pesoCriterio(P);
+  P.ataque+=(ef.ataque||0)*k; P.orden+=(ef.orden||0)*k; P.cierre=(P.cierre||0)+(ef.orden||0)*k;
+  P.riesgoPlan+=(ef.riesgoPlan||0)*k; P.desgaste+=ef.desgaste||0;
+  P.empuje+=(ef.ataque||0)*0.3*k;
+}
+/* 7.9042 · qué hace cada opción, dicho en cristiano (el jugador no entendía qué apretaba). */
+function efectoLegible(ef){
+  ef=ef||{}; const out=[];
+  const a=ef.ataque||0, o=ef.orden||0, r=ef.riesgoPlan||0, d=ef.desgaste||0;
+  if(a>=4) out.push({ic:"⚔",t:"muchas más llegadas",tono:"bueno"});
+  else if(a>=2) out.push({ic:"⚔",t:"más llegadas",tono:"bueno"});
+  else if(a<=-2) out.push({ic:"⚔",t:"atacas menos",tono:"malo"});
+  if(o>=3) out.push({ic:"🛡",t:"el rival llega mucho menos",tono:"bueno"});
+  else if(o>=1.5) out.push({ic:"🛡",t:"más orden atrás",tono:"bueno"});
+  else if(o<=-1.5) out.push({ic:"🛡",t:"te desordenas",tono:"malo"});
+  if(r>=3) out.push({ic:"⚠",t:"partido muy abierto: te pueden golear",tono:"malo"});
+  else if(r>=1.5) out.push({ic:"⚠",t:"quedas expuesto de contra",tono:"malo"});
+  else if(r<0) out.push({ic:"🔒",t:"cierra el partido",tono:"bueno"});
+  if(d>=2) out.push({ic:"🔋",t:"cansa mucho",tono:"malo"});
+  else if(d<=-1) out.push({ic:"🔋",t:"ahorra piernas",tono:"bueno"});
+  if(!out.length) out.push({ic:"＝",t:"no cambia casi nada",tono:""});
+  return out;
 }
 function compactarRelato(lineas){
   const L=(lineas||[]).slice();
