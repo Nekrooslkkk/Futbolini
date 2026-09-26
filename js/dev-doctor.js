@@ -1631,6 +1631,71 @@ devDoctorRegistrar({id:"poder_sombra", area:"vida", n:"La sombra del poder: sube
   (E.decPend||[]).forEach(function(x){ if(/^proc_(sombra|favor)_/.test(x.id)&&!(E.decProc&&E.decProc[x.id])) falta.push("pendiente sin datos: "+x.id); });
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sombra "+sombraActual()+"/100 en la partida · "+SOMBRA_CASA.length+" golpes en casa · "+FAVORES_PODER.length+" favores");
 }});
+/* 7.9082 · el Aero es UNO: aero7.css manda, la letra es Selawik (no monoespaciada), cada sección vive en
+   su ventana de Explorador (el Escritorio no: es el escritorio) y los títulos van negros sobre vidrio claro */
+/* mide el estilo real sobre una ventana y un "+$ M" de prueba (leer las reglas de la hoja no sirve con file://) */
+function _docSondaAero7(){
+  var host=document.createElement("div"); host.style.cssText="position:absolute;left:-9999px;top:0;width:500px";
+  host.innerHTML='<div class="ventana-so"><div class="so-barra"><span class="so-titulo">x</span></div><div class="so-cuerpo">y</div></div>'+
+    '<div id="barraDatos"><div class="bd" style="position:relative;height:40px"><div class="k">Caja</div><span class="vida-delta sube">+1</span></div></div>';
+  document.body.appendChild(host); void host.offsetHeight;
+  var bar=host.querySelector(".so-barra"), cb=getComputedStyle(bar), ct=getComputedStyle(host.querySelector(".so-titulo")), cd=getComputedStyle(host.querySelector(".vida-delta"));
+  var r={barraFondo:cb.backgroundColor+" "+cb.backgroundImage, titulo:ct.color, deltaTop:parseFloat(cd.top)};
+  host.remove(); return r;
+}
+devDoctorRegistrar({id:"aero_coherente", area:"interfaz", n:"Aero de Windows 7 coherente: una hoja, Selawik, ventanas por sección", pesado:true,
+  arreglo:"Todo el look Aero vive en css/aero7.css y js/aero7.js. Si falta una ventana, mira AERO7_SIN_VENTANA; si falta la letra, /fonts y las @font-face.", fn:function(){
+  if(typeof document==="undefined"||!document.body||typeof render!=="function") return _dok("sin DOM");
+  var falta=[];
+  var links=[].slice.call(document.querySelectorAll('link[rel="stylesheet"]')).map(function(l){ return l.getAttribute("href")||""; });
+  var i7=links.findIndex(function(h){ return /aero7\.css/.test(h); });
+  if(i7<0) falta.push("css/aero7.css no está en index.html");
+  else ["aero.css","so.css","pulido.css"].forEach(function(n){ var k=links.findIndex(function(h){ return h.indexOf("css/"+n)>=0; }); if(k>i7) falta.push(n+" carga DESPUÉS de aero7.css y le pisa el look"); });
+  var hayFuente=false; try{ document.fonts.forEach(function(f){ if(/Selawik/.test(f.family)) hayFuente=true; }); }catch(e){}
+  if(!hayFuente) falta.push("no está registrada la letra Selawik (@font-face en aero7.css)");
+  var tema=document.body.getAttribute("data-tema"), sec=SEC, snap=(typeof clonarPartida==="function"&&E)?clonarPartida(E):null;
+  try{
+    document.body.setAttribute("data-tema","aero");
+    var fd=getComputedStyle(document.body).getPropertyValue("--f-dato");
+    if(/mono|Consolas|Lucida Console/i.test(fd)) falta.push("los números del tema Aero siguen en letra monoespaciada ("+fd.trim()+")");
+    var so=_docSondaAero7();
+    if(!/rgba\(0, 0, 0, 0\) none/.test(so.barraFondo)) falta.push("la barra de título de las ventanas tiene fondo propio ("+so.barraFondo.slice(0,60)+"): vuelve el título negro sobre azul oscuro");
+    if(!/rgb\(0, 0, 0\)/.test(so.titulo)) falta.push("el título de las ventanas no es negro con brillo (Win7): "+so.titulo);
+    if(window.innerWidth>900&&!(so.deltaTop>=30)) falta.push("el «+$ M» de la barra tapa la etiqueta del dato (debe ir debajo del chip)");
+    if(E){
+      ["institucion","finanzas","plantel","mercado","calendario","historia","carrera","vida"].forEach(function(s){
+        SEC=s; render();
+        var v=document.getElementById("vista"), w=v.querySelectorAll(":scope > .ventana-so.in-vista");
+        if(w.length!==1) falta.push(s+": "+w.length+" ventanas en la vista (debe ser 1)");
+        else if(!w[0].querySelector(":scope > .so-dir")) falta.push(s+": la ventana no tiene barra de direcciones");
+        else if(!(w[0]._cuerpo||w[0].querySelector(".so-cuerpo")).children.length) falta.push(s+": ventana vacía");
+      });
+      SEC="escritorio"; render();
+      if(document.querySelector("#vista > .ventana-so.in-vista")) falta.push("el Escritorio quedó dentro de una ventana (debe ser el fondo, con paneles sueltos)");
+    }
+  } catch(e){ falta.push("explota: "+e.message); }
+  finally { document.body.setAttribute("data-tema",tema||"aero"); if(snap) restaurarPartida(snap); SEC=sec; try{ render(); }catch(e){} }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("aero7.css al final · Selawik · 8 secciones en su ventana con dirección · escritorio suelto");
+}});
+/* 7.9082 · las imágenes que pone el humano (js/data-ranuras.js): bien declaradas y, si están marcadas, que existan */
+devDoctorRegistrar({id:"ranuras_img", area:"contenido", n:"Ranuras de imagen: declaradas bien y presentes si están marcadas listas",
+  arreglo:"Edita js/data-ranuras.js: pon listo:true SOLO si el archivo está en esa ruta exacta (minúsculas, sin espacios).", fn:function(){
+  if(typeof RANURAS_IMG==="undefined") return _dmal("no cargó js/data-ranuras.js",["falta el script en index.html"]);
+  var falta=[], ids={}, listas=0;
+  RANURAS_IMG.forEach(function(r){
+    if(ids[r.id]) falta.push("id repetido: "+r.id); ids[r.id]=1;
+    if(!/^img\/aero\/[a-z0-9-]+\.(png|jpg|jpeg|webp|svg)$/.test(r.archivo||"")) falta.push(r.id+": ruta rara «"+r.archivo+"» (va en img/aero/, minúsculas, sin espacios)");
+    if(!r.que||!r.medida) falta.push(r.id+": sin descripción o medida (el humano no sabe qué hacer)");
+    if(r.listo){ listas++;
+      if(typeof location!=="undefined"&&/^https?:/.test(location.protocol)){
+        try{ var x=new XMLHttpRequest(); x.open("HEAD",r.archivo,false); x.send(); if(x.status>=400) falta.push(r.id+": marcada lista pero "+r.archivo+" no está ("+x.status+")"); }catch(e){}
+      }
+    }
+  });
+  if(typeof SECCIONES!=="undefined") SECCIONES.forEach(function(s){ if(s[0]!=="ajustes"&&!ids["sec-"+s[0]]) falta.push("la sección "+s[0]+" no tiene ranura de ícono"); });
+  var faltan=RANURAS_IMG.filter(function(r){ return !r.listo; }).map(function(r){ return r.archivo; });
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(listas+" de "+RANURAS_IMG.length+" imágenes puestas"+(faltan.length?" · pendientes (ver GUIA_HUMANO.md): "+faltan.length:""));
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
@@ -1681,7 +1746,7 @@ devDoctorRegistrar({id:"scroll_estable", area:"interfaz", n:"Apretar un botón n
   var falta=[];
   if(typeof _renderCuerpo!=="function") falta.push("repintar una sección vacía la página y el scroll vuelve arriba");
   if(typeof pintarPartido!=="function"||_docFuente(pintarPartido).indexOf("ancla")<0) falta.push("los botones del partido (pausa, velocidad, cancha) sacan el relato de la vista");
-  if(typeof irA!=="function"||String(irA).indexOf("cambia")<0) falta.push("volver a apretar la misma sección te manda arriba");
+  if(typeof irA!=="function"||_docFuente(irA).indexOf("cambia")<0) falta.push("volver a apretar la misma sección te manda arriba");
   if(!falta.length && E && document.body && !document.body.classList.contains("con-modal") && !document.body.classList.contains("en-partido")){
     var y0=window.scrollY, alto=document.documentElement.scrollHeight-innerHeight;
     if(alto<=200){ var vv=document.getElementById("vista"); if(vv){ vv.style.minHeight=(innerHeight+800)+"px"; alto=document.documentElement.scrollHeight-innerHeight; } }
@@ -1749,7 +1814,16 @@ devDoctorRegistrar({id:"legibilidad_ui", area:"interfaz", n:"Los botones y menú
   } else det.push("tema "+document.body.dataset.tema+": brillo de botones no aplica");
   var act=document.querySelector('#menu .mi[aria-selected="true"], #menu .mi[aria-current="page"]');
   if(act && document.body.classList.contains("nav-lateral")){
-    var k=_docContraste(getComputedStyle(act).color,"rgb(214,236,255)");
+    /* 7.9082 · el fondo se estima de verdad (gradiente del canal sobre el del lateral): el lateral ya no es siempre celeste */
+    var col=getComputedStyle(act).color, fondo="rgb(214,236,255)";
+    if(_docLum(col)>0.5){
+      var stops=function(e){ return (getComputedStyle(e).backgroundImage.match(/rgba?\([^)]+\)/g)||[]).map(function(x){ var n=x.match(/[\d.]+/g).map(Number); return [n[0],n[1],n[2],n.length>3?n[3]:1]; }); };
+      var base=stops(document.getElementById("menu"))[0]||[20,40,70,1], st=stops(act);
+      if(st.length){ var a=st.reduce(function(t,x){ return t+x[3]; },0)/st.length;
+        var rgb=[0,1,2].map(function(i){ var m=st.reduce(function(t,x){ return t+x[i]; },0)/st.length; return Math.round(m*a+base[i]*(1-a)); });
+        fondo="rgb("+rgb.join(",")+")"; }
+    }
+    var k=_docContraste(col,fondo);
     det.push("canal activo: contraste "+(Math.round(k*10)/10));
     if(k<4.5) falta.push("el canal activo de la barra lateral no se lee (contraste "+(Math.round(k*10)/10)+", mínimo 4,5)");
   }

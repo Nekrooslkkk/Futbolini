@@ -1812,3 +1812,11 @@ Estado: doctor sano (3 partidas) · dev 567/567 · core 1185/1185.
 - Tono: te pasan cosas, nadie te sermonea.
 
 Estado: doctor sano (3 partidas) · dev 570/570 · core 1185/1185.
+
+**7.9082 (Claude) · Aero de Windows 7, una sola hoja.** El look Aero ahora vive en `css/aero7.css`, que carga
+después de las otras hojas. Si algo del tema Aero se ve mal, se arregla ahí, no con otra capa encima.
+- Secciones en ventana de Explorador: `js/aero7.js`. `AERO7_SIN_VENTANA` y `AERO7_COLUMNAS` deciden cuáles.
+- Imágenes que pone el humano: `js/data-ranuras.js`.
+- `test/doctor.sh` ahora corre también en celular.
+
+Estado: doctor sano (3 partidas + celular) · dev 574/574 · core 1185/1185.

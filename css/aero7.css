@@ -1,0 +1,396 @@
+/* ============================================================
+   FUTBOLINI 7.9082 · aero7.css — LA hoja del tema Aero (Windows 7 / Vista / Frutiger Aero)
+   Por qué existe: el Aero se había ido armando en capas (aero.css, so.css, pulido.css, temas.css,
+   movil.css, 7.css del CDN y <style> que inyectan los .js) y se pisaban entre sí. Ejemplo: 7.css
+   pone el título de las ventanas en NEGRO con brillo blanco (como Windows 7 de verdad) y so.css
+   le pintaba detrás una barra azul oscura estilo XP: salía texto negro sobre azul, con un halo raro.
+   Esta hoja manda sobre todas las anteriores en el tema Aero y define UN solo lenguaje:
+     1. Letra: Selawik (la Segoe UI libre de Microsoft, OFL, en /fonts). Números alineados.
+     2. Ventanas (secciones, diálogos): marco de VIDRIO claro, título negro con brillo blanco,
+        botones de título Win7 (minimizar/maximizar vidriosos, cerrar rojo), cliente claro.
+     3. Paneles = tarjetas blancas con encabezado brillante claro (el "command bar" de Win7),
+        texto azul marino e ícono en una burbuja. El color va en el tinte, no en una barra saturada.
+     4. El Escritorio es el escritorio: sus paneles flotan sobre el fondo como gadgets de Vista.
+     5. Avisos = globos de la bandeja de Windows 7, abajo a la derecha, apilados.
+   Reglas para quien toque esto: todo va bajo body[data-tema="aero"] (los otros temas no se tocan);
+   los colores salen de las variables de :root de abajo; si algo se ve mal, se arregla ACÁ, no
+   con otra capa encima. El doctor `aero_coherente` revisa que esto siga en pie.
+   ============================================================ */
+
+/* ---------- 1. letra ---------- */
+@font-face{ font-family:"Selawik"; src:url("../fonts/selawkl.woff2") format("woff2"); font-weight:300; font-display:swap; }
+@font-face{ font-family:"Selawik"; src:url("../fonts/selawk.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face{ font-family:"Selawik"; src:url("../fonts/selawksb.woff2") format("woff2"); font-weight:600; font-display:swap; }
+@font-face{ font-family:"Selawik"; src:url("../fonts/selawkb.woff2") format("woff2"); font-weight:700 900; font-display:swap; }
+
+body[data-tema="aero"]{
+  --f-titulo:"Selawik","Segoe UI","Noto Sans",Tahoma,sans-serif;
+  --f-cuerpo:"Selawik","Segoe UI","Noto Sans",Tahoma,sans-serif;
+  --f-dato:"Selawik","Segoe UI","Noto Sans",Tahoma,sans-serif;
+  /* paleta Windows 7 */
+  --w7-tinta:#1e395b;          /* texto de encabezados (azul marino de Win7) */
+  --w7-texto:#1b2a3a;
+  --w7-suave:#4d6178;
+  --w7-borde:#a9c4e2;          /* borde de tarjetas */
+  --w7-borde-fuerte:#7a9cc4;
+  --w7-sel:#cce8ff;            /* selección de lista (Explorer) */
+  --w7-sel-borde:#99d1ff;
+  --w7-hover:#e5f3ff;
+  --w7-cliente:#f4f8fc;        /* fondo del área cliente de una ventana */
+  --w7-vidrio:rgba(118,168,224,.66);
+  --w7-vidrio-borde:rgba(10,30,60,.62);
+  /* las variables viejas del tema (eran verdes) pasan a la paleta de Win7 */
+  --tinta:#1b2a3a; --tinta-suave:#4d6178; --linea:rgba(90,120,160,.26);
+  font-family:var(--f-cuerpo);
+  font-variant-numeric:tabular-nums;
+  color:var(--w7-texto);
+}
+body[data-tema="aero"] :is(button,input,select,textarea){ font-family:inherit; }
+/* números de la tabla/chips: la misma letra, cifras del mismo ancho */
+body[data-tema="aero"] :is(.fila b,.bd .v,td,th,.apoyo-v,.obj-dato,.cotiza .precio,.banco-cta .v){
+  font-family:var(--f-dato); font-variant-numeric:tabular-nums;
+}
+
+/* ---------- 2. ventanas: vidrio Windows 7 ---------- */
+/* el ::before de 7.css (CDN) pinta su propio vidrio encima: lo apagamos para verse igual con y sin red */
+body[data-tema="aero"] :is(.ventana-so,.modal.panel,.modal > .panel)::before{ display:none !important; }
+body[data-tema="aero"] :is(.ventana-so,.modal.panel,.modal > .panel){
+  border:1px solid var(--w7-vidrio-borde) !important;
+  border-radius:8px !important;
+  background-color:var(--w7-vidrio) !important;
+  background-image:
+    linear-gradient(180deg,rgba(255,255,255,.62) 0,rgba(255,255,255,.18) 30px,rgba(255,255,255,0) 31px),
+    linear-gradient(104deg,transparent 12%,rgba(255,255,255,.34) 22%,transparent 23%,transparent 64%,rgba(255,255,255,.2) 74%,transparent 75%),
+    linear-gradient(90deg,rgba(255,255,255,.28),rgba(0,0,0,.06) 50%,rgba(255,255,255,.18)) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.7); backdrop-filter:blur(14px) saturate(1.7);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.62), 0 14px 38px rgba(0,22,54,.42) !important;
+  padding:0 7px 7px !important;
+}
+/* barra de título: sin fondo propio (se ve el vidrio), texto negro con brillo blanco */
+body[data-tema="aero"] :is(.ventana-so .so-barra,:is(.modal.panel,.modal > .panel) > .cab){
+  background:transparent !important; border:0 !important; box-shadow:none !important;
+  color:#000 !important; font:400 13.5px/1.2 var(--f-titulo) !important;
+  text-shadow:0 0 9px #fff,0 0 9px #fff,0 0 5px #fff,0 0 2px #fff !important;
+  padding:6px 4px 7px 6px !important; margin:0 !important;
+}
+body[data-tema="aero"] :is(.ventana-so .so-barra,:is(.modal.panel,.modal > .panel) > .cab)::after{ display:none !important; }
+body[data-tema="aero"] .ventana-so .so-titulo{ color:#000 !important; font-weight:400; }
+body[data-tema="aero"] :is(.modal.panel,.modal > .panel) > .cab .ic{ background:none; border:0; box-shadow:none; width:auto; height:auto; }
+/* botones de título: grupo pegado arriba a la derecha */
+body[data-tema="aero"] .ventana-so .so-ctrl{
+  margin-top:-7px; border:1px solid rgba(0,0,0,.55); border-top:0; border-radius:0 0 6px 6px;
+  box-shadow:0 1px 0 rgba(255,255,255,.45), inset 0 0 0 1px rgba(255,255,255,.35);
+}
+body[data-tema="aero"] .ventana-so .so-btn{
+  width:27px; height:19px; border-right:1px solid rgba(0,0,0,.4);
+  background:linear-gradient(180deg,rgba(255,255,255,.55) 0,rgba(255,255,255,.22) 48%,rgba(40,70,110,.25) 50%,rgba(255,255,255,.28) 100%);
+}
+body[data-tema="aero"] .ventana-so .so-btn:hover{
+  filter:none; background:linear-gradient(180deg,#d6efff 0,#7cc1f2 48%,#2c8ad8 50%,#79d2ff 100%);
+  box-shadow:inset 0 0 6px rgba(255,255,255,.7), 0 0 8px rgba(100,200,255,.8);
+}
+body[data-tema="aero"] .ventana-so .so-btn.cerrar{
+  width:45px; background:linear-gradient(180deg,#eab4a6 0,#d2745e 48%,#b52b16 50%,#d0634a 100%);
+}
+body[data-tema="aero"] .ventana-so .so-btn.cerrar:hover{
+  background:linear-gradient(180deg,#ffc9b8 0,#ef7f62 48%,#d8341b 50%,#ff8a5c 100%);
+  box-shadow:inset 0 0 6px rgba(255,255,255,.6), 0 0 10px rgba(255,120,80,.85);
+}
+/* área cliente: clara, con el doble filo (negro adentro, blanco afuera) de Win7 */
+body[data-tema="aero"] :is(.ventana-so .so-cuerpo,.ventana-so .window-body,:is(.modal.panel,.modal > .panel) > .cuerpo){
+  background:var(--w7-cliente) !important; background-image:none !important;
+  border:1px solid rgba(0,0,0,.52) !important; border-radius:1px !important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.65) !important;
+  margin:0 !important; color:var(--w7-texto);
+}
+body[data-tema="aero"] :is(.modal.panel,.modal > .panel) > .cuerpo{ padding:14px 16px !important; }
+body[data-tema="aero"] .ventana-so .so-pie{
+  margin:0 !important; border:1px solid rgba(0,0,0,.52) !important; border-top:0 !important;
+  background:linear-gradient(180deg,#eef2f6,#e2e8ef) !important;
+  box-shadow:inset 0 1px 0 #fff, 0 0 0 1px rgba(255,255,255,.65) !important;
+}
+body[data-tema="aero"] .modal.ventana-so,body[data-tema="aero"] .modal.panel{ overflow:hidden; }
+
+/* barra de direcciones (Explorer) en las ventanas de sección: la pone js/aero7.js */
+.so-dir{ display:flex; align-items:center; gap:6px; padding:0 2px 6px; }
+.so-dir .dir-nav{ display:flex; gap:2px; }
+.so-dir .dir-b{
+  width:26px; height:26px; border-radius:50%; border:1px solid rgba(0,30,70,.6); cursor:pointer; padding:0;
+  color:#fff; font:700 14px/1 var(--f-cuerpo); text-shadow:0 -1px 0 rgba(0,0,0,.4);
+  background:radial-gradient(circle at 50% 30%,#bfe4ff 0,#4d9de0 45%,#155aa8 55%,#3d8fd8 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 1px 2px rgba(0,0,0,.3);
+}
+.so-dir .dir-b:hover{ filter:brightness(1.12); box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 0 8px rgba(120,210,255,.9); }
+.so-dir .dir-b:disabled{ filter:grayscale(1) opacity(.55); cursor:default; box-shadow:none; }
+.so-dir .dir-ruta{
+  flex:1; min-width:0; display:flex; align-items:center; gap:0; height:24px; padding:0 6px;
+  background:rgba(255,255,255,.93); border:1px solid rgba(0,0,0,.45); border-radius:2px;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.12); font:400 13px var(--f-cuerpo); color:#000; overflow:hidden; white-space:nowrap;
+}
+.so-dir .dir-ruta .ic{ margin-right:6px; }
+.so-dir .dir-ruta button{
+  border:1px solid transparent; background:none; font:inherit; color:inherit; padding:1px 5px; border-radius:2px; cursor:pointer;
+}
+.so-dir .dir-ruta button:hover{ background:linear-gradient(180deg,#eaf6fd,#d9f0fc); border-color:#7eb4ea; }
+.so-dir .dir-ruta .sep{ color:#5a6a7c; padding:0 2px; font-size:10px; }
+.so-dir .dir-ruta b{ font-weight:400; padding:1px 5px; }
+@media (max-width:700px){ .so-dir{ display:none; } }
+
+/* ---------- 3. paneles: tarjetas con encabezado brillante claro ---------- */
+body[data-tema="aero"] .panel:not(.modal,.modal > .panel){
+  border:1px solid var(--w7-borde) !important; border-radius:6px !important;
+  background:linear-gradient(180deg,#ffffff,#f7fbff) !important;
+  box-shadow:inset 0 1px 0 #fff, 0 2px 7px rgba(20,60,110,.13) !important;
+  padding:0 !important; overflow:hidden;
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+}
+body[data-tema="aero"] .panel:not(.modal,.modal > .panel) > .cab{
+  --cab-a:#fdfeff; --cab-b:#edf4fc; --cab-c:#dce8f6; --cab-d:#e7f0fa; --cab-t:var(--w7-tinta); --cab-l:#bcd2ea;
+  --orb-a:#ffffff; --orb-b:#c4e3ff; --orb-c:#6fb2ec;
+  background:linear-gradient(180deg,var(--cab-a) 0%,var(--cab-b) 49%,var(--cab-c) 50%,var(--cab-d) 100%) !important;
+  border-bottom:1px solid var(--cab-l) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.95) !important;
+  color:var(--cab-t) !important; text-shadow:0 1px 0 rgba(255,255,255,.9) !important;
+  font:600 14.5px/1.25 var(--f-titulo) !important; letter-spacing:0 !important;
+  padding:6px 10px !important; display:flex; align-items:center; gap:8px;
+}
+body[data-tema="aero"] .panel:not(.modal,.modal > .panel) > .cab::after{ display:none !important; }
+body[data-tema="aero"] .panel:not(.modal,.modal > .panel) > .cab > .ic:not(:empty){
+  flex:0 0 24px; width:24px; height:24px; border-radius:50%; display:grid; place-items:center;
+  font-size:13px; line-height:1; text-shadow:none;
+  background:radial-gradient(circle at 50% 28%,var(--orb-a) 0,var(--orb-b) 55%,var(--orb-c) 100%);
+  border:1px solid rgba(255,255,255,.95);
+  box-shadow:0 0 0 1px rgba(40,90,150,.28), inset 0 -3px 5px rgba(20,70,140,.18), 0 1px 2px rgba(0,30,70,.2);
+}
+body[data-tema="aero"] .panel:not(.modal,.modal > .panel) > .cab > .ic:empty{ display:none; }
+body[data-tema="aero"] .panel.agua:not(.modal) > .cab{ --cab-a:#fbffff; --cab-b:#e8f9fb; --cab-c:#cdeef3; --cab-d:#dcf4f7; --cab-t:#0b5263; --cab-l:#a7dbe4; --orb-b:#c2f1f5; --orb-c:#3fb8cb; }
+body[data-tema="aero"] .panel.alerta:not(.modal) > .cab{ --cab-a:#fffdf6; --cab-b:#fff3d8; --cab-c:#ffe3a6; --cab-d:#ffedc4; --cab-t:#6e3d00; --cab-l:#e9c27c; --orb-b:#ffe2a0; --orb-c:#f0a52c; }
+body[data-tema="aero"] .panel.grave:not(.modal) > .cab{ --cab-a:#fffafa; --cab-b:#ffe8e4; --cab-c:#ffcdc4; --cab-d:#ffdcd5; --cab-t:#7d1b10; --cab-l:#eaa699; --orb-b:#ffc6bb; --orb-c:#e0553d; }
+body[data-tema="aero"] .panel.agua:not(.modal){ border-color:#a7d6e0 !important; }
+body[data-tema="aero"] .panel.alerta:not(.modal){ border-color:#e3bf7c !important; }
+body[data-tema="aero"] .panel.grave:not(.modal){ border-color:#e3a095 !important; }
+body[data-tema="aero"] .panel:not(.modal,.modal > .panel) > .cuerpo{
+  margin:0 !important; padding:12px !important; background:transparent !important;
+  border:0 !important; box-shadow:none !important; border-radius:0 !important; color:var(--w7-texto);
+}
+/* filas y tablas: rayas finas, fila bajo el mouse = selección de Explorer */
+body[data-tema="aero"] .fila{ border-bottom-color:rgba(120,150,190,.22) !important; color:var(--w7-texto); }
+body[data-tema="aero"] table:not(.plopt table) th{
+  color:var(--w7-suave); font-weight:600; background:linear-gradient(180deg,#ffffff,#f1f5fa);
+  border-bottom:1px solid #d5dfea; text-shadow:none;
+}
+body[data-tema="aero"] table:not(.plopt table) tbody tr:hover > td{ background:var(--w7-hover); }
+/* los paneles del escritorio flotan sobre el fondo como gadgets: un poco de vidrio alrededor */
+body[data-tema="aero"] #vista[data-sec="escritorio"] .panel:not(.modal,.modal > .panel){
+  box-shadow:0 0 0 4px rgba(255,255,255,.28), 0 6px 18px rgba(0,40,20,.25) !important;
+}
+
+/* ---------- 4. controles ---------- */
+/* botón estándar de Windows 7 (.gris): gris vidrioso, brillo celeste al pasar */
+body[data-tema="aero"] .btn-aqua.gris{
+  color:#000 !important; text-shadow:none !important; font-weight:400;
+  border:1px solid #707070 !important; border-radius:3px !important;
+  background:linear-gradient(180deg,#f2f2f2 0%,#ebebeb 49%,#dddddd 50%,#cfcfcf 100%) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.75) !important;
+}
+body[data-tema="aero"] .btn-aqua.gris:hover:not(:disabled){
+  border-color:#3c7fb1 !important;
+  background:linear-gradient(180deg,#eaf6fd 0%,#d9f0fc 49%,#bee6fd 50%,#a7d9f5 100%) !important;
+}
+body[data-tema="aero"] .btn-aqua.gris:active:not(:disabled){
+  border-color:#2c628b !important;
+  background:linear-gradient(180deg,#e5f4fc 0%,#c4e5f6 49%,#98d1ef 50%,#68b3db 100%) !important;
+}
+body[data-tema="aero"] .btn-aqua.gris::before,body[data-tema="aero"] .btn-aqua.gris::after{ display:none; }
+body[data-tema="aero"] .btn-aqua:focus-visible{ outline:1px dotted #000; outline-offset:-4px; }
+/* campos de texto: los de Win7 (borde que se ilumina en azul) */
+body[data-tema="aero"] :is(input[type=text],input[type=number],input[type=search],input:not([type]),select,textarea){
+  border:1px solid #abadb3; border-top-color:#8e9199; border-radius:2px; background:#fff; color:#000;
+  box-shadow:none;
+}
+body[data-tema="aero"] :is(input,select,textarea):hover{ border-color:#7eb4ea; }
+body[data-tema="aero"] :is(input,select,textarea):focus{ border-color:#3d7bad; outline:none; box-shadow:0 0 0 1px rgba(61,123,173,.25); }
+/* barras de progreso: la verde de Windows 7, con el destello que recorre */
+body[data-tema="aero"] .barrita{
+  height:11px; border-radius:3px !important; overflow:hidden; position:relative;
+  border:1px solid #9aa9b8; background:linear-gradient(180deg,#e6e6e6,#f6f6f6 50%,#dcdcdc 50%,#ececec) !important;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.15) !important;
+}
+body[data-tema="aero"] .barrita i{
+  border-radius:0 !important; position:relative; overflow:hidden;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.6) 0,rgba(255,255,255,.15) 50%,rgba(0,0,0,.08) 51%,rgba(255,255,255,.12) 100%) !important;
+}
+body[data-tema="aero"] .barrita i::after{
+  content:""; position:absolute; top:0; bottom:0; width:60px; left:-60px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+  animation:w7Barrido 2.6s ease-in-out infinite;
+}
+@keyframes w7Barrido{ 0%{ left:-60px } 70%,100%{ left:100% } }
+@media (prefers-reduced-motion:reduce){ body[data-tema="aero"] .barrita i::after{ animation:none; display:none } }
+body.perf[data-tema="aero"] .barrita i::after{ display:none; }
+/* barras de desplazamiento de Windows 7 */
+body[data-tema="aero"] ::-webkit-scrollbar{ width:15px; height:15px; }
+body[data-tema="aero"] ::-webkit-scrollbar-track{ background:linear-gradient(90deg,#e8e8e8,#f5f5f5); }
+body[data-tema="aero"] ::-webkit-scrollbar-thumb{
+  border:1px solid #9a9a9a; border-radius:3px; background:linear-gradient(90deg,#f4f4f4,#e3e3e3 50%,#d6d6d6);
+  box-shadow:inset 0 0 0 1px #fff;
+}
+body[data-tema="aero"] ::-webkit-scrollbar-thumb:hover{ border-color:#3c7fb1; background:linear-gradient(90deg,#e3f4fc,#c4e6f8 50%,#a9d9f2); }
+/* fichas/pestañas chicas (filtros): segmentos de Win7 */
+body[data-tema="aero"] .fichas button:not(.btn-aqua),body[data-tema="aero"] .ficha{
+  border:1px solid #9fb6ce; border-radius:3px; color:var(--w7-tinta);
+  background:linear-gradient(180deg,#ffffff,#eef3f9 50%,#e1eaf4 50%,#eaf0f7);
+}
+body[data-tema="aero"] :is(.fichas button:not(.btn-aqua),.ficha):is(.on,.sel,[aria-selected="true"],[aria-pressed="true"]){
+  border-color:#3c7fb1; color:#000;
+  background:linear-gradient(180deg,#e5f4fc,#c4e5f6 50%,#98d1ef 50%,#b8e0f5);
+}
+
+/* ---------- 5. avisos: globos de la bandeja de Windows 7 ---------- */
+body[data-tema="aero"] #avisos{
+  left:auto; right:16px; transform:none; bottom:96px; align-items:flex-end; gap:8px; width:auto; max-width:360px;
+}
+body[data-tema="aero"] .aviso{
+  position:relative; min-width:220px; max-width:340px; text-align:left !important;
+  padding:10px 14px 10px 40px; border-radius:6px; border:1px solid #767676;
+  background:linear-gradient(180deg,#ffffff 0,#f1f6fb 60%,#e4edf7 100%); color:#000;
+  font:400 13px/1.35 var(--f-cuerpo); text-shadow:none;
+  box-shadow:0 6px 16px rgba(0,0,0,.28), inset 0 1px 0 #fff;
+}
+body[data-tema="aero"] .aviso::before{
+  content:"i"; position:absolute; left:10px; top:10px; width:20px; height:20px; border-radius:50%;
+  display:grid; place-items:center; color:#fff; font:700 italic 13px/1 Georgia,serif;
+  background:radial-gradient(circle at 50% 30%,#9fd4ff,#2a7ad4 60%,#15549e); box-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+/* colita apuntando a la bandeja */
+body[data-tema="aero"] .aviso::after{
+  content:""; position:absolute; right:26px; bottom:-8px; width:14px; height:14px; transform:rotate(45deg);
+  background:#e4edf7; border-right:1px solid #767676; border-bottom:1px solid #767676;
+}
+body[data-tema="aero"] .aviso:not(:last-child)::after{ display:none; }
+@media (max-width:900px){
+  body[data-tema="aero"] #avisos{ right:auto; left:50%; transform:translateX(-50%); align-items:center; }
+  body[data-tema="aero"] .aviso::after{ display:none; }
+}
+/* el "+$120 M" de la barra: flota DEBAJO del dato, sin tapar la etiqueta */
+@media (max-width:900px){ body[data-tema="aero"] .vida-delta{ top:auto !important; bottom:2px; } }
+body[data-tema="aero"] .vida-delta{
+  top:100%; transform:translate(-50%,4px); margin-top:0; font:700 11.5px/1.3 var(--f-cuerpo);
+  border:1px solid rgba(0,0,0,.35);
+  animation:w7Delta 1.6s ease-out forwards;
+}
+body[data-tema="aero"] .vida-delta.sube{ background:linear-gradient(180deg,#7ee07a,#2c9f2c); }
+body[data-tema="aero"] .vida-delta.baja{ background:linear-gradient(180deg,#ff8f7a,#c4321f); }
+@keyframes w7Delta{ 0%{opacity:0;transform:translate(-50%,-2px)} 12%{opacity:1;transform:translate(-50%,4px)} 75%{opacity:1;transform:translate(-50%,6px)} 100%{opacity:0;transform:translate(-50%,12px)} }
+@media (min-width:901px){ body[data-tema="aero"] #barra{ overflow:visible; } }
+
+/* ---------- 6. barra de tareas y lateral ---------- */
+body[data-tema="aero"] .bd .k{ font:600 9.5px/1.3 var(--f-cuerpo); letter-spacing:.5px; }
+body[data-tema="aero"] .bd .v{ font:600 13.5px/1.25 var(--f-dato); }
+/* lateral: panel de vidrio como el menú Inicio, canales blancos */
+@media (min-width:901px){
+  body[data-tema="aero"].nav-lateral #menu{
+    background:linear-gradient(180deg,rgba(24,52,88,.55),rgba(14,36,64,.62)) !important;
+    border-right:1px solid rgba(0,0,0,.45) !important;
+    box-shadow:inset -1px 0 0 rgba(255,255,255,.35), 3px 0 16px rgba(0,20,40,.25) !important;
+    -webkit-backdrop-filter:blur(16px) saturate(1.5); backdrop-filter:blur(16px) saturate(1.5);
+  }
+  body[data-tema="aero"].nav-lateral #menu .mi{
+    color:#fff !important; font:600 13px/1.15 var(--f-cuerpo) !important; text-shadow:0 1px 2px rgba(0,0,0,.6) !important;
+    background:transparent !important; border:1px solid transparent !important; box-shadow:none !important; border-radius:4px !important;
+  }
+  body[data-tema="aero"].nav-lateral #menu .mi:hover{
+    transform:none; border-color:rgba(255,255,255,.45) !important;
+    background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.12) 50%,rgba(255,255,255,.04) 50%,rgba(255,255,255,.16)) !important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.2), 0 0 10px rgba(140,200,255,.35) !important;
+  }
+  body[data-tema="aero"].nav-lateral #menu .mi[aria-selected="true"]{
+    color:#fff !important; text-shadow:0 1px 2px rgba(0,0,0,.6) !important; border-color:rgba(160,220,255,.8) !important;
+    background:linear-gradient(180deg,rgba(120,190,250,.75),rgba(40,110,200,.75) 50%,rgba(10,70,160,.8) 50%,rgba(50,130,220,.8)) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.55), 0 0 12px rgba(120,200,255,.55) !important;
+  }
+  body[data-tema="aero"].nav-lateral #menu .mi > span:first-child{
+    background:radial-gradient(circle at 50% 28%,#ffffff 0,#dff0ff 55%,#9ccbf2 100%) !important;
+    border:1px solid rgba(255,255,255,.9) !important; border-radius:6px !important;
+  }
+}
+
+/* ---------- 7. el botón Jugar: gel verde con orbe ---------- */
+body[data-tema="aero"] .avance-grande{
+  border-radius:8px; border:1px solid #185f18;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.62) 0,rgba(255,255,255,.2) 48%,rgba(255,255,255,0) 50%),
+    linear-gradient(180deg,#6fd65a 0,#2ea52a 50%,#1c8a1d 51%,#43c23a 100%);
+  box-shadow:0 0 0 1px rgba(255,255,255,.5) inset, 0 8px 22px rgba(0,40,0,.4), 0 0 18px rgba(120,255,120,.25);
+  font-family:var(--f-titulo);
+}
+body[data-tema="aero"] .avance-grande:hover{ filter:none; box-shadow:0 0 0 1px rgba(255,255,255,.6) inset, 0 8px 22px rgba(0,40,0,.4), 0 0 24px rgba(140,255,140,.6); }
+/* que el botón no tape lo último de la sección */
+body[data-tema="aero"].con-juego #vista{ padding-bottom:96px; }
+
+/* ---------- 8. ranuras de imagen (img/aero/): si el archivo existe, reemplaza al emoji ---------- */
+.ranura-img{ width:1.35em; height:1.35em; object-fit:contain; vertical-align:-.25em; }
+.panel > .cab > .ic > .ranura-img{ width:20px; height:20px; }
+#menu .mi > span:first-child > .ranura-img{ width:24px; height:24px; }
+body.fondo-propio[data-tema="aero"] .cielo{ background:var(--fondo-propio) center/cover no-repeat !important; }
+body.fondo-propio[data-tema="aero"] :is(.aurora,.pasto,.destello){ opacity:.25; }
+
+/* ---------- 9. celular ---------- */
+@media (max-width:700px){
+  body[data-tema="aero"] :is(.ventana-so,.modal.panel,.modal > .panel){ padding:0 4px 4px !important; border-radius:6px !important; }
+  body[data-tema="aero"] .ventana-so .so-btn.min,body[data-tema="aero"] .ventana-so .so-btn.max{ display:none; }
+  body[data-tema="aero"] .panel:not(.modal,.modal > .panel) > .cab{ font-size:14px !important; }
+  body[data-tema="aero"].con-juego #vista{ padding-bottom:16px; }
+}
+
+/* ---------- 10. ventanas de sección: una o varias columnas ---------- */
+@media (min-width:1000px){
+  #vista > .ventana-so.in-vista.so-una-col :is(.so-cuerpo,.window-body){ column-count:1 !important; }
+}
+body[data-tema="aero"] #vista > .ventana-so.in-vista :is(.so-cuerpo,.window-body){ padding:14px !important; }
+
+/* ---------- 11. opciones de decisión = "command links" de Windows 7 ---------- */
+body[data-tema="aero"] .op{
+  position:relative; padding:9px 12px 9px 38px !important; border-radius:3px !important;
+  border:1px solid rgba(160,185,215,.55) !important; background:rgba(255,255,255,.75) !important;
+  box-shadow:none !important; color:#151c55 !important; text-shadow:none !important;
+}
+body[data-tema="aero"] .op::before{
+  content:"➜"; position:absolute; left:12px; top:9px; font:700 17px/1 var(--f-cuerpo); color:#2a9a2a;
+  text-shadow:0 1px 0 #fff;
+}
+body[data-tema="aero"] .op:hover:not(:disabled){
+  border-color:#7eb4ea !important; transform:none !important;
+  background:linear-gradient(180deg,#f4faff,#e3f1fd) !important; box-shadow:0 0 0 1px rgba(126,180,234,.35) !important;
+}
+body[data-tema="aero"] .op:hover:not(:disabled)::before{ color:#1fb51f; }
+body[data-tema="aero"] .op :is(b,strong,.t){ color:#151c55; font-weight:600; font-size:14.5px; }
+
+/* ---------- 12. PLOP! en Internet Explorer 8 sobre Windows 7 (mismo vidrio) ---------- */
+body[data-tema="aero"] .plop-ie{
+  border:1px solid var(--w7-vidrio-borde); border-radius:8px; padding:0 7px 7px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.62) 0,rgba(255,255,255,.18) 30px,rgba(255,255,255,0) 31px),
+    linear-gradient(104deg,transparent 12%,rgba(255,255,255,.34) 22%,transparent 23%),
+    var(--w7-vidrio);
+  -webkit-backdrop-filter:blur(14px) saturate(1.7); backdrop-filter:blur(14px) saturate(1.7);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.62), 0 14px 38px rgba(0,22,54,.42);
+}
+body[data-tema="aero"] .plop-ie-tit{
+  background:transparent !important; color:#000 !important; font:400 13.5px/1.2 var(--f-titulo) !important;
+  text-shadow:0 0 9px #fff,0 0 9px #fff,0 0 5px #fff !important; padding:6px 0 7px 4px !important; border:0 !important;
+}
+body[data-tema="aero"] .plop-ie-x{
+  width:45px; height:19px; margin-top:-7px; align-self:flex-start; border:1px solid rgba(0,0,0,.55); border-top:0; border-radius:0 0 6px 6px;
+  background:linear-gradient(180deg,#eab4a6 0,#d2745e 48%,#b52b16 50%,#d0634a 100%); text-shadow:0 0 3px rgba(0,0,0,.6); font-size:12px;
+}
+body[data-tema="aero"] .plop-ie-barra{ background:transparent !important; border:0 !important; padding:0 0 6px !important; }
+body[data-tema="aero"] .plop-ie-dir{ border-color:rgba(0,0,0,.45) !important; box-shadow:inset 0 1px 2px rgba(0,0,0,.12); }
+body[data-tema="aero"] .plop-ie-nav{ color:#fff !important; text-shadow:0 0 4px rgba(0,40,90,.9); }
+body[data-tema="aero"] .plop-ie-cuerpo{ border:1px solid rgba(0,0,0,.52); box-shadow:0 0 0 1px rgba(255,255,255,.65); }
+
+/* ---------- 13. retoques ---------- */
+body[data-tema="aero"] #vista .ventana-so .cs{ max-width:1100px; margin-left:auto; margin-right:auto; }
+body[data-tema="aero"] #btnTemas{ font-family:"Segoe UI Symbol","DejaVu Sans","Noto Sans Symbols 2",sans-serif; }
+body[data-tema="aero"] .modal > .panel > .cab .ic{ background:none !important; border:0 !important; box-shadow:none !important; width:auto; height:auto; }
+body[data-tema="aero"] .plop-ie-tit{ align-items:flex-start !important; }
+body[data-tema="aero"] .plop-ie-x{ margin-top:-6px !important; }

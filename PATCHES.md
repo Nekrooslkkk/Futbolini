@@ -4374,3 +4374,40 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   Comprobado al revés con 4 roturas (allanamiento sin investigación, sin decaimiento, favores sin poder,
   sin efecto en la vida): las 4 las caza.
 - **Estado:** doctor sano en 3 partidas (74 chequeos) · dev 570/570 · core 1185/1185.
+
+### 7.9082 — Aero de Windows 7 de verdad: una sola hoja, vidrio claro, ventanas de Explorador
+**Archivos:** `css/aero7.css` (nuevo), `js/aero7.js` (nuevo), `js/data-ranuras.js` (nuevo), `fonts/` (Selawik, OFL),
+`js/dev-doctor.js`, `test/doctor.sh`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **El diagnóstico:** el Aero estaba en capas que se pisaban (aero.css, so.css, pulido.css, temas.css, movil.css,
+  7.css del CDN y `<style>` inyectados). Ejemplo concreto: 7.css pone el título de ventana negro con brillo
+  blanco (Win7 real) y so.css le pintaba detrás una barra azul oscura XP → texto negro sobre azul con halo.
+- **`css/aero7.css` manda en el tema Aero** (carga después de pulido.css). Un solo lenguaje:
+  - Letra **Selawik** (la Segoe UI libre de Microsoft, en `/fonts`, funciona sin internet). Los números ya no
+    van en monoespaciada: cifras alineadas (`tabular-nums`).
+  - **Ventanas y diálogos:** vidrio claro con reflejos, título negro con brillo blanco, botones de título Win7
+    (cerrar rojo), área cliente clara con el doble filo. Igual con o sin el 7.css del CDN.
+  - **Paneles:** tarjetas blancas con encabezado brillante claro, texto azul marino, ícono en burbuja. El
+    color (agua/alerta/grave) va en el tinte, no en barras saturadas.
+  - **Escritorio = el escritorio:** sus paneles flotan sobre el fondo como gadgets de Vista.
+  - **Opciones de decisión = "command links"** de Win7 (flecha verde, título azul).
+  - **Avisos = globos de la bandeja** de Win7, abajo a la derecha, apilados (en celu, centrados).
+  - El **«+$ M»** de la barra flota debajo del dato (en PC) y ya no tapa la etiqueta.
+  - Botón gris = botón estándar Win7; campos de texto, barras de progreso (con destello), scrollbars y filtros Win7.
+  - Lateral = vidrio oscuro del menú Inicio, canal activo en gel azul (contraste medido ≥ 4,5).
+  - PLOP! = Internet Explorer 8 sobre el mismo vidrio.
+- **`js/aero7.js`:** cada sección (menos Escritorio y PLOP!) se abre en su **ventana de Explorador** con barra de
+  direcciones: ◀ ▶ (historial real) y la ruta «Futbolini ▸ Club ▸ Sección». Secciones de listas en columnas.
+- **Ranuras de imagen (`js/data-ranuras.js`):** 14 lugares donde un humano puede poner su imagen (fondo, logo,
+  íconos de sección). Se pone el archivo en `img/aero/`, se marca `listo:true`, y reemplaza al emoji; si falta,
+  vuelve el emoji solo. Ver `GUIA_HUMANO.md`.
+- **Doctor:**
+  - `aero_coherente`: aero7.css al final, Selawik registrada, sin monoespaciada, título sin fondo propio y negro,
+    «+$ M» debajo del chip, 8 secciones con una ventana y dirección, escritorio suelto. Al revés: 4 roturas cazadas.
+  - `ranuras_img`: ids únicos, rutas limpias, descripción y medida; si está marcada lista, que el archivo exista.
+    Al revés: marcada sin archivo y ruta con mayúsculas/espacios, ambas cazadas.
+  - `legibilidad_ui` estima el fondo real del canal activo (ya no supone celeste). Al revés: cazado.
+  - `scroll_estable` lee `irA` con `_docFuente` (atraviesa envoltorios).
+  - **`test/doctor.sh` corre además en pantalla de celular (390×844).** Cazó en vivo un desborde de 200 px que en
+    PC no se veía.
+- **Barrido:** 5 partidas × 12 secciones × PC y celular + 4 ventanas + partido: sin hallazgos.
+- **Estado:** doctor sano (3 partidas + celular, 76 chequeos) · dev 574/574 · core 1185/1185.

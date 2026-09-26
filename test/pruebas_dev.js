@@ -1565,6 +1565,22 @@
       SEC="escritorio";
     },"Sombra 7.9081");
 
+    grupo("Aero de Windows 7 · 7.9082");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      ["aero_coherente","ranuras_img"].forEach(function(id){
+        var r=DOCTOR_CHECKS.filter(function(c){ return c.id===id; })[0].fn();
+        t(r.ok,"doctor "+id+": "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      });
+      document.body.setAttribute("data-tema","aero");
+      irA("finanzas"); irA("plantel");
+      var atras=document.querySelector("#vista .so-dir .dir-b");
+      t(!!atras&&!atras.disabled,"después de navegar, el botón Atrás de la ventana está activo");
+      aero7Navegar(-1);
+      t(SEC==="finanzas","Atrás vuelve a la sección anterior");
+      irA("escritorio");
+    },"Aero 7.9082");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

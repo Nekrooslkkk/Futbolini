@@ -3,6 +3,8 @@
 # Úsalo antes de subir: si algo se rompió, dice qué chequeo, en qué archivo:línea y por qué.
 #   bash test/doctor.sh                 → las 3 de siempre
 #   bash test/doctor.sh RIV,2026 UC,2026 → las que digas
+# 7.9082: la primera partida corre además en pantalla de celular (390×844): el desborde de página en el
+# celu solo se ve con esa ventana (medido: una regla de la barra desbordaba 200 px y en PC no se notaba).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 CHROME_BIN="${CHROME:-}"
@@ -20,8 +22,12 @@ open("_doctor_tmp.html","w",encoding="utf-8").write(s.replace("</body>",inject))
 PY
 trap 'rm -f ./_doctor_tmp.html' EXIT
 FALLA=0
-for P in "${PARTIDAS[@]}"; do
-  OUT=$(timeout 600 "$CHROME_BIN" --headless=new --no-sandbox --disable-gpu --window-size=1366,800 --virtual-time-budget=120000 --dump-dom "file://$PWD/_doctor_tmp.html#$P" 2>/dev/null | python3 -c "
+CORRIDAS=(); for P in "${PARTIDAS[@]}"; do CORRIDAS+=("$P|1366,800"); done
+CORRIDAS+=("${PARTIDAS[0]}|390,844")
+for C in "${CORRIDAS[@]}"; do
+  P="${C%%|*}"; VEN="${C##*|}"
+  [ "$VEN" = "390,844" ] && echo "── celular 390×844 ──"
+  OUT=$(timeout 600 "$CHROME_BIN" --headless=new --no-sandbox --disable-gpu --window-size=$VEN --virtual-time-budget=120000 --dump-dom "file://$PWD/_doctor_tmp.html#$P" 2>/dev/null | python3 -c "
 import sys,re,html
 d=sys.stdin.read(); m=re.search(r'<pre id=\"out\">(.*?)</pre>', d, re.S)
 print(html.unescape(m.group(1)) if m else 'NO OUT · DOCTOR_DONE:FAIL')
@@ -30,5 +36,5 @@ print(html.unescape(m.group(1)) if m else 'NO OUT · DOCTOR_DONE:FAIL')
   echo "$OUT" | grep -q "DOCTOR_DONE:PASS" || FALLA=1
 done
 echo
-if [ $FALLA -eq 0 ]; then echo "✅ DOCTOR SANO en ${#PARTIDAS[@]} partida(s)"; else echo "❌ DOCTOR con fallas"; fi
+if [ $FALLA -eq 0 ]; then echo "✅ DOCTOR SANO en ${#PARTIDAS[@]} partida(s) + celular"; else echo "❌ DOCTOR con fallas"; fi
 exit $FALLA
