@@ -1431,6 +1431,12 @@ devDoctorRegistrar({id:"arco_3d", area:"interfaz", n:"Arco 3D: cámara real (arc
     if(!suave||suave.efecto!=="picadita") falta.push("un trazo corto y suave no sale picada");
     if(!curva||!(curva.curl>0.3)) falta.push("un trazo abombado a la derecha no da comba a la derecha");
   }
+  if(typeof efectoConPotencia!=="function") falta.push("no hay barra de potencia al deslizar");
+  else {
+    if(efectoConPotencia({curl:0},0.3).efecto!=="colocado") falta.push("con poca potencia no sale colocado");
+    if(efectoConPotencia({curl:0},0.75).efecto!=="potente") falta.push("con la barra en naranjo no sale potente");
+    if(!efectoConPotencia({curl:0},0.99).pasado) falta.push("pasarse de potencia no eleva el tiro");
+  }
   if(!/a3-pateador/.test(htmlArcoVivo({modo:"penal"}))) falta.push("el penal no tiene pateador de espalda");
   if(!(typeof cerrarModal==="function"&&cerrarModal._a3)) falta.push("la ventana puede cerrarse en medio del festejo");
   var st=document.createElement("div"); st.className="modal escena-3d"; st.innerHTML='<div class="e3d-stage"><div class="e3d-world"></div></div>';

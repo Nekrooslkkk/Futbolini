@@ -529,26 +529,47 @@ function efectoDeTrazo(pts){
   else if(cuerda<95&&vel<0.45) efecto="picadita";
   return {efecto:efecto, curl:curl, vel:vel, cuerda:cuerda, picada:efecto==="picadita"};
 }
+/* 7.9074 · deslizar con ayuda (respuesta del autor): mientras mantienes el dedo se llena la barra
+   de potencia. ≤60 % colocado · 60–92 % potente · >92 % se te eleva (el apunte sube: puede irse). */
+const A3_CARGA_MS=1100, A3_POT={potente:0.6, pasado:0.92};
+function efectoConPotencia(ef,pot){
+  const out=Object.assign({curl:0,picada:false},ef||{});
+  if(ef&&ef.picada&&pot<0.35){ out.efecto="picadita"; }
+  else out.efecto=pot>=A3_POT.potente?"potente":"colocado";
+  out.pot=pot; out.pasado=pot>A3_POT.pasado;
+  return out;
+}
 function _a3Deslizar(stage,svg){
-  let pts=null;
+  let pts=null, t0=0, raf=0;
   const trazo=svg.querySelector("#a3-trazo");
-  const loc=e=>{ const m=svg.getScreenCTM(); if(!m) return null; const q=svg.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const r=q.matrixTransform(m.inverse()); return {x:r.x,y:r.y,t:performance.now()}; };
-  stage.addEventListener("pointerdown",function(e){ if(svg._pateado) return; const p=loc(e); if(!p) return; pts=[p]; svg._swipe=null; },true);
+  const barra=document.createElement("div"); barra.className="a3-pot";
+  barra.innerHTML='<div class="a3-pot-t">Potencia</div><div class="a3-pot-b"><i></i><span class="a3-pot-m" style="left:'+(A3_POT.potente*100)+'%"></span><span class="a3-pot-m r" style="left:'+(A3_POT.pasado*100)+'%"></span></div>';
+  stage.appendChild(barra);
+  const fill=barra.querySelector("i");
+  const pot=()=>Math.min(1,(performance.now()-t0)/A3_CARGA_MS);
+  const pintar=()=>{ if(!pts) return; const v=pot(); fill.style.width=(v*100).toFixed(1)+"%"; fill.className=v>A3_POT.pasado?"r":(v>=A3_POT.potente?"n":""); raf=requestAnimationFrame(pintar); };
+  const loc=e=>{ const m=svg.getScreenCTM(); if(!m) return null; const q=svg.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const r=q.matrixTransform(m.inverse()); return {x:r.x,y:r.y,t:performance.now(),cx:e.clientX,cy:e.clientY}; };
+  stage.addEventListener("pointerdown",function(e){ if(svg._pateado) return; const p=loc(e); if(!p) return; pts=[p]; svg._swipe=null; t0=performance.now(); barra.classList.add("on"); cancelAnimationFrame(raf); pintar(); },true);
   stage.addEventListener("pointermove",function(e){
     if(!pts) return; const p=loc(e); if(!p) return; pts.push(p); if(pts.length>80) pts.splice(1,1);
     if(trazo){ trazo.setAttribute("d","M"+pts.map(q=>q.x.toFixed(1)+","+q.y.toFixed(1)).join(" L")); trazo.setAttribute("opacity",".8"); }
     if(pts.length>4){ const ef=efectoDeTrazo(pts); if(ef&&ef.cuerda>40) svg._swipe=ef; }
   },true);
-  stage.addEventListener("pointerup",function(){
+  stage.addEventListener("pointerup",function(e){
     if(!pts) return;
-    const ef=efectoDeTrazo(pts); pts=null;
+    const v=pot(), ult=pts[pts.length-1], ef=efectoConPotencia(efectoDeTrazo(pts),v); pts=null; cancelAnimationFrame(raf);
+    setTimeout(function(){ barra.classList.remove("on"); fill.style.width="0"; },650);
     if(trazo) setTimeout(function(){ trazo.setAttribute("opacity","0"); },220);
-    if(!ef||ef.cuerda<40){ svg._swipe=null; return; }
-    svg._swipe=ef;
-    /* el efecto del trazo aprieta el botón que corresponde (la lógica sigue siendo la misma) */
+    svg._swipe=(ef.cuerda||0)>=40?ef:{curl:0,picada:ef.efecto==="picadita",efecto:ef.efecto,pot:v};
+    /* la barra elige el efecto (el mismo botón de siempre: la lógica no cambia) */
     const modal=stage.closest(".modal"), bs=modal?modal.querySelectorAll(".penal-ef button"):[];
     const idx={colocado:0,potente:1,picadita:2}[ef.efecto];
     if(bs[idx]) bs[idx].click();
+    /* pasado de potencia: el apunte se eleva antes de que la jugada lo lea */
+    if(ef.pasado&&ult){
+      const m=svg.getScreenCTM(); const q=svg.createSVGPoint(); q.x=ult.x; q.y=ult.y-(26+(v-A3_POT.pasado)*300); const c=m?q.matrixTransform(m):{x:ult.cx,y:ult.cy-40};
+      try{ svg.dispatchEvent(new PointerEvent("pointermove",{clientX:c.x,clientY:c.y,buttons:1,pressure:0.5,bubbles:true})); }catch(err){}
+    }
     const h=stage.querySelector(".a3-hint"); if(h) h.classList.add("oculto");
   },true);
 }
@@ -643,7 +664,7 @@ function festejoArcoActivo(){ return !!(_A3_FEST&&_A3_FEST.svg.isConnected&&perf
 (function(){
   const o=window._abrirEscenaArco; if(typeof o!=="function"||o._a3) return;
   const w=function(){ const r=o.apply(this,arguments);
-    try{ if(r&&r.stage){ r.stage.classList.add("e3d-v2"); const h=document.createElement("div"); h.className="a3-hint"; h.textContent="Desliza desde la pelota: rápido = potente · con curva = comba · corto y suave = picada. O toca el arco y aprieta el botón."; r.stage.appendChild(h); setTimeout(function(){ h.classList.add("oculto"); },5200); } }catch(e){}
+    try{ if(r&&r.stage){ r.stage.classList.add("e3d-v2"); const h=document.createElement("div"); h.className="a3-hint"; h.textContent="Mantén el dedo en la pelota y desliza al arco: la barra de potencia se llena mientras mantienes (si te pasas, se eleva). La curva del trazo es la comba; corto y suave es picada."; r.stage.appendChild(h); setTimeout(function(){ h.classList.add("oculto"); },5200); } }catch(e){}
     return r; };
   Object.keys(o).forEach(k=>w[k]=o[k]); w._a3=true; window._abrirEscenaArco=w;
 })();
@@ -671,6 +692,12 @@ if(typeof document!=="undefined"&&!document.getElementById("css-arco3d")){
     "@media (max-width:760px){html body .modal.escena-3d .e3d-stage.e3d-v2{flex:1 1 auto !important;aspect-ratio:auto !important;min-height:250px !important;max-height:none !important;margin:0 !important}}"+
     ".e3d-stage .a3-hint{position:absolute;left:8px;right:8px;top:8px;padding:6px 10px;border-radius:10px;background:rgba(5,12,24,.62);color:#e8f4ff;font-size:12px;line-height:1.35;pointer-events:none;transition:opacity .4s}"+
     ".e3d-stage .a3-hint.oculto{opacity:0}"+
+    ".e3d-stage .a3-pot{position:absolute;left:10px;bottom:10px;width:min(220px,46%);padding:5px 8px;border-radius:10px;background:rgba(5,12,24,.62);opacity:0;transition:opacity .2s;pointer-events:none}"+
+    ".e3d-stage .a3-pot.on{opacity:1}.a3-pot-t{font:800 10px system-ui;letter-spacing:1px;color:#cfe6ff;text-transform:uppercase;margin-bottom:3px}"+
+    ".a3-pot-b{position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,rgba(79,191,63,.25) 0 60%,rgba(240,180,41,.25) 60% 92%,rgba(224,60,50,.3) 92%);box-shadow:inset 0 1px 2px rgba(0,0,0,.5);overflow:hidden}"+
+    ".a3-pot-b i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;background:linear-gradient(180deg,#b6f5a8,#3fbf3a);box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}"+
+    ".a3-pot-b i.n{background:linear-gradient(180deg,#ffe08a,#f0a020)}.a3-pot-b i.r{background:linear-gradient(180deg,#ff9a8a,#d8352a)}"+
+    ".a3-pot-m{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.8)}.a3-pot-m.r{background:#ffd0cc}"+
     ".e3d-stage .a3-repe{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:6px;background:#d6262f;color:#fff;font-weight:900;font-size:12px;letter-spacing:1.5px;animation:a3Repe 1s ease-in-out infinite alternate}"+
     "@keyframes a3Repe{from{opacity:.75}to{opacity:1}}"+
     ".arco-svg .a3-led{animation:a3Led 26s linear infinite}"+

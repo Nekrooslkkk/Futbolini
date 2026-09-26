@@ -4213,3 +4213,17 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Avisos de logro:** se suben para no quedar encima del botón gordo de Avanzar.
 - **Doctor `calendario_aero`:** detecta el choque de clases. Comprobado al revés.
   **Tests:** dev 564/564 · core 1185/1185.
+
+### 7.9074 — Arco: deslizar con ayuda (barra de potencia)
+**Archivos:** `js/arco3d.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`
+- **Respuesta del autor:** "Deslizar con ayuda" (barra de potencia que se llena mientras mantienes el dedo,
+  como FIFA).
+- **La barra:** aparece abajo a la izquierda del escenario y se llena en 1,1 s mientras mantienes el dedo.
+  - Verde (hasta 60 %): colocado.
+  - Naranjo (60–92 %): potente.
+  - Rojo (más de 92 %): te pasaste. El apunte sube, más cuanto más te pasas, y el tiro puede irse por arriba.
+  - Corto y suave con poca carga: picada.
+- **La curva del trazo sigue siendo la comba.**
+- **La lógica no cambia:** la barra aprieta el mismo botón de efecto de siempre, y si te pasas mueve el punto
+  de apunte hacia arriba antes de que la jugada lo lea (el botón y el toque al arco siguen funcionando).
+- **Doctor `arco_3d`:** revisa además colocado, potente y "te pasaste".
