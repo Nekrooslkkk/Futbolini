@@ -3804,3 +3804,18 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Pedido del autor, sin tocar:** el VAR y el reloj quedan como están ("lo mejor del juego").
 - **Doctor `plop_vivo`:** ahora también exige que las pistas sean mensajes del chat y marquen a la mayoría.
   **Tests:** dev 525/525 · core 1185/1185.
+
+### 7.9058 — estadio en maqueta isométrica
+**Archivos:** `js/estadio-dibujo.js`, `js/util.js`, `index.html`
+- Respuesta del autor: "Más 3D (isométrico)". `svgEstadio` se reconstruyó como maqueta: cuatro tribunas con
+  altura (Pacífico, Norte, Sur, Andes), cancha con franjas y líneas en perspectiva isométrica, y pista atlética
+  en los recintos viejos.
+- **Mejora tribuna por tribuna:** talud de cemento con grietas → butacas en los colores del club → techo →
+  doble bandeja. La cercana es más baja para no tapar la cancha.
+- **Público:** sentado sobre las butacas según la ocupación proyectada.
+- **Etapas:** desde la 3, torres de luz. Completo: partido de noche con luces encendidas, pantalla con el
+  nombre del club y banderas sobre el techo principal.
+- **Obra en marcha:** andamios y grúa sobre la tribuna que se está mejorando. El pie dice cuál es la próxima
+  ("Próxima mejora: tribuna Norte").
+- La API (`etapaEstadio`, `estadioCompleto`, `panelEstadioDibujo`) y el doctor `estadio_dibujado` no cambian.
+  **Tests:** dev 525/525 · core 1185/1185.
