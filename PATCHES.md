@@ -3458,3 +3458,18 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Ventanas:** minimizar cierra como la X (antes dejaba "Empezar en 2026" flotando solo); maximizar agranda de verdad.
 - Test de calibración corregido: 7.9037 decía "mismo número"; es estable, no idéntico.
 - **Doctor +1:** `ui_sin_duplicados`, verificado al revés. **Tests:** dev 489/489 · core 1185/1185.
+
+## 7.9040 · El ayudante hace (y te cuenta qué hizo y por qué)
+**Archivos:** `js/ayudante.js` (nuevo), `js/ui.js`, `js/dev-doctor.js`, `css/pulido.css`, `js/util.js`, `index.html`, tests
+- **Pedido del autor:** el ayudante tenía que hacer, no preguntar. Antes diagnosticaba ("Caja flaca", "Camarín
+  cortado") y te mandaba a buscar el botón. Ahora, en su panel del Escritorio, **"Lo hago yo"**: cada problema
+  con su acción, el **porqué** (para aprender) y, después, **qué hizo con números**:
+  resolver las decisiones pendientes (elige la de mejor puntaje que se puede pagar, y dice cómo salió cada una),
+  charla con el capitán en el tono correcto, semana suave para los cansados, rearmar un once manual con
+  lesionados, bajar entradas si la hinchada se va, delegar la caja al Tesorero. "Haz todo lo seguro" de una.
+  Queda un registro de lo último que hizo.
+- **Tesorero con riesgo** (Finanzas): Prudente (6 semanas de gastos de colchón, casi todo el excedente a deuda),
+  Medio (4 / mitad), Agresivo (2 / poco a deuda: caja para fichar, pero un mes malo te deja sin sueldos). Cada
+  semana deja su informe de qué hizo. El colchón se mide en semanas de gastos reales del club.
+- **Doctor +1:** `ayudante_hace` (cada acción ofrecida cambia algo de verdad y explica por qué), verificado al
+  revés. **Tests:** dev 504/504 · core 1185/1185.

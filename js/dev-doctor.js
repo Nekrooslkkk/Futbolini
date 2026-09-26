@@ -831,6 +831,21 @@ devDoctorRegistrar({id:"ui_sin_duplicados", area:"interfaz", n:"Cada cosa tiene 
   return falta.length?_dmal(falta.length+" duplicado(s)",falta):_dok("un botón por cosa; charla con el capitán, una por semana");
 }});
 
+/* 7.9040 · el ayudante HACE: cada problema que muestra tiene que resolverse con su botón */
+devDoctorRegistrar({id:"ayudante_hace", area:"motor", n:"Lo que el ayudante ofrece hacer, lo hace de verdad", fn:function(){
+  if(!E||typeof ayudanteAcciones!=="function") return _dmal("ayudante.js no está cargado");
+  var acc=ayudanteAcciones(), falta=[], snap=clonarPartida(E);
+  try{
+    acc.forEach(function(a){
+      var antes=JSON.stringify(E), txt=ayudanteHacer(a.id);
+      if(!txt) falta.push("«"+a.t+"»: no hizo nada");
+      else if(JSON.stringify(E)===antes) falta.push("«"+a.t+"»: dice que lo hizo pero no cambió nada");
+    });
+  } finally { restaurarPartida(snap); }
+  if(acc.some(function(a){ return !a.porque; })) falta.push("hay acciones sin explicar por qué");
+  return falta.length?_dmal(falta.length+" acción(es) de mentira",falta):_dok(acc.length?(acc.length+" acción(es) disponibles, todas hacen algo y explican por qué"):"nada que arreglar ahora");
+}});
+
 /* 7.9032 · legibilidad: el vidrio Aero no puede tapar el texto */
 function _docLum(rgb){
   var m=String(rgb).match(/[\d.]+/g); if(!m) return 1;

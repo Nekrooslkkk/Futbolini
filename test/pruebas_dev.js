@@ -1321,6 +1321,36 @@
       t(plata(0.95)==="$950.000" && plata(1.4)==="$1,4 M" && plata(250)==="$250 M","la plata chica se lee en pesos ($950.000, $1,4 M)");
     },"Sin duplicados");
 
+    grupo("El ayudante hace · 7.9040");
+    safe(function(){
+      nuevaPartida("RAN",2026,"historico");
+      for(var i=0;i<4;i++){ var pp=proximoPartido(); if(pp.jugado){ procesarSemanaPostPartido(); continue; } var P=iniciarPartido(pp,"simular"); correrHasta(P,90); terminarPartido(P); procesarSemanaRapido(); }
+      /* un club con problemas: moral baja, piernas pesadas, once manual con un lesionado, hinchada caída */
+      E.ind.moral=40; E.ind.hinchada=35;
+      var once=onceIdeal(); once.slice(0,3).forEach(function(j){ j.cansancio=20; });
+      E.tactica.xiManual=once.map(function(j){ return j.n; }); once[5].lesion=2;
+      var ids=ayudanteAcciones().map(function(a){ return a.id; });
+      ["charla","suave","once","precios"].forEach(function(k){ t(ids.indexOf(k)>=0,"el ayudante ofrece: "+k); });
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="ayudante_hace"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor ayudante_hace: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
+      var ah=ayudanteHacer; ayudanteHacer=function(){ return "listo"; };
+      t(!c.fn().ok,"el Doctor caza un ayudante que dice que hizo pero no hizo"); ayudanteHacer=ah;
+      var dec0=(E.decPend||[]).length, m0=E.ind.moral;
+      var h=ayudanteHacerTodoSeguro();
+      t(h.length>=3,"'Haz todo lo seguro' resolvió "+h.length+" cosas");
+      t((E.decPend||[]).length<dec0||dec0===0,"las decisiones quedaron resueltas ("+dec0+" → "+(E.decPend||[]).length+")");
+      t(E.ind.moral!==m0,"la charla movió la moral ("+m0+" → "+E.ind.moral+")");
+      t(!E.tactica.xiManual,"el once manual roto se rearmó");
+      t(onceIdeal().every(function(j){ return !(j.lesion>0); }),"sin lesionados en el once");
+      t(E.ayudante&&E.ayudante.log.length>=3,"queda registro de lo que hizo");
+      SEC="escritorio"; render();
+      t(!!document.querySelector("#vista .ay-hace"),"el bloque 'Lo hago yo' está en el Escritorio");
+      E.finanzas.delegado=true; E.finanzas.riesgo="prudente"; E.deuda=500; E.plata=colchonTesorero()+200;
+      var d0=E.deuda; gestionTesorero();
+      t(E.deuda<d0 && E.plata>=colchonTesorero()-5,"Tesorero prudente: abona deuda sin romper el colchón ("+plata(d0)+" → "+plata(E.deuda)+")");
+      E.finanzas.riesgo="agresivo"; t(colchonTesorero()<(E.finanzas.riesgo="prudente",colchonTesorero()),"agresivo guarda menos colchón que prudente");
+    },"Ayudante");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

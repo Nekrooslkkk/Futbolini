@@ -1547,6 +1547,20 @@ function vistaFinanzas(){
     b.style.marginTop="5px";
     b.onclick=()=>{ E.finanzas.delegado=!E.finanzas.delegado; guardar(); render(); aviso(E.finanzas.delegado?"Delegaste la caja al Tesorero":"Retomaste el control de la caja"); };
     dl.appendChild(b);
+    /* 7.9040 · cuánto arriesga el Tesorero (y qué hizo la última semana) */
+    if(typeof TESORERO_RIESGO==="object"){
+      const rk=E.finanzas.riesgo||"medio";
+      const f=el("div","fichas"); f.style.marginTop="6px";
+      Object.keys(TESORERO_RIESGO).forEach(k=>{
+        const c=el("button","ficha"+(rk===k?" on":""),TESORERO_RIESGO[k].n);
+        c.setAttribute("aria-pressed",rk===k?"true":"false");
+        c.onclick=()=>{ E.finanzas.riesgo=k; guardar(); render(); };
+        f.appendChild(c);
+      });
+      dl.appendChild(f);
+      dl.appendChild(el("p","mini","<b>"+TESORERO_RIESGO[rk].n+":</b> "+TESORERO_RIESGO[rk].d+" Colchón hoy: <b>"+plata(colchonTesorero())+"</b>."));
+      if(E.finanzas.informe) dl.appendChild(el("p","mini","🏦 "+escHtml(E.finanzas.informe)));
+    }
     pd.cuerpo.appendChild(dl);
   }
   const anclaBanco=v.querySelector(".banco-cuentas");

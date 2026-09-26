@@ -226,3 +226,11 @@ body.con-juego .burbujas i{ animation-play-state:paused !important; }
   .modal.ventana-so.so-maxi{ width:min(96vw,1400px) !important; max-width:none !important; height:94dvh !important; max-height:94dvh !important; }
   .modal.ventana-so.so-maxi .so-cuerpo{ flex:1 1 auto; overflow:auto; }
 }
+/* 7.9040 · el ayudante hace (con porqué) */
+.ay-hace{ margin:6px 0 10px; }
+.ay-accion{ padding:8px 10px; margin:6px 0; border-radius:10px; border:1px solid rgba(30,120,60,.25);
+  background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(226,246,232,.35)); display:grid; gap:4px; }
+.ay-accion.ay-riesgo{ border-color:rgba(200,130,20,.35); background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(252,240,220,.4)); }
+.ay-accion .ay-t{ font-weight:800; font-size:13px; }
+.ay-accion .btn-aqua{ justify-self:start; }
+.ay-log > summary{ cursor:pointer; font-size:12px; font-weight:700; padding:4px 0; }
