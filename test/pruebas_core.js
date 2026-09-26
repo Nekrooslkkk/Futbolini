@@ -430,16 +430,18 @@
       ok(chips.some(function(c){ return /domingo/i.test(c); }), "chip ¿El domingo?");
       var r=(typeof preguntarAyudante==="function")?preguntarAyudante("¿El domingo?"):"";
       ok(/vs |rival|Fecha|local|visita|partido|Morning|favorito|parejo|fuerte/i.test(r), "¿El domingo? habla del partido: "+String(r).slice(0,90));
-      SEC="calendario";
+      /* 7.9059 · Calendario nivel SofaScore (pedido del autor): pestañas; solo se dibuja la activa */
+      SEC="calendario"; E.uiCal=null;
       if(typeof render==="function") render();
-      ok(E.uiMundoTab==="tablas", "tab default = tablas");
-      ok(document.querySelector(".tablas-pais"), "grid tablas-pais en Calendario");
-      /* 7.9037 · rendimiento: tu liga abierta; el resto de ligas y las copas plegadas (se dibujan al abrir) */
-      var nLig=document.querySelectorAll(".tablas-pais .tabla-liga").length, pleg=[].slice.call(document.querySelectorAll(".mundo-plegable > summary")).map(function(s){ return s.textContent; });
-      ok(nLig>=1 && nLig+pleg.filter(function(t){ return /Liga|Segunda/.test(t); }).length>=4, "las 4 ligas en Tablas (tu liga abierta + "+pleg.length+" plegadas)");
-      ok(pleg.some(function(t){ return /Copa Chile/.test(t); }), "grupos de copa en Tablas (plegados)");
-      var dups=Array.prototype.filter.call(document.querySelectorAll("#vista .panel .cab span:last-child"), function(s){ return /^Tabla de posiciones/.test(s.textContent||""); });
-      ok(dups.length===0, "no queda la tabla suelta de una sola liga ("+dups.length+")");
+      ok(E.uiCal && E.uiCal.tab==="partidos", "tab default = partidos (como SofaScore)");
+      ok(document.querySelector(".cs-tabs") && document.querySelector(".cs-buscar input"), "pestañas y buscador de equipos");
+      E.uiCal.tab="tablas"; render();
+      ok(document.querySelectorAll(".cs-tabla tbody tr").length>=6, "la tabla de tu liga se ve en Tablas");
+      var chipsL=[].slice.call(document.querySelectorAll(".cs-chips .ficha")).map(function(b){ return b.textContent; });
+      ok(chipsL.filter(function(t){ return /Primera|Segunda/.test(t); }).length>=4, "las 4 ligas del país a un toque ("+chipsL.join(" · ")+")");
+      E.uiCal.tab="copas"; render();
+      ok(/Copa Chile/.test(document.getElementById("vista").textContent), "Copa Chile en Copas");
+      E.uiCal.tab="partidos"; render();
     }, "Calendario tablas + chips");
 
     /* T11 · 7.76 Grok: Argentina + historia Segunda + tuits/voz */
@@ -461,11 +463,13 @@
       ok(E.clubNombre==="Boca Juniors", "nombre Boca");
       ok(E.mundo && E.mundo.ligas && E.mundo.ligas.arg2026A && E.mundo.ligas.arg2026A.ids.length===15, "mundo Zona A = 15");
       ok(E.mundo.ligas.arg2026B && E.mundo.ligas.arg2026B.ids.length===15, "mundo Zona B = 15");
-      SEC="calendario";
+      SEC="calendario"; E.uiCal={tab:"tablas"};
       if(typeof render==="function") render();
-      ok(document.querySelector(".tablas-pais"), "grid tablas-pais en Calendario Argentina");
-      ok(/Zona A|Apertura|Liga Profesional/i.test((document.querySelector(".tablas-pais")||{textContent:""}).textContent||""), "tabla dice Apertura / Zona A");
-      ok(!document.querySelector(".tablas-copa"), "Argentina no muestra grupos de Copa Chile");
+      ok(document.querySelectorAll(".cs-tabla tbody tr").length>=10, "tabla de Argentina en Calendario");
+      ok(/Zona A/i.test(document.getElementById("vista").textContent||""), "la tabla dice Zona A");
+      E.uiCal.tab="copas"; render();
+      ok(!/Copa Chile/.test(document.getElementById("vista").textContent||""), "Argentina no muestra Copa Chile");
+      E.uiCal.tab="partidos";
     }, "Partida Boca");
     safe(function(){
       ok(typeof HISTORIA_LINEA==="object" && HISTORIA_LINEA.SMO && HISTORIA_LINEA.SMO.length>=2, "historia Santiago Morning");

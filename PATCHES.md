@@ -3819,3 +3819,29 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   ("Próxima mejora: tribuna Norte").
 - La API (`etapaEstadio`, `estadioCompleto`, `panelEstadioDibujo`) y el doctor `estadio_dibujado` no cambian.
   **Tests:** dev 525/525 · core 1185/1185.
+
+### 7.9059 — Calendario nivel SofaScore (etapa 3, tarea 13)
+**Archivos:** `js/calendario-sofa.js` (nuevo, antes de `ayudante.js`), `js/mundo.js`, `js/dev-doctor.js`, `css/pulido.css`, `test/pruebas_core.js`, `js/util.js`, `index.html`
+- Pedido del autor: Calendario al nivel de SofaScore: ordenado, búsqueda por equipo, ver cualquier equipo
+  como si lo manejaras, tablas más gruesas, sin botones de más, sin lentitud. Se reconstruyó la vista; los
+  datos siguen en `mundo.js`. Aplica en las épocas con universo; 1991 y 2006 mantienen su vista.
+- **Buscador de equipos:** tolerante a tildes y guiones, con los 76 equipos de todas las ligas. Abre la ficha.
+- **Pestañas:** solo se dibuja la activa (~50 ms).
+  - **Partidos:** tarjeta del próximo compromiso (el único botón de acción) y progreso de la temporada.
+    Lista por mes al estilo SofaScore: fecha y día, escudos, marcador, barra de color G/E/P y torneo.
+    Filtro Todos/Liga/Copas. Los meses viejos van plegados. Tocar un partido jugado abre su repetición.
+  - **Tablas:** chips por liga (la tuya con ★) y tabla gruesa con zonas de color (campeón, Libertadores,
+    Sudamericana, liguilla, descenso), DG y forma de los últimos 5 con puntos. Tocar un equipo abre su ficha.
+  - **Copas:** chips por copa, grupos en grilla (el tuyo marcado) y el cuadro cuando existe.
+  - **Resultados:** lo último del país agrupado por torneo.
+  - **Ficha de equipo:** escudo, liga, puesto, DT, estadio y forma, con sub-pestañas Partidos (su fixture con
+    resultados), Tabla (resaltado) y Plantel (con nivel, edad y valor).
+- **`mundo.js`:** guarda el resultado de cada ronda (`L.res`). En partidas viejas se recalcula igual, porque
+  el resultado es determinista.
+- Argentina no ve las copas chilenas.
+- **Tests core actualizados al diseño nuevo:** las pestañas y el buscador reemplazan `.tablas-pais` y los
+  plegables.
+- **Doctor `calendario_sofa`:** exige que el buscador encuentre todos los equipos, que la ficha tenga fixture y
+  plantel, y que los jugados de la ficha coincidan con la tabla. Al revés, falla.
+- **Próximo (7.9060):** fase final de Libertadores y Sudamericana simulada y con llaves.
+  **Tests:** dev 525/525 · core 1185/1185.

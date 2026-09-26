@@ -1746,3 +1746,7 @@ Estado: dev 509/509 · core 1185/1185.
 mismo tono de hincha chileno que el resto del chat. Categorías: ataque, aguantar, equilibrio, riesgo. Tienen
 que empujar una dirección sin decir la respuesta obvia y entenderse. Máximo ~70 caracteres cada una. Después
 de agregarlas, correr `bash test/correr_dev.sh`.
+
+**7.9059 (Claude):** reconstruí la VISTA del Calendario (`js/calendario-sofa.js`), con plan y tests. Los datos
+siguen en `mundo.js`. Si agregas una liga o una copa, suma su clave en `_CS_LIGAS` o en
+`_csCopasDisponibles`. Doctor: `calendario_sofa`.

@@ -1155,6 +1155,23 @@ devDoctorRegistrar({id:"economia_real", area:"motor", n:"Mercado a escala chilen
   }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("niv 62 "+plata(v62)+" · niv 80 "+plata(v80)+" · "+lib.length+" libres · préstamos ida y vuelta");
 }});
+devDoctorRegistrar({id:"calendario_sofa", area:"interfaz", n:"Calendario tipo SofaScore: buscar, fichas de equipo, tablas con forma, copas", fn:function(){
+  var falta=[];
+  if(typeof vistaCalendarioSofa!=="function") return _dmal("sin Calendario nuevo");
+  if(!(typeof mundoEra2026==="function"&&mundoEra2026()&&E&&E.mundo)) return _dok("época sin universo: usa la vista clásica");
+  var idx=_csIndiceEquipos(), ligas=_csLigas(), nLig=0; ligas.forEach(function(l){ nLig+=(E.mundo.ligas[l.k].ids||[]).length; });
+  if(idx.length<nLig*0.95) falta.push("el buscador encuentra "+idx.length+" de "+nLig+" equipos");
+  var riv=ligas.length?(E.mundo.ligas[ligas[0].k].ids||[]).filter(function(id){ return id!==E.club; })[0]:null;
+  if(riv){
+    var ps=_csPartidosEquipo(riv), L=E.mundo.ligas[ligas[0].k];
+    if(!ps.length) falta.push("la ficha de "+riv+" no tiene fixture");
+    var jugados=ps.filter(function(p){ return p.jugado; }).length, tab=(mundoFilasLiga(ligas[0].k).filter(function(f){ return f.id===riv; })[0]||{}).pj||0;
+    if(jugados!==tab) falta.push("la ficha de "+_csNom(riv)+" dice "+jugados+" jugados y la tabla "+tab);
+    if(typeof cpuPlantel==="function"&&!cpuPlantel(riv).length) falta.push("la ficha de "+_csNom(riv)+" no muestra plantel");
+  }
+  var det=idx.length+" equipos buscables · "+ligas.length+" ligas · "+_csCopasDisponibles().length+" copas";
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

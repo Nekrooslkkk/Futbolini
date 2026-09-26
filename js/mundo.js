@@ -932,6 +932,8 @@ function mundoSimRondaLiga(key, rondaIdx){
     const [ga,gb]=_golesM(a,b,"liga|"+key+"|"+rondaIdx+"|"+a.id+"|"+b.id);
     _aplicarTabla(L.tab, a.id, b.id, ga, gb);
     pais.push({a:a.c||a.n, b:b.c||b.n, ga:ga, gb:gb, liga:L.nom, idA:a.id, idB:b.id});
+    /* 7.9059 · resultado por ronda: la ficha de cada equipo y su racha lo leen */
+    (L.res=L.res||{})[rondaIdx]=(L.res[rondaIdx]||[]).concat([[a.id,b.id,ga,gb]]);
   });
   L.ronda=rondaIdx+1;
   E.mundo.pais=(E.mundo.pais||[]).concat(pais).slice(-40);
