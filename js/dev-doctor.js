@@ -849,6 +849,44 @@ devDoctorRegistrar({id:"correcciones_pesan", area:"motor", n:"Las decisiones en 
   } finally { restaurarPartida(snap); E._bulkSim=bulk; }
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
 }});
+devDoctorRegistrar({id:"gol_se_ve", area:"interfaz", n:"El gol se ve (también en modo liviano) y el del rival no molesta", fn:function(){
+  var falta=[];
+  if(typeof document==="undefined"||!document.body) return _dok("sin pantalla");
+  if(typeof golCelDuracion!=="function") return _dmal("sin golCelDuracion");
+  var b=document.body, tenia=b.classList.contains("perf");
+  var prueba=function(clase){ var d=document.createElement("div"); d.className=clase; d.style.visibility="hidden"; b.appendChild(d);
+    var ms=parseFloat(getComputedStyle(d).animationDuration)*1000||0; d.remove(); return ms; };
+  try{
+    b.classList.add("perf");
+    var cel=prueba("gol-cel"), toast=prueba("gol-toast");
+    if(cel<800) falta.push("en modo liviano el festejo dura "+Math.round(cel)+" ms: el gol es un parpadeo invisible");
+    if(toast<800) falta.push("en modo liviano el aviso de gol rival dura "+Math.round(toast)+" ms");
+  } finally { b.classList.toggle("perf",tenia); }
+  if(!tenia && golCelDuracion(true)<2500) falta.push("el gol propio dura menos de 2,5 s");
+  if(golCelDuracion(false)>=golCelDuracion(true)) falta.push("el gol rival se festeja igual o más que el propio");
+  if(String(celebrarGol).indexOf("gol-toast")<0) falta.push("el gol rival tapa la pantalla completa");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("gol propio "+golCelDuracion(true)+" ms con reloj detenido · rival: zócalo de "+golCelDuracion(false)+" ms");
+}});
+devDoctorRegistrar({id:"canal_coherente", area:"contenido", n:"El canal de TV calza con la época y el torneo", fn:function(){
+  var falta=[];
+  if(typeof canalDelPartido!=="function"||!E) return _dok("sin partida");
+  var a0=E.anio, eb=E.eraBase;
+  try{
+    E.eraBase="historico";
+    [1991,1998,2008,2015].forEach(function(an){ E.anio=an;
+      var c=canalDelPartido({tipo:"liga",local:true,rivalId:"x"});
+      if(/TNT/.test(c.n)) falta.push(an+": dice "+c.n+" (TNT Sports llegó en 2019)");
+      var cl=canalDelPartido({tipo:"copa",torneo:"Copa Libertadores",local:true,rivalId:"x"});
+      if(/ESPN|TNT/.test(cl.n)&&an<2019) falta.push(an+": la Libertadores sale por "+cl.n);
+    });
+    E.anio=2026;
+    var am=canalDelPartido({tipo:"amistoso",local:true,rivalId:"x"});
+    if(/TNT|ESPN|CDF/.test(am.n)) falta.push("un amistoso sale por "+am.n);
+    var lg=canalDelPartido({tipo:"liga",local:true,rivalId:"x"});
+    if(!lg.d||lg.d.length<12) falta.push("el canal no dice qué torneo es");
+  } finally { E.anio=a0; E.eraBase=eb; }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("canal según la época (abierta → CDF → TNT) y amistosos sin TV");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

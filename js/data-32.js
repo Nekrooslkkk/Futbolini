@@ -33,26 +33,42 @@ function nombreTorneo(part){
 }
 
 /* ---------- canal de TV (concesión / época, no un dato inventado de un partido real) ---------- */
+/* 7.9042 · canal coherente con la ÉPOCA (TNT Sports no existía en 1998), con el torneo
+   nombrado y hablándole al jugador. Nombres de señales reales, asignación aproximada. */
 function canalDelPartido(part){
   var anio=(typeof E!=="undefined"&&E&&E.anio)||2026;
   var prest=(typeof E!=="undefined"&&E&&E.ind&&E.ind.prestigio)||50;
   var copa=part&&part.tipo==="copa";
   var torneo=(part&&part.torneo)||"";
   var clasico=(typeof esClasico==="function")&&part?esClasico(part):false;
+  var tor=copa?(torneo||"Copa"):((typeof nombreTorneo==="function"&&part)?nombreTorneo(part):"el campeonato");
+  if(part&&part.tipo==="amistoso") return {n:"Sin TV",d:"Amistoso: si alguien lo transmite, es el streaming del club. Lo ven los fanáticos de verdad."};
+  if(copa&&/Libertadores|Sudamericana/i.test(torneo)){
+    if(anio<=1995) return {n:"Canal 13",d:tor+": lo que se ve de tu partido es en diferido o en el resumen de la noche."};
+    if(anio<=2018) return {n:"Fox Sports",d:tor+": señal continental de cable. Tu partido se ve en toda Sudamérica."};
+    if(anio<=2022) return {n:"Fox Sports / ESPN",d:tor+": señal continental. Tu partido se ve en todo el continente."};
+    return {n:(/Sudamericana/i.test(torneo)?"ESPN / Disney+":"ESPN"),d:tor+": señal continental. Tu partido se ve en todo el continente."};
+  }
   if(anio<=1994){
-    if(copa||clasico) return {n:"Canal 13",d:"Señal abierta. Sábado a la tarde, sin pay-per-view."};
-    return {n:(prest>=55?"TVN":"Canal 13"),d:"Televisión abierta. Lo ve el que tiene antena."};
+    if(copa||clasico) return {n:"Canal 13",d:tor+" en señal abierta. Sábado en la tarde, sin pay-per-view."};
+    return {n:(prest>=55?"TVN":"Canal 13"),d:tor+": televisión abierta, si te toca. Si no, radio y el resumen del domingo."};
   }
-  if(copa&&/Libertadores/i.test(torneo)) return {n:"ESPN",d:"Señal continental. Se ve en el resto de América."};
-  if(copa&&/Sudamericana/i.test(torneo)) return {n:"ESPN / Disney+",d:"Señal continental. La Sudamericana también se ve."};
+  if(anio<=2002){
+    if(clasico||prest>=65) return {n:"TVN / Canal 13",d:tor+": tu partido va en señal abierta. Lo ve todo el país."};
+    return {n:"Radio y resumen",d:tor+": tu partido no entra en la grilla abierta. Radio en vivo y los goles en la noche."};
+  }
+  if(anio<=2018){
+    if(clasico||prest>=62) return {n:"CDF Premium",d:tor+": tu partido va en el canal premium del fútbol. El que paga, lo ve."};
+    return {n:"CDF Básico",d:tor+": señal básica del cable. Lo ven tus hinchas; el resto espera el resumen."};
+  }
   if(copa&&/Chile/i.test(torneo)){
-    if(prest>=62||clasico) return {n:"TNT Sports",d:"Señal premium. La Copa Chile también se pelea en la tele."};
-    return {n:"TNT Sports 2",d:"Segundo canal. Se ve, pero no es horario estelar."};
+    if(prest>=62||clasico) return {n:"TNT Sports",d:tor+": señal premium. La copa también se pelea en la tele."};
+    return {n:"TNT Sports 2",d:tor+": segundo canal. Se ve, pero no en horario estelar."};
   }
-  if(clasico) return {n:"TNT Sports",d:"Clásico en señal premium. La concesión se nota."};
-  if(prest>=70) return {n:"TNT Sports",d:"Horario estelar, relato de siempre."};
-  if(prest>=50) return {n:"TNT Sports 2",d:"Señal 2. Lo ven los hinchas; el resto zapea."};
-  return {n:"TNT Sports 3 / streaming",d:"Fondo de grilla. La concesión todavía no te pone en el primer canal."};
+  if(clasico) return {n:"TNT Sports",d:tor+": clásico en señal premium. La concesión se nota."};
+  if(prest>=70) return {n:"TNT Sports",d:tor+": horario estelar. Tu club vende."};
+  if(prest>=50) return {n:"TNT Sports 2",d:tor+": señal 2. Lo ven tus hinchas; el resto hace zapping."};
+  return {n:"TNT Sports 3 / streaming",d:tor+": fondo de grilla. Tu club todavía no vende lo suficiente para el primer canal."};
 }
 
 function widgetClima(part){

@@ -3519,3 +3519,26 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `correcciones_pesan`:** determinista, mide `peligro()` antes y después de cada una de las 32
   consignas. También vigila las barras y el botón de la barra. Al revés, con el modelo viejo, da 7 problemas.
   **Tests:** dev 516/516 · core 1185/1185.
+
+### 7.9044 — el gol se festeja (el tuyo), el del rival no molesta; canal y árbitro coherentes
+**Archivos:** `js/ui-partido.js`, `css/gol.css`, `js/data-32.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`
+- **Bug de fondo:** en modo liviano, que se autoenciende en celulares de 4 núcleos o menos, la regla global
+  `body.perf *{animation-duration:.001s}` hacía terminar el festejo en opacidad 0 al instante. En muchos
+  celulares el gol era un parpadeo invisible. Ahora el fundido se exime.
+- **Gol propio:** festejo completo de ~3,3 s (1,6 s en liviano) con autor, tipo (cabeza/penal/tiro libre),
+  asistencia, minuto y marcador. El reloj espera (`P._celHasta`, un plazo y no una bandera: si guardas a
+  mitad del festejo no queda trabado). El confeti solo mueve `transform`, y el overlay tiene `contain:strict`.
+- **Gol rival:** zócalo liviano arriba (`.gol-toast`, 2,2 s). No tapa la pantalla ni frena el partido.
+- **Canal de TV por época:**
+  - hasta 1994, TV abierta;
+  - 1995–2002, abierta o solo radio y resumen;
+  - 2003–2018, CDF Básico/Premium;
+  - desde 2019, TNT Sports;
+  - Libertadores/Sudamericana: Fox Sports hasta 2018 y ESPN después;
+  - amistoso: "Sin TV".
+
+  El texto nombra el torneo y le habla al jugador. La asignación de señales es aproximada.
+- **Árbitro casero:** el chip dice si hoy te favorece o juega en tu contra.
+- **Doctor `gol_se_ve`** (verificado al revés: sin la exención, el festejo dura 1 ms) y **`canal_coherente`**
+  (al revés, con TNT en todas las épocas, da 10 problemas).
+  **Tests:** dev 516/516 · core 1185/1185.

@@ -142,8 +142,10 @@ function chipArbitro(part,arb){
   const a=arb||((typeof arbitroDe==="function"&&part)?arbitroDe(part):null);
   if(!a) return null;
   const d=el("span","chip-arb"+(a.casero?" casero":"")+(a.estilo==="tarjetero"?" tarj":"")+(a.estilo==="deja jugar"?" suave":""));
-  d.innerHTML="🧑‍⚖️ <b>"+a.n+"</b> · "+a.estilo;
-  d.title=a.desc+(a.casero?" · cobra para el local.":".");
+  d.innerHTML="🧑‍⚖️ <b>"+a.n+"</b> · "+a.estilo+(a.casero&&part?(part.local?" · 🏠 casero (a favor)":" · 🏠 casero (en contra)"):"");
+  /* 7.9042 · el casero dice si hoy te favorece o te perjudica */
+  const hoy=a.casero&&part?(part.local?" · cobra para el local: hoy te favorece.":" · cobra para el local: hoy juega en tu contra."):".";
+  d.title=a.desc+(a.casero?hoy:".");
   return d;
 }
 function celdaCans(j){
@@ -928,32 +930,54 @@ function celebrarGolSiCorresponde(P, marcEl){
   }
   P._golPrev=tot; P._glPrev=P.gl; P._gvPrev=P.gv;
 }
+/* 7.9042 · el gol PROPIO se festeja entero (el reloj espera ~3 s, confeti, autor, asistencia);
+   el del rival es un zócalo liviano que no frena el partido. Sin lag: solo transform/opacity,
+   y pasoEnVivo no avanza mientras dura el festejo (P._celHasta). */
+function golCelDuracion(propio){
+  const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const perf=document.body.classList.contains("perf");
+  if(!propio) return (perf||reduce)?1400:2200;
+  return (perf||reduce)?1600:3300;
+}
 function celebrarGol(P, propio, quien, marcEl){
   /* el marcador late */
   if(marcEl){ const go=marcEl.querySelector(".go"); if(go){ go.classList.remove("pulso"); void go.offsetWidth; go.classList.add("pulso"); } }
   const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
   const perf=document.body.classList.contains("perf");
-  const ov=el("div","gol-cel"+(propio?"":" rival"));
-  const grito=propio?"¡GOOOOL!":"Gol de "+(P.part.rivalNombre||"el rival");
+  document.querySelectorAll(".gol-cel,.gol-toast").forEach(x=>x.remove());
+  const marc=(P.part.local?E.clubNombre:P.part.rivalNombre)+" "+P.gl+" - "+P.gv+" "+(P.part.local?P.part.rivalNombre:E.clubNombre);
+  const dur=golCelDuracion(propio);
+  if(!propio){
+    const t=el("div","gol-toast",'<b>⚽ Gol de '+escHtml(P.part.rivalNombre||"el rival")+'</b><span>'+escHtml(marc)+'</span>');
+    t.style.animationDuration=dur+"ms";
+    document.body.appendChild(t);
+    setTimeout(()=>{ if(t.parentNode) t.parentNode.removeChild(t); }, dur+50);
+    return;
+  }
+  const det=(P.golesDetalle||[]).filter(g=>g.propio).slice(-1)[0]||{};
+  const ov=el("div","gol-cel");
+  ov.style.animationDuration=dur+"ms";
+  const tipo=det.tipo==="cabeza"?"de cabeza":(det.tipo==="penal"?"de penal":(det.tipo==="tiro libre"?"de tiro libre":(det.tipo==="autogol"?"en contra":"")));
   const wrap=el("div","wrap",
-    '<div class="big">'+(propio?"⚽ ¡GOOOL!":"GOL "+ (P.part.rivalNombre||"rival"))+'</div>'+
-    (propio&&quien?'<div class="quien">de '+quien+'</div>':(!propio?'<div class="quien">nos empataron la alegría…</div>':''))+
-    '<div class="marc-mini">'+(P.part.local?E.clubNombre:P.part.rivalNombre)+" "+P.gl+" - "+P.gv+" "+(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>');
+    '<div class="big">¡GOOOL!</div>'+
+    (quien?'<div class="quien">'+escHtml(quien)+(tipo?' <span class="tipo">'+tipo+'</span>':'')+'</div>':'')+
+    (det.asist?'<div class="asist">asistencia de '+escHtml(det.asist)+'</div>':'')+
+    '<div class="marc-mini">'+(det.min!=null?det.min+"' · ":"")+escHtml(marc)+'</div>');
   ov.appendChild(wrap);
-  /* confeti (no en modo liviano ni reduce) */
   if(!perf && !reduce){
-    const cols=propio?["#38d66a","#eaffef","#ffd23f","#4fb0ff"]:["#e8563f","#ffd0c8","#ffffff"];
-    for(let i=0;i<16;i++){
+    const cols=["#38d66a","#eaffef","#ffd23f","#4fb0ff"];
+    for(let i=0;i<22;i++){
       const c=el("i");
       c.style.left=(Math.random()*100)+"vw";
       c.style.background=cols[i%cols.length];
-      c.style.animationDelay=(Math.random()*0.35)+"s";
-      c.style.transform="translateY(0) rotate("+(Math.random()*180)+"deg)";
+      c.style.animationDelay=(Math.random()*0.5)+"s";
+      c.style.animationDuration=(dur/1000*0.85)+"s";
       ov.appendChild(c);
     }
   }
   document.body.appendChild(ov);
-  const dur=(perf||reduce)?1000:1750;
+  /* el reloj espera el festejo; se libera sí o sí al terminar */
+  P._celHasta=Date.now()+dur;   /* plazo, no bandera: si se guarda a mitad del festejo no queda trabado */
   setTimeout(()=>{ if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); }, dur);
 }
 /* 7.9003 · zócalo VAR estilo Aero (lower-third). Pausa 2s, después valida o anula. */
@@ -1309,7 +1333,7 @@ function correrEnVivo(){
 function pasoEnVivo(){
   if(PAUSADO) return;
   const P=P_ACTUAL; if(!P){ clearInterval(TIMER); return; }
-  if(P._varHold) return;
+  if(P._varHold || (P._celHasta && Date.now()<P._celHasta)) return;
   if(P.tanda && !P.tanda.done) return;
   if(P.terminado || (P.tanda && P.tanda.done)){ clearInterval(TIMER); pintarPartido(); cerrarPartido(); return; }
   /* momento táctico (solo dirigir). Nunca tape el descanso: si todavía no hubo

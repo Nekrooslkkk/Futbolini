@@ -5,10 +5,26 @@
    ============================================================ */
 .gol-cel{
   position:fixed; inset:0; z-index:220; display:grid; place-items:center;
-  pointer-events:none; overflow:hidden;
-  background:radial-gradient(circle at 50% 42%, rgba(30,140,70,.42), rgba(0,0,0,.32));
-  animation:golFade 1.8s ease forwards;
+  pointer-events:none; overflow:hidden; contain:strict;
+  background:radial-gradient(circle at 50% 42%, rgba(30,140,70,.46), rgba(0,0,0,.36));
+  animation:golFade 3.3s ease forwards; will-change:opacity;
 }
+.gol-cel .quien .tipo{ font-weight:600; opacity:.85; font-size:.7em; }
+.gol-cel .asist{ margin-top:2px; font-size:clamp(13px,3.4vw,19px); color:#d6ffe2; animation:golSub .5s .2s ease both; }
+/* 7.9042 · gol rival: zócalo liviano arriba, no tapa ni frena */
+.gol-toast{
+  position:fixed; left:50%; top:12px; z-index:220; pointer-events:none;
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+  padding:8px 18px; border-radius:12px; min-width:220px; text-align:center;
+  background:linear-gradient(180deg,#7a1f1f,#4a0f0f); color:#fff;
+  box-shadow:0 8px 24px rgba(0,0,0,.35); border:1px solid rgba(255,190,180,.4);
+  transform:translateX(-50%); will-change:transform,opacity;
+  animation:golToast 2.2s ease forwards;
+}
+.gol-toast b{ font-family:var(--f-titulo,system-ui); font-size:16px; letter-spacing:.3px; }
+.gol-toast span{ font-family:var(--f-dato,monospace); font-size:13px; opacity:.9; }
+@keyframes golToast{ 0%{transform:translate(-50%,-140%);opacity:0} 12%{transform:translate(-50%,0);opacity:1} 82%{transform:translate(-50%,0);opacity:1} 100%{transform:translate(-50%,-140%);opacity:0} }
+@media (prefers-reduced-motion:reduce){ .gol-toast{ animation:none; } }
 .gol-cel.rival{ background:radial-gradient(circle at 50% 42%, rgba(140,35,35,.42), rgba(0,0,0,.36)); }
 .gol-cel .wrap{ text-align:center; z-index:2; }
 .gol-cel .big{
@@ -31,11 +47,11 @@
 }
 .gol-cel i{
   position:absolute; top:-16px; width:9px; height:14px; border-radius:2px; opacity:.95;
-  animation:golConf 1.7s linear forwards;
+  animation:golConf 2.8s linear forwards; will-change:transform;
 }
 @keyframes golPop{ 0%{transform:scale(.3) rotate(-7deg);opacity:0} 58%{transform:scale(1.1) rotate(2deg);opacity:1} 100%{transform:scale(1) rotate(0)} }
 @keyframes golSub{ from{transform:translateY(16px);opacity:0} to{transform:none;opacity:1} }
-@keyframes golFade{ 0%{opacity:0} 7%{opacity:1} 78%{opacity:1} 100%{opacity:0} }
+@keyframes golFade{ 0%{opacity:0} 5%{opacity:1} 85%{opacity:1} 100%{opacity:0} }
 @keyframes golConf{ to{ transform:translateY(112vh) rotate(760deg); } }
 
 /* el marcador late cuando cae un gol */
@@ -44,7 +60,7 @@
 
 /* modo liviano / reduce: sin confeti, animación corta y sobria */
 body.perf .gol-cel i{ display:none; }
-body.perf .gol-cel{ animation-duration:1s; }
+body.perf .gol-cel{ animation-duration:1.6s; }
 body.perf .gol-cel .big{ animation:none; }
 @media (prefers-reduced-motion:reduce){
   .gol-cel i{ display:none; }
@@ -366,3 +382,10 @@ body.perf .arco-svg .arco-hinchas-c, body.perf .arco-svg .arq-idle{ animation:no
 @media (prefers-reduced-motion:reduce){
   .arco-svg .arco-hinchas-a, .arco-svg .arco-hinchas-b, .arco-svg .arco-hinchas-c, .arco-svg .arq-idle{ animation:none !important; }
 }
+
+/* 7.9042 · en modo liviano (se autoenciende en celulares de 4 núcleos) la regla global
+   `body.perf *{animation-duration:.001s !important}` hacía que el festejo terminara en
+   opacidad 0 al instante: el gol era un parpadeo invisible. El fundido es barato
+   (solo opacidad), así que se exime. */
+body.perf .gol-cel{ animation-duration:1.6s !important; }
+body.perf .gol-toast{ animation-duration:1.4s !important; }
