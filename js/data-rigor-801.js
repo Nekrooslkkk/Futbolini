@@ -360,7 +360,7 @@ _d801("cbl26_calama","CBL",2026,"institucional","alto",2,
       "Un lienzo te acusó de administrar el descenso.",
       {be:{prestigio:3},we:{prestigio:-3}})
   ],
-  {historia:"Cobreloa descendió a Primera B en 2024. Hecho de tabla."}),
+  {historia:"Cobreloa descendió a Primera B en 2024."}),
 _d801("cbl26_zorros","CBL",2026,"hinchada","medio",4,
   "El Zorros de semana",
   "Cuando llega un grande de la B se llena. El resto, calor y sillas. La distancia es arma si el rival no viaja entero.",

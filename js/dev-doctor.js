@@ -970,6 +970,28 @@ devDoctorRegistrar({id:"calendario_decisiones", area:"motor", n:"Decisiones de d
   } finally { restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
 }});
+devDoctorRegistrar({id:"noticias_relevantes", area:"contenido", n:"Las noticias son de tu club o de rivales que te importan", fn:function(){
+  var falta=[];
+  if(typeof titularesSemana!=="function"||typeof idsRelevantes!=="function") return _dmal("sin filtro de noticias");
+  if(!E||!E.calendario) return _dok("sin partida");
+  var idx0=E.idx, vistos={}, malas={};
+  try{
+    for(var k=0;k<14;k++){ E.idx=(idx0||0)+k;
+      (titularesSemana()||[]).forEach(function(n){ vistos[n.t]=1;
+        var c=typeof NOTICIAS_COND!=="undefined"&&NOTICIAS_COND[n.t];
+        if(c){ try{ if(!c()) malas[n.t]=1; }catch(e){ malas[n.t]=1; } }
+        if(/tutorial|Calendario muestra|Hecho de tabla/i.test((n.t||"")+" "+(n.d||""))) malas[n.t]=1;
+      });
+    }
+  } finally { E.idx=idx0; }
+  Object.keys(malas).forEach(function(t){ falta.push("titular que no te corresponde o que es una nota de desarrollo: «"+t+"»"); });
+  var rel=idsRelevantes();
+  (typeof mundoNoticias==="function"?mundoNoticias():[]).forEach(function(n){
+    if((n.idA||n.idB) && !(rel[n.idA]||rel[n.idB])) falta.push("noticia de clubes ajenos a tu liga: «"+n.t+"»");
+    if(/^Copa Chile · Grupo /.test(n.t||"")) falta.push("noticia de un grupo de Copa Chile que no es el tuyo: «"+n.t+"»");
+  });
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(Object.keys(vistos).length+" titulares distintos en 14 semanas, todos pertinentes");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

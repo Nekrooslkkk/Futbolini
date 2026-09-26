@@ -3624,3 +3624,21 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Previa:** muestra el día de la semana, la hora y el chip "🗓/🚌 motivo".
 - **Doctor `calendario_decisiones`:** al revés, sin reemplazo de día y sin efecto del voto, da 2 problemas.
   **Tests:** dev 519/519 · core 1185/1185.
+
+### 7.9049 — noticias de tu club y de tus rivales, sin notas de desarrollo
+**Archivos:** `js/noticias-relevantes.js` (nuevo, antes de `ayudante.js`), `js/data-voz-76.js`, `js/data-historico.js`, `js/data-tarea-e.js`, `js/data-rigor-801.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`
+- Pedido del autor: "Osorno ya estuvo en Primera… Hecho de tabla, no de leyenda" le salía a Rangers, sin
+  sentido y con un tono raro. Las noticias tienen que ser de tu club o de rivales relevantes.
+- **Fuera:** tres "noticias" que eran notas de desarrollo ("La tabla de arriba se mueve", "El ayudante no es
+  un tutorial", "Argentina también tiene tabla").
+- **Con condición:**
+  - Osorno y Morning, solo si ese club está en tu liga o viene en tus próximos 3 partidos;
+  - la Segunda por zonas, solo si juegas la Segunda;
+  - la deuda, solo si hay deuda;
+  - el chiste del VAR, desde 2018.
+- **Tono:** "Hecho de tabla" desaparece de todos lados.
+- **Noticias del país (`mundoArmarNoticias`):** goleadas y chistes de la fecha solo si juega alguien de tu
+  liga o un próximo rival (`idsRelevantes`). La Copa Chile muestra tu grupo, no uno cualquiera.
+- **Doctor `noticias_relevantes`:** recorre 14 semanas de titulares y las noticias del país. Al revés, con
+  Osorno forzado y una nota de desarrollo, da 2 problemas.
+  **Tests:** dev 519/519 · core 1185/1185.

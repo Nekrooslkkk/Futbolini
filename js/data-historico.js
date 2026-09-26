@@ -199,7 +199,7 @@ var HISTORIA_LINEA={
   ],
   OSO:[
     {anio:1983,hito:"Fundación",txt:"Provincial Osorno. El toro del sur. Estuvo en Primera: el Campeonato Nacional 1991 lo tiene en la tabla."},
-    {anio:1991,hito:"Primera",txt:"Jugó el Nacional 1991 (19 pts, descendió junto a Wanderers). Hecho de tabla, no de leyenda."},
+    {anio:1991,hito:"Primera",txt:"Jugó el Nacional 1991: 19 puntos y descenso, junto a Wanderers."},
     {anio:2026,hito:"Hoy",txt:"Segunda, zona Sur. Rubén Marcos Peralta (~12.000). Estadio grande para la categoría."}
   ],
   LIN:[

@@ -334,7 +334,7 @@ const EPOCAS_TAREA_E={
     ind:{plantel:70,moral:82,hinchada:80,socios:50,cantera:52,estadio:64,prestigio:62,riesgo:28},
     caja:{plata:180,deuda:70}}],
   GME:[{anio:2025,etq:"2025 · Ascenso a Primera",
-    desc:"Gimnasia de Mendoza asciende a la Liga Profesional 2026. Hecho de tabla. (Plantel: cantera.)",
+    desc:"Gimnasia de Mendoza asciende a la Liga Profesional 2026.",
     dt:"el cuerpo técnico",
     ind:{plantel:64,moral:80,hinchada:70,socios:40,cantera:46,estadio:48,prestigio:52,riesgo:32},
     caja:{plata:140,deuda:60}}],

@@ -102,7 +102,7 @@ const VOZ_NOTICIAS_76=[
  {tipo:"imp",t:"📰 Argentina también tiene tabla",d:"Si manejas un club de la Liga Profesional, Calendario muestra la de 30, no la Copa Chile."},
  {tipo:"chiste",t:"😄 El tesorero faltó a la asamblea",d:"El único que tenía un número. El resto trajo eslóganes."},
  {tipo:"club",t:"📰 Esteban Paredes en Morning",d:"El chaguito, Segunda 2026, DT documentado. Cantera si falta plantel: no se inventa."},
- {tipo:"imp",t:"📰 Osorno ya estuvo en Primera",d:"Nacional 1991, 19 pts, bajó con Wanderers. Hecho de tabla, no de leyenda."}
+ {tipo:"imp",t:"📰 Osorno ya estuvo en Primera",d:"Provincial Osorno jugó el Nacional 1991: 19 puntos y descenso, junto a Wanderers."}
 ];
 
 (function hornearVoz76(){
