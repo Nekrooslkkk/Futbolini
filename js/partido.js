@@ -1078,7 +1078,7 @@ function tickPartido(P){
     if(varRevisa(P,aFavor?"penal":"penalRival")) return {tipo:"varCheck",kind:aFavor?"penal":"penalRival",min:min,aFavor:aFavor};
     return {tipo:aFavor?"penal":"penalRival",min:min,aFavor:aFavor}; }
   /* acción: lesión */
-  if(min>20&&Math.random()<0.006){ return {tipo:"lesion",min:min}; }
+  if(min>20&&Math.random()<(P.sinLesiones?0.0006:0.006)){ return {tipo:"lesion",min:min}; }   /* 7.9061 · pretemporada: casi sin lesiones */
   /* acción: tiro libre peligroso propio */
   if(Math.random()<0.010){ return {tipo:"tiroLibre",min:min}; }
   /* autogol (raro), en cualquiera de los dos arcos */

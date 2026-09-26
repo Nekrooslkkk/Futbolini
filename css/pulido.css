@@ -419,3 +419,8 @@ body[data-tema="negro"] .cs-eqs .cs-l,body[data-tema="negro"] .cs-marc{color:#ea
 #vista[data-sec="calendario"] > .cs{break-inside:auto}
 .cs{max-width:960px}
 .cs-buscar .pick-buscar{max-width:none !important;display:block}
+
+/* 7.9061 · amistosos */
+.copa-form{display:grid;grid-template-columns:1fr;gap:4px}
+@media(min-width:640px){ .copa-form{grid-template-columns:140px 1fr} .copa-form .lb{align-self:center} }
+.copa-form .entrada{width:100%}

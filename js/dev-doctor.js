@@ -1191,6 +1191,18 @@ devDoctorRegistrar({id:"conmebol_ko", area:"motor", n:"Libertadores y Sudamerica
   });
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(det.join(" · ")||"sin copas CONMEBOL");
 }});
+devDoctorRegistrar({id:"amistosos", area:"motor", n:"Amistosos: pretemporada sin cruzar la cordillera, cachet por tamaño, tu copa con reglas", fn:function(){
+  var falta=[];
+  if(typeof rivalesPretemporada!=="function"||typeof presupuestoAmistoso!=="function"||typeof crearCopaPropia!=="function") return _dmal("sin sistema de amistosos");
+  var cruzan=rivalesPretemporada().filter(function(x){ return paisDeClub(x.id)!==paisDeClub(E.club); }).length;
+  if(cruzan) falta.push(cruzan+" rivales de pretemporada cruzan la cordillera");
+  var infl=(typeof inflacionEra==="function")?inflacionEra()/1.4:1;
+  var g=["CC","UCH","UC"].filter(function(id){ return id!==E.club; })[0], cg=cachetDe(g);
+  if(cg<12*infl||cg>45*infl) falta.push("un grande cobra "+plata(cg)+" por un amistoso (real 15–40 M)");
+  if(SPONSORS_CL.some(function(sp){ return ["Copec","Sodimac","Ripley","Jumbo","Unimarc","Cristal","Escudo","Soprole","Bilz","Carozzi","Lucchetti","Falabella","Entel","Colun"].indexOf(sp)>=0; })) falta.push("un sponsor usa la marca real sin cambiar la letra");
+  if(typeof esLlaveDirecta==="function"&&!esLlaveDirecta({tipo:"amistoso",copaPropia:true})) falta.push("la copa propia no se define en penales si empata");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("pretemporada sin cruzar · cachet grande "+plata(cg)+" · copa con penales/alargue según reglas");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

@@ -3865,3 +3865,21 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `conmebol_ko`:** exige que no haya llaves vacías, que no queden partidos atrasados sin jugar y que
   el cuadro sea el mismo cada vez que se mira.
   **Tests:** dev 525/525 · core 1185/1185.
+
+### 7.9061 — Amistosos: pretemporada, pagados por tamaño, invitaciones y tu propia copa
+**Archivos:** `js/amistosos.js` (nuevo), `js/partido.js`, `js/calendario-sofa.js`, `js/dev-doctor.js`, `css/pulido.css`, `js/util.js`, `index.html`
+- Tarea 14 del autor. Centro "🤝 Amistosos" en Calendario → Partidos:
+  - **Pretemporada:** hasta 3 amistosos gratis antes del primer partido oficial, contra rivales de tu división
+    o la de al lado. Todos aceptan salvo cruzar la cordillera. Casi sin lesiones (1/10).
+  - **Pagado:** cachet según el tamaño del rival (grande 15–40 M, mediano 3–8 M, chico ~1 M), no según el país.
+    Un grande llena más la tribuna. Antes de aceptar ves cachet, taquilla estimada y neto.
+  - **Invitaciones:** llegan solas en la temporada, con plata ya negociada. El grande te invita a su cancha
+    como vitrina; el chico te paga por tenerte. Vencen en 3 fechas.
+  - **Tu copa:** nombre propio, sponsor (marcas chilenas con una letra cambiada: Copek, Sodimak, Riplei,
+    Jambo…), trofeo obligatorio (lata, plata u oro, con costo) y reglas (3, 5 o cambios libres; penales
+    directos o alargue; árbitro normal, estricto o permisivo). Cuadrangular en tu cancha. El sponsor paga
+    según a quién invites. La otra semi se simula y, si quedas afuera, la final también. El trofeo queda en
+    `E.amistosos.trofeos` y suma prestigio.
+- **Amistoso libre:** pasa a Ajustes como "Solo jugar".
+- **Doctor `amistosos`.**
+  **Tests:** dev 525/525 · core 1185/1185.

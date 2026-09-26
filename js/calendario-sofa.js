@@ -121,7 +121,7 @@ function _csPartidos(cont){
   const pl=panel(T("cal_sig","Lo que viene")+" y lo jugado","📅");
   const f=el("div","fichas cs-chips");
   [["todos","Todos"],["liga","Liga"],["copas","Copas"]].forEach(([k,n])=>{ const b=el("button","ficha",n); b.setAttribute("aria-pressed",u.filtro===k?"true":"false"); b.onclick=()=>{ u.filtro=k; irA("calendario"); }; f.appendChild(b); });
-  if(typeof modalAmistoso==="function"){ const ba=el("button","ficha","🤝 Amistoso"); ba.onclick=()=>modalAmistoso(); f.appendChild(ba); }
+  if(typeof modalAmistosos==="function"){ const ba=el("button","ficha","🤝 Amistosos"); ba.onclick=()=>modalAmistosos(); f.appendChild(ba); }
   pl.cuerpo.appendChild(f);
   const lista=(E.calendario||[]).map((c,i)=>({c:c,i:i})).filter(x=>u.filtro==="todos"||(u.filtro==="liga"?x.c.tipo==="liga":x.c.tipo!=="liga"));
   const mesHoy=prox&&prox.f?prox.f.m:12;
