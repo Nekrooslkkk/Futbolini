@@ -3845,3 +3845,23 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   plantel, y que los jugados de la ficha coincidan con la tabla. Al revés, falla.
 - **Próximo (7.9060):** fase final de Libertadores y Sudamericana simulada y con llaves.
   **Tests:** dev 525/525 · core 1185/1185.
+
+### 7.9060 — Libertadores y Sudamericana: fase final simulada y con llaves
+**Archivos:** `js/conmebol-ko.js` (nuevo, antes de `calendario-sofa.js`), `js/dev-doctor.js`, `js/util.js`, `index.html`
+- Pedido del autor: las copas CONMEBOL con sus llaves ("deberían estar simulándose"). Antes solo existía la
+  fase de grupos.
+- **Clasificación y cuadro:** clasifican 1° y 2° de cada grupo, más los mejores terceros hasta 16. Si los
+  grupos documentados no alcanzan (la Libertadores 2026 tiene menos grupos cargados), el cuadro parte en
+  cuartos con los 8 mejores. Va sembrado para que 1 y 2 solo se crucen en la final.
+- **Reglas:** ida y vuelta con la vuelta en casa del mejor sembrado, sin gol de visita (global empatado →
+  penales), final única.
+- **Fechas:** las mismas que tu calendario (octavos 12 y 19 de agosto, … final en noviembre). Cada partido
+  se juega cuando su fecha ya pasó. Usa el mismo motor (`_golesM`) y azar fijo: se calcula al mirar y siempre
+  da lo mismo.
+- **Tu llave:** si tu club está en el cuadro, la llave muestra tus partidos (rival y marcador del calendario;
+  la tanda, si hubo).
+- **Calendario → Copas → Libertadores/Sudamericana:** muestra el cuadro sobre los grupos, con el campeón
+  cuando lo hay.
+- **Doctor `conmebol_ko`:** exige que no haya llaves vacías, que no queden partidos atrasados sin jugar y que
+  el cuadro sea el mismo cada vez que se mira.
+  **Tests:** dev 525/525 · core 1185/1185.

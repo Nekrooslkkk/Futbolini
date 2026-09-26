@@ -1172,6 +1172,25 @@ devDoctorRegistrar({id:"calendario_sofa", area:"interfaz", n:"Calendario tipo So
   var det=idx.length+" equipos buscables · "+ligas.length+" ligas · "+_csCopasDisponibles().length+" copas";
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
 }});
+devDoctorRegistrar({id:"conmebol_ko", area:"motor", n:"Libertadores y Sudamericana: fase final simulada y con llaves", fn:function(){
+  var falta=[], det=[];
+  if(typeof conmebolKO!=="function") return _dmal("sin fase final CONMEBOL");
+  if(!E||!E.mundo||!E.mundo.copas) return _dok("sin partida");
+  ["lib","sud"].forEach(function(t){
+    var pack=E.mundo.copas[t]; if(!pack||!pack.grupos||!Object.keys(pack.grupos).length) return;
+    var ko=conmebolKO(t);
+    if((pack.ronda||0)>=6 && !ko){ falta.push(t+": terminaron los grupos y no hay cuadro"); return; }
+    if(!ko){ det.push(t+": grupos en curso"); return; }
+    var r0=ko.rondas[ko.orden[0]]||[];
+    if(r0.some(function(x){ return !x.a||!x.b; })) falta.push(t+": hay llaves con un equipo vacío");
+    var hoy=mundoFechaHoy();
+    r0.forEach(function(x){ x.fechas.forEach(function(f,i){ if(!x.mia && _mfn(f)<=_mfn(hoy) && !(x.legs&&x.legs[i])) falta.push(t+": un partido del "+f.d+"/"+f.m+" ya debió jugarse"); }); });
+    var ko2=conmebolKO(t);
+    if(JSON.stringify(ko2.rondas[ko.orden[0]].map(function(x){ return x.gana; }))!==JSON.stringify(r0.map(function(x){ return x.gana; }))) falta.push(t+": el cuadro cambia cada vez que se mira");
+    det.push(t+": "+ko.orden[0]+(ko.campeon?" · campeón "+_cnNom(t,ko.campeon):""));
+  });
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(det.join(" · ")||"sin copas CONMEBOL");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
