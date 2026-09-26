@@ -277,9 +277,24 @@ function buscarComprador(j){
 }
 
 /* ---------- negociación de compra (4 pilares) ---------- */
+/* 7.9053 · división de un club (1 Primera, 2 Ascenso, 3 Segunda) según la liga vigente */
+function divisionDeClub(id){
+  const en=(L)=>Array.isArray(L)&&L.some(c=>(c.id||c)===id);
+  const lm=E&&E.ligaMod;
+  if(lm){ if(en(lm[2026])||en(lm["2026"])) return 1; if(en(lm["2026b"])) return 2; if(en(lm["2026c"])) return 3; }
+  if(typeof LIGA_2026!=="undefined"&&en(LIGA_2026)) return 1;
+  if(typeof LIGA_B_2026!=="undefined"&&en(LIGA_B_2026)) return 2;
+  if(typeof LIGA_C_2026!=="undefined"&&en(LIGA_C_2026)) return 3;
+  return 1;
+}
+function miDivision(){ return E.eraBase==="2026b"?2:(E.eraBase==="2026c"?3:1); }
+function bajaDeDivision(j){ return !!(j&&j.clubId&&(E.anio||0)>=2026&&divisionDeClub(j.clubId)<miDivision()); }
 function interesJugador(j,oferta){
   let v=0;
   v += (E.ind.prestigio-50)*0.6;
+  /* bajar de categoría pesa (menos al veterano que busca minutos); ir al clásico rival, también */
+  if(bajaDeDivision(j)) v -= (j.edad>=32?10:24)*(divisionDeClub(j.clubId)-miDivision()<-1?1.4:1);
+  if(typeof esRivalidadRegional==="function"&&j.clubId&&esRivalidadRegional(E.club,j.clubId)) v-=15;
   v += clamp((oferta.sueldo-j.pidesueldo)/Math.max(1,j.pidesueldo)*45,-30,30);
   v += ({titular:12, promesa:(j.edad<=22?14:0), suplente:-10}[oferta.rol]||0);
   v += (E.plata>300?4:0);
@@ -489,7 +504,8 @@ function resolverPreacuerdosAlAbrir(){
 }
 
 /* ---------- ojeo / informe de scout (revela lo que no dicen los números) ---------- */
-function costoOjeo(j){ return Math.max(8, Math.round((j.valor||100)*0.04)); }
+/* 7.9053 · un informe de ojeador vale ~0,5–1 M (como el "informe completo"), no 15 M */
+function costoOjeo(j){ const infl=(typeof inflacionEra==="function")?inflacionEra():1; return Math.round(Math.max(0.5,Math.min(1.5,(j.valor||100)*0.002))*infl*10)/10; }
 function informeOjeo(j){
   if(!E.ojeados) E.ojeados={};
   if(E.ojeados[j.n]) return E.ojeados[j.n];
@@ -640,26 +656,67 @@ function vistaMercado(){
     b.onclick=()=>{ MERC_FILTRO[k]=!MERC_FILTRO[k]; render(); }; fx.appendChild(b);
   });
   po.cuerpo.appendChild(fx);
-  const inp=el("input","pick-buscar"); inp.type="search"; inp.placeholder="Buscar jugador o club…"; inp.value=MERC_FILTRO.q||"";
+  const inp=el("input","pick-buscar"); inp.type="search"; inp.placeholder="Buscar en todos los clubes: jugador o club…"; inp.value=MERC_FILTRO.q||"";
   inp.style.margin="6px 0";
-  inp.oninput=function(){ MERC_FILTRO.q=inp.value||""; };
-  inp.onchange=function(){ MERC_FILTRO.q=inp.value||""; render(); };
   po.cuerpo.appendChild(inp);
-  const merc=mercadoSemana();
-  const q=(MERC_FILTRO.q||"").trim().toLowerCase();
-  const pool=q&&typeof poolMercadoReal==="function"?poolMercadoReal():(merc.objetivos||[]);
+  const resBox=el("div","merc-res"); po.cuerpo.appendChild(resBox);
+  /* 7.9053 · búsqueda en vivo (sin Enter) y tolerante: "colo colo" encuentra "Colo-Colo", sin tildes */
+  let tmr=null;
+  inp.oninput=function(){ MERC_FILTRO.q=inp.value||""; clearTimeout(tmr); tmr=setTimeout(function(){ pintarResultadosMercado(resBox,firma); },180); };
+  pintarResultadosMercado(resBox,firma);
+  v.appendChild(po);
+}
+function _normBusq(t){ return String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim(); }
+/* 7.9053 · recomendados del ayudante: lo que te FALTA, con el porqué */
+function recomendadosMercado(){
+  const pool=(typeof poolMercadoReal==="function")?poolMercadoReal():[];
+  const mios=(E.plantel||[]).filter(j=>!j.vendido&&!j.cedido);
+  const f=(typeof FORMACIONES!=="undefined"&&FORMACIONES[(E.tactica&&E.tactica.form)||"4-4-2"])||{def:4,vol:4,del:2};
+  const cupo={ARQ:1,DEF:f.def,VOL:f.vol,DEL:f.del}, peor={};
+  Object.keys(cupo).forEach(pos=>{ const t=mios.filter(j=>j.pos===pos).sort((a,b)=>b.nivel-a.nivel).slice(0,cupo[pos]);
+    peor[pos]=t.length<cupo[pos]?0:t[t.length-1].nivel; });
+  const caja=Math.max(1,E.plata||0);
+  const cand=pool.filter(j=>j.nivel>=peor[j.pos]+3 && j.precio<=caja*1.4).map(j=>{
+    const gana=j.nivel-peor[j.pos];
+    return Object.assign({},j,{_por:gana/Math.max(1,j.precio)*100+gana*0.3,
+      _porque:(peor[j.pos]?"Mejora tu "+j.pos+" más flojo del once ("+peor[j.pos]+" → "+j.nivel+")":"Te falta un "+j.pos+" titular")+(j.precio<=caja?" · te alcanza":" · se estira la caja")});
+  }).sort((a,b)=>b._por-a._por);
+  const out=[], porPos={}, porClub={};
+  const cabe=j=>(porPos[j.pos]||0)<3 && (porClub[j.clubId]||0)<2;   /* variedad: máx 3 por puesto y 2 por club */
+  const meter=j=>{ out.push(j); porPos[j.pos]=(porPos[j.pos]||0)+1; porClub[j.clubId]=(porClub[j.clubId]||0)+1; };
+  cand.forEach(j=>{ if(out.length<10 && cabe(j)) meter(j); });
+  /* si la caja no alcanza para nada, las mejoras más baratas con lo que te falta (vender o endeudarse) */
+  if(out.length<4){
+    const baratos=pool.filter(j=>j.nivel>=peor[j.pos]+3 && out.every(x=>x.n!==j.n)).sort((a,b)=>a.precio-b.precio);
+    for(const j of baratos){
+      if(out.length>=6) break;
+      if(!cabe(j)) continue;
+      meter(Object.assign({},j,{_porque:"Mejora tu "+j.pos+" ("+peor[j.pos]+" → "+j.nivel+"), pero te faltan "+plata(Math.max(0,j.precio-caja))+": habría que vender o endeudarse"}));
+    }
+  }
+  pool.filter(j=>j.edad<=21 && (j.proy||0)>=j.nivel+8 && j.precio<=caja && out.indexOf(j)<0).sort((a,b)=>(b.proy-b.nivel)-(a.proy-a.nivel)).slice(0,3)
+    .forEach(j=>out.push(Object.assign({},j,{_porque:"Apuesta a futuro: "+j.edad+" años, techo "+j.proy})));
+  return out;
+}
+function pintarResultadosMercado(box,firma){
+  box.innerHTML="";
+  const q=_normBusq(MERC_FILTRO.q);
+  const pool=q?((typeof poolMercadoReal==="function")?poolMercadoReal():[]):recomendadosMercado();
+  if(!q) box.appendChild(el("h3","sub","🧭 Recomendados por el ayudante"));
   const lista=pool.filter(j=>
     (!MERC_FILTRO.pos||j.pos===MERC_FILTRO.pos) &&
     (!MERC_FILTRO.joven||j.edad<=23) &&
     (!MERC_FILTRO.barato||j.precio<=E.plata) &&
-    (!q || (j.n||"").toLowerCase().indexOf(q)>=0 || (j.club||"").toLowerCase().indexOf(q)>=0)
-  ).slice(0, q?40:16);
-  if(!lista.length) po.cuerpo.appendChild(el("p","mini",q?"Nadie con esa búsqueda.":"Ningún objetivo cumple los filtros esta semana."));
+    (!q || _normBusq(j.n).indexOf(q)>=0 || _normBusq(j.club).indexOf(q)>=0)
+  ).sort((a,b)=>q?(b.nivel-a.nivel):0).slice(0, q?60:16);
+  if(q) box.appendChild(el("p","mini",lista.length+" resultado(s) en todos los clubes"+(lista.length>=60?" (se muestran los 60 de más nivel)":"")+"."));
+  if(!lista.length) box.appendChild(el("p","mini",q?"Nadie con esa búsqueda.":"El ayudante no encuentra nada que te mejore dentro de tu caja."));
   lista.forEach(j=>{
     const d=el("div","resul mitad");
-    d.innerHTML="<b>"+(j.real?"● ":"")+j.n+" <span class='mini'>("+(j.club||"—")+")</span></b><br>"+
+    d.innerHTML="<b>"+(j.real?"● ":"")+escHtml(j.n)+" <span class='mini'>("+escHtml(j.club||"—")+")</span></b><br>"+
       j.pos+" · "+j.edad+" años · nivel "+j.nivel+(j.proy>j.nivel+4?" · proy "+j.proy:"")+
-      " · piden <b>"+plata(j.precio)+"</b> + sueldo "+plata(j.pidesueldo);
+      " · piden <b>"+plata(j.precio)+"</b> + sueldo "+plata(j.pidesueldo)+
+      (j._porque?"<div class='mini merc-porque'>🧭 "+escHtml(j._porque)+"</div>":"");
     const oj=E.ojeados&&E.ojeados[j.n];
     if(oj) d.appendChild(el("div","mini","🔍 <b>Informe:</b> "+oj.caracter+" · "+oj.fisico+" · "+oj.techo+" · "+oj.humor));
     const cont=el("div"); cont.style.marginTop="6px";
@@ -670,9 +727,8 @@ function vistaMercado(){
     const b=el("button","btn-aqua chico verde",firma?"Negociar / Comprar":"Negociar / dejar trato"); if(!oj) b.style.marginLeft="6px";
     b.onclick=()=>modalComprar(j,firma);
     cont.appendChild(b); d.appendChild(cont);
-    po.cuerpo.appendChild(d);
+    box.appendChild(d);
   });
-  v.appendChild(po);
 }
 var MERC_FILTRO={pos:"",joven:false,barato:false,q:""};
 
@@ -715,7 +771,8 @@ function modalComprar(j,abierto){
       if(!cok) contra.precio=exigePrecio;
       if(!jok){ contra.sueldo=Math.max(oferta.sueldo, Math.round(j.pidesueldo*1.12)); contra.rol=(j.edad<=22?"promesa":"titular"); }
       contra.msg = "El club "+(cok?"acepta el precio":"pide "+plata(contra.precio))+
-        (jok?"":" · el jugador quiere "+plata(contra.sueldo)+(contra.rol&&contra.rol!==oferta.rol?" y ser "+contra.rol:""));
+        (jok?"":" · el jugador quiere "+plata(contra.sueldo)+(contra.rol&&contra.rol!==oferta.rol?" y ser "+contra.rol:""))+
+        (!jok&&bajaDeDivision(j)?". «Bajar de categoría no está en mis planes»: solo lo convence la plata y ser titular.":"");
       paso=2; pintar();
     };
     const insistir=()=>{

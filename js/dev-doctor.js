@@ -1067,6 +1067,27 @@ devDoctorRegistrar({id:"plantel_vivo", area:"motor", n:"Plantel: charlas con mem
   } finally { window.aviso=av; window.pushNotif=pn; restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("charla 1/semana con memoria · renovar ok · grupo · once sin lesionados · química por continuidad");
 }});
+devDoctorRegistrar({id:"mercado_busqueda", area:"motor", n:"Mercado: se busca en TODOS los clubes y el ayudante recomienda con porqué", fn:function(){
+  var falta=[];
+  if(typeof poolMercadoReal!=="function"||typeof _normBusq!=="function") return _dmal("sin búsqueda de mercado");
+  var pool=poolMercadoReal(), clubes={}; pool.forEach(function(j){ clubes[j.clubId]=1; });
+  var nClub=Object.keys(clubes).length;
+  if(nClub<20) falta.push("la búsqueda solo cubre "+nClub+" clubes");
+  if(E.club!=="CC"){ var q=_normBusq("colo colo"), cc=pool.filter(function(j){ return _normBusq(j.club).indexOf(q)>=0; }).length;
+    if(!cc) falta.push("buscar «colo colo» no encuentra a nadie de Colo-Colo"); }
+  if(typeof recomendadosMercado==="function"){
+    var rec=recomendadosMercado();
+    if(rec.some(function(j){ return !j._porque; })) falta.push("hay recomendados sin porqué");
+  } else falta.push("no hay recomendados del ayudante");
+  var det=pool.length+" jugadores de "+nClub+" clubes";
+  if(typeof bajaDeDivision==="function"&&miDivision()>1){
+    var arriba=pool.filter(function(j){ return bajaDeDivision(j); })[0];
+    if(arriba){ var of={sueldo:arriba.pidesueldo,rol:"titular"}; var conBaja=interesJugador(arriba,of);
+      var copia=Object.assign({},arriba,{clubId:E.club}); var sinBaja=interesJugador(copia,of);
+      if(!(conBaja<sinBaja)) falta.push("a un jugador de Primera le da lo mismo bajar de categoría"); det+=" · bajar pesa "+(conBaja-sinBaja); }
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

@@ -3697,3 +3697,23 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `plantel_vivo`:** al revés, con las versiones viejas de renovar y charla, da 4 problemas (incluido
   "Renovar se rompe").
   **Tests:** dev 519/519 · core 1185/1185.
+
+### 7.9053 — Mercado: búsqueda en vivo en todos los clubes, recomendados con porqué, bajar de categoría pesa
+**Archivos:** `js/mercado.js`, `js/dev-doctor.js`, `css/pulido.css`, `js/util.js`, `index.html`
+- **Búsqueda:** cubre los 86 clubes (unos 1.800 jugadores, Colo-Colo incluido). Filtra mientras escribes, sin
+  Enter; solo se repinta la lista, así que el cuadro no pierde el foco. Es tolerante: "colo colo" encuentra
+  "Colo-Colo" y no importan las tildes (`_normBusq`). Muestra hasta 60 resultados, ordenados por nivel.
+- **Lista sin búsqueda: "🧭 Recomendados por el ayudante"** (`recomendadosMercado`):
+  - lo que mejora tu once (puesto más flojo → nivel del candidato) y si te alcanza;
+  - si nada entra en la caja, las mejoras más baratas con cuánto falta ("habría que vender o endeudarse");
+  - 3 apuestas a futuro;
+  - variedad: máximo 3 por puesto y 2 por club.
+- **Negociación más real:** un jugador de Primera no quiere bajar a la B o a la Segunda (pesa menos si tiene
+  32 años o más), ni ir al clásico rival. La contraoferta lo dice ("Bajar de categoría no está en mis
+  planes").
+- **Ojear:** baja de ~15 M a 0,5–1,5 M, en línea con el "informe completo" de 1 M.
+- **Doctor `mercado_busqueda`:** exige más de 20 clubes en la búsqueda, que "colo colo" encuentre a Colo-Colo,
+  que los recomendados tengan su porqué y que bajar de categoría reste interés.
+- **Pendiente para el autor:** los precios del mercado (`j.valor`) son altos para la caja de un club chico. Se
+  pregunta al cierre de la etapa.
+  **Tests:** dev 519/519 · core 1185/1185.

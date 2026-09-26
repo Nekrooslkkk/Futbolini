@@ -296,3 +296,7 @@ body.perf .ll-marc.ll-gol{animation:none}
 
 /* 7.9048 · chip de calendario en la previa */
 .chip-cal{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:#fff4d6;color:#6b4a00;border:1px solid #f0d58a;margin:2px 4px}
+
+/* 7.9053 · mercado: el porqué del ayudante */
+.merc-porque{margin-top:3px;color:#1d5f9e}
+body[data-tema="negro"] .merc-porque{color:#8fd0ff}
