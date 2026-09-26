@@ -3676,3 +3676,24 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `finanzas_realistas`:** el CM sube el costo semanal y tiene sueldo creíble; la acción registra la
   semana y se mueve con un triunfo; comprar y vender al mismo precio devuelve lo invertido.
   **Tests:** dev 519/519 · core 1185/1185.
+
+### 7.9052 — Plantel: charlas con memoria, "hablar con todos", renovar arreglado, química por continuidad
+**Archivos:** `js/ui.js`, `js/ui-partido.js`, `js/partido.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`
+- **Bug:** "Renovar" cobraba de `E.fin.caja`, que no existe, así que el botón se rompía. Ahora cobra de la caja
+  y solo renueva si le queda un año o menos (antes se podía sumar +2 años sin fin).
+- **Hablar y apoyar / Exigir más:**
+  - una vez por semana por jugador (antes +7 de moral por clic, sin fin);
+  - la reacción depende de quién es: al golpeado, apretarlo lo hunde; al cabeza caliente lo pica; al
+    capitán o profesional le sirve de desafío;
+  - el aviso dice "moral 52→60 · forma…" y la ficha recuerda la última charla (`j.charlas`).
+- **"Hablar con todo el plantel":** una charla al grupo por semana (apoyar o exigir). Pega al 60 % y resume
+  cuántos respondieron bien.
+- **Moral entendible:** la ficha muestra "En la cancha rinde X: nivel + forma + moral − cansancio", con la
+  misma cuenta que `fuerzaEquipo`.
+- **Química:** `E.juntos` cuenta los partidos jugados juntos en el once por cada par; la química del par sube
+  con la continuidad (hasta +14). Se poda sola para que la partida no crezca.
+- **Previa:** un solo botón "👥 Once y concentrados". Guardar el once lleva directo a elegir la banca, y
+  "⚡ Todo automático" arma el mejor once sin lesionados y su banca.
+- **Doctor `plantel_vivo`:** al revés, con las versiones viejas de renovar y charla, da 4 problemas (incluido
+  "Renovar se rompe").
+  **Tests:** dev 519/519 · core 1185/1185.

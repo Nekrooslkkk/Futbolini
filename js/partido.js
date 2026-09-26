@@ -434,6 +434,21 @@ function formacionDetectada(piz){
    juntos, y un "click/roce" fijo por par) → estable, no azar por
    partido. Se dibuja en la pizarra y suma/resta nivel real.
    ============================================================ */
+/* 7.9052 · partidos jugados juntos por cada par del once */
+function registrarJuntos(once){
+  if(!E||!once) return;
+  E.juntos=E.juntos||{};
+  for(let i=0;i<once.length;i++) for(let j=i+1;j<once.length;j++){
+    const a=once[i].n, b=once[j].n, k=a<b?a+"|"+b:b+"|"+a;
+    E.juntos[k]=(E.juntos[k]||0)+1;
+  }
+  /* poda: solo pares de jugadores que siguen en el plantel (la partida no crece sin fin) */
+  const ks=Object.keys(E.juntos);
+  if(ks.length>1500){
+    const vivos={}; (E.plantel||[]).forEach(x=>{ if(!x.vendido) vivos[x.n]=1; });
+    ks.forEach(k=>{ const pr=k.split("|"); if(!vivos[pr[0]]||!vivos[pr[1]]) delete E.juntos[k]; });
+  }
+}
 function hashStr(s){ let h=0; for(let i=0;i<(s||"").length;i++){ h=(h*31+s.charCodeAt(i))|0; } return h; }
 function quimicaPar(a,b){
   if(!a||!b||a===b) return 50;
@@ -444,7 +459,9 @@ function quimicaPar(a,b){
   const rs=(a.rasgos||[]).filter(r=>(b.rasgos||[]).indexOf(r)>=0).length;
   q+= rs*6;
   if((a.rasgos||[]).indexOf("de la casa")>=0 && (b.rasgos||[]).indexOf("de la casa")>=0) q+=10;
-  q+= Math.min(10,(Math.min(a.partidos||0,b.partidos||0))/8);
+  /* 7.9052 · la química crece con partidos JUNTOS en el once (continuidad), no con partidos sueltos */
+  if(E&&E.juntos) q+= Math.min(14,(E.juntos[a.n<b.n?a.n+"|"+b.n:b.n+"|"+a.n]||0)*0.7);
+  else q+= Math.min(10,(Math.min(a.partidos||0,b.partidos||0))/8);
   q+= (Math.abs(hashStr(key))%25)-12;   /* click (+) o roce (−) fijo del par */
   return clamp(Math.round(q),5,99);
 }
@@ -1620,6 +1637,7 @@ function terminarPartido(P){
   part.jugado=true; part.gf=yo; part.gc=otro;
   part.goleadores=(P.goleadores||[]).slice();   /* 6.19 · para que los tuits citen al goleador real */
   persistirRepeticion(P,part);
+  registrarJuntos(P.once);
   P.once.forEach(j=>{
     j.partidos++;
     j.minutosTemporada=(j.minutosTemporada||0)+(90-(j.minEntrada||0));   /* 6.24 · minutos jugados en la temporada */

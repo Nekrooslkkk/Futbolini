@@ -1042,6 +1042,31 @@ devDoctorRegistrar({id:"finanzas_realistas", area:"motor", n:"Finanzas con monto
   }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("CM "+plata(typeof CM_SUELDO_MES!=="undefined"?CM_SUELDO_MES:0)+"/mes en el flujo · bolsa semanal y por partido");
 }});
+devDoctorRegistrar({id:"plantel_vivo", area:"motor", n:"Plantel: charlas con memoria, renovar funciona, once sin lesionados, química por continuidad", fn:function(){
+  var falta=[];
+  if(typeof charlaJugador!=="function"||typeof renovarContrato!=="function") return _dmal("sin acciones de plantel");
+  var snap=clonarPartida(E), av=window.aviso, pn=window.pushNotif; window.aviso=function(){}; window.pushNotif=function(){};
+  try{
+    var j=(E.plantel||[]).filter(function(x){ return !x.vendido&&!x.cedido; })[0];
+    if(j){
+      j._charlaIdx=null; var r1=charlaJugador(j,"banco"), r2=charlaJugador(j,"banco");
+      if(!r1) falta.push("«Hablar y apoyar» no hace nada");
+      if(r2) falta.push("se puede hablar con el mismo jugador sin límite (la moral sube con cada clic)");
+      if(!(j.charlas&&j.charlas.length)) falta.push("el cuerpo técnico no recuerda las charlas");
+      E.plata=500; j.contrato=j.contrato||{}; j.contrato.hasta=E.anio; var ok=false;
+      try{ ok=renovarContrato(j); }catch(e){ falta.push("«Renovar» se rompe: "+e.message); }
+      if(!ok) falta.push("no se puede renovar a un jugador al que le termina el contrato");
+      else if(renovarContrato(j)) falta.push("se puede renovar dos veces seguidas (+4 años)");
+    }
+    if(typeof charlaGrupal==="function"){ E.flags=E.flags||{}; var g1=charlaGrupal("banco"), g2=charlaGrupal("banco"); if(!g1||g2) falta.push("la charla al grupo no funciona una vez por semana"); }
+    else falta.push("no hay «hablar con todos»");
+    var les=(E.plantel||[]).filter(function(x){ return !x.vendido; })[1]; if(les){ les.lesion=3; E.tactica.xiManual=null;
+      if(onceIdeal().indexOf(les)>=0) falta.push("el once automático pone a un lesionado"); }
+    if(typeof registrarJuntos==="function"){ var o=onceIdeal(), a=o[0], b=o[1]; if(a&&b){ var q0=quimicaPar(a,b); for(var i=0;i<10;i++) registrarJuntos(o); if(!(quimicaPar(a,b)>q0)) falta.push("jugar juntos no sube la química del par"); } }
+    else falta.push("la química no depende de jugar juntos");
+  } finally { window.aviso=av; window.pushNotif=pn; restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("charla 1/semana con memoria · renovar ok · grupo · once sin lesionados · química por continuidad");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

@@ -301,16 +301,12 @@ function pantallaPrevia(part){
   refrescarBalance();
   detRol.appendChild(balance);
   p1.cuerpo.appendChild(detRol);
-  const manualOn=E.tactica.xiManual&&E.tactica.xiManual.length;
+  /* 7.9052 · once y concentrados en UN botón: primero el once, después la banca */
+  const manualOn=(E.tactica.xiManual&&E.tactica.xiManual.length)||(E.tactica.bancaManual&&E.tactica.bancaManual.length);
   const bali=el("button","btn-aqua ancho"+(manualOn?" verde":""),
-    "👥 Alinear el equipo · "+(manualOn?"manual":"automático"));
+    "👥 Once y concentrados · "+cupoL+" · "+(manualOn?"manual":"automático"));
   bali.onclick=()=>modalAlineacion(part);
   p1.cuerpo.appendChild(bali);
-  const blista=el("button","btn-aqua ancho"+(E.tactica.bancaManual&&E.tactica.bancaManual.length?" verde":""),
-    "📋 Lista de concentrados · "+cupoL+(E.tactica.bancaManual&&E.tactica.bancaManual.length?" · manual":" · auto"));
-  blista.style.marginTop="6px";
-  blista.onclick=()=>modalLista(part);
-  p1.cuerpo.appendChild(blista);
   const bpiz=el("button","btn-aqua ancho"+(E.tactica.pizarra&&E.tactica.pizarra.length?" verde":""),
     "🎯 Pizarra libre"+(E.tactica.pizarra&&E.tactica.pizarra.length?" · activa":""));
   bpiz.style.marginTop="6px";
@@ -389,13 +385,13 @@ function modalAlineacion(part){
         });
         c.appendChild(cont);
       });
-      const g=el("button","btn-aqua ancho verde","Guardar mi alineación"); g.disabled=!ok;
+      const g=el("button","btn-aqua ancho verde","Guardar el once y elegir la banca →"); g.disabled=!ok;
       g.onclick=()=>{ E.tactica.xiManual=sel.slice();
         if(Array.isArray(E.tactica.bancaManual)) E.tactica.bancaManual=E.tactica.bancaManual.filter(n=>sel.indexOf(n)<0);
-        guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Alineación guardada"); };
+        guardar(); cerrarModal(); aviso("Once guardado. Ahora, los concentrados."); modalLista(part); };
       c.appendChild(g);
-      const a=el("button","btn-aqua ancho gris","Volver a automático (el juego elige)"); a.style.marginTop="6px";
-      a.onclick=()=>{ E.tactica.xiManual=null; guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Alineación automática"); };
+      const a=el("button","btn-aqua ancho gris","⚡ Todo automático (mejor once disponible y su banca)"); a.style.marginTop="6px";
+      a.onclick=()=>{ E.tactica.xiManual=null; E.tactica.bancaManual=null; guardar(); cerrarModal(); if(part) pantallaPrevia(part); aviso("Once y concentrados automáticos: sin lesionados, los mejores en forma"); };
       c.appendChild(a);
     };
     pintar();

@@ -1635,22 +1635,76 @@ function lecturaJugador(j){
   return bits.join(" ");
 }
 function renovarContrato(j){
+  /* 7.9052 · cobraba de E.fin.caja (no existe → el botón se rompía). Y solo se renueva al que le queda poco. */
+  const resta=(j.contrato&&j.contrato.hasta||E.anio)-E.anio;
+  if(resta>=2){ aviso(j.n+" tiene contrato hasta "+j.contrato.hasta+". Se renueva cuando le quede un año o menos."); return false; }
   const extra=Math.max(8,Math.round(j.sueldo*0.12));
-  if(E.fin.caja<extra){ aviso("No hay caja para el aumento ("+plata(extra)+")"); return false; }
-  E.fin.caja-=extra;
+  if((E.plata||0)<extra){ aviso("No hay caja para el aumento ("+plata(extra)+")"); return false; }
+  aplicarEfectos({plata:-extra});
   j.sueldo+=extra;
   j.contrato.hasta=Math.max(j.contrato.hasta,E.anio)+2;
   if(typeof clausulaDe==="function"){
     j.contrato.clausula=Math.round((clausulaDe(j)||j.valor||80)*1.18);
   }
   j.moral=clamp((j.moral||70)+8,0,100);
+  _anotarCharla(j,"renovó");
   if(typeof pushNotif==="function") pushNotif("Renové a "+j.n,j.n+" firmó "+(typeof etqContrato==="function"?etqContrato(j):("hasta "+j.contrato.hasta))+". Costó "+plata(extra)+" de caja.","bueno");
   guardar(); return true;
 }
+/* 7.9052 · el cuerpo técnico recuerda las charlas: una por semana por jugador, con reacción según quién es */
+function _anotarCharla(j,tipo){
+  j.charlas=(j.charlas||[]).concat([{anio:E.anio,idx:E.idx||0,tipo:tipo}]).slice(-6);
+  j._charlaIdx=E.idx||0; j._charlaAnio=E.anio;
+}
+function charlaHecha(j){ return j._charlaIdx===(E.idx||0) && j._charlaAnio===E.anio; }
+function reaccionCharla(j,tipo){
+  const rs=j.rasgos||[], m0=Math.round(j.moral||70), f0=Math.round(j.forma||70);
+  let dm=0, df=0, txt="";
+  if(tipo==="banco"){
+    dm=m0<50?10:(m0<70?7:(m0<85?3:1));
+    txt=m0<50?"Lo necesitaba: sale otro":(m0<85?"Sale más tranquilo":"Ya estaba bien: lo agradece y poco más");
+  } else {
+    const duro=rs.indexOf("capitán")>=0||rs.indexOf("profesional")>=0||rs.indexOf("líder")>=0;
+    if(m0<50 && !duro){ dm=-8; df=1; txt="Venía golpeado y lo apretaste: se cierra"; }
+    else if(rs.indexOf("cabeza caliente")>=0){ dm=-6; df=4; txt="Se picó. Va a correr, pero con bronca"; }
+    else if(f0<72){ dm=duro?-1:-3; df=duro?7:6; txt=duro?"Lo tomó como desafío":"Acusa el golpe y se pone las pilas"; }
+    else { dm=-4; df=2; txt="Está en forma: exigirle más le suena injusto"; }
+  }
+  return {dm:dm,df:df,txt:txt};
+}
 function charlaJugador(j,tipo){
-  if(tipo==="banco"){ j.moral=clamp((j.moral||70)+7,0,100); if(E.ind) E.ind.moral=clamp((E.ind.moral||50)+1,0,100); aviso(j.n+" sale más tranquilo."); }
-  else { j.forma=clamp((j.forma||70)+5,0,100); j.moral=clamp((j.moral||70)-5,0,100); aviso(j.n+" se queda pensando."); }
+  if(charlaHecha(j)){ aviso("Ya hablaste con "+j.n+" esta semana. Otra charla ahora no suma."); return null; }
+  const r=reaccionCharla(j,tipo), m0=Math.round(j.moral||70), f0=Math.round(j.forma||70);
+  j.moral=clamp((j.moral||70)+r.dm,0,100); j.forma=clamp((j.forma||70)+r.df,0,100);
+  if(tipo==="banco" && E.ind && r.dm>=7) E.ind.moral=clamp((E.ind.moral||50)+1,0,100);
+  _anotarCharla(j,tipo==="banco"?"apoyo":"exigencia");
+  aviso(j.n+": "+r.txt+" · moral "+m0+"→"+Math.round(j.moral)+(r.df?" · forma "+f0+"→"+Math.round(j.forma):""));
   guardar();
+  return r;
+}
+/* hablar con todo el plantel de una vez (una por semana): ahorra 30 clics */
+function charlaGrupal(tipo){
+  E.flags=E.flags||{};
+  const k="charlaGrupal_"+E.anio+"_"+(E.idx||0);
+  if(E.flags[k]){ aviso("Ya hablaste con el grupo esta semana."); return null; }
+  E.flags[k]=true;
+  let sube=0, baja=0;
+  (E.plantel||[]).filter(j=>!j.vendido&&!j.cedido).forEach(j=>{
+    if(charlaHecha(j)) return;
+    const r=reaccionCharla(j,tipo);
+    const dm=Math.round(r.dm*0.6), df=Math.round(r.df*0.6);   /* en grupo pega menos que mano a mano */
+    j.moral=clamp((j.moral||70)+dm,0,100); j.forma=clamp((j.forma||70)+df,0,100);
+    if(dm+df>0) sube++; else if(dm+df<0) baja++;
+    _anotarCharla(j,tipo==="banco"?"apoyo (grupo)":"exigencia (grupo)");
+  });
+  if(tipo==="banco" && E.ind) E.ind.moral=clamp((E.ind.moral||50)+2,0,100);
+  guardar();
+  return {sube:sube,baja:baja};
+}
+/* qué hace la moral/forma/cansancio de un jugador en la cancha (misma cuenta que fuerzaEquipo) */
+function rendimientoJugador(j){
+  const f=((j.forma||70)-70)*0.16, m=((j.moral||70)-70)*0.10, c=-(j.cansancio||0)*0.22;
+  return {nivel:j.nivel, forma:f, moral:m, cans:c, total:j.nivel+f+m+c};
 }
 function vistaPlantel(){
   const v=$("#vista");
@@ -1679,6 +1733,17 @@ function vistaPlantel(){
   v.appendChild(pOnce);
   /* 7.9039 · la charla con el capitán vive acá (antes en Redes): una por semana */
   v.appendChild(panelCharlaCapitan());
+  /* 7.9052 · hablar con todos de una vez */
+  { const pg=panel("Hablar con todo el plantel","🗣️");
+    const k="charlaGrupal_"+E.anio+"_"+(E.idx||0), hecha=!!(E.flags&&E.flags[k]);
+    pg.cuerpo.appendChild(el("p","mini","Una charla al grupo por semana. Pega menos que el mano a mano, pero llega a todos. Los que ya hablaron contigo esta semana no cuentan."));
+    [["banco","🤝 Apoyar a todos","Sube la moral, sobre todo a los golpeados."],["exigir","📣 Exigir a todos","Sube la forma de los que están bajos; al que viene golpeado lo hunde."]].forEach(([t,n,d])=>{
+      const b=el("button","op"); b.disabled=hecha;
+      b.innerHTML='<div class="t">'+n+(hecha?" · <span class='mini'>ya hablaste con el grupo</span>":"")+'</div><div class="d">'+d+'</div>';
+      b.onclick=()=>{ const r=charlaGrupal(t); if(r){ aviso("Charla al grupo: "+r.sube+" respondieron bien, "+r.baja+" lo sintieron."); render(); } };
+      pg.cuerpo.appendChild(b);
+    });
+    v.appendChild(pg); }
   const p=panel("Plantel "+E.anio,"👥");
   p.cuerpo.appendChild(el("p","mini","● nombre documentado. Sin punto: cantera / relleno. Stats estimadas."));
   const f=el("div","fichas cinta-agua");
@@ -1723,6 +1788,11 @@ function fichaJugador(j){
     c.appendChild(fila("Puesto",j.pos+" · "+j.edad+" años · "+rolProbable(j)));
     c.appendChild(fila("Nivel / proyección",j.nivel+" / "+j.proy+(j.real?" · aprox.":"")));
     c.appendChild(fila("Forma / moral",Math.round(j.forma)+" / "+Math.round(j.moral)));
+    { const rj=rendimientoJugador(j), sg=x=>(x>=0?"+":"−")+Math.abs(x).toFixed(1);
+      c.appendChild(el("div","mini rend-jug","En la cancha rinde <b>"+rj.total.toFixed(1)+"</b>: nivel "+rj.nivel+" "+sg(rj.forma)+" por forma "+sg(rj.moral)+" por moral "+sg(rj.cans)+" por cansancio."));
+      const ult=(j.charlas||[]).slice(-1)[0];
+      if(ult) c.appendChild(el("div","mini","Última charla: "+ult.tipo+((ult.anio===E.anio)?" · hace "+Math.max(0,(E.idx||0)-ult.idx)+" fecha(s)":" · "+ult.anio)+"."));
+    }
     c.appendChild(fila("Cansancio",Math.round(j.cansancio||0)+((j.cansancio||0)>=18?" · piernas pesadas":((j.cansancio||0)>=10?" · un poco cargado":" · fresco"))));
     c.appendChild(fila("Sueldo anual",plata(j.sueldo)));
     c.appendChild(fila("Valor estimado",plata(j.valor)));
@@ -1741,11 +1811,13 @@ function fichaJugador(j){
     if(j.lesion>0) c.appendChild(el("p","mini","Lesionado: fuera unas "+j.lesion+" semanas."));
     if(j.cedido){ c.appendChild(el("div","resul mitad","🔄 Cedido a "+j.cedido.club+" hasta "+j.cedido.hasta+". Vuelve mejorado.")); }
     if(!j.cedido){
-      const bch=el("button","btn-aqua chico","Hablar y apoyar");
+      const ch=charlaHecha(j);
+      const bch=el("button","btn-aqua chico"+(ch?" gris":""),ch?"Ya hablaron esta semana":"Hablar y apoyar"); bch.disabled=ch;
       bch.onclick=()=>{ charlaJugador(j,"banco"); cerrarModal(); render(); };
-      const bex=el("button","btn-aqua chico","Exigir más"); bex.style.marginLeft="6px";
+      const bex=el("button","btn-aqua chico"+(ch?" gris":""),"Exigir más"); bex.style.marginLeft="6px"; bex.disabled=ch;
       bex.onclick=()=>{ charlaJugador(j,"exigir"); cerrarModal(); render(); };
-      const brn=el("button","btn-aqua chico verde","Renovar (+2 años)"); brn.style.marginLeft="6px";
+      const resta=(j.contrato&&j.contrato.hasta||E.anio)-E.anio;
+      const brn=el("button","btn-aqua chico"+(resta>=2?" gris":" verde"),resta>=2?"Contrato hasta "+j.contrato.hasta:"Renovar (+2 años)"); brn.style.marginLeft="6px"; brn.disabled=resta>=2;
       brn.onclick=()=>{ if(renovarContrato(j)){ cerrarModal(); render(); } };
       c.appendChild(bch); c.appendChild(bex); c.appendChild(brn);
       const tieneOferta=E.ofertasPend&&E.ofertasPend.some(o=>o.jid===j.n);
