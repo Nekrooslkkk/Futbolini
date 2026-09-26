@@ -3601,3 +3601,26 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `motor_goles`:** pasa a 200 partidos con topes con margen, porque con 120 el ruido cruzaba los topes
   (medido: goleadas 1,7–8,3 % en 12 corridas). El motor viejo sigue fallando por lejos.
   **Tests:** dev 519/519 (3 corridas seguidas) · core 1185/1185.
+
+### 7.9048 — decisiones con calendario real y voto ANFP que pesa
+**Archivos:** `js/calendario-real.js` (nuevo, antes de `ayudante.js`), `js/ui-partido.js`, `js/dev-doctor.js`, `css/pulido.css`, `js/util.js`, `index.html`
+- Pedido del autor: las decisiones de días y horarios dependen del calendario ("bajar precios solo si el
+  partido realmente es domingo"), y el voto ANFP condiciona de verdad el fixture.
+- **"domingo":** en decisiones (vía `resolverTokens`) y en arcos (vía `capituloActivo`) pasa a ser el día real
+  de tu próximo partido de local. Ejemplo: "¿Sábado o lunes a las 21?". "Juan Domingo" no se toca.
+- **Efectos reales (`efectoCalendario`):**
+  - "entrada barata" o "precios bajos": ese partido tiene la entrada al 70 % y +15 % de gente (`part.promo`,
+    que la taquilla lee);
+  - "horario de televisión": el partido se mueve al lunes 21:00 si el calendario lo permite (−15 % de gente);
+  - el aviso dice qué partido quedó tocado.
+- **Voto en la ANFP** (decisión fija y la procedural "Consejo de Presidentes"):
+  - si ganas con los grandes, el próximo de local va en horario estelar (+8 % de gente);
+  - si te castigan, el de local va a las 15:00 (−18 %) y la visita es un "viaje de castigo" (el equipo llega
+    cansado);
+  - la decisión dice qué partidos quedaron tocados.
+- **Condiciones:** la TV solo pide mover un partido de fin de semana; "El fixture te dejó un viaje imposible"
+  solo aparece si hay una visita con 4 días o menos al partido siguiente, y lo nombra con días y rivales
+  (`{FX_TRAMO}`); la votación, solo con fixture por delante.
+- **Previa:** muestra el día de la semana, la hora y el chip "🗓/🚌 motivo".
+- **Doctor `calendario_decisiones`:** al revés, sin reemplazo de día y sin efecto del voto, da 2 problemas.
+  **Tests:** dev 519/519 · core 1185/1185.

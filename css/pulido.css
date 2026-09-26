@@ -293,3 +293,6 @@ body.perf .ll-marc.ll-gol{animation:none}
 .cancha2d{max-height:none !important;width:auto;margin:6px auto !important;display:block;border-radius:10px;
   box-shadow:0 6px 18px rgba(0,0,0,.28)}
 .rep-cancha{display:block;margin:6px auto;border-radius:10px}
+
+/* 7.9048 · chip de calendario en la previa */
+.chip-cal{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:#fff4d6;color:#6b4a00;border:1px solid #f0d58a;margin:2px 4px}

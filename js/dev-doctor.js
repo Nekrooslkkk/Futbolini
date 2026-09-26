@@ -943,6 +943,33 @@ devDoctorRegistrar({id:"cancha_cenital", area:"interfaz", n:"La cancha del parti
   } finally { caja.remove(); }
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
 }});
+devDoctorRegistrar({id:"calendario_decisiones", area:"motor", n:"Decisiones de días y horarios miran tu calendario (y la ANFP pesa)", fn:function(){
+  var falta=[];
+  if(typeof textoConDia!=="function"||typeof efectoCalendario!=="function"||typeof aplicarFixtureANFP!=="function") return _dmal("sin calendario-real.js");
+  var loc=typeof proximoLocal==="function"?proximoLocal():null;
+  if(!loc) return _dok("sin partido de local por delante");
+  var snap=clonarPartida(E), det="";
+  try{
+    var dia=nombreDiaDe(loc);
+    var t=resolverTokens("Domingo, entrada barata. El domingo es sagrado.",E);
+    if(dia!=="domingo" && /omingo/.test(t)) falta.push("una decisión dice «domingo» y tu próximo partido de local es el "+dia);
+    var sinPromo=taquilla(Object.assign({},loc,{promo:null}));
+    efectoCalendario("Domingo, entrada barata");
+    var p2=proximoLocal(), conPromo=taquilla(p2);
+    if(!(p2&&p2.promo&&conPromo.gente>sinPromo.gente)) falta.push("«entrada barata» no cambia la entrada del partido real ("+sinPromo.gente+" → "+conPromo.gente+" personas)");
+    restaurarPartida(snap);
+    var toc=aplicarFixtureANFP("castigo");
+    if(!toc.length) falta.push("votar contra los grandes no toca tu fixture");
+    else if(!toc.some(function(p){ return p.promo&&p.promo.motivo; })) falta.push("el castigo de la ANFP no se explica en el partido");
+    restaurarPartida(snap);
+    var tv=(typeof BOLSA!=="undefined")&&BOLSA.find(function(x){ return x.id==="b_tv_horario"; });
+    if(tv && tv.cuando(E) && !proximoLocalFinde()) falta.push("la TV pide mover un partido de fin de semana y el tuyo no es de fin de semana");
+    var fx=(typeof BOLSA!=="undefined")&&BOLSA.find(function(x){ return x.id==="b_anfp_fixture"; });
+    if(fx && fx.cuando(E) && !tramoApretado()) falta.push("aparece «el viaje imposible» sin tramo apretado en tu fixture");
+    det="próximo de local: "+dia+" "+loc.f.d+"/"+loc.f.m+" ante "+loc.rivalNombre+(tramoApretado()?" · hay tramo apretado":"");
+  } finally { restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

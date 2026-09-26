@@ -167,11 +167,12 @@ function pantallaPrevia(part){
   const cab=panel(copaTit, part.tipo==="copa"?"🏆":(part.tipo==="amistoso"?"🤝":"⚽"), part.tipo==="copa"?"agua":"");
   if(part.tipo==="amistoso") cab.cuerpo.appendChild(el("p","mini","Amistoso: no cuenta para la tabla ni gasta la semana. Roda minutos, sube la forma y deja taquilla si eres local."));
   cab.cuerpo.appendChild(el("h2","tit",(part.local?E.clubNombre+" vs "+part.rivalNombre:part.rivalNombre+" vs "+E.clubNombre)));
-  cab.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" en "+part.sede+" · "+fechaTxt(part.f)+" de "+E.anio+
+  cab.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" en "+part.sede+" · "+(typeof nombreDiaDe==="function"?nombreDiaDe(part)+" ":"")+fechaTxt(part.f)+" de "+E.anio+(part.hora?" · "+part.hora:"")+
     (part.apodo?" · "+part.apodo:"")));
   const meta=el("div","fila-meta");
   meta.appendChild(el("span","chip-meta",part.local?"🏠 Local":"✈️ Visita"));
   const ca=chipArbitro(part); if(ca) meta.appendChild(ca);
+  if(typeof chipCalendario==="function"){ const cc=chipCalendario(part); if(cc) meta.appendChild(cc); }   /* 7.9048 · horario/precio que decidiste o que impuso la ANFP */
   cab.cuerpo.appendChild(meta);
   v.appendChild(cab);
 
