@@ -4227,3 +4227,16 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **La lógica no cambia:** la barra aprieta el mismo botón de efecto de siempre, y si te pasas mueve el punto
   de apunte hacia arriba antes de que la jugada lo lea (el botón y el toque al arco siguen funcionando).
 - **Doctor `arco_3d`:** revisa además colocado, potente y "te pasaste".
+
+### 7.9075 — Etapa 4A · Orden de pantallas en PC (auditoría visual)
+**Archivos:** `js/interfaz-aero.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`
+- **Auditoría:** capturas de cada sección en PC (1366) y celular (390).
+- **Finanzas y Vida:** su ventana quedaba atrapada en una columna de 580 px del reparto de `#vista`, con media
+  pantalla vacía. Ahora la ventana ocupa todo el ancho y reparte sus paneles en 2 columnas por dentro (3 en
+  pantallas de 1560 px o más). Las tarjetas de arriba (caja, deuda, bolsillo, acciones) van de lado a lado.
+  Finanzas pasó de 2412 a 1415 px de alto.
+- **Estadio:** el dibujo flotaba en una caja oscura con franjas vacías. Ahora el cielo de la caja es el mismo
+  del dibujo (nocturno cuando el estadio está completo), el SVG llena el ancho hasta 420 px de alto y la foto
+  queda en 220 px.
+- **Doctor `pantallas_pc`:** en PC mide que las ventanas de sección usen al menos el 90 % del ancho.
+  Comprobado al revés forzando 580 px.

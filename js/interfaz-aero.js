@@ -253,3 +253,26 @@ if(typeof document!=="undefined"&&!document.getElementById("css-cal-aero")){
     "body[data-tema=negro] #vista .cs .cs-cuando{background:linear-gradient(180deg,#27394d,#1c2b3b);color:#e3f0ff;border-color:#34495f;border-top-color:#d2322d}";
   document.head.appendChild(st);
 }
+/* ============================================================
+   7.9075 · Orden de pantallas en PC (auditoría visual de la etapa 4):
+   - Finanzas y Vida viven en una ventana que quedaba atrapada en una columna de 580 px (media
+     pantalla vacía): la ventana ocupa todo el ancho y reparte sus paneles en columnas adentro.
+   - Estadio: el dibujo flotaba en una caja oscura con franjas vacías y la foto ocupaba la pantalla.
+   ============================================================ */
+if(typeof document!=="undefined"&&!document.getElementById("css-orden-pc")){
+  const st=document.createElement("style"); st.id="css-orden-pc";
+  st.textContent=
+    "@media (min-width:1000px){"+
+      "#vista:has(> .ventana-so.in-vista){column-count:1 !important}"+
+      "#vista > .ventana-so.in-vista{width:100% !important;max-width:none !important}"+
+      "#vista > .ventana-so.in-vista :is(.so-cuerpo,.window-body){column-count:2;column-gap:14px}"+
+      "#vista > .ventana-so.in-vista :is(.so-cuerpo,.window-body) > *{break-inside:avoid;margin:0 0 14px !important}"+
+      "#vista > .ventana-so.in-vista :is(.so-cuerpo,.window-body) > :not(.panel){column-span:all}"+
+    "}"+
+    "@media (min-width:1560px){#vista > .ventana-so.in-vista :is(.so-cuerpo,.window-body){column-count:3}}"+
+    ".estadio-dibujo{background:linear-gradient(180deg,#8ec5f0,#e2f1fb) !important}.estadio-dibujo.completo{background:linear-gradient(180deg,#0b1733,#1d3b73) !important}"+
+    ".estadio-dibujo svg{display:block;width:100% !important;height:auto;max-height:420px;margin:0 auto}"+
+    ".estadio-dibujo .ed-pie{background:rgba(6,20,40,.78)}"+
+    ".foto-est{max-height:220px !important}";
+  document.head.appendChild(st);
+}

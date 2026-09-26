@@ -1504,6 +1504,24 @@ devDoctorRegistrar({id:"calendario_aero", area:"interfaz", n:"Calendario con est
   finally { v.innerHTML=html; v.dataset.sec=ds; SEC=sec; restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("pestañas de vidrio · posiciones en esferas por zona · celdas sin choque de clases");
 }});
+devDoctorRegistrar({id:"pantallas_pc", area:"interfaz", n:"En PC las ventanas de sección usan el ancho (sin media pantalla vacía)", fn:function(){
+  if(typeof document==="undefined"||!document.body) return _dok("sin DOM");
+  if(window.innerWidth<1000) return _dok("pantalla chica ("+window.innerWidth+" px): se revisa en PC");
+  var falta=[], v=document.getElementById("vista"); if(!v) return _dok("sin vista");
+  var snap=clonarPartida(E), sec=SEC, html=v.innerHTML, ds=v.dataset.sec;
+  try{
+    ["finanzas","vida"].forEach(function(s){
+      SEC=s; v.innerHTML=""; v.dataset.sec=s;
+      var fn={finanzas:typeof vistaFinanzas==="function"?vistaFinanzas:null, vida:typeof vistaVida==="function"?vistaVida:null}[s];
+      if(!fn) return; fn();
+      var w=v.querySelector(":scope > .ventana-so.in-vista"); if(!w) return;
+      var ancho=w.getBoundingClientRect().width, util=v.clientWidth-24;
+      if(ancho<util*0.9) falta.push(s+": la ventana usa "+Math.round(ancho)+" de "+Math.round(util)+" px");
+    });
+  } catch(e){ falta.push("se cae al medir: "+e.message); }
+  finally { v.innerHTML=html; v.dataset.sec=ds; SEC=sec; restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("Finanzas y Vida ocupan el ancho y reparten sus paneles en columnas");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
