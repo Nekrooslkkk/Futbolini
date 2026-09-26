@@ -288,3 +288,8 @@ body.con-juego .burbujas i{ animation-play-state:paused !important; }
 .ll-pasa{color:#38d66a}
 .ll-tuyo{font-size:15px;margin:6px 0}
 body.perf .ll-marc.ll-gol{animation:none}
+
+/* 7.9047 · cancha cenital: el alto sale de 105×68 (JS). Nada de max-height que la aplaste. */
+.cancha2d{max-height:none !important;width:auto;margin:6px auto !important;display:block;border-radius:10px;
+  box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.rep-cancha{display:block;margin:6px auto;border-radius:10px}

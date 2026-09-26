@@ -1728,3 +1728,16 @@ test exige que NO haya nombres de relleno. Estado: dev 474/474 · core 1185/1185
 **7.9042 (Claude):** recalibré el motor de goles (`MOTOR_GOL` en partido.js) y el VAR (`VAR_REVISION`).
 Si tocás probabilidades de gol, corré `devMedirGoles(300)` en consola o el doctor `motor_goles`.
 Estado: dev 509/509 · core 1185/1185.
+
+**7.9043–7.9047 (Claude):**
+- Reconstruí `js/cancha.js` (pedido del autor: cancha cenital realista). La API pública queda igual y
+  `pruebas_core` sigue pasando. Plan: fondo cacheado, pelota con dueño y pases, repetición de gol, doctor
+  `cancha_cenital`.
+- Otros cambios de la tanda:
+  - decisiones en vivo con 6 alternativas y efectos;
+  - barras de apoyo con efecto y botón de la barra;
+  - festejo del gol (con el arreglo del modo liviano);
+  - canal de TV por época;
+  - gráfico de dominio al final del partido;
+  - cuartos de la liguilla en vivo.
+- Estado: dev 519/519 · core 1185/1185.

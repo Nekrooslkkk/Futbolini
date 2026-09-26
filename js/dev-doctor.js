@@ -920,16 +920,39 @@ devDoctorRegistrar({id:"llaves_en_vivo", area:"interfaz", n:"Las llaves ajenas d
   if(!L||L.ronda!==ant||L.anio!==E.anio) return _dmal("los "+ant.toLowerCase()+" se jugaron y no hay cómo verlos",["solo llegó un aviso: falta marcarLlavesParaVer(\"ligB\",\""+ant+"\")"]);
   return _dok(ajenas.length+" llave(s) de "+ant+" para ver"+(L.vista?" (ya las viste)":""));
 }});
+devDoctorRegistrar({id:"cancha_cenital", area:"interfaz", n:"La cancha del partido: proporción real, liviana y con repetición del gol", fn:function(){
+  var falta=[];
+  if(typeof _cvSize!=="function"||typeof _cvDraw!=="function"||typeof _cvNuevoEstado!=="function") return _dmal("sin cancha cenital");
+  if(typeof document==="undefined"||!document.body) return _dok("sin pantalla");
+  var caja=document.createElement("div"); caja.style.cssText="position:absolute;left:-9999px;top:0;width:900px";
+  var cv=document.createElement("canvas"); caja.appendChild(cv); document.body.appendChild(caja);
+  try{
+    var s=_cvSize(cv), ratio=cv._w/cv._h;
+    if(Math.abs(ratio-105/68)>0.03) falta.push("la cancha no respeta 105×68 (proporción "+ratio.toFixed(2)+")");
+    var st=_cvNuevoEstado(null), g=cv.getContext("2d"), t0=performance.now();
+    for(var i=0;i<30;i++){ _cvStep(null,0.016,st); _cvDraw(g,s.w,s.h,st,null); }
+    var ms=(performance.now()-t0)/30;
+    if(ms>4) falta.push("cada cuadro cuesta "+ms.toFixed(1)+" ms (con 4+ ms se traba en celulares)");
+    var st2=_cvNuevoEstado(null); _cvArmarGol(st2,1,"x",10); var dentro=false;
+    for(var k=0;k<200&&st2.seq;k++){ _cvPasoGol(st2,0.03); if(st2.seq&&st2.ball.x>1.0) dentro=true; }
+    if(!dentro) falta.push("la repetición del gol no termina con la pelota en la red");
+    if(typeof cvRepeticionGol!=="function") falta.push("no se pueden volver a ver los goles en la repetición");
+    var enc=0; st.jug.forEach(function(a,i){ st.jug.forEach(function(b,j){ if(j>i&&Math.hypot(a.x-b.x,a.y-b.y)<0.01) enc++; }); });
+    if(enc) falta.push(enc+" pares de jugadores parados uno encima del otro");
+    var det="proporción "+ratio.toFixed(2)+" · "+ms.toFixed(2)+" ms por cuadro";
+  } finally { caja.remove(); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
   if(typeof MOTOR_GOL==="undefined") falta.push("sin perillas MOTOR_GOL en partido.js");
   else if(MOTOR_GOL.corner.max>0.15) falta.push("los córners terminan en gol hasta "+Math.round(MOTOR_GOL.corner.max*100)+" % (real ≈ 3–5 %)");
-  var m=devMedirGoles(120);
+  var m=devMedirGoles(200);   /* 200: con 120 el ruido cruzaba los topes (medido: goleadas 1,7–8,3 %) */
   if(m){
-    if(m.goles>3.3||m.goles<2.0) falta.push("promedio de "+m.goles.toFixed(2)+" goles por partido (esperado 2,0–3,3; la liga real ronda 2,6)");
-    if(m.empates<0.15) falta.push("solo "+Math.round(m.empates*100)+" % de empates (real 25–28 %)");
-    if(m.goleadas>0.08) falta.push(Math.round(m.goleadas*100)+" % de partidos con 4+ goles de diferencia (real ≈ 3 %)");
+    if(m.goles>3.4||m.goles<2.0) falta.push("promedio de "+m.goles.toFixed(2)+" goles por partido (esperado 2,0–3,4; la liga real ronda 2,6)");
+    if(m.empates<0.12) falta.push("solo "+Math.round(m.empates*100)+" % de empates (real 25–28 %)");
+    if(m.goleadas>0.10) falta.push(Math.round(m.goleadas*100)+" % de partidos con 4+ goles de diferencia (real ≈ 3 %)");
   }
   var det=m?(m.goles.toFixed(2)+" goles/partido · "+Math.round(m.empates*100)+" % empates · "+(m.goleadas*100).toFixed(1)+" % goleadas (4+)"):"sin partida para medir";
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);

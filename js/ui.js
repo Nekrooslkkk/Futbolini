@@ -1769,10 +1769,22 @@ function modalRepeticion(c){
     const gd=(c.golesDetalle||[]).slice().sort((a,b)=>(a.min||0)-(b.min||0));
     if(gd.length){
       cc.appendChild(el("h3","sub","⚽ Goles"));
+      /* 7.9047 · cada gol se puede volver a ver en la cancha cenital */
+      let repCv=null;
       gd.forEach(g=>{
-        cc.appendChild(el("div","fila","<span>"+(g.min||"?")+"' "+(g.propio?"":"("+(c.rivalNombre||"rival")+") ")+(g.quien||"?")+
+        const fila=el("div","fila","<span>"+(g.min||"?")+"' "+(g.propio?"":"("+(c.rivalNombre||"rival")+") ")+(g.quien||"?")+
           (g.tipo&&g.tipo!=="jugada"?" <span class='mini'>["+g.tipo+"]</span>":"")+
-          (g.asist?" <span class='mini'>(asist. "+g.asist+")</span>":"")+"</span>"));
+          (g.asist?" <span class='mini'>(asist. "+g.asist+")</span>":"")+"</span>");
+        if(typeof cvRepeticionGol==="function"){
+          const bv=el("button","btn-aqua chico","▶ Ver el gol");
+          bv.onclick=()=>{
+            if(!repCv){ repCv=el("canvas","rep-cancha"); repCv.setAttribute("aria-label","Repetición del gol"); }
+            fila.after(repCv);
+            cvRepeticionGol(repCv,g,{rivalId:c.rivalId});
+          };
+          fila.appendChild(bv);
+        }
+        cc.appendChild(fila);
       });
     } else {
       const gs=c.goleadores||[];

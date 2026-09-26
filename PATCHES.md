@@ -3574,3 +3574,30 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `llaves_en_vivo`:** si tu próximo partido es de la liguilla y la ronda anterior tuvo llaves ajenas,
   exige que se puedan ver. Al revés, sin la marca, falla. Probado con Rangers forzado a 2° de la B.
   **Tests:** dev 519/519 · core 1185/1185.
+
+### 7.9047 — cancha cenital reconstruida y repetición de cada gol
+**Archivos:** `js/cancha.js` (reescrito), `js/ui.js`, `js/dev-doctor.js`, `css/pulido.css`, `js/util.js`, `index.html`
+- Pedido del autor: cancha cenital realista estilo FIFA/flash, que entre en PC, liviana en celular, sin lag
+  ni bugs. `cancha.js` se reconstruyó; la API se mantiene: `montarCancha`, `detenerCancha`, `_cvSeed`,
+  `_cvSt` con los campos del penal, `_cvSize` 105×68.
+- **Dibujo:** vectorial y nítido (antes, pixel-art de un buffer de 200 px). El césped cortado a franjas y las
+  medidas reales (área de 16,5 m, área chica, arcos del penal, córners, arcos con red) se pintan una vez por
+  tamaño (`_cvFondo`); cada cuadro solo mueve jugadores y pelota. Medido: 0,09 ms por cuadro y la página a
+  60 cps.
+- **Jugadores:** fichas redondas con sombra, el color del club (el rival usa alternativa si choca), arqueros
+  de otro color, número en PC y anillo en el que tiene la pelota. Tu formación real (4-3-3, 5-3-2…) se ve en
+  la cancha. Nadie se para encima de otro (`_cvSeparar`).
+- **Juego:** la pelota tiene dueño y viaja con pases (con intercepciones según el dominio del motor), remates
+  que ataja el arquero o salen, presión del más cercano, y bloques que acompañan la pelota. Hay velocidad
+  tope: se acabó el tiriteo.
+- **Repetición:** cada gol muestra la jugada que termina en la red (pase, centro, remate, red que tiembla),
+  con el cartel "REPETICIÓN · autor minuto". Después viene el saque del medio. El gol rival es más corto.
+- **Tamaño:** en PC el alto tiene tope y el ancho acompaña, sin estirarse. En celular usa el ancho completo.
+  Va a 30 cps en modo liviano y se pausa si la pestaña no se ve.
+- **Calendario → repetición:** "▶ Ver el gol" en cada gol (`cvRepeticionGol`).
+- **Doctor `cancha_cenital`:** exige proporción 105×68, costo menor a 4 ms por cuadro, que la repetición
+  termine con la pelota en la red y que no haya jugadores superpuestos. Al revés, con una cancha aplastada,
+  falla.
+- **Doctor `motor_goles`:** pasa a 200 partidos con topes con margen, porque con 120 el ruido cruzaba los topes
+  (medido: goleadas 1,7–8,3 % en 12 corridas). El motor viejo sigue fallando por lejos.
+  **Tests:** dev 519/519 (3 corridas seguidas) · core 1185/1185.
