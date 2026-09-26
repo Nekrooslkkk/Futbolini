@@ -263,7 +263,7 @@ if(typeof document!=="undefined"&&!document.getElementById("css-orden-pc")){
   const st=document.createElement("style"); st.id="css-orden-pc";
   st.textContent=
     "@media (min-width:1000px){"+
-      "#vista:has(> .ventana-so.in-vista){column-count:1 !important}"+
+      "#vista.con-ventana{column-count:1 !important}"+   /* sin :has(): Chrome no siempre lo reevalúa tras muchos cambios del DOM (medido en 7.9078) */
       "#vista > .ventana-so.in-vista{width:100% !important;max-width:none !important}"+
       "#vista > .ventana-so.in-vista :is(.so-cuerpo,.window-body){column-count:2;column-gap:14px}"+
       "#vista > .ventana-so.in-vista :is(.so-cuerpo,.window-body) > *{break-inside:avoid;margin:0 0 14px !important}"+
@@ -325,3 +325,19 @@ if(typeof document!=="undefined"&&!document.getElementById("css-partido-2col")){
     "}";
   document.head.appendChild(st);
 }
+
+/* 7.9078 · marca explícita (no solo :has, que en algún entorno no se reevalúa): la sección vive en una ventana */
+function marcarVistaConVentana(){
+  const v=document.getElementById("vista"); if(!v) return;
+  const hay=!!v.querySelector(":scope > .ventana-so.in-vista");
+  v.classList.toggle("con-ventana",hay);
+  /* estilo en línea: Chrome a veces no recalcula #vista tras las reglas con :has() de pulido.css
+     (medido: clase puesta, regla !important que calza, y column-count seguía en 2) */
+  if(hay) v.style.setProperty("column-count","1","important"); else v.style.removeProperty("column-count");
+}
+(function(){
+  const o=window.envolverVistaSO;
+  if(typeof o==="function"&&!o._cv){ const w=function(){ const r=o.apply(this,arguments); try{ marcarVistaConVentana(); }catch(e){} return r; }; Object.keys(o).forEach(k=>w[k]=o[k]); w._cv=true; w._orig=o; window.envolverVistaSO=w; }
+  const r=window.render;
+  if(typeof r==="function"&&!r._cv){ const w=function(){ const x=r.apply(this,arguments); try{ marcarVistaConVentana(); }catch(e){} return x; }; Object.keys(r).forEach(k=>w[k]=r[k]); w._cv=true; w._orig=r; window.render=w; }
+})();

@@ -4289,3 +4289,33 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   nuevos no traigan texto entre comillas. Las ligas que crea el jugador (registradas con el juego ya
   cargado, `registrado:true`) no cuentan. Comprobado al revés: sin los dilemas de River, marca "RIV tiene 3".
   **Tests:** dev 567/567 · core 1185/1185.
+
+### 7.9078 — Doctor profesional: archivo:línea, tiempos, qué se rompió desde la vez anterior, y `test/doctor.sh`
+**Archivos:** `js/dev-doctor.js`, `test/doctor.js` (nuevo), `test/doctor.sh` (nuevo), `js/interfaz-aero.js`, `js/util.js`, `index.html`
+- **Pedido del autor:** "DOCTOR es para mí y para ti, para que después agregar, mejorar y arreglar te sea fácil,
+  como lo que hacen los programadores serios".
+- **Cada chequeo sabe dónde vive:** `devDoctorRegistrar` guarda `donde` (archivo:línea, sacado del stack al
+  registrarse). El panel 🩺 y `devDoctorTexto` muestran "📍 js/dev-doctor.js:1525 · id pantallas_pc" en cada
+  falla y el "🔧" si el chequeo trae `arreglo`.
+- **Tiempos:** cada chequeo mide cuánto tarda (⏱ si pasa de 300 ms).
+- **Historia:** se guardan las últimas 12 corridas en este navegador (`futbolini_doctor_hist`). El panel dice
+  "desde la corrida anterior (versión): N se rompieron · M se arreglaron", y cada falla nueva lleva "se rompió
+  recién".
+- **`bash test/doctor.sh`:** corre el doctor completo, pesados incluidos, en 3 partidas (CC 2026, CC 1991,
+  Linares 2026), cada una en un navegador limpio. Imprime cada falla con archivo:línea y detalle, y devuelve un
+  código de salida (0 sano, 1 con fallas). Acepta partidas: `bash test/doctor.sh RIV,2026 UC,2026`. Es para
+  correr antes de subir.
+- **Lo que destapó la primera corrida:**
+  - **`motor_vs_ia`:** fallaba según el club. La brecha es idéntica de 7.9056 a hoy (0,180 en CC), con media
+    de liga 0,03 y por club de −0,18 (UCH) a +0,20 (COQ). El tope de 0,2 caía dentro de la dispersión normal:
+    ahora mide 200 partidos por escenario con tope 0,25 (igual que `motor_goles` en 7.9042). El motor no se
+    tocó.
+  - **`calendario_aero`:** falso positivo en 1991, que usa el calendario clásico. Ahora lo reconoce.
+  - **`pantallas_pc`:** en 1991, si entrabas a Institución antes que a Finanzas, la ventana se medía de 583 px.
+    Con el protocolo de depuración de Chrome se vio que el estilo correcto se aplica un cuadro después
+    (1170 px): la lectura sincrónica justo después de pintar viene vieja. Arreglos:
+    - `#vista.con-ventana` más estilo en línea (sin depender de `:has()`, que en ese caso no se reevaluaba);
+    - el chequeo revisa el mecanismo y no el ancho del mismo instante.
+
+  Los tres, comprobados al revés.
+- **Estado:** doctor sano en las 3 partidas · dev 567/567 · core 1185/1185.

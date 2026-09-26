@@ -1794,3 +1794,12 @@ Estado: dev 554/554 · core 1185/1185.
   1,9 m.
 
 Estado: dev 558/558 · core 1185/1185.
+
+**7.9078 (Claude) · protocolo del Doctor.** Antes de subir, corre `bash test/doctor.sh` además de los dos
+`correr*.sh`. Cada falla trae archivo:línea (📍).
+- Para agregar un chequeo: `devDoctorRegistrar({id, area, n, fn, arreglo:"cómo se arregla"})` en
+  `js/dev-doctor.js`. `fn` devuelve `_dok(txt)` o `_dmal(txt,[detalles])`; si toca `E`, que clone y restaure.
+- Verifícalo al revés (rompe lo que cuida y mira que falle).
+- Si el chequeo busca algo en el código fuente de una función que otros envuelven, usa `_docFuente(fn)`.
+
+Estado: doctor sano (3 partidas) · dev 567/567 · core 1185/1185.

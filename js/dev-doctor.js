@@ -15,10 +15,21 @@
    ============================================================ */
 
 var DOCTOR_CHECKS=[];
+/* 7.9078 · dónde vive cada chequeo (archivo:línea), para ir directo a arreglarlo */
+function _docDonde(){
+  try{
+    var st=String(new Error().stack||"").split("\n");
+    for(var i=0;i<st.length;i++){
+      var m=/\/(js\/[\w.-]+\.js)(?:\?[^:]*)?:(\d+)/.exec(st[i]);
+      if(m&&!/_docDonde|devDoctorRegistrar/.test(st[i])) return m[1]+":"+m[2];
+    }
+  }catch(e){}
+  return "";
+}
 function devDoctorRegistrar(c){
   if(!c||!c.id||typeof c.fn!=="function") return false;
   if(DOCTOR_CHECKS.some(function(x){ return x.id===c.id; })) return false;
-  DOCTOR_CHECKS.push({id:c.id, area:c.area||"general", n:c.n||c.id, fn:c.fn, pesado:!!c.pesado});
+  DOCTOR_CHECKS.push({id:c.id, area:c.area||"general", n:c.n||c.id, fn:c.fn, pesado:!!c.pesado, donde:c.donde||_docDonde(), arreglo:c.arreglo||""});
   return true;
 }
 function _dok(txt,detalle){ return {ok:true, txt:txt||"", detalle:detalle||[]}; }
@@ -623,11 +634,14 @@ devDoctorRegistrar({id:"economia_escala", area:"motor", pesado:true, n:"Nadie se
 devDoctorRegistrar({id:"motor_vs_ia", area:"simulacion", pesado:true, n:"Tus partidos responden a la fuerza igual que los de la IA", fn:function(){
   if(typeof devCalibrarMotor!=="function"||!E) return _dok("sin partida");
   if(E._fuerzaV!==2) return _dok("partida con escala vieja (anterior a 7.9029): no aplica");
-  var r=devCalibrarMotor(120,[-10,0,10]);
+  /* 7.9078 · 200 por escenario y tope 0,25: medido en 7.9056→7.9077 (sin cambios de motor) la brecha
+     por club va de −0,18 (UCH) a +0,20 (COQ) con media de liga 0,03 (c=5). Con tope 0,2 el chequeo
+     fallaba según el club y el estado del azar, no por el motor (test/doctor.sh lo destapó). */
+  var r=devCalibrarMotor(200,[-10,0,10]);
   var m=r.reduce(function(s,x){ return s+x.brecha; },0)/r.length;
   var det=r.map(function(x){ return "dif "+x.dif+(x.local?" L":" V")+": motor "+x.ptsMotor+" pts vs IA "+x.ptsIA; });
   var txt="brecha media "+(Math.round(m*100)/100)+" pts/partido";
-  return Math.abs(m)>0.2?_dmal(txt+(m>0?": el club del jugador saca ventaja":": el club del jugador queda castigado"),det):_dok(txt,det);
+  return Math.abs(m)>0.25?_dmal(txt+(m>0?": el club del jugador saca ventaja":": el club del jugador queda castigado"),det):_dok(txt,det);
 }});
 
 /* 7.9030 · el juego tiene que poder vivir sin internet, y el navegador no puede
@@ -1494,6 +1508,7 @@ devDoctorRegistrar({id:"calendario_aero", area:"interfaz", n:"Calendario con est
     E.uiCal=E.uiCal||{}; var t0=E.uiCal.tab; E.uiCal.tab="tablas"; SEC="calendario"; v.innerHTML=""; v.dataset.sec="calendario";
     (typeof vistaCalendario==="function"?vistaCalendario:function(){})();
     var td=v.querySelector(".cs-tabla td.pos");
+    if(!v.querySelector(".cs")){ E.uiCal.tab=t0; return _dok("esta época usa el calendario clásico (sin tablas SofaScore)"); }
     if(!td) falta.push("la tabla del calendario no se pintó");
     else {
       var cs=getComputedStyle(td);
@@ -1509,7 +1524,6 @@ devDoctorRegistrar({id:"calendario_aero", area:"interfaz", n:"Calendario con est
 }});
 devDoctorRegistrar({id:"pantallas_pc", area:"interfaz", n:"En PC las ventanas de sección usan el ancho (sin media pantalla vacía)", fn:function(){
   if(typeof document==="undefined"||!document.body) return _dok("sin DOM");
-  if(window.innerWidth<1000) return _dok("pantalla chica ("+window.innerWidth+" px): se revisa en PC");
   var falta=[], v=document.getElementById("vista"); if(!v) return _dok("sin vista");
   var snap=clonarPartida(E), sec=SEC, html=v.innerHTML, ds=v.dataset.sec;
   try{
@@ -1518,8 +1532,10 @@ devDoctorRegistrar({id:"pantallas_pc", area:"interfaz", n:"En PC las ventanas de
       var fn={finanzas:typeof vistaFinanzas==="function"?vistaFinanzas:null, vida:typeof vistaVida==="function"?vistaVida:null}[s];
       if(!fn) return; fn();
       var w=v.querySelector(":scope > .ventana-so.in-vista"); if(!w) return;
-      var ancho=w.getBoundingClientRect().width, util=v.clientWidth-24;
-      if(ancho<util*0.9) falta.push(s+": la ventana usa "+Math.round(ancho)+" de "+Math.round(util)+" px");
+      /* 7.9078 · se revisa el mecanismo, no el layout: Chrome entrega el ancho viejo si se lee en el
+         mismo instante en que se pinta (medido: 583 px sincrónico, 1170 px un cuadro después) */
+      if(!v.classList.contains("con-ventana")||v.style.getPropertyValue("column-count")!=="1")
+        falta.push(s+": la ventana no marca #vista para ocupar el ancho (sigue repartida en columnas)");
     });
   } catch(e){ falta.push("se cae al medir: "+e.message); }
   finally { v.innerHTML=html; v.dataset.sec=ds; SEC=sec; restaurarPartida(snap); }
@@ -1719,30 +1735,52 @@ function devDoctor(opts){
   DOCTOR_CHECKS.forEach(function(c){
     if(opts.soloRapidos && c.pesado) return;
     if(opts.area && c.area!==opts.area) return;
-    var r;
+    var r, t=(typeof performance!=="undefined"?performance.now():Date.now());
     try{ r=c.fn()||_dok(""); }
     catch(e){ r=_dmal("EXCEPCIÓN: "+e.message); }
-    r.id=c.id; r.area=c.area; r.n=c.n;
+    r.id=c.id; r.area=c.area; r.n=c.n; r.donde=c.donde; r.arreglo=c.arreglo;
+    r.ms=Math.round((typeof performance!=="undefined"?performance.now():Date.now())-t);
     res.checks.push(r);
     if(r.ok) res.ok++; else res.mal++;
   });
   res.ms=Date.now()-res.t0;
   res.total=res.ok+res.mal;
   res.veredicto=res.mal===0?"sano":(res.mal<=2?"con detalles":"roto");
+  if(!opts.sinHistoria) _docHistoria(res);
   return res;
+}
+/* 7.9078 · historia: qué se rompió o se arregló desde la corrida anterior (en este navegador) */
+var DOCTOR_HIST_KEY="futbolini_doctor_hist";
+function _docHistoria(res){
+  var prev=null;
+  try{ var h=JSON.parse(localStorage.getItem(DOCTOR_HIST_KEY)||"[]"); prev=h[0]||null;
+    h.unshift({t:Date.now(), v:(typeof VERSION!=="undefined"?VERSION:""), ok:res.checks.filter(function(c){ return c.ok; }).map(function(c){ return c.id; }), mal:res.checks.filter(function(c){ return !c.ok; }).map(function(c){ return c.id; })});
+    if(h.length>12) h.length=12; localStorage.setItem(DOCTOR_HIST_KEY,JSON.stringify(h)); }catch(e){}
+  res.cambios={rotos:[],arreglados:[]};
+  if(prev){
+    res.checks.forEach(function(c){
+      if(!c.ok&&prev.ok.indexOf(c.id)>=0) res.cambios.rotos.push(c.id);
+      if(c.ok&&prev.mal.indexOf(c.id)>=0) res.cambios.arreglados.push(c.id);
+      c.nuevo=!c.ok&&prev.ok.indexOf(c.id)>=0;
+    });
+    res.previa={v:prev.v, t:prev.t};
+  }
+  return res.cambios;
 }
 /* texto plano, para pegar en el chat de trabajo o en un issue */
 function devDoctorTexto(res){
   res=res||devDoctor();
   var l=["FUTBOLINI · DOCTOR — "+res.veredicto.toUpperCase()+" ("+res.ok+"/"+res.total+" en "+res.ms+" ms)"];
+  if(res.cambios&&(res.cambios.rotos.length||res.cambios.arreglados.length))
+    l.push("desde la corrida anterior: "+res.cambios.rotos.length+" se rompieron ("+res.cambios.rotos.join(", ")+") · "+res.cambios.arreglados.length+" se arreglaron");
   var areas={};
   res.checks.forEach(function(c){ (areas[c.area]=areas[c.area]||[]).push(c); });
   Object.keys(areas).forEach(function(a){
     l.push("");
     l.push("["+a.toUpperCase()+"]");
     areas[a].forEach(function(c){
-      l.push((c.ok?"  OK  ":"  MAL ")+c.n+" — "+c.txt);
-      if(!c.ok) (c.detalle||[]).slice(0,10).forEach(function(d){ l.push("        · "+d); });
+      l.push((c.ok?"  OK  ":"  MAL ")+c.n+" — "+c.txt+(c.ms>300?"  ⏱"+c.ms+"ms":""));
+      if(!c.ok){ l.push("        📍 "+(c.donde||"?")+"  (id: "+c.id+")"); if(c.arreglo) l.push("        🔧 "+c.arreglo); (c.detalle||[]).slice(0,10).forEach(function(d){ l.push("        · "+d); }); }
     });
   });
   return l.join("\n");
@@ -1762,7 +1800,8 @@ function devPintarDoctor(cont){
     salida.innerHTML="";
     var col=res.veredicto==="sano"?"#2fa84f":(res.veredicto==="con detalles"?"#d68a1f":"#c0392b");
     caja.innerHTML="<div class='dev-liga-cab'><b style='color:"+col+"'>"+res.veredicto.toUpperCase()+"</b>"+
-      " <span class='mini'>"+res.ok+" de "+res.total+" chequeos · "+res.ms+" ms</span></div>";
+      " <span class='mini'>"+res.ok+" de "+res.total+" chequeos · "+res.ms+" ms</span></div>"+
+      (res.cambios&&(res.cambios.rotos.length||res.cambios.arreglados.length)?"<div class='mini'>Desde la corrida anterior"+(res.previa&&res.previa.v?" ("+res.previa.v+")":"")+": <b style='color:#c0392b'>"+res.cambios.rotos.length+" se rompieron</b> · <b style='color:#2fa84f'>"+res.cambios.arreglados.length+" se arreglaron</b></div>":"");
     var areas={};
     res.checks.forEach(function(c){ (areas[c.area]=areas[c.area]||[]).push(c); });
     Object.keys(areas).forEach(function(a){
@@ -1770,11 +1809,12 @@ function devPintarDoctor(cont){
         contenido:"📚 Contenido",interfaz:"📱 Interfaz"}[a]||a));
       areas[a].forEach(function(c){
         var f=el("div","fila"+(c.ok?"":" mal"));
-        f.innerHTML="<span>"+(c.ok?"✅":"❌")+" "+escHtml(c.n)+"</span><b class='mini'>"+escHtml(c.txt||"")+"</b>";
+        f.innerHTML="<span>"+(c.ok?"✅":"❌")+" "+escHtml(c.n)+(c.nuevo?" <b style='color:#c0392b'>· se rompió recién</b>":"")+"</span><b class='mini'>"+escHtml(c.txt||"")+(c.ms>300?" ⏱"+c.ms+" ms":"")+"</b>";
         salida.appendChild(f);
-        if(!c.ok&&(c.detalle||[]).length){
-          var d=el("details"); d.appendChild(el("summary","mini","ver "+c.detalle.length+" detalle(s)"));
-          c.detalle.slice(0,25).forEach(function(x){ d.appendChild(el("div","mini","· "+escHtml(String(x)))); });
+        if(!c.ok){
+          var d=el("details"); d.open=true; d.appendChild(el("summary","mini","📍 "+escHtml(c.donde||"?")+" · id "+escHtml(c.id)+((c.detalle||[]).length?" · "+c.detalle.length+" detalle(s)":"")));
+          if(c.arreglo) d.appendChild(el("div","mini","🔧 "+escHtml(c.arreglo)));
+          (c.detalle||[]).slice(0,25).forEach(function(x){ d.appendChild(el("div","mini","· "+escHtml(String(x)))); });
           salida.appendChild(d);
         }
       });
