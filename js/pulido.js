@@ -226,7 +226,7 @@ function ajustarObjetivos74(objs){
         }
         if(/decisión/i.test(it.t||"")) it.d="En el escritorio, abajo: las urgentes van primero. Resolvelas antes del partido; si no, el club decide solo y casi nunca a tu favor.";
         if(/Química floja/i.test(it.t||"")) it.d="Andá a la pizarra (previa del partido) y juntá a los que se llevan: misma edad, mismos rasgos, dos ídolos de la casa. No pongas juntos a los que se pelean.";
-        if(/Camarín cortado/i.test(it.t||"")) it.d="Charlá con el capitán (Redes), no armes un once de castigo, pagá sueldos si están atrasados (Finanzas) y ganá el próximo. Ganar cura casi todo.";
+        if(/Camarín cortado/i.test(it.t||"")) it.d="Charlá con el capitán (Plantel), no armes un once de castigo, pagá sueldos si están atrasados (Finanzas) y ganá el próximo. Ganar cura casi todo.";
         if(/Sueldos atrasados/i.test(it.t||"")) it.d="Finanzas → regularizá la caja. Mientras debas sueldos, la moral cae sola cada semana. Vendé un prescindible o cortá gastos; no fichería.";
         if(/Popular clausurada/i.test(it.t||"")) it.d="Institución → mesa con la barra. Bajá el tono, cumplí un pacto chico, no los quemés en radio. El aforo vuelve cuando el clima baja.";
         if(/aviso/i.test(it.t||"")) it.d="Campana de avisos (arriba). Ofertas y pedidos caducan: si no respondés, el otro club se va.";

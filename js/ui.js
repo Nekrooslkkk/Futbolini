@@ -8,7 +8,8 @@ let REDES_PEST="club";
 const SECCIONES=[
  ["escritorio","🗂️","Escritorio"],["institucion","🏛️","Institución"],["finanzas","💰","Finanzas"],
  ["plantel","👥","Plantel"],["mercado","🧳","Mercado"],["estadio","🏟️","Estadio"],["redes","📱","Redes"],["calendario","📅","Calendario"],["historia","📚","Historia"],
- ["carrera","🎖️","Carrera"],["vida","🪪","Vida"],["avisos","🔔","Avisos"],["ajustes","⚙️","Ajustes"]
+ ["carrera","🎖️","Carrera"],["vida","🪪","Vida"],["ajustes","⚙️","Ajustes"]
+ /* 7.9039 · Avisos ya no es sección del menú: es el historial, se abre con la 🔔 de arriba (una sola) */
 ];
 function irA(s){
   if(s==="ajustes" && typeof abrirAjustes==="function"){ abrirAjustes(); return; } /* 7.9027: ventana */
@@ -683,92 +684,8 @@ function _nomCortoRival(part){
   const tope=w<1000?12:16;
   return n.length>tope?(n.slice(0,tope-1).trim()+"…"):n;
 }
-function vistaEscritorio(){
-  const v=$("#vista");
-  if(typeof sembrarStoryline==="function") sembrarStoryline();   /* 7.0 · intenta abrir un arco de equipo (1 vez por semana) */
-  const rej=el("div","rejilla dos esc-aero");   /* 7.9006 · entrada Vista de la sección (scoped aero) */
-  const izq=el("div"), der=el("div");
-
-  /* 7.36 · el partido es LA cosa: primero el compromiso, después lo que atiende */
-  const part=proximoPartido();
-  const p=panel("Próximo compromiso","📌","agua");
-  if(part){
-    p.cuerpo.appendChild(el("h2","tit","Próximo partido con "+part.rivalNombre));
-    p.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" · "+(typeof etqCompromiso==="function"?etqCompromiso(part):(part.tipo==="copa"?(part.torneo||"Copa")+" · "+part.ronda:"fecha "+part.fecha))+
-      " · "+fechaTxt(part.f)+" · "+part.sede));
-    /* 7.9013 · el rival tiene pasado: racha, puesto y cómo terminó el último cruce.
-       Todo derivado (E.forma la arma ui-jornada.js). Si no hay dato, se dice. */
-    p.cuerpo.appendChild(_pasadoRival(part));
-    const b=el("button","btn-aqua ancho verde cta-jugar","Ir al partido");
-    b.onclick=()=>{ if(bloqueoDecisiones()) return; pantallaPrevia(part); };
-    p.cuerpo.appendChild(b);
-    if(typeof plantelRival==="function"){
-      const det=el("details"); det.className="rival-prev";
-      det.appendChild(el("summary","","👁️ "+T("esc_once_ver","Once probable de ")+part.rivalNombre));
-      try{
-        const xi=plantelRival(part.rivalId||part.rivalNombre, part.fuerzaRival);
-        /* 7.9013 · informe GRATIS: útil, y un club chico puede pedirlo todas las semanas. */
-        const SCOUT_COSTO=0;
-        window.SCOUT_COSTO=SCOUT_COSTO;
-        const claveScout=(E.club||"")+"|"+(part.rivalId||part.rivalNombre)+"|"+E.idx;
-        if(!E.flags) E.flags={}; if(!E.flags.scouting) E.flags.scouting={};
-        const pagado=!!E.flags.scouting[claveScout];
-        /* sin informe: solo los 4 más obvios. El resto, niebla — se revela al pedir. */
-        const revelados=xi.slice().sort((a,b)=>(b.nivel||0)-(a.nivel||0)).slice(0,4);
-        const ve=j=>pagado||revelados.indexOf(j)>=0;
-        const t=el("table"); t.innerHTML="<thead><tr><th>"+T("scout_rival","Rival")+"</th><th>"+T("scout_pos","Pos")+"</th><th class='n'>"+T("scout_nivel","Nivel")+"</th></tr></thead>";
-        const tb=el("tbody");
-        xi.forEach(j=>{
-          const nom=ve(j)?((j.real?"● ":"")+j.n):"???????";
-          const niv=pagado?j.nivel:(revelados.indexOf(j)>=0?("~"+(Math.round((j.nivel||60)/4)*4)):"—");
-          tb.appendChild(el("tr",ve(j)?null:"scout-niebla","<td>"+nom+"</td><td>"+j.pos+"</td><td class='n'>"+niv+"</td>"));
-        });
-        t.appendChild(tb); det.appendChild(t);
-        if(pagado){
-          det.appendChild(el("p","mini","● "+T("scout_real","jugador real documentado")+". "+
-            (xi.some(j=>!j.real)?T("scout_juego","Sin ●: jugador del juego (no hay plantel documentado de ese club o de ese año).")+" ":"")+
-            T("scout_estim","Es una lectura estimada: la formación final puede cambiar.")));
-        } else {
-          det.appendChild(el("p","mini",T("scout_niebla","Ves a los conocidos; el resto es niebla. Pide el informe y ves el once completo — no cuesta caja.")));
-          const bi=el("button","btn-aqua chico verde");
-          bi.textContent="🔎 "+T("scout_btn","Informe completo")+" · "+T("scout_gratis","gratis");
-          bi.onclick=()=>{
-            E.flags.scouting[claveScout]=1;
-            guardar(); aviso("🔎 "+T("scout_listo","Informe listo")+": "+part.rivalNombre);
-            render();
-          };
-          det.appendChild(bi);
-        }
-      }catch(e){ det.appendChild(el("p","mini","No se pudo leer el rival.")); }
-      p.cuerpo.appendChild(det);
-    }
-    const yaEntreno=E.flags["entreno_"+E.anio+"_"+E.idx];
-    const bent=el("button","btn-aqua ancho"+(yaEntreno?" gris":""),yaEntreno?"🏃 Ya entrenaron fuerte esta semana":"🏃 Entrenar fuerte · mejora la forma (riesgo bajo de lesión)");
-    bent.disabled=yaEntreno; bent.style.marginTop="6px"; bent.onclick=entrenarSemana;
-    p.cuerpo.appendChild(bent);
-  } else {
-    p.cuerpo.appendChild(el("p",null,"No quedan partidos. Toca cerrar la temporada "+E.anio+"."));
-    const b=el("button","btn-aqua ancho verde","Cerrar temporada");
-    b.onclick=cerrarTemporada;
-    p.cuerpo.appendChild(b);
-  }
-  izq.appendChild(p);
-
-  const pend=(typeof pendientesAtender==="function")?pendientesAtender():[];
-  if(pend.length){
-    const pa=panel("Atiende antes de avanzar","⚠️","alerta");
-    pa.cuerpo.appendChild(el("p","mini","Hay cosas que conviene resolver antes de apretar Avanzar. Toca una para ir a resolverla:"));
-    pend.forEach(it=>{
-      const b=el("button","op"+(it.fuerte?" op-alerta":"")); b.innerHTML='<div class="t">'+it.ic+" "+it.t+'</div>'+(it.d?'<div class="req">'+it.d+'</div>':"");
-      b.onclick=()=>atenderPendiente(it);
-      pa.cuerpo.appendChild(b);
-    });
-    izq.appendChild(pa);
-  }
-
-  /* 7.0 · historia del club (arco de equipo) si hay un capítulo abierto */
-  if(typeof panelStoryline==="function"){ const ps=panelStoryline(); if(ps) izq.appendChild(ps); }
-
+/* 7.9039 · metas de la temporada (antes en el Escritorio) */
+function panelMetas(){
   /* 5.0 · objetivos de temporada — lo que se espera de ti
      6.29 · pestañas por sección (menos scroll) + tarjetas compactas movibles */
   if(Array.isArray(E.objetivos)&&E.objetivos.length&&typeof progresoObjetivo==="function"){
@@ -813,8 +730,98 @@ function vistaEscritorio(){
     po.cuerpo.appendChild(tabs);
     po.cuerpo.appendChild(cont);
     pintarObjs();
-    izq.appendChild(po);
+    return po;
   }
+  return null;
+}
+function vistaEscritorio(){
+  const v=$("#vista");
+  if(typeof sembrarStoryline==="function") sembrarStoryline();   /* 7.0 · intenta abrir un arco de equipo (1 vez por semana) */
+  const rej=el("div","rejilla dos esc-aero");   /* 7.9006 · entrada Vista de la sección (scoped aero) */
+  const izq=el("div"), der=el("div");
+
+  /* 7.36 · el partido es LA cosa: primero el compromiso, después lo que atiende */
+  const part=proximoPartido();
+  const p=panel("Próximo compromiso","📌","agua");
+  if(part){
+    p.cuerpo.appendChild(el("h2","tit","Próximo partido con "+part.rivalNombre));
+    p.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" · "+(typeof etqCompromiso==="function"?etqCompromiso(part):(part.tipo==="copa"?(part.torneo||"Copa")+" · "+part.ronda:"fecha "+part.fecha))+
+      " · "+fechaTxt(part.f)+" · "+part.sede));
+    /* 7.9013 · el rival tiene pasado: racha, puesto y cómo terminó el último cruce.
+       Todo derivado (E.forma la arma ui-jornada.js). Si no hay dato, se dice. */
+    p.cuerpo.appendChild(_pasadoRival(part));
+    /* 7.9039 · sin "Ir al partido" acá: era el mismo botón que Jugar (barra de arriba / dock) */
+    if(typeof plantelRival==="function"){
+      const det=el("details"); det.className="rival-prev";
+      det.appendChild(el("summary","","👁️ "+T("esc_once_ver","Once probable de ")+part.rivalNombre));
+      try{
+        const xi=plantelRival(part.rivalId||part.rivalNombre, part.fuerzaRival);
+        /* 7.9039 · pedido del autor: el informe cuesta ~US$1.000 (≈ $1 M), no millones ni gratis */
+        const SCOUT_COSTO=1;
+        window.SCOUT_COSTO=SCOUT_COSTO;
+        const claveScout=(E.club||"")+"|"+(part.rivalId||part.rivalNombre)+"|"+E.idx;
+        if(!E.flags) E.flags={}; if(!E.flags.scouting) E.flags.scouting={};
+        const pagado=!!E.flags.scouting[claveScout];
+        /* sin informe: solo los 4 más obvios. El resto, niebla — se revela al pedir. */
+        const revelados=xi.slice().sort((a,b)=>(b.nivel||0)-(a.nivel||0)).slice(0,4);
+        const ve=j=>pagado||revelados.indexOf(j)>=0;
+        const t=el("table"); t.innerHTML="<thead><tr><th>"+T("scout_rival","Rival")+"</th><th>"+T("scout_pos","Pos")+"</th><th class='n'>"+T("scout_nivel","Nivel")+"</th></tr></thead>";
+        const tb=el("tbody");
+        xi.forEach(j=>{
+          const nom=ve(j)?((j.real?"● ":"")+j.n):"???????";
+          const niv=pagado?j.nivel:(revelados.indexOf(j)>=0?("~"+(Math.round((j.nivel||60)/4)*4)):"—");
+          tb.appendChild(el("tr",ve(j)?null:"scout-niebla","<td>"+nom+"</td><td>"+j.pos+"</td><td class='n'>"+niv+"</td>"));
+        });
+        t.appendChild(tb); det.appendChild(t);
+        if(pagado){
+          det.appendChild(el("p","mini","● "+T("scout_real","jugador real documentado")+". "+
+            (xi.some(j=>!j.real)?T("scout_juego","Sin ●: jugador del juego (no hay plantel documentado de ese club o de ese año).")+" ":"")+
+            T("scout_estim","Es una lectura estimada: la formación final puede cambiar.")));
+        } else {
+          det.appendChild(el("p","mini",T("scout_niebla2","Ves a los conocidos; el resto es niebla. El informe del ojeador trae el once completo.")));
+          const bi=el("button","btn-aqua chico verde");
+          bi.textContent="🔎 "+T("scout_btn","Informe completo")+" · "+plata(SCOUT_COSTO);
+          if((E.plata||0)<SCOUT_COSTO){ bi.disabled=true; bi.title=T("scout_sin","No alcanza la caja para el informe."); }
+          bi.onclick=()=>{
+            if((E.plata||0)<SCOUT_COSTO) return;
+            aplicarEfectos({plata:-SCOUT_COSTO});
+            E.flags.scouting[claveScout]=1;
+            guardar(); aviso("🔎 "+T("scout_listo","Informe listo")+": "+part.rivalNombre);
+            render();
+          };
+          det.appendChild(bi);
+        }
+      }catch(e){ det.appendChild(el("p","mini","No se pudo leer el rival.")); }
+      p.cuerpo.appendChild(det);
+    }
+    const yaEntreno=E.flags["entreno_"+E.anio+"_"+E.idx];
+    const bent=el("button","btn-aqua ancho"+(yaEntreno?" gris":""),yaEntreno?"🏃 Ya entrenaron fuerte esta semana":"🏃 Entrenar fuerte · mejora la forma (riesgo bajo de lesión)");
+    bent.disabled=yaEntreno; bent.style.marginTop="6px"; bent.onclick=entrenarSemana;
+    p.cuerpo.appendChild(bent);
+  } else {
+    p.cuerpo.appendChild(el("p",null,"No quedan partidos. Toca cerrar la temporada "+E.anio+"."));
+    const b=el("button","btn-aqua ancho verde","Cerrar temporada");
+    b.onclick=cerrarTemporada;
+    p.cuerpo.appendChild(b);
+  }
+  izq.appendChild(p);
+
+  const pend=(typeof pendientesAtender==="function")?pendientesAtender():[];
+  if(pend.length){
+    const pa=panel("Atiende antes de avanzar","⚠️","alerta");
+    pa.cuerpo.appendChild(el("p","mini","Hay cosas que conviene resolver antes de apretar Avanzar. Toca una para ir a resolverla:"));
+    pend.forEach(it=>{
+      const b=el("button","op"+(it.fuerte?" op-alerta":"")); b.innerHTML='<div class="t">'+it.ic+" "+it.t+'</div>'+(it.d?'<div class="req">'+it.d+'</div>':"");
+      b.onclick=()=>atenderPendiente(it);
+      pa.cuerpo.appendChild(b);
+    });
+    izq.appendChild(pa);
+  }
+
+  /* 7.0 · historia del club (arco de equipo) si hay un capítulo abierto */
+  if(typeof panelStoryline==="function"){ const ps=panelStoryline(); if(ps) izq.appendChild(ps); }
+
+  /* 7.9039 · las metas ya no van en el Escritorio (arriba avisa la que está en riesgo): viven en Institución */
 
   const cer=panel("Ayudante","🧑‍🏫","agua");
   cer.cuerpo.appendChild(el("p","mini","Tu mano derecha, gratis y sin servidor: lee el club de verdad, arma un informe y te responde en chileno. Pregúntale lo que quieras."));
@@ -886,6 +893,14 @@ function vistaEscritorio(){
     const d=decisionPorId(x.id); if(!d) return;
     const gk=_grupoDe(d.buzon); (porGrupo[gk]=porGrupo[gk]||[]).push({x,d});
   });
+  /* 7.9039 · compacto: todas las urgentes + hasta 4 más; el resto plegado */
+  let mostradas=0; const resto=[];
+  /* las urgentes primero en TODOS los grupos, para que las 5 visibles sean las que apuran */
+  GRUPO_DEC.forEach(g=>{ (porGrupo[g.k]||[]).sort((a,b)=>(b.x.peso==="alto")-(a.x.peso==="alto")); });
+  GRUPO_DEC.forEach(g=>{
+    const todos=porGrupo[g.k]||[];
+    porGrupo[g.k]=todos.filter(({x})=>{ if(mostradas<5){ mostradas++; return true; } resto.push({x:x,d:decisionPorId(x.id)}); return false; });
+  });
   GRUPO_DEC.forEach(g=>{
     const items=porGrupo[g.k]; if(!items||!items.length) return;
     pd.cuerpo.appendChild(el("h3","sub dec-grupo",g.n));
@@ -899,19 +914,26 @@ function vistaEscritorio(){
     });
     pd.cuerpo.appendChild(gridDec);
   });
+  if(resto.length){
+    const det=el("details","esc-mas"); det.appendChild(el("summary","","＋ "+resto.length+" "+T("esc_dec_mas","decisiones más")+(resto.some(r=>r.x.peso==="alto")?" (hay urgentes)":"")));
+    const g2=el("div","grid-comodo");
+    resto.forEach(({x,d})=>{ if(!d) return; const b=el("button","op"); b.innerHTML='<div class="t">'+BUZONES[d.buzon].ic+" "+resolverTokens(d.t,E)+'</div><div class="d">'+BUZONES[d.buzon].n+'</div>'; b.onclick=()=>abrirDecision(d,true); g2.appendChild(b); });
+    det.appendChild(g2); pd.cuerpo.appendChild(det);
+  }
   izq.appendChild(pd);
 
   /* bandeja de novedades */
   const pb=panel("Lo que pasó esta semana","📰");
   if(!E.bandeja.length) pb.cuerpo.appendChild(el("p","mini","Sin novedades de tu club esta semana. Igual, el fútbol no para:"));
-  E.bandeja.slice(0,7).forEach(it=>{
+  /* 7.9039 · 3 noticias; el historial completo vive en Avisos (campanita) */
+  E.bandeja.slice(0,3).forEach(it=>{
     const d=el("div","resul "+(it.tipo==="malo"?"mal":(it.tipo==="bueno"?"bien":"mitad")));
     d.innerHTML="<b>"+it.t+"</b><br>"+it.d+(it.extra?"<br><span class='mini'>"+it.extra+"</span>":"");
     pb.cuerpo.appendChild(d);
   });
   /* 6.34 · titulares de la liga: noticias relevantes atadas al estado real */
   if(typeof titularesSemana==="function"){
-    const tits=titularesSemana();
+    const tits=titularesSemana().slice(0,3);
     if(tits.length){
       pb.cuerpo.appendChild(el("h3","sub","Titulares de la liga"));
       tits.forEach(n=>{
@@ -921,6 +943,7 @@ function vistaEscritorio(){
       });
     }
   }
+  if(E.bandeja.length>3){ const ba=el("button","btn-aqua chico gris","🔔 "+T("esc_ver_avisos","Ver todo en Avisos")+" ("+E.bandeja.length+")"); ba.onclick=()=>modalAvisos(); pb.cuerpo.appendChild(ba); }
   izq.appendChild(pb);
 
   /* E-1 · la situación del club ya NO vive acá (era un párrafo genérico con ventana
@@ -1111,6 +1134,8 @@ function vistaInstitucion(){
     (E.capital>100?" Pasaste los 100: tienes un poder político enorme para hacer lo que quieras.":"")+
     " Este año vas a generar aproximadamente <b>"+signo(capitalAnual())+"</b>."));
   v.appendChild(p);
+  /* 7.9039 · las metas de la dirigencia (antes en el Escritorio) */
+  { const pm=(typeof panelMetas==="function")?panelMetas():null; if(pm) v.appendChild(pm); }
 
   /* jugadas de poder (arriesgarse con el capital) */
   const pp=panel("Jugadas de poder","♟️","alerta");
@@ -1436,12 +1461,7 @@ function vistaFinanzas(){
     v.appendChild(pb);
   }
 
-  /* --- precios de entradas: ahora viven en la sección Estadio 🏟️ --- */
-  const pev=panel("Entradas y estadio","🎫","agua");
-  pev.cuerpo.appendChild(el("p","mini","Los precios por sector y las obras del estadio se manejan en su propia sección."));
-  const beg=el("button","btn-aqua chico verde","Ir al Estadio"); beg.onclick=()=>irA("estadio");
-  pev.cuerpo.appendChild(beg);
-  v.appendChild(pev);
+  /* 7.9039 · sin el panel de entradas: era solo un botón suelto a Estadio (ya está en el menú) */
 
   /* --- inversiones de club --- */
   const pin=panel("Inversiones","🏗️");
@@ -1616,17 +1636,13 @@ function vistaPlantel(){
       tbO.appendChild(tr);
     });
     tOnce.appendChild(tbO); pOnce.cuerpo.appendChild(tOnce);
-    const bp=el("button","btn-aqua ancho verde",(typeof T==="function"?T("pla_ir_pizarra","Ir a la previa / pizarra"):"Ir a la previa / pizarra"));
-    bp.onclick=()=>{
-      const part=typeof proximoPartido==="function"?proximoPartido():null;
-      if(part && typeof pantallaPrevia==="function") pantallaPrevia(part);
-      else if(typeof aviso==="function") aviso(typeof T==="function"?T("pla_sinpart","No hay partido para armar la pizarra."):"No hay partido para armar la pizarra.");
-    };
-    pOnce.cuerpo.appendChild(bp);
+    /* 7.9039 · sin "Ir a la previa / pizarra": era otro Jugar más (la previa se abre al jugar) */
   } else {
     pOnce.cuerpo.appendChild(el("p","mini",(typeof T==="function"?T("pla_sinpart","No hay partido para armar la pizarra."):"No hay once disponible.")));
   }
   v.appendChild(pOnce);
+  /* 7.9039 · la charla con el capitán vive acá (antes en Redes): una por semana */
+  v.appendChild(panelCharlaCapitan());
   const p=panel("Plantel "+E.anio,"👥");
   p.cuerpo.appendChild(el("p","mini","● nombre documentado. Sin punto: cantera / relleno. Stats estimadas."));
   const f=el("div","fichas cinta-agua");
@@ -2897,15 +2913,7 @@ function vistaRedes(){
   else if(REDES_TAB==="menciones") v.appendChild(pcd);
   if(REDES_TAB==="inicio" && typeof arrancarPlopBots==="function") arrancarPlopBots();
 
-  /* roleo con el capitán */
-  const pc=panel("Charla con el capitán","🧑‍✈️");
-  const part=proximoPartido();
-  const esFinal=part&&(part.ronda==="FINAL"||part.ronda==="Semifinal");
-  pc.cuerpo.appendChild(el("p","mini",esFinal?"Se viene un partido grande. Una buena charla puede cambiar el ánimo del grupo.":"Puedes hablar con el referente del plantel para mover la moral antes del próximo partido."));
-  const bc=el("button","btn-aqua ancho"+(esFinal?" verde":""),"Hablar con el capitán");
-  bc.onclick=modalCharlaCapitan;
-  pc.cuerpo.appendChild(bc);
-  v.appendChild(pc);
+  /* 7.9039 · la charla con el capitán se mudó a Plantel */
 
   /* promesas activas */
   if(E.promesas&&E.promesas.length){
@@ -2924,7 +2932,26 @@ function vistaRedes(){
   });
   v.appendChild(pf);
 }
+function _claveCharla(){ return "charla_"+E.anio+"_"+E.idx; }
+function capitanDelPlantel(){
+  const pl=(E.plantel||[]).filter(j=>j&&!j.vendido&&!j.cedido);
+  return pl.find(j=>(j.rasgos||[]).indexOf("capitán")>=0)||pl.slice().sort((a,b)=>(b.edad||0)+(b.nivel||0)/4-((a.edad||0)+(a.nivel||0)/4))[0]||null;
+}
+function panelCharlaCapitan(){
+  const pc=panel("Charla con el capitán","🧑‍✈️");
+  const part=proximoPartido(), cap=capitanDelPlantel();
+  const esFinal=part&&(part.ronda==="FINAL"||part.ronda==="Semifinal");
+  const hecha=E.flags&&E.flags[_claveCharla()];
+  pc.cuerpo.appendChild(el("p","mini",(cap?"<b>"+escHtml(cap.n)+"</b> habla por el grupo. ":"")+
+    (hecha?"Ya hablaron esta semana: "+escHtml(hecha)+" Otra charla ahora sonaría a nervio.":
+     (esFinal?"Se viene un partido grande. El tono correcto mueve la moral; el equivocado la baja.":"Moral actual "+E.ind.moral+". El tono correcto la sube; el equivocado la baja."))));
+  const bc=el("button","btn-aqua ancho"+(esFinal&&!hecha?" verde":"")+(hecha?" gris":""),hecha?"Ya hablaron esta semana":"Hablar con el capitán");
+  bc.disabled=!!hecha; bc.onclick=modalCharlaCapitan;
+  pc.cuerpo.appendChild(bc);
+  return pc;
+}
 function modalCharlaCapitan(){
+  if(E.flags&&E.flags[_claveCharla()]){ aviso("Ya hablaron esta semana"); return; }
   modal(box=>{
     box.appendChild(el("div","cab",'<span class="ic">🧑‍✈️</span><span>Charla con el capitán</span>'));
     const c=el("div","cuerpo"); box.appendChild(c);
@@ -2935,7 +2962,11 @@ function modalCharlaCapitan(){
      ["exigencia","Exigir y marcar autoridad","Dejar claro qué se espera de cada uno."]].forEach(([k,n,d])=>{
       const b=el("button","op");
       b.innerHTML='<div class="t">'+n+'</div><div class="d">'+d+'</div>';
-      b.onclick=()=>{ const r=charlaCapitan(k); cerrarModal(); render(); aviso(r.txt); };
+      b.onclick=()=>{
+        const m0=E.ind.moral, r=charlaCapitan(k), dm=E.ind.moral-m0;
+        E.flags=E.flags||{}; E.flags[_claveCharla()]=r.txt;   /* 7.9039 · una por semana: antes se repetía sin fin */
+        cerrarModal(); render(); aviso(r.txt+" (moral "+(dm>=0?"+":"")+dm+")");
+      };
       ops.appendChild(b);
     });
     c.appendChild(ops);
@@ -3838,7 +3869,7 @@ function atenderPendiente(it){
     if(d){ abrirDecision(d,true); return; }
   }
   if(it.abre==="meta"){
-    irA("escritorio");
+    irA("institucion");   /* 7.9039 · las metas viven en Institución */
     _buscarMarcar("[data-meta]", it.metaId);
     return;
   }

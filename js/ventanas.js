@@ -78,9 +78,12 @@ function montarBarraSO(host, titulo, icono, onCerrar, onMin, onMax){
   const tit=el("span","so-titulo title-bar-text",titulo||"");
   barra.appendChild(tit);
   const ctr=el("div","so-ctrl title-bar-controls");
-  [["min","is-minimize","Minimize","Minimizar",onMin||function(){ host.classList.toggle("so-min"); }],
+  /* 7.9039 · minimizar escondía solo el cuerpo y dejaba el pie suelto ("Empezar en 2026" flotando):
+     ahora minimizar cierra igual que la X. Maximizar agranda de verdad (CSS .so-maxi). */
+  const cerrarFn=onCerrar||function(){ if(typeof cerrarModal==="function") cerrarModal(); };
+  [["min","is-minimize","Minimize","Minimizar",onMin||cerrarFn],
    ["max","is-maximize","Maximize","Maximizar",onMax||function(){ host.classList.toggle("so-maxi"); }],
-   ["cerrar","is-close","Close","Cerrar",onCerrar||function(){ if(typeof cerrarModal==="function") cerrarModal(); }]
+   ["cerrar","is-close","Close","Cerrar",cerrarFn]
   ].forEach(function(x){
     const b=el("button","so-btn "+x[0]+" "+x[1]);
     b.type="button";

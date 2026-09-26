@@ -3443,3 +3443,18 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   Ahora la vista queda anclada al relato (mismo lugar en pantalla aunque aparezca o se esconda la cancha) y se
   conserva el scroll interno del relato. Probado a 1280 y 390 px.
 - **Doctor +1:** `scroll_estable` (prueba en vivo), verificado al revés. **Tests:** dev 482/482 · core 1185/1185.
+
+## 7.9039 · Pantallas limpias: un botón por cosa, Escritorio compacto
+**Archivos:** `js/ui.js`, `js/ventanas.js`, `js/util.js`, `js/pulido.js`, `js/idiomas.js`, `js/dev-doctor.js`, `css/pulido.css`, `css/movil.css`, `index.html`, tests
+- **Una sola 🔔:** Avisos era sección del menú, campana flotante y botón de la barra. Queda la de la barra (también
+  en el celu); abre el historial ordenado (lo que pide respuesta arriba).
+- **Escritorio:** sin "Ir al partido" (era el mismo Jugar de la barra/dock); las metas se mudaron a Institución
+  (arriba igual avisa la que está en riesgo); decisiones: 5 a la vista (urgentes primero) y el resto plegado;
+  3 noticias de la semana + "Ver todo en Avisos". PC: 4.500 → 2.900 px de alto.
+- **Finanzas** sin el panel que solo llevaba a Estadio. **Plantel** sin "Ir a la previa / pizarra".
+- **Charla con el capitán** se mudó de Redes a Plantel, nombra al capitán, muestra cuánto movió la moral y es
+  **una por semana** (antes se repetía sin fin y subía la moral gratis).
+- **Informe del rival:** cuesta $1 M (≈ US$1.000), no gratis. **Plata chica** se lee en pesos: $950.000, $1,4 M.
+- **Ventanas:** minimizar cierra como la X (antes dejaba "Empezar en 2026" flotando solo); maximizar agranda de verdad.
+- Test de calibración corregido: 7.9037 decía "mismo número"; es estable, no idéntico.
+- **Doctor +1:** `ui_sin_duplicados`, verificado al revés. **Tests:** dev 489/489 · core 1185/1185.

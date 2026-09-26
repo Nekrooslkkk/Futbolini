@@ -539,3 +539,6 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
 @media (max-width:720px){
   body.en-partido #menu{ display:none !important; }
 }
+/* 7.9039 · una sola campana de avisos: la de la barra de arriba, también en el celu */
+.campana{display:none !important}
+@media (max-width:720px){ body.con-dock #btnAvisos{display:inline-flex !important;align-items:center} }

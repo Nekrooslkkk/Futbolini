@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-const VERSION="7.9038";
+const VERSION="7.9039";
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
 function el(tag,cls,html){const n=document.createElement(tag);if(cls)n.className=cls;if(html!=null)n.innerHTML=html;return n;}
@@ -67,9 +67,13 @@ function saneaEstado(est){
 }
 /* Pesos chilenos. Toda la plata del juego está en MILLONES de pesos de la época. */
 function plata(v){
+  v=+v||0;
+  const a=Math.abs(v), sg=v<0?"−$":"$";
+  /* 7.9039 · montos chicos (un informe, un sueldo de CM, una apuesta): en pesos, no "$0 M" o "$1 M" */
+  if(a>0 && a<1) return sg+(Math.round(a*1000)*1000).toLocaleString("es-CL");
+  if(a<10 && Math.abs(a-Math.round(a))>=0.05) return sg+a.toLocaleString("es-CL",{minimumFractionDigits:1,maximumFractionDigits:1})+" M";
   const n=Math.round(v);
-  const s=Math.abs(n).toLocaleString("es-CL");
-  return (n<0?"−$":"$")+s+" M";
+  return (n<0?"−$":"$")+Math.abs(n).toLocaleString("es-CL")+" M";
 }
 function pesosLargo(v){ return plata(v)+" (millones de pesos)"; }
 function signo(v){ return (v>0?"+":"")+Math.round(v); }

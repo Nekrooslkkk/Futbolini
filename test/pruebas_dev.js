@@ -1286,8 +1286,10 @@
       var antes=JSON.stringify(E), t0=performance.now(), rc=devCalibrarMotor(30,[0]), ms=performance.now()-t0;
       t(rc&&rc.length===2 && JSON.stringify(E)===antes,"calibrar deja la partida intacta ("+Math.round(ms)+" ms para 60 partidos)");
       t(typeof devCalibrarMotorAsync==="function","hay versión por tandas que no congela la página");
-      var r2=devCalibrarMotor(30,[0]), r3=devCalibrarMotor(30,[0]);
-      t(JSON.stringify(r2)===JSON.stringify(r3),"calibrar da el mismo número para el mismo estado");
+      /* azar sembrado: estable, no idéntico (el relato recuerda frases usadas fuera de la partida) */
+      var r2=devCalibrarMotor(60,[0]), r3=devCalibrarMotor(60,[0]);
+      var d23=Math.abs(r2[0].ptsMotor-r3[0].ptsMotor)+Math.abs(r2[1].ptsMotor-r3[1].ptsMotor);
+      t(d23<0.8,"calibrar da números estables entre corridas (diferencia "+d23.toFixed(2)+" pts)");
     },"Rendimiento");
 
     grupo("Scroll que no salta · 7.9038");
@@ -1302,6 +1304,22 @@
       t(document.querySelectorAll(".relato .rel").length===n0 && n0>0,"repintar el partido conserva todo el relato ("+n0+" líneas)");
       clearInterval(TIMER); P_ACTUAL=null; PAUSADO=false; render();
     },"Scroll");
+
+    grupo("Pantallas sin duplicados · 7.9039");
+    safe(function(){
+      nuevaPartida("RAN",2026,"historico"); SEC="escritorio"; render();
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="ui_sin_duplicados"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor ui_sin_duplicados: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
+      SECCIONES.push(["avisos","🔔","Avisos"]); t(!c.fn().ok,"el Doctor caza Avisos duplicado en el menú"); SECCIONES.pop();
+      t(![].slice.call(document.querySelectorAll("#vista button")).some(function(b){ return b.textContent.trim()==="Ir al partido"; }),"el Escritorio no repite Jugar");
+      irA("institucion"); t(!!document.querySelector("#vista .obj"),"las metas están en Institución");
+      irA("plantel"); var bc=[].slice.call(document.querySelectorAll("#vista button")).filter(function(b){ return /capitán/.test(b.textContent); })[0];
+      t(!!bc,"la charla con el capitán está en Plantel");
+      var m0=E.ind.moral; E.flags[_claveCharla()]="probado"; render();
+      bc=[].slice.call(document.querySelectorAll("#vista button")).filter(function(b){ return /esta semana/.test(b.textContent); })[0];
+      t(bc&&bc.disabled,"después de hablar, no se puede repetir la misma semana");
+      t(plata(0.95)==="$950.000" && plata(1.4)==="$1,4 M" && plata(250)==="$250 M","la plata chica se lee en pesos ($950.000, $1,4 M)");
+    },"Sin duplicados");
 
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");

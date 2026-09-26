@@ -218,3 +218,11 @@ body.con-juego .burbujas i{ animation-play-state:paused !important; }
 .mundo-plegable > summary::after{ content:"▸"; float:right; opacity:.6; }
 .mundo-plegable[open] > summary::after{ content:"▾"; }
 .mundo-plegable > .panel{ margin:0 6px 8px; }
+/* 7.9039 · decisiones que pueden esperar, plegadas en el Escritorio */
+.esc-mas{ margin-top:8px; }
+.esc-mas > summary{ cursor:pointer; font-weight:800; font-size:13px; padding:8px 4px; color:#1d4f7a; }
+/* 7.9039 · maximizar de verdad (antes solo cambiaba la sombra) */
+@media (min-width:721px){
+  .modal.ventana-so.so-maxi{ width:min(96vw,1400px) !important; max-width:none !important; height:94dvh !important; max-height:94dvh !important; }
+  .modal.ventana-so.so-maxi .so-cuerpo{ flex:1 1 auto; overflow:auto; }
+}

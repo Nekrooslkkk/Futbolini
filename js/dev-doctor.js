@@ -526,7 +526,7 @@ function devEconomiaClubes(anio, base){
 /* 7.9037 · "Calibrar motor vs IA" congelaba la página: 1.500 partidos y, antes de cada uno, se
    clonaba el juego entero (200+ KB de JSON). Un partido simulado solo toca plantel, indicadores y
    memoria: se guarda y restaura eso. El botón corre por tandas (progreso y cancelar). Azar
-   sembrado: el mismo estado da el mismo número (antes oscilaba ±0,2 y el chequeo fallaba solo). */
+   sembrado: números estables entre corridas (no idénticos: el relato recuerda frases usadas). */
 var _CAL_CLAVES=["plantel","ind","memoria","logros","_memId"];
 function _calFoto(){ var f={}; _CAL_CLAVES.forEach(function(k){ f[k]=(k in E)?JSON.stringify(E[k]):undefined; }); return f; }
 function _calVolver(f){ _CAL_CLAVES.forEach(function(k){ if(f[k]===undefined) delete E[k]; else E[k]=JSON.parse(f[k]); }); }
@@ -813,6 +813,22 @@ devDoctorRegistrar({id:"scroll_estable", area:"interfaz", n:"Apretar un botón n
     var vx=document.getElementById("vista"); if(vx) vx.style.minHeight="";
   }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("el scroll se queda donde estabas");
+}});
+
+/* 7.9039 · pantallas sin duplicados: el autor contó 3 botones de Avisos, 2 de Jugar, un "Ir al
+   Estadio" suelto en Finanzas, una pizarra en Plantel y metas repetidas en el Escritorio */
+devDoctorRegistrar({id:"ui_sin_duplicados", area:"interfaz", n:"Cada cosa tiene un solo botón (sin duplicados)", fn:function(){
+  var falta=[];
+  if(typeof SECCIONES!=="undefined"&&SECCIONES.some(function(s){ return s[0]==="avisos"; })) falta.push("Avisos está en el menú además de la 🔔 de arriba");
+  var cam=document.getElementById("campanaAvisos");
+  if(cam&&getComputedStyle(cam).display!=="none") falta.push("hay una campana flotante además de la de la barra");
+  var srcE=String(typeof vistaEscritorio==="function"?vistaEscritorio:"");
+  if(/"Ir al partido"/.test(srcE)) falta.push("el Escritorio repite el botón Jugar (\"Ir al partido\")");
+  if(/Lo que se espera de ti/.test(srcE)) falta.push("las metas se repiten en el Escritorio");
+  if(/Entradas y estadio/.test(String(typeof vistaFinanzas==="function"?vistaFinanzas:""))) falta.push("Finanzas repite un botón a Estadio");
+  if(/pla_ir_pizarra/.test(String(typeof vistaPlantel==="function"?vistaPlantel:""))) falta.push("Plantel repite el botón de la previa");
+  if(typeof modalCharlaCapitan==="function"&&String(modalCharlaCapitan).indexOf("_claveCharla")<0) falta.push("la charla con el capitán se puede repetir sin límite");
+  return falta.length?_dmal(falta.length+" duplicado(s)",falta):_dok("un botón por cosa; charla con el capitán, una por semana");
 }});
 
 /* 7.9032 · legibilidad: el vidrio Aero no puede tapar el texto */
