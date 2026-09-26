@@ -1245,9 +1245,21 @@ devDoctorRegistrar({id:"vida_familia", area:"motor", n:"Vida: embarazo de 9 mese
       tenerHijo();
       if(p.embarazo) falta.push("se puede encargar otro hijo el mismo año del parto");
     }
+    /* 7.9069 · la pérdida llega con aviso: crisis con semanas y decisiones, nunca de golpe */
+    if(typeof iniciarCrisisHijo!=="function") falta.push("no hay crisis con aviso: un hijo podría morir de golpe");
+    else {
+      p.hijos=[{nombre:"Prueba",nacido:E.anio-5}]; p.crisisHijo=null; E.decPend=[];
+      var cr=iniciarCrisisHijo(p.hijos[0],"neumonia");
+      if(!cr||p.hijos[0].fallecido) falta.push("la crisis mata al hijo en el mismo momento");
+      if(!E.decPend.some(function(x){ return x.peso==="alto"&&E.decProc[x.id]&&E.decProc[x.id].crisisHijo; })) falta.push("la crisis no te pide decidir nada");
+      var r1=null; for(var w=0;w<30&&p.crisisHijo;w++) r1=tickCrisisHijo(w>=cr.total-1?false:null);
+      if(p.crisisHijo) falta.push("la crisis no termina nunca");
+      if(r1!=="salio"||p.hijos[0].fallecido) falta.push("con riesgo cero, el hijo igual muere");
+      if(!E.decPend.some(function(x){ return E.decProc[x.id]&&E.decProc[x.id].crisisHijo===2; })) falta.push("a mitad de la crisis no aparece la segunda decisión");
+    }
   } catch(e){ falta.push("falló la prueba: "+e.message); }
   finally { window.guardar=gu; window.notificar=nt; window.render=rd; window.aviso=av; restaurarPartida(snap); }
-  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("embarazo de "+SEMANAS_EMBARAZO+" semanas · uno a la vez · primera cita con persona real (mala/normal/genial)");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("embarazo de "+SEMANAS_EMBARAZO+" semanas · uno a la vez · primera cita con persona real · pérdida solo con aviso y decisiones");
 }});
 devDoctorRegistrar({id:"vida_patrimonio", area:"motor", n:"Vida: el patrimonio se valoriza/deprecia a precio real y las apuestas pagan con margen de casa", fn:function(){
   var falta=[];
@@ -1294,7 +1306,12 @@ devDoctorRegistrar({id:"prensa_real", area:"motor", n:"Prensa, trivia y clima: r
   var falta=[];
   var sin=(typeof preguntasSinRespuesta==="function")?preguntasSinRespuesta():["(sin chequeo)"];
   if(sin.length) falta.push(sin.length+" preguntas de prensa caen en respuestas comodín (ej.: «"+sin[0]+"»)");
-  if(typeof CONF_N_PREGUNTAS==="undefined"||CONF_N_PREGUNTAS<4) falta.push("la conferencia tiene menos de 4 preguntas");
+  if(typeof nPreguntasConf!=="function") falta.push("la conferencia no mide la importancia del partido");
+  else {
+    var nNormal=nPreguntasConf({tipo:"liga",rivalId:"___",rivalNombre:"x"}), nFinal=nPreguntasConf({tipo:"copa",ronda:"FINAL",torneo:"Copa Chile"});
+    if(nNormal<3) falta.push("un partido normal trae "+nNormal+" preguntas (mínimo 3)");
+    if(!(nFinal>nNormal)) falta.push("una final trae las mismas preguntas que un partido normal ("+nFinal+")");
+  }
   if(typeof modalConferencia==="function"&&/textarea/.test(String(modalConferencia))) falta.push("la conferencia todavía deja escribir texto libre");
   try{
     var part=(E.calendario||[]).filter(function(x){ return x&&x.tipo==="liga"; })[0];
@@ -1323,7 +1340,7 @@ devDoctorRegistrar({id:"prensa_real", area:"motor", n:"Prensa, trivia y clima: r
     if(!(CLIMA_PUBLICO.lluvia<1)) falta.push("la lluvia no baja el público");
     if(part){ var snap=clonarPartida(E); try{ var P2=iniciarPartido(Object.assign({},part,{clima:"frio"}),"simular"); if(!(P2&&P2.lesionClima>1)) falta.push("el frío no sube el riesgo de lesión"); } finally { restaurarPartida(snap); } }
   }
-  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("0 respuestas comodín · conferencia de "+CONF_N_PREGUNTAS+"+ · "+Object.keys(formas).length+" formas de matemática · clima con efecto en plan, público y lesiones");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("0 respuestas comodín · conferencia según el partido · "+Object.keys(formas).length+" formas de matemática · clima con efecto en plan, público y lesiones");
 }});
 devDoctorRegistrar({id:"historia_carrera", area:"interfaz", n:"Historia, Carrera y Avisos funcionan con cualquier club y llevan registro", fn:function(){
   var falta=[];

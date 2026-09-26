@@ -209,24 +209,7 @@ function nacerHijo(){
   notificar({t:"Nació "+nombre,tipo:"bueno",bandeja:true,d:"Parto sin complicaciones. La clínica y lo primero costaron "+plata(costo)+". Van a ser noches largas."});
   if(typeof recordar==="function") recordar("familia","nació "+nombre,{peso:"alto",tono:"bueno"});
 }
-/* pérdida de un hijo: muy rara, pero existe. El juego no la esconde. */
-function chequearPerdidaHijo(){
-  const p=E.perfil; if(!p||!p.hijos) return;
-  p.hijos.forEach(h=>{
-    if(h.fallecido||h.enPlantel) return;
-    const ed=(E.anio||2026)-(h.nacido||E.anio);
-    if(ed>12) return;
-    if(Math.random()<0.004){
-      h.fallecido=E.anio;
-      p.bienestar=clamp((p.bienestar||70)-45,0,100);
-      if(p.pareja) p.pareja.nivel=clamp((p.pareja.nivel||65)-15,0,100);
-      aplicarEfectos({moral:-8});
-      E.flags=E.flags||{}; E.flags.duelo={anio:E.anio,idx:E.idx,n:h.nombre};
-      notificar({t:"Murió "+h.nombre,tipo:"malo",bandeja:true,d:"No hay forma de escribir esto bien. El club te da los días que necesites. El plantel viste brazalete negro el domingo."});
-      if(typeof recordar==="function") recordar("familia","murió tu hijo "+h.nombre,{peso:"alto",tono:"malo"});
-    }
-  });
-}
+/* la pérdida de un hijo ya no es de golpe: ver Parte D (crisis con aviso y decisiones) */
 /* ---------- familia en la previa: pesa y se ve ---------- */
 const FAMILIA_PREVIA=[
   {t:"Tu hijo amaneció con fiebre alta",d:"Tu pareja está en la clínica con él. El partido es en tres horas.",req:"hijo"},
@@ -270,7 +253,6 @@ function familiaPrevia(part, seguir){
   envolver("tickSemana",o=>function(){ const r=o.apply(this,arguments);
     try{ const p=E.perfil; if(p&&p.embarazo){ p.embarazo.semanas=(p.embarazo.semanas||0)+1; if(p.embarazo.semanas>=SEMANAS_EMBARAZO) nacerHijo(); } }catch(e){}
     return r; });
-  envolver("finDeTemporada",o=>function(){ try{ chequearPerdidaHijo(); }catch(e){} return o.apply(this,arguments); });
   envolver("pantallaPrevia",o=>function(part){
     const self=this, args=arguments;
     try{
@@ -572,3 +554,116 @@ if(typeof document!=="undefined"&&!document.getElementById("css-vida-c")){
     ".fila.pat-bien{flex-wrap:wrap;gap:6px}.fila.pat-bien>span{flex:1 1 55%;min-width:0}.fila.pat-bien>button{flex:0 0 auto}";
   document.head.appendChild(st);
 }
+
+/* ============================================================
+   Parte D (7.9069): la pérdida de un hijo llega con aviso.
+   Pedido del autor: "con aviso antes". Un hijo chico se enferma o tiene un accidente; hay semanas de
+   seguimiento y dos decisiones tuyas cambian el riesgo. El final no está escrito: puede salir adelante.
+   (Riesgos base moderados; los tratamientos serios los bajan, la terapia milagrosa de redes los sube.)
+   ============================================================ */
+const CRISIS_HIJO=[
+  {id:"neumonia",  n:"una neumonía grave",       semanas:4,  riesgo:0.10, d:"Empezó como un resfrío. Ahora está internado con oxígeno."},
+  {id:"meningitis",n:"una meningitis",           semanas:5,  riesgo:0.18, d:"Fiebre, el cuello rígido y un médico que habla despacio. Está en la UCI pediátrica."},
+  {id:"accidente", n:"un accidente de tránsito", semanas:4,  riesgo:0.22, d:"Iba en el auto con la familia de un compañero. Está en la UCI, estable pero grave."},
+  {id:"leucemia",  n:"una leucemia",             semanas:10, riesgo:0.15, d:"Los exámenes de rutina salieron mal. La quimioterapia empieza la próxima semana."}
+];
+const CRISIS_PROB_SEMANA=0.00035;   /* por hijo de hasta 12 años: ~1,2 % por temporada */
+function _k14(){ return ((typeof inflacionEra==="function")?inflacionEra():1.4)/1.4; }
+function iniciarCrisisHijo(h,tipoId){
+  const p=E.perfil; if(!p||!h||p.crisisHijo) return null;
+  const t=CRISIS_HIJO.find(x=>x.id===tipoId)||elige(CRISIS_HIJO);
+  p.crisisHijo={nombre:h.nombre, tipo:t.id, n:t.n, semana:0, total:t.semanas, riesgo:t.riesgo, anio:E.anio, fase:0, licencia:0};
+  p.bienestar=clamp((p.bienestar||70)-15,0,100);
+  notificar({t:h.nombre+": "+t.n,tipo:"malo",bandeja:true,d:t.d+" Van a ser unas "+t.semanas+" semanas. Lo que decidas cuenta."});
+  if(typeof recordar==="function") recordar("familia",h.nombre+" enfrentó "+t.n,{peso:"alto",tono:"malo"});
+  _sembrarDecisionCrisis(1);
+  return p.crisisHijo;
+}
+function _sembrarDecisionCrisis(fase){
+  const c=E.perfil.crisisHijo; if(!c) return null;
+  const k=_k14(), id="proc_crisis_"+E.anio+"_"+(E.idx||0)+"_"+fase;
+  const ok=(txt)=>({txt:txt,ef:{}});
+  const ops=fase===1?[
+    {t:"Pedir licencia: el ayudante dirige los próximos 3 partidos",d:"Estar ahí. El club lo entiende; los resultados, no siempre.",dif:10,cr:{riesgo:-0.03,bien:6,par:10,licencia:3},
+      bien:ok("Pediste licencia. En la clínica te ven llegar todos los días."),mitad:ok("Pediste licencia. El directorio lo acepta con cara larga."),mal:ok("Pediste licencia. En el club ya hay quien habla de reemplazo.")},
+    {t:"Seguir dirigiendo y dormir en la clínica",d:"Los dos frentes a la vez. El cuerpo pasa la cuenta.",dif:30,cr:{bien:-10,par:-4},
+      bien:ok("Aguantas. No sabes cómo, pero aguantas."),mitad:ok("Dormiste cuatro horas en una semana."),mal:ok("Te quedaste dormido en la charla técnica.")},
+    {t:"Dejarlo en manos de tu pareja y enfocarte en el club",d:"Alguien tiene que seguir trabajando. O eso te dices.",dif:40,cr:{bien:-6,par:-18},
+      bien:ok("Tu pareja no dijo nada. No hacía falta."),mitad:ok("En la clínica preguntan por ti."),mal:ok("Tu hijo preguntó por ti tres días seguidos.")}
+  ]:[
+    {t:"Trasladarlo a una clínica privada con especialista",d:"La mejor opción que hay. Cuesta "+plata(Math.round(35*k*10)/10)+" de tu bolsillo.",dif:15,cr:{riesgo:-0.08,costo:Math.round(35*k*10)/10,bien:2},
+      bien:ok("El especialista cambió el tratamiento el primer día."),mitad:ok("La clínica es buena. La cuenta también."),mal:ok("El traslado fue duro, pero ya está.")},
+    {t:"Seguir en el hospital público: lo están haciendo bien",d:"Médicos que ven esto todos los días. Sin costo.",dif:25,cr:{riesgo:-0.02,bien:1},
+      bien:ok("La doctora de turno lo conoce por su nombre."),mitad:ok("Hay espera, pero lo atienden bien."),mal:ok("Faltan camas, pero lo están cuidando.")},
+    {t:"Probar la terapia que un conocido promociona en redes",d:"Te la juran milagrosa. Cuesta "+plata(Math.round(8*k*10)/10)+".",dif:60,cr:{riesgo:0.06,costo:Math.round(8*k*10)/10},
+      bien:ok("No le hizo nada. Por suerte, tampoco daño."),mitad:ok("El médico te pidió que no le dieras nada más sin preguntarle."),mal:ok("Tuvieron que suspenderla: le hizo mal.")}
+  ];
+  E.decProc=E.decProc||{};
+  E.decProc[id]={id:id,buzon:"gris",peso:"alto",crisisHijo:fase,posturas:{},
+    t:(fase===1?c.nombre+" está grave":"El médico propone opciones para "+c.nombre),
+    d:(fase===1?"Te llaman de la clínica: "+c.n+". ¿Cómo te organizas estas semanas?":"Van "+c.semana+" semanas. El tratamiento puede cambiar."), op:ops};
+  E.decPend=E.decPend||[];
+  E.decPend.push({id:id,clave:id,peso:"alto"});
+  c.fase=fase;
+  return E.decProc[id];
+}
+function efectoCrisis(dec,op){
+  const p=E.perfil, c=p&&p.crisisHijo, cr=op&&op.cr; if(!c||!cr) return "";
+  const b0=Math.round(p.bienestar||70), p0=p.pareja?Math.round(p.pareja.nivel||65):null;
+  let pagado=1;
+  if(cr.costo){ const bol=(E.personal&&E.personal.bolsillo)||0; pagado=Math.min(1,bol/cr.costo); E.personal.bolsillo=Math.max(0,bol-cr.costo); }
+  if(cr.riesgo) c.riesgo=clamp(c.riesgo+cr.riesgo*(cr.riesgo<0?pagado:1),0.02,0.6);
+  if(cr.bien) p.bienestar=clamp((p.bienestar||70)+cr.bien,0,100);
+  if(cr.par&&p.pareja) p.pareja.nivel=clamp((p.pareja.nivel||65)+cr.par,0,100);
+  if(cr.licencia) c.licencia=cr.licencia;
+  return "Bienestar "+b0+"→"+Math.round(p.bienestar)+(p0!=null?" · pareja "+p0+"→"+Math.round(p.pareja.nivel):"")+(cr.costo?" · pagaste "+plata(Math.round(cr.costo*pagado*10)/10)+(pagado<1?" (no alcanzó para todo)":""):"")+".";
+}
+/* una semana más de clínica; al final, el desenlace */
+function tickCrisisHijo(forzar){
+  const p=E.perfil, c=p&&p.crisisHijo; if(!c) return null;
+  c.semana++;
+  p.bienestar=clamp((p.bienestar||70)-2,0,100);
+  if(c.fase===1&&c.semana>=Math.max(2,Math.floor(c.total/2))) _sembrarDecisionCrisis(2);
+  if(c.semana<c.total) return null;
+  const h=(p.hijos||[]).find(x=>x.nombre===c.nombre&&!x.fallecido);
+  const muere=forzar!=null?forzar:(Math.random()<c.riesgo);
+  p.crisisHijo=null;
+  if(!h) return null;
+  if(muere){
+    h.fallecido=E.anio;
+    p.bienestar=clamp((p.bienestar||70)-45,0,100);
+    if(p.pareja) p.pareja.nivel=clamp((p.pareja.nivel||65)-15,0,100);
+    aplicarEfectos({moral:-8});
+    E.flags=E.flags||{}; E.flags.duelo={anio:E.anio,idx:E.idx,n:h.nombre};
+    notificar({t:"Murió "+h.nombre,tipo:"malo",bandeja:true,d:"Después de "+c.total+" semanas, "+c.n+" pudo más. No hay forma de escribir esto bien. El club te da los días que necesites. El plantel viste brazalete negro el domingo."});
+    if(typeof recordar==="function") recordar("familia","murió tu hijo "+h.nombre,{peso:"alto",tono:"malo"});
+    return "murio";
+  }
+  p.bienestar=clamp((p.bienestar||70)+18,0,100);
+  if(p.pareja) p.pareja.nivel=clamp((p.pareja.nivel||65)+8,0,100);
+  notificar({t:h.nombre+" salió adelante",tipo:"bueno",bandeja:true,d:"Le dieron el alta después de "+c.total+" semanas. Vuelve a la casa. Vas a mirar distinto cada partido que venga."});
+  if(typeof recordar==="function") recordar("familia",h.nombre+" salió adelante de "+c.n,{peso:"alto",tono:"bueno"});
+  return "salio";
+}
+/* sin muertes de golpe: cada semana, una chance chica de que empiece una crisis con aviso */
+function chequearCrisisHijo(){
+  const p=E&&E.perfil; if(!p||p.crisisHijo||!p.hijos||E._bulkSim) return null;
+  const chicos=p.hijos.filter(h=>!h.fallecido&&!h.enPlantel&&((E.anio||2026)-(h.nacido||E.anio))<=12);
+  for(const h of chicos){ if(Math.random()<CRISIS_PROB_SEMANA) return iniciarCrisisHijo(h); }
+  return null;
+}
+(function(){
+  const envolver=(nom,fn)=>{ const o=window[nom]; if(typeof o!=="function"||o._vrD) return; const w=fn(o); Object.keys(o).forEach(k=>w[k]=o[k]); w._vrD=true; window[nom]=w; };
+  envolver("tickSemana",o=>function(){ const r=o.apply(this,arguments); try{ if(E.perfil&&E.perfil.crisisHijo) tickCrisisHijo(); else chequearCrisisHijo(); }catch(e){} return r; });
+  envolver("resolverDecision",o=>function(dec,idx){
+    const op=dec&&dec.op&&dec.op[idx];
+    const r=o.apply(this,arguments);
+    try{ if(r&&dec&&dec.crisisHijo&&op){ const x=efectoCrisis(dec,op); r.extra=(r.extra?r.extra+" ":"")+x; } }catch(e){}
+    return r;
+  });
+  /* licencia: el ayudante dirige los próximos partidos */
+  envolver("pantallaPrevia",o=>function(part){
+    try{ const c=E.perfil&&E.perfil.crisisHijo; if(part&&c&&c.licencia>0&&part.tipo!=="amistoso"&&!part._licencia){ part._licencia=true; part._forzarSimular=true; part._familiaHecha=true; c.licencia--; } }catch(e){}
+    return o.apply(this,arguments);
+  });
+})();

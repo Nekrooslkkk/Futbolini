@@ -556,8 +556,9 @@ function vistaVida(){
     pt.cuerpo.appendChild(el("p","mini","Soltero y a la búsqueda. "+(typeof eraMatch==="function"?eraMatch().mini:"Si hay química, lo invitas a salir.")));
   }
   /* hijos (futura dinastía) */
-  if(E.perfil.hijos && (E.perfil.hijos.length||E.perfil.embarazo)){
+  if(E.perfil.hijos && (E.perfil.hijos.length||E.perfil.embarazo||E.perfil.crisisHijo)){
     pt.cuerpo.appendChild(el("h3","sub","Familia"));
+    if(E.perfil.crisisHijo){ const cc=E.perfil.crisisHijo; pt.cuerpo.appendChild(el("div","resul mal","🏥 <b>"+escHtml(cc.nombre)+"</b>: "+escHtml(cc.n)+" · semana "+cc.semana+" de "+cc.total+(cc.licencia?" · licencia: "+cc.licencia+" partido(s) más":""))); }
     if(E.perfil.embarazo) pt.cuerpo.appendChild(fila("🤰 En camino",Math.max(0,(typeof SEMANAS_EMBARAZO!=="undefined"?SEMANAS_EMBARAZO:36)-(E.perfil.embarazo.semanas||0))+" semanas para el parto"));
     const heredero=E.perfil.hijos.filter(x=>!x.fallecido)[0];
     E.perfil.hijos.forEach(h=>{

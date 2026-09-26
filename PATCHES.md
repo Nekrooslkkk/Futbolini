@@ -4083,3 +4083,33 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 
   Comprobado al revés con una proyección sin perspectiva y con la capa en `relative`.
   **Tests:** dev 554/554 · core 1185/1185.
+
+### 7.9069 — Prensa según el partido · la pérdida de un hijo llega con aviso
+**Archivos:** `js/prensa-real.js`, `js/ui-partido.js`, `js/vida-real.js`, `js/reputacion.js`, `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Prensa según el partido** (respuesta del autor):
+  - partido normal: 3 preguntas antes y 2 después;
+  - amistoso: 2 y 1;
+  - con una razón de peso (clásico, final o semi, Libertadores/Sudamericana, liguilla, 3+ sin ganar, tu
+    puesto en duda, último partido del año): 5, o 6 si se juntan varias;
+  - la sala después sube a 4 si hubo goleada, roja o remontada;
+  - club grande: +1, como antes.
+
+  La conferencia dice por qué viene llena ("Sala llena (clásico, racha sin ganar)").
+- **La pérdida de un hijo llega con aviso** (respuesta del autor):
+  - Ya no hay muertes de golpe. Cada semana, un hijo de hasta 12 años tiene una chance chica (~1,2 % por
+    temporada) de enfrentar una crisis de semanas: una neumonía grave, una meningitis, un accidente o una
+    leucemia.
+  - **Primera decisión:**
+    - licencia: el ayudante dirige 3 partidos y el riesgo baja un poco;
+    - dirigir y dormir en la clínica;
+    - dejarlo en manos de tu pareja.
+  - **A mitad de la crisis:**
+    - clínica privada con especialista (cara, baja el riesgo);
+    - hospital público;
+    - la terapia milagrosa de redes (sube el riesgo).
+  - Si no te alcanza la plata, la clínica ayuda solo en proporción a lo que pagaste.
+  - **Final:** puede salir adelante o morir según el riesgo acumulado.
+  - Vida muestra la crisis en curso: semana, cuántas quedan y la licencia.
+- **Doctor `vida_familia`:** ahora revisa además que la crisis no mate en el acto, que pida decidir, que
+  tenga su segunda decisión y que con riesgo cero el hijo salga adelante. Comprobado al revés.
+  **Tests:** dev 555/555 · core 1185/1185.

@@ -1452,7 +1452,8 @@
       modalConferencia(proximoPartido());
       t(!document.querySelector(".modal textarea"),"la conferencia no tiene texto libre");
       var cab=document.querySelector(".modal .cab").textContent;
-      t(/de [45]/.test(cab),"la conferencia trae 4 o 5 preguntas ("+cab.trim()+")");
+      t(/de [2-7]/.test(cab),"la conferencia trae varias preguntas ("+cab.trim()+")");
+      t(nPreguntasConf({tipo:"copa",ronda:"FINAL"})>nPreguntasConf({tipo:"liga",rivalNombre:"x"}),"una final llena más la sala que un partido normal");
       var o=document.querySelector(".modal .op"); o.click();
       t(/respuesta anterior/.test(document.querySelector(".modal").textContent),"después de contestar se ve qué movió la respuesta");
       t(!/No hablar con la prensa|Cortar/.test(document.querySelector(".modal").textContent),"después de contestar no se puede cortar la conferencia");

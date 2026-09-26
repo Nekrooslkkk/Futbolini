@@ -705,7 +705,7 @@ function elegirPreguntasConf(L,n){
   elegidas.forEach(q=>{ vistas.push(q.q); }); if(vistas.length>10) vistas.splice(0,vistas.length-10);
   return elegidas;
 }
-const CONF_N_PREGUNTAS=4, POST_N_PREGUNTAS=3;
+const CONF_N_PREGUNTAS=3, POST_N_PREGUNTAS=2;   /* partido normal; los importantes suben (nPreguntasConf/Post) */
 /* lo que movió la última respuesta, en una línea (sin que tengas que adivinar) */
 function _efectoPrensaTxt(a){
   const nom={prensa:"prensa",camarin:"camarín",hinchada:"hinchada",anfp:"ANFP",directorio:"directorio"}, out=[];
@@ -716,7 +716,7 @@ function _efectoPrensaTxt(a){
 }
 function modalConferencia(part){
   const L=preguntasConferencia(part);
-  const preguntas=elegirPreguntasConf(L,CONF_N_PREGUNTAS);   /* 7.9065 · 4 preguntas (5 en club grande) */
+  const preguntas=elegirPreguntasConf(L,(typeof nPreguntasConf==="function")?nPreguntasConf(part):CONF_N_PREGUNTAS);   /* 7.9069 · según el partido */
   const peris=mezcla(periodistasEra().slice()).slice(0,preguntas.length);   /* distintos periodistas */
   let idx=0, ultimoEf=""; const dichos=[];
   modal(box=>{
@@ -737,6 +737,7 @@ function modalConferencia(part){
       bar.innerHTML="Clima de prensa para este partido: <b>"+cl.etq+"</b> <span class='mini'>(influye en cómo sales a la cancha)</span>"+
         "<div class='barrita' style='margin-top:3px'><i style='width:"+cl.pct+"%;--c:"+cl.col+"'></i></div>";
       c.appendChild(bar);
+      if(idx===0&&typeof partidoPesado==="function"){ const pp=partidoPesado(part); c.appendChild(el("p","mini",pp.pesa?("Sala llena ("+pp.porque+"): vienen más preguntas."):"Partido normal: pocas preguntas.")); }
       if(ultimoEf) c.appendChild(el("p","mini conf-ef","Tu respuesta anterior: "+ultimoEf));
       const per=peris[idx]||eligePeri(), q=preguntas[idx];
       c.appendChild(el("div","resul mitad peri-row", fichaPeriodista(per, q.q)));
@@ -2825,7 +2826,7 @@ function seccionPrensa(p,res,P){
     zonaPrensa.innerHTML="";
     if(hecho) return;
     if(!qs) qs=(typeof elegirPreguntasPrensa==="function")
-      ?elegirPreguntasPrensa(preguntasPostPartido(res,P),POST_N_PREGUNTAS)
+      ?elegirPreguntasPrensa(preguntasPostPartido(res,P),(typeof nPreguntasPost==="function")?nPreguntasPost(res,P):POST_N_PREGUNTAS)
       :[elegirPreguntaPrensa(preguntasPostPartido(res,P))].filter(Boolean);
     if(E.prensaAuto){
       const r=res.yo>res.otro?{grupos:{prensa:3,camarin:2}}:res.yo<res.otro?{grupos:{prensa:1,camarin:1}}:{grupos:{prensa:1}};

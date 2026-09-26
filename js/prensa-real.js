@@ -21,6 +21,32 @@
   }
   if(typeof aplicarRespuestasVoz==="function") aplicarRespuestasVoz();
 })();
+/* ---------- 7.9069 · cuántas preguntas: según el partido ---------- */
+/* un clásico, una final, una copa internacional o un DT en la cuerda floja llenan la sala */
+function partidoPesado(part){
+  if(!part) return {pesa:false,porque:""};
+  const r=[];
+  try{ if(typeof esClasico==="function"&&esClasico(part)) r.push("clásico"); }catch(e){}
+  if(part.ronda==="FINAL"||part.ronda==="Semifinal") r.push(part.ronda==="FINAL"?"final":"semifinal");
+  if(part.tipo==="copa"&&/Libertadores|Sudamericana/i.test(part.torneo||"")) r.push("copa internacional");
+  if(/Liguilla|Playoff/i.test((part.ronda||"")+" "+(part.torneo||""))) r.push("liguilla");
+  if(((E.temporada&&E.temporada.sinGanar)||0)>=3) r.push("racha sin ganar");
+  try{ if(typeof riesgoDestitucion==="function"&&riesgoDestitucion()) r.push("tu puesto en duda"); }catch(e){}
+  if(E.calendario&&E.calendario.indexOf(part)===E.calendario.length-1) r.push("último partido del año");
+  return {pesa:r.length>0, porque:r.join(", ")};
+}
+function nPreguntasConf(part){
+  if(part&&part.tipo==="amistoso") return 2;
+  const p=partidoPesado(part);
+  return p.pesa?Math.min(6,CONF_N_PREGUNTAS+2+(p.porque.split(",").length>1?1:0)):CONF_N_PREGUNTAS;
+}
+function nPreguntasPost(res,P){
+  const part=P&&P.part;
+  if(part&&part.tipo==="amistoso") return 1;
+  const dif=res?Math.abs((res.yo||0)-(res.otro||0)):0;
+  const pesa=partidoPesado(part).pesa||dif>=3||(P&&(P.tuvoRoja||P.abajo2));
+  return pesa?POST_N_PREGUNTAS+2:POST_N_PREGUNTAS;
+}
 /* preguntas que siguen sin respuesta propia (para el doctor) */
 function preguntasSinRespuesta(){
   if(typeof PREGUNTAS_VOZ==="undefined") return [];
