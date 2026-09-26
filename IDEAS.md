@@ -20,6 +20,7 @@
 - [ ] **Chilenización de docs .md** (no user-facing, baja prioridad).
 
 ## 🔒 Bloqueadas (necesito algo tuyo)
+> Todo lo que es tuyo, con pasos, medidas y prompts: **`GUIA_HUMANO.md`** (26 sep 2026).
 - [ ] **Fotos**: caras / escudos / estadios / noticias → van a `img/`, WebP livianas, **sin copyright**
   (CC0/CC-BY con crédito o propias). *(Necesito los archivos o el OK para buscarlas en Wikimedia Commons.)*
 - [ ] **Planteles reales**: Limache 2026, correcciones a los grandes. *(Si subís datos, a `data/`.)*

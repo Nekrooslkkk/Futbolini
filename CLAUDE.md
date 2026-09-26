@@ -57,6 +57,8 @@ No es opcional ni hay que preguntarlo. Concretamente:
 - `ChatDeTrabajIA.md` — **canal único** de trabajo entre las IA (antes `GROK_CAZA.md`). Toda tanda
   deja su nota al final. No se crean archivos de coordinación nuevos.
 - `IDEAS.md` — wishlist del usuario: pendientes por hacer. Trabajá de acá cuando te digan "seguí con IDEAS".
+- `GUIA_HUMANO.md` — lo que hace el humano (imágenes, textos, limpieza L1, cómo pedirle a Grok). Si cierras
+  algo de ahí o cambian líneas/archivos que cita, actualízala.
 
 ## Cómo probar (protocolo)
 1. Sintaxis: `node --check js/*.js`.

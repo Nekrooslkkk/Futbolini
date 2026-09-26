@@ -4411,3 +4411,11 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
     PC no se veía.
 - **Barrido:** 5 partidas × 12 secciones × PC y celular + 4 ventanas + partido: sin hallazgos.
 - **Estado:** doctor sano (3 partidas + celular, 76 chequeos) · dev 574/574 · core 1185/1185.
+- **Adenda 7.9082 · `GUIA_HUMANO.md`** (para el autor): tareas humanas, cómo pedir, 14 imágenes con medida y prompt,
+  fotos de estadio faltantes (15 Chile + 30 Argentina, nombres verificados en el juego), voz del juego y tareas de
+  texto, reparto con Grok con plantilla, y limpieza segura en VS Code.
+  - **`test/correr_dev.sh` detecta funciones declaradas en dos archivos.** La copia que carga antes es código muerto.
+    Hay 8 conocidas en la lista DEUDA: la tarea L1 del autor. Si aparece una duplicada nueva, la suite falla.
+    Si una ya se limpió, avisa con ✨. Al revés: un duplicado de prueba (`aviso`) fue cazado.
+  - La L1 se probó en una copia: sin esas 280 líneas, dev 574/574, core 1185/1185 y doctor sano en PC y celular.
+  - Voseo propio corregido en `poder-sombra.js` ("pensás" → "piensas").

@@ -59,7 +59,7 @@ const SOMBRA_CASA=[
        ["Cambiarlo a un colegio privado","Plata para que no tenga que escuchar. El problema viaja con él.",{bolsillo:-6,bien:-2}],
        ["Decirle que son envidias","Proteges tu imagen delante de él.",{bien:-3,hijo:"miente"}]]},
   {id:"insomnio",req:()=>true,min:35,t:"No duermes",
-   d:"Tres de la mañana y estás mirando el techo. Cada vez que suena el teléfono pensás que es un periodista o un fiscal. El médico del club te ve cara de nada y pregunta.",
+   d:"Tres de la mañana y estás mirando el techo. Cada vez que suena el teléfono piensas que es un periodista o un fiscal. El médico del club te ve cara de nada y pregunta.",
    op:[["Ir al psicólogo","Una hora a la semana. Hablar con alguien que no quiere nada de ti.",{bien:10,bolsillo:-1}],
        ["Pastillas para dormir","Duermes. Lo demás sigue ahí.",{bien:4}],
        ["Aguantar","El DT no se quiebra. Eso dicen.",{bien:-8}]]},
