@@ -311,3 +311,21 @@ body[data-tema="negro"] .merc-porque{color:#8fd0ff}
 .ed-paso{width:18px;height:6px;border-radius:3px;background:rgba(255,255,255,.2)}
 .ed-paso.hecho{background:#38d66a}
 .ed-paso.actual{box-shadow:0 0 0 2px #fff}
+
+/* 7.9055 · PLOP! como ventana de Internet Explorer */
+.plop-ie{position:relative;border-radius:8px 8px 6px 6px;overflow:hidden;border:1px solid #0a246a;box-shadow:0 8px 28px rgba(0,0,0,.3);background:#fff;margin:0 auto 12px;max-width:980px}
+.plop-ie-tit{display:flex;align-items:center;gap:6px;padding:5px 8px;color:#fff;font:700 13px/1.2 "Trebuchet MS",system-ui,sans-serif;
+  background:linear-gradient(180deg,#3a8cf0 0%,#0a5ad6 45%,#0548b8 55%,#0a5ad6 100%)}
+.plop-ie-tit span{flex:1}
+.plop-ie-x{width:24px;height:22px;border-radius:4px;border:1px solid #fff;background:linear-gradient(180deg,#e88a6e,#c9391c);color:#fff;font-weight:900;cursor:pointer;line-height:1}
+.plop-ie-barra{display:flex;gap:8px;align-items:center;padding:4px 8px;background:#ece9d8;border-bottom:1px solid #aca899;font:12px system-ui,sans-serif;color:#333}
+.plop-ie-dir{flex:1;background:#fff;border:1px solid #7f9db9;padding:2px 6px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plop-ie-nav{letter-spacing:4px;color:#2a5ea8}
+.plop-ie-cuerpo{padding:8px;background:linear-gradient(180deg,#fdfdfd,#f2f4f8)}
+.plop-ie-carga{position:absolute;inset:60px 0 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#fff;z-index:5;transition:opacity .3s}
+.plop-ie-carga.fuera{opacity:0}
+.plop-ie-carga-t{font:13px system-ui,sans-serif;color:#333}
+.plop-ie-prog{width:220px;height:14px;border:1px solid #888;border-radius:2px;background:#fff;overflow:hidden;padding:1px}
+.plop-ie-prog i{display:block;height:100%;width:40%;background:repeating-linear-gradient(90deg,#3cb33c 0 8px,transparent 8px 10px);animation:plopProg .9s linear infinite}
+@keyframes plopProg{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
+body.perf .plop-ie-prog i{animation:none;width:100%}

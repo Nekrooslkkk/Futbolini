@@ -2758,6 +2758,9 @@ function arrancarPlopBots(){
     }
   }, 5000);
 }
+/* 7.9055 · la cuenta con la que estás operando (oficial del club o perfil del DT) */
+function cuentaPlop(){ return (typeof REDES_PEST!=="undefined"&&REDES_PEST==="club"&&typeof handleClub==="function")?handleClub():handleDT(); }
+function cuentaPlopTipo(){ return (typeof REDES_PEST!=="undefined"&&REDES_PEST==="club")?"club":"dt"; }
 function reaccionarPost(t,tipo){
   t.likes=t.likes||0; t.rts=t.rts||0; t.replies=t.replies||0; t.hilo=t.hilo||[];
   /* 6 · un hincha propio crítico ("colocolino en rojo") NO es un hostil: es de los tuyos.
@@ -2773,14 +2776,18 @@ function reaccionarPost(t,tipo){
     if(amistoso){
       aplicarGrupos({hinchada:2}); moverSeguidores&&moverSeguidores(ri(20,120));
       /* la cuenta reacciona al like del DT: te acerca a la gente */
-      t.replies++; t.hilo=t.hilo||[]; t.hilo.push({autor:t.autor,texto:elige(["¡Le gustó al mismísimo DT! 🙌","Nos leyó el técnico, grande.","Bancado desde arriba. Vamos."]),fecha:"ahora"});
-      aviso("❤ Le llegó tu like — la hinchada lo festeja (+2)");
+      /* 7.9055 · "le gustó al DT" solo si el like es desde el perfil del DT; desde la oficial, es el club */
+      const desdeClub=(typeof REDES_PEST!=="undefined"&&REDES_PEST==="club");
+      t.replies++; t.hilo=t.hilo||[]; t.hilo.push({autor:t.autor,texto:elige(desdeClub
+        ?["¡Nos dio like la cuenta oficial! 🙌","La oficial nos leyó. Así se hace.","Hasta el club lo apoya, vamos."]
+        :["¡Le gustó al mismísimo DT! 🙌","Nos leyó el técnico, grande.","Bancado desde arriba. Vamos."]),fecha:"ahora"});
+      aviso(desdeClub?"❤ Like de la cuenta oficial — la gente lo toma como postura del club (+2)":"❤ Le llegó tu like — la hinchada lo festeja (+2)");
     } else if(esRival){
       aplicarRep({credibilidad:-2}); aplicarGrupos({hinchada:-2});
       aviso("😬 Le diste like a una cuenta rival… mal visto por la gente (−2 hinchada)");
     } else if(esPropioCritico){
       /* darle like a un hincha tuyo enojado: escuchar no está mal, no hay castigo */
-      t.replies++; t.hilo.push({autor:t.autor,texto:elige(["Al menos el DT escucha…","Uh, me leyó. A ver si cambia algo.","Ojalá le sirva la crítica."]),fecha:"ahora"});
+      t.replies++; t.hilo.push({autor:t.autor,texto:elige((typeof REDES_PEST!=="undefined"&&REDES_PEST==="club")?["Al menos el club escucha…","La oficial me leyó. A ver si cambia algo."]:["Al menos el DT escucha…","Uh, me leyó. A ver si cambia algo.","Ojalá le sirva la crítica."]),fecha:"ahora"});
       aviso("👂 Le diste like a un hincha picado. Escuchar a los tuyos no te resta.");
     } else aviso("❤ Like");
   } else if(tipo==="rt"){
@@ -2790,15 +2797,15 @@ function reaccionarPost(t,tipo){
       /* te auto-troleaste: amplificaste a un rival */
       aplicarGrupos({hinchada:-6,prensa:-4}); aplicarRep({credibilidad:-6});
       if(typeof recordar==="function") recordar("plop","reposteaste a "+t.autor+", una cuenta rival (te auto-troleaste)",{peso:"medio",tono:"malo"});
-      if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"malo");
+      if(typeof postProc==="function") postProc(cuentaPlop(),cuentaPlopTipo(),"RT "+t.autor+": "+(t.texto||"").slice(0,80),"malo");
       aviso("🤦 Reposteaste a una cuenta rival. Te auto-troleaste: la gente y la prensa te caen encima.");
     } else if(esPropioCritico){
       /* repostear a un hincha propio enojado contigo: autocrítica, raro pero no te funa */
-      if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"neutro");
+      if(typeof postProc==="function") postProc(cuentaPlop(),cuentaPlopTipo(),"RT "+t.autor+": "+(t.texto||"").slice(0,80),"neutro");
       aviso("🔁 Reposteaste a un hincha picado contigo. Mostrar autocrítica no está mal, pero no esperes aplausos.");
     } else {
       aplicarGrupos({hinchada:3}); aplicarRep({publica:2}); moverSeguidores&&moverSeguidores(ri(40,260));
-      if(typeof postProc==="function") postProc(handleDT(),"dt","RT "+t.autor+": "+(t.texto||"").slice(0,80),"bueno");
+      if(typeof postProc==="function") postProc(cuentaPlop(),cuentaPlopTipo(),"RT "+t.autor+": "+(t.texto||"").slice(0,80),"bueno");
       aviso("🔁 Repost al aire — sumas a los tuyos (+3 hinchada)");
     }
   } else if(tipo==="report"){
@@ -2829,8 +2836,8 @@ function enviarReply(t, raw){
   t._replyOpen=false;
   t.replies=(t.replies||0)+1;
   t.hilo=t.hilo||[];
-  t.hilo.push({autor:handleDT(),texto:txt,fecha:"ahora"});
-  if(typeof postProc==="function") postProc(handleDT(),"dt","@"+String(t.autor||"").replace(/^@/,"")+" "+txt,"neutro");
+  t.hilo.push({autor:cuentaPlop(),texto:txt,fecha:"ahora"});
+  if(typeof postProc==="function") postProc(cuentaPlop(),cuentaPlopTipo(),"@"+String(t.autor||"").replace(/^@/,"")+" "+txt,"neutro");
   if(typeof responderHilo==="function") responderHilo(t, txt);
   aplicarRep({prensa:1});
   guardar();
@@ -2850,9 +2857,11 @@ function quitarLike(t){
 function impulsarPlop(monto){
   if(E.plata<monto) return aviso("No te alcanza la caja");
   aplicarEfectos({plata:-monto});
-  const nuevos=Math.round(monto*ri(90,160)); moverSeguidores&&moverSeguidores(nuevos);
-  aplicarRep({publica:Math.round(monto/120)});
-  if(typeof recordar==="function" && monto>=200) recordar("plop","metiste plata para inflar tu cuenta de PLOP",{peso:"bajo"});
+  const inflP=(typeof inflacionEra==="function")?inflacionEra():1, rel=monto/inflP;   /* en M de 2026: 0,5 / 2 / 6 */
+  const nuevos=Math.round(rel*ri(3000,5000)*(E.plopVerif&&E.plopVerif[handleDT()]?1.3:1)); moverSeguidores&&moverSeguidores(nuevos);
+  aplicarRep({publica:Math.max(1,Math.round(rel*1.2))});
+  if(rel>=2) aplicarGrupos({sponsors:Math.round(rel)});
+  if(typeof recordar==="function" && rel>=6) recordar("plop","metiste plata para inflar tu cuenta de PLOP",{peso:"bajo"});
   guardar(); render(); aviso("📈 +"+nuevos.toLocaleString("es-CL")+" seguidores por la campaña");
 }
 function vistaRedes(){
@@ -2893,17 +2902,7 @@ function vistaRedes(){
     });
   };
   p.cuerpo.appendChild(bp);
-  if(REDES_PEST!=="club" && typeof POSTS_PREDEF!=="undefined"){
-    p.cuerpo.appendChild(el("h3","sub","Borradores (tú, no el club)"));
-    const fr=el("div","ops");
-    POSTS_PREDEF.forEach(pp=>{
-      const b=el("button","op");
-      b.innerHTML='<div class="t">'+pp.t+'</div><div class="d">"'+pp.texto+'"</div>';
-      b.onclick=()=>{ aplicarPost(pp.texto, Object.assign({},pp.ev||{})); if(typeof postProc==="function") postProc(handleDT(),"dt",pp.texto,pp.ev&&pp.ev.sentimiento<0?"malo":"bueno"); if(typeof responderAlPostPropio==="function"){ const it=(E.timeline||[])[0]; if(it) responderAlPostPropio(it, pp.texto); } irA("redes"); };
-      fr.appendChild(b);
-    });
-    p.cuerpo.appendChild(fr);
-  }
+  /* 7.9055 · sin borradores (pedido del autor): se escribe o no se escribe */
   if(REDES_PEST==="club"){
     if(E.staff&&E.staff.cm){
       /* 6 · comunicados oficiales EXTENSOS, solo con CM contratado */
@@ -2953,15 +2952,19 @@ function vistaRedes(){
   };
   pcd.cuerpo.appendChild(inU); pcd.cuerpo.appendChild(bU);
   if(!verifOwn){
-    const bV=el("button","btn-aqua chico"+(E.plata<150?" gris":""),"✔ Comprar verificado · "+plata(150)); bV.style.marginLeft="6px"; bV.style.marginTop="5px";
-    bV.disabled=E.plata<150;
-    bV.onclick=()=>{ if(E.plata<150) return aviso("No te alcanza"); aplicarEfectos({plata:-150}); E.plopVerif[handleDT()]=true; aplicarRep({publica:3}); moverSeguidores&&moverSeguidores(ri(300,1500)); guardar(); render(); aviso("✔ Cuenta verificada — más alcance y estatus"); };
+    /* 7.9055 · el verificado cuesta lo que cuesta de verdad (~100 mil al año), no 150 M */
+    const PV=Math.round(0.1*((typeof inflacionEra==="function")?inflacionEra():1)*100)/100;
+    const bV=el("button","btn-aqua chico"+(E.plata<PV?" gris":""),"✔ Comprar verificado · "+plata(PV)+" al año"); bV.style.marginLeft="6px"; bV.style.marginTop="5px";
+    bV.disabled=E.plata<PV;
+    bV.onclick=()=>{ if(E.plata<PV) return aviso("No te alcanza"); aplicarEfectos({plata:-PV}); E.plopVerif[handleDT()]=true; aplicarRep({publica:3}); moverSeguidores&&moverSeguidores(ri(300,1500)); guardar(); render(); aviso("✔ Cuenta verificada — más alcance y estatus"); };
     pcd.cuerpo.appendChild(bV);
   }
   /* crecer para comerte todo: impulsar la cuenta con plata */
   pcd.cuerpo.appendChild(el("p","mini","Impulsa tu cuenta: plata a cambio de alcance y seguidores. El que domina la conversación domina la calle."));
   const imp=el("div");
-  [["Impulso chico",80],["Campaña",200],["Ofensiva total",500]].forEach(([n,m])=>{
+  /* 7.9055 · publicidad pagada a montos reales (0,5 / 2 / 6 M) y con efecto que se nota */
+  const inflP=(typeof inflacionEra==="function")?inflacionEra():1;
+  [["Impulso chico",Math.round(0.5*inflP*10)/10],["Campaña",Math.round(2*inflP*10)/10],["Ofensiva total",Math.round(6*inflP*10)/10]].forEach(([n,m])=>{
     const b=el("button","btn-aqua chico"+(E.plata<m?" gris":" verde"),n+" · "+plata(m)); b.style.marginRight="5px"; b.style.marginTop="4px";
     b.disabled=E.plata<m; b.onclick=()=>impulsarPlop(m);
     imp.appendChild(b);

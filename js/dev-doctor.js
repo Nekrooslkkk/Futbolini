@@ -1106,6 +1106,24 @@ devDoctorRegistrar({id:"estadio_dibujado", area:"interfaz", n:"Estadio dibujado 
   } finally { restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
 }});
+devDoctorRegistrar({id:"plop_vivo", area:"interfaz", n:"PLOP!: sin repetidos, likes con la cuenta correcta, respuestas a lo que escribiste, análisis en vivo", fn:function(){
+  var falta=[];
+  if(typeof textoSinSentido!=="function") falta.push("responder «cf» trae respuestas de comunicado");
+  else { if(!textoSinSentido("cf")) falta.push("«cf» no se reconoce como texto sin sentido"); if(textoSinSentido("vamos con todo el domingo")) falta.push("una frase normal se toma como sin sentido"); }
+  if(typeof postProc==="function"&&E){
+    var tl=(E.timeline||[]).slice(), n0=(E.timeline||[]).length;
+    postProc("@doc1","hincha","texto de prueba del doctor","neutro"); postProc("@doc2","hincha","texto de prueba del doctor","neutro");
+    if((E.timeline||[]).length-n0>1) falta.push("el feed publica dos veces el mismo texto ajeno");
+    E.timeline=tl;
+  }
+  if(typeof cuentaPlop!=="function") falta.push("los likes y respuestas se firman siempre como el DT");
+  else { var pe=REDES_PEST; try{ REDES_PEST="club"; if(cuentaPlop()===handleDT()&&handleClub()!==handleDT()) falta.push("desde la cuenta oficial se firma como el DT"); } finally { REDES_PEST=pe; } }
+  if(typeof tickerAnalisis==="function"){ var P={min:31,ticker:[],stats:{pos:0.5},dom:[],part:{},gl:0,gv:0}; tickerAnalisis(P);
+    if(!P.ticker.some(function(x){ return /📊/.test(x.texto); })) falta.push("el análisis en vivo no sale a los 30'"); }
+  else falta.push("Plop en vivo sin análisis");
+  if(typeof logoPlop!=="function") falta.push("PLOP! no se abre como ventana de navegador");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sin repetidos · cuenta correcta · «cf» confunde · análisis 30/60/80 · ventana plop.com");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

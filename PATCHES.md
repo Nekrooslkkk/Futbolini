@@ -3739,3 +3739,22 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `estadio_dibujado`:** una obra terminada sube la etapa, el completo se distingue y no se venden más
   butacas que el aforo.
   **Tests:** dev 519/519 · core 1185/1185.
+
+### 7.9055 — PLOP! en su ventana de navegador, sin borradores, sin repetidos, con análisis en vivo
+**Archivos:** `js/plop-mejoras.js` (nuevo, antes de `ayudante.js`), `js/ui.js`, `js/redes.js`, `js/ui-partido.js`, `js/dev-doctor.js`, `css/pulido.css`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Ventana:** PLOP! se abre como Internet Explorer en `http://plop.com/dt` o `/oficial`, con barra de título
+  azul XP, botón ✕ que cierra (vuelve al escritorio), barra de direcciones y la carga con la barrita verde de
+  XP la primera vez de la sesión. En el menú aparece como app: pajarito rojo y nombre "PLOP!".
+- **Borradores:** fuera.
+- **Cuenta correcta:** "¡Le gustó al mismísimo DT!" solo si el like sale del perfil del DT; desde la oficial,
+  "la oficial nos leyó". Los RT y las respuestas se firman con la cuenta que estás usando (`cuentaPlop()`).
+- **Sin repetidos:** un texto ajeno igual a uno de los últimos 40 no se vuelve a publicar.
+- **Respuestas a lo que escribiste:** si publicas algo sin sentido ("cf"), la gente reacciona a eso
+  (`textoSinSentido`); antes contestaban como a un comunicado.
+- **Precios reales:** el verificado pasa de 150 M a ~0,1 M al año; los impulsos, de 80/200/500 M a 0,5/2/6 M.
+  El efecto sigue notándose, y la campaña grande también suma sponsors.
+- **Plop en vivo:** a los 30', 60' y 80' salen un análisis con números reales (posesión, remates, al arco y
+  una lectura del dominio) y una encuesta de la gente ("¿Cambio ofensivo YA? Sí 64 %"). Antes el análisis
+  casi nunca salía.
+- **Doctor `plop_vivo`** y dev test "PLOP 7.9055".
+  **Tests:** dev 523/523 · core 1185/1185.

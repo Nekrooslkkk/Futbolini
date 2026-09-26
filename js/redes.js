@@ -44,6 +44,8 @@ function postProc(autor,tipo,texto,tono,extra){
   E.timeline=E.timeline||[];
   autor=(typeof textoLimpio==="function")?textoLimpio(autor,48):String(autor||"").slice(0,48);
   texto=(typeof textoLimpio==="function")?textoLimpio(texto,280):String(texto||"").replace(/<[^>]*>/g,"").slice(0,280);
+  /* 7.9055 · el feed no repite: un texto ajeno igual a uno reciente no se vuelve a publicar */
+  if(tipo!=="dt"&&tipo!=="club"){ const ya=E.timeline.slice(0,40).find(x=>x&&x.texto===texto); if(ya) return ya; }
   const part=typeof proximoPartido==="function"?proximoPartido():null;
   const likesBase=tipo==="prensa"?ri(80,2800):tipo==="club"?ri(200,4500):tipo==="rival"?ri(40,900):ri(5,1800);
   const item={
@@ -229,6 +231,13 @@ const PLOP_RESP_JUG=[
   "leímos. a trabajar.",
   "en el camarín se entiende. afuera, ruido."
 ];
+/* texto sin sentido: muy corto, sin vocales o sin ninguna palabra de verdad */
+function textoSinSentido(txt){
+  const t=String(txt||"").toLowerCase().replace(/[@#]\S+/g," ").replace(/[^a-záéíóúñü\s]/g," ").trim();
+  if(t.length<4) return true;
+  const pal=t.split(/\s+/).filter(w=>w.length>=3 && /[aeiouáéíóú]/.test(w));
+  return pal.length===0;
+}
 function responderHilo(t, txtYo){
   if(!t) return [];
   t.hilo=t.hilo||[];
@@ -238,6 +247,15 @@ function responderHilo(t, txtYo){
   const out=[];
   const pick=function(arr){ return (typeof elige==="function")?elige(arr):arr[Math.floor(Math.random()*arr.length)]; };
   const h=(typeof HANDLES_HINCHA!=="undefined")?HANDLES_HINCHA:["@hincha_de_ley"];
+  /* 7.9055 · si escribiste algo sin sentido ("cf"), la gente no te contesta como si fuera un comunicado */
+  if(textoSinSentido(txtYo)){
+    const who=(typeof REDES_PEST!=="undefined"&&REDES_PEST==="club")?"la cuenta oficial":"el dt";
+    const conf=["¿"+String(txtYo||"").trim().slice(0,12)+"? ¿se le cayó el celu a "+who+"?","jajaja "+who+" escribiendo con el codo","hackearon a "+who+" o qué 😂","¿mensaje en clave? no entendí nada","screenshot antes que lo borre 📸"];
+    const k=2+Math.floor(Math.random()*2);
+    const ini=Math.floor(Math.random()*conf.length);
+    for(let i=0;i<k;i++){ const item={autor:pick(h),texto:conf[(ini+i)%conf.length],fecha:"ahora",tipo:"hincha"}; t.hilo.push(item); t.replies=(t.replies||0)+1; out.push(item); }
+    return out;
+  }
   const p=(typeof HANDLES_PRENSA!=="undefined")?HANDLES_PRENSA:["@RadioGolAM"];
   for(let i=0;i<n;i++){
     let autor, texto, tipo="hincha";
@@ -680,8 +698,29 @@ function tickerPost(P, ev){
 }
 /* 6.36 · tuits que reaccionan al MOMENTO (marcador, tensión, tiempo), no a la jugada.
    Se llaman de a ratos desde el loop: hacen sentir FutbolGram vivo. */
+/* 7.9055 · Plop en vivo con utilidad: análisis con números reales y encuestas que dicen qué pide la gente.
+   Uno a los 30', otro a los 60' y otro a los 80' (antes el análisis casi nunca salía). */
+function tickerAnalisis(P){
+  if(!P||!P.ticker) return false;
+  const m=P.min||0, marca=[30,60,80].find(x=>m>=x && !(P._anal||{})[x]);
+  if(!marca) return false;
+  P._anal=P._anal||{}; P._anal[marca]=true;
+  const s=P.stats||{}, pos=Math.round((s.pos||0.5)*100);
+  const dom=(P.dom||[]).slice(-6), dv=dom.length?dom.reduce((a,x)=>a+x.v,0)/dom.length:0;
+  const [yo,otro]=(typeof miMarcador==="function")?miMarcador(P):[P.gl,P.gv];
+  const lectura=dv>0.15?"el partido es tuyo, falta la puntada":(dv<-0.15?"te están llevando por delante":"está parejo, lo gana el que se equivoque menos");
+  const txt="📊 "+m+"': posesión "+pos+"% · remates "+(s.remMio||0)+"-"+(s.remRiv||0)+" · al arco "+(s.arcMio||0)+"-"+(s.arcRiv||0)+". Lectura: "+lectura+".";
+  P.ticker.unshift({m:m, autor:"@datofutbol_cl", texto:txt, tono:"neutro"});
+  const dif=yo-otro;
+  const preg=dif<0?"¿Cambio ofensivo YA?":(dif>0?"¿Cerrar el partido o ir por otro?":"¿Arriesgar o esperar el error?");
+  const si=Math.round(clamp(50+(dif<0?18:(dif>0?-12:0))+(dv<0?8:-4)+ri(-6,6),20,85));
+  P.ticker.unshift({m:m, autor:elige(HANDLES_HINCHA), texto:"🗳 Encuesta: "+preg+" Sí "+si+"% · No "+(100-si)+"%", tono:"neutro"});
+  if(P.ticker.length>18) P.ticker.length=18;
+  return true;
+}
 function tickerAmbiente(P){
   if(!P||!P.ticker) return;
+  if(tickerAnalisis(P)) return;
   const [yo,otro]=(typeof miMarcador==="function")?miMarcador(P):[P.gl,P.gv];
   const dif=yo-otro, m=P.min||0, rival=(P.part&&P.part.rivalNombre)||"el rival";
   let ops=[];

@@ -1394,6 +1394,20 @@
       t(rc.ok,"doctor canal_coherente: "+rc.txt);
     },"Partido 7.9042");
 
+    grupo("PLOP! · ventana, sin borradores, precios reales · 7.9055");
+    safe(function(){
+      nuevaPartida("RAN",2026,"historico");
+      REDES_PEST="yo"; SEC="redes"; render();
+      var txt=document.getElementById("vista").textContent;
+      t(!/Borradores/.test(txt),"sin borradores");
+      t(!!document.querySelector("#vista .plop-ie") && /plop\.com/.test(txt),"PLOP! vive en una ventana tipo navegador en plop.com");
+      var bv=[].slice.call(document.querySelectorAll("#vista button")).filter(function(b){ return /verificado/.test(b.textContent); })[0];
+      t(!bv || !/\$1[0-9]{2} M/.test(bv.textContent),"el verificado no cuesta cientos de millones ("+(bv?bv.textContent:"ya verificado")+")");
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="plop_vivo"; })[0].fn();
+      t(r.ok,"doctor plop_vivo: "+r.txt);
+      SEC="escritorio";
+    },"PLOP 7.9055");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

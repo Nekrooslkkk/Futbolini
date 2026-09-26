@@ -1347,6 +1347,7 @@ function pasoEnVivo(){
   if(typeof actualizarStats==="function") actualizarStats(P,ev);
   if(typeof actualizarApoyo==="function") actualizarApoyo(P);
   if(typeof tickerPost==="function") tickerPost(P,ev);
+  if(typeof tickerAnalisis==="function") tickerAnalisis(P);   /* 7.9055 · análisis y encuesta a los 30', 60', 80' (antes casi nunca salían) */
   if(typeof tickerAmbiente==="function" && (!ev||ev.tipo==="nada") && Math.random()<0.14) tickerAmbiente(P);   /* 6.36 · tuits del momento */
   if(ev.tipo==="fin" || ev.tipo==="tandaFin"){ clearInterval(TIMER); pintarPartido(); cerrarPartido(); return; }
   if(ev.tipo==="tanda"){
