@@ -1090,7 +1090,9 @@ function pintarPartido(){
     if(eraPartido){
       const rel=v&&v.querySelector(".relato"); if(rel&&relTop) rel.scrollTop=relTop;
       if(!document.body.classList.contains("con-modal")){
-        if(ancla!=null&&rel){ const d=rel.getBoundingClientRect().top-ancla; if(Math.abs(d)>2) try{ window.scrollBy(0,d); }catch(e){} }
+        /* 7.9083 · en PC a dos columnas el relato vive fijo a la derecha: anclarlo corría la página hacia abajo en
+           cada repintado (el relato recién pintado está abajo a la izquierda hasta que se muda). Ahí se sostiene el scroll. */
+        if(ancla!=null&&rel&&!document.body.classList.contains("pv-2col")){ const d=rel.getBoundingClientRect().top-ancla; if(Math.abs(d)>2) try{ window.scrollBy(0,d); }catch(e){} }
         else if(Math.abs((window.scrollY||0)-y)>2){ try{ window.scrollTo(0,y); }catch(e){} }
       }
     }

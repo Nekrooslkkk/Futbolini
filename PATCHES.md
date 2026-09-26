@@ -4419,3 +4419,27 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
     Si una ya se limpió, avisa con ✨. Al revés: un duplicado de prueba (`aviso`) fue cazado.
   - La L1 se probó en una copia: sin esas 280 líneas, dev 574/574, core 1185/1185 y doctor sano en PC y celular.
   - Voseo propio corregido en `poder-sombra.js` ("pensás" → "piensas").
+
+### 7.9083 — Partido en PC sin corrimiento · metas siempre posibles
+**Archivos:** `js/ui-partido.js`, `js/interfaz-aero.js`, `js/metas-real.js` (nuevo), `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Bug del partido en PC** (reporte: "sale todo a la derecha y no se lee nada").
+  - Causa: el ancla del relato mantiene su posición en cada repintado. En PC a dos columnas el relato vive fijo
+    a la derecha, pero al repintarse aparece abajo a la izquierda antes de mudarse. La página se corría hacia abajo
+    en cada tick (medido: 0 → 405 px).
+  - Arreglo: con `body.pv-2col` no se ancla; se sostiene el scroll. El partido arranca arriba.
+- **Panel de preguntas cortado:** la decisión del partido (`.momento-vivo`) iba a la columna angosta de 440 px
+  (mostraba 281 de 588 px). Ahora va bajo el marcador, a todo el ancho de la columna principal.
+- **Metas realistas** (reporte: Linares en Segunda con "Clasificar a Sudamericana"). Nueva capa final
+  `ajustarMetasReales()` sobre `generarObjetivos()`:
+  - Sin metas continentales fuera de Primera.
+  - La meta de posición exige como mucho 2 puestos sobre tu lugar real por fuerza (`rankingFuerza()`: tu
+    plantel vs. la fuerza de cada rival de tu liga). En la B, "entrar a la liguilla".
+  - Triunfos con tope según partidos de liga y nivel.
+  - Sudamericana solo si tu plantel está entre los 9 primeros.
+  - El mandato repite la meta deportiva.
+  - Las partidas ya empezadas se corrigen al cargar.
+- **Doctor:**
+  - `partido_pc_estable`: al revés, cazado.
+  - `metas_realistas`: al revés, cazó continental en Segunda, meta de título para el 8° plantel y Sudamericana
+    para el 13°.
+- **Estado:** doctor sano (3 partidas + celular) · dev 581/581 · core 1185/1185.

@@ -1581,6 +1581,19 @@
       irA("escritorio");
     },"Aero 7.9082");
 
+    grupo("Metas realistas y partido en PC · 7.9083");
+    safe(function(){
+      [["LIN",2026],["UES",2026],["UCH",1991],["CC",2026],["LSE",2026]].forEach(function(x){
+        nuevaPartida(x[0],x[1],"historico");
+        var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="metas_realistas"; })[0].fn();
+        t(r.ok,x[0]+" "+x[1]+": "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      });
+      nuevaPartida("LIN",2026,"historico");
+      t(!E.objetivos.some(function(o){ return /Sudamericana|Libertadores/.test(o.t); }),"Linares en Segunda no tiene metas continentales");
+      var r2=DOCTOR_CHECKS.filter(function(c){ return c.id==="partido_pc_estable"; })[0].fn();
+      t(r2.ok,"doctor partido_pc_estable: "+r2.txt+(r2.ok?"":" · "+r2.detalle.join(" | ")));
+    },"Metas 7.9083");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

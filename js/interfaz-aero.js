@@ -289,9 +289,13 @@ function partidoDosColumnas(){
   if(!ancho) return false;
   let der=v.querySelector(":scope > .pv-der");
   if(!der){ der=el("div","pv-der"); v.appendChild(der); }
-  const mom=v.querySelector(":scope > .momento-vivo, .partido-wrap .momento-vivo");
+  /* 7.9083 · la decisión del partido NO va a la columna angosta (quedaba cortada y "todo a la derecha", reporte
+     del autor): va a la columna principal, justo bajo el marcador, a todo el ancho. */
+  const marc=v.querySelector(".partido-wrap .marcador-vivo");
+  [].slice.call(v.querySelectorAll(".momento-vivo")).forEach(mom=>{
+    if(marc&&marc.parentNode&&mom.previousElementSibling!==marc) marc.insertAdjacentElement("afterend",mom);
+  });
   const chat=v.querySelector(".partido-wrap .chat-vivo"), rel=v.querySelector(".partido-wrap .relato");
-  if(mom&&mom.parentNode!==der) der.insertBefore(mom,der.firstChild);
   if(chat&&chat.parentNode!==der) der.appendChild(chat);
   if(rel&&rel.parentNode!==der){ const caja=el("div","pv-relato"); caja.appendChild(el("div","pv-relato-t","🎙️ Relato")); caja.appendChild(rel); der.appendChild(caja); }
   return true;
@@ -303,6 +307,13 @@ function partidoDosColumnas(){
     Object.keys(o).forEach(k=>w[k]=o[k]); w._pv=true; w._orig=o; window[nom]=w;
   });
 })();
+/* 7.9083 · el partido arranca arriba (venía con el scroll de la previa y se veía la mitad de abajo) */
+(function(){
+  const o=window.arrancarPartido; if(typeof o!=="function"||o._arriba) return;
+  const w=function(){ const r=o.apply(this,arguments); const arriba=()=>{ try{ window.scrollTo(0,0); }catch(e){} };
+    arriba(); requestAnimationFrame(arriba); setTimeout(arriba,120); return r; };
+  Object.keys(o).forEach(k=>w[k]=o[k]); w._arriba=true; w._orig=o; window.arrancarPartido=w;
+})();
 if(typeof document!=="undefined"&&!document.getElementById("css-partido-2col")){
   const st=document.createElement("style"); st.id="css-partido-2col";
   st.textContent=
@@ -310,7 +321,7 @@ if(typeof document!=="undefined"&&!document.getElementById("css-partido-2col")){
       "body.pv-2col #vista[data-sec=partido]{display:grid !important;grid-template-columns:minmax(0,1fr) minmax(380px,440px);gap:14px;align-items:start;max-width:1500px}"+
       "body.pv-2col #vista[data-sec=partido] > .partido-wrap{min-width:0}"+
       "body.pv-2col .pv-der{position:sticky;top:62px;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 74px);overflow-y:auto;overscroll-behavior:contain;padding-bottom:6px}"+
-      "body.pv-2col .pv-der .momento-vivo{margin:0 !important;position:static !important;max-height:none !important}"+
+      "body.pv-2col .partido-wrap .momento-vivo{margin:10px 0 !important;position:static !important;max-height:none !important;overflow:visible !important}"+
       "body.pv-2col .pv-der .chat-vivo{margin-top:0}"+
       "body.pv-2col .pv-der .chat-lista{max-height:min(46vh,420px) !important}"+
       "body.pv-2col .pv-relato{border-radius:12px;overflow:hidden;border:1px solid rgba(80,140,210,.35);background:rgba(236,246,255,.9)}"+

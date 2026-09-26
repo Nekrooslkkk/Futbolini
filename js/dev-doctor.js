@@ -1696,6 +1696,35 @@ devDoctorRegistrar({id:"ranuras_img", area:"contenido", n:"Ranuras de imagen: de
   var faltan=RANURAS_IMG.filter(function(r){ return !r.listo; }).map(function(r){ return r.archivo; });
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(listas+" de "+RANURAS_IMG.length+" imágenes puestas"+(faltan.length?" · pendientes (ver GUIA_HUMANO.md): "+faltan.length:""));
 }});
+/* 7.9083 · reporte del autor: "al ir al partido sale todo a la derecha y no se lee nada en PC" + "el panel de
+   preguntas quedó chico y cortado". Causa: el ancla del relato corría la página en cada repintado (a dos columnas
+   el relato vive a la derecha) y la decisión se metía en la columna angosta. */
+devDoctorRegistrar({id:"partido_pc_estable", area:"interfaz", n:"Partido en PC: la página no se corre sola y la decisión va a lo ancho",
+  arreglo:"pintarPartido (ui-partido.js) no debe anclar el relato con body.pv-2col; partidoDosColumnas (interfaz-aero.js) pone .momento-vivo bajo .marcador-vivo.", fn:function(){
+  var falta=[];
+  if(typeof pintarPartido!=="function"||_docFuente(pintarPartido).indexOf("pv-2col")<0) falta.push("el ancla del relato corre la página en cada repintado del partido a dos columnas");
+  if(typeof partidoDosColumnas!=="function"||String(partidoDosColumnas).indexOf("marcador-vivo")<0) falta.push("la decisión del partido se va a la columna angosta de la derecha (queda cortada)");
+  if(typeof arrancarPartido!=="function"||!arrancarPartido._arriba) falta.push("el partido arranca con el scroll de la previa (se ve la mitad de abajo)");
+  if(typeof document!=="undefined"&&document.body&&document.body.classList.contains("pv-2col")){
+    var m=document.querySelector(".pv-der .momento-vivo"); if(m) falta.push("en vivo: hay una decisión dentro de la columna derecha");
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sin corrimiento · decisión bajo el marcador · arranca arriba");
+}});
+/* 7.9083 · reporte del autor: Linares (Segunda) tenía de meta "Clasificar a Sudamericana". Las metas tienen que ser
+   posibles para ESE plantel en ESA división */
+devDoctorRegistrar({id:"metas_realistas", area:"contenido", n:"Metas de temporada posibles para el plantel y la división",
+  arreglo:"js/metas-real.js: ajustarMetasReales() es la última capa sobre generarObjetivos(); rankingFuerza() mide tu lugar real.", fn:function(){
+  if(!E||!E.objetivos) return _dok("sin partida");
+  if(typeof ajustarMetasReales!=="function") return _dmal("no cargó js/metas-real.js",["falta el script en index.html"]);
+  var falta=[], div=divisionActual(), rk=rankingFuerza(), pj=partidosLiga();
+  E.objetivos.forEach(function(o){
+    if(div>1&&METAS_CONTINENTAL.test((o.t||"")+" "+(o.torneo||""))) falta.push("«"+o.t+"» en división "+div+": fuera de Primera no se clasifica a copas continentales");
+    if(o.id==="dep"&&typeof o.meta==="number"&&o.meta<rk.rank-2) falta.push("«"+o.t+"» pide terminar "+o.meta+"° con el "+rk.rank+"° plantel de "+rk.n);
+    if(o.id==="vic"&&o.meta>Math.round(pj*0.65)) falta.push("«"+o.t+"» en "+pj+" partidos de liga: casi nadie gana tanto");
+  });
+  if(rk.rank>9&&E.objetivos.some(function(o){ return o.id==="sud27"; })) falta.push("piden Sudamericana con el "+rk.rank+"° plantel de "+rk.n);
+  return falta.length?_dmal(falta.length+" meta(s) imposible(s)",falta):_dok("división "+div+" · "+rk.rank+"° plantel de "+rk.n+" · "+E.objetivos.length+" metas posibles");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
