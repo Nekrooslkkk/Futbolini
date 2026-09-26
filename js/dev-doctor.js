@@ -23,6 +23,9 @@ function devDoctorRegistrar(c){
 }
 function _dok(txt,detalle){ return {ok:true, txt:txt||"", detalle:detalle||[]}; }
 function _dmal(txt,detalle){ return {ok:false, txt:txt||"", detalle:detalle||[]}; }
+/* 7.9076 · el código de una función con todas sus envolturas (cada wrap guarda _orig): así un
+   chequeo que busca algo en el fuente no se engaña cuando alguien la envuelve */
+function _docFuente(fn){ let s="", f=fn, n=0; while(f&&n<12){ s+=String(f)+"\n"; f=f._orig; n++; } return s; }
 function _dnum(v){ return typeof v==="number" && isFinite(v); }
 
 /* ============ ÁREA: MOTOR Y TABLAS ============
@@ -1571,7 +1574,7 @@ devDoctorRegistrar({id:"rendimiento_ui", area:"interfaz", n:"La escena del penal
 devDoctorRegistrar({id:"scroll_estable", area:"interfaz", n:"Apretar un botón no te manda arriba (ni en el partido)", fn:function(){
   var falta=[];
   if(typeof _renderCuerpo!=="function") falta.push("repintar una sección vacía la página y el scroll vuelve arriba");
-  if(typeof pintarPartido!=="function"||String(pintarPartido).indexOf("ancla")<0) falta.push("los botones del partido (pausa, velocidad, cancha) sacan el relato de la vista");
+  if(typeof pintarPartido!=="function"||_docFuente(pintarPartido).indexOf("ancla")<0) falta.push("los botones del partido (pausa, velocidad, cancha) sacan el relato de la vista");
   if(typeof irA!=="function"||String(irA).indexOf("cambia")<0) falta.push("volver a apretar la misma sección te manda arriba");
   if(!falta.length && E && document.body && !document.body.classList.contains("con-modal") && !document.body.classList.contains("en-partido")){
     var y0=window.scrollY, alto=document.documentElement.scrollHeight-innerHeight;

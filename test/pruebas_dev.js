@@ -1522,6 +1522,7 @@
       for(var m=1;m<=40;m++){ P.min=m; tickerCharla(P); }
       document.body.classList.add("en-partido"); pintarPartido();
       t(document.querySelectorAll(".chat-vivo .chat-b").length===P.ticker.length,"el chat muestra todos los mensajes ("+P.ticker.length+")");
+      if(window.innerWidth>=1100) t(!!document.querySelector("#vista > .pv-der .chat-vivo"),"en PC el chat vive en la columna derecha del partido");
       document.body.classList.remove("en-partido"); P_ACTUAL=null; clearInterval(TIMER);
     },"Chat 7.9071");
 

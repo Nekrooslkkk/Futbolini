@@ -276,3 +276,52 @@ if(typeof document!=="undefined"&&!document.getElementById("css-orden-pc")){
     ".foto-est{max-height:220px !important}";
   document.head.appendChild(st);
 }
+/* ============================================================
+   7.9076 · Partido en vivo en PC: dos columnas. A la izquierda el partido (marcador, cancha,
+   controles, barras); a la derecha, fija al hacer scroll, la decisión (si hay), el chat en vivo y el
+   relato. Antes el chat quedaba al fondo de una columna larga y la derecha vacía. Celular: igual.
+   ============================================================ */
+function partidoDosColumnas(){
+  const v=document.getElementById("vista");
+  if(!v||v.dataset.sec!=="partido") return false;
+  const ancho=window.innerWidth>=1100;
+  document.body.classList.toggle("pv-2col",ancho);
+  if(!ancho) return false;
+  let der=v.querySelector(":scope > .pv-der");
+  if(!der){ der=el("div","pv-der"); v.appendChild(der); }
+  const mom=v.querySelector(":scope > .momento-vivo, .partido-wrap .momento-vivo");
+  const chat=v.querySelector(".partido-wrap .chat-vivo"), rel=v.querySelector(".partido-wrap .relato");
+  if(mom&&mom.parentNode!==der) der.insertBefore(mom,der.firstChild);
+  if(chat&&chat.parentNode!==der) der.appendChild(chat);
+  if(rel&&rel.parentNode!==der){ const caja=el("div","pv-relato"); caja.appendChild(el("div","pv-relato-t","🎙️ Relato")); caja.appendChild(rel); der.appendChild(caja); }
+  return true;
+}
+(function(){
+  ["pintarPartido","mostrarMomento"].forEach(nom=>{
+    const o=window[nom]; if(typeof o!=="function"||o._pv) return;
+    const w=function(){ const r=o.apply(this,arguments); try{ partidoDosColumnas(); }catch(e){} return r; };
+    Object.keys(o).forEach(k=>w[k]=o[k]); w._pv=true; w._orig=o; window[nom]=w;
+  });
+})();
+if(typeof document!=="undefined"&&!document.getElementById("css-partido-2col")){
+  const st=document.createElement("style"); st.id="css-partido-2col";
+  st.textContent=
+    "@media (min-width:1100px){"+
+      "body.pv-2col #vista[data-sec=partido]{display:grid !important;grid-template-columns:minmax(0,1fr) minmax(380px,440px);gap:14px;align-items:start;max-width:1500px}"+
+      "body.pv-2col #vista[data-sec=partido] > .partido-wrap{min-width:0}"+
+      "body.pv-2col .pv-der{position:sticky;top:62px;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 74px);overflow-y:auto;overscroll-behavior:contain;padding-bottom:6px}"+
+      "body.pv-2col .pv-der .momento-vivo{margin:0 !important;position:static !important;max-height:none !important}"+
+      "body.pv-2col .pv-der .chat-vivo{margin-top:0}"+
+      "body.pv-2col .pv-der .chat-lista{max-height:min(46vh,420px) !important}"+
+      "body.pv-2col .pv-relato{border-radius:12px;overflow:hidden;border:1px solid rgba(80,140,210,.35);background:rgba(236,246,255,.9)}"+
+      "body.pv-2col .pv-relato-t{padding:6px 10px;font:700 13px system-ui;color:#0d2c4d;background:linear-gradient(180deg,#f7fbff,#d7e8f8);border-bottom:1px solid rgba(80,140,210,.3)}"+
+      "body.pv-2col .pv-relato .relato{max-height:240px;overflow-y:auto;margin:0;padding:4px 8px}"+
+      "body[data-tema=aero].pv-2col .pv-relato,body[data-tema=negro].pv-2col .pv-relato{background:rgba(12,28,50,.9);border-color:rgba(120,170,240,.25)}"+
+      "body[data-tema=aero].pv-2col .pv-relato-t,body[data-tema=negro].pv-2col .pv-relato-t{background:linear-gradient(180deg,#1e3c64,#12294a);color:#e3f0ff}"+
+      "body[data-tema=aero].pv-2col .pv-relato .rel,body[data-tema=negro].pv-2col .pv-relato .rel{color:#dbe9fb;border-bottom-color:rgba(120,170,240,.18)}"+
+      "body[data-tema=aero].pv-2col .pv-relato .rel .m,body[data-tema=negro].pv-2col .pv-relato .rel .m{color:#8fd0ff;opacity:.85}"+
+      "body[data-tema=aero].pv-2col .pv-relato .rel.gol,body[data-tema=negro].pv-2col .pv-relato .rel.gol{color:#9ff0b0}"+
+      "body[data-tema=aero].pv-2col .pv-relato .rel.grave,body[data-tema=negro].pv-2col .pv-relato .rel.grave{color:#ffb0a6}"+
+    "}";
+  document.head.appendChild(st);
+}

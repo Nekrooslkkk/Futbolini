@@ -4240,3 +4240,18 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   queda en 220 px.
 - **Doctor `pantallas_pc`:** en PC mide que las ventanas de sección usen al menos el 90 % del ancho.
   Comprobado al revés forzando 580 px.
+
+### 7.9076 — Etapa 4A · Partido en vivo en dos columnas (PC)
+**Archivos:** `js/interfaz-aero.js`, `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Pedido del autor:** "Partido en vivo" quedó corto. El chat estaba al fondo de una columna larga y la mitad
+  derecha de la pantalla quedaba vacía, salvo cuando había decisión.
+- **PC (1100 px o más):**
+  - izquierda: el partido (marcador, cancha, controles, barras);
+  - derecha, fija al hacer scroll: la decisión si hay, el chat en vivo y el relato (con su propio scroll y
+    contraste para el tema oscuro).
+  - Alto de la página: de 1515 a 1208 px.
+- **Celular:** igual que antes.
+- **Doctor:** nuevo `_docFuente(fn)`, que junta el código de una función con todas sus envolturas (cada wrap
+  guarda `_orig`). `scroll_estable` lo usa, así no se engaña cuando alguien envuelve `pintarPartido`
+  (falló la primera vez al envolverla).
+  **Tests:** dev 564/564 · core 1185/1185.
