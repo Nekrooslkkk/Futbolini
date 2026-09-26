@@ -1443,6 +1443,24 @@
       SEC="escritorio";
     },"Vida 7.9063");
 
+    grupo("Prensa, trivia y clima · 7.9065");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="prensa_real"; })[0].fn();
+      t(r.ok,"doctor prensa_real: "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      modalConferencia(proximoPartido());
+      t(!document.querySelector(".modal textarea"),"la conferencia no tiene texto libre");
+      var cab=document.querySelector(".modal .cab").textContent;
+      t(/de [45]/.test(cab),"la conferencia trae 4 o 5 preguntas ("+cab.trim()+")");
+      var o=document.querySelector(".modal .op"); o.click();
+      t(/respuesta anterior/.test(document.querySelector(".modal").textContent),"después de contestar se ve qué movió la respuesta");
+      t(!/No hablar con la prensa|Cortar/.test(document.querySelector(".modal").textContent),"después de contestar no se puede cortar la conferencia");
+      cerrarModal();
+      var part=proximoPartido(); part.clima="lluvia";
+      var w=widgetClima(part);
+      t(/Con tu plan/.test(w.textContent)&&/Conviene/.test(w.textContent),"el widget del clima dice qué hace con tu plan y qué conviene");
+    },"Prensa 7.9065");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

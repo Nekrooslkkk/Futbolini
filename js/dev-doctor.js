@@ -1288,6 +1288,41 @@ devDoctorRegistrar({id:"vida_patrimonio", area:"motor", n:"Vida: el patrimonio s
   finally { window.notificar=nt; window.guardar=gu; window.render=rd; window.aviso=av; restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(PATRIMONIO.length+" bienes a precio real · se valorizan/deprecian · margen de la casa "+Math.round(MARGEN_CASA*100)+" %");
 }});
+devDoctorRegistrar({id:"prensa_real", area:"motor", n:"Prensa, trivia y clima: respuestas que calzan, matemática variada y clima que cambia el plan", fn:function(){
+  var falta=[];
+  var sin=(typeof preguntasSinRespuesta==="function")?preguntasSinRespuesta():["(sin chequeo)"];
+  if(sin.length) falta.push(sin.length+" preguntas de prensa caen en respuestas comodín (ej.: «"+sin[0]+"»)");
+  if(typeof CONF_N_PREGUNTAS==="undefined"||CONF_N_PREGUNTAS<4) falta.push("la conferencia tiene menos de 4 preguntas");
+  if(typeof modalConferencia==="function"&&/textarea/.test(String(modalConferencia))) falta.push("la conferencia todavía deja escribir texto libre");
+  try{
+    var part=(E.calendario||[]).filter(function(x){ return x&&x.tipo==="liga"; })[0];
+    if(part){
+      var L=preguntasConferencia(part), comodin=0;
+      L.forEach(function(q){ (q.ops||[]).forEach(function(o){ if(/^(Bajar el perfil|Salir con confianza|Un palo y a la cancha|Bancarlo de frente|Un palo y a la siguiente)$/.test(o.t)) comodin++; }); });
+      if(comodin) falta.push(comodin+" respuestas comodín en la conferencia de hoy");
+    }
+  }catch(e){ falta.push("la conferencia no se arma: "+e.message); }
+  /* trivia */
+  var formas={}, malas=0, nivel=0, P={min:50,part:part||{}};
+  for(var i=0;i<60;i++){
+    var t=triviaMate(); formas[t.q.replace(/[0-9.,%$]+/g,"#")]=1;
+    var m=momentoTrivia(P); if(!m.op||m.op.length!==3||m.op.filter(function(o){ return o.ok; }).length!==1) malas++;
+    if(/nivel de |¿cuánto nivel/i.test(m.q)) nivel++;
+  }
+  E.triviaVistas=[];
+  if(Object.keys(formas).length<8) falta.push("la matemática de la trivia tiene solo "+Object.keys(formas).length+" formas distintas");
+  if(malas) falta.push(malas+" trivias sin exactamente una respuesta correcta");
+  if(nivel) falta.push("la trivia pregunta el «nivel» de un jugador");
+  /* clima */
+  if(typeof efectosClimaPlan!=="function") falta.push("el clima no toca el plan");
+  else {
+    if(!efectosClimaPlan("lluvia",{estilo:"Control y toque"}).length) falta.push("la lluvia no castiga el toque corto");
+    if(!efectosClimaPlan("calor",{presion:"Alta"}).length) falta.push("el calor no castiga la presión alta");
+    if(!(CLIMA_PUBLICO.lluvia<1)) falta.push("la lluvia no baja el público");
+    if(part){ var snap=clonarPartida(E); try{ var P2=iniciarPartido(Object.assign({},part,{clima:"frio"}),"simular"); if(!(P2&&P2.lesionClima>1)) falta.push("el frío no sube el riesgo de lesión"); } finally { restaurarPartida(snap); } }
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("0 respuestas comodín · conferencia de "+CONF_N_PREGUNTAS+"+ · "+Object.keys(formas).length+" formas de matemática · clima con efecto en plan, público y lesiones");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

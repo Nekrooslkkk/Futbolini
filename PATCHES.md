@@ -3957,3 +3957,38 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `vida_patrimonio`:** comprobado al revés con margen de casa del 30 % y una camioneta que se
   valoriza.
   **Tests:** dev 538/538 · core 1185/1185.
+
+### 7.9065 — Prensa con respuestas que calzan, trivia variada y clima que sirve
+**Archivos:** `js/data-respuestas.js` (nuevo), `js/prensa-real.js` (nuevo), `js/ui-partido.js`, `js/partido.js`, `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Por qué no calzaban las respuestas:** las 156 preguntas de `PREGUNTAS_VOZ` (voz, beta, histórico,
+  formato 2026) no traían respuestas y caían en tres comodines: "Bajar el perfil / Salir con confianza / Un
+  palo y a la cancha". Ahora cada una tiene sus tres respuestas, dichas por el DT (`data-respuestas.js`). Las
+  respuestas de `ui-partido.js` que eran descripciones ("Tirarle un palo al rival", "Encender a la hinchada")
+  pasaron a ser frases que contestan la pregunta.
+- **Conferencia:**
+  - 4 preguntas (5 en club grande). Primero van las de la situación, después las generales.
+  - Sin texto libre.
+  - "No hablar con la prensa" solo antes de la primera respuesta; después no se corta.
+  - Cada pregunta muestra qué movió tu respuesta anterior (prensa, camarín, credibilidad, moral).
+- **Sala post-partido:** 3 preguntas. Cuando contestas la primera, desaparece "Delegar en el ayudante".
+- **Trivia:**
+  - 17 generadores de matemática: sumas y restas de dos cifras, tablas, divisiones exactas, orden de las
+    operaciones, cuadrados, porcentajes, series.
+  - Cuentas de DT: puntos, puntos en juego, diferencia de gol, minutos con descuento, recaudación, promedio,
+    sueldo anual, ocupación del estadio. Los distractores son errores típicos.
+  - 36 preguntas de cultura general y fútbol mundial, con año "desde" para no preguntar el Mundial 2022 en
+    1991.
+  - Se acabó el "¿cuánto nivel tiene X?".
+  - Reparto: 35 % matemática, 30 % tu club, 20 % cultura, 15 % fútbol.
+  - Al menos 2 por partido (una antes del 30', otra antes del 60'). Medido: ~2,3 por partido.
+- **Clima:**
+  - **Tu plan:**
+    - lluvia: castiga el toque corto y premia el pelotazo y la presión alta;
+    - calor: castiga la presión alta y el ritmo vertiginoso;
+    - viento: castiga el pelotazo;
+    - frío: castiga el ritmo lento.
+  - **Público:** lluvia −18 %, frío −10 %.
+  - **Lesiones:** frío ×1,5, calor ×1,25, lluvia ×1,2.
+  - **El widget** dice qué le hace el clima a tu plan y qué conviene.
+- **Doctor `prensa_real`:** comprobado al revés; con una pregunta sin respuesta, el chequeo falla.
+  **Tests:** dev 544/544 · core 1185/1185.
