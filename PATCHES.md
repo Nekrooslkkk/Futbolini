@@ -4319,3 +4319,23 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 
   Los tres, comprobados al revés.
 - **Estado:** doctor sano en las 3 partidas · dev 567/567 · core 1185/1185.
+
+### 7.9079 — Revisión para la beta: la química de un DT nuevo ya no decide los partidos
+**Archivos:** `js/partido.js`, `js/dev-doctor.js`, `CLAUDE.md`, `js/util.js`, `index.html`
+- **Barrido:** `test/doctor.sh` en 12 partidas (UCH, UC, COQ, AUD, RIV, BOC, ROS, CBL y SW 2026; TRA; UCH y
+  CBL 1991). 9 sanas; en las otras la brecha motor/IA dependía del club: UC −0,32 pts/partido, COQ y RIV
+  +0,28. En 30 fechas son ±9 puntos por ser el jugador.
+- **Causa medida:** la química inicial. En 47 clubes iba de −4 (Estudiantes LP) a +5,3 (La Serena), media
+  +1,5. Salía del balance de parejas que congenian, amplificado ±40, más un sorteo fijo por pareja. Coincidía
+  con la brecha: UC −3,3 → −0,32; RIV +2,5 → +0,28.
+- **Arreglo realista:** la química heredada se expresa con los partidos juntos. Al llegar el DT pesa el 40 %
+  y llega al 100 % cuando el once suma unos 12 partidos juntos (`E.juntos`). Sigue siendo una palanca del
+  jugador (la pizarra, la continuidad), pero no un sorteo que decide la temporada desde la fecha 1.
+- **Resultado** (10 clubes, 200 partidos por escenario):
+  - peor brecha: de 0,32 a 0,21;
+  - media: −0,04;
+  - todos bajo el tope.
+- **Doctor `quimica_inicial`:** arranca cerca del 40 %, un club nuevo no pasa de ±2,5 y se expresa entera
+  tras 14 partidos juntos. Comprobado al revés: con el factor en 1, vuelve UC −0,32.
+- **`CLAUDE.md`:** el protocolo de prueba suma "Doctor antes de subir: `bash test/doctor.sh`".
+- **Estado:** doctor sano en 9 partidas · dev 567/567 · core 1185/1185.

@@ -63,8 +63,10 @@ No es opcional ni hay que preguntarlo. Concretamente:
 2. Lógica: harness de Node (no está en el repo; concatena los `js/` sin DOM y simula temporadas).
 3. UI: `python -m http.server` + navegador. OJO: el navegador CACHEA los .js por origen →
    para verificar cambios, usá un puerto nuevo.
-4. Commit con mensaje descriptivo + una línea en `PATCHES.md`. (git = el guardado permanente.)
-5. **Al subir `VERSION` (js/util.js), cambiá TODOS los `?v=` de `index.html` a la misma versión**
+4. **Doctor antes de subir:** `bash test/doctor.sh` (doctor completo en 3 partidas aisladas; cada falla
+   dice archivo:línea). Acepta partidas: `bash test/doctor.sh RIV,2026 UC,1991`.
+5. Commit con mensaje descriptivo + una línea en `PATCHES.md`. (git = el guardado permanente.)
+6. **Al subir `VERSION` (js/util.js), cambiá TODOS los `?v=` de `index.html` a la misma versión**
    (`sed -i 's/?v=VIEJA/?v=NUEVA/g' index.html`). Si no, el navegador y el service worker sirven
    JS viejo. El doctor `offline_listo` y la suite dev fallan si no calzan.
 

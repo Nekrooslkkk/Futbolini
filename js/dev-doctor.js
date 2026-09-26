@@ -1551,6 +1551,22 @@ devDoctorRegistrar({id:"alma_pareja", area:"contenido", n:"Todos los clubes con 
   if(citas.length) falta.push(citas.length+" dilemas nuevos traen texto entre comillas (¿frase puesta en boca de alguien?)");
   return falta.length?_dmal(falta.length+" problema(s)",falta.slice(0,20)):_dok(inf.total+" clubes dirigibles, todos con 6+ ítems propios");
 }});
+/* 7.9079 · un DT que recién llega no puede arrancar con la química decidida por un sorteo */
+devDoctorRegistrar({id:"quimica_inicial", area:"motor", n:"La química de un club nuevo no decide los partidos (se construye jugando)", arreglo:"quimicaEquipo (js/partido.js): la química heredada se expresa con E.juntos; revisa el factor 'expresa'.", fn:function(){
+  if(typeof quimicaEquipo!=="function") return _dmal("sin química");
+  var snap=clonarPartida(E), falta=[], v=[];
+  try{
+    E.juntos={};
+    var q0=quimicaEquipo(onceIdeal());
+    if(!(q0.expresa<=0.5)) falta.push("sin partidos juntos la química ya pesa "+Math.round((q0.expresa||1)*100)+" % (debería arrancar cerca del 40 %)");
+    if(Math.abs(q0.bono)>2.5) falta.push("este club arranca con química "+q0.bono.toFixed(1)+" (la vara es ±2,5)");
+    var once=onceIdeal(); for(var i=0;i<14;i++) registrarJuntos(once);
+    var q1=quimicaEquipo(once);
+    if(!(q1.expresa>=0.99)) falta.push("después de 14 partidos juntos la química no se expresa entera ("+Math.round(q1.expresa*100)+" %)");
+  } catch(e){ falta.push("falló: "+e.message); }
+  finally { restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("arranca al 40 % y se expresa entera con el once jugando junto");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

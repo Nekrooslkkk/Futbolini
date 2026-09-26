@@ -494,8 +494,13 @@ function quimicaEquipo(once){
      juntar a los que congenian se nota de verdad y se puede llegar alto (o bajo). */
   let prom=Math.round(media + (buenos-malos)/total*40);
   prom=clamp(prom,15,97);
-  const bono=clamp((prom-55)/6,-4,6);
-  return {prom:prom,bono:bono,lazos:lazos,buenos:buenos,malos:malos,total:total};
+  /* 7.9079 · la química heredada se EXPRESA con partidos juntos: al llegar el DT pesa el 40 % y llega
+     al 100 % cuando el once suma ~12 partidos juntos. Antes una partida nueva arrancaba con −4 a +5,3
+     según un sorteo por pareja (medido en 47 clubes) y eso movía ±0,3 pts/partido (doctor motor_vs_ia). */
+  let jm=0; if(E&&E.juntos){ pares.forEach(([a,b])=>{ jm+=E.juntos[a.n<b.n?a.n+"|"+b.n:b.n+"|"+a.n]||0; }); jm/=pares.length; }
+  const expresa=clamp(0.4+jm/20,0.4,1);
+  const bono=clamp((prom-55)/6,-4,6)*expresa;
+  return {prom:prom,bono:bono,lazos:lazos,buenos:buenos,malos:malos,total:total,expresa:expresa};
 }
 /* 7.10 · árbitro con nombre (ficticio) y sesgo visible. Determinista por fixture
    para que la previa y el partido muestren el mismo. NUNCA usa nombres de árbitros reales. */
