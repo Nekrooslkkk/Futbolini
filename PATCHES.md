@@ -4339,3 +4339,16 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   tras 14 partidos juntos. Comprobado al revés: con el factor en 1, vuelve UC −0,32.
 - **`CLAUDE.md`:** el protocolo de prueba suma "Doctor antes de subir: `bash test/doctor.sh`".
 - **Estado:** doctor sano en 9 partidas · dev 567/567 · core 1185/1185.
+
+### 7.9080 — Revisión para la beta: barrido de interfaz, dejado adentro del Doctor
+**Archivos:** `js/dev-doctor.js`, `js/util.js`, `index.html`
+- **Barrido automático:** 5 partidas (CC 2026, CC 1991, Linares 2026, River 2026, U. de Chile 1991) × 12
+  secciones × PC y celular. En cada una se abren la previa, la conferencia, Ajustes, los amistosos y la
+  decisión pendiente, y se juega un partido dirigido unos minutos. Se buscaron errores de JS y desbordes
+  horizontales. **Resultado: sin hallazgos.**
+- **Doctor `ventanas_abren`:** regla del modo dev ("lo que se verifica a mano se deja adentro").
+  - Las 5 ventanas de uso diario abren sin explotar ni desbordar.
+  - Toda decisión pendiente tiene sus datos (`decisionPorId`).
+  - Trae 🔧 con cómo investigar.
+  - Comprobado al revés rompiendo la previa: "previa: explota al abrir".
+- **Estado:** doctor sano en 3 partidas (73 chequeos) · dev 567/567 · core 1185/1185.

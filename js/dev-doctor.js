@@ -1567,6 +1567,31 @@ devDoctorRegistrar({id:"quimica_inicial", area:"motor", n:"La química de un clu
   finally { restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("arranca al 40 % y se expresa entera con el once jugando junto");
 }});
+/* 7.9080 · barrido de la revisión para la beta, dejado adentro: las ventanas que más se usan abren sin
+   explotar ni desbordar, y toda decisión pendiente tiene sus datos */
+devDoctorRegistrar({id:"ventanas_abren", area:"interfaz", n:"Previa, conferencia, ajustes, amistosos y decisiones abren sin romperse", pesado:true,
+  arreglo:"Abre la ventana que falla desde la consola y mira el error; si es una decisión, busca su id con decisionPorId(id).", fn:function(){
+  if(typeof document==="undefined"||!document.body||typeof modal!=="function") return _dok("sin DOM");
+  var falta=[], snap=clonarPartida(E), sec=SEC;
+  (E.decPend||[]).forEach(function(x){ if(typeof decisionPorId==="function"&&!decisionPorId(x.id)) falta.push("decisión pendiente sin datos: "+x.id); });
+  var part=(typeof proximoPartido==="function")?proximoPartido():null;
+  var abrir={
+    previa:function(){ if(part) pantallaPrevia(part); },
+    conferencia:function(){ if(part&&typeof modalConferencia==="function") modalConferencia(part); },
+    ajustes:function(){ if(typeof abrirAjustes==="function") abrirAjustes(); },
+    amistosos:function(){ if(typeof modalAmistosos==="function") modalAmistosos(); },
+    decision:function(){ var x=(E.decPend||[])[0]; if(x&&typeof decisionPorId==="function"&&decisionPorId(x.id)) abrirDecision(decisionPorId(x.id),true); }
+  };
+  try{
+    Object.keys(abrir).forEach(function(k){
+      try{ cerrarModal(); abrir[k](); }
+      catch(e){ falta.push(k+": explota al abrir — "+e.message); return; }
+      var m=document.querySelector("#capa-modal .modal");
+      if(m&&m.scrollWidth-m.clientWidth>2) falta.push(k+": desborda "+(m.scrollWidth-m.clientWidth)+" px dentro de la ventana");
+    });
+  } finally { try{ if(typeof _A3_FEST!=="undefined") _A3_FEST=null; cerrarModal(); }catch(e){} restaurarPartida(snap); SEC=sec; try{ render(); }catch(e){} }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("5 ventanas abren limpias · decisiones pendientes con datos");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
