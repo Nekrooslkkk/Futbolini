@@ -1385,6 +1385,13 @@
       t(E.ind.hinchada===Math.min(100,h0+1),"arengar suma +1 de hinchada");
       t(VAR_REVISION.gol<0.3,"el VAR no revisa todos los goles");
       P_ACTUAL=null; clearInterval(TIMER);
+      var rd=DOCTOR_CHECKS.filter(function(c){ return c.id==="dominio_final"; })[0].fn();
+      t(rd.ok,"doctor dominio_final: "+rd.txt);
+      var Q=iniciarPartido(proximoPartido(),"simular"); correrHasta(Q,90);
+      var bd=bloqueDominio(Q);
+      t(!!bd && !!bd.querySelector(".dom-svg") && bd.querySelectorAll(".dom-c").length>=1,"el cierre trae gráfico y consejos");
+      var rc=DOCTOR_CHECKS.filter(function(c){ return c.id==="canal_coherente"; })[0].fn();
+      t(rc.ok,"doctor canal_coherente: "+rc.txt);
     },"Partido 7.9042");
 
     OUT.push("\n════════════════════════");

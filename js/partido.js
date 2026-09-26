@@ -890,6 +890,41 @@ function hayVarEnVivo(P){
   const anio=((typeof E!=="undefined"&&E&&E.anio)||0);
   return anio>=2018;
 }
+/* 7.9044 · quién mandó en cada tramo: (peligro propio − rival) / total, de −1 a 1.
+   Se guarda uno por tick (~30 por partido) para el gráfico del final. */
+function registrarDominio(P,pl){
+  if(!P||!pl) return;
+  P.dom=P.dom||[];
+  const t=pl.yo+pl.el;
+  P.dom.push({m:P.min, v:t>0?Math.round((pl.yo-pl.el)/t*100)/100:0, c:Math.round((P.cansancio||0)*10)/10});
+}
+/* lo que pasó en el tick mueve la aguja: un remate atajado o un córner es un tramo tuyo */
+const DOM_EVENTO={gol:0.55,golRival:-0.55,chance:0.18,corner:0.2,penal:0.4,penalRival:-0.4,tiroLibre:0.15};
+function marcarDominioEvento(P,ev){
+  if(!P||!ev||!P.dom||!P.dom.length) return;
+  const u=P.dom[P.dom.length-1]; if(u.m!==(ev.min!=null?ev.min:P.min)) return;
+  let k=DOM_EVENTO[ev.tipo]||0;
+  if(ev.tipo==="atajada") k=ev.aFavor?0.3:-0.3;
+  if(ev.tipo==="corner" && ev.aFavor===false) k=-0.2;
+  if(k) u.v=Math.round(clamp(u.v+k,-1,1)*100)/100;
+}
+function _promDom(arr){ return arr.length?arr.reduce((a,x)=>a+x.v,0)/arr.length:0; }
+/* lectura del partido para el cierre: qué mejorar (no qué hiciste mal). Máximo 3. */
+function consejosPartido(P){
+  const d=(P&&P.dom)||[]; if(d.length<6) return [];
+  const [yo,otro]=miMarcador(P);
+  const ini=_promDom(d.filter(x=>x.m<=20)), medio=_promDom(d.filter(x=>x.m>45&&x.m<=70)), fin=_promDom(d.filter(x=>x.m>70));
+  const total=_promDom(d), cans=(d[d.length-1]||{}).c||0;
+  const out=[];
+  if(ini<-0.15) out.push({ic:"🧱",t:"Para arrancar mejor",d:"Los primeros 20' fueron del rival. Prueba salir con más orden (bloque medio o «Empezar de menos a más») y suelta al equipo después del 15'."});
+  if(fin<medio-0.18 && cans>=4) out.push({ic:"🔋",t:"Para cerrar mejor",d:"Del 70' en adelante el equipo se apagó (se nota el cansancio). Si metes los cambios antes del 65' o bajas el ritmo, el final se sostiene."});
+  if(total>0.15 && yo<=otro) out.push({ic:"🎯",t:"Para convertir lo que generas",d:"Mandaste más de lo que dice el marcador. Más gente en el área (centros, doble nueve) o trabajar definición en la semana transforma ese dominio en goles."});
+  if(total<-0.25) out.push({ic:"🛡",t:"Para competir este tipo de partido",d:"El rival generó más peligro que tú casi todo el partido. Contra equipos así rinde más un bloque bajo y salir de contra que ir de igual a igual."});
+  if(Math.abs(total)<=0.12 && yo===otro) out.push({ic:"⚖",t:"Para desnivelar un partido parejo",d:"Fue muy parejo. En estos partidos la decisión del segundo tiempo pesa: un cambio ofensivo a tiempo o una pelota parada ensayada lo rompen."});
+  if(P.modo==="dirigir" && !(P.apoyo&&P.apoyo.momentos)) out.push({ic:"🧠",t:"Para usar tu criterio",d:"No tomaste decisiones en vivo. Cada decisión sube tu Criterio DT y hace que tus correcciones pesen más."});
+  if(!out.length) out.push({ic:"✅",t:"Para mantener",d:yo>otro?"El partido salió como se planeó: la idea funciona, conviene sostenerla.":"Hiciste un partido correcto; el detalle estuvo en las áreas."});
+  return out.slice(0,3);
+}
 /* 7.9042 · el VAR NO revisa cada gol: solo las jugadas dudosas. El resto se grita en paz.
    Cuando revisa, la duda es real: anula más seguido (≈ 5 % de los goles en total). */
 const VAR_REVISION={ gol:0.14, penal:0.35, anulaGol:0.38, anulaPenal:0.30 };
@@ -910,6 +945,7 @@ function resetInercia(P){
 }
 function actualizarInercia(P,ev){
   if(!P||!ev) return;
+  marcarDominioEvento(P,ev);   /* 7.9044 */
   P.iner=P.iner||{cor:0,ataj:0,falta:0};
   const i=P.iner;
   const min=ev.min||P.min||0;
@@ -1008,6 +1044,7 @@ function tickPartido(P){
   let N=MOTOR_GOL.N;
   if(P.fase==="dominio"){ N=MOTOR_GOL.dom; pl.yo*=1.08; }
   if(P.fase==="ahogo"){ N=MOTOR_GOL.aho; pl.el*=1.08; }
+  registrarDominio(P,pl);
   const r=Math.random();
   if(r<pl.yo/N){
     if(varRevisa(P,"gol")) return {tipo:"varCheck",kind:"gol",min:min};
@@ -1561,6 +1598,7 @@ function persistirRepeticion(P,part){
   if(!P||!part) return;
   part.lineas=compactarRelato(P.lineas||[]);
   part.golesDetalle=(P.golesDetalle||[]).slice();
+  if(P.dom&&P.dom.length) part.dom=P.dom.map(x=>[x.m,x.v]);   /* 7.9044 · para volver a ver el gráfico */
   part.tarjetas=(P.tarjetas||[]).slice();
   part.lesionados=(P.lesionados||[]).slice();
   if(P.stats) part.stats={pos:P.stats.pos,remMio:P.stats.remMio,remRiv:P.stats.remRiv,arcMio:P.stats.arcMio,arcRiv:P.stats.arcRiv,corMio:P.stats.corMio,corRiv:P.stats.corRiv};

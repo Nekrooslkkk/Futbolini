@@ -887,6 +887,26 @@ devDoctorRegistrar({id:"canal_coherente", area:"contenido", n:"El canal de TV ca
   } finally { E.anio=a0; E.eraBase=eb; }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("canal según la época (abierta → CDF → TNT) y amistosos sin TV");
 }});
+devDoctorRegistrar({id:"dominio_final", area:"motor", n:"Al final del partido hay gráfico de dominio y consejos para mejorar", fn:function(){
+  var falta=[];
+  if(typeof registrarDominio!=="function"||typeof consejosPartido!=="function") return _dmal("sin gráfico de dominio");
+  var molde=(E&&E.calendario||[]).filter(function(p){ return p&&p.tipo==="liga"; })[0];
+  if(!molde) return _dok("sin partida para medir");
+  var snap=clonarPartida(E), bulk=E._bulkSim, det="";
+  try{
+    E._bulkSim=true;
+    var P=iniciarPartido(Object.assign({},molde,{jugado:false}),"simular"); correrHasta(P,90);
+    var n=(P.dom||[]).length;
+    if(n<15) falta.push("el partido registró solo "+n+" tramos de dominio (se necesitan 15+)");
+    var vs=(P.dom||[]).map(function(x){ return x.v; }), rango=vs.length?Math.max.apply(null,vs)-Math.min.apply(null,vs):0;
+    if(n && rango<0.2) falta.push("la curva es plana (rango "+rango.toFixed(2)+"): no muestra los momentos del partido");
+    var c=consejosPartido(P);
+    if(!c.length||c.length>3) falta.push(c.length+" consejos (se esperan 1 a 3)");
+    c.forEach(function(x){ if(!/^Para /.test(x.t)) falta.push("consejo que no dice qué mejorar: «"+x.t+"»"); });
+    det=n+" tramos · rango "+rango.toFixed(2)+" · "+c.map(function(x){ return x.t; }).join(" / ");
+  } finally { restaurarPartida(snap); E._bulkSim=bulk; }
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

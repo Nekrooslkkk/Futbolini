@@ -3542,3 +3542,20 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `gol_se_ve`** (verificado al revés: sin la exención, el festejo dura 1 ms) y **`canal_coherente`**
   (al revés, con TNT en todas las épocas, da 10 problemas).
   **Tests:** dev 516/516 · core 1185/1185.
+
+### 7.9045 — gráfico de dominio al final del partido, con qué mejorar
+**Archivos:** `js/partido.js`, `js/ui-partido.js`, `js/dev-doctor.js`, `css/pulido.css`, `js/util.js`, `index.html`, `test/pruebas_dev.js`
+- **Registro:** `registrarDominio` guarda un tramo por tick (~30 por partido). El valor es
+  (peligro propio − rival) / total. `marcarDominioEvento` mueve la aguja con lo que pasó en el tick
+  (remates, atajadas, córners, goles). Así la curva muestra los momentos del partido, no solo la diferencia
+  de planteles.
+- **Gráfico en el cierre:** arriba verde (mandaste tú), abajo rojo (mandó el rival). Muestra el descanso,
+  los goles como pelotas en HTML (en el SVG estirado se deformaban) y la escala es automática. Incluye una
+  explicación ("no es la posesión") y el % total del peligro.
+- **"Para la próxima":** 1 a 3 consejos (`consejosPartido`) que dicen qué mejorar, no qué hiciste mal. Temas:
+  arranque, cansancio al final, convertir el dominio, competir contra un rival superior, desnivelar un
+  partido parejo, usar el criterio.
+- `part.dom` queda guardado en el partido, para volver a verlo.
+- **Doctor `dominio_final`:** exige 15+ tramos, curva con rango (no plana) y consejos que empiecen con
+  "Para…". Al revés: sin eventos, la curva es plana; sin registro, faltan tramos.
+  **Tests:** dev 519/519 · core 1185/1185.

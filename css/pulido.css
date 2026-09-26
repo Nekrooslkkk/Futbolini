@@ -254,3 +254,23 @@ body.con-juego .burbujas i{ animation-play-state:paused !important; }
 .apoyo-ayuda summary{cursor:pointer;font-size:12px;color:#8fd0ff;margin:4px 0}
 .apoyo-ayuda p{color:#c9d5e2}
 .apoyo-live>.btn-aqua{margin-top:6px}
+
+/* 7.9044 · gráfico de dominio al final del partido */
+.dom-box{margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(8,20,36,.55);border:1px solid rgba(255,255,255,.14);color:#e6eef7}
+.dom-box h3.sub{margin:0 0 6px;color:#e6eef7}
+.dom-svg{display:block;width:100%;height:110px;border-radius:8px;overflow:hidden}
+.dom-fondo-yo{fill:rgba(56,214,106,.07)} .dom-fondo-el{fill:rgba(232,86,63,.07)}
+.dom-yo{fill:rgba(56,214,106,.55)} .dom-el{fill:rgba(232,86,63,.55)}
+.dom-eje{stroke:rgba(255,255,255,.5);stroke-width:1}
+.dom-ht{stroke:rgba(255,255,255,.35);stroke-width:1;stroke-dasharray:3 3}
+.dom-linea{fill:none;stroke:#fff;stroke-width:1.6}
+.dom-ley{display:flex;flex-wrap:wrap;gap:4px 12px;margin:6px 0 2px;color:#c9d5e2}
+.dom-ley i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.dom-ley .c-yo{background:#38d66a} .dom-ley .c-el{background:#e8563f}
+.dom-exp{color:#c9d5e2;margin:4px 0 8px}
+.dom-cab{font-weight:800;font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:#8fd0ff;margin-bottom:4px}
+.dom-c{padding:6px 8px;margin:4px 0;border-radius:8px;background:rgba(255,255,255,.06);font-size:13px;line-height:1.35}
+.dom-c span{color:#c9d5e2}
+.dom-graf{position:relative}
+.dom-gol{position:absolute;transform:translateX(-50%);font-size:12px;line-height:1;pointer-events:auto;z-index:1}
+.dom-gol.yo{top:3px} .dom-gol.el{bottom:3px}

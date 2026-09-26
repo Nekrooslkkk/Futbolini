@@ -2585,6 +2585,47 @@ function hitosPartido(res){
   (res.golesDetalle||[]).forEach(g=>{ if(g.propio&&(cuenta[g.quien]||0)<2){ const j=E.plantel.find(x=>x.n===g.quien); if(j&&j.edad<=20) h.push("🌱 Gol del juvenil "+j.n+" ("+j.edad+" años)."); } });
   return h;
 }
+/* 7.9044 · gráfico de dominio: arriba mandaste tú, abajo el rival. Con goles y descanso marcados. */
+function svgDominio(dom,goles,local){
+  const W=300,H=96,mid=H/2,amp=H/2-8;
+  const pts=(dom||[]).map(x=>Array.isArray(x)?{m:x[0],v:x[1]}:x).filter(x=>x&&x.m!=null);
+  if(pts.length<3) return "";
+  const maxM=Math.max(90,pts[pts.length-1].m);
+  const sm=pts.map((p,i)=>{ const a=pts.slice(Math.max(0,i-1),i+2); return {m:p.m, v:a.reduce((s,x)=>s+x.v,0)/a.length}; });
+  /* escala automática: un partido parejo igual se lee (el máximo ocupa ~90 % del alto) */
+  const top=Math.max(0.2,...sm.map(p=>Math.abs(p.v)))/0.9;
+  sm.forEach(p=>{ p.v=clamp(p.v/top,-1,1); });
+  const X=m=>Math.round(m/maxM*(W-4)*10)/10+2, Y=v=>Math.round((mid-v*amp)*10)/10;
+  const linea=sm.map((p,i)=>(i?"L":"M")+X(p.m)+","+Y(p.v)).join(" ");
+  const area="M"+X(sm[0].m)+","+mid+" "+sm.map(p=>"L"+X(p.m)+","+Y(p.v)).join(" ")+" L"+X(sm[sm.length-1].m)+","+mid+" Z";
+  /* los goles van en HTML encima (en el SVG estirado la pelota se deformaba) */
+  const g=(goles||[]).map(x=>'<span class="dom-gol '+(x.propio?"yo":"el")+'" style="left:'+(X(x.min)/W*100).toFixed(1)+'%" title="'+x.min+'\'">⚽</span>').join("");
+  return '<div class="dom-graf">'+g+'<svg class="dom-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" role="img" aria-label="Dominio del partido minuto a minuto">'+
+    '<defs><clipPath id="domArr"><rect x="0" y="0" width="'+W+'" height="'+mid+'"/></clipPath><clipPath id="domAb"><rect x="0" y="'+mid+'" width="'+W+'" height="'+mid+'"/></clipPath></defs>'+
+    '<rect x="0" y="0" width="'+W+'" height="'+mid+'" class="dom-fondo-yo"/><rect x="0" y="'+mid+'" width="'+W+'" height="'+mid+'" class="dom-fondo-el"/>'+
+    '<path d="'+area+'" class="dom-yo" clip-path="url(#domArr)"/><path d="'+area+'" class="dom-el" clip-path="url(#domAb)"/>'+
+    '<line x1="0" y1="'+mid+'" x2="'+W+'" y2="'+mid+'" class="dom-eje"/>'+
+    '<line x1="'+X(45)+'" y1="0" x2="'+X(45)+'" y2="'+H+'" class="dom-ht"/>'+
+    '<path d="'+linea+'" class="dom-linea" vector-effect="non-scaling-stroke"/></svg></div>';
+}
+function bloqueDominio(P){
+  if(!P||!P.dom||P.dom.length<6) return null;
+  const box=el("div","dom-box");
+  const tot=_promDom(P.dom), pct=Math.round((tot+1)/2*100);
+  box.appendChild(el("h3","sub","📈 Quién mandó en el partido"));
+  box.innerHTML+=svgDominio(P.dom,P.golesDetalle,P.part&&P.part.local);
+  box.appendChild(el("div","dom-ley mini",
+    "<span><i class='c-yo'></i>Arriba: mandaste tú</span><span><i class='c-el'></i>Abajo: mandó "+escHtml(P.part.rivalNombre||"el rival")+"</span><span>┊ descanso · ⚽ goles</span>"));
+  box.appendChild(el("p","mini dom-exp","La curva mide quién generaba más peligro en cada tramo: llegadas, presión y control. No es la posesión. En total dominaste el <b>"+pct+" %</b> del peligro."));
+  const cons=(typeof consejosPartido==="function")?consejosPartido(P):[];
+  if(cons.length){
+    const ul=el("div","dom-consejos");
+    ul.appendChild(el("div","dom-cab","Para la próxima"));
+    cons.forEach(c=>ul.appendChild(el("div","dom-c","<b>"+c.ic+" "+c.t+"</b><br><span>"+c.d+"</span>")));
+    box.appendChild(ul);
+  }
+  return box;
+}
 function cerrarPartido(){
   const P=P_ACTUAL; if(!P||P.cerrado) return;
   P.cerrado=true; clearInterval(TIMER); MOMENTO_OPS=[];
@@ -2616,6 +2657,9 @@ function cerrarPartido(){
   if(res.penales) html+="<b>Penales:</b> "+res.penales.yo+"-"+res.penales.el+(res.penales.gano?" · pasamos":" · fuera")+"<br>";
   cajita.innerHTML=html;
   p.cuerpo.appendChild(cajita);
+
+  /* 7.9044 · gráfico de dominio + qué mejorar */
+  if(typeof bloqueDominio==="function"){ const bd=bloqueDominio(P); if(bd) p.cuerpo.appendChild(bd); }
 
   /* hitos / efemérides */
   const hitos=hitosPartido(res);
