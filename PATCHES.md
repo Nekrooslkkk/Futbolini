@@ -4352,3 +4352,25 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   - Trae 🔧 con cómo investigar.
   - Comprobado al revés rompiendo la previa: "previa: explota al abrir".
 - **Estado:** doctor sano en 3 partidas (73 chequeos) · dev 567/567 · core 1185/1185.
+
+### 7.9081 — Poder y corrupción: la sombra
+**Archivos:** `js/poder-sombra.js` (nuevo), `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **La sombra (0–100):** junta en un solo número lo que hiciste con el poder.
+  - Fuentes vivas: desfalco en curso, sospecha en la asociación, pactos con la barra en pie.
+  - Registro que no se borra (`E.sombra.log`): doping, apuestas a tu partido, desvíos, favores aceptados.
+    Se apaga un 35 % por temporada, pero nunca llega a cero.
+  - Panel 🌑 **Tu sombra** en Carrera (siempre) y en Vida (cuando hay algo), con el desglose.
+- **La sombra entra a tu casa** (`SOMBRA_CASA`): con la sombra alta llegan decisiones personales.
+  - Tu pareja pregunta de dónde salió la plata; a tu hijo lo molestan en el colegio; insomnio; los amigos
+    de verdad se alejan.
+  - Con investigación abierta: **allanamiento**. Si contratas abogado, lo pagas de tu bolsillo cada semana
+    mientras dure la investigación.
+  - Cada opción pega en bienestar, pareja, bolsillo, reputación o grupos (`op.so`), y queda en la memoria.
+- **Los favores del poder** (`FAVORES_PODER`): solo si tienes poder (prestigio ≥ 60, capital ≥ 45 o
+  presidente de la asociación). Reloj del representante, cuñado en el club, universidad del hijo, contrato
+  de TV, fiesta del auspiciador. Roles, nunca personas reales. Aceptar suma sombra.
+- **Doctor `poder_sombra`:** envoltorios en pie, toda opción con consecuencia, la sombra sube y se apaga,
+  allanamiento solo con investigación, el abogado cobra, favores solo con poder. Clona y restaura la partida.
+  Comprobado al revés con 4 roturas (allanamiento sin investigación, sin decaimiento, favores sin poder,
+  sin efecto en la vida): las 4 las caza.
+- **Estado:** doctor sano en 3 partidas (74 chequeos) · dev 570/570 · core 1185/1185.

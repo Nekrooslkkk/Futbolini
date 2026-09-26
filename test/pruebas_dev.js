@@ -1553,6 +1553,18 @@
       t(decisionesDisponibles().some(function(d){ return /^alma77_riv/.test(d.id); }),"una partida con River recibe sus dilemas propios");
     },"Alma 7.9077");
 
+    grupo("Poder y corrupción · 7.9081");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="poder_sombra"; })[0].fn();
+      t(r.ok,"doctor poder_sombra: "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      t(sombraActual()===0,"una partida nueva arranca con la sombra en 0 (el doctor no la ensucia)");
+      anotarSombra("apuesta",26,"prueba");
+      SEC="vida"; render();
+      t(document.getElementById("vista").textContent.indexOf("Tu sombra")>=0,"con sombra, Vida muestra el panel");
+      SEC="escritorio";
+    },"Sombra 7.9081");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

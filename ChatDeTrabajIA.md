@@ -1803,3 +1803,12 @@ Estado: dev 558/558 · core 1185/1185.
 - Si el chequeo busca algo en el código fuente de una función que otros envuelven, usa `_docFuente(fn)`.
 
 Estado: doctor sano (3 partidas) · dev 567/567 · core 1185/1185.
+
+**7.9081 (Claude) · Poder y corrupción.** Nuevo `js/poder-sombra.js`, cargado antes de `ayudante.js`
+(necesita vida-real, casino y barra).
+- Si agregas un acto corrupto nuevo, regístralo con `anotarSombra(tipo, peso, txt)`.
+- Si agregas un golpe en casa o un favor, va en `SOMBRA_CASA` / `FAVORES_PODER`. Cada opción necesita su
+  objeto `so` (el doctor falla si falta).
+- Tono: te pasan cosas, nadie te sermonea.
+
+Estado: doctor sano (3 partidas) · dev 570/570 · core 1185/1185.

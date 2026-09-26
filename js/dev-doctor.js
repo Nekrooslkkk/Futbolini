@@ -1592,6 +1592,45 @@ devDoctorRegistrar({id:"ventanas_abren", area:"interfaz", n:"Previa, conferencia
   } finally { try{ if(typeof _A3_FEST!=="undefined") _A3_FEST=null; cerrarModal(); }catch(e){} restaurarPartida(snap); SEC=sec; try{ render(); }catch(e){} }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("5 ventanas abren limpias · decisiones pendientes con datos");
 }});
+/* 7.9081 · poder y corrupción: la sombra sube con lo que haces, se apaga con los años, entra a tu casa
+   (el allanamiento solo con investigación abierta) y los favores llegan solo a quien tiene poder */
+devDoctorRegistrar({id:"poder_sombra", area:"vida", n:"La sombra del poder: sube, se apaga, entra a tu casa y cobra",
+  arreglo:"Mira js/poder-sombra.js: los envoltorios (_sb/_sb2), sombraDesglose() y el filtro req de SOMBRA_CASA/FAVORES_PODER.", fn:function(){
+  if(typeof sombraActual!=="function"||typeof SOMBRA_CASA==="undefined") return _dmal("no cargó js/poder-sombra.js",["falta el script en index.html"]);
+  var falta=[], snap=clonarPartida(E);
+  try{
+    [["doparEquipo","_sb"],["desviarFondos","_sb"],["apostar","_sb"],["resolverDecision","_sb2"],["tickSemana","_sb2"],["vistaVida","_sb"],["vistaCarrera","_sb"]].forEach(function(x){
+      if(!(window[x[0]]&&window[x[0]][x[1]])) falta.push(x[0]+" no pasa por la sombra (se pisó el envoltorio)"); });
+    [SOMBRA_CASA,FAVORES_PODER].forEach(function(L){ L.forEach(function(ev){ ev.op.forEach(function(o,i){
+      if(!o[2]||!Object.keys(o[2]).length) falta.push(ev.id+" opción "+(i+1)+" no tiene consecuencia personal"); }); }); });
+    E.sombra={log:[],vistos:{},ultEvento:-99,ultFavor:-99}; E.flags=E.flags||{}; delete E.flags.desfalco; delete E.flags.investigacionAbierta;
+    if(E.fed) E.fed.sospecha=0;
+    var s0=sombraActual(); anotarSombra("doping",22,"sonda del doctor"); var s1=sombraActual();
+    if(!(s1>s0)) falta.push("anotarSombra no sube la sombra ("+s0+"→"+s1+")");
+    E.sombra.log[0].anio=(E.anio||0)-3; var s3=sombraActual();
+    if(!(s3<s1&&s3>0)) falta.push("lo viejo no se apaga (o desaparece del todo): "+s1+"→"+s3+" a tres años");
+    if(sembrarSombraCasa("allanamiento")) falta.push("hay allanamiento sin investigación abierta");
+    E.flags.investigacionAbierta=true;
+    var d=sembrarSombraCasa("allanamiento");
+    if(!d) falta.push("con investigación abierta no llega el allanamiento");
+    else {
+      if(!(typeof decisionPorId==="function"&&decisionPorId(d.id))) falta.push("la decisión de la sombra no se encuentra por id");
+      var b0=E.perfil.bienestar, bo0=E.personal.bolsillo=Math.max(E.personal.bolsillo||0,50);
+      var r=resolverDecision(d,0);
+      if(!r) falta.push("la decisión del allanamiento no se puede resolver");
+      else if(!(E.perfil.bienestar<b0&&E.personal.bolsillo<bo0)) falta.push("resolver el allanamiento no toca tu vida (bienestar "+b0+"→"+E.perfil.bienestar+")");
+      if(E.sombra.abogado==null) falta.push("elegir abogado no deja al abogado cobrando");
+      else if(!(cobrarAbogado()>0)) falta.push("el abogado no cobra con la investigación abierta");
+    }
+    E.ind.prestigio=10; E.capital=0; if(E.fed) E.fed.presidente=false; E.sombra.ultFavor=-99;
+    if(sembrarFavor()) falta.push("llegan favores del poder a quien no tiene poder");
+    var f=sembrarFavor("reloj"), sf=sombraActual();
+    if(f){ resolverDecision(f,0); if(!(sombraActual()>sf)) falta.push("aceptar el reloj no suma sombra"); }
+  } catch(e){ falta.push("explota: "+e.message); }
+  finally { restaurarPartida(snap); }
+  (E.decPend||[]).forEach(function(x){ if(/^proc_(sombra|favor)_/.test(x.id)&&!(E.decProc&&E.decProc[x.id])) falta.push("pendiente sin datos: "+x.id); });
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sombra "+sombraActual()+"/100 en la partida · "+SOMBRA_CASA.length+" golpes en casa · "+FAVORES_PODER.length+" favores");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
