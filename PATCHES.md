@@ -3903,3 +3903,27 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   pareja y bolsillo, y el aviso muestra los números.
 - **Doctor `vida_real`.**
   **Tests:** dev 525/525 · core 1185/1185.
+
+### 7.9063 — Vida (B): Match realista con primera cita, embarazo de 9 meses, pérdida de un hijo, familia en la previa
+**Archivos:** `js/vida-real.js`, `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Match:** cada persona tiene un carácter oculto: mala 15 %, normal 60 %, genial 25 %. El chat hace 4
+  preguntas de un pool más grande (hijos, qué no perdonas, la última vez que lloraste…). Al final aparece
+  una señal de cómo es de verdad ("te pide entradas para 10 amigos", "se acuerda de lo que le dijiste").
+- **Primera cita** en 3 pasos: dónde (picada, restaurante caro, caminar por el cerro), de qué hablan y cómo
+  termina. Una persona mala te pide plata, te vende a la farándula o no llega. Con una normal o genial puede
+  empezar una relación. Si ya tienes pareja, te pueden pillar.
+- **Hijos:**
+  - Embarazo de 36 semanas de juego, uno a la vez, y al menos un año entre partos.
+  - El parto cuesta plata real y deja noches largas.
+  - Hasta 4 hijos vivos.
+- **Pérdida de un hijo:** muy rara (0,4 % por temporada, solo hijos de hasta 12 años), pero existe. El
+  bienestar, la pareja y la moral caen fuerte y queda en la historia.
+- **Familia en la previa:** con pareja o hijos, un 7 % de los partidos (nunca amistosos) trae antes una
+  urgencia: fiebre, acto del colegio, aniversario, papá hospitalizado. Tienes 3 opciones:
+  - quedarte, y dirige el ayudante;
+  - ir y llamar en el entretiempo;
+  - ir con el teléfono apagado.
+
+  Cada opción muestra sus números y el aviso dice cuánto cambió todo.
+- **Doctor `vida_familia`:** comprobado al revés; si el hijo nace al tiro, el chequeo falla.
+  **Tests:** dev 531/531 · core 1185/1185.

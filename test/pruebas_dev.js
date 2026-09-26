@@ -1411,6 +1411,23 @@
       SEC="escritorio";
     },"PLOP 7.9055");
 
+    grupo("Vida · Match, cita, embarazo, familia · 7.9063");
+    safe(function(){
+      nuevaPartida("RAN",2026,"historico");
+      t(E.perfil&&E.perfil.nombre==="Yoni","el DT parte llamándose Yoni ("+(E.perfil&&E.perfil.nombre)+")");
+      ["vida_real","vida_familia"].forEach(function(id){
+        var r=DOCTOR_CHECKS.filter(function(c){ return c.id===id; })[0].fn();
+        t(r.ok,"doctor "+id+": "+r.txt);
+      });
+      var m={n:"Cata",orb:"#f0a"}; primeraCita(m);
+      var ops=document.querySelectorAll(".modal .op");
+      t(ops.length===3,"la primera cita pregunta dónde (3 opciones)");
+      for(var k=0;k<3;k++){ var o=document.querySelector(".modal .op"); if(o) o.click(); }
+      t(!!document.querySelector(".modal .resul"),"la cita termina con un desenlace");
+      t(!!m.persona,"la persona tiene un carácter oculto ("+m.persona+")");
+      cerrarModal();
+    },"Vida 7.9063");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

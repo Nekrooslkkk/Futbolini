@@ -1222,6 +1222,31 @@ devDoctorRegistrar({id:"vida_real", area:"motor", n:"Vida: la orientación filtr
   } finally { restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("Match filtra por orientación · visita familiar obligada por temporada");
 }});
+devDoctorRegistrar({id:"vida_familia", area:"motor", n:"Vida: embarazo de 9 meses, un hijo a la vez y primera cita real", fn:function(){
+  var falta=[];
+  if(typeof primeraCita!=="function") falta.push("no hay primera cita: invitar a salir no pasa nada");
+  if(typeof CHARLAS_MATCH!=="undefined"&&typeof CHARLAS_EXTRA!=="undefined"&&CHARLAS_MATCH.concat(CHARLAS_EXTRA).length<6) falta.push("el chat del Match tiene muy pocas preguntas");
+  if(typeof tickSemana!=="function"||!tickSemana._vrB) falta.push("tickSemana no cuenta las semanas de embarazo");
+  if(typeof SEMANAS_EMBARAZO==="undefined"||SEMANAS_EMBARAZO<30) falta.push("el embarazo dura "+(typeof SEMANAS_EMBARAZO==="undefined"?"0":SEMANAS_EMBARAZO)+" semanas (real ≈ 36–40)");
+  var snap=clonarPartida(E), gu=window.guardar, nt=window.notificar, rd=window.render, av=window.aviso, avisos=[];
+  try{
+    window.guardar=function(){}; window.notificar=function(){}; window.render=function(){}; window.aviso=function(t){ avisos.push(t); };
+    var p=E.perfil; p.pareja={n:"Prueba",nivel:80}; p.hijos=[]; p.embarazo=null; p.ultimoParto=null;
+    tenerHijo();
+    if(!p.embarazo) falta.push("tener un hijo no parte con un embarazo");
+    if(p.hijos.length) falta.push("el hijo nace al tiro (debería tardar nueve meses)");
+    tenerHijo();
+    if(p.hijos.length) falta.push("se puede pedir un segundo hijo con uno en camino");
+    if(p.embarazo&&typeof nacerHijo==="function"){
+      p.embarazo.semanas=SEMANAS_EMBARAZO-1; nacerHijo();
+      if(p.hijos.length!==1||p.embarazo) falta.push("el parto no deja exactamente un hijo");
+      tenerHijo();
+      if(p.embarazo) falta.push("se puede encargar otro hijo el mismo año del parto");
+    }
+  } catch(e){ falta.push("falló la prueba: "+e.message); }
+  finally { window.guardar=gu; window.notificar=nt; window.render=rd; window.aviso=av; restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("embarazo de "+SEMANAS_EMBARAZO+" semanas · uno a la vez · primera cita con persona real (mala/normal/genial)");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
