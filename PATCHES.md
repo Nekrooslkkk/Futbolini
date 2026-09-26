@@ -3473,3 +3473,10 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   semana deja su informe de qué hizo. El colchón se mide en semanas de gastos reales del club.
 - **Doctor +1:** `ayudante_hace` (cada acción ofrecida cambia algo de verdad y explica por qué), verificado al
   revés. **Tests:** dev 504/504 · core 1185/1185.
+
+## 7.9041 · Syntergia: el piloto automático
+**Archivos:** `js/ayudante.js`, `css/pulido.css`, `js/util.js`, `index.html`, tests
+- Pedido del autor: un piloto automático al que se le entrega todo, llamado **Syntergia** (la IA del club).
+  Interruptor en el panel del Ayudante. Encendida, cada semana hace todo lo que el ayudante ofrece (lo seguro y
+  lo que cuesta) y firma un informe ("🤖 Syntergia · semana N"). Apagarla devuelve el control al tiro. No actúa
+  en las simulaciones masivas. **Tests:** dev 509/509 · core 1185/1185.

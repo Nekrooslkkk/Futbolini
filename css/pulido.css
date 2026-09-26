@@ -234,3 +234,8 @@ body.con-juego .burbujas i{ animation-play-state:paused !important; }
 .ay-accion .ay-t{ font-weight:800; font-size:13px; }
 .ay-accion .btn-aqua{ justify-self:start; }
 .ay-log > summary{ cursor:pointer; font-size:12px; font-weight:700; padding:4px 0; }
+/* 7.9041 · Syntergia */
+.syn-box{ margin:6px 0 8px; padding:8px 10px; border-radius:10px; border:1px dashed rgba(40,90,160,.35); background:rgba(230,240,255,.5); display:grid; gap:4px; }
+.syn-box.on{ border-style:solid; border-color:#2f7fd0; background:linear-gradient(180deg,rgba(220,236,255,.85),rgba(200,225,255,.5)); }
+.syn-box .syn-t{ font-weight:800; font-size:13px; }
+.syn-box .btn-aqua{ justify-self:start; }

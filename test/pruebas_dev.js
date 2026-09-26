@@ -1351,6 +1351,20 @@
       E.finanzas.riesgo="agresivo"; t(colchonTesorero()<(E.finanzas.riesgo="prudente",colchonTesorero()),"agresivo guarda menos colchón que prudente");
     },"Ayudante");
 
+    grupo("Syntergia · piloto automático · 7.9041");
+    safe(function(){
+      nuevaPartida("RAN",2026,"historico");
+      t(!syntergiaOn(),"arranca apagada");
+      E.piloto={on:true};
+      for(var i=0;i<3;i++){ var pp=proximoPartido(); if(pp.jugado){ procesarSemanaPostPartido(); continue; } var P=iniciarPartido(pp,"simular"); correrHasta(P,90); terminarPartido(P); procesarSemanaPostPartido(); }
+      t((E.decPend||[]).length===0,"con Syntergia encendida no quedan decisiones pendientes ("+(E.decPend||[]).length+")");
+      t((E.notifs||[]).some(function(n){ return /Syntergia/.test(n.t||""); })||(E.piloto.semanas||0)>=3,"Syntergia trabaja cada semana (semanas: "+(E.piloto.semanas||0)+")");
+      SEC="escritorio"; render();
+      t(!!document.querySelector("#vista .syn-box.on"),"el interruptor se ve encendido en el Ayudante");
+      E.piloto.on=false; var n0=(E.decPend||[]).length; repartirDecisiones(); var n1=(E.decPend||[]).length; syntergiaTurno();
+      t((E.decPend||[]).length===n1,"apagada no toca nada");
+    },"Syntergia");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

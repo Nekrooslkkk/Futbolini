@@ -192,3 +192,53 @@ function bloqueAyudanteHace(){
   try{ Object.keys(orig).forEach(k=>{ vistaEscritorio[k]=orig[k]; }); }catch(e){}
   vistaEscritorio._ay=true;
 })();
+
+/* ============================================================
+   7.9041 · SYNTERGIA — piloto automático (pedido del autor: "le entrego todo")
+   Una IA del club que, con el interruptor encendido, cada semana hace TODO lo que
+   el ayudante ofrece (lo seguro y lo que cuesta) y firma un informe con qué hizo.
+   Tú miras y corriges: apagarla devuelve el control al tiro.
+   ============================================================ */
+function syntergiaOn(){ return !!(E&&E.piloto&&E.piloto.on); }
+function syntergiaTurno(){
+  if(!syntergiaOn()||E._bulkSim) return [];
+  const hechas=[];
+  let guard=0;
+  while(guard++<8){
+    const acc=ayudanteAcciones();
+    if(!acc.length) break;
+    let alguna=false;
+    acc.forEach(a=>{ const t=ayudanteHacer(a.id); if(t){ hechas.push(t); alguna=true; } });
+    if(!alguna) break;
+  }
+  E.piloto.semanas=(E.piloto.semanas||0)+1;
+  if(hechas.length && typeof notificar==="function")
+    notificar({t:"🤖 Syntergia · semana "+(E.idx+1),tipo:"neutro",bandeja:true,
+      d:"Hice "+hechas.length+" cosa"+(hechas.length>1?"s":"")+": "+hechas.map(h=>h.split(":")[0]).join(" · ")+". El detalle está en el registro del Ayudante."});
+  return hechas;
+}
+["procesarSemanaPostPartido","procesarSemanaRapido"].forEach(function(nom){
+  const orig=window[nom]; if(typeof orig!=="function"||orig._syn) return;
+  const w=function(){ const r=orig.apply(this,arguments); try{ syntergiaTurno(); }catch(e){} return r; };
+  try{ Object.keys(orig).forEach(k=>{ w[k]=orig[k]; }); }catch(e){}
+  w._syn=true; window[nom]=w;
+});
+function bloqueSyntergia(){
+  const on=syntergiaOn();
+  const box=el("div","syn-box"+(on?" on":""));
+  box.innerHTML='<div class="syn-t">🤖 Syntergia · piloto automático <b>'+(on?"ENCENDIDO":"apagado")+'</b></div>'+
+    '<div class="mini">'+(on
+      ?"Cada semana hace todo lo de abajo (incluido lo que cuesta plata) y te deja el informe. Tú miras y corriges."
+      :"Si la enciendes, cada semana resuelve decisiones, charla, descanso, once, entradas y caja por ti, y te cuenta qué hizo.")+'</div>';
+  const b=el("button","btn-aqua chico"+(on?" rojo":" verde"),on?"Apagar Syntergia":"Encender Syntergia");
+  b.onclick=()=>{ E.piloto=E.piloto||{}; E.piloto.on=!on; if(E.piloto.on) syntergiaTurno(); guardar(); render();
+    if(typeof aviso==="function") aviso(E.piloto.on?"🤖 Syntergia al mando":"Retomaste el control"); };
+  box.appendChild(b);
+  return box;
+}
+(function wrapBloqueSyn(){
+  if(typeof bloqueAyudanteHace!=="function"||bloqueAyudanteHace._syn) return;
+  const orig=bloqueAyudanteHace;
+  bloqueAyudanteHace=function(){ const b=orig.apply(this,arguments); try{ b.insertBefore(bloqueSyntergia(), b.children[1]||null); }catch(e){} return b; };
+  bloqueAyudanteHace._syn=true;
+})();
