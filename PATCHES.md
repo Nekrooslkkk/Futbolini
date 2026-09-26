@@ -3480,3 +3480,19 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   Interruptor en el panel del Ayudante. Encendida, cada semana hace todo lo que el ayudante ofrece (lo seguro y
   lo que cuesta) y firma un informe ("🤖 Syntergia · semana N"). Apagarla devuelve el control al tiro. No actúa
   en las simulaciones masivas. **Tests:** dev 509/509 · core 1185/1185.
+
+### 7.9042 — marcadores creíbles y un VAR que deja gritar
+**Archivos:** `js/partido.js`, `js/ui-partido.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`
+- Medido antes: ~4 goles por partido, 16–23 % de empates y 9–13 % de goleadas por 4+. Ahora 2,5–2,8 goles,
+  21–29 % de empates y 1–5 % de goleadas (300 partidos por club). Las perillas quedaron juntas en `MOTOR_GOL`.
+- Los córners metían gol en el 10–30 % de los centros y solo a favor del jugador (de ahí el sesgo pro-jugador).
+  Ahora 2–11 %.
+- Con 3 de ventaja el que gana afloja. Tu equipo sigue a fondo solo si el plan es ofensivo. El rival sigue
+  castigándote si tu equipo quedó expuesto (riesgo/exposición altos). La goleada existe, pero la fabrica un
+  mal plan que no se corrige.
+- VAR: ya no frena cada gol. Revisa ~14 % de los goles y ~35 % de los penales (`VAR_REVISION`). Cuando revisa,
+  tarda ~5 s con etapas ("trazan la línea…") y anula más seguido: la duda es real.
+- Doctor `motor_goles`: simula 120 partidos de tu liga sin tocar tu partida y exige un promedio de 2,0–3,3
+  goles, 15 %+ de empates y un máximo de 8 % de goleadas. También vigila que el VAR no revise todo y que los
+  córners no sean penales. Verificado al revés: con los valores viejos da 4 problemas.
+  **Tests:** dev 509/509 · core 1185/1185.

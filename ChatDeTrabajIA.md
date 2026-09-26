@@ -1724,3 +1724,7 @@ Estado: VERSION 7.9035 · dev 466/466 · core 1185/1185. Seguí desde 7.9036.
 documentado sale con `plantelGenerado(clave, fuerza, pais)` (nombres comunes del país, `real:false`).
 Cambié tu test de 2006 "los apodos dicen Rangers": el autor pidió que no haya "el 7 de X". Ahora el
 test exige que NO haya nombres de relleno. Estado: dev 474/474 · core 1185/1185.
+
+**7.9042 (Claude):** recalibré el motor de goles (`MOTOR_GOL` en partido.js) y el VAR (`VAR_REVISION`).
+Si tocás probabilidades de gol, corré `devMedirGoles(300)` en consola o el doctor `motor_goles`.
+Estado: dev 509/509 · core 1185/1185.

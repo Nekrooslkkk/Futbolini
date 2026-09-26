@@ -802,6 +802,10 @@ function actualizarApoyo(P){
 /* avanza el reloj hasta 'hasta' generando eventos.
    Modelo: se calcula cuánto peligro genera cada lado por partido
    (algo parecido a goles esperados) y se reparte minuto a minuto. */
+/* 7.9042 · perillas del motor de goles. Objetivo (liga chilena real): ~2,6 goles por partido,
+   25–28 % de empates, goleadas por 4+ raras (~3 %) pero posibles si el plan es malo y no se corrige.
+   El doctor 'motor_goles' mide contra estos rangos. */
+const MOTOR_GOL={ N:42, dom:36, aho:38, pend:0.38, corner:{base:0.035,iner:0.015,aereo:0.03,min:0.02,max:0.11} };
 function peligro(P){
   const mio=P.ataque+P.empuje-P.cansancio*1.6;
   const suyo=P.rival+P.riesgoPlan*1.4-(P.orden-P.rival)*0.16;
@@ -811,12 +815,23 @@ function peligro(P){
      exponer la defensa (peor cansado) sube el del rival. */
   const recup=(P.recup||0)*Math.max(0,1-P.cansancio*0.09);
   const expo=(P.expo||0)*(0.3+P.cansancio*0.06);
-  let yo=Math.max(0.20,1.30+d*0.42+recup*0.06);
-  let el=Math.max(0.20,1.30-d*0.42+expo*0.06);
+  let yo=Math.max(0.20,1.30+d*MOTOR_GOL.pend+recup*0.06);
+  let el=Math.max(0.20,1.30-d*MOTOR_GOL.pend+expo*0.06);
   /* 7.99954 · si vas perdiendo, la pizarra se siente: atacar abre el partido. */
   if(diffMarcador(P)<0){
     const k=planCuandoVasPerdiendo(P);
     yo*=k.yo; el*=k.el;
+  }
+  /* 7.9042 · con 3 de ventaja el que gana afloja (se cuida, cambia, administra).
+     Tu equipo solo sigue a fondo si el plan es ofensivo; el rival sigue haciéndote
+     daño si dejaste el equipo expuesto (riesgo/exposición altos): la goleada existe,
+     pero la fabrica un mal plan que no se corrigió. */
+  const dm=diffMarcador(P);
+  if(dm>=3){
+    const ment=(E&&E.tactica&&E.tactica.mentalidad)||"";
+    yo*=/Ofensivo/.test(ment)?0.9:0.68;
+  } else if(dm<=-3){
+    el*=clamp(0.62+Math.max(0,P.riesgoPlan||0)*0.05+Math.max(0,P.expo||0)*0.03,0.62,1);
   }
   /* 7.9003 · inercia: córners / atajadas / faltas seguidas empujan el próximo tiro. */
   const iner=inerciaTiro(P);
@@ -831,6 +846,14 @@ function hayVarEnVivo(P){
   if(P.modo==="simular") return false;
   const anio=((typeof E!=="undefined"&&E&&E.anio)||0);
   return anio>=2018;
+}
+/* 7.9042 · el VAR NO revisa cada gol: solo las jugadas dudosas. El resto se grita en paz.
+   Cuando revisa, la duda es real: anula más seguido (≈ 5 % de los goles en total). */
+const VAR_REVISION={ gol:0.14, penal:0.35, anulaGol:0.38, anulaPenal:0.30 };
+function varRevisa(P,kind){
+  if(!hayVarEnVivo(P)) return false;
+  const esPenal=kind==="penal"||kind==="penalRival";
+  return Math.random()<(esPenal?VAR_REVISION.penal:VAR_REVISION.gol);
 }
 /* 7.9003 · racha de córners / atajadas / faltas. Tope 3. Reset al gol. */
 function inerciaTiro(P){
@@ -938,24 +961,24 @@ function tickPartido(P){
   const pl=peligro(P);
   if(P.precClima&&P.precClima!==1){ pl.yo*=P.precClima; pl.el*=P.precClima; }
   actualizarFase(P);
-  let N=28;
-  if(P.fase==="dominio"){ N=23; pl.yo*=1.08; }
-  if(P.fase==="ahogo"){ N=25; pl.el*=1.08; }
+  /* 7.9042 · divisores recalibrados (antes 28/23/25 → ~4 goles por partido). */
+  let N=MOTOR_GOL.N;
+  if(P.fase==="dominio"){ N=MOTOR_GOL.dom; pl.yo*=1.08; }
+  if(P.fase==="ahogo"){ N=MOTOR_GOL.aho; pl.el*=1.08; }
   const r=Math.random();
-  const varVivo=hayVarEnVivo(P);
   if(r<pl.yo/N){
-    if(varVivo) return {tipo:"varCheck",kind:"gol",min:min};
+    if(varRevisa(P,"gol")) return {tipo:"varCheck",kind:"gol",min:min};
     anotaPropio(P,min); return {tipo:"gol",min:min};
   }
   if(r<(pl.yo+pl.el)/N){
-    if(varVivo) return {tipo:"varCheck",kind:"golRival",min:min};
+    if(varRevisa(P,"golRival")) return {tipo:"varCheck",kind:"golRival",min:min};
     anotaRival(P,min); return {tipo:"golRival",min:min};
   }
   /* acción: penal */
   if(Math.random()<0.006){ const aFavor=Math.random()<clamp(0.5+(P.ataque-P.rival)*0.004,0.2,0.8);
     P._penalCancha=aFavor?1:-1;
     P._penalSeq=(P._penalSeq||0)+1;
-    if(varVivo) return {tipo:"varCheck",kind:aFavor?"penal":"penalRival",min:min,aFavor:aFavor};
+    if(varRevisa(P,aFavor?"penal":"penalRival")) return {tipo:"varCheck",kind:aFavor?"penal":"penalRival",min:min,aFavor:aFavor};
     return {tipo:aFavor?"penal":"penalRival",min:min,aFavor:aFavor}; }
   /* acción: lesión */
   if(min>20&&Math.random()<0.006){ return {tipo:"lesion",min:min}; }
@@ -1190,7 +1213,9 @@ function centroCorner(P){
   const iner=((P.iner&&P.iner.cor)||0);
   if(typeof linea==="function") linea(P,P.min,"Córner. Centro al área, sube "+((aereo&&aereo.n)||"el área")+".");
   const aereoOk=aereo&&aereo.rasgos&&aereo.rasgos.indexOf("juego aéreo")>=0;
-  const prob=clamp(0.10+(iner*0.04)+(aereoOk?0.08:0)+(((aereo&&aereo.nivel)||70)-70)*0.003,0.06,0.30);
+  /* 7.9042 · antes 10–30 % de los centros era gol (y solo a favor): real ronda 3–5 %. */
+  const c=MOTOR_GOL.corner;
+  const prob=clamp(c.base+(iner*c.iner)+(aereoOk?c.aereo:0)+(((aereo&&aereo.nivel)||70)-70)*0.0015,c.min,c.max);
   if(Math.random()<prob){
     if(aereo){ aereo.goles=(aereo.goles||0)+1; P.goleadores.push(aereo.n); if(typeof regGol==="function") regGol(P,P.min,aereo.n,true,"cabeza"); }
     if(P.part.local) P.gl++; else P.gv++;

@@ -960,7 +960,7 @@ function celebrarGol(P, propio, quien, marcEl){
 function varDuracionMs(){
   const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
   const perf=document.body&&document.body.classList.contains("perf");
-  return (perf||reduce)?400:2000;
+  return (perf||reduce)?600:5200;   /* 7.9042 · la revisión que existe, tarda: tensión */
 }
 function mostrarVar(P, ev){
   if(!P||!ev) return;
@@ -981,8 +981,13 @@ function mostrarVar(P, ev){
   body.appendChild(kicker); body.appendChild(title); body.appendChild(sub);
   ov.appendChild(badge); ov.appendChild(body);
   document.body.appendChild(ov);
-  const anula=Math.random()<(esPenal?0.12:0.08);
+  const VR=(typeof VAR_REVISION!=="undefined")?VAR_REVISION:{anulaGol:0.38,anulaPenal:0.30};
+  const anula=Math.random()<(esPenal?VR.anulaPenal:VR.anulaGol);
   const dur=varDuracionMs();
+  /* 7.9042 · la espera se cuenta en etapas: nadie grita todavía. */
+  const etapas=esPenal?["El juez se lleva la mano a la oreja…","Van al monitor. Cámara lenta del contacto.","Otra toma. El estadio en silencio."]
+    :["El juez se lleva la mano a la oreja…","Trazan la línea del offside.","Otra toma. Nadie grita todavía."];
+  if(dur>1000) etapas.forEach(function(tx,i){ setTimeout(function(){ if(ov.parentNode&&!ov.classList.contains("ok")&&!ov.classList.contains("anula")) sub.textContent=club+" · "+tx; }, Math.round(dur*i/etapas.length)); });
   setTimeout(function(){
     ov.classList.add(anula?"anula":"ok");
     kicker.textContent=anula?"Decisión":"Confirmado";

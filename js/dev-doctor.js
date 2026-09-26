@@ -766,6 +766,40 @@ devDoctorRegistrar({id:"llave_global", area:"motor", n:"Las llaves se definen po
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("global bien sumado; tanda y alargue según las bases");
 }});
 
+/* 7.9042 · el motor goleaba de más (~4 goles, 16 % de empates, 12 % de goleadas por 4+) y el VAR
+   frenaba TODOS los goles. Simula partidos de tu próxima fecha sin tocar tu partida. */
+function devMedirGoles(n){
+  n=n||120;
+  if(!E||!E.calendario||typeof iniciarPartido!=="function"||typeof clonarPartida!=="function") return null;
+  var molde=E.calendario.filter(function(p){ return p&&p.tipo==="liga"; });
+  if(!molde.length) return null;
+  var snap=clonarPartida(E), bulk=E._bulkSim, g=0, emp=0, g4=0;
+  try{
+    for(var i=0;i<n;i++){
+      E._bulkSim=true;
+      var pp=Object.assign({},molde[i%molde.length],{jugado:false});
+      var P=iniciarPartido(pp,"simular"); correrHasta(P,90);
+      var a=P.gl, b=P.gv; g+=a+b; if(a===b) emp++; if(Math.abs(a-b)>=4) g4++;
+      restaurarPartida(snap);
+    }
+  } finally { restaurarPartida(snap); E._bulkSim=bulk; }
+  return { n:n, goles:g/n, empates:emp/n, goleadas:g4/n };
+}
+devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
+  var falta=[];
+  if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
+  if(typeof MOTOR_GOL==="undefined") falta.push("sin perillas MOTOR_GOL en partido.js");
+  else if(MOTOR_GOL.corner.max>0.15) falta.push("los córners terminan en gol hasta "+Math.round(MOTOR_GOL.corner.max*100)+" % (real ≈ 3–5 %)");
+  var m=devMedirGoles(120);
+  if(m){
+    if(m.goles>3.3||m.goles<2.0) falta.push("promedio de "+m.goles.toFixed(2)+" goles por partido (esperado 2,0–3,3; la liga real ronda 2,6)");
+    if(m.empates<0.15) falta.push("solo "+Math.round(m.empates*100)+" % de empates (real 25–28 %)");
+    if(m.goleadas>0.08) falta.push(Math.round(m.goleadas*100)+" % de partidos con 4+ goles de diferencia (real ≈ 3 %)");
+  }
+  var det=m?(m.goles.toFixed(2)+" goles/partido · "+Math.round(m.empates*100)+" % empates · "+(m.goleadas*100).toFixed(1)+" % goleadas (4+)"):"sin partida para medir";
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
+}});
+
 /* 7.9037 · rendimiento: la escena del penal crecía sola en PC y el fondo animado obligaba a
    re-desenfocar todos los paneles de vidrio en cada cuadro */
 devDoctorRegistrar({id:"rendimiento_ui", area:"interfaz", n:"La escena del penal no crece sola y el fondo no gasta de más", fn:function(){
