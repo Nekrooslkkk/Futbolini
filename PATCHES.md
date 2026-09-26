@@ -4170,3 +4170,22 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   ventanas abiertas.
 - **Doctor `chat_vivo`:** comprobado al revés con el tope de 18.
   **Tests:** dev 561/561 · core 1185/1185.
+
+### 7.9072 — Etapa 4A · PLOP! como el Twitter de 2009, dentro de la ventana Aero
+**Archivos:** `js/interfaz-aero.js`, `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Pedido del autor:** "si ahora es una página, que se vea igual Frutiger Aero / Vista / 7 / XP pero parezca red
+  social tipo Twitter antigua".
+- **Dentro de la ventana de Internet Explorer:**
+  - cielo celeste con nubes;
+  - encabezado con la palabra "plop!" (el pajarito) y la navegación como píldoras: cuenta del club o del DT,
+    Inicio, Menciones, Me gusta, Tendencias;
+  - columna blanca con "¿Qué está pasando en el club?" o "¿Qué estás pensando?", el contador y el botón gris;
+    debajo, la línea de tiempo;
+  - barra lateral celeste (#DDEEF6) con tu perfil (avatar cuadrado, nombre, seguidores), Comunidad digital,
+    verificación, campañas, Tendencias y Promesas.
+- **Cada post:** avatar cuadrado de 48 px con iniciales, nombre en celeste #0084B4, fecha en gris, líneas finas
+  entre posts; las acciones (me gusta, RT, responder, reportar) aparecen a la derecha al pasar el mouse. En
+  celular, las acciones quedan a la vista y la barra lateral va después de la línea de tiempo.
+- **La lógica no se toca:** se reordena el DOM que ya pinta `vistaRedes`, envuelto con el flag `_plopt`.
+- **Doctor `plop_antiguo`:** comprobado al revés.
+  **Tests:** dev 563/563 · core 1185/1185.

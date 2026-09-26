@@ -1525,6 +1525,16 @@
       document.body.classList.remove("en-partido"); P_ACTUAL=null; clearInterval(TIMER);
     },"Chat 7.9071");
 
+    grupo("PLOP! antiguo · 7.9072");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="plop_antiguo"; })[0].fn();
+      t(r.ok,"doctor plop_antiguo: "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      REDES_PEST="club"; SEC="redes"; render();
+      t(!!document.querySelector("#vista .plop-ie .plopt"),"la sección PLOP! queda con el formato antiguo");
+      SEC="escritorio";
+    },"PLOP 7.9072");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

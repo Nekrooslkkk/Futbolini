@@ -1457,6 +1457,26 @@ devDoctorRegistrar({id:"chat_vivo", area:"interfaz", n:"Chat en vivo completo, p
   }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("chat de "+TICKER_MAX+" mensajes con charla variada · pistas solo en el chat · Avanzar grande abajo");
 }});
+devDoctorRegistrar({id:"plop_antiguo", area:"interfaz", n:"PLOP! se ve como el Twitter de 2009 dentro de la ventana Aero", fn:function(){
+  if(typeof document==="undefined"||!document.body||typeof vistaRedes!=="function") return _dok("sin DOM");
+  if(typeof plopAntiguo!=="function") return _dmal("PLOP! sin el formato antiguo");
+  var falta=[], v=document.getElementById("vista"); if(!v) return _dok("sin vista");
+  var snap=clonarPartida(E), sec=SEC, html=v.innerHTML;
+  try{
+    if(typeof redesDisponibles==="function"&&!redesDisponibles()) return _dok("esta época no tiene redes");
+    v.innerHTML=""; vistaRedes();
+    var r=v.querySelector(".plopt");
+    if(!r) falta.push("PLOP! no arma el formato antiguo");
+    else {
+      if(!r.querySelector(".plopt-main")||!r.querySelector(".plopt-lado")) falta.push("falta la columna principal o la barra lateral");
+      if(!/Qué está pasando|Qué estás pensando/.test(r.textContent)) falta.push("no está el «¿Qué está pasando?»");
+      var cards=r.querySelectorAll(".plop-card"), sinAv=[].filter.call(cards,function(c){ return !c.querySelector(".plopt-av"); });
+      if(sinAv.length) falta.push(sinAv.length+" posts sin avatar");
+    }
+  } catch(e){ falta.push("PLOP! se cae: "+e.message); }
+  finally { v.innerHTML=html; SEC=sec; restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("ventana IE · cielo · «¿Qué está pasando?» · línea de tiempo con avatares · barra lateral");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
