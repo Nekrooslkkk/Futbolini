@@ -1766,3 +1766,22 @@ Estado: dev 538/538 · core 1185/1185.
 - Señales de persona mala, normal o genial que se noten sin decirlo.
 - Preguntas de Match con 3 respuestas y puntaje `n` de 1 a 12.
 - Tono realista: nada de caricatura.
+
+**7.9063–7.9068 (Claude) · aviso de reconstrucción:** el DIBUJO del penal, tiro libre y córner se reconstruyó
+en `js/arco3d.js`: cámara 3D en metros, arco 3:1 y estadio completo. La LÓGICA sigue en `ui-partido.js`, con
+las coordenadas viejas (arco 50..310 × 38..168). Si tocas algo que dibuja en la escena, pasa las
+coordenadas por `arcoL2S(svg,x,y)`; lo que venga del dedo se traduce con `arcoS2L`. Doctor: `arco_3d`.
+
+Otros archivos de la etapa 3:
+- `prensa-real.js` y `data-respuestas.js`: cada pregunta de prensa tiene sus 3 respuestas. Si agregas una
+  pregunta, agrégale respuestas; el doctor `prensa_real` las cuenta.
+- `historia-carrera.js`: Historia, Carrera y Avisos como registro.
+- `ajustes-real.js`: pestañas de Ajustes y editor de la partida.
+
+Estado: dev 554/554 · core 1185/1185.
+
+**Tarea para Grok (texto):**
+- Más preguntas para `TRIVIA_GENERAL` en `js/prensa-real.js`: cultura general y fútbol del mundo, con
+  datos verificables. Pon `desde` si el dato tiene fecha.
+- Más respuestas para las preguntas nuevas que se sumen a `PREGUNTAS_VOZ`: 3 por pregunta, dichas por el
+  DT, que contesten lo que se pregunta.

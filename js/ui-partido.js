@@ -2036,7 +2036,7 @@ function _arcoVista(svg){
   if(r.width>0&&r.height>0){
     /* en celu (vertical) se acerca la cámara: el arco manda, no la tribuna */
     if(r.height/r.width>0.9) W=300;
-    H=Math.max(240, Math.min(340, W*r.height/r.width));
+    H=Math.max(240, Math.min(480, W*r.height/r.width));   /* 7.9068 · en celu la tribuna sube hasta el techo */
   }
   /* 7.9037 · en PC la escena crecía sola (~1 px cada 250 ms): el alto del escenario seguía al
      dibujo y el dibujo se recalculaba con ese alto; el redondeo subía una décima por vuelta.

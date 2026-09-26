@@ -4046,3 +4046,40 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   número, texto o sí/no. Guarda al salir del campo.
 - **Doctor `ajustes_orden`:** comprobado al revés sacando el scroll de la lista de partidas.
   **Tests:** dev 551/551 · core 1185/1185.
+
+### 7.9068 — Arco 3D: cámara real, estadio de verdad, escenario que no crece
+**Archivos:** `js/arco3d.js` (nuevo), `js/ui-partido.js` (tope de alto en celular), `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Se reconstruyó el dibujo; la lógica no se tocó.** Las probabilidades, zonas y resultados siguen en
+  `penZona`, `tlClasificar`, `cornerClasificar` y `penResolver`, con sus coordenadas de siempre. Una capa
+  traduce: `arcoS2L` (el dedo → lógica) y `arcoL2S` (lógica → pantalla).
+- **Cámara con proyección real en metros:**
+  - penal a 1,7 m de alto, tiro libre a 2,8 m, córner a 4,5 m;
+  - el arco mide 7,32 × 2,44 (3:1; antes se dibujaba 2:1) y queda en el mismo lugar en las tres cámaras.
+- **Cancha:**
+  - franjas de corte cada 5 m;
+  - línea de gol, área chica, área grande, punto penal y medialuna en perspectiva;
+  - la barrera a 9,15 m con la línea de spray.
+- **Arco:** red con 2 m de fondo (techo, fondo y costados tejidos), fierros de atrás y la sombra en el pasto.
+- **Estadio:**
+  - carteles LED 4 m detrás del arco, con sponsors que corren;
+  - fotógrafos;
+  - tribuna de dos bandejas con 42° de inclinación y balcón, gente escalada por distancia;
+  - lienzos de la barra, techo con cerchas, torres de luz que titilan y flashes de cámaras;
+  - bruma nocturna y un leve desenfoque de fondo.
+- **Vuelo de la pelota:** el tamaño cambia según 1/distancia, hace curva, deja estela, la sombra corre por
+  el pasto y la red se infla donde entra. El arquero se tira en pantalla y el guante llega al punto
+  proyectado.
+- **Escenario que crecía:** el dibujo ahora vive en una capa absoluta y el tamaño lo pone solo el
+  escenario. Medido en 1280, 1920 y 390 de ancho: estable al abrir, a los 1,5 s, tras el tiro y al cambiar
+  el tamaño de la ventana.
+- **Celular:** la escena ocupa el alto disponible (antes quedaba un hueco bajo el arco) y la tribuna sube
+  hasta el techo.
+- **Tests:** la medición del guante de `arco_arte` ahora compara en pantalla (`arcoL2S`).
+- **Doctor `arco_3d`:**
+  - revisa que las 3 cámaras dibujen el arco 3:1;
+  - que el dedo vuelva exacto (ida y vuelta);
+  - que la pelota tenga perspectiva y que la cancha tenga líneas y tribuna;
+  - que el dibujo viva en una capa absoluta.
+
+  Comprobado al revés con una proyección sin perspectiva y con la capa en `relative`.
+  **Tests:** dev 554/554 · core 1185/1185.

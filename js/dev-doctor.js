@@ -381,8 +381,10 @@ function _docArcoGuante(aim, ataja){
   var D=_arqDestino(arq,"izq",{aim:aim,ataja:ataja});
   _arqPose(arq, D.x0+D.dx, D.y0+D.dy, D.esc, D.rot, D.brazo);
   var c=svg.querySelector("#arco-mano-izq").getCTM();
+  /* 7.9068 · la lógica apunta en coordenadas del arco; el guante vive en pantalla */
+  var tgt=(typeof arcoL2S==="function")?arcoL2S(svg,aim.cx,aim.cy):{x:aim.cx,y:aim.cy};
   svg.remove();
-  return Math.hypot(c.e-aim.cx, c.f-aim.cy);
+  return Math.hypot(c.e-tgt.x, c.f-tgt.y);
 }
 function _docArcoMedir(){
   if(typeof document==="undefined"||!document.body||typeof htmlArcoVivo!=="function") return null;
@@ -1369,6 +1371,36 @@ devDoctorRegistrar({id:"ajustes_orden", area:"interfaz", n:"Ajustes en pestañas
   } catch(e){ falta.push("Ajustes se cae: "+e.message); }
   finally { host.remove(); restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(AJ_TABS.length+" pestañas · partidas con scroll · Dios y estado editables");
+}});
+devDoctorRegistrar({id:"arco_3d", area:"interfaz", n:"Arco 3D: cámara real (arco 3:1), traducción exacta al dedo y escenario que no crece", fn:function(){
+  var falta=[];
+  if(typeof camaraArco!=="function"||typeof arcoL2S!=="function") return _dmal("sin cámara 3D del arco");
+  if(typeof document==="undefined"||!document.body) return _dok("sin DOM");
+  var NS="http://www.w3.org/2000/svg";
+  ["penal","tl","corner"].forEach(function(modo){
+    var svg=document.createElementNS(NS,"svg"); svg.setAttribute("viewBox","0 0 360 240");
+    svg.style.cssText="position:absolute;left:-9999px;top:0;width:360px;height:240px;visibility:hidden";
+    svg.innerHTML=htmlArcoVivo({modo:modo,barrera:modo==="tl",bolaX:modo==="corner"?40:180,bolaY:modo==="corner"?222:220,lado:"izq"});
+    document.body.appendChild(svg);
+    try{
+      var a=arcoL2S(svg,50,38), b=arcoL2S(svg,310,168), r=(b.x-a.x)/(b.y-a.y);
+      if(Math.abs(r-3)>0.06) falta.push(modo+": el arco mide "+r.toFixed(2)+":1 (uno real: 3:1)");
+      [[70,60],[180,100],[290,150],[120,168]].forEach(function(p){
+        var s=arcoL2S(svg,p[0],p[1]), q=arcoS2L(svg,s.x,s.y);
+        if(Math.hypot(q.x-p[0],q.y-p[1])>0.5) falta.push(modo+": el dedo en ("+p+") vuelve como ("+q.x.toFixed(1)+","+q.y.toFixed(1)+")");
+      });
+      var cam=_camDe(svg), kb=proyectar(cam,0,0,cam.Zb).k, kg=proyectar(cam,0,0,0).k;
+      if(!(kg/kb<0.8)) falta.push(modo+": la pelota no se achica al llegar al arco (sin perspectiva: "+(kg/kb).toFixed(2)+")");
+      if(!svg.querySelector(".a3-cal line")) falta.push(modo+": la cancha no tiene líneas en perspectiva");
+      if(svg.querySelectorAll("pattern[id^=a3g]").length<10) falta.push(modo+": la tribuna tiene menos de 10 filas de gente");
+    } catch(e){ falta.push(modo+": "+e.message); }
+    finally { svg.remove(); }
+  });
+  var st=document.createElement("div"); st.className="modal escena-3d"; st.innerHTML='<div class="e3d-stage"><div class="e3d-world"></div></div>';
+  st.style.cssText="position:absolute;left:-9999px;visibility:hidden"; document.body.appendChild(st);
+  var pos=getComputedStyle(st.querySelector(".e3d-world")).position; st.remove();
+  if(pos!=="absolute") falta.push("el dibujo no vive en una capa absoluta: el escenario puede crecer con él");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("3 cámaras con arco 3:1 · dedo ida y vuelta exacto · pelota con perspectiva · escenario fijo");
 }});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];

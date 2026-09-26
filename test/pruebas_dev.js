@@ -1071,8 +1071,9 @@
         var D=_arqDestino(arq,q[2],{aim:aim,ataja:true});
         _arqPose(arq, D.x0+D.dx, D.y0+D.dy, D.esc, D.rot, D.brazo);
         var c=svg.querySelector(q[2]==="izq"?"#arco-mano-izq":"#arco-mano-der").getCTM();
+        var tg=(typeof arcoL2S==="function")?arcoL2S(svg,q[0],q[1]):{x:q[0],y:q[1]};
         svg.remove();
-        var dist=Math.hypot(c.e-q[0],c.f-q[1]);
+        var dist=Math.hypot(c.e-tg.x,c.f-tg.y);
         t(dist<12,"rincón "+q[2]+" "+(q[1]<100?"alto":"bajo")+": el guante llega (a "+Math.round(dist)+")");
       });
       /* la escena real: no hay un svg que recorte y el botón explica qué falta */
@@ -1485,6 +1486,21 @@
       t(E.flags.modoDios!==true,"el doctor no deja el Modo Dios prendido");
       t(diosSet("plantel.0.nivel",88)&&E.plantel[0].nivel===88,"el Modo Dios edita un jugador por ruta");
     },"Ajustes 7.9067");
+
+    grupo("Arco 3D · 7.9068");
+    safe(function(){
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="arco_3d"; })[0].fn();
+      t(r.ok,"doctor arco_3d: "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      var html=htmlArcoVivo({modo:"penal"});
+      t(/arco-publi/.test(html)&&/a3-fotos/.test(html)&&/arco-red/.test(html),"estadio con carteles, fotógrafos y red con fondo");
+      nuevaPartida("CC",2026,"historico");
+      var once=(E.plantel||[]).filter(function(j){ return j&&j.pos!=="ARQ"; }).slice(0,11);
+      P_ACTUAL={modo:"dirigir", once:once, rivalPlantel:[{n:"Arquero rival",pos:"ARQ",nivel:72}], part:{rivalId:"UCH",local:true}, min:44, goleadores:[], gl:0,gv:0, lineas:[], iner:{cor:0}};
+      minijuegoPenal(P_ACTUAL, once[0], {onRes:function(){}});
+      var stg=document.querySelector("#capa-modal .e3d-stage");
+      t(!!stg&&stg.classList.contains("e3d-v2"),"la escena usa el escenario nuevo");
+      cerrarModal(); P_ACTUAL=null;
+    },"Arco3D 7.9068");
 
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
