@@ -1347,6 +1347,29 @@ devDoctorRegistrar({id:"historia_carrera", area:"interfaz", n:"Historia, Carrera
   if(temaAviso({t:"Te lesionaste",d:""})==="plata") falta.push("el registro clasifica mal por el detalle");
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(ids.length+" clubes con nombre · "+(ids.length-sinFicha.length)+" con ficha (ciudad o estadio) · récords y reputación por temporada");
 }});
+devDoctorRegistrar({id:"ajustes_orden", area:"interfaz", n:"Ajustes en pestañas, partidas con scroll propio y Modo Dios editable", fn:function(){
+  if(typeof document==="undefined"||!document.body) return _dok("sin DOM");
+  if(typeof AJ_TABS==="undefined") return _dmal("Ajustes sin pestañas");
+  var falta=[], snap=clonarPartida(E), host=document.createElement("div");
+  host.style.cssText="position:absolute;left:-9999px;top:0;width:400px;visibility:hidden"; document.body.appendChild(host);
+  try{
+    E.flags.modoDios=true; E.flags.modoDiosUsado=true;
+    vistaAjustes(host);
+    var tabs=host.querySelectorAll(".aj-tab"), pans=[].slice.call(host.querySelectorAll(":scope > .panel"));
+    if(tabs.length<3) falta.push("Ajustes tiene "+tabs.length+" pestañas");
+    var sin=pans.filter(function(p){ return !p.dataset.ajtab; });
+    if(sin.length) falta.push(sin.length+" paneles sin pestaña");
+    var vis=pans.filter(function(p){ return p.style.display!=="none"; }).map(function(p){ return p.dataset.ajtab; });
+    if(vis.some(function(t){ return t!==vis[0]; })) falta.push("se ven paneles de dos pestañas a la vez");
+    if(!host.querySelector(".mp-lista")) falta.push("la lista de partidas no tiene scroll propio");
+    if(!host.querySelector(".dios-editor input")) falta.push("el Modo Dios no deja editar valores a mano");
+    var trucos=pans.filter(function(p){ return p.dataset.ajtab==="trucos"; }).map(_tituloPanel).join(",");
+    if(!/Modo Dios/.test(trucos)) falta.push("el Modo Dios no está en Trucos");
+    var m0=E.ind.moral; if(!devSetRuta("ind.moral",m0===50?51:50)||E.ind.moral===m0) falta.push("el editor de la partida no escribe en E");
+  } catch(e){ falta.push("Ajustes se cae: "+e.message); }
+  finally { host.remove(); restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(AJ_TABS.length+" pestañas · partidas con scroll · Dios y estado editables");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

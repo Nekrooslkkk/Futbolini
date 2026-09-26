@@ -4019,3 +4019,30 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   - `E.repHist`: la reputación de cada temporada.
 - **Doctor `historia_carrera`:** comprobado al revés con el bug viejo de `CLUB_INFO`.
   **Tests:** dev 548/548 · core 1185/1185.
+
+### 7.9067 — Ajustes ordenado: pestañas, partidas con scroll, Modo Dios editable, editor de la partida
+**Archivos:** `js/ajustes-real.js` (nuevo), `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Pestañas:**
+  - 💾 Partida: nube, mis partidas, respaldo, sin internet, solo jugar.
+  - 🎨 Pantalla.
+  - 💚 Proyecto.
+  - 😇 Trucos: Modo Dios, modo desarrollador, editores.
+
+  Cada panel cae en su pestaña por el título, así que los paneles que agreguen otros archivos se ordenan
+  solos. La pestaña se recuerda y la barra queda pegada arriba al hacer scroll.
+- **Mis partidas:**
+  - la lista tiene su propio scroll (antes una lista larga empujaba todo lo demás);
+  - buscador cuando hay más de 5 partidas;
+  - la partida actual queda fija arriba;
+  - "Guardar ahora" y "Borrar esta partida" pasaron acá desde el panel del tema visual.
+- **Pantalla:** tarjetas para tema, navegación, rendimiento, idioma y animaciones (dos columnas en PC). El
+  aviso legal pasó a Proyecto.
+- **Modo Dios:**
+  - "✏️ Editar a mano": caja, deuda, bolsillo y capital con campo numérico; indicadores, grupos de poder,
+    reputación, bienestar y relación con slider;
+  - cualquier jugador: nivel, edad, forma, cansancio y lesión;
+  - los atajos de siempre quedan en "⚡ Atajos".
+- **Modo dev:** "🧬 Editor de la partida" recorre `E` como un árbol, con migas y filtro, y edita cualquier
+  número, texto o sí/no. Guarda al salir del campo.
+- **Doctor `ajustes_orden`:** comprobado al revés sacando el scroll de la lista de partidas.
+  **Tests:** dev 551/551 · core 1185/1185.

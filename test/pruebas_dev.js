@@ -1477,6 +1477,15 @@
       SEC="escritorio";
     },"Historia 7.9066");
 
+    grupo("Ajustes ordenados · 7.9067");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="ajustes_orden"; })[0].fn();
+      t(r.ok,"doctor ajustes_orden: "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      t(E.flags.modoDios!==true,"el doctor no deja el Modo Dios prendido");
+      t(diosSet("plantel.0.nivel",88)&&E.plantel[0].nivel===88,"el Modo Dios edita un jugador por ruta");
+    },"Ajustes 7.9067");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));
