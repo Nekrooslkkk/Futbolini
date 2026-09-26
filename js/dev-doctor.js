@@ -1247,6 +1247,47 @@ devDoctorRegistrar({id:"vida_familia", area:"motor", n:"Vida: embarazo de 9 mese
   finally { window.guardar=gu; window.notificar=nt; window.render=rd; window.aviso=av; restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("embarazo de "+SEMANAS_EMBARAZO+" semanas · uno a la vez · primera cita con persona real (mala/normal/genial)");
 }});
+devDoctorRegistrar({id:"vida_patrimonio", area:"motor", n:"Vida: el patrimonio se valoriza/deprecia a precio real y las apuestas pagan con margen de casa", fn:function(){
+  var falta=[];
+  if(typeof PATRIMONIO==="undefined"||typeof cierrePatrimonio!=="function") return _dmal("sin patrimonio vivo");
+  var k=_kEra(), dep=PATRIMONIO.filter(function(a){ return a.id==="deptoN"; })[0];
+  if(!dep||dep.costo<100||dep.costo>260) falta.push("un depto en Ñuñoa cuesta "+(dep?dep.costo:"?")+" M (real 2026 ≈ 130–220 M)");
+  var baratos=PATRIMONIO.filter(function(a){ return a.tipo==="prop"&&a.id!=="reloj"&&a.costo<50; });
+  if(baratos.length) falta.push("propiedades a precio de juguete: "+baratos.map(function(a){ return a.t; }).join(", "));
+  var snap=clonarPartida(E), nt=window.notificar, gu=window.guardar, rd=window.render, av=window.aviso;
+  try{
+    window.notificar=function(){}; window.guardar=function(){}; window.render=function(){}; window.aviso=function(){};
+    E.personal.propiedades=[]; E.personal.autos=[]; E.personal.bolsillo=100000; E.ind.prestigio=50;
+    comprarLujo(dep); comprarLujo(PATRIMONIO.filter(function(a){ return a.id==="cam4x4"; })[0]);
+    var d=E.personal.propiedades[0], c=E.personal.autos[0];
+    if(!d||!c) falta.push("comprar no deja el bien en tu patrimonio");
+    else {
+      var vd=d.valor, vc=c.valor, b0=E.personal.bolsillo, tot0=patrimonioTotal();
+      if(Math.abs(tot0-(b0+vd+vc))>0.05) falta.push("el patrimonio total no suma bolsillo + bienes");
+      var b=cierrePatrimonio();
+      if(!(d.valor>vd)) falta.push("el departamento no se valoriza");
+      if(!(c.valor<vc*0.92)) falta.push("la camioneta no se deprecia");
+      if(!(b.mant>0)) falta.push("los bienes no cobran mantención");
+      var antes=E.personal.bolsillo, neto=venderBien(c);
+      if(!(neto<c.valor&&E.personal.bolsillo>antes)) falta.push("vender no paga el valor menos el corretaje");
+      if(E.personal.autos.length) falta.push("vendido, el auto sigue en tu garaje");
+    }
+    comprarLujo(PATRIMONIO.filter(function(a){ return a.id==="heli"; })[0]);
+    if(E.personal.autos.length) falta.push("con prestigio 50 se puede comprar un helicóptero (req 85)");
+    /* apuestas: la casa se queda con su margen y el pago cuadra */
+    var ca=cuotas1X2({id:"a",fuerza:60},{id:"b",fuerza:60}), marg=1/ca.L+1/ca.X+1/ca.V-1;
+    if(marg<0.03||marg>0.12) falta.push("margen de la casa "+Math.round(marg*100)+" % (real 6–8 %)");
+    var cf=cuotas1X2({id:"a",fuerza:80},{id:"b",fuerza:45});
+    if(!(cf.L<cf.V)) falta.push("el favorito paga más que el débil");
+    E.personal.apuestas=[{anio:E.anio,idx:E.idx,a:"a",b:"b",na:"A",nb:"B",pick:"L",monto:10,cuota:2.5,mio:false}];
+    var part=E.calendario[E.idx]; if(part){ part.jugado=true; E.ultimaFecha=[{a:"A",b:"B",ga:2,gb:0}];
+      var bb=E.personal.bolsillo; resolverApuestas();
+      if(Math.abs(E.personal.bolsillo-bb-25)>0.01) falta.push("una apuesta ganada a 2,50 no paga 2,5 veces");
+      if(E.personal.apuestas.length) falta.push("la apuesta resuelta sigue pendiente"); }
+  } catch(e){ falta.push("falló la prueba: "+e.message); }
+  finally { window.notificar=nt; window.guardar=gu; window.render=rd; window.aviso=av; restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(PATRIMONIO.length+" bienes a precio real · se valorizan/deprecian · margen de la casa "+Math.round(MARGEN_CASA*100)+" %");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

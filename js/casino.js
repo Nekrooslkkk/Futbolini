@@ -3,7 +3,7 @@
    FUTBOLINI 5.0 · casino.js  (Bloque 2)
    Casino con plata personal (E.personal.bolsillo), corrupción /
    desfalco (meter mano a la caja del club E.plata) y redención.
-   Tono satírico-realista, ficción de juego. Odds de ruleta reales.
+   Tono realista y crudo, ficción de juego. Odds de ruleta reales.
    ============================================================ */
 
 /* ---------- ruleta europea (37 casillas, ventaja de casa real ~2.7%) ---------- */
@@ -139,7 +139,7 @@ function modalTragamonedas(){
       box.innerHTML="";
       box.appendChild(el("div","cab",'<span class="ic">🎰</span><span>Casino · tragamonedas</span>'));
       const c=el("div","cuerpo"); box.appendChild(c);
-      c.appendChild(el("p","mini","Tres rodillos. Triple paga fuerte (🏆 hasta 75x), par paga 1,5x. La casa gana a la larga. Bolsillo: <b>"+plata(E.personal.bolsillo||0)+"</b>."));
+      c.appendChild(el("p","mini","Tres rodillos. Triple paga fuerte (🏆 hasta 75x), un par devuelve 1,2x. La casa gana a la larga. Bolsillo: <b>"+plata(E.personal.bolsillo||0)+"</b>."));
       const car=el("div","traga-car");
       car.style.cssText="display:flex;gap:8px;justify-content:center;font-size:44px;margin:6px 0;padding:10px;border-radius:10px;background:rgba(0,40,25,.18);border:1px solid rgba(255,255,255,.35)";
       (ultimo?ultimo.reels:["❔","❔","❔"]).forEach(s=>{ const d=el("div","",girando?"🎲":s); d.style.cssText="width:64px;text-align:center"; car.appendChild(d); });
@@ -165,7 +165,7 @@ function modalTragamonedas(){
       c.appendChild(bg);
       if(ultimo&&!girando){
         c.appendChild(el("div","resul "+(ultimo.gano?"bien":"mal"),
-          ultimo.reels.join(" ")+" — "+(ultimo.mult>=3?("🎉 "+ultimo.linea+" Ganaste "+plata(ultimo.pago)+" (neto +"+plata(ultimo.neto)+")"):(ultimo.mult>1?("Par: recuperás "+plata(ultimo.pago)+" (neto +"+plata(ultimo.neto)+")"):("Nada. Perdiste "+plata(ultimo.monto)+".")))));
+          ultimo.reels.join(" ")+" — "+(ultimo.mult>=3?("🎉 "+ultimo.linea+" Ganaste "+plata(ultimo.pago)+" (neto +"+plata(ultimo.neto)+")"):(ultimo.mult>1?("Par: recuperas "+plata(ultimo.pago)+" (neto +"+plata(ultimo.neto)+")"):("Nada. Perdiste "+plata(ultimo.monto)+".")))));
       }
       const br=el("button","btn-aqua ancho","🎡 Ir a la ruleta"); br.style.marginTop="8px"; br.onclick=()=>{ cerrarModal(); modalCasino(); }; c.appendChild(br);
       if((E.personal.bolsillo||0)<=0){ const bd=el("button","btn-aqua ancho rojo","Meter mano a la caja del club"); bd.style.marginTop="6px"; bd.onclick=()=>{ cerrarModal(); modalDesviar(); }; c.appendChild(bd); }
@@ -286,7 +286,7 @@ function panelCasino(){
   if(!E.personal) E.personal={};
   if(typeof E.personal.bolsillo!=="number" || isNaN(E.personal.bolsillo)) E.personal.bolsillo=0;
   const p=panel("Casino","🎰");
-  p.cuerpo.appendChild(el("p","mini","Plata personal. Ruleta, tragamonedas y blackjack — apostá el monto que quieras (la casa gana a la larga). Bolsillo: <b>"+plata(E.personal.bolsillo)+"</b>."));
+  p.cuerpo.appendChild(el("p","mini","Plata personal. Ruleta, tragamonedas y blackjack — apuesta el monto que quieras (la casa gana a la larga). Bolsillo: <b>"+plata(E.personal.bolsillo)+"</b>."));
   const b=el("button","btn-aqua ancho verde","Ruleta");
   b.onclick=modalCasino;
   p.cuerpo.appendChild(b);
@@ -361,7 +361,7 @@ function modalBlackjack(){
   }
   function cobrar(tipo){
     fase="fin";
-    if(tipo==="bj"){ const p=Math.round(monto*2.5); E.personal.bolsillo+=p; msg="Blackjack. Cobrás "+plata(p)+" (3:2)."; }
+    if(tipo==="bj"){ const p=Math.round(monto*2.5); E.personal.bolsillo+=p; msg="Blackjack. Cobras "+plata(p)+" (3:2)."; }
     else if(tipo==="win"){ const p=monto*2; E.personal.bolsillo+=p; msg="Ganaste. +" +plata(p)+"."; }
     else if(tipo==="push"){ E.personal.bolsillo+=monto; msg="Empate. Se devuelve la apuesta."; }
     else if(tipo==="bust") msg="Te pasaste. Perdiste "+plata(monto)+".";
@@ -376,15 +376,18 @@ function modalBlackjack(){
       c.appendChild(el("p","mini","Dealer se planta en 17. Blackjack paga 3:2. Bolsillo: <b>"+plata(E.personal.bolsillo)+"</b>."));
       if(fase!=="apuesta"){
         c.appendChild(el("div","bj-mano","Dealer · "+(fase==="fin"?totalBJ(dealer):"?")+"<br><span class='bj-cards'>"+txtMano(dealer,fase!=="fin")+"</span>"));
-        c.appendChild(el("div","bj-mano","Vos · "+totalBJ(yo)+"<br><span class='bj-cards'>"+txtMano(yo,false)+"</span>"));
+        c.appendChild(el("div","bj-mano","Tú · "+totalBJ(yo)+"<br><span class='bj-cards'>"+txtMano(yo,false)+"</span>"));
       }
       if(fase==="apuesta"){
         const maxB=Math.max(1,E.personal.bolsillo);
         monto=Math.min(monto,maxB);
         c.appendChild(el("label","lb","Apuesta: <b>"+plata(monto)+"</b>"));
-        const sm=el("input"); sm.type="range"; sm.min=1; sm.max=maxB; sm.value=monto; sm.className="rango";
-        sm.oninput=()=>{ monto=parseInt(sm.value,10); const e=c.querySelector(".lb b"); if(e)e.textContent=plata(monto); };
-        c.appendChild(sm);
+        const rowB=el("div"); rowB.style.cssText="display:flex;gap:8px;align-items:center";
+        const sm=el("input"); sm.type="range"; sm.min=1; sm.max=maxB; sm.value=monto; sm.className="rango"; sm.style.flex="1";
+        const nm=el("input"); nm.type="number"; nm.min=1; nm.max=maxB; nm.value=monto; nm.style.cssText="width:88px;padding:7px;border-radius:8px;border:1px solid rgba(0,0,0,.15)";
+        const syncB=v=>{ monto=Math.max(1,Math.min(parseInt(v,10)||1,maxB)); sm.value=monto; nm.value=monto; const e=c.querySelector(".lb b"); if(e)e.textContent=plata(monto); };
+        sm.oninput=()=>syncB(sm.value); nm.oninput=()=>syncB(nm.value);
+        rowB.appendChild(sm); rowB.appendChild(nm); c.appendChild(rowB);
         const b=el("button","btn-aqua ancho verde"+(E.personal.bolsillo<=0?" gris":""),"Repartir");
         b.disabled=E.personal.bolsillo<=0;
         b.onclick=()=>{ deal(); pintar(); };

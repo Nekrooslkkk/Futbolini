@@ -378,7 +378,7 @@ function asumirSucesor(){
   E.dinastia.generacion++;
   const gen=E.dinastia.generacion;
   /* el heredero es tu hijo mayor si tuviste familia; si no, la sangre nueva del linaje */
-  const hijo=(E.perfil.hijos&&E.perfil.hijos.length)?E.perfil.hijos[0]:null;
+  const hijo=(E.perfil.hijos||[]).filter(h=>!h.fallecido)[0]||null;
   E.perfil.nombre = hijo ? hijo.nombre : nombreGeneracion(E.dinastia.raiz, gen);
   E.perfil.nacimiento=(E.anio-ri(28,34))+"-06-15";
   if(E.dinastia.linaje==="Tu linaje"){ const ape=apellidoDinastia(); E.dinastia.linaje="Familia "+(ape||E.dinastia.raiz); }
@@ -395,11 +395,11 @@ function pantallaSucesion(){
   const ultimo=E.dinastia.historial[E.dinastia.historial.length-1]||{};
   p.cuerpo.appendChild(el("h2","tit","Se retira una generación"));
   p.cuerpo.appendChild(el("p",null,(ultimo.nombre||"El DT")+" se retira por edad a los "+(ultimo.edad||"")+" años, tras "+(ultimo.titulos||0)+" títulos. La "+E.dinastia.linaje+" no se detiene: la sangre nueva toma la en serio."));
-  const hijo=(E.perfil.hijos&&E.perfil.hijos.length)?E.perfil.hijos[0]:null;
+  const hijo=(E.perfil.hijos||[]).filter(h=>!h.fallecido)[0]||null;
   const prox=hijo?hijo.nombre:nombreGeneracion(E.dinastia.raiz, E.dinastia.generacion+1);
   p.cuerpo.appendChild(fila("Linaje",E.dinastia.linaje));
   p.cuerpo.appendChild(fila("Al mando ahora",prox+" · "+relacionSucesor(E.dinastia.generacion+1)+(hijo?" (tu hijo, criado en el club)":"")));
-  p.cuerpo.appendChild(fila("Patrimonio heredado",plata(E.personal.bolsillo)+" + "+(E.personal.propiedades.length)+" propiedades + "+(E.personal.autos.length)+" autos"));
+  p.cuerpo.appendChild(fila("Patrimonio heredado",plata(typeof patrimonioTotal==="function"?patrimonioTotal():E.personal.bolsillo)+" ("+(E.personal.propiedades.length)+" propiedades, "+(E.personal.autos.length)+" vehículos)"));
   const b=el("button","btn-aqua ancho verde",(hijo?"Que tome el cargo "+hijo.nombre:"Asumir la sangre"));
   b.onclick=()=>elegirSucesor("hijo");
   p.cuerpo.appendChild(b);
@@ -550,17 +550,20 @@ function vistaVida(){
     pt.cuerpo.appendChild(d);
     const bc=el("button","btn-aqua chico verde","💕 Cita romántica"); bc.onclick=citaConPareja; pt.cuerpo.appendChild(bc);
     if(!par.casades){ const bm=el("button","btn-aqua chico"); bm.textContent="💍 Casarse"; bm.style.marginLeft="6px"; bm.onclick=casarse; pt.cuerpo.appendChild(bm); }
-    if(E.perfil.hijos.length<4){ const bh=el("button","btn-aqua chico"); bh.textContent="👶 Tener un hijo"; bh.style.marginLeft="6px"; bh.onclick=tenerHijo; pt.cuerpo.appendChild(bh); }
+    if(E.perfil.hijos.filter(h=>!h.fallecido).length<4&&!E.perfil.embarazo){ const bh=el("button","btn-aqua chico"); bh.textContent="👶 Tener un hijo"; bh.style.marginLeft="6px"; bh.onclick=tenerHijo; pt.cuerpo.appendChild(bh); }
     const br=el("button","btn-aqua chico rojo","Terminar"); br.style.marginLeft="6px"; br.onclick=romperPareja; pt.cuerpo.appendChild(br);
   } else {
     pt.cuerpo.appendChild(el("p","mini","Soltero y a la búsqueda. "+(typeof eraMatch==="function"?eraMatch().mini:"Si hay química, lo invitas a salir.")));
   }
   /* hijos (futura dinastía) */
-  if(E.perfil.hijos && E.perfil.hijos.length){
+  if(E.perfil.hijos && (E.perfil.hijos.length||E.perfil.embarazo)){
     pt.cuerpo.appendChild(el("h3","sub","Familia"));
+    if(E.perfil.embarazo) pt.cuerpo.appendChild(fila("🤰 En camino",Math.max(0,(typeof SEMANAS_EMBARAZO!=="undefined"?SEMANAS_EMBARAZO:36)-(E.perfil.embarazo.semanas||0))+" semanas para el parto"));
+    const heredero=E.perfil.hijos.filter(x=>!x.fallecido)[0];
     E.perfil.hijos.forEach(h=>{
+      if(h.fallecido){ pt.cuerpo.appendChild(fila("🕯️ "+h.nombre,h.nacido+" – "+h.fallecido)); return; }
       const ed=typeof edadHijo==="function"?edadHijo(h):(E.anio-h.nacido);
-      const extra=(E.perfil.hijos[0]===h?" · heredero":"")+(h.enPlantel?" · en el plantel":"");
+      const extra=(heredero===h?" · heredero":"")+(h.enPlantel?" · en el plantel":"");
       pt.cuerpo.appendChild(fila("👶 "+h.nombre,ed+" años · nacido "+h.nacido+extra));
       if(ed>=17 && !h.enPlantel){
         const bh=el("button","btn-aqua chico","Firmarlo en cantera");
@@ -585,24 +588,12 @@ function vistaVida(){
   }
   v.appendChild(pt);
 
-  /* --- Lujos (escalan con el tamaño del club) --- */
-  const pl=panel("Lujos y patrimonio","💎");
-  pl.cuerpo.appendChild(el("p","mini","Gasta tu plata personal en estatus. Mientras más grande el club, más delirante lo que se te habilita. Bolsillo: <b>"+plata(E.personal.bolsillo)+"</b> · prestigio del club: <b>"+Math.round(E.ind.prestigio)+"</b>."));
-  LUJOS.forEach(l=>{
-    const bloqueado=l.req && (E.ind.prestigio||0)<l.req;
-    const b=el("button","op"+(bloqueado?" op-bloqueado":""));
-    b.innerHTML='<div class="t">'+(bloqueado?"🔒 ":"")+l.t+' <span class="mini">· '+plata(l.costo)+'</span></div>'+
-      '<div class="d">'+(bloqueado?"Necesitas un club con prestigio ≥ "+l.req+" para darte este gusto.":l.d)+'</div>';
-    b.disabled=bloqueado;
-    if(!bloqueado) b.onclick=()=>comprarLujo(l);
-    pl.cuerpo.appendChild(b);
-  });
-  const tengo=(E.personal.propiedades.length+E.personal.autos.length);
-  if(tengo) pl.cuerpo.appendChild(el("p","mini","Tienes "+E.personal.propiedades.length+" propiedades y "+E.personal.autos.length+" autos."));
-  v.appendChild(pl);
+  /* --- Patrimonio (7.9064: se valoriza, arrienda, se vende; ver vida-real.js) --- */
+  v.appendChild(panelPatrimonio());
 
   /* --- Casino (Bloque 2) --- */
   if(typeof panelCasino==="function") v.appendChild(panelCasino());
+  if(typeof panelApuestas==="function") v.appendChild(panelApuestas());
 
   /* --- Dinastía --- */
   const pd=panel("Dinastía","👑","agua");

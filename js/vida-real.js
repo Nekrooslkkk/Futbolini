@@ -288,3 +288,287 @@ function familiaPrevia(part, seguir){
     return o.apply(this,arguments);
   });
 })();
+
+/* ============================================================
+   Parte C (7.9064): patrimonio que vive (se valoriza, se deprecia, arrienda, se vende)
+   y apuestas deportivas a los partidos del juego, con cuotas del mismo motor.
+   Precios 2026 en millones de CLP (portales inmobiliarios/automotrices, aprox.), escalados por época.
+   ============================================================ */
+/* val = valorización anual · mant = mantención anual (contribuciones, seguro, gastos comunes)
+   renta = arriendo/utilidad anual · req = prestigio del club para que te lo ofrezcan */
+const PATRIMONIO=[
+ {id:"reloj",   t:"Reloj de colección",           tipo:"prop",costo:12,  val:0.02, mant:0.2, renta:0,  ef:{prestigio:1},d:"Se ve en la conferencia. Nadie pregunta cuánto costó; todos lo saben."},
+ {id:"suv",     t:"SUV usado, 2021",               tipo:"auto",costo:22,  val:-0.12,mant:1.6, renta:0,  d:"Permiso, seguro, revisión técnica. El auto de un DT que todavía no la hizo."},
+ {id:"cam4x4",  t:"Camioneta 4x4 nueva",           tipo:"auto",costo:48,  val:-0.15,mant:2.6, renta:0,  ef:{prestigio:1},d:"Pierde un cuarto de su valor el día que la sacas del concesionario."},
+ {id:"deptoN",  t:"Departamento para arrendar en Ñuñoa",tipo:"prop",costo:165,val:0.03,mant:1.9,renta:7.2,d:"Dos dormitorios cerca del metro. Arriendo de unos 600 mil al mes, cuando hay arrendatario."},
+ {id:"parcela", t:"Parcela de agrado en el sur",   tipo:"prop",costo:95,  val:0.04, mant:1.4, renta:0,  ef:{moral:3},d:"Cinco mil metros y un fogón. Para apagar el teléfono."},
+ {id:"deport",  t:"Auto deportivo",                tipo:"auto",costo:165, val:-0.10,mant:6,   renta:0,  ef:{prestigio:1,riesgo:3},d:"La prensa lo fotografía en el estacionamiento después de cada derrota."},
+ {id:"local",   t:"Local comercial en Providencia",tipo:"prop",costo:260, val:0.025,mant:3.2, renta:16, d:"Renta más que un departamento, pero si el local queda vacío, las contribuciones igual llegan."},
+ {id:"deptoV",  t:"Departamento en Vitacura",      tipo:"prop",costo:390, val:0.03, mant:5.5, renta:0,  ef:{prestigio:2},d:"Piso alto, vista a la cordillera. Vives ahí: no renta, pero vale."},
+ {id:"resto",   t:"Socio en un restaurante",       tipo:"negocio",costo:80,val:0,  mant:0,   renta:9,  riesgoNeg:0.12,d:"Te invita un ex jugador. La mitad de los restaurantes cierra antes de tres años."},
+ {id:"chicureo",t:"Casa en Chicureo",              tipo:"prop",costo:480, val:0.035,mant:7.5, renta:0,  req:55,ef:{moral:2,prestigio:1},d:"Condominio, portón, piscina. Lejos del estadio y de todo."},
+ {id:"yate",    t:"Lancha en Algarrobo",           tipo:"auto",costo:160, val:-0.08,mant:18,  renta:0,  req:55,ef:{prestigio:2,riesgo:5},d:"Marina, patrón y combustible. La hinchada la ve en las redes un lunes después de perder."},
+ {id:"zapallar",t:"Casa en Zapallar",              tipo:"prop",costo:1250,val:0.04, mant:22,  renta:30, req:70,ef:{prestigio:3,riesgo:4},d:"Se arrienda en enero y febrero. El resto del año es tuya y del cuidador."},
+ {id:"vina",    t:"Campo con viñedo en Colchagua", tipo:"negocio",costo:2600,val:0.03,mant:70,renta:130,riesgoNeg:0.05,req:70,ef:{moral:3,prestigio:2},d:"Vino con tu apellido. Una helada mala y el año se pierde."},
+ {id:"heli",    t:"Helicóptero",                   tipo:"auto",costo:650, val:-0.07,mant:85,  renta:0,  req:85,ef:{prestigio:4,riesgo:8},d:"Llegas por el aire y el plantel en bus. Nadie en el camarín lo olvida."},
+ {id:"estatua", t:"Tu estatua afuera del estadio", tipo:"ego", costo:90,  val:-1,   mant:0,   renta:0,  req:85,ef:{prestigio:5,riesgo:10},d:"Te la mandaste a hacer tú, en vida. No se vende: el día que te vayas, la sacan con grúa."}
+];
+function _kEra(){ return ((typeof inflacionEra==="function")?inflacionEra():1.4)/1.4; }
+function _r2(x){ return Math.round(x*100)/100; }
+function precioPatrimonio(a){ return _r2(a.costo*_kEra()); }
+function _defPat(item){ return PATRIMONIO.find(a=>a.id===item.id)||PATRIMONIO.find(a=>a.t===item.t)||null; }
+function bienesPropios(){
+  const pe=E.personal||{}; const out=[];
+  ["propiedades","autos"].forEach(k=>(pe[k]||[]).forEach(it=>out.push(it)));
+  return out;
+}
+/* partidas viejas: los lujos no tenían valor → se estima desde el catálogo */
+function migrarPatrimonio(){
+  bienesPropios().forEach(it=>{
+    if(typeof it.valor==="number") return;
+    const d=_defPat(it);
+    it.id=d?d.id:(it.id||"otro");
+    it.valor=d&&d.val>-1?precioPatrimonio(d)*0.8:0;
+    it.pagado=it.pagado||it.valor;
+  });
+}
+function patrimonioTotal(){
+  migrarPatrimonio();
+  return _r2((E.personal&&E.personal.bolsillo||0)+bienesPropios().reduce((s,it)=>s+(it.valor||0),0));
+}
+comprarLujo=function(l){
+  const d=l.id?l:(_defPat(l)||l);
+  if(d.req && (E.ind.prestigio||0)<d.req){ aviso("Todavía no tienes el nivel de club para eso (prestigio "+d.req+")."); return; }
+  const precio=d.val!==undefined?precioPatrimonio(d):l.costo;
+  if((E.personal.bolsillo||0)<precio){ aviso("No te alcanza el bolsillo ("+plata(precio)+")."); return; }
+  if(d.id&&bienesPropios().some(it=>it.id===d.id)&&(d.tipo==="ego"||d.id==="vina"||d.id==="heli")){ aviso("Ya tienes uno."); return; }
+  E.personal.bolsillo=_r2(E.personal.bolsillo-precio);
+  if(d.ef) aplicarEfectos(d.ef);
+  (d.tipo==="auto"?E.personal.autos:E.personal.propiedades).push({id:d.id,t:d.t,anio:E.anio,pagado:precio,valor:d.val<=-1?0:precio});
+  notificar({t:"Compraste: "+d.t,tipo:"neutro",bandeja:false,d:d.d+" Pagaste "+plata(precio)+"."+(d.mant?" Mantenerlo cuesta unos "+plata(_r2(d.mant*_kEra()))+" al año.":"")});
+  guardar(); render();
+};
+function venderBien(item){
+  const d=_defPat(item);
+  if(d&&d.tipo==="ego"){ aviso("Nadie compra una estatua tuya."); return 0; }
+  const neto=_r2((item.valor||0)*0.97);   /* corretaje/comisión ~3 % */
+  ["propiedades","autos"].forEach(k=>{ E.personal[k]=(E.personal[k]||[]).filter(x=>x!==item); });
+  E.personal.bolsillo=_r2((E.personal.bolsillo||0)+neto);
+  const gan=_r2(neto-(item.pagado||0));
+  notificar({t:"Vendiste: "+item.t,tipo:gan>=0?"bueno":"malo",bandeja:false,d:"Recibiste "+plata(neto)+" (descontado el 3 % de corretaje). "+(gan>=0?"Ganaste "+plata(gan)+" respecto de lo que pagaste.":"Perdiste "+plata(-gan)+" respecto de lo que pagaste.")});
+  guardar(); render();
+  return neto;
+}
+/* cierre anual: valorización, mantención, arriendos. Devuelve el balance para mostrarlo. */
+function cierrePatrimonio(){
+  migrarPatrimonio();
+  const k=_kEra(), b={val:0,mant:0,renta:0,vacios:[],quiebras:[]};
+  bienesPropios().slice().forEach(it=>{
+    const d=_defPat(it); if(!d) return;
+    const v0=it.valor||0;
+    if(d.val>-1) it.valor=_r2(Math.max(0,v0*(1+d.val+(Math.random()-0.5)*0.04)));
+    b.val+=it.valor-v0;
+    b.mant+=d.mant*k;
+    if(d.renta){
+      if(d.riesgoNeg&&Math.random()<d.riesgoNeg){ b.quiebras.push(it.t); it.valor=_r2(it.valor*0.2); if(d.tipo==="negocio"&&d.id==="resto"){ ["propiedades","autos"].forEach(x=>{ E.personal[x]=E.personal[x].filter(y=>y!==it); }); } return; }
+      if(d.tipo==="prop"&&Math.random()<0.12){ b.vacios.push(it.t); return; }
+      b.renta+=d.renta*k*(d.tipo==="negocio"?(0.6+Math.random()*0.8):1);
+    }
+  });
+  b.val=_r2(b.val); b.mant=_r2(b.mant); b.renta=_r2(b.renta);
+  if(b.mant||b.renta||b.val){
+    E.personal.bolsillo=_r2(Math.max(0,(E.personal.bolsillo||0)+b.renta-b.mant));
+    E.personal.patHist=E.personal.patHist||[];
+    E.personal.patHist.unshift({anio:E.anio,val:b.val,mant:b.mant,renta:b.renta,total:patrimonioTotal()});
+    if(E.personal.patHist.length>12) E.personal.patHist.length=12;
+    notificar({t:"Balance de tu patrimonio "+E.anio,tipo:(b.val+b.renta-b.mant)>=0?"bueno":"malo",bandeja:true,
+      d:"Valorización "+(b.val>=0?"+":"")+plata(b.val)+" · arriendos y utilidades +"+plata(b.renta)+" · mantención −"+plata(b.mant)+"."+
+        (b.vacios.length?" Sin arrendatario todo el año: "+b.vacios.join(", ")+".":"")+(b.quiebras.length?" Mal año para: "+b.quiebras.join(", ")+".":"")+
+        " Patrimonio total: "+plata(patrimonioTotal())+"."});
+  }
+  return b;
+}
+function panelPatrimonio(){
+  migrarPatrimonio();
+  const pl=panel("Patrimonio","💎");
+  const bienes=bienesPropios(), k=_kEra();
+  const enBienes=_r2(bienes.reduce((s,it)=>s+(it.valor||0),0));
+  const mantAnual=_r2(bienes.reduce((s,it)=>{ const d=_defPat(it); return s+(d?d.mant*k:0); },0));
+  pl.cuerpo.appendChild(fila("Patrimonio total",plata(patrimonioTotal())));
+  pl.cuerpo.appendChild(fila("Bolsillo · en bienes",plata(E.personal.bolsillo||0)+" · "+plata(enBienes)));
+  if(mantAnual) pl.cuerpo.appendChild(fila("Mantención al año",plata(mantAnual)));
+  if(bienes.length){
+    pl.cuerpo.appendChild(el("div","lb","Lo que tienes"));
+    bienes.forEach(it=>{
+      const d=_defPat(it), dif=_r2((it.valor||0)-(it.pagado||0));
+      const row=el("div","fila pat-bien");
+      row.innerHTML="<span>"+escHtml(it.t)+" <span class='mini'>· desde "+(it.anio||"?")+"</span></span><b>"+(d&&d.tipo==="ego"?"no se vende":plata(it.valor||0)+" <span class='mini "+(dif>=0?"verde":"rojo")+"'>("+(dif>=0?"+":"")+plata(dif)+")</span>")+"</b>";
+      if(!(d&&d.tipo==="ego")){ const b=el("button","btn-aqua chico","Vender"); b.onclick=()=>{ if(confirm("¿Vender "+it.t+" por "+plata(_r2((it.valor||0)*0.97))+"?")) venderBien(it); }; row.appendChild(b); }
+      pl.cuerpo.appendChild(row);
+    });
+  }
+  const h=(E.personal.patHist||[])[0];
+  if(h) pl.cuerpo.appendChild(el("p","mini","Último balance ("+h.anio+"): valorización "+(h.val>=0?"+":"")+plata(h.val)+" · arriendos +"+plata(h.renta)+" · mantención −"+plata(h.mant)+"."));
+  const det=el("details","pat-cat"); det.appendChild(el("summary",null,"Comprar ("+PATRIMONIO.length+" opciones)"));
+  PATRIMONIO.forEach(a=>{
+    const bloq=a.req&&(E.ind.prestigio||0)<a.req, precio=precioPatrimonio(a);
+    const rasgos=[a.val>0?"se valoriza ~"+Math.round(a.val*100)+" %/año":(a.val<=-1?"no se revende":"se deprecia ~"+Math.round(-a.val*100)+" %/año"),
+      a.mant?"mantención "+plata(_r2(a.mant*k))+"/año":"",a.renta?"renta ~"+plata(_r2(a.renta*k))+"/año":""].filter(Boolean).join(" · ");
+    const b=el("button","op"+(bloq?" op-bloqueado":""));
+    b.innerHTML='<div class="t">'+(bloq?"🔒 ":"")+escHtml(a.t)+' <span class="mini">· '+plata(precio)+'</span></div><div class="d">'+
+      (bloq?"Con un club de prestigio ≥ "+a.req+" empiezan a ofrecértelo.":escHtml(a.d)+"<br><span class='mini'>"+rasgos+"</span>")+'</div>';
+    b.disabled=!!bloq; if(!bloq) b.onclick=()=>comprarLujo(a);
+    det.appendChild(b);
+  });
+  pl.cuerpo.appendChild(det);
+  return pl;
+}
+
+/* ---------- apuestas deportivas: los partidos de tu liga, con cuotas del motor ---------- */
+const MARGEN_CASA=0.07;   /* las casas chilenas cobran ~6–8 % sobre la probabilidad justa */
+function _poisPMF(l,k){ let p=Math.exp(-l); for(let i=1;i<=k;i++) p*=l/i; return p; }
+function probabilidades1X2(a,b){
+  const fa=(a.fuerza||55)+3.2+(typeof _formaClub==="function"?_formaClub(a.id):0);
+  const fb=(b.fuerza||55)+(typeof _formaClub==="function"?_formaClub(b.id):0);
+  const d=(fa-fb)/24;
+  const lh=clamp(1.38+d*0.72,0.35,2.9), la=clamp(1.08-d*0.72,0.35,2.9);
+  let L=0,X=0,V=0;
+  for(let i=0;i<=5;i++) for(let j=0;j<=5;j++){
+    const p=(i===5?1-[0,1,2,3,4].reduce((s,k)=>s+_poisPMF(lh,k),0):_poisPMF(lh,i))*(j===5?1-[0,1,2,3,4].reduce((s,k)=>s+_poisPMF(la,k),0):_poisPMF(la,j));
+    if(i>j) L+=p; else if(i===j) X+=p; else V+=p;
+  }
+  return {L:L,X:X,V:V};
+}
+function cuotas1X2(a,b){
+  const p=probabilidades1X2(a,b), c={};
+  ["L","X","V"].forEach(k=>c[k]=Math.max(1.03,Math.round(100/(p[k]*(1+MARGEN_CASA)))/100));
+  return c;
+}
+function _clubApu(id){
+  const c=(typeof CLUB_POR_ID!=="undefined"&&CLUB_POR_ID[id])||(typeof clubLookup==="function"&&clubLookup(id));
+  return (c&&c.id)?c:{id:id,n:id,c:id,fuerza:60};
+}
+/* la próxima fecha de liga con sus partidos (los mismos que después simula simularResto) */
+function fechaApostable(){
+  const cal=E.calendario||[]; let idx=-1;
+  for(let i=E.idx||0;i<cal.length;i++){ if(cal[i]&&!cal[i].jugado&&cal[i].tipo==="liga"){ idx=i; break; } }
+  const part=cal[idx];
+  if(!part) return null;
+  const especial=["liguillaAscenso","liguillaDescenso","apertura","clausura","zonal"].indexOf(part.fase)>=0;
+  if(!part.jornada&&!especial&&typeof emparejarFecha==="function") part.jornada=emparejarFecha(E.anio,part.fecha,E.club,part.rivalId);
+  const pares=[];
+  const yo=[part.local?E.club:part.rivalId, part.local?part.rivalId:E.club];
+  if(part.rivalId) pares.push({a:yo[0],b:yo[1],mio:true});
+  (part.jornada||[]).forEach(p=>{ if(!p||p[0]===E.club||p[1]===E.club||p[0]==="__BYE__"||p[1]==="__BYE__") return; pares.push({a:p[0],b:p[1],mio:false}); });
+  return {part:part, idx:idx, pares:pares};
+}
+function apostar(par,pick,monto,cuota,idx){
+  monto=_r2(Math.max(0.01,Math.min(monto,E.personal.bolsillo||0)));
+  if(!(monto>0)){ aviso("No tienes plata en el bolsillo."); return null; }
+  const a=_clubApu(par.a), b=_clubApu(par.b);
+  E.personal.bolsillo=_r2(E.personal.bolsillo-monto);
+  const ap={anio:E.anio,idx:(typeof idx==='number'?idx:E.idx),a:par.a,b:par.b,na:a.c||a.n,nb:b.c||b.n,pick:pick,monto:monto,cuota:cuota,mio:!!par.mio};
+  E.personal.apuestas=E.personal.apuestas||[]; E.personal.apuestas.push(ap);
+  /* apostar a tu propio partido: prohibido por reglamento. Si te pillan, es un escándalo. */
+  if(par.mio){
+    const contra=(pick==="L"&&par.a!==E.club)||(pick==="V"&&par.b!==E.club);
+    ap.contra=contra;
+    if(Math.random()<(contra?0.45:0.2)){
+      aplicarRep({credibilidad:contra?-18:-8,publica:contra?-12:-5}); aplicarEfectos({riesgo:contra?18:8});
+      if(typeof aplicarGrupos==="function") aplicarGrupos({prensa:-8,anfp:contra?-14:-6,plantel:contra?-12:-2});
+      E.flags=E.flags||{}; E.flags.apuestaPropia=(E.flags.apuestaPropia||0)+1;
+      notificar({t:contra?"Apostaste contra tu propio equipo, y se supo":"Te pillaron apostando a tu propio partido",tipo:"malo",bandeja:true,
+        d:contra?"Un operador de la casa de apuestas filtró el movimiento. La ANFP abre investigación por posible amaño y el camarín ya no te mira igual."
+                :"La casa de apuestas reporta el movimiento a la ANFP. El reglamento lo prohíbe aunque apuestes a ganar. La prensa te pregunta en cada conferencia."});
+      if(typeof recordar==="function") recordar("escandalo",contra?"apostaste contra tu equipo":"apostaste a tu propio partido",{peso:"alto",tono:"malo"});
+    }
+  }
+  guardar();
+  return ap;
+}
+function _resultadoDe(ap){
+  const part=(E.calendario||[])[ap.idx];
+  if(ap.mio){
+    if(!part||!part.jugado||typeof part.gf!=="number") return null;
+    const gl=part.local?part.gf:part.gc, gv=part.local?part.gc:part.gf;
+    return [gl,gv];
+  }
+  if(!part||!part.jugado) return null;
+  const f=(E.ultimaFecha||[]).find(x=>x.a===ap.na&&x.b===ap.nb);
+  return f?[f.ga,f.gb]:"sinDato";
+}
+function resolverApuestas(){
+  const lista=(E.personal&&E.personal.apuestas)||[]; if(!lista.length) return [];
+  const hechas=[], quedan=[];
+  lista.forEach(ap=>{
+    const r=(ap.anio!==E.anio)?"sinDato":_resultadoDe(ap);
+    if(r===null){ quedan.push(ap); return; }
+    if(r==="sinDato"){ E.personal.bolsillo=_r2(E.personal.bolsillo+ap.monto); hechas.push({ap:ap,neto:0,txt:"anulada (devuelta)"}); return; }
+    const sal=r[0]>r[1]?"L":(r[0]===r[1]?"X":"V");
+    const gano=sal===ap.pick, pago=gano?_r2(ap.monto*ap.cuota):0;
+    E.personal.bolsillo=_r2(E.personal.bolsillo+pago);
+    hechas.push({ap:ap,neto:_r2(pago-ap.monto),txt:ap.na+" "+r[0]+"-"+r[1]+" "+ap.nb});
+  });
+  E.personal.apuestas=quedan;
+  if(hechas.length){
+    const neto=_r2(hechas.reduce((s,h)=>s+h.neto,0));
+    E.personal.apuHist=E.personal.apuHist||{jug:0,neto:0}; E.personal.apuHist.jug+=hechas.length; E.personal.apuHist.neto=_r2(E.personal.apuHist.neto+neto);
+    notificar({t:"Apuestas de la fecha: "+(neto>=0?"+":"")+plata(neto),tipo:neto>=0?"bueno":"malo",bandeja:false,
+      d:hechas.map(h=>h.txt+" → "+(h.neto>0?"+"+plata(h.neto):(h.neto<0?"−"+plata(-h.neto):"0"))).join(" · ")+
+        ". En total llevas "+(E.personal.apuHist.neto>=0?"+":"")+plata(E.personal.apuHist.neto)+" en "+E.personal.apuHist.jug+" apuestas."});
+  }
+  return hechas;
+}
+function panelApuestas(){
+  const p=panel("Apuestas deportivas","🎟️");
+  const f=fechaApostable(), pend=(E.personal.apuestas||[]);
+  p.cuerpo.appendChild(el("p","mini","Cuotas con el "+Math.round(MARGEN_CASA*100)+" % de margen de la casa, como las de verdad: a la larga, pierdes. Apostar a tu propio partido está prohibido por reglamento."+
+    (E.personal.apuHist?" Llevas "+(E.personal.apuHist.neto>=0?"+":"")+plata(E.personal.apuHist.neto)+" en "+E.personal.apuHist.jug+" apuestas.":"")));
+  if(pend.length) p.cuerpo.appendChild(el("div","resul mitad","En juego: "+pend.map(a=>escHtml(a.na+"–"+a.nb)+" ("+({L:"local",X:"empate",V:"visita"})[a.pick]+", "+plata(a.monto)+" a "+a.cuota.toFixed(2)+")").join(" · ")));
+  if(!f){ p.cuerpo.appendChild(el("p","mini","No hay una fecha de liga por delante para apostar.")); return p; }
+  let monto=_r2(Math.min(1,Math.max(0.1,(E.personal.bolsillo||0)/10)));
+  const maxB=Math.max(0.1,_r2(E.personal.bolsillo||0));
+  const lb=el("label","lb","Monto por apuesta: <b>"+plata(monto)+"</b>"); p.cuerpo.appendChild(lb);
+  const row=el("div"); row.style.cssText="display:flex;gap:8px;align-items:center";
+  const sm=el("input"); sm.type="range"; sm.min=0.1; sm.max=maxB; sm.step=0.1; sm.value=monto; sm.className="rango"; sm.style.flex="1";
+  const nm=el("input"); nm.type="number"; nm.min=0.1; nm.max=maxB; nm.step=0.1; nm.value=monto; nm.className="apu-monto"; nm.style.cssText="width:88px;padding:7px;border-radius:8px;border:1px solid rgba(0,0,0,.15)";
+  const sync=v=>{ monto=_r2(Math.max(0.1,Math.min(parseFloat(v)||0.1,maxB))); sm.value=monto; nm.value=monto; lb.querySelector("b").textContent=plata(monto); };
+  sm.oninput=()=>sync(sm.value); nm.onchange=()=>sync(nm.value);
+  row.appendChild(sm); row.appendChild(nm); p.cuerpo.appendChild(row);
+  const tab=el("div","apu-lista");
+  f.pares.forEach(par=>{
+    const a=_clubApu(par.a), b=_clubApu(par.b), c=cuotas1X2(a,b);
+    const ya=pend.some(x=>x.idx===f.idx&&x.a===par.a&&x.b===par.b);
+    const r=el("div","apu-fila"+(par.mio?" mio":""));
+    r.appendChild(el("span","apu-par",escHtml((a.c||a.n)+" – "+(b.c||b.n))+(par.mio?" <span class='mini rojo'>tu partido</span>":"")));
+    ["L","X","V"].forEach(k=>{
+      const bt=el("button","btn-aqua chico apu-cuota",({L:"1",X:"X",V:"2"})[k]+" · "+c[k].toFixed(2));
+      bt.disabled=ya||(E.personal.bolsillo||0)<=0;
+      bt.onclick=()=>{
+        if(par.mio&&!confirm("Apostar a tu propio partido está prohibido por el reglamento de la ANFP. Si se sabe, es un escándalo. ¿Apostar igual?")) return;
+        const ap=apostar(par,k,monto,c[k],f.idx); if(ap){ aviso("Apostaste "+plata(ap.monto)+" a "+c[k].toFixed(2)+" · si sale, cobras "+plata(_r2(ap.monto*ap.cuota))+"."); render(); }
+      };
+      r.appendChild(bt);
+    });
+    tab.appendChild(r);
+  });
+  p.cuerpo.appendChild(tab);
+  return p;
+}
+(function(){
+  const envolver=(nom,fn)=>{ const o=window[nom]; if(typeof o!=="function"||o._vrC) return; const w=fn(o); Object.keys(o).forEach(k=>w[k]=o[k]); w._vrC=true; window[nom]=w; };
+  envolver("terminarPartido",o=>function(){ const r=o.apply(this,arguments); try{ resolverApuestas(); }catch(e){} return r; });
+  envolver("finDeTemporada",o=>function(){ try{ cierrePatrimonio(); resolverApuestas(); }catch(e){} return o.apply(this,arguments); });
+})();
+if(typeof document!=="undefined"&&!document.getElementById("css-vida-c")){
+  const st=document.createElement("style"); st.id="css-vida-c";
+  st.textContent=".apu-lista{display:flex;flex-direction:column;gap:6px;margin-top:8px}"+
+    ".apu-fila{display:grid;grid-template-columns:1fr repeat(3,auto);gap:6px;align-items:center;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.04)}"+
+    ".apu-fila.mio{background:rgba(200,40,40,.08);outline:1px solid rgba(200,40,40,.25)}"+
+    ".apu-par{font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis}"+
+    ".apu-cuota{min-width:64px;font-variant-numeric:tabular-nums}"+
+    "@media (max-width:560px){.apu-fila{grid-template-columns:repeat(3,1fr)}.apu-par{grid-column:1/-1}}"+
+    ".pat-cat summary{cursor:pointer;font-weight:600;margin:8px 0 4px}"+
+    ".fila.pat-bien{flex-wrap:wrap;gap:6px}.fila.pat-bien>span{flex:1 1 55%;min-width:0}.fila.pat-bien>button{flex:0 0 auto}";
+  document.head.appendChild(st);
+}

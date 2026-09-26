@@ -1415,7 +1415,7 @@
     safe(function(){
       nuevaPartida("RAN",2026,"historico");
       t(E.perfil&&E.perfil.nombre==="Yoni","el DT parte llamándose Yoni ("+(E.perfil&&E.perfil.nombre)+")");
-      ["vida_real","vida_familia"].forEach(function(id){
+      ["vida_real","vida_familia","vida_patrimonio"].forEach(function(id){
         var r=DOCTOR_CHECKS.filter(function(c){ return c.id===id; })[0].fn();
         t(r.ok,"doctor "+id+": "+r.txt);
       });
@@ -1426,6 +1426,21 @@
       t(!!document.querySelector(".modal .resul"),"la cita termina con un desenlace");
       t(!!m.persona,"la persona tiene un carácter oculto ("+m.persona+")");
       cerrarModal();
+      E.personal.bolsillo=500; SEC="vida"; render();
+      var vt=document.getElementById("vista").textContent;
+      t(/Patrimonio total/.test(vt),"Vida muestra el patrimonio total");
+      t(document.querySelectorAll("#vista .apu-cuota").length>=3,"Vida trae apuestas con cuotas ("+document.querySelectorAll("#vista .apu-cuota").length+")");
+      t(!/Cohete|tigre/i.test(vt),"sin lujos de caricatura (cohete, tigre)");
+      var fa=fechaApostable(), par=fa&&fa.pares.filter(function(x){ return !x.mio; })[0];
+      if(par){
+        var ap=apostar(par,"L",5,2,fa.idx), b0=E.personal.bolsillo, n=0;
+        while(E.idx<=fa.idx&&n<12){ var pp=E.calendario[E.idx]; var P=iniciarPartido(pp,"simular"); correrHasta(P,90); terminarPartido(P); n++; }
+        var res=(E.ultimaFecha||[]).filter(function(x){ return x.a===ap.na&&x.b===ap.nb; })[0];
+        t(!E.personal.apuestas.length,"la apuesta se resuelve al jugarse la fecha");
+        t(!!res,"el partido apostado se jugó en esa fecha ("+ap.na+"–"+ap.nb+")");
+        if(res) t(Math.abs(E.personal.bolsillo-b0-(res.ga>res.gb?10:0))<0.01,"paga según el resultado real ("+res.ga+"-"+res.gb+")");
+      }
+      SEC="escritorio";
     },"Vida 7.9063");
 
     OUT.push("\n════════════════════════");

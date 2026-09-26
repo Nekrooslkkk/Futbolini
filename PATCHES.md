@@ -3927,3 +3927,33 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   Cada opción muestra sus números y el aviso dice cuánto cambió todo.
 - **Doctor `vida_familia`:** comprobado al revés; si el hijo nace al tiro, el chequeo falla.
   **Tests:** dev 531/531 · core 1185/1185.
+
+### 7.9064 — Vida (C): patrimonio que vive, apuestas deportivas y casino más honesto
+**Archivos:** `js/vida-real.js`, `js/reputacion.js`, `js/casino.js`, `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Patrimonio** (reemplaza "Lujos"): 15 bienes a precios 2026 aproximados, escalados por época:
+  - reloj, SUV usado, camioneta 4x4, depto para arrendar en Ñuñoa (~165 M), parcela en el sur, auto deportivo;
+  - local en Providencia, depto en Vitacura, socio de restaurante;
+  - desde prestigio 55: casa en Chicureo, lancha;
+  - desde prestigio 70: casa en Zapallar, viñedo en Colchagua;
+  - desde prestigio 85: helicóptero, tu propia estatua.
+- **Cada bien trae** valorización o depreciación anual, mantención (contribuciones, seguro, marina) y renta. En
+  un año, las propiedades pueden quedar sin arrendatario (12 %) y un negocio puede tener un mal año.
+- **Cierre de temporada:** balance de valorización, arriendos y mantención, que queda en la bandeja.
+- **Vender:** recibes el valor actual menos un 3 % de corretaje y ves cuánto ganaste o perdiste. La estatua no
+  se vende.
+- **Patrimonio total** (bolsillo + bienes): se ve en Vida y es lo que hereda la dinastía. Las partidas viejas
+  se migran con un valor estimado.
+- **Retirados:** el cohete, el tigre y la isla. Eran caricatura.
+- **Apuestas deportivas:** todos los partidos de la próxima fecha de tu liga.
+  - Las cuotas 1X2 salen del mismo modelo de goles que simula esos partidos, más un 7 % de margen de la casa.
+  - El monto se elige con slider o número.
+  - Se pagan solas cuando se juega la fecha, con el resultado real.
+  - Apostar a tu propio partido está prohibido por reglamento: te pide confirmar. Si te pillan (20 %; 45 % si
+    apostaste contra tu equipo), pierdes credibilidad, se abre una investigación en la ANFP y el camarín lo
+    sabe.
+- **Casino:** el blackjack también acepta el monto escrito. El tragamonedas decía que el par pagaba 1,5x pero
+  pagaba 1,2x; ahora el texto dice la verdad (RTP ≈ 90 %). Los textos pasaron a tú.
+- **Familia:** muestra el embarazo en curso y los hijos fallecidos (🕯️). El heredero es el mayor vivo.
+- **Doctor `vida_patrimonio`:** comprobado al revés con margen de casa del 30 % y una camioneta que se
+  valoriza.
+  **Tests:** dev 538/538 · core 1185/1185.
