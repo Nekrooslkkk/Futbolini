@@ -1785,3 +1785,12 @@ Estado: dev 554/554 · core 1185/1185.
   datos verificables. Pon `desde` si el dato tiene fecha.
 - Más respuestas para las preguntas nuevas que se sumen a `PREGUNTAS_VOZ`: 3 por pregunta, dichas por el
   DT, que contesten lo que se pregunta.
+
+**7.9069–7.9070 (Claude):**
+- **Prensa según el partido:** `partidoPesado`, `nPreguntasConf` y `nPreguntasPost` en `prensa-real.js`.
+- **Crisis de un hijo con aviso:** Parte D de `vida-real.js`.
+- **Arco:** cámara general en `arco3d.js`. Si agregas algo a la escena, proyéctalo con
+  `proyectar(cam,X,Y,Z)` o recórtalo con `_poly` / `_seg`. El córner usa otra traducción: sobre el plano de
+  1,9 m.
+
+Estado: dev 558/558 · core 1185/1185.

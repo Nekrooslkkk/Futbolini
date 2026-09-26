@@ -4113,3 +4113,37 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `vida_familia`:** ahora revisa además que la crisis no mate en el acto, que pida decidir, que
   tenga su segunda decisión y que con riesgo cero el hijo salga adelante. Comprobado al revés.
   **Tests:** dev 555/555 · core 1185/1185.
+
+### 7.9070 — Arco: tiro por deslizamiento, pateador de espalda, festejo con repetición, cámara de córner de tres cuartos
+**Archivos:** `js/arco3d.js`, `js/ui-partido.js` (textos), `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Respuestas del autor:** "Pateador de espalda, festejo y repetición y una cámara de Corner más certera, con
+  modelo mejorado y tipo de tiro FIFA / Score Hero / Soccer Champs".
+- **Cámara general:** posición, hacia dónde mira e inclinación. Todo polígono y toda línea se recortan contra la
+  cámara antes de proyectarse.
+- **Córner:**
+  - cámara alta en diagonal desde el lado del córner; el arco se ve de tres cuartos;
+  - primer palo, punto penal y segundo palo quedan separados en pantalla (antes, desde atrás del que cobra,
+    el arco quedaba de canto);
+  - se apunta sobre el plano de cabeceo (1,9 m) y la traducción a la lógica es exacta;
+  - se ve la tribuna lateral lejana;
+  - si es gol, el cabezazo termina adentro.
+- **Tiro por deslizamiento** (se puede seguir tocando el arco y apretando el botón):
+  - deslizas desde la pelota y el trazo se dibuja;
+  - rápido = potente; corto y suave = picada; si no, colocado (aprieta el botón que corresponde, así que las
+    probabilidades son las mismas);
+  - la curva del trazo es la comba del vuelo y de la trayectoria prevista.
+- **Pateador de espalda:** en el penal y el tiro libre está a un costado de la pelota, sin tapar el arco; en el
+  córner, junto al banderín. Hace la carrera antes del golpe y el arquero espera esa carrera.
+- **Festejo con repetición** (~3 s):
+  - papel picado con los colores de la hinchada;
+  - el pateador sale corriendo con los brazos arriba;
+  - repetición en cámara lenta con zoom al arco y sello "⟲ REPETICIÓN": la pelota y el arquero de nuevo.
+  - Mientras dura, la ventana no se cierra y el partido no se reanuda; después sigue solo.
+  - En modo liviano el festejo es corto y sin repetición.
+- **Figuras mejoradas:** sombra suave doble, cuello, puños, sombra en los muslos, medias con franja, botines con
+  brillo, orejas y pliegues de camiseta.
+- **Textos:** "Arrastrá/Soltá" pasaron a "Desliza".
+- **Doctor `arco_3d`:** revisa además cómo se clasifica el trazo (potente, picada, comba), que haya pateador y
+  que la ventana espere el festejo. Los tests revisan que el festejo arranque, que la ventana espere y que
+  después cierre. Comprobado al revés.
+  **Tests:** dev 558/558 · core 1185/1185.

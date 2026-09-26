@@ -1400,24 +1400,44 @@ devDoctorRegistrar({id:"arco_3d", area:"interfaz", n:"Arco 3D: cámara real (arc
     svg.innerHTML=htmlArcoVivo({modo:modo,barrera:modo==="tl",bolaX:modo==="corner"?40:180,bolaY:modo==="corner"?222:220,lado:"izq"});
     document.body.appendChild(svg);
     try{
-      var a=arcoL2S(svg,50,38), b=arcoL2S(svg,310,168), r=(b.x-a.x)/(b.y-a.y);
-      if(Math.abs(r-3)>0.06) falta.push(modo+": el arco mide "+r.toFixed(2)+":1 (uno real: 3:1)");
+      var cam=_camDe(svg);
+      if(cam.frontal){
+        var a=arcoL2S(svg,50,38), b=arcoL2S(svg,310,168), r=(b.x-a.x)/(b.y-a.y);
+        if(Math.abs(r-3)>0.06) falta.push(modo+": el arco mide "+r.toFixed(2)+":1 (uno real: 3:1)");
+      } else {
+        /* córner: primer palo, punto penal y segundo palo tienen que verse separados para apuntar */
+        var zp=arcoL2S(svg,70,50), zc=arcoL2S(svg,180,141), zs=arcoL2S(svg,290,50);
+        var sep=Math.min(Math.hypot(zp.x-zc.x,zp.y-zc.y),Math.hypot(zs.x-zc.x,zs.y-zc.y),Math.hypot(zp.x-zs.x,zp.y-zs.y));
+        if(sep<25) falta.push("córner: primer palo, penal y segundo palo quedan a "+Math.round(sep)+" px entre sí (no se puede apuntar)");
+      }
       [[70,60],[180,100],[290,150],[120,168]].forEach(function(p){
         var s=arcoL2S(svg,p[0],p[1]), q=arcoS2L(svg,s.x,s.y);
         if(Math.hypot(q.x-p[0],q.y-p[1])>0.5) falta.push(modo+": el dedo en ("+p+") vuelve como ("+q.x.toFixed(1)+","+q.y.toFixed(1)+")");
       });
-      var cam=_camDe(svg), kb=proyectar(cam,0,0,cam.Zb).k, kg=proyectar(cam,0,0,0).k;
+      var kb=cam.frontal?proyectar(cam,0,0,cam.Zb).k:arcoL2S(svg,cam.lbx,cam.lby).k, kg=cam.frontal?proyectar(cam,0,0,0).k:arcoL2S(svg,180,60).k;
       if(!(kg/kb<0.8)) falta.push(modo+": la pelota no se achica al llegar al arco (sin perspectiva: "+(kg/kb).toFixed(2)+")");
       if(!svg.querySelector(".a3-cal line")) falta.push(modo+": la cancha no tiene líneas en perspectiva");
       if(svg.querySelectorAll("pattern[id^=a3g]").length<10) falta.push(modo+": la tribuna tiene menos de 10 filas de gente");
     } catch(e){ falta.push(modo+": "+e.message); }
     finally { svg.remove(); }
   });
+  /* 7.9070 · tiro por deslizamiento, pateador de espalda y festejo que no se corta */
+  if(typeof efectoDeTrazo!=="function") falta.push("no hay tiro por deslizamiento");
+  else {
+    var rapido=efectoDeTrazo([{x:180,y:215,t:0},{x:180,y:150,t:30},{x:180,y:90,t:60}]);
+    var suave=efectoDeTrazo([{x:180,y:215,t:0},{x:182,y:180,t:120},{x:180,y:150,t:260}]);
+    var curva=efectoDeTrazo([{x:180,y:215,t:0},{x:240,y:150,t:150},{x:180,y:90,t:300}]);
+    if(!rapido||rapido.efecto!=="potente") falta.push("un trazo rápido no sale potente");
+    if(!suave||suave.efecto!=="picadita") falta.push("un trazo corto y suave no sale picada");
+    if(!curva||!(curva.curl>0.3)) falta.push("un trazo abombado a la derecha no da comba a la derecha");
+  }
+  if(!/a3-pateador/.test(htmlArcoVivo({modo:"penal"}))) falta.push("el penal no tiene pateador de espalda");
+  if(!(typeof cerrarModal==="function"&&cerrarModal._a3)) falta.push("la ventana puede cerrarse en medio del festejo");
   var st=document.createElement("div"); st.className="modal escena-3d"; st.innerHTML='<div class="e3d-stage"><div class="e3d-world"></div></div>';
   st.style.cssText="position:absolute;left:-9999px;visibility:hidden"; document.body.appendChild(st);
   var pos=getComputedStyle(st.querySelector(".e3d-world")).position; st.remove();
   if(pos!=="absolute") falta.push("el dibujo no vive en una capa absoluta: el escenario puede crecer con él");
-  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("3 cámaras con arco 3:1 · dedo ida y vuelta exacto · pelota con perspectiva · escenario fijo");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("penal y tiro libre con arco 3:1 · córner con zonas separadas · dedo ida y vuelta exacto · pelota con perspectiva · escenario fijo");
 }});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];

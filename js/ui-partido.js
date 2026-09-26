@@ -487,7 +487,7 @@ function modalPizarra(part){
       box.innerHTML="";
       box.appendChild(el("div","cab",'<span class="ic">🎯</span><span>Pizarra táctica</span>'));
       const c=el("div","cuerpo"); box.appendChild(c);
-      c.appendChild(el("p","mini","🖐️ Arrastrá a los jugadores por la cancha para acomodarlos. Se permiten esquemas asimétricos o bizarros. ⬆ arriba es el arco rival."));
+      c.appendChild(el("p","mini","🖐️ Arrastra a los jugadores por la cancha para acomodarlos. Se permiten esquemas asimétricos o bizarros. ⬆ arriba es el arco rival."));
       const grid=el("div","pizarra");
       for(let rr=PIZ_FILAS-1; rr>=0; rr--){
         for(let cc=0; cc<PIZ_COLS; cc++){
@@ -2228,8 +2228,8 @@ function minijuegoPenal(P,pateador,opts){
     _hudArco(c,"penal",P);
     let pat=pateador;
     const cands=(opts.cands&&opts.cands.length)?opts.cands:[pateador];
-    const chips=_chipsPateador(c, cands, pateador, function(j){ pat=j; etiq.innerHTML="Patea <b>"+j.n+"</b>. Arrastrá al rincón y soltá."; });
-    const etiq=el("p","mini e3d-etiq","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Arrastrá al arco y soltá. El centro flojo se ataja.");
+    const chips=_chipsPateador(c, cands, pateador, function(j){ pat=j; etiq.innerHTML="Patea <b>"+j.n+"</b>. Desliza al rincón."; });
+    const etiq=el("p","mini e3d-etiq","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Desliza desde la pelota al arco. El centro flojo se ataja.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
     const svg=_arcoMontarSvg(esc, htmlArcoVivo({arqX:180, modo:"penal", kitArq:kit, hinchada:hinchada, semilla:P.part&&P.part.rivalId}));
@@ -2302,7 +2302,7 @@ function minijuegoTiroLibre(P){
     const esc=_abrirEscenaArco(box, _tt("arco_tl_tit","Tiro libre"), "🎯");
     const c=esc.cuerpo;
     _hudArco(c,"tl",P);
-    const etiq=el("p","mini e3d-etiq","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Arrastrá por arriba o al costado y soltá.");
+    const etiq=el("p","mini e3d-etiq","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Desliza por arriba o al costado.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
     const svg=_arcoMontarSvg(esc, htmlArcoVivo({barrera:true, arqX:arqX, modo:"tl", kitArq:kit, kitWall:kit, kitAtk:kitAtk, hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
@@ -2406,7 +2406,7 @@ function minijuegoCorner(P){
     const esc=_abrirEscenaArco(box, _tt("arco_cor_tit","Córner"), "🚩");
     const c=esc.cuerpo;
     _hudArco(c,"corner",P);
-    const etiq=el("p","mini e3d-etiq","Cobra <b>"+(j.n)+"</b>. Arrastrá el centro: primer palo, punto penal o segundo palo. Soltá para cobrar.");
+    const etiq=el("p","mini e3d-etiq","Cobra <b>"+(j.n)+"</b>. Desliza el centro: primer palo, punto penal o segundo palo.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
     const svg=_arcoMontarSvg(esc, htmlArcoVivo({modo:"corner", arqX:arqX, kitArq:kit, kitWall:kit, kitAtk:kitAtk, bolaX:bolaX, bolaY:222, lado:lado, hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));

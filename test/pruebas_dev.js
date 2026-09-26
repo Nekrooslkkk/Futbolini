@@ -1500,7 +1500,16 @@
       minijuegoPenal(P_ACTUAL, once[0], {onRes:function(){}});
       var stg=document.querySelector("#capa-modal .e3d-stage");
       t(!!stg&&stg.classList.contains("e3d-v2"),"la escena usa el escenario nuevo");
-      cerrarModal(); P_ACTUAL=null;
+      var svgE=document.querySelector("#capa-modal .e3d-svg");
+      document.body.classList.remove("perf");
+      svgE.classList.add("arco-golazo");
+      _a3Festejo(svgE);
+      t(festejoArcoActivo(),"un gol arranca el festejo");
+      cerrarModal();
+      t(!!document.querySelector("#capa-modal .escena-3d"),"durante el festejo la ventana no se cierra");
+      _A3_FEST.hasta=0; cerrarModal();
+      t(!document.querySelector("#capa-modal .escena-3d"),"terminado el festejo, la ventana se cierra");
+      P_ACTUAL=null;
     },"Arco3D 7.9068");
 
     OUT.push("\n════════════════════════");
