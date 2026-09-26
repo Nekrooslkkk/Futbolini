@@ -3432,3 +3432,14 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Calendario:** en el resumen, tu liga abierta; las otras ligas y las copas plegadas (se dibujan al
   abrir): ~2.400 → ~1.000 nodos. Escudos que fallan una vez (sin internet) van directo al dibujo.
 - **Doctor +1:** `rendimiento_ui`, verificado al revés. **Tests:** dev 479/479 · core 1185/1185.
+
+## 7.9038 · El scroll se queda donde estabas (y el relato no se pierde)
+**Archivos:** `js/ui.js`, `js/ui-partido.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`, tests
+- **"Apretar cualquier cosa me manda arriba":** cada acción repintaba la sección entera; al vaciarla la página
+  se achicaba y el navegador llevaba el scroll a 0. Ahora `render()` sostiene el alto mientras repinta y vuelve
+  a tu posición. Cambiar de sección sí empieza arriba; volver a apretar la misma, no. Borrar una partida en
+  Ajustes tampoco te sube.
+- **Partido:** Pausa, velocidad, Cancha ON/OFF, Plan y auto-pausa repintaban todo y el relato salía de la vista.
+  Ahora la vista queda anclada al relato (mismo lugar en pantalla aunque aparezca o se esconda la cancha) y se
+  conserva el scroll interno del relato. Probado a 1280 y 390 px.
+- **Doctor +1:** `scroll_estable` (prueba en vivo), verificado al revés. **Tests:** dev 482/482 · core 1185/1185.

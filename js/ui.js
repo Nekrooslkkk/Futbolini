@@ -15,7 +15,10 @@ function irA(s){
   if(typeof partidoEnCurso==="function" && partidoEnCurso() && typeof pausarPartidoHold==="function"){
     pausarPartidoHold();
   }
-  SEC=s; render(); const v=$("#vista"); if(v){ v.classList.remove("fx-in"); void v.offsetWidth; v.classList.add("fx-in"); } window.scrollTo(0,0);
+  const cambia=(s!==SEC);
+  SEC=s; render();
+  if(!cambia) return;   /* 7.9038 · volver a apretar la misma sección no te manda arriba */
+  const v=$("#vista"); if(v){ v.classList.remove("fx-in"); void v.offsetWidth; v.classList.add("fx-in"); } window.scrollTo(0,0);
 }
 function esMovil(){ return !!(window.matchMedia&&window.matchMedia("(max-width:720px)").matches); }
 function encajarScrollMovil(box){
@@ -187,7 +190,21 @@ function pintarMenu(){
   });
 }
 /* ---------------- render ---------------- */
+/* 7.9038 · "apretar cualquier cosa me manda arriba": cada acción repinta la sección entera; al
+   vaciarla la página se achicaba un instante y el navegador llevaba el scroll a 0. Si la sección
+   es la misma, se sostiene el alto mientras se repinta y se vuelve a donde estabas. Cambiar de
+   sección sí empieza arriba (irA). */
 function render(){
+  const v=$("#vista"), misma=!!(E&&render._sec===SEC&&v), y=window.scrollY||0, alto=v?v.offsetHeight:0;
+  if(misma&&alto) v.style.minHeight=alto+"px";
+  try{ _renderCuerpo(); }
+  finally{
+    if(v) v.style.minHeight="";
+    render._sec=E?SEC:null;
+    if(misma && !document.body.classList.contains("con-modal") && Math.abs((window.scrollY||0)-y)>2){ try{ window.scrollTo(0,y); }catch(e){} }
+  }
+}
+function _renderCuerpo(){
   if(typeof detenerPlopBots==="function") detenerPlopBots();
   /* 7.9007 · cualquier render a mitad del partido lo pausa: las decisiones no desaparecen. */
   if(typeof partidoEnCurso==="function" && partidoEnCurso() && P_ACTUAL && !P_ACTUAL._holdUI && typeof pausarPartidoHold==="function"){
@@ -3134,7 +3151,10 @@ async function borrarPartidaUI(id,nombre){
   const eraActual=(E&&E._slot===id);
   await borrarPartida(id);
   if(eraActual){ E=null; SEC="escritorio"; }
+  /* 7.9038 · borrar una partida en Ajustes te mandaba arriba (la lista se recarga async) */
+  const y=window.scrollY||0, st=(typeof _ajVentana!=="undefined"&&_ajVentana)?_ajVentana.scrollTop:0;
   render(); aviso("Partida borrada");
+  setTimeout(function(){ try{ if(typeof _ajVentana!=="undefined"&&_ajVentana&&_ajVentana.isConnected) _ajVentana.scrollTop=st; else window.scrollTo(0,y); }catch(e){} },80);
 }
 function panelMisPartidas(v){
   const pm=panel("Mis partidas","🗂️");

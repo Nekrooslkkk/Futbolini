@@ -1290,6 +1290,19 @@
       t(JSON.stringify(r2)===JSON.stringify(r3),"calibrar da el mismo número para el mismo estado");
     },"Rendimiento");
 
+    grupo("Scroll que no salta · 7.9038");
+    safe(function(){
+      nuevaPartida("UCH",2026,"historico"); SEC="escritorio"; render();
+      var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="scroll_estable"; })[0], r=c&&c.fn();
+      t(r&&r.ok,"doctor scroll_estable: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
+      var rv=render; render=function(){ var v=$("#vista"); v.innerHTML=""; SEC=SEC; };
+      t(!c.fn().ok,"el Doctor caza un render que vacía la página (el bug viejo)"); render=rv;
+      var pp=proximoPartido(); P_ACTUAL=iniciarPartido(pp,"dirigir"); PAUSADO=true; correrHasta(P_ACTUAL,20); pintarPartido();
+      var n0=document.querySelectorAll(".relato .rel").length; pintarPartido();
+      t(document.querySelectorAll(".relato .rel").length===n0 && n0>0,"repintar el partido conserva todo el relato ("+n0+" líneas)");
+      clearInterval(TIMER); P_ACTUAL=null; PAUSADO=false; render();
+    },"Scroll");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

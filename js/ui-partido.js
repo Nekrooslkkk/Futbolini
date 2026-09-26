@@ -1052,9 +1052,32 @@ function aplicarVarValidado(P, ev){
   if(typeof pintarPartido==="function") pintarPartido();
   if(!PAUSADO && !(MOMENTO_OPS&&MOMENTO_OPS.length) && typeof correrEnVivo==="function") correrEnVivo();
 }
+/* 7.9038 · "Autobús, velocidad, pausa, cancha… y se pierde el relato": cada botón repinta la
+   pantalla desde cero; al vaciarla la página se achicaba y el scroll (y el del relato) volvía a 0.
+   Se sostiene el alto mientras se repinta y se vuelve exactamente a donde estabas. */
 function pintarPartido(){
   const P=P_ACTUAL; if(!P) return;
-  const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
+  const v0=$("#vista"), eraPartido=!!(v0&&v0.dataset.sec==="partido");
+  const y=window.scrollY||0, alto=v0?v0.offsetHeight:0;
+  const rel0=v0&&v0.querySelector(".relato"), relTop=rel0?rel0.scrollTop:0;
+  /* ancla: si el relato estaba en pantalla, queda en el mismo lugar aunque arriba cambie algo (cancha ON/OFF) */
+  const r0=rel0&&rel0.getBoundingClientRect(), ancla=(r0&&r0.top<innerHeight&&r0.bottom>0)?r0.top:null;
+  try{ _pintarPartidoCuerpo(P); }
+  finally{
+    const v=$("#vista"); if(v) v.style.minHeight="";
+    if(eraPartido){
+      const rel=v&&v.querySelector(".relato"); if(rel&&relTop) rel.scrollTop=relTop;
+      if(!document.body.classList.contains("con-modal")){
+        if(ancla!=null&&rel){ const d=rel.getBoundingClientRect().top-ancla; if(Math.abs(d)>2) try{ window.scrollBy(0,d); }catch(e){} }
+        else if(Math.abs((window.scrollY||0)-y)>2){ try{ window.scrollTo(0,y); }catch(e){} }
+      }
+    }
+  }
+}
+function _pintarPartidoCuerpo(P){
+  const v=$("#vista");
+  if(v.dataset.sec==="partido"&&v.offsetHeight) v.style.minHeight=v.offsetHeight+"px";
+  v.innerHTML=""; v.dataset.sec="partido";
   document.body.classList.add("en-partido");
   document.body.classList.remove("con-dock","hay-momento");
   if(typeof pintarDock==="function") pintarDock();

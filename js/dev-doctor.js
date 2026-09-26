@@ -796,6 +796,25 @@ devDoctorRegistrar({id:"rendimiento_ui", area:"interfaz", n:"La escena del penal
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("escena estable; fondo quieto dentro del juego");
 }});
 
+/* 7.9038 · "apretar cualquier cosa me manda arriba" y "se pierde el relato del partido" */
+devDoctorRegistrar({id:"scroll_estable", area:"interfaz", n:"Apretar un botón no te manda arriba (ni en el partido)", fn:function(){
+  var falta=[];
+  if(typeof _renderCuerpo!=="function") falta.push("repintar una sección vacía la página y el scroll vuelve arriba");
+  if(typeof pintarPartido!=="function"||String(pintarPartido).indexOf("ancla")<0) falta.push("los botones del partido (pausa, velocidad, cancha) sacan el relato de la vista");
+  if(typeof irA!=="function"||String(irA).indexOf("cambia")<0) falta.push("volver a apretar la misma sección te manda arriba");
+  if(!falta.length && E && document.body && !document.body.classList.contains("con-modal") && !document.body.classList.contains("en-partido")){
+    var y0=window.scrollY, alto=document.documentElement.scrollHeight-innerHeight;
+    if(alto<=200){ var vv=document.getElementById("vista"); if(vv){ vv.style.minHeight=(innerHeight+800)+"px"; alto=document.documentElement.scrollHeight-innerHeight; } }
+    if(alto>200){
+      window.scrollTo(0,Math.min(300,alto)); var y1=window.scrollY; render();
+      if(Math.abs(window.scrollY-y1)>2) falta.push("probado en vivo: render() movió el scroll de "+y1+" a "+window.scrollY);
+      window.scrollTo(0,y0);
+    }
+    var vx=document.getElementById("vista"); if(vx) vx.style.minHeight="";
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("el scroll se queda donde estabas");
+}});
+
 /* 7.9032 · legibilidad: el vidrio Aero no puede tapar el texto */
 function _docLum(rgb){
   var m=String(rgb).match(/[\d.]+/g); if(!m) return 1;
