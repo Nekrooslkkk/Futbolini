@@ -61,7 +61,7 @@ function registrarLiga(cfg){
   clubs.forEach(function(c){
     if(typeof CLUB_INFO_2026!=="undefined" && !CLUB_INFO_2026[c.id]){
       CLUB_INFO_2026[c.id]={ n:c.n, esc:c.esc||"⚪", est:c.est||("Estadio de "+(c.ciudad||c.c||c.n)),
-        dt:c.dt||"el cuerpo técnico", desc:c.desc||((c.n)+", de "+(c.ciudad||"la región")+".") };
+        dt:c.dt||"el cuerpo técnico", desc:c.desc||((c.n)+", de "+(c.ciudad||"la región")+"."), registrado:(typeof document!=="undefined"&&document.readyState!=="loading") };   /* 7.9077 · liga creada con el juego ya cargado = del jugador (no cuenta para la vara del alma) */
     }
     if(typeof IND_BASE_2026!=="undefined" && !IND_BASE_2026[c.id])
       IND_BASE_2026[c.id]=Object.assign(_indDeFuerza(c.fuerza), c.ind||{});

@@ -4255,3 +4255,37 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   guarda `_orig`). `scroll_estable` lo usa, así no se engaña cuando alguien envuelve `pintarPartido`
   (falló la primera vez al envolverla).
   **Tests:** dev 564/564 · core 1185/1185.
+
+### 7.9077 — El alma: los 76 clubes con contenido propio de verdad
+**Archivos:** `js/data-alma-9077.js` (nuevo), `js/liga-registrar.js`, `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Pedido del autor:** "seguir el protocolo de DOCTOR y revisar el alma y mejorar eso".
+- **Medición (`devInformeCobertura`):** 76 dirigibles, 35 ricos, 41 medios, 0 pobres. Los medios eran los 30
+  de la AFA y 11 de Segunda. River, Boca, Racing, Independiente, San Lorenzo, Vélez y Estudiantes tenían 3
+  ítems propios, menos que Deportes Rengo.
+- **89 dilemas nuevos, escritos para cada club** (no la plantilla con el nombre cambiado de
+  `data-alma-arg.js`). Ejemplos:
+  - la Bombonera que no alcanza y la reventa de entradas;
+  - la vuelta a Boedo;
+  - la deuda del Rey de Copas y la obra inconclusa del Libertadores de América;
+  - los recitales en el Amalfitani;
+  - el Cilindro y el clásico de Avellaneda sin visitantes;
+  - el Kempes que es provincial;
+  - el museo del Diego en La Paternal;
+  - la sequía y el pasto en Ovalle;
+  - el sponsor minero y el agua en Salamanca;
+  - las viñas de Colchagua;
+  - el Trasandino y el tren.
+
+  Tres por cada grande argentino y dos por cada club restante. Salen en marzo, mayo y julio (la Segunda
+  termina en junio).
+- **Integridad:** ficción de dirigencia sobre anclas públicas (estadio, barrio, rivalidades, debates
+  conocidos). Sin frases de personas reales, sin hechos con fecha inventados, sin jugadores nuevos. River ya
+  vendió el nombre del estadio: ese dilema se reescribió como "otro sponsor en la camiseta".
+- **Consecuencias:** cada opción lleva un perfil (`obra`, `caja`, `gasto`, `cantera`, `barrio`, `sponsor`,
+  `barra`, `firme`, `socios`, `camarin`, `politica`, `prensa`) que define plata, indicadores, grupos,
+  reputación, dificultad y los tres desenlaces (bien, a medias, mal).
+- **Resultado:** 76 ricos, 0 medios.
+- **Doctor `alma_pareja`:** la vara sube de "ningún pobre" a "todos ricos (6+)" y revisa que los dilemas
+  nuevos no traigan texto entre comillas. Las ligas que crea el jugador (registradas con el juego ya
+  cargado, `registrado:true`) no cuentan. Comprobado al revés: sin los dilemas de River, marca "RIV tiene 3".
+  **Tests:** dev 567/567 · core 1185/1185.

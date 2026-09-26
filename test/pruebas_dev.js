@@ -1543,6 +1543,16 @@
       t(r.ok,"doctor calendario_aero: "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
     },"Calendario 7.9073");
 
+    grupo("Alma de los clubes · 7.9077");
+    safe(function(){
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="alma_pareja"; })[0].fn();
+      t(r.ok,"doctor alma_pareja: "+r.txt+(r.ok?"":" · "+r.detalle.slice(0,4).join(" | ")));
+      var boca=DECISIONES.filter(function(d){ return d.club==="BOC"; }).length;
+      t(boca>=5,"Boca tiene decisiones propias ("+boca+")");
+      nuevaPartida("RIV",2026,"historico");
+      t(decisionesDisponibles().some(function(d){ return /^alma77_riv/.test(d.id); }),"una partida con River recibe sus dilemas propios");
+    },"Alma 7.9077");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

@@ -1525,6 +1525,16 @@ devDoctorRegistrar({id:"pantallas_pc", area:"interfaz", n:"En PC las ventanas de
   finally { v.innerHTML=html; v.dataset.sec=ds; SEC=sec; restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("Finanzas y Vida ocupan el ancho y reparten sus paneles en columnas");
 }});
+/* 7.9077 · la vara del alma sube: ningún club dirigible por debajo de "rico" (6+ ítems propios) */
+devDoctorRegistrar({id:"alma_pareja", area:"contenido", n:"Todos los clubes con alma propia de verdad (6+ ítems, sin citas inventadas)", fn:function(){
+  if(typeof devInformeCobertura!=="function") return _dok("auditor no cargado");
+  var inf=devInformeCobertura(), falta=[];
+  var base=function(c){ var i=typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id]; return !(i&&i.registrado); };   /* ligas creadas por el jugador no cuentan */
+  inf.medios.concat(inf.pobres).filter(base).forEach(function(c){ falta.push(c.id+" tiene "+c.total+" ítems propios (la vara es 6)"); });
+  var citas=(typeof DECISIONES!=="undefined"?DECISIONES:[]).filter(function(d){ return /^alma77_/.test(d.id)&&/[«»"“”]/.test(String(d.t)+" "+String(d.d)); });
+  if(citas.length) falta.push(citas.length+" dilemas nuevos traen texto entre comillas (¿frase puesta en boca de alguien?)");
+  return falta.length?_dmal(falta.length+" problema(s)",falta.slice(0,20)):_dok(inf.total+" clubes dirigibles, todos con 6+ ítems propios");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
