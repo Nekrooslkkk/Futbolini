@@ -1535,6 +1535,13 @@
       SEC="escritorio";
     },"PLOP 7.9072");
 
+    grupo("Calendario Aero · 7.9073");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="calendario_aero"; })[0].fn();
+      t(r.ok,"doctor calendario_aero: "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+    },"Calendario 7.9073");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

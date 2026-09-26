@@ -4189,3 +4189,27 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **La lógica no se toca:** se reordena el DOM que ya pinta `vistaRedes`, envuelto con el flag `_plopt`.
 - **Doctor `plop_antiguo`:** comprobado al revés.
   **Tests:** dev 563/563 · core 1185/1185.
+
+### 7.9073 — Etapa 4A · Calendario con cariño Aero (Vista / 7)
+**Archivos:** `js/interfaz-aero.js`, `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Pedido del autor:** "el SofaScore (quiero más cariño)… Frutiger Aero / Windows Vista / 7 / XP". Se mantiene el
+  orden de SofaScore y se le pone el vidrio de Windows.
+- **Buscador:** estilo Vista, con lupa dibujada y brillo azul al escribir.
+- **Pestañas:** barra de vidrio; la activa es un botón azul brillante de Vista.
+- **Partidos:**
+  - la fecha es una hoja de calendario de escritorio con franja roja;
+  - el marcador va en una pastilla de vidrio oscuro;
+  - las tarjetas son de vidrio y el mes lleva línea degradada;
+  - en el próximo compromiso, el "VS" es una esfera azul.
+- **Tablas:**
+  - cabecera brillante y filas alternas de vidrio;
+  - tu club en verde;
+  - la posición es una esfera de color según la zona: oro campeón, verde Libertadores, azul Sudamericana,
+    rojo descenso, naranjo permanencia;
+  - la forma se ve en bolitas de vidrio.
+- **Bug de las "cajitas raras":** la clase genérica `.pos` de `base.css` (la ficha de posición del jugador)
+  convertía la celda de posición en una caja con borde. Ahora vuelve a ser celda.
+- **Celular:** las ligas quedan en una sola fila deslizable.
+- **Avisos de logro:** se suben para no quedar encima del botón gordo de Avanzar.
+- **Doctor `calendario_aero`:** detecta el choque de clases. Comprobado al revés.
+  **Tests:** dev 564/564 · core 1185/1185.

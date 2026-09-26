@@ -139,6 +139,7 @@ if(typeof document!=="undefined"&&!document.getElementById("css-interfaz-aero"))
     ".avance-grande .ag-t{font-weight:900;font-size:19px;letter-spacing:.3px}.avance-grande .ag-s{font-size:12px;opacity:.95}"+
     "body.nav-lateral .avance-grande{left:calc(50% + 82px)}"+
     "body.con-avance #vista{padding-bottom:88px}"+
+    "body.con-avance #avisos{bottom:88px}"+
     "body.con-modal .avance-grande,body.en-partido .avance-grande{display:none}"+
     "@media (max-width:760px){body.hay-momento .momento-vivo{max-height:55vh !important;overflow-y:auto !important}}"+
     /* chat en vivo */
@@ -202,5 +203,53 @@ if(typeof document!=="undefined"&&!document.getElementById("css-plop-antiguo")){
     ".plopt-perfil b{color:#333;font-size:14px}"+
     ".plopt-lado .fila{border-color:#c0deed !important}"+
     ".plopt-lado .resul{background:rgba(255,255,255,.6) !important}";
+  document.head.appendChild(st);
+}
+
+/* ============================================================
+   7.9073 · Calendario con cariño Aero (Vista / 7): el orden de SofaScore, el vidrio de Windows.
+   Buscador tipo Vista, pestañas de vidrio, tarjetas con fecha de hoja de calendario, marcadores
+   brillantes, tabla con franjas de zona y posiciones en esferas, forma en bolitas de vidrio.
+   ============================================================ */
+if(typeof document!=="undefined"&&!document.getElementById("css-cal-aero")){
+  const st=document.createElement("style"); st.id="css-cal-aero";
+  st.textContent=
+    "#vista .cs .cs-buscar .pick-buscar{border-radius:14px;border:1px solid #7da2c8;background:linear-gradient(180deg,#fff,#f2f7fc);box-shadow:inset 0 2px 3px rgba(0,40,90,.14),0 1px 0 rgba(255,255,255,.8);padding-right:38px;"+
+      "background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ccircle cx='7.5' cy='7.5' r='5' fill='none' stroke='%232b6fb3' stroke-width='2'/%3E%3Cpath d='M11.5 11.5 L16 16' stroke='%232b6fb3' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E\"),linear-gradient(180deg,#fff,#f2f7fc);background-repeat:no-repeat;background-position:right 12px center,0 0}"+
+    "#vista .cs .cs-buscar .pick-buscar:focus{border-color:#3d8fe0;box-shadow:0 0 0 3px rgba(61,143,224,.25),inset 0 2px 3px rgba(0,40,90,.12)}"+
+    "#vista .cs .cs-tabs{background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(190,220,245,.42) 50%,rgba(160,200,235,.45) 51%,rgba(200,228,250,.55));border:1px solid rgba(255,255,255,.75);box-shadow:0 2px 8px rgba(0,50,100,.18),inset 0 1px 0 rgba(255,255,255,.9);padding:5px}"+
+    "#vista .cs .cs-tab{color:#0b2a4a;font-weight:700;text-shadow:0 1px 0 rgba(255,255,255,.7)}"+
+    "#vista .cs .cs-tab:hover{background:rgba(255,255,255,.45)}"+
+    "#vista .cs .cs-tab.on{background:linear-gradient(180deg,#8ecbff 0%,#3d8fe0 48%,#1f6fc0 52%,#3b8ee2 100%);color:#fff;text-shadow:0 1px 1px rgba(0,30,70,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 2px 6px rgba(0,50,110,.35)}"+
+    "#vista .cs .cs-mes{display:flex;align-items:center;gap:8px;color:#1d5f9e}#vista .cs .cs-mes::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(29,95,158,.45),transparent)}"+
+    "#vista .cs .cs-fila{background:linear-gradient(180deg,#ffffff,#f1f7fd);border:1px solid #c9dcef;box-shadow:0 1px 3px rgba(0,40,90,.1),inset 0 1px 0 #fff;border-radius:12px}"+
+    "#vista .cs .cs-fila.clic:hover{background:linear-gradient(180deg,#f7fbff,#e3f0fc);border-color:#8ec0ea}"+
+    "#vista .cs .cs-fila.prox{border:2px solid #3d8fe0;box-shadow:0 0 0 3px rgba(61,143,224,.18)}"+
+    /* la fecha como hoja de calendario de escritorio */
+    "#vista .cs .cs-cuando{background:linear-gradient(180deg,#fff,#eef3f8);border:1px solid #b9c9da;border-top:7px solid #d2322d;border-radius:6px;padding:3px 2px 4px;box-shadow:0 1px 2px rgba(0,0,0,.12);font-weight:700;color:#253545}"+
+    /* marcador de vidrio oscuro */
+    "#vista .cs .cs-marc{background:linear-gradient(180deg,#4b5d72,#1c2a3a 55%,#101b27);color:#fff;border-radius:9px;padding:2px 0;min-width:30px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 1px 2px rgba(0,0,0,.25)}"+
+    /* tabla: cabecera brillante, filas de vidrio, posiciones en esferas de color por zona */
+    "#vista .cs .cs-tabla th{background:linear-gradient(180deg,#f4f9ff,#d6e7f7);color:#2a4a6a;border-bottom:1px solid #9fc0e0}"+
+    "#vista .cs .cs-tabla tbody tr:nth-child(even) td{background:rgba(225,238,250,.45)}"+
+    "#vista .cs .cs-tabla tbody tr:hover td{background:rgba(142,203,255,.25)}"+
+    "#vista .cs .cs-tabla tr.yo td{background:linear-gradient(180deg,rgba(190,245,200,.7),rgba(140,225,160,.55))}"+
+    "#vista .cs .cs-tabla td.pos{display:table-cell !important;border-radius:0 !important;border:0 !important;box-shadow:none !important;text-align:center !important;padding:0 !important;width:36px;min-width:36px;line-height:26px;color:#fff;font-size:12px;text-shadow:0 1px 1px rgba(0,0,0,.45);"+
+      "background:radial-gradient(circle at 50% 32%,rgba(255,255,255,.9) 0,rgba(255,255,255,0) 38%),radial-gradient(circle,#8a9aad 0,#5d6e82 62%,transparent 64%) !important;background-size:26px 26px !important;background-position:center !important;background-repeat:no-repeat !important}"+
+    "#vista .cs .cs-tabla tr.z-camp td.pos{background:radial-gradient(circle at 50% 32%,rgba(255,255,255,.9) 0,rgba(255,255,255,0) 38%),radial-gradient(circle,#f3c742 0,#c88a0e 62%,transparent 64%) !important;background-size:26px 26px !important;background-position:center !important;background-repeat:no-repeat !important}"+
+    "#vista .cs .cs-tabla tr.z-lib td.pos{background:radial-gradient(circle at 50% 32%,rgba(255,255,255,.9) 0,rgba(255,255,255,0) 38%),radial-gradient(circle,#4fdc78 0,#1d9a45 62%,transparent 64%) !important;background-size:26px 26px !important;background-position:center !important;background-repeat:no-repeat !important}"+
+    "#vista .cs .cs-tabla tr.z-sud td.pos{background:radial-gradient(circle at 50% 32%,rgba(255,255,255,.9) 0,rgba(255,255,255,0) 38%),radial-gradient(circle,#5aa6ef 0,#1f5fae 62%,transparent 64%) !important;background-size:26px 26px !important;background-position:center !important;background-repeat:no-repeat !important}"+
+    "#vista .cs .cs-tabla tr.z-desc td.pos{background:radial-gradient(circle at 50% 32%,rgba(255,255,255,.9) 0,rgba(255,255,255,0) 38%),radial-gradient(circle,#f06a5a 0,#b32618 62%,transparent 64%) !important;background-size:26px 26px !important;background-position:center !important;background-repeat:no-repeat !important}"+
+    "#vista .cs .cs-tabla tr.z-perm td.pos{background:radial-gradient(circle at 50% 32%,rgba(255,255,255,.9) 0,rgba(255,255,255,0) 38%),radial-gradient(circle,#f2b04a 0,#c06f10 62%,transparent 64%) !important;background-size:26px 26px !important;background-position:center !important;background-repeat:no-repeat !important}"+
+    "@media (max-width:600px){#vista .cs .cs-chips{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;padding-bottom:2px}#vista .cs .cs-chips::-webkit-scrollbar{display:none}#vista .cs .cs-chips .ficha{flex:0 0 auto}}"+
+    "#vista .cs .fd{box-shadow:inset 0 -1px 1px rgba(0,0,0,.25),inset 0 1px 1px rgba(255,255,255,.7)}"+
+    "#vista .cs .fd.fG{background:radial-gradient(circle at 40% 30%,#a8f5bd,#1fae52 60%)}#vista .cs .fd.fE{background:radial-gradient(circle at 40% 30%,#e3e9ef,#8a97a5 60%)}#vista .cs .fd.fP{background:radial-gradient(circle at 40% 30%,#ffb3a8,#d23b2a 60%)}"+
+    "#vista .cs .cs-grupo{background:linear-gradient(180deg,#fff,#f1f7fd);border-color:#c9dcef;box-shadow:0 1px 3px rgba(0,40,90,.1)}"+
+    "#vista .cs .cs-equipo-cab{background:linear-gradient(180deg,#2a5d93 0%,#123e6e 48%,#0b2c52 52%,#123e6e 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 8px rgba(0,30,70,.3)}"+
+    "#vista .cs .cs-prox-card .cs-vs{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;color:#fff;background:radial-gradient(circle at 50% 30%,#9fd4ff,#2f7dd0 60%,#174f93);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 2px 5px rgba(0,40,90,.3)}"+
+    "body[data-tema=negro] #vista .cs .cs-fila,body[data-tema=negro] #vista .cs .cs-grupo{background:linear-gradient(180deg,#1f3247,#172636);border-color:#2a3d52}"+
+    "body[data-tema=negro] #vista .cs .cs-tabla th{background:linear-gradient(180deg,#223a55,#172a3f);color:#cfe3f7}"+
+    "body[data-tema=negro] #vista .cs .cs-tabla tbody tr:nth-child(even) td{background:rgba(40,60,85,.35)}"+
+    "body[data-tema=negro] #vista .cs .cs-cuando{background:linear-gradient(180deg,#27394d,#1c2b3b);color:#e3f0ff;border-color:#34495f;border-top-color:#d2322d}";
   document.head.appendChild(st);
 }

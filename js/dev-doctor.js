@@ -1477,6 +1477,27 @@ devDoctorRegistrar({id:"plop_antiguo", area:"interfaz", n:"PLOP! se ve como el T
   finally { v.innerHTML=html; SEC=sec; restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("ventana IE · cielo · «¿Qué está pasando?» · línea de tiempo con avatares · barra lateral");
 }});
+devDoctorRegistrar({id:"calendario_aero", area:"interfaz", n:"Calendario con estilo Aero y sin choques de clases genéricas", fn:function(){
+  if(typeof document==="undefined"||!document.body) return _dok("sin DOM");
+  var falta=[], v=document.getElementById("vista"); if(!v) return _dok("sin vista");
+  var snap=clonarPartida(E), sec=SEC, html=v.innerHTML, ds=v.dataset.sec;
+  try{
+    E.uiCal=E.uiCal||{}; var t0=E.uiCal.tab; E.uiCal.tab="tablas"; SEC="calendario"; v.innerHTML=""; v.dataset.sec="calendario";
+    (typeof vistaCalendario==="function"?vistaCalendario:function(){})();
+    var td=v.querySelector(".cs-tabla td.pos");
+    if(!td) falta.push("la tabla del calendario no se pintó");
+    else {
+      var cs=getComputedStyle(td);
+      if(cs.display!=="table-cell") falta.push("la posición de la tabla se pinta como caja («.pos» genérica de base.css choca): "+cs.display);
+      if(!/gradient/.test(cs.backgroundImage)) falta.push("la posición no tiene su esfera de color");
+    }
+    var tab=v.querySelector(".cs-tab.on");
+    if(tab&&!/gradient/.test(getComputedStyle(tab).backgroundImage)) falta.push("la pestaña activa no tiene el vidrio Aero");
+    E.uiCal.tab=t0;
+  } catch(e){ falta.push("el calendario se cae: "+e.message); }
+  finally { v.innerHTML=html; v.dataset.sec=ds; SEC=sec; restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("pestañas de vidrio · posiciones en esferas por zona · celdas sin choque de clases");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
