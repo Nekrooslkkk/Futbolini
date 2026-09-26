@@ -1110,10 +1110,13 @@ const JUGADAS_PODER=[
   malo:{grupos:{anfp:-10},rep:{credibilidad:-5},ef:{riesgo:4},msg:"Te expusiste: ahora el arbitraje te va a mirar con lupa."}}
 ];
 function probMalaJugada(j){ return clamp(j.prob-(((E.rep&&E.rep.credibilidad)||50)-50)/200,0.1,0.85); }
+function jugadaUsada(j){ return !!(E.flags&&E.flags["jp_"+j.id+"_"+E.anio]); }
 function hacerJugadaPoder(j){
+  if(jugadaUsada(j)){ aviso("«"+j.n+"» ya la jugaste esta temporada."); return; }
   if((E.capital||0)<j.costo){ aviso("No te alcanza el capital institucional ("+j.costo+" necesarios)"); return; }
   if(!confirm(j.n+" — cuesta "+j.costo+" de capital y hay ~"+Math.round(probMalaJugada(j)*100)+"% de que salga mal. ¿Jugártela?")) return;
   E.capital-=j.costo;
+  E.flags=E.flags||{}; E.flags["jp_"+j.id+"_"+E.anio]=true;   /* 7.9050 · una vez por temporada */
   const malo=Math.random()<probMalaJugada(j);
   const res=malo?j.malo:j.bueno;
   if(res.ef) aplicarEfectos(res.ef);
@@ -1142,9 +1145,10 @@ function vistaInstitucion(){
   pp.cuerpo.appendChild(el("p","mini","Movidas fuertes: gastas capital para ir por un premio grande… o que te explote. Tu credibilidad ("+Math.round((E.rep&&E.rep.credibilidad)||50)+"/100) baja el riesgo de que salga mal."));
   const _locFed=(typeof localizarFed==="function")?localizarFed:(x=>x);   /* ANFP→AFA en liga extranjera */
   JUGADAS_PODER.forEach(j=>{
-    const b=el("button","op"); b.disabled=(E.capital||0)<j.costo;
+    const usadaJ=jugadaUsada(j);
+    const b=el("button","op"); b.disabled=usadaJ||(E.capital||0)<j.costo;
     const pm=Math.round(probMalaJugada(j)*100);
-    b.innerHTML=_locFed('<div class="t">'+j.ic+" "+j.n+" · "+j.costo+' cap.</div><div class="d">'+j.desc+" <span class='mini'>(riesgo de que salga mal: ~"+pm+"%)</span></div>");
+    b.innerHTML=_locFed('<div class="t">'+j.ic+" "+j.n+" · "+j.costo+' cap.'+(usadaJ?" · <span class='mini'>ya la jugaste esta temporada</span>":"")+'</div><div class="d">'+j.desc+" <span class='mini'>(riesgo de que salga mal: ~"+pm+"%)</span></div>");
     b.onclick=()=>hacerJugadaPoder(j);
     pp.cuerpo.appendChild(b);
   });
@@ -1171,10 +1175,13 @@ function vistaInstitucion(){
     const d=el("div");
     d.innerHTML='<div class="fila"><span>'+cat.ic+" "+cat.n+'</span><b>'+_locFed(actual?actual.n:"—")+'</b></div>';
     const f=el("div","fichas");
+    const tocadoEst=!!(E.flags&&E.flags["est_"+cat.id+"_"+E.anio]);   /* 7.9050 · un cambio por temporada */
+    if(tocadoEst) d.appendChild(el("div","mini","Ya lo cambiaste esta temporada: el estatuto se asienta hasta enero."));
     cat.op.forEach(o=>{
       if(o.id===E.estatutos[cat.id]) return;
       const costo=cat.pesado?42:22;
       const b=el("button","ficha",_locFed(o.n)+" · "+costo);
+      b.disabled=tocadoEst;
       b.title=_locFed(o.d);
       b.onclick=()=>cambiarEstatuto(cat,o,costo);
       f.appendChild(b);
@@ -1194,10 +1201,11 @@ function vistaInstitucion(){
       pi.cuerpo.appendChild(el("h3","sub",gr.ic+" "+gr.g));
       gr.ops.forEach((op,oi)=>{
         const key="pasillo_"+gi+"_"+oi+"_"+E.anio;
-        const usado=!op.soplo && !!(E.flags&&E.flags[key]);
+        const soploEspera=op.soplo && ((E.idx||0)-((E.flags&&E.flags.soploIdx!=null)?E.flags.soploIdx:-99))<4;   /* 7.9050 · un soplo cada 4 fechas */
+        const usado=(!op.soplo && !!(E.flags&&E.flags[key])) || soploEspera;
         const b=el("button","op"); b.disabled=usado;
         const costo=op.capital?(Math.abs(op.capital)+" capital"):(op.plata?plata(Math.abs(op.plata)):"gratis");
-        b.innerHTML='<div class="t">'+op.t+(usado?" · <span class='mini'>ya lo hiciste esta temporada</span>":"")+'</div><div class="d">'+(op.d||"")+' · <b>'+costo+'</b></div>';
+        b.innerHTML='<div class="t">'+op.t+(usado?" · <span class='mini'>"+(soploEspera?"el informante vuelve en unas fechas":"ya lo hiciste esta temporada")+"</span>":"")+'</div><div class="d">'+(op.d||"")+' · <b>'+costo+'</b></div>';
         b.onclick=()=>{
           const r=aplicarInteraccion(op);
           if(!r.ok){ aviso(r.msg); return; }
@@ -1218,14 +1226,17 @@ function abrirMesaBarra(){
     box.classList.remove("panel");
     const p=panel("Mesa con la barra","🚩","alerta"); p.classList.add("dec");
     p.cuerpo.appendChild(el("h2","tit","Los referentes de la barra piden reunión"));
-    p.cuerpo.appendChild(el("p","ctx","La mesa no es un trámite: lo que acuerdas queda, y si lo rompes te lo cobran. Pactos en pie: "+pactosVigentes()+"/3"+(barraContenta()?" — la barra está de tu lado.":".")));
-    const vig=E.barra.pactos.filter(x=>!x.roto);
+    const lleno=pactosVigentes()>=(typeof TOPE_PACTOS!=="undefined"?TOPE_PACTOS:3);
+    p.cuerpo.appendChild(el("p","ctx","La mesa no es un trámite: lo que acuerdas queda, y si lo rompes te lo cobran. Los pactos duran la temporada. Pactos en pie: "+pactosVigentes()+"/3"+(barraContenta()?" — la barra está de tu lado.":".")));
+    if(lleno) p.cuerpo.appendChild(el("div","resul mitad","Con tres pactos en pie la mesa no da para más: cumple lo que prometiste. En enero se vuelve a negociar."));
+    const vig=E.barra.pactos.filter(x=>!x.roto&&!x.vencido);
     if(vig.length){ p.cuerpo.appendChild(el("h3","sub","Pactos en pie")); vig.forEach(x=>p.cuerpo.appendChild(el("div","mini","🤝 "+x.resumen))); }
     if(E.barra.lienzos.length) p.cuerpo.appendChild(el("div","resul mal","🚩 Lienzo en contra: "+E.barra.lienzos[E.barra.lienzos.length-1].t));
     const ops=el("div","ops");
     pactosBarra().forEach(o=>{
-      const yaTiene=E.barra.pactos.some(x=>!x.roto && x.tipo===o.tipo && (!o.quien||x.quien===o.quien));
-      const b=el("button","op"); b.disabled=yaTiene||(o.costo&&E.plata<o.costo);
+      const fam=(typeof _familiaPacto==="function")?_familiaPacto:(t=>t);
+      const yaTiene=E.barra.pactos.some(x=>!x.roto && !x.vencido && fam(x.tipo)===fam(o.tipo));
+      const b=el("button","op"); b.disabled=yaTiene||lleno||(o.costo&&E.plata<o.costo);
       b.innerHTML='<div class="t">'+o.t+(yaTiene?" · <span class='mini'>ya pactado</span>":(o.costo?" · <b>"+plata(o.costo)+"</b>":""))+'</div><div class="d">'+o.d+'</div>';
       b.onclick=()=>{ if(pactar(o)){ cerrarModal(); render(); aviso("Pacto cerrado con la barra"); } };
       ops.appendChild(b);
@@ -1287,6 +1298,7 @@ function cambiarEstatuto(cat,op,costo){
     const b=el("button","btn-aqua ancho verde","Promulgar");
     b.onclick=()=>{
       E.capital-=costo;
+      E.flags=E.flags||{}; E.flags["est_"+cat.id+"_"+E.anio]=true;
       E.estatutos[cat.id]=op.id;
       aplicarGrupos(op.ef||{});
       aplicarEstatutosMod();

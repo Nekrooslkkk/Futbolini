@@ -3642,3 +3642,20 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `noticias_relevantes`:** recorre 14 semanas de titulares y las noticias del país. Al revés, con
   Osorno forzado y una nota de desarrollo, da 2 problemas.
   **Tests:** dev 519/519 · core 1185/1185.
+
+### 7.9050 — Institución con topes de verdad
+**Archivos:** `js/barra.js`, `js/ui.js`, `js/motor.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`
+- Pedido del autor: la mesa de la barra dejaba cerrar un 4° pacto con 3/3 ("¿se mide en todo el juego?"), y
+  había acciones repetibles sin fin.
+- **Pactos:**
+  - duran la temporada: al cambiar el año vencen (`p.vencido`), no se rompen;
+  - tope duro de 3 en `pactar()`, no solo en el botón;
+  - "no vender al ídolo" y "no rematar el plantel" son la misma promesa, así que un cambio de ídolo ya no
+    abre un pacto nuevo;
+  - la mesa lo explica.
+- **Jugadas de poder:** cada una, una vez por temporada.
+- **Estatutos:** cada categoría se cambia una vez por temporada (antes se podía ir y volver sin fin).
+- **Soplo anónimo:** uno cada 4 fechas. Se revisa en `aplicarInteraccion` antes de cobrar.
+- **Doctor `institucion_limites`:** mide el comportamiento real (intenta 5 pactos, cambia el año, compra dos
+  soplos). Al revés, con el `pactar` viejo, falla.
+  **Tests:** dev 519/519 · core 1185/1185.

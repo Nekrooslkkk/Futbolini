@@ -511,6 +511,9 @@ function notificar(n){
 }
 /* ---------- 5.0 · Bloque 4 — interacción institucional ---------- */
 function aplicarInteraccion(op){
+  /* 7.9050 · el informante no vive en tu oficina: una vez cada 4 fechas (se revisa ANTES de cobrar) */
+  E.flags=E.flags||{};
+  if(op.soplo && E.flags.soploIdx!=null && (E.idx||0)-E.flags.soploIdx<4) return {ok:false,msg:"El informante vuelve en unas fechas."};
   if(op.capital && E.capital+op.capital<0) return {ok:false,msg:"No te alcanza el capital institucional."};
   if(op.plata && E.plata+op.plata<0) return {ok:false,msg:"No te alcanza la caja."};
   if(op.capital) aplicarEfectos({capital:op.capital});
@@ -519,7 +522,11 @@ function aplicarInteraccion(op){
   if(op.grupos) aplicarGrupos(op.grupos);
   if(op.rep) aplicarRep(op.rep);
   if(op.flags) for(const k in op.flags) E.flags[k]=op.flags[k];
-  if(op.soplo){ const s=soploAnonimo(); guardar(); return {ok:true,soplo:s}; }
+  if(op.soplo){
+    /* 7.9050 · el informante no vive en tu oficina: una vez cada 4 fechas */
+    E.flags.soploIdx=E.idx||0;
+    const s=soploAnonimo(); guardar(); return {ok:true,soplo:s};
+  }
   notificar({t:"Interacción: "+op.t,tipo:"neutro",d:op.d||"",bandeja:false});
   guardar(); return {ok:true};
 }

@@ -992,6 +992,31 @@ devDoctorRegistrar({id:"noticias_relevantes", area:"contenido", n:"Las noticias 
   });
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(Object.keys(vistos).length+" titulares distintos en 14 semanas, todos pertinentes");
 }});
+devDoctorRegistrar({id:"institucion_limites", area:"motor", n:"Institución: topes reales (3 pactos por temporada, nada repetible sin fin)", fn:function(){
+  var falta=[];
+  if(typeof pactar!=="function"||typeof pactosVigentes!=="function") return _dmal("sin mesa de la barra");
+  var snap=clonarPartida(E);
+  var avisoOrig=window.aviso; window.aviso=function(){};
+  try{
+    normalizarBarra(); E.barra.pactos=[]; E.plata=Math.max(E.plata||0,500);
+    ["aliento","logistica","no_vender","no_bajar","extra"].forEach(function(t,i){ pactar({tipo:t,quien:t==="no_vender"?"X"+i:null,resumen:t,costo:0}); });
+    if(pactosVigentes()>3) falta.push("se pueden tener "+pactosVigentes()+" pactos en pie (el tope es 3)");
+    if(E.barra.pactos.some(function(p){ return p.tipo==="no_bajar"; }) && E.barra.pactos.some(function(p){ return p.tipo==="no_vender"; })) falta.push("«no vender al ídolo» y «no rematar el plantel» cuentan como dos pactos (son la misma promesa)");
+    E.anio=(E.anio||2026)+1; normalizarBarra();
+    if(pactosVigentes()!==0) falta.push("los pactos del año pasado siguen contando ("+pactosVigentes()+")");
+    restaurarPartida(snap);
+    if(typeof hacerJugadaPoder==="function"&&typeof jugadaUsada!=="function") falta.push("las jugadas de poder se repiten sin límite");
+    if(typeof cambiarEstatuto==="function"&&String(cambiarEstatuto).indexOf("est_")<0) falta.push("los estatutos se pueden cambiar ida y vuelta sin límite");
+    if(typeof aplicarInteraccion==="function"){
+      var nOrig=window.notificar; window.notificar=function(){};
+      try{ E.flags=E.flags||{}; delete E.flags.soploIdx; E.capital=Math.max(E.capital||0,50);
+        var r1=aplicarInteraccion({t:"x",soplo:true}), r2=aplicarInteraccion({t:"x",soplo:true});
+        if(r1.ok&&r2.ok) falta.push("el soplo anónimo se compra dos veces en la misma fecha");
+      } finally { window.notificar=nOrig; }
+    }
+  } finally { window.aviso=avisoOrig; restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("3 pactos por temporada · jugadas y estatutos una vez por temporada · soplo cada 4 fechas");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

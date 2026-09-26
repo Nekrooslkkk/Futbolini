@@ -11,8 +11,13 @@ function normalizarBarra(){
   if(!E.barra) E.barra={humor:60, lienzos:[], pactos:[], ultimoIdx:-99, roto:false};
   if(!Array.isArray(E.barra.lienzos)) E.barra.lienzos=[];
   if(!Array.isArray(E.barra.pactos)) E.barra.pactos=[];
+  /* 7.9050 · los pactos son de la temporada: al cambiar el año, vencen (no se rompen) */
+  E.barra.pactos.forEach(p=>{ if(!p.roto && !p.vencido && (p.anio||0)<(E.anio||0)) p.vencido=true; });
 }
-function pactosVigentes(){ return (((E&&E.barra)||{}).pactos||[]).filter(p=>!p.roto).length; }
+const TOPE_PACTOS=3;
+/* "no vender al ídolo" y "no rematar el plantel" son la misma promesa: no vender */
+function _familiaPacto(t){ return (t==="no_vender"||t==="no_bajar")?"promesa":t; }
+function pactosVigentes(){ return (((E&&E.barra)||{}).pactos||[]).filter(p=>!p.roto&&!p.vencido).length; }
 function barraContenta(){ return pactosVigentes()>=3; }
 function puedeMesaBarra(){ return E&&E.barra&&((E.idx||0)-(E.barra.ultimoIdx||-99))>=4; }
 
@@ -39,6 +44,8 @@ function pactosBarra(){
 }
 function pactar(o){
   normalizarBarra();
+  if(pactosVigentes()>=TOPE_PACTOS){ if(typeof aviso==="function") aviso("Ya hay "+TOPE_PACTOS+" pactos en pie esta temporada. La mesa no da para más."); return false; }
+  if(E.barra.pactos.some(x=>!x.roto&&!x.vencido&&_familiaPacto(x.tipo)===_familiaPacto(o.tipo))){ if(typeof aviso==="function") aviso("Ese pacto ya está en pie."); return false; }
   if(o.costo && E.plata<o.costo){ if(typeof aviso==="function") aviso("No te alcanza la caja ("+plata(o.costo)+")"); return false; }
   if(o.costo) aplicarEfectos({plata:-o.costo});
   if(o.ef) aplicarEfectos(o.ef);
@@ -59,8 +66,8 @@ function pactar(o){
 /* rompes un pacto (ej: vender al de la casa que juraste no vender) */
 function romperPacto(motivo,quien){
   normalizarBarra();
-  let p=E.barra.pactos.find(x=>!x.roto && quien && x.tipo==="no_vender" && x.quien===quien);
-  if(!p) p=E.barra.pactos.find(x=>!x.roto && (x.tipo==="no_vender"||x.tipo==="no_bajar"));
+  let p=E.barra.pactos.find(x=>!x.roto && !x.vencido && quien && x.tipo==="no_vender" && x.quien===quien);
+  if(!p) p=E.barra.pactos.find(x=>!x.roto && !x.vencido && (x.tipo==="no_vender"||x.tipo==="no_bajar"));
   if(!p) return false;
   p.roto=true; E.barra.roto=true;
   E.barra.humor=clamp((E.barra.humor||60)-28,0,100);
