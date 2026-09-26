@@ -8,8 +8,12 @@
    ============================================================ */
 
 function edadDT(){
-  const y=parseInt(String((E.perfil&&E.perfil.nacimiento)||"1988").slice(0,4),10)||1988;
-  return Math.max(0, E.anio - y);
+  /* 7.9062 · edad con la fecha completa (cumpleaños incluido), no solo el año */
+  const s=String((E.perfil&&E.perfil.nacimiento)||"1988-06-15");
+  const y=parseInt(s.slice(0,4),10)||1988, m=parseInt(s.slice(5,7),10)||6, d=parseInt(s.slice(8,10),10)||15;
+  const hoy=(typeof proximoPartido==="function"&&proximoPartido()&&proximoPartido().f)||{m:6,d:15};
+  const antes=(hoy.m<m)||(hoy.m===m&&hoy.d<d);
+  return Math.max(0, E.anio - y - (antes?1:0));
 }
 function apellidoDinastia(){
   const p=String((E.perfil&&E.perfil.nombre)||"DT").trim().split(/\s+/);
@@ -48,7 +52,15 @@ const SALIDAS=[
  {t:"Asado con amigos",d:"Asado tranquilo que termina en debate acalorado sobre el mejor DT de la historia."},
  {t:"Gala benéfica",d:"Cena de beneficencia con foto obligada. Si te portas bien, es buena imagen."},
  {t:"Escapada a la playa",d:"Fin de semana en la costa para despejar la cabeza del vestuario."},
- {t:"Cena de negocios",d:"Un empresario te invita a cenar «sin compromiso». Nadie invita sin compromiso."}
+ {t:"Cena de negocios",d:"Un empresario te invita a cenar «sin compromiso». Nadie invita sin compromiso."},
+ {t:"Once en la casa de tus viejos",d:"Marraqueta, palta y la pregunta de siempre: «¿y cuándo vas a ganar algo?»."},
+ {t:"Pichanga con los del colegio",d:"Los de siempre, la cancha de siempre. Nadie te trata de profe."},
+ {t:"Concierto en el estadio",d:"Una banda llena el estadio que tú no llenas. Te reconocen en la fila del baño."},
+ {t:"Karaoke de la oficina del club",d:"El tesorero canta Luis Miguel. Tú decides si te sumas o grabas."},
+ {t:"Cumpleaños de un jugador",d:"Te invitan al cumpleaños de uno del plantel. Ir es cercanía; quedarte hasta tarde, un problema."},
+ {t:"Misa del barrio",d:"La junta de vecinos te pide que leas algo. El cura es hincha del rival."},
+ {t:"Partido de tenis con un dirigente",d:"Ganarle o dejarse ganar: esa es la pregunta."},
+ {t:"Fiesta de fin de año de la barra",d:"Invitación que no se rechaza fácil. Ir tiene costo; no ir, también."}
 ];
 function salir(){
   const ev=elige(SALIDAS);
@@ -156,10 +168,11 @@ function generoCandidato(c){
   return (["Javiera","Fran","Ignacia","Vale","Pau","Coni","Elvira","Rosa","Marta","Amanda","Sofía","Pilar","Tamara","Kathy","Daniela"].indexOf(c.n)>=0)?"F":"M";
 }
 function candidatoPasaFiltro(c){
+  /* 7.9062 · la orientación filtra de verdad (antes el perfil diverso le salía a todos) */
   const o=E.perfil.orientacion||"Libre", g=E.perfil.genero||"M", cg=generoCandidato(c);
-  if(o==="Bi"||o==="Libre") return true;
-  if(cg==="X") return true;               /* diverso aparece para todos */
-  if(o==="Hetero") return cg!==g;
+  if(o==="Libre"||g==="O") return true;
+  if(o==="Bi") return cg==="M"||cg==="F";
+  if(o==="Hetero") return (g==="M"&&cg==="F")||(g==="F"&&cg==="M");
   if(o==="Gay") return cg===g;
   return true;
 }
@@ -184,8 +197,7 @@ function eraMatch(){
 function generarTinder(){
   asegurarTinder();
   const base=poolCandidatos();
-  let pool=base.filter(candidatoPasaFiltro);
-  if(pool.length<3) pool=base.slice();
+  let pool=base.filter(candidatoPasaFiltro);   /* 7.9062 · sin «si hay pocos, muestro a todos» */
   return mezcla(pool).slice(0,6).map(c=>Object.assign({},c,{orb:elige(ORBES),afin:(Math.random()*0.25)}));
 }
 function engancharSwipeTinder(card, onPass, onLike){
@@ -423,31 +435,26 @@ function vistaVida(){
   inNombre.onchange=()=>{ const val=(typeof textoLimpio==="function"?textoLimpio(inNombre.value,40):inNombre.value.trim())||"DT"; E.perfil.nombre=val; inNombre.value=val; if(E.dinastia.generacion<=1) E.dinastia.raiz=val; guardar(); };
   info.appendChild(el("label","lb","Nombre"+(E.dinastia.generacion>1?" (heredado)":"")));
   info.appendChild(inNombre);
-  /* 7.0 · edad más piola: stepper simple en vez de escribir la fecha entera */
-  info.appendChild(el("label","lb","Edad del DT"));
+  /* 7.9062 · fecha de nacimiento con calendario de verdad (un DT tiene entre 25 y 75 años) */
+  info.appendChild(el("label","lb","Fecha de nacimiento"));
   const eRow=el("div","edad-stepper");
-  const bMenos=el("button","btn-aqua chico","−");
-  const eVal=el("b","dato edad-val");
-  const bMas=el("button","btn-aqua chico","+");
-  const setEdad=(e)=>{
-    e=clamp(e,22,80);
-    const mmdd=(String(E.perfil.nacimiento||"").slice(4))||"-06-15";
-    E.perfil.nacimiento=(E.anio-e)+mmdd;
-    eVal.textContent=e+" años"; guardar();
-  };
-  eVal.textContent=edadDT()+" años";
-  bMenos.onclick=()=>setEdad(edadDT()-1);
-  bMas.onclick=()=>setEdad(edadDT()+1);
-  eRow.appendChild(bMenos); eRow.appendChild(eVal); eRow.appendChild(bMas);
+  const inFecha=el("input"); inFecha.type="date"; inFecha.className="entrada";
+  inFecha.min=(E.anio-75)+"-01-01"; inFecha.max=(E.anio-25)+"-12-31";
+  inFecha.value=String(E.perfil.nacimiento||((E.anio-38)+"-06-15")).slice(0,10);
+  const eVal=el("b","dato edad-val",edadDT()+" años");
+  inFecha.onchange=()=>{ const v=inFecha.value; if(!/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+    const y=parseInt(v.slice(0,4),10); if(y<E.anio-75||y>E.anio-25){ aviso("Un DT de verdad tiene entre 25 y 75 años."); inFecha.value=E.perfil.nacimiento; return; }
+    E.perfil.nacimiento=v; eVal.textContent=edadDT()+" años"; guardar(); };
+  eRow.appendChild(inFecha); eRow.appendChild(eVal);
   info.appendChild(eRow);
   info.appendChild(el("label","lb","Género"));
   const fg=el("div","fichas");
-  [["M","Hombre"],["F","Mujer"]].forEach(([k,n])=>{
+  [["M","Hombre"],["F","Mujer"],["O","Otro"]].forEach(([k,n])=>{
     const b=el("button","ficha",n); b.setAttribute("aria-pressed",(E.perfil.genero||"M")===k?"true":"false");
     b.onclick=()=>{ E.perfil.genero=k; guardar(); render(); }; fg.appendChild(b);
   });
   info.appendChild(fg);
-  info.appendChild(el("label","lb","Orientación (filtra el Match)"));
+  info.appendChild(el("label","lb","Orientación"));
   const fo=el("div","fichas");
   ["Hetero","Gay","Bi","Libre"].forEach(k=>{
     const b=el("button","ficha",k); b.setAttribute("aria-pressed",(E.perfil.orientacion||"Libre")===k?"true":"false");
@@ -483,16 +490,18 @@ function vistaVida(){
   /* --- Changas honestas: ganar plata sin depender del casino --- */
   const pin=panel("Pegas honestas","💼","agua");
   pin.cuerpo.appendChild(el("p","mini","Plata honesta para tu bolsillo, aparte del sueldo. Cada una se puede hacer una vez por semana; algunas piden que tengas nombre (imagen pública)."));
+  /* 7.9062 · montos reales por una pega (en M de 2026): una columna paga cientos de miles, no 5 millones */
+  const kP=((typeof inflacionEra==="function")?inflacionEra():1)/1.4;
   const CHANGAS=[
-    {id:"columna",t:"Columna en el diario",d:"Escribís de fútbol en chilensis. Pagan poco, pero es fijo.",pago:[3,8],req:0},
-    {id:"clinica",t:"Escuelita en la población",d:"Un sábado enseñando a cabros chicos. Cariño de barrio y unas lucas.",pago:[5,12],req:0},
-    {id:"radio",t:"Pega en la radio AM",d:"Comentar la fecha en un estudio chico. Voz, no figura.",pago:[4,10],req:10},
-    {id:"sindicato",t:"Palestra en el sindicato",d:"Te piden hablar de pega, no de táctica. El barrio te mira distinto.",pago:[6,14],req:20},
-    {id:"asado",t:"Asado con los socios",d:"No es show: es estar. Te sale de tu bolsillo o te dejan un sobre.",pago:[2,9],req:0},
-    {id:"charla",t:"Charla en una empresa",d:"Liderazgo y trabajo en equipo. Buena plata por un rato.",pago:[10,22],req:35},
-    {id:"tv",t:"Panel en la tele",d:"Una noche de gritos. Necesitás algo de figura.",pago:[7,16],req:40},
-    {id:"micro",t:"Cargar el micro de la barra",d:"Pega sucia, lucas al tiro. La barra no se olvida.",pago:[8,18],req:25},
-    {id:"publicidad",t:"Cara pa una marca",d:"Prestas el hocico. Cuanto más conocido, más pagan.",pago:[12,28],req:55}
+    {id:"columna",t:"Columna en el diario",d:"Escribes de fútbol en chilensis. Pagan poco, pero es fijo.",pago:[0.15,0.3],req:0},
+    {id:"clinica",t:"Escuelita en la población",d:"Un sábado enseñando a cabros chicos. Cariño de barrio y unas lucas.",pago:[0.05,0.15],req:0},
+    {id:"radio",t:"Pega en la radio AM",d:"Comentar la fecha en un estudio chico. Voz, no figura.",pago:[0.2,0.5],req:10},
+    {id:"sindicato",t:"Palestra en el sindicato",d:"Te piden hablar de pega, no de táctica. El barrio te mira distinto.",pago:[0.1,0.3],req:20},
+    {id:"asado",t:"Asado con los socios",d:"No es show: es estar. A veces sale de tu bolsillo, a veces te dejan un sobre.",pago:[-0.1,0.2],req:0},
+    {id:"charla",t:"Charla en una empresa",d:"Liderazgo y trabajo en equipo. Buena plata por un rato.",pago:[1,3],req:35},
+    {id:"tv",t:"Panel en la tele",d:"Una noche de gritos. Necesitas algo de figura.",pago:[0.4,1.2],req:40},
+    {id:"micro",t:"Cargar el micro de la barra",d:"Pega sucia, lucas al tiro. La barra no se olvida.",pago:[0.3,0.8],req:25},
+    {id:"publicidad",t:"Cara para una marca",d:"Prestas la cara. Cuanto más conocido, más pagan.",pago:[3,15],req:55}
   ];
   CHANGAS.forEach(ch=>{
     const hecha=E.flags["changa_"+ch.id]===(E.anio+"-"+E.idx);   /* 6.25 · fix: keyear por año+idx (antes colisionaba en el 2do año) */
@@ -502,12 +511,12 @@ function vistaVida(){
     const b=el("button","btn-aqua chico"+(hecha||faltaFama?" gris":" verde"), hecha?"Ya lo hiciste esta semana":(faltaFama?"Te falta figura":"Aceptar")); b.style.marginTop="5px";
     b.disabled=hecha||faltaFama;
     b.onclick=()=>{
-      const pago=ri(ch.pago[0],ch.pago[1]); E.personal.bolsillo+=pago; E.flags["changa_"+ch.id]=(E.anio+"-"+E.idx);
+      const pago=Math.round((ch.pago[0]+Math.random()*(ch.pago[1]-ch.pago[0]))*kP*100)/100; E.personal.bolsillo+=pago; E.flags["changa_"+ch.id]=(E.anio+"-"+E.idx);
       if(ch.id==="clinica"||ch.id==="sindicato"||ch.id==="asado") aplicarGrupos({comunidad:3});
       if(ch.id==="micro") aplicarGrupos({hinchada:4});
       if(ch.id==="tv"||ch.id==="publicidad"||ch.id==="radio") aplicarRep({publica:2});
-      if(typeof recordar==="function"&&pago>=15) recordar("changa","te hiciste unos pesos: "+ch.t.toLowerCase(),{peso:"bajo"});
-      guardar(); render(); aviso("💵 +"+plata(pago)+" al bolsillo");
+      if(typeof recordar==="function"&&pago>=3) recordar("changa","te hiciste unos pesos: "+ch.t.toLowerCase(),{peso:"bajo"});
+      guardar(); render(); aviso((pago>=0?"💵 +":"💸 ")+plata(pago)+(pago>=0?" al bolsillo":" (pusiste tú)"));
     };
     d.appendChild(b);
     pin.cuerpo.appendChild(d);
@@ -534,7 +543,7 @@ function vistaVida(){
   if(E.perfil.pareja){
     const par=E.perfil.pareja; const niv=par.nivel||65;
     const d=el("div","resul "+(niv>=50?"bien":"mal"));
-    d.innerHTML='<span class="aero-orb '+(par.orb||"orb-rosa")+' orb-chico"></span> <b>'+par.n+'</b>'+(par.id?" <span class='mini'>("+par.id+")</span>":"")+
+    d.innerHTML='<span class="aero-orb '+(par.orb||"orb-rosa")+' orb-chico"></span> <b>'+par.n+'</b>'+
       (par.casades?" 💍":"")+"<br>"+(par.casades?"Casados":"En pareja")+" desde "+par.desde+". "+
       (niv<30?"La relación está en crisis: si no la cuidas, se termina.":niv<55?"La relación necesita atención.":"Relación sólida: menos escándalos, más paz.")+
       '<div style="margin-top:4px"><span class="mini">Relación</span>'+barrita(niv,niv>50?"#e0563f":"#c9392c")+'</div>';
@@ -569,7 +578,7 @@ function vistaVida(){
     pt.cuerpo.appendChild(el("h3","sub","Tus matches"));
     ms.slice(0,8).forEach(m=>{
       const row=el("div","fila");
-      row.innerHTML='<span><span class="aero-orb '+(m.orb||"orb-azul")+' orb-chico"></span> '+m.n+(m.id?" <span class='mini'>("+m.id+")</span>":"")+'</span>';
+      row.innerHTML='<span><span class="aero-orb '+(m.orb||"orb-azul")+' orb-chico"></span> '+m.n+'</span>';
       const b=el("button","btn-aqua chico","Charlar"); b.onclick=()=>chatMatch(m);
       row.appendChild(b); pt.cuerpo.appendChild(row);
     });

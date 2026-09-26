@@ -1203,6 +1203,25 @@ devDoctorRegistrar({id:"amistosos", area:"motor", n:"Amistosos: pretemporada sin
   if(typeof esLlaveDirecta==="function"&&!esLlaveDirecta({tipo:"amistoso",copaPropia:true})) falta.push("la copa propia no se define en penales si empata");
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("pretemporada sin cruzar · cachet grande "+plata(cg)+" · copa con penales/alargue según reglas");
 }});
+devDoctorRegistrar({id:"vida_real", area:"motor", n:"Vida: la orientación filtra de verdad y la familia exige una visita por temporada", fn:function(){
+  var falta=[];
+  if(typeof candidatoPasaFiltro!=="function"||typeof generoCandidato!=="function") return _dmal("sin filtro de Match");
+  var snap=clonarPartida(E);
+  try{
+    E.perfil.genero="M"; E.perfil.orientacion="Hetero";
+    var malos=poolCandidatos().filter(function(c){ return candidatoPasaFiltro(c) && generoCandidato(c)!=="F"; }).length;
+    if(malos) falta.push("con orientación hetero (hombre) aparecen "+malos+" perfiles que no son mujeres");
+    E.perfil.orientacion="Gay";
+    var malos2=poolCandidatos().filter(function(c){ return candidatoPasaFiltro(c) && generoCandidato(c)!=="M"; }).length;
+    if(malos2) falta.push("con orientación gay (hombre) aparecen "+malos2+" perfiles que no son hombres");
+    if(typeof sembrarVisitaObligada==="function"){
+      E.flags=E.flags||{}; delete E.flags["visitaObl_"+E.anio]; E.perfil.vidaSocial={agenda:[]}; E.idx=Math.ceil((E.calendario||[]).length*0.85); E.decPend=[];
+      var d=sembrarVisitaObligada();
+      if(!d||!E.decPend.some(function(x){ return x.id===d.id&&x.peso==="alto"; })) falta.push("pasada la temporada sin ver a la familia, no aparece la visita obligada");
+    } else falta.push("no hay visita familiar obligada");
+  } finally { restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("Match filtra por orientación · visita familiar obligada por temporada");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

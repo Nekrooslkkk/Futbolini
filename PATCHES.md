@@ -3883,3 +3883,23 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Amistoso libre:** pasa a Ajustes como "Solo jugar".
 - **Doctor `amistosos`.**
   **Tests:** dev 525/525 · core 1185/1185.
+
+### 7.9062 — Vida (A): Yoni, fecha de nacimiento, orientación que filtra, pegas reales, visita familiar
+**Archivos:** `js/reputacion.js`, `js/vida-real.js` (nuevo), `js/dev-doctor.js`, `js/util.js`, `index.html`
+- **Nombre:** el DT se llama "Yoni" por defecto.
+- **Fecha de nacimiento:** calendario del sistema (en celular abre el selector nativo) entre 25 y 75 años. La
+  edad cuenta el cumpleaños.
+- **Género:** Hombre / Mujer / Otro.
+- **Orientación:** ahora filtra de verdad. Antes el perfil diverso le aparecía a todos y, si quedaban pocos, se
+  mostraban todos. Ya no aparece la etiqueta del candidato entre paréntesis, y el rótulo dice solo
+  "Orientación".
+- **Pegas a montos reales:** columna 0,15–0,3 M, escuelita 0,05–0,15, radio 0,2–0,5, charla en empresa 1–3,
+  panel de TV 0,4–1,2, publicidad 3–15. Antes pagaban hasta 28 M por semana. El asado a veces sale de tu
+  bolsillo.
+- **Vida social:** 8 salidas nuevas (once con tus viejos, pichanga del colegio, karaoke del club, tenis con un
+  dirigente, fiesta de la barra…).
+- **Visita familiar obligada**, una por temporada: los 70 de tu mamá, el matrimonio de tu hermano, un
+  funeral… Llega como decisión bloqueante pasada la mitad del año. Ir, ir un rato o no ir mueve bienestar,
+  pareja y bolsillo, y el aviso muestra los números.
+- **Doctor `vida_real`.**
+  **Tests:** dev 525/525 · core 1185/1185.
