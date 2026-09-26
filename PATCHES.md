@@ -4147,3 +4147,26 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   que la ventana espere el festejo. Los tests revisan que el festejo arranque, que la ventana espere y que
   después cierre. Comprobado al revés.
   **Tests:** dev 558/558 · core 1185/1185.
+
+### 7.9071 — Etapa 4A · Chat en vivo completo, pistas solo en el chat, Avanzar grande abajo
+**Archivos:** `js/interfaz-aero.js` (nuevo), `js/redes.js`, `js/data-voz.js`, `js/ui-partido.js`, `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Pedido del autor:** "el chat en vivo quedó bugeado, fome y reducido… los 3 mensajes deberían salir ahí,
+  marcados, y no dentro de la decisión, y mantén los mensajes anteriores" · "el botón de avanzar debería
+  volver a donde estaba y quita el de arriba (fome, feo y chico)".
+- **Chat en vivo:**
+  - Guarda el partido entero: `TICKER_MAX` = 150 (antes se cortaba a 18 y se mostraban 4 con "Ver más").
+  - Burbujas Plop!: avatar con iniciales, handle, verificado de la prensa, minuto, texto y me gusta.
+  - La hinchada rival aparece con fondo propio.
+  - Tiene su propio scroll, que no salta al llegar mensajes nuevos: se guarda y se compensa la altura de lo
+    nuevo.
+- **Charla entre jugadas** (`tickerCharla`): los jugadores con nombre, la hinchada rival, el árbitro, el clima,
+  la cancha y el maní. Sale cada vez que el chat lleva 4' callado; antes se moría entre jugada y jugada.
+- **Pistas de las decisiones:** los 3 mensajes se marcan con un brillo dorado sutil, sin texto que los delate,
+  solo en el chat. Salieron de la caja de decisión y se fue el 📣 de las alternativas.
+- **Decisión abierta:** en celular, la hoja de decisión no pasa del 55 % y el chat se acomoda para que se vean
+  los mensajes marcados.
+- **Avanzar:** el botón chico de la barra se va. En PC vuelve el botón gordo abajo, el mismo del celular: dice
+  "⚽ Jugar / visita a X · fecha", "⏩ Avanzar semana" o "🏁 Cerrar temporada". Se esconde en partido y con
+  ventanas abiertas.
+- **Doctor `chat_vivo`:** comprobado al revés con el tope de 18.
+  **Tests:** dev 561/561 · core 1185/1185.

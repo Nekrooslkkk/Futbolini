@@ -426,7 +426,7 @@ function empujarTicker(P, autor, texto, tono, m){
   if(!P) return;
   P.ticker=P.ticker||[];
   P.ticker.unshift({m:m||P.min||0, autor:autor, texto:texto, tono:tono||"neutro"});
-  if(P.ticker.length>18) P.ticker.length=18;
+  if(P.ticker.length>TICKER_MAX) P.ticker.length=TICKER_MAX;
 }
 
 /* ---------- merge + wrap (se corre al cargar el script) ---------- */

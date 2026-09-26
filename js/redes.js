@@ -694,7 +694,7 @@ function tickerPost(P, ev){
   }
   if(!texto) return;
   P.ticker.unshift({m:m, autor:autor, texto:texto, tono:tono});
-  if(P.ticker.length>18) P.ticker.length=18;
+  if(P.ticker.length>TICKER_MAX) P.ticker.length=TICKER_MAX;
 }
 /* 6.36 · tuits que reaccionan al MOMENTO (marcador, tensión, tiempo), no a la jugada.
    Se llaman de a ratos desde el loop: hacen sentir FutbolGram vivo. */
@@ -715,7 +715,7 @@ function tickerAnalisis(P){
   const preg=dif<0?"¿Cambio ofensivo YA?":(dif>0?"¿Cerrar el partido o ir por otro?":"¿Arriesgar o esperar el error?");
   const si=Math.round(clamp(50+(dif<0?18:(dif>0?-12:0))+(dv<0?8:-4)+ri(-6,6),20,85));
   P.ticker.unshift({m:m, autor:elige(HANDLES_HINCHA), texto:"🗳 Encuesta: "+preg+" Sí "+si+"% · No "+(100-si)+"%", tono:"neutro"});
-  if(P.ticker.length>18) P.ticker.length=18;
+  if(P.ticker.length>TICKER_MAX) P.ticker.length=TICKER_MAX;
   return true;
 }
 function tickerAmbiente(P){
@@ -736,7 +736,43 @@ function tickerAmbiente(P){
   /* 7.9056 · cada mensaje lleva hacia dónde empuja (el panel de decisiones marca los últimos del chat) */
   const dir=dif<0?"ataque":((dif>0&&m>=70)?"aguantar":"equilibrio");
   P.ticker.unshift({m:m, autor:elige(HANDLES_HINCHA), texto:elige(ops), tono:dif>0?"bueno":(dif<0?"malo":"neutro"), dir:dir});
-  if(P.ticker.length>18) P.ticker.length=18;
+  if(P.ticker.length>TICKER_MAX) P.ticker.length=TICKER_MAX;
+}
+/* 7.9071 · el chat en vivo guarda todo el partido (antes se cortaba a 18) */
+const TICKER_MAX=150;
+/* charla suelta: jugadores con nombre, la hinchada rival, el árbitro, el clima, la cancha.
+   Para que el chat no se muera entre jugada y jugada (pedido del autor: "quedó fome"). */
+function tickerCharla(P){
+  if(!P) return null;
+  P.ticker=P.ticker||[];
+  const m=P.min||0, once=(P.once||[]).filter(j=>j&&j.n), j=once.length?elige(once).n.split(" ").slice(-1)[0]:"el diez";
+  const riv=(P.part&&P.part.rivalNombre)||"el rival", sede=(P.part&&P.part.sede)||"la cancha";
+  const [yo,otro]=(typeof miMarcador==="function")?miMarcador(P):[P.gl||0,P.gv||0];
+  const cl=(typeof CLIMAS!=="undefined"&&P.part&&CLIMAS[P.part.clima])||null;
+  const pool=[
+    {a:"hincha",t:j+" está en otra, hoy no la toca "+m+"'",tono:"malo"},
+    {a:"hincha",t:"Hoy "+j+" está intratable, denle la pelota a él",tono:"bueno"},
+    {a:"hincha",t:"¿Alguien le avisó a "+j+" que empezó el partido? "+m+"'",tono:"malo"},
+    {a:"hincha",t:"Que "+j+" le pegue de lejos, el arquero está adelantado",tono:"neutro"},
+    {a:"rival",t:"Tranquilos, que "+riv+" ya les llega "+m+"'",tono:"malo"},
+    {a:"rival",t:"Juegan con doce, el árbitro es de ustedes 🙄",tono:"malo"},
+    {a:"rival",t:"Qué nervios tienen, jajaja, "+m+"'",tono:"malo"},
+    {a:"hincha",t:"El árbitro no cobra nada para acá, "+m+"'",tono:"malo"},
+    {a:"hincha",t:"Mi abuela patea mejor esos córners",tono:"neutro"},
+    {a:"hincha",t:"Estoy en "+sede+" y se escucha a la barra desde la entrada",tono:"bueno"},
+    {a:"prensa",t:"Desde "+sede+": "+(yo===otro?"partido de dientes apretados":(yo>otro?"el local se encuentra cómodo":"hay murmullo en la tribuna"))+", "+m+"'",tono:"neutro"},
+    {a:"hincha",t:"El carrito del maní pasó tres veces y todavía no pasa nada en la cancha",tono:"neutro"}
+  ];
+  if(cl) pool.push({a:"hincha",t:({lluvia:"Llueve a cántaros y la pelota no corre",calor:"Qué calor, los jugadores no dan más",frio:"Un frío de cagarse en la galería",viento:"Con este viento, cada centro es una lotería",despejado:"Tarde linda para ganar"})[P.part.clima]||"",tono:"neutro"});
+  const usados=P.ticker.slice(0,20).map(x=>x.texto);
+  const libres=pool.filter(x=>x.t&&usados.indexOf(x.t)<0);
+  const x=elige(libres.length?libres:pool);
+  const autor=x.a==="prensa"?elige(HANDLES_PRENSA):(x.a==="rival"?"@hincha_"+String(riv).toLowerCase().replace(/[^a-z]/g,"").slice(0,10)+"_"+(10+(m%80)):elige(HANDLES_HINCHA));
+  const it={m:m, autor:autor, texto:x.t, tono:x.tono, rival:x.a==="rival"};
+  P.ticker.unshift(it);
+  if(P.ticker.length>TICKER_MAX) P.ticker.length=TICKER_MAX;
+  P._ultChat=m;
+  return it;
 }
 /* mensajes del chat en vivo que empujan una dirección (misma voz que el resto del chat).
    Grok puede sumar frases acá (pedido del autor): que se entiendan, sin decir la respuesta obvia. */
@@ -754,7 +790,7 @@ function tickerPista(P,dir){
   const libres=pool.filter(t=>usados.every(u=>u.indexOf(t)<0));
   const it={m:P.min||0, autor:elige(HANDLES_HINCHA), texto:elige(libres.length?libres:pool)+", "+(P.min||0)+"'", tono:"neutro", dir:dir};
   P.ticker.unshift(it);
-  if(P.ticker.length>18) P.ticker.length=18;
+  if(P.ticker.length>TICKER_MAX) P.ticker.length=TICKER_MAX;
   return it;
 }
 /* los últimos 3 del chat que dicen qué hacer: 2 con lo que pide la mayoría y 1 que disiente */

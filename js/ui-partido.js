@@ -1303,19 +1303,43 @@ function _pintarPartidoCuerpo(P){
   P.lineas.slice().reverse().forEach(l=>rel.appendChild(el("div","rel "+l.c,'<span class="m">'+l.m+"'</span><span>"+l.t+"</span>")));
   if(!P.lineas.length) rel.appendChild(el("div","rel","<span class='m'>0'</span><span>Rueda la pelota en "+P.part.sede+".</span>"));
   p.cuerpo.appendChild(rel);
-  /* ticker de redes en vivo (FutbolGram) */
+  /* 7.9071 · chat en vivo completo (pedido del autor): todos los mensajes del partido, con su propio
+     scroll que no salta al llegar uno nuevo. Las 3 pistas de cada decisión se marcan ACÁ, sutil. */
   if(P.modo!=="simular" && P.ticker && P.ticker.length){
-    /* 7.9056 · Plop ocupaba demasiado: los últimos 4 a la vista, el resto plegado */
-    p.cuerpo.appendChild(el("h3","sub","📱 Plop! · en vivo"));
-    const tk=el("div","ticker");
-    const fila=t=>{ const d=el("div","tk "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":""))+(t.pista?" pista":""));
-      d.innerHTML="<b>"+escHtml(t.autor)+"</b> <span class='mini'>"+(t.m||"?")+"'</span> "+escHtml(t.texto); return d; };
-    P.ticker.slice(0,4).forEach(t=>tk.appendChild(fila(t)));
-    if(P.ticker.length>4){ const mas=el("details","tk-mas"); mas.appendChild(el("summary",null,"Ver más ("+(Math.min(10,P.ticker.length)-4)+")")); P.ticker.slice(4,10).forEach(t=>mas.appendChild(fila(t))); tk.appendChild(mas); }
-    p.cuerpo.appendChild(tk);
+    const box=el("div","chat-vivo");
+    box.appendChild(el("div","chat-cab",'<span class="chat-punto"></span><b>Plop!</b> · chat en vivo <span class="mini">'+P.ticker.length+' mensajes</span>'));
+    const tk=el("div","ticker chat-lista");
+    P.ticker.forEach(t=>tk.appendChild(burbujaChat(t)));
+    box.appendChild(tk);
+    p.cuerpo.appendChild(box);
+    const nuevos=Math.max(0,P.ticker.length-(P._chatN||0)), prev=P._chatScroll||0;
+    P._chatN=P.ticker.length;
+    requestAnimationFrame(()=>{
+      if(prev>0){ let h=0; for(let i=0;i<nuevos&&i<tk.children.length;i++) h+=tk.children[i].offsetHeight+5; tk.scrollTop=prev+h; P._chatScroll=tk.scrollTop; }
+    });
+    tk.addEventListener("scroll",()=>{ P._chatScroll=tk.scrollTop; },{passive:true});
   }
   const wrap=el("div","partido-wrap"); wrap.appendChild(p); v.appendChild(wrap);
   if(canchaCv && typeof montarCancha==="function"){ requestAnimationFrame(()=>montarCancha(canchaCv)); }
+}
+/* 7.9071 · una burbuja del chat: avatar con iniciales, handle, minuto, texto y me gusta */
+function burbujaChat(t){
+  const h=_arcoHash?_arcoHash(t.autor||"x"):7, cols=["#2f7fd6","#d6452f","#2f9d57","#8a4fd6","#d68a2f","#2fa6b8","#b8412f","#4a5a70"];
+  const ini=String(t.autor||"@?").replace("@","").slice(0,2).toUpperCase();
+  const prensa=typeof HANDLES_PRENSA!=="undefined"&&HANDLES_PRENSA.indexOf(t.autor)>=0;
+  const d=el("div","tk chat-b "+(t.tono==="bueno"?"bien":(t.tono==="malo"?"mal":""))+(t.pista?" pista":"")+(t.rival?" rival":""));
+  d.innerHTML='<span class="chat-av" style="background:'+cols[h%cols.length]+'">'+escHtml(ini)+'</span>'+
+    '<div class="chat-c"><div class="chat-h"><b>'+escHtml(t.autor||"")+'</b>'+(prensa?' <span class="chat-v" title="verificado">✔</span>':'')+' <span class="mini">'+(t.m!=null?t.m:"?")+'\'</span></div>'+
+    '<div class="chat-t">'+escHtml(t.texto||"")+'</div>'+
+    '<div class="chat-l mini">♡ '+(3+(h%97))+'</div></div>';
+  return d;
+}
+/* repinta solo el chat (para marcar las pistas sin reconstruir el partido) */
+function pintarChatSolo(P){
+  const tk=document.querySelector(".chat-vivo .chat-lista"); if(!tk||!P||!P.ticker) return;
+  const st=tk.scrollTop; tk.innerHTML=""; P.ticker.forEach(t=>tk.appendChild(burbujaChat(t)));
+  const cab=document.querySelector(".chat-vivo .chat-cab .mini"); if(cab) cab.textContent=P.ticker.length+" mensajes";
+  P._chatN=P.ticker.length; tk.scrollTop=st;
 }
 /* Loop fluido: el reloj corre y se auto-pausa SOLO cuando hay una jugada de
    peligro que decidir (penal, tiro libre, lesión) o un momento táctico. */
@@ -1345,6 +1369,7 @@ function pasoEnVivo(){
   if(typeof tickerPost==="function") tickerPost(P,ev);
   if(typeof tickerAnalisis==="function") tickerAnalisis(P);   /* 7.9055 · análisis y encuesta a los 30', 60', 80' (antes casi nunca salían) */
   if(typeof tickerAmbiente==="function" && (!ev||ev.tipo==="nada") && Math.random()<0.14) tickerAmbiente(P);   /* 6.36 · tuits del momento */
+  else if(typeof tickerCharla==="function" && P.modo!=="simular" && (!ev||ev.tipo==="nada") && ((P.min||0)-(P._ultChat||0)>=4||Math.random()<0.06)) tickerCharla(P);   /* 7.9071 · el chat no se muere */
   if(ev.tipo==="fin" || ev.tipo==="tandaFin"){ clearInterval(TIMER); pintarPartido(); cerrarPartido(); return; }
   if(ev.tipo==="tanda"){
     clearInterval(TIMER); pintarPartido();
@@ -1583,14 +1608,8 @@ function mostrarMomento(){
   let rec=null;
   if(!esTrivia && typeof direccionRecomendada==="function"){
     rec=direccionRecomendada(P);
-    const pistas=(typeof plopPistas==="function")?plopPistas(P,rec):[];
-    if(pistas.length){
-      const fg=el("div","fg-opina");
-      fg.appendChild(el("div","fg-cab","📱 Lo último en el chat de Plop"));
-      pistas.forEach(t=>fg.appendChild(el("div","fg-op"+(t.dir===rec?" pide":""),"<b>"+escHtml(t.autor)+"</b> <span class='mini'>"+(t.m||0)+"'</span> "+escHtml(t.texto))));
-      fg.appendChild(el("div","fg-ayuda mini","Dos de tres van para el mismo lado: las opciones con 📣 van en esa línea. Si les haces caso, el equipo siente el respaldo; a veces la gente se equivoca."));
-      p.cuerpo.appendChild(fg);
-    }
+    /* 7.9071 · las 3 pistas se marcan en el chat en vivo (no acá adentro, pedido del autor) */
+    if(typeof plopPistas==="function"){ plopPistas(P,rec); if(typeof pintarChatSolo==="function") pintarChatSolo(P); }
   }
   const ops=el("div","ops ops-part"); MOMENTO_OPS=[];
   /* 7.9056 · agrupadas por intención: ir a buscarlo / equilibrar / cerrar (se entiende qué es cada una) */
@@ -1602,9 +1621,8 @@ function mostrarMomento(){
     if(!esTrivia){ const g=o.doping?3:GRUPO[dirDe(o)]; if(g!==gAnt){ gAnt=g; if(g<3) ops.appendChild(el("div","op-grupo",NOMG[g])); } }
     const b=el("button","op"+(o.doping?" op-doping":""));
     /* 7.9042 · cada alternativa dice qué hace y si es lo que pide la gente */
-    const pide=!esTrivia && !o.doping && rec && typeof direccionOpcion==="function" && direccionOpcion(o.ef)===rec;
     const chips=(!esTrivia && !o.doping && typeof efectoLegible==="function")
-      ? '<div class="ef-linea">'+efectoLegible(o.ef).map(c=>'<span class="ef-l '+(c.tono||"")+'">'+c.ic+' '+c.t+'</span>').join(" · ")+(pide?' <span class="ef-l pide">· 📣</span>':'')+'</div>' : "";
+      ? '<div class="ef-linea">'+efectoLegible(o.ef).map(c=>'<span class="ef-l '+(c.tono||"")+'">'+c.ic+' '+c.t+'</span>').join(" · ")+'</div>' : "";
     b.innerHTML='<div class="t"><span class="tecla">'+(i+1)+'</span> '+o.t+'</div>'+(o.d?'<div class="d">'+o.d+'</div>':"")+chips;
     b.onclick=()=>{
       MOMENTO_OPS=[];

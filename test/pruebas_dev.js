@@ -1379,8 +1379,9 @@
       var ops=document.querySelectorAll(".momento-vivo .op"), chips=document.querySelectorAll(".momento-vivo .ef-linea");
       t(ops.length>=6 && chips.length>=5,"el panel muestra las alternativas con sus efectos ("+ops.length+" / "+chips.length+")");
       t(document.querySelectorAll(".momento-vivo .op-grupo").length>=2,"las alternativas vienen agrupadas (ir a buscarlo / equilibrar / cerrar)");
-      var pistas=[].slice.call(document.querySelectorAll(".momento-vivo .fg-op")).map(function(x){ return x.textContent; });
-      t(pistas.length===3 && P.ticker.filter(function(x){ return x.pista; }).length===3,"la pista son 3 mensajes del mismo chat en vivo (marcados en el feed)");
+      /* 7.9071 · las pistas se marcan en el chat en vivo, no dentro de la caja de decisión */
+      t(!document.querySelector(".momento-vivo .fg-op") && P.ticker.filter(function(x){ return x.pista; }).length===3,"la pista son 3 mensajes del chat en vivo, marcados ahí y no en la decisión");
+      t(!document.querySelector(".momento-vivo .ef-l.pide"),"las alternativas no dicen cuál pide la gente (sin obviedad)");
       document.querySelectorAll(".momento-vivo").forEach(function(x){ x.remove(); }); MOMENTO_OPS=[]; document.body.classList.remove("hay-momento");
       var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="correcciones_pesan"; })[0].fn();
       t(r.ok,"doctor correcciones_pesan: "+r.txt);
@@ -1511,6 +1512,18 @@
       t(!document.querySelector("#capa-modal .escena-3d"),"terminado el festejo, la ventana se cierra");
       P_ACTUAL=null;
     },"Arco3D 7.9068");
+
+    grupo("Chat en vivo y Avanzar · 7.9071");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="chat_vivo"; })[0].fn();
+      t(r.ok,"doctor chat_vivo: "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      var P=iniciarPartido(proximoPartido(),"dirigir"); P_ACTUAL=P; PAUSADO=true;
+      for(var m=1;m<=40;m++){ P.min=m; tickerCharla(P); }
+      document.body.classList.add("en-partido"); pintarPartido();
+      t(document.querySelectorAll(".chat-vivo .chat-b").length===P.ticker.length,"el chat muestra todos los mensajes ("+P.ticker.length+")");
+      document.body.classList.remove("en-partido"); P_ACTUAL=null; clearInterval(TIMER);
+    },"Chat 7.9071");
 
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");

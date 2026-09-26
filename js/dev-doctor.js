@@ -1439,6 +1439,24 @@ devDoctorRegistrar({id:"arco_3d", area:"interfaz", n:"Arco 3D: cámara real (arc
   if(pos!=="absolute") falta.push("el dibujo no vive en una capa absoluta: el escenario puede crecer con él");
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("penal y tiro libre con arco 3:1 · córner con zonas separadas · dedo ida y vuelta exacto · pelota con perspectiva · escenario fijo");
 }});
+devDoctorRegistrar({id:"chat_vivo", area:"interfaz", n:"Chat en vivo completo, pistas marcadas solo en el chat y Avanzar grande abajo", fn:function(){
+  var falta=[];
+  if(typeof TICKER_MAX==="undefined"||TICKER_MAX<100) falta.push("el chat en vivo se corta a "+(typeof TICKER_MAX==="undefined"?18:TICKER_MAX)+" mensajes (debe guardar el partido entero)");
+  if(typeof tickerCharla!=="function") falta.push("el chat no tiene charla entre jugadas (se muere)");
+  else {
+    var Q={min:20,ticker:[],once:[{n:"Juan Pérez"},{n:"Luis Soto"}],part:{rivalNombre:"Rival",sede:"Estadio"},gl:0,gv:0}, textos={};
+    for(var i=0;i<14;i++){ Q.min=20+i; var x=tickerCharla(Q); if(x) textos[x.texto]=1; }
+    if(Object.keys(textos).length<8) falta.push("la charla del chat repite mucho ("+Object.keys(textos).length+" distintas de 14)");
+  }
+  if(typeof mostrarMomento==="function"&&/fg-opina/.test(String(mostrarMomento))) falta.push("las pistas vuelven a salir dentro de la caja de decisión");
+  if(typeof burbujaChat!=="function") falta.push("el chat no tiene burbujas");
+  if(typeof document!=="undefined"&&document.body){
+    var b=document.getElementById("btnAvanzar");
+    if(b&&getComputedStyle(b).display!=="none") falta.push("el Avanzar chico de la barra sigue a la vista");
+    if(typeof pintarAvanceGrande!=="function") falta.push("no hay botón grande de avanzar abajo");
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("chat de "+TICKER_MAX+" mensajes con charla variada · pistas solo en el chat · Avanzar grande abajo");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
