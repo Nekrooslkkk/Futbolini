@@ -907,6 +907,19 @@ devDoctorRegistrar({id:"dominio_final", area:"motor", n:"Al final del partido ha
   } finally { restaurarPartida(snap); E._bulkSim=bulk; }
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat([det])):_dok(det);
 }});
+devDoctorRegistrar({id:"llaves_en_vivo", area:"interfaz", n:"Las llaves ajenas de tu ronda se pueden ver en vivo", fn:function(){
+  if(typeof llavesEnVivo!=="function"||typeof marcarLlavesParaVer!=="function") return _dmal("sin vista de llaves en vivo");
+  var lb=E&&E.mundo&&E.mundo.ligB;
+  var pend=(E&&E.calendario||[]).slice(E.idx||0).find(function(p){ return p&&!p.jugado; });
+  if(!lb||!pend||pend.torneo!=="Liguilla de Ascenso") return _dok("sin liguilla en curso (nada que ver)");
+  var ant={Semifinal:"Cuartos",FINAL:"Semifinal"}[pend.ronda];
+  if(!ant||!lb.rondas[ant]) return _dok("tu primera ronda de liguilla");
+  var ajenas=lb.rondas[ant].filter(function(t){ return !(t.a===E.club||t.b===E.club)&&t.gana; });
+  if(!ajenas.length) return _dok("sin llaves ajenas resueltas");
+  var L=E.llavesVer;
+  if(!L||L.ronda!==ant||L.anio!==E.anio) return _dmal("los "+ant.toLowerCase()+" se jugaron y no hay cómo verlos",["solo llegó un aviso: falta marcarLlavesParaVer(\"ligB\",\""+ant+"\")"]);
+  return _dok(ajenas.length+" llave(s) de "+ant+" para ver"+(L.vista?" (ya las viste)":""));
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

@@ -986,6 +986,7 @@ function avanzarLiguillaB(part){
       d:"2° de la regular. "+etq+". Mientras esperabas se jugaron los cuartos"+(res?": "+res:"")+". "+
         (rivS?"Te toca "+_nomClub(rivS)+", el peor clasificado de los que pasaron.":"")});
     if(ts) mundoInsertarLlaveJugador("ligB", ts, "Liguilla de Ascenso", nota);
+    if(typeof marcarLlavesParaVer==="function") marcarLlavesParaVer("ligB","Cuartos");   /* 7.9046 · verlos en vivo */
     return;
   }
   var tq=mundoLlaveLigB("Cuartos");
@@ -1025,6 +1026,7 @@ function resolverLiguillaB(part, yo, otro){
   var nota="Liguilla de la B (bases ANFP 2026). Ida: local el peor de la fase regular.";
   var sig=ronda==="Cuartos"?"Semifinal":"FINAL";
   mundoLigBCerrarRonda(ronda);
+  if(typeof marcarLlavesParaVer==="function") marcarLlavesParaVer("ligB",ronda);   /* 7.9046 · las otras llaves, en vivo */
   var tn=mundoLlaveLigB(sig);
   var rivN=tn?(tn.a===E.club?tn.b:tn.a):null;
   if(typeof aplicarEfectos==="function") aplicarEfectos(ronda==="Cuartos"?{moral:3,plata:30}:{moral:4,plata:50});

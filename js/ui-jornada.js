@@ -263,6 +263,112 @@ function panelJornada(){
   return p;
 }
 
+/* ---------- 7.9046 · LLAVES EN VIVO (liguilla / copas) ----------
+   Pedido del autor: "quiero VER los cuartos antes de la semi". Las llaves ajenas se
+   resolvían de un golpe y solo llegaba un aviso. Ahora la vuelta se juega delante tuyo:
+   reloj, goles en su minuto, global que se mueve y, si empata, penales. */
+function _llNom(id){ return (typeof _nomClub==="function")?_nomClub(id):id; }
+function _llMinutos(n, clave){
+  const rng=(typeof _mAzar==="function")?_mAzar("vivo|"+clave):Math.random;
+  const out=[]; let g=0;
+  while(out.length<n && g++<200){ const m=1+Math.floor(rng()*90); if(out.indexOf(m)<0) out.push(m); }
+  return out.sort((a,b)=>a-b);
+}
+/* marca la ronda para que el escritorio ofrezca verla (una vez por ronda) */
+function marcarLlavesParaVer(tor, ronda){
+  if(!E) return;
+  E.llavesVer={tor:tor, ronda:ronda, anio:E.anio, vista:false};
+}
+function _llLista(){
+  const L=E&&E.llavesVer; if(!L||L.anio!==E.anio) return null;
+  if(L.tor==="ligB"){ const lb=E.mundo&&E.mundo.ligB; return lb&&lb.rondas[L.ronda]?lb.rondas[L.ronda]:null; }
+  const pack=E.mundo&&E.mundo.copas&&E.mundo.copas[L.tor];
+  return pack&&pack.ko&&pack.ko.rondas[L.ronda]?pack.ko.rondas[L.ronda]:null;
+}
+function llavesEnVivo(alCerrar){
+  const L=E&&E.llavesVer, lista=_llLista();
+  if(!L||!lista||!lista.length){ if(typeof alCerrar==="function") alCerrar(); return; }
+  const nomTor=L.tor==="ligB"?"Liguilla de Ascenso":(L.tor==="chile"?"Copa Chile":"Copa de la Liga");
+  modal(function(box){
+    const cuerpo=(typeof montarBarraSO==="function")
+      ? montarBarraSO(box,nomTor+" · "+L.ronda+" en vivo","📺",function(){ fin(true); })
+      : (function(){ box.appendChild(el("div","cab",'<span class="ic">📺</span><span>'+nomTor+" · "+L.ronda+'</span>')); const c=el("div","cuerpo"); box.appendChild(c); return c; })();
+    const reloj=el("div","ll-reloj","0'");
+    cuerpo.appendChild(el("p","mini","Se juegan las vueltas al mismo tiempo. El global suma la ida; si empata, penales"+(L.ronda==="FINAL"?" (antes, alargue)":"")+"."));
+    cuerpo.appendChild(reloj);
+    const filas=lista.map(function(t){
+      const ida=t.unica?null:t.legs[0], vta=t.unica?t.legs[0]:t.legs[1];
+      const locV=t.unica?t.a:t.b, visV=locV===t.a?t.b:t.a;
+      const f=el("div","ll-row"+((E.club===t.a||E.club===t.b)?" ll-mia":""));
+      f.innerHTML="<div class='ll-cab'><span>"+escHtml(_llNom(locV))+"</span><b class='ll-marc'>0 - 0</b><span>"+escHtml(_llNom(visV))+"</span></div>"+
+        "<div class='ll-pie mini'>"+(ida?"Ida: "+escHtml(_llNom(t.a))+" "+ida.ga+"-"+ida.gb+" "+escHtml(_llNom(t.b))+" · ":"")+"<span class='ll-glob'></span></div>";
+      cuerpo.appendChild(f);
+      const mins={l:vta?_llMinutos(vta.ga,t.a+t.b+"l"):[], v:vta?_llMinutos(vta.gb,t.a+t.b+"v"):[]};
+      return {t:t, f:f, vta:vta, locV:locV, mins:mins};
+    });
+    const pie=el("div","ll-final"); cuerpo.appendChild(pie);
+    let m=0, tmr=null, listo=false;
+    function pintarMin(min){
+      reloj.textContent=min>=90?"Final":(min+"'");
+      filas.forEach(function(x){
+        if(!x.vta) return;
+        const gl=x.mins.l.filter(k=>k<=min).length, gv=x.mins.v.filter(k=>k<=min).length;
+        const mEl=x.f.querySelector(".ll-marc"), prev=mEl.textContent;
+        mEl.textContent=gl+" - "+gv;
+        if(prev!==mEl.textContent && min>0){ mEl.classList.remove("ll-gol"); void mEl.offsetWidth; mEl.classList.add("ll-gol"); }
+        const ida=x.t.unica?{ga:0,gb:0}:(x.t.legs[0]||{ga:0,gb:0});
+        const ga=ida.ga+(x.locV===x.t.a?gl:gv), gb=ida.gb+(x.locV===x.t.a?gv:gl);
+        x.f.querySelector(".ll-glob").textContent=x.t.unica?"":("Global: "+_llNom(x.t.a)+" "+ga+"-"+gb+" "+_llNom(x.t.b));
+      });
+    }
+    function fin(cerrar){
+      if(tmr){ clearTimeout(tmr); tmr=null; }
+      if(!listo){
+        listo=true; pintarMin(90);
+        filas.forEach(function(x){
+          const g=x.t.gana; if(!g) return;
+          x.f.classList.add("ll-hecha");
+          const extra=x.t.pens?(x.t.alargueGoles?" · alargue y penales":" · por penales"):"";
+          x.f.querySelector(".ll-pie").insertAdjacentHTML("beforeend"," · <b class='ll-pasa'>Pasa "+escHtml(_llNom(g))+extra+"</b>");
+        });
+        const pasan=filas.map(x=>x.t.gana).filter(Boolean).map(_llNom);
+        if(pasan.length) pie.appendChild(el("p",null,"<b>Pasan:</b> "+pasan.map(escHtml).join(" · ")));
+        const sig=(typeof mundoLlaveLigB==="function"&&L.tor==="ligB")?mundoLlaveLigB(L.ronda==="Cuartos"?"Semifinal":"FINAL"):null;
+        if(sig){ const riv=sig.a===E.club?sig.b:sig.a; pie.appendChild(el("p","ll-tuyo","👉 Tu rival en la "+(L.ronda==="Cuartos"?"semifinal":"final")+": <b>"+escHtml(_llNom(riv))+"</b>")); }
+        const ok=el("button","btn-aqua ancho verde","Listo"); ok.onclick=function(){ fin(true); }; pie.appendChild(ok);
+        if(salta) salta.remove();
+        L.vista=true; if(typeof guardar==="function") guardar();
+      }
+      if(cerrar){ cerrarModal(); if(typeof alCerrar==="function") alCerrar(); }
+    }
+    function paso(){ m=Math.min(90,m+3); pintarMin(m); if(m>=90){ fin(false); return; } tmr=setTimeout(paso,160); }
+    let salta=null;
+    if(_jorSinAnim()){ fin(false); }
+    else { salta=el("button","btn-aqua chico gris","⏩ Ver resultados"); salta.onclick=function(){ fin(false); }; cuerpo.appendChild(salta); pintarMin(0); tmr=setTimeout(paso,400); }
+  },{cerrarFuera:false,clase:"ventana-so"});
+}
+function panelLlaves(){
+  const L=E&&E.llavesVer, lista=_llLista();
+  if(!L||!lista) return null;
+  const pend=(E.calendario||[]).slice(E.idx||0).find(p=>p&&!p.jugado);
+  if(L.vista && !(pend&&pend.torneo==="Liguilla de Ascenso")) return null;   /* ya la viste y pasó la ronda */
+  const nomTor=L.tor==="ligB"?"Liguilla":"Copa";
+  const p=panel(nomTor+" · "+L.ronda+(L.vista?"":" · se jugaron"),"📺","agua");
+  if(!L.vista){
+    p.cuerpo.appendChild(el("p","mini","Mientras tanto se jugaron las otras llaves. Tu próximo rival sale de acá."));
+    const b=el("button","btn-aqua ancho verde","▶ Ver los "+L.ronda.toLowerCase()+" en vivo");
+    b.onclick=function(){ llavesEnVivo(function(){ if(typeof render==="function") render(); }); };
+    p.cuerpo.appendChild(b);
+  } else {
+    lista.forEach(function(t){ const g=(typeof _mGlobal==="function")?_mGlobal(t):[0,0];
+      p.cuerpo.appendChild(el("div","fila mini","<span>"+escHtml(_llNom(t.a)+" vs "+_llNom(t.b))+"</span><b>"+g[0]+"-"+g[1]+(t.gana?" · "+escHtml(_llNom(t.gana)):"")+"</b>")); });
+    const r=el("button","btn-aqua chico gris","↻ Volver a verlos");
+    r.onclick=function(){ llavesEnVivo(function(){ if(typeof render==="function") render(); }); };
+    p.cuerpo.appendChild(r);
+  }
+  return p;
+}
+
 /* ---------- parte de la semana (lo que pasó mientras avanzabas) ---------- */
 function parteSemana(lineas){
   if(!E) return;
@@ -305,6 +411,8 @@ function _jorInsertar(){
   if(!rej) return;
   const pp=panelParte();
   if(pp&&izq) izq.insertBefore(pp,izq.firstChild);
+  const pl=panelLlaves();   /* 7.9046 · las llaves ajenas, arriba: tu rival sale de ahí */
+  if(pl&&izq) izq.insertBefore(pl,izq.firstChild);
   const pj=panelJornada();
   if(pj) (der||izq||rej).appendChild(pj);
 }

@@ -3559,3 +3559,18 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `dominio_final`:** exige 15+ tramos, curva con rango (no plana) y consejos que empiecen con
   "Para…". Al revés: sin eventos, la curva es plana; sin registro, faltan tramos.
   **Tests:** dev 519/519 · core 1185/1185.
+
+### 7.9046 — los cuartos de la liguilla se ven en vivo
+**Archivos:** `js/ui-jornada.js`, `js/data-formato2026.js`, `js/dev-doctor.js`, `css/pulido.css`, `js/util.js`, `index.html`
+- Pedido del autor: ver los cuartos antes de la semi. Antes, las llaves ajenas se resolvían de un golpe y
+  solo llegaba un aviso.
+- **`llavesEnVivo()`:** las vueltas se juegan al mismo tiempo delante tuyo, con reloj de 0' a 90', goles en su
+  minuto (deterministas, salen del resultado real de la llave), global que se mueve, "Pasa X" con alargue o
+  penales, "Pasan: …" y "👉 Tu rival en la semifinal". Botón para saltar a los resultados. En modo liviano va
+  directo al final.
+- **`marcarLlavesParaVer(tor, ronda)`:** se llama cuando esperas en semis (2° de la regular) y cuando pasas
+  una ronda. El escritorio muestra arriba el panel "Liguilla · Cuartos · se jugaron" con "▶ Ver en vivo".
+  Una vez visto, queda el resumen con "↻ Volver a verlos" hasta que juegas tu partido.
+- **Doctor `llaves_en_vivo`:** si tu próximo partido es de la liguilla y la ronda anterior tuvo llaves ajenas,
+  exige que se puedan ver. Al revés, sin la marca, falla. Probado con Rangers forzado a 2° de la B.
+  **Tests:** dev 519/519 · core 1185/1185.
