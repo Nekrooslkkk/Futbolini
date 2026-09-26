@@ -2588,7 +2588,7 @@ function vistaCarrera(){
   const pt=panel("Trayectoria","🗂️");
   pt.cuerpo.appendChild(fila("Club actual",E.clubNombre+" (desde "+E.carrera.desde+")"));
   pt.cuerpo.appendChild(fila("Destituciones",E.carrera.despidos));
-  E.carrera.clubes.forEach(c=>pt.cuerpo.appendChild(fila(CLUB_INFO[c.club].n,c.desde+"-"+c.hasta+" · "+c.titulos.length+" títulos")));
+  E.carrera.clubes.forEach(c=>pt.cuerpo.appendChild(fila((typeof nomClubCualquiera==="function"?nomClubCualquiera(c.club):((CLUB_INFO[c.club]||{}).n||c.club)),c.desde+"-"+c.hasta+" · "+c.titulos.length+" títulos")));
   if(E.titulos.length){
     pt.cuerpo.appendChild(el("h3","sub","Vitrina"));
     E.titulos.forEach(t=>pt.cuerpo.appendChild(fila("🏆",t)));

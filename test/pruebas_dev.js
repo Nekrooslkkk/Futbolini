@@ -1461,6 +1461,22 @@
       t(/Con tu plan/.test(w.textContent)&&/Conviene/.test(w.textContent),"el widget del clima dice qué hace con tu plan y qué conviene");
     },"Prensa 7.9065");
 
+    grupo("Historia, Carrera y Avisos · 7.9066");
+    safe(function(){
+      nuevaPartida("COQ",2026,"historico");
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="historia_carrera"; })[0].fn();
+      t(r.ok,"doctor historia_carrera: "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      E.carrera.clubes.push({club:"XYZ",desde:2020,hasta:2021,titulos:[]});
+      SEC="carrera"; render();
+      t(/Tu carrera en números/.test(document.getElementById("vista").textContent),"Carrera abre con un club sin ficha en la trayectoria");
+      SEC="historia"; render();
+      t(/Ficha de/.test(document.getElementById("vista").textContent),"Historia muestra la ficha del club");
+      notificar({t:"Prueba de registro",d:"detalle",tipo:"malo"});
+      SEC="avisos"; render();
+      t(!!document.querySelector("#vista .av-fila")&&!!document.querySelector("#vista .av-buscar"),"Avisos es un registro con búsqueda");
+      SEC="escritorio";
+    },"Historia 7.9066");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

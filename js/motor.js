@@ -501,7 +501,7 @@ function notificar(n){
     leido:false, acc:n.acc||null
   };
   E.notifs.unshift(item);
-  if(E.notifs.length>80) E.notifs.length=80;
+  if(E.notifs.length>200) E.notifs.length=200;   /* 7.9066 · Avisos es un registro: guarda más */
   /* también entra a la bandeja semanal del escritorio, salvo que se pida lo contrario */
   if(n.bandeja!==false){
     E.bandeja.unshift({t:item.t,d:item.d,extra:item.extra,tipo:item.tipo,anio:E.anio});

@@ -1323,6 +1323,30 @@ devDoctorRegistrar({id:"prensa_real", area:"motor", n:"Prensa, trivia y clima: r
   }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("0 respuestas comodín · conferencia de "+CONF_N_PREGUNTAS+"+ · "+Object.keys(formas).length+" formas de matemática · clima con efecto en plan, público y lesiones");
 }});
+devDoctorRegistrar({id:"historia_carrera", area:"interfaz", n:"Historia, Carrera y Avisos funcionan con cualquier club y llevan registro", fn:function(){
+  var falta=[];
+  if(typeof fichaClub!=="function"||typeof panelCarreraNumeros!=="function") return _dmal("sin Historia/Carrera nuevas");
+  var ids=[].concat(Object.keys(typeof CLUB_INFO_2026!=="undefined"?CLUB_INFO_2026:{}),Object.keys(typeof CLUB_INFO!=="undefined"?CLUB_INFO:{}));
+  var sinNombre=ids.filter(function(id){ return nomClubCualquiera(id)===id; });
+  if(sinNombre.length) falta.push(sinNombre.length+" clubes sin nombre en Historia: "+sinNombre.slice(0,5).join(", "));
+  var sinFicha=ids.filter(function(id){ var f=fichaClub(id); return !f.ciudad&&!f.estadio; });
+  var snap=clonarPartida(E);
+  try{
+    E.carrera.clubes=(E.carrera.clubes||[]).concat([{club:"ZZZ_NO_EXISTE",desde:E.anio-2,hasta:E.anio-1,titulos:[]}]);
+    try{ panelCarreraNumeros(); panelEraEnClub(); panelFichaClub(); }catch(e){ falta.push("Carrera/Historia se caen con un club sin ficha: "+e.message); }
+    var r0=_recClub(E.club), pj=r0.pj;
+    registrarPartidoHistoria({tipo:"liga",rivalNombre:"Prueba",torneo:"Liga"},5,0,["Uno","Uno"]);
+    var r=E.records.porClub[E.club];
+    if(r.pj!==pj+1||!r.mayorGol||r.goles.Uno<2) falta.push("los récords del club no se registran partido a partido");
+    registrarPartidoHistoria({tipo:"amistoso"},9,0,[]);
+    if(E.records.porClub[E.club].pj!==pj+1) falta.push("los amistosos cuentan para los récords");
+    E.repHist=[]; registrarRepTemporada(); registrarRepTemporada();
+    if(E.repHist.length!==1) falta.push("la reputación se guarda dos veces en la misma temporada");
+  } finally { restaurarPartida(snap); }
+  if(temaAviso({t:"Balance 1992: 5° en el Nacional",d:"$ 3 M"})!=="partido") falta.push("el registro clasifica mal los balances de temporada");
+  if(temaAviso({t:"Te lesionaste",d:""})==="plata") falta.push("el registro clasifica mal por el detalle");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(ids.length+" clubes con nombre · "+(ids.length-sinFicha.length)+" con ficha (ciudad o estadio) · récords y reputación por temporada");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

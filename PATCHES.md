@@ -3992,3 +3992,30 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   - **El widget** dice qué le hace el clima a tu plan y qué conviene.
 - **Doctor `prensa_real`:** comprobado al revés; con una pregunta sin respuesta, el chequeo falla.
   **Tests:** dev 544/544 · core 1185/1185.
+
+### 7.9066 — Historia, Carrera y Avisos con cariño (sirven para cualquier club)
+**Archivos:** `js/historia-carrera.js` (nuevo), `js/ui.js`, `js/motor.js`, `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Historia** parte con 3 paneles nuevos:
+  - **Ficha del club:** escudo, ciudad, fundación y años, colores, estadio y aforo, clásicos y división.
+    Se arma con los datos que existan para cualquier club (`CLUB_META`, `ESTADIOS_DATA`, `RIVALIDADES_2026`).
+  - **Tu era en el club:** temporadas, PJ, G-E-P, goles, rendimiento y títulos; gráfico de posición final por
+    temporada (🏆 en los años con título); mejor y peor campaña; mayor goleada, peor derrota, mejor racha y
+    top 5 de goleadores.
+  - **Lo que el club recuerda de ti:** la memoria del juego, por año.
+- **Carrera** parte con **Tu carrera en números:**
+  - años, clubes, PJ, G-E-P, rendimiento, títulos y despidos;
+  - club por club, con escudo, años, balance y mejor puesto;
+  - curva de tu imagen pública por temporada.
+- **Bug:** la trayectoria se caía (`CLUB_INFO[c.club].n`) con cualquier club que no fuera de 1991.
+- **Avisos** pasa a ser un **registro**:
+  - filtros por tono (buenos, malos, sin leer) y por tema (plata, plantel, prensa, club, vida, resultados,
+    historia), con conteo;
+  - búsqueda;
+  - agrupado por fecha, una línea por aviso y el detalle al tocarlo;
+  - "ver más" de a 60;
+  - guarda 200 avisos en vez de 80.
+- **Registros nuevos:**
+  - `E.records.porClub`: partidos oficiales, goleadas, rachas y goleadores. Los amistosos no cuentan.
+  - `E.repHist`: la reputación de cada temporada.
+- **Doctor `historia_carrera`:** comprobado al revés con el bug viejo de `CLUB_INFO`.
+  **Tests:** dev 548/548 · core 1185/1185.
