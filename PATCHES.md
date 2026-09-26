@@ -3659,3 +3659,20 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Doctor `institucion_limites`:** mide el comportamiento real (intenta 5 pactos, cambia el año, compra dos
   soplos). Al revés, con el `pactar` viejo, falla.
   **Tests:** dev 519/519 · core 1185/1185.
+
+### 7.9051 — Finanzas con montos reales: el CM tiene sueldo, la campaña cuesta lo que cuesta
+**Archivos:** `js/motor.js`, `js/ui.js`, `js/dev-doctor.js`, `js/util.js`, `index.html`
+- Pedido del autor: el CM tiene que costar poco de entrada y tener sueldo como gasto recurrente, con números
+  chicos y reales.
+- **CM:**
+  - contratación de 1,5 M más 1,2 M de sueldo al mes, en pesos de la época (`inflacionEra`; en 2026 da
+    2,1 M y 1,7 M al mes);
+  - el sueldo entra en `egresosAnuales().cm` y en `costoSemanal`, con su línea en el flujo de caja;
+  - se puede despedir;
+  - antes de 2010 se llama "Encargado de comunicaciones".
+- **Campaña de marketing:** baja de 250 M a 45 M (63 M en pesos de 2026).
+- `costoSemanal` conserva decimales: los sueldos chicos ya no desaparecen en el redondeo.
+- **Bolsa:** revisada. Funciona: se mueve cada semana y tras cada partido, y paga dividendos al cierre.
+- **Doctor `finanzas_realistas`:** el CM sube el costo semanal y tiene sueldo creíble; la acción registra la
+  semana y se mueve con un triunfo; comprar y vender al mismo precio devuelve lo invertido.
+  **Tests:** dev 519/519 · core 1185/1185.

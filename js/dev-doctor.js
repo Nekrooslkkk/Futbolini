@@ -1017,6 +1017,31 @@ devDoctorRegistrar({id:"institucion_limites", area:"motor", n:"Institución: top
   } finally { window.aviso=avisoOrig; restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("3 pactos por temporada · jugadas y estatutos una vez por temporada · soplo cada 4 fechas");
 }});
+devDoctorRegistrar({id:"finanzas_realistas", area:"motor", n:"Finanzas con montos reales (CM con sueldo) y una bolsa que se mueve", fn:function(){
+  var falta=[];
+  if(typeof sueldoCMAnual!=="function") falta.push("el CM no tiene sueldo: se paga una vez y nunca más");
+  else {
+    var snap=clonarPartida(E);
+    try{
+      E.staff=E.staff||{}; E.staff.cm=false; var c0=costoSemanal();
+      E.staff.cm=true; var c1=costoSemanal();
+      if(!(c1>c0)) falta.push("con CM contratado el costo semanal no sube ("+c0+" → "+c1+")");
+      if(sueldoCMAnual()>60) falta.push("el CM cuesta "+plata(sueldoCMAnual())+" al año (un CM real ronda 15 M)");
+      if(typeof CM_CONTRATO!=="undefined"&&CM_CONTRATO>10) falta.push("contratar al CM cuesta "+plata(CM_CONTRATO));
+    } finally { restaurarPartida(snap); }
+  }
+  if(typeof actualizarBolsa==="function"&&typeof invertirBolsa==="function"){
+    var snap2=clonarPartida(E);
+    try{
+      normalizarBolsa(); var h0=E.bolsa.historia.length; actualizarBolsa();
+      if(E.bolsa.historia.length<=h0 && h0<40) falta.push("la acción no registra la semana");
+      var p0=E.bolsa.precio; golpeBolsa(1); if(E.bolsa.precio===p0) falta.push("ganar un partido no mueve la acción");
+      E.personal.bolsillo=100; invertirBolsa(50); var rec=liquidarBolsa(1);
+      if(Math.abs(rec-50)>2) falta.push("comprar y vender al mismo precio no devuelve lo invertido ("+rec+" de 50)");
+    } finally { restaurarPartida(snap2); }
+  }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("CM "+plata(typeof CM_SUELDO_MES!=="undefined"?CM_SUELDO_MES:0)+"/mes en el flujo · bolsa semanal y por partido");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

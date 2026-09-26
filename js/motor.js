@@ -992,11 +992,18 @@ function ingresosAnuales(){
   const dig=(typeof ingresoDigital==="function")?ingresoDigital():0;
   return {tv:Math.round(tv),sponsors:Math.round(spo),socios:Math.round(soc),digital:dig};
 }
+/* 7.9050 · sueldo real del CM: ~1,2 M al mes (en pesos de la época), no 180 M de una vez */
+const CM_SUELDO_MES=1.2, CM_CONTRATO=1.5;
+function sueldoCMAnual(){
+  if(!E||!E.staff||!E.staff.cm) return 0;
+  const infl=(typeof inflacionEra==="function")?inflacionEra():1;
+  return Math.round(CM_SUELDO_MES*12*infl*10)/10;
+}
 function egresosAnuales(){
   const planilla=planillaAnual();
   const oper=Math.round(100+E.ind.prestigio*2+E.ind.estadio*5+E.ind.hinchada*2);
   const inter=Math.round(E.deuda*(0.16+modSuma("interes")));
-  return {planilla:planilla,operacion:oper,intereses:inter};
+  return {planilla:planilla,operacion:oper,intereses:inter,cm:sueldoCMAnual()};
 }
 /* 7.58 · refinanciar la deuda: bajás el interés semanal a cambio de estirar el
    total (te sale más caro en total, pero respirás ahora). */
@@ -1091,7 +1098,7 @@ function prensaFiltra(){
 }
 function costoSemanal(){
   const e=egresosAnuales();
-  return Math.round((e.planilla+e.operacion+e.intereses)/40);
+  return Math.round((e.planilla+e.operacion+e.intereses+(e.cm||0))/40*10)/10;
 }
 function ingresoSemanal(){
   const i=ingresosAnuales();

@@ -1420,6 +1420,7 @@ function vistaFinanzas(){
     linea("Derechos de TV",s(ia.tv)); linea("Sponsors",s(ia.sponsors)); linea("Socios/abonos",s(ia.socios));
     if(ia.digital) linea("Digital/redes",s(ia.digital));
     linea("Planilla (sueldos)",s(ea.planilla),true); linea("Operación/estadio",s(ea.operacion),true); linea("Intereses de deuda",s(ea.intereses),true);
+    if(ea.cm) linea(((E.anio||2026)>=2010?"Community Manager":"Comunicaciones")+" (sueldo)",Math.round(ea.cm/40*10)/10,true);
     if(E.flags&&E.flags.feeTesoreroUlt) linea("Comisión del Tesorero",E.flags.feeTesoreroUlt,true);
     t.appendChild(tb); pf.cuerpo.appendChild(t);
     const neto2=ingresoSemanal()-costoSemanal();
@@ -1479,12 +1480,17 @@ function vistaFinanzas(){
   const pin=panel("Inversiones","🏗️");
   pin.cuerpo.appendChild(el("p","mini","Plata que sale hoy para tener un club más grande mañana. No hay atajos infinitos: cada mejora tiene un techo realista y se pone más cara a medida que subes."));
   const hinTope=E.ind.hinchada>=88;
+  /* 7.9050 · montos reales de un club chileno: campaña ~45 M; CM = contratación chica + sueldo mensual */
+  const inflI=(typeof inflacionEra==="function")?inflacionEra():1;
+  const costoCamp=Math.round(45*inflI);
+  const nomCM=(E.anio||2026)>=2010?"Community Manager":"Encargado de comunicaciones";
+  const costoCM=Math.round(CM_CONTRATO*inflI*10)/10, mesCM=Math.round(CM_SUELDO_MES*inflI*10)/10;
   const inv=[
-   {n:"Campaña de marketing",costo:250,disp:!hinTope,
+   {n:"Campaña de marketing",costo:costoCamp,disp:!hinTope,
     desc:hinTope?"La hinchada ya está a full: gastar en publicidad ahora es tirar la plata.":"+ hinchada, socios y algo de prestigio. Pierde efecto cuando la gente ya está prendida.",
-    fn:()=>aplicarEfectos({plata:-250,hinchada:Math.max(2,Math.round((88-E.ind.hinchada)/6)),socios:4,prestigio:2})},
-   E.staff.cm?{n:"Community Manager (contratado)",costo:0,disp:false,desc:"Ya tienes CM. Se maneja desde PLOP.",fn:null}
-             :{n:"Contratar Community Manager",costo:180,disp:true,desc:"Profesionaliza la comunicación: + prestigio y desbloquea campañas en PLOP.",fn:()=>{ aplicarEfectos({plata:-180,prestigio:2}); E.staff.cm=true; }}
+    fn:()=>aplicarEfectos({plata:-costoCamp,hinchada:Math.max(2,Math.round((88-E.ind.hinchada)/6)),socios:4,prestigio:2})},
+   E.staff.cm?{n:nomCM+" (contratado)",costo:0,disp:false,cm:true,desc:"Sueldo: "+plata(mesCM)+" al mes (va en el flujo de caja). Campañas desde PLOP.",fn:null}
+             :{n:"Contratar "+nomCM,costo:costoCM,disp:true,desc:"Contratación "+plata(costoCM)+" y después "+plata(mesCM)+" de sueldo al mes. + prestigio y desbloquea campañas en PLOP.",fn:()=>{ aplicarEfectos({plata:-costoCM,prestigio:2}); E.staff.cm=true; }}
   ];
   inv.forEach(o=>{
     const d=el("div","resul mitad");
@@ -1495,6 +1501,10 @@ function vistaFinanzas(){
       b.disabled=sinCaja;
       b.onclick=()=>{ o.fn(); guardar(); render(); aviso(o.n+" · "+plata(o.costo)); };
       d.appendChild(b);
+    } else if(o.cm){
+      const bx=el("button","btn-aqua chico gris","Despedir"); bx.style.marginTop="5px";
+      bx.onclick=()=>{ if(!confirm("¿Despedir al "+nomCM+"? Se corta el sueldo y las campañas en PLOP.")) return; E.staff.cm=false; aplicarEfectos({prestigio:-1}); guardar(); render(); aviso(nomCM+" despedido"); };
+      d.appendChild(bx);
     } else if(!o.disp && o.n.indexOf("contratado")<0){
       d.appendChild(el("span","etq neu","Tope alcanzado"));
     }
