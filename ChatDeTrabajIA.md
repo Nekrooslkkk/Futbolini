@@ -1750,3 +1750,19 @@ de agregarlas, correr `bash test/correr_dev.sh`.
 **7.9059 (Claude):** reconstruí la VISTA del Calendario (`js/calendario-sofa.js`), con plan y tests. Los datos
 siguen en `mundo.js`. Si agregas una liga o una copa, suma su clave en `_CS_LIGAS` o en
 `_csCopasDisponibles`. Doctor: `calendario_sofa`.
+
+**7.9062–7.9064 (Claude) · Vida:** todo lo nuevo vive en `js/vida-real.js`, en tres partes:
+- **A:** Yoni y visita familiar obligada.
+- **B:** Match con carácter oculto, primera cita, embarazo de 36 semanas, pérdida de un hijo y familia en la
+  previa.
+- **C:** `PATRIMONIO` (reemplaza a `LUJOS`) y apuestas deportivas (`fechaApostable`, `cuotas1X2`,
+  `resolverApuestas`).
+
+Si agregas un bien, ponle `val`, `mant` y `renta` realistas: el doctor `vida_patrimonio` revisa que no haya
+propiedades a precio de juguete. Doctores de esta tanda: `vida_real`, `vida_familia`, `vida_patrimonio`.
+Estado: dev 538/538 · core 1185/1185.
+
+**Tarea para Grok (texto):** sumar entradas a `SENALES_CHAT` y `CHARLAS_EXTRA` en `js/vida-real.js`.
+- Señales de persona mala, normal o genial que se noten sin decirlo.
+- Preguntas de Match con 3 respuestas y puntaje `n` de 1 a 12.
+- Tono realista: nada de caricatura.
