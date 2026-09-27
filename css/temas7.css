@@ -264,3 +264,25 @@ html body[data-tema="insano"] .cielo{ background-size:300% 300% !important; anim
 html body[data-tema="insano"] .panel:not(.modal,.modal > .panel) > .cab{ background-size:200% 100% !important; animation:insanoCab 6s linear infinite; }
 @keyframes insanoCab{ from{ background-position:0% 0 } to{ background-position:200% 0 } }
 html body[data-tema="insano"] #fondo :is(.pasto,.destello){ background:none !important; }
+
+/* ---------- 6. 7.9088 · 📼 temporadas: repetición fecha a fecha ---------- */
+.repe-cab{ display:flex; flex-wrap:wrap; align-items:baseline; gap:6px; margin:4px 0 6px; }
+.repe-cab .repe-fecha{ margin-left:auto; font-weight:700; font-variant-numeric:tabular-nums; }
+.repe-ctr{ display:flex; flex-wrap:wrap; align-items:center; gap:4px; margin:6px 0; }
+.repe-rango{ flex:1 1 160px; min-width:120px; }
+.repe-lista{ display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; max-height:120px; overflow-y:auto; }
+.repe-res{ display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:4px; margin:6px 0 10px; }
+.repe-p{ display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center; padding:4px 8px; border-radius:3px;
+  border:1px solid var(--t-linea,rgba(90,120,160,.26)); background:rgba(127,127,127,.06); font-size:13px; }
+.repe-p .l{ text-align:right; } .repe-p b{ font-variant-numeric:tabular-nums; min-width:44px; text-align:center; }
+.repe-p.yo{ border-color:#3c7fb1; background:rgba(60,127,177,.12); font-weight:600; }
+.repe-p.vivo b{ color:#c0392b; }
+.repe-tabla .sube{ color:#2a9a2a; } .repe-tabla .baja{ color:#c0392b; } .repe-tabla .igual{ opacity:.45; }
+.repe-tabla tr.yo td{ font-weight:700; background:rgba(60,127,177,.12); }
+.repe-tabla-wrap, .repe-resumen{ overflow-x:auto; }
+/* pestañas del calendario: las de un sitio de resultados de 2009 (gris brillante, la activa blanca pegada al contenido) */
+html body .cs-tabs{ display:flex; gap:2px; border-bottom:2px solid #3c7fb1; padding:0 4px; background:none !important; box-shadow:none !important; border-radius:0 !important; }
+html body .cs-tab{ border:1px solid #b9c7d6 !important; border-bottom:0 !important; border-radius:5px 5px 0 0 !important; padding:6px 14px !important;
+  background:linear-gradient(180deg,#ffffff,#e9eef4 50%,#dde5ee 50%,#e7edf3) !important; color:#1e395b !important; font:600 13px var(--f-cuerpo) !important; box-shadow:none !important; text-shadow:none !important; }
+html body .cs-tab.on{ background:linear-gradient(180deg,#8fc3f0 0%,#4a8fd0 48%,#2e6fb4 50%,#4d93d6 100%) !important; color:#fff !important; border-color:#3c7fb1 !important; }
+html body[data-tema="negro"] .cs-tab{ background:linear-gradient(180deg,#2b3440,#1b222b) !important; color:#d6e3f2 !important; border-color:#3a4656 !important; }

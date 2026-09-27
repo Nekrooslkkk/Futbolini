@@ -4477,3 +4477,33 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
     Usa una sonda nueva por tema, porque Chrome devolvía el estilo del tema anterior.
   - `tuit_gol_neutro`.
 - **Estado:** doctor sano (3 partidas + celular, 81 chequeos) · dev 585/585 · core 1185/1185 · barrido 5 partidas × 12 secciones × PC/celular sin hallazgos.
+
+### 7.9088 — Temporadas pasadas con repetición, resumen real de la simulación, copas con detalle
+**Archivos:** `js/temporadas-archivo.js` (nuevo), `js/calendario-sofa.js`, `css/temas7.css`, `js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Archivo de temporadas** (reporte del autor: "cuando se simulan no se puede ver cómo quedaron").
+  - Después de cada fecha de liga se anota `[local, visita, goles, goles]`: ~4 KB por temporada.
+  - Las 15 últimas quedan completas; las viejas guardan la tabla final.
+  - La tabla de cualquier fecha se **reconstruye** desde los resultados. Controlado: la temporada simulada de
+    Colo-Colo 2026 da exactamente la tabla real (30 fechas, 0 diferencias), igual en 1991 y Argentina.
+  - Nace al empezar la temporada.
+  - Viaja contigo si cambias de club (`aceptarClub` armaba una partida nueva y lo borraba).
+  - Las liguillas no cuentan como fecha, porque se suman un momento y se revierten.
+- **Calendario ▸ 📼 Temporadas** (y un panel al final del Calendario en las épocas sin el calendario 2026):
+  - Eliges el año y lo repites.
+  - 🐢 **Lento (el exacto):** partido a partido, minuto a minuto (los goles caen en su minuto, fijos por
+    partido); la tabla se mueve al final de cada fecha.
+  - ⏩ **Rápido:** fecha a fecha.
+  - También: ⏮ ◀ ▶ ⏭, barra de fecha, flechas ▲▼ de cambio de puesto y tabla con PJ G E P GF GC DG Pts.
+- **Simulación:**
+  - Al terminar varias temporadas sale el **resumen de todas** (año, club, liga, puesto, campeón), cada una con
+    📼 Ver. Antes quedaba solo un aviso.
+  - El avance rápido suma **"Simular 1 temporada"**.
+  - "Simular la próxima fecha" ahora es **en vivo**: la fecha recién simulada se ve minuto a minuto.
+- **Copas:** las tablas de grupos muestran G, E, P, GF y GC (antes solo PJ, DG, Pts).
+- **Pestañas del Calendario:** las de un sitio de resultados de 2009, con la activa en gel azul.
+- **Doctor `temporadas_archivo`:** enganches en pie, temporada en curso = tabla real, temporadas archivadas sin
+  descuadre, archivo < 600 KB. Al revés: saltarse un partido por fecha dio "16 equipos no cuadran".
+- **Pendiente anotado:** en la Segunda (zonas) la tabla real del cierre trae partidos que no pasan por las fechas
+  del calendario, y un `pts:-999` en un club. El archivo muestra lo que se jugó fecha a fecha; el doctor no exige
+  cuadratura ahí. Revisar el cierre de zonas de Segunda.
+- **Estado:** doctor sano (3 partidas + celular, 82 chequeos) · dev 590/590 · core 1185/1185.

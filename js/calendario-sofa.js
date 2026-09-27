@@ -172,10 +172,12 @@ function _csGrupos(tor){
     const g=el("div","cs-grupo"+(filas.some(c=>c.id===E.club)?" mio":""));
     g.appendChild(el("div","cs-grupo-t","Grupo "+letra));
     const t=el("table","cs-tabla cs-mini");
-    t.innerHTML="<thead><tr><th></th><th class='izq'>Equipo</th><th class='n'>PJ</th><th class='n'>DG</th><th class='n'>Pts</th></tr></thead>";
+    /* 7.9088 · con ganados, empatados, perdidos y goles (pedido del autor: "no muestran más detalles") */
+    t.innerHTML="<thead><tr><th></th><th class='izq'>Equipo</th><th class='n'>PJ</th><th class='n'>G</th><th class='n'>E</th><th class='n'>P</th><th class='n'>GF</th><th class='n'>GC</th><th class='n'>DG</th><th class='n'>Pts</th></tr></thead>";
     const tb=el("tbody");
     filas.forEach((c,i)=>{ const tr=el("tr",(c.id===E.club?"yo ":"")+(i<2?"z-sud":""));
-      tr.innerHTML="<td class='n pos'>"+(i+1)+"</td><td class='izq'>"+_csEsc(c.id)+"<span class='cs-eq'>"+escHtml(c.n||_csNom(c.id))+"</span></td><td class='n'>"+c.pj+"</td><td class='n'>"+((c.gf-c.gc)>0?"+":"")+(c.gf-c.gc)+"</td><td class='n pts'>"+c.pts+"</td>";
+      const n0=v=>(v==null?"–":v);
+      tr.innerHTML="<td class='n pos'>"+(i+1)+"</td><td class='izq'>"+_csEsc(c.id)+"<span class='cs-eq'>"+escHtml(c.n||_csNom(c.id))+"</span></td><td class='n'>"+c.pj+"</td><td class='n'>"+n0(c.pg)+"</td><td class='n'>"+n0(c.pe)+"</td><td class='n'>"+n0(c.pp)+"</td><td class='n'>"+n0(c.gf)+"</td><td class='n'>"+n0(c.gc)+"</td><td class='n'>"+((c.gf-c.gc)>0?"+":"")+(c.gf-c.gc)+"</td><td class='n pts'>"+c.pts+"</td>";
       tb.appendChild(tr); });
     t.appendChild(tb); g.appendChild(t); box.appendChild(g);
   });
@@ -279,14 +281,15 @@ function vistaCalendarioSofa(){
   const cont=el("div","cs");
   _csBuscador(cont);
   const tabs=el("div","cs-tabs"); tabs.setAttribute("role","tablist");
-  const TABS=[["partidos","Partidos"],["tablas","Tablas"],["copas","Copas"],["resultados","Resultados"]];
+  const TABS=[["partidos","Partidos"],["tablas","Tablas"],["copas","Copas"],["resultados","Resultados"],["temporadas","📼 Temporadas"]];
   if(u.equipo) TABS.push(["equipo",_csNom(u.equipo)]);
   TABS.forEach(([k,n])=>{ const b=el("button","cs-tab"+(u.tab===k?" on":""),escHtml(n)); b.setAttribute("role","tab"); b.setAttribute("aria-selected",u.tab===k?"true":"false");
     b.onclick=()=>{ u.tab=k; irA("calendario"); }; tabs.appendChild(b); });
   cont.appendChild(tabs);
   const cuerpo=el("div","cs-cuerpo"); cont.appendChild(cuerpo);
   try{
-    ({partidos:_csPartidos,tablas:_csTablas,copas:_csCopas,resultados:_csResultados,equipo:_csEquipo}[u.tab]||_csPartidos)(cuerpo);
+    ({partidos:_csPartidos,tablas:_csTablas,copas:_csCopas,resultados:_csResultados,equipo:_csEquipo,
+      temporadas:function(c){ if(typeof panelTemporadas==="function") panelTemporadas(c); }}[u.tab]||_csPartidos)(cuerpo);
   }catch(e){ cuerpo.appendChild(el("p","mini","No se pudo dibujar: "+e.message)); }
   v.appendChild(cont);
 }

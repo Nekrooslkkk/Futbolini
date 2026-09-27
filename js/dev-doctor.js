@@ -1797,6 +1797,24 @@ devDoctorRegistrar({id:"tuit_gol_neutro", area:"contenido", n:"Un gol común en 
   finally{ if(typeof setIdioma==="function") setIdioma(idi); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("gol común en neutro: sin tuit forzado");
 }});
+/* 7.9088 · temporadas pasadas: el registro se engancha, la tabla reconstruida es la real y el archivo no revienta */
+devDoctorRegistrar({id:"temporadas_archivo", area:"motor", n:"Temporadas pasadas: cada fecha anotada, tabla reconstruida = tabla real, archivo liviano",
+  arreglo:"js/temporadas-archivo.js: simularResto/nuevoAnio/aceptarClub llevan el enganche _arch; tablaDeArchivo() rehace la tabla.", fn:function(){
+  if(typeof archivoAnotarFecha!=="function") return _dmal("no cargó js/temporadas-archivo.js",["falta el script en index.html"]);
+  var falta=[];
+  ["simularResto","nuevoAnio","aceptarClub","nuevaPartida"].forEach(function(n){ if(!(window[n]&&window[n]._arch)) falta.push(n+" no anota en el archivo (se pisó el enganche)"); });
+  if(!E) return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sin partida");
+  var A=E.archivo||{temps:[]}, act=A.actual, faseUnica=!/^2026c/.test(E.eraBase||"");
+  if(act&&act.fechas&&act.fechas.length&&!act.desde&&faseUnica){
+    var rec=tablaDeArchivo(act,act.fechas.length);
+    var mal=rec.filter(function(r){ var x=E.tabla&&E.tabla[r.id]; return x&&(x.pts!==r.pts||x.gf!==r.gf||x.gc!==r.gc||x.pj!==r.pj); });
+    if(mal.length) falta.push("la temporada en curso no cuadra: "+mal.slice(0,3).map(function(r){ return r.id+" "+r.pts+" pts anotados vs "+E.tabla[r.id].pts; }).join(", "));
+  }
+  (A.temps||[]).forEach(function(t){ if(t.descuadres&&!/^2026c|Segunda/.test((t.liga||"")+(t.eraBase||""))&&t.n>8) falta.push(t.anio+" "+t.club+": "+t.descuadres+" equipos no cuadran con la tabla real"); });
+  var kb=Math.round(JSON.stringify(A).length/1024);
+  if(kb>600) falta.push("el archivo pesa "+kb+" KB (el tope razonable es 600): revisar ARCHIVO_COMPLETAS");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok((A.temps||[]).length+" temporada(s) archivada(s) · en curso "+((act&&act.fechas.length)||0)+" fecha(s) · "+kb+" KB");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

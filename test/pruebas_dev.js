@@ -1608,6 +1608,21 @@
       SEC="escritorio"; render();
     },"Temas 7.9087");
 
+    grupo("Temporadas pasadas · 7.9088");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      simularTemporadas(1);
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="temporadas_archivo"; })[0].fn();
+      t(r.ok,"doctor temporadas_archivo: "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      var tp=E.archivo.temps[0];
+      t(!!tp&&tp.fechas&&tp.fechas.length===30,"la temporada simulada quedó con sus 30 fechas");
+      t(!!tp&&tp.descuadres===0,"la tabla reconstruida de la temporada es la tabla real");
+      t(tablaDeArchivo(tp,1).length>0&&tablaDeArchivo(tp,1)[0].pj===1,"la tabla se puede rehacer en la fecha 1");
+      E.uiCal=E.uiCal||{}; E.uiCal.tab="temporadas"; SEC="calendario"; render();
+      t(!!document.querySelector("#vista .repe .repe-p"),"Calendario ▸ Temporadas muestra los partidos de la fecha");
+      SEC="escritorio"; render();
+    },"Temporadas 7.9088");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));
