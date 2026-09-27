@@ -1,0 +1,266 @@
+/* ============================================================
+   FUTBOLINI 7.9084 · temas7.css — barras Vista, animaciones OFF y los otros 3 temas
+   Pedido del autor (22 mar del juego): "no se ve el movimiento de carga de las barras",
+   "el modo oscuro que sea realmente oscuro → DarkAero", "claro e insano entretenidos y que se
+   lean bien", "todo lo animado se tiene que poder quitar con Animaciones OFF, con doctor".
+   1. BARRAS de progreso de Vista/7 en TODOS los temas: brillo que recorre + se llenan al entrar
+      a una sección. Siguen vivas en Modo liviano (son baratas: transform de un pseudo-elemento).
+   2. ANIMACIONES OFF (body.anim-off) apaga TODO lo animado del juego, sin excepción.
+      Modo liviano (body.perf) ya no congela todo: solo lo pesado (desenfoques, burbujas, auroras).
+   3. DARKAERO (tema "negro"): vidrio NEGRO de Vista, oscuro de verdad, texto claro con contraste.
+   4. CLARO: Windows 7 Basic, limpio, con color en los detalles.
+   5. INSANO: caramelo Y2K / XP Luna, estridente pero legible (nada de Times ni sombras corridas).
+   Carga al final (ventanas.js la re-ordena detrás de temas.css). El doctor `temas_legibles` y
+   `animaciones_off` revisan que esto siga en pie.
+   ============================================================ */
+
+/* ---------- 1. barras de progreso Vista (todos los temas) ---------- */
+html body .barrita{
+  height:12px; border-radius:3px !important; overflow:hidden; position:relative;
+  border:1px solid var(--t-barra-borde,#9aa9b8);
+  background:var(--t-barra-riel,linear-gradient(180deg,#e3e3e3,#f5f5f5 50%,#d9d9d9 50%,#ebebeb)) !important;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.18) !important;
+}
+html body .barrita i{
+  position:relative; overflow:hidden; border-radius:0 !important; animation:none;
+  background-image:
+    linear-gradient(180deg,rgba(255,255,255,.62) 0,rgba(255,255,255,.18) 50%,rgba(0,0,0,.1) 51%,rgba(255,255,255,.14) 100%),
+    linear-gradient(var(--c,#4fc34a),var(--c,#4fc34a)) !important;
+  background-size:auto !important; background-repeat:no-repeat !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);
+  transform-origin:left center;
+}
+/* el destello que recorre (el "pulso" de la barra verde de Vista) */
+html body .barrita i::after{
+  content:""; display:block; position:absolute; top:0; bottom:0; left:0; width:45%; inset:auto; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.8),transparent);
+  transform:translateX(-120%); animation:vistaPulso 2.4s ease-in-out infinite; pointer-events:none;
+}
+@keyframes vistaPulso{ 0%{ transform:translateX(-120%) } 65%,100%{ transform:translateX(260%) } }
+/* se llenan al entrar a una sección (js/aero7.js pone #vista.llenando un momento) */
+html body #vista.llenando .barrita i{ animation:vistaLlenar .9s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes vistaLlenar{ from{ transform:scaleX(0) } to{ transform:scaleX(1) } }
+/* Modo liviano: la barra sigue viva (gana a la regla vieja que congelaba todo) */
+html body.perf .barrita i::after{ display:block !important; animation-duration:2.4s !important; animation-delay:0s !important; }
+html body.perf #vista.llenando .barrita i{ animation-duration:.9s !important; }
+
+/* ---------- 2. Animaciones OFF: TODO quieto ---------- */
+html body.anim-off *, html body.anim-off *::before, html body.anim-off *::after{
+  animation:none !important; transition:none !important;
+}
+html body.anim-off .barrita i::after{ display:none !important; }
+html body.anim-off .burbujas, html body.anim-off #fondo .aurora{ display:none !important; }
+@media (prefers-reduced-motion:reduce){ html body .barrita i::after{ display:none } }
+
+/* ---------- 3–5. estructura común de los temas negro, claro e insano (colores por variables) ---------- */
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]){
+  --f-titulo:"Selawik","Segoe UI","Noto Sans",Tahoma,sans-serif;
+  --f-cuerpo:"Selawik","Segoe UI","Noto Sans",Tahoma,sans-serif;
+  --f-dato:"Selawik","Segoe UI","Noto Sans",Tahoma,sans-serif;
+  --tinta:var(--t-texto); --tinta-suave:var(--t-suave); --linea:var(--t-linea);
+  font-family:var(--f-cuerpo); font-variant-numeric:tabular-nums; color:var(--t-texto);
+}
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(button,input,select,textarea,h1,h2,h3,h4){ font-family:inherit; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .cielo{ background:var(--t-fondo) !important; }
+/* ventanas y diálogos */
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(.ventana-so,.modal.panel,.modal > .panel){
+  border:1px solid var(--t-vidrio-borde) !important; border-radius:8px !important;
+  background:var(--t-vidrio) !important; padding:0 7px 7px !important;
+  box-shadow:inset 0 0 0 1px var(--t-vidrio-luz), 0 14px 38px rgba(0,0,0,.45) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.4); backdrop-filter:blur(14px) saturate(1.4);
+  color:var(--t-texto);
+}
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(.ventana-so,.modal.panel,.modal > .panel)::before{ display:none !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(.ventana-so .so-barra,:is(.modal.panel,.modal > .panel) > .cab){
+  background:var(--t-titulo-bg,transparent) !important; border:0 !important; box-shadow:none !important;
+  color:var(--t-titulo) !important; text-shadow:var(--t-titulo-sombra) !important;
+  font:var(--t-titulo-peso,400) 13.5px/1.2 var(--f-titulo) !important; padding:6px 4px 7px 6px !important; margin:0 -7px 0 -7px !important;
+  padding-left:13px !important; padding-right:11px !important; border-radius:7px 7px 0 0 !important;
+}
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(.ventana-so .so-barra,:is(.modal.panel,.modal > .panel) > .cab)::after{ display:none !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .ventana-so .so-titulo{ color:var(--t-titulo) !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(.modal.panel,.modal > .panel) > .cab .ic{ background:none !important; border:0 !important; box-shadow:none !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(.ventana-so .so-cuerpo,.ventana-so .window-body,:is(.modal.panel,.modal > .panel) > .cuerpo){
+  background:var(--t-cliente) !important; background-image:none !important; color:var(--t-texto) !important;
+  border:1px solid var(--t-cliente-borde) !important; border-radius:1px !important; box-shadow:none !important; margin:0 !important;
+}
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(.modal.panel,.modal > .panel) > .cuerpo{ padding:14px 16px !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .ventana-so .so-pie{
+  background:var(--t-pie) !important; border:1px solid var(--t-cliente-borde) !important; border-top:0 !important; margin:0 !important; box-shadow:none !important;
+}
+/* paneles */
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .panel:not(.modal,.modal > .panel){
+  background:var(--t-panel) !important; border:var(--t-panel-borde-ancho,1px) solid var(--t-panel-borde) !important;
+  border-radius:6px !important; box-shadow:var(--t-panel-sombra) !important; padding:0 !important; overflow:hidden;
+  -webkit-backdrop-filter:none !important; backdrop-filter:none !important; color:var(--t-texto);
+}
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .panel:not(.modal,.modal > .panel) > .cab{
+  background:var(--t-cab) !important; color:var(--t-cab-t) !important; text-shadow:var(--t-cab-sombra) !important;
+  border-bottom:1px solid var(--t-cab-l) !important; box-shadow:inset 0 1px 0 var(--t-cab-luz) !important;
+  font:var(--t-cab-peso,600) 14.5px/1.25 var(--f-titulo) !important; padding:6px 10px !important;
+  display:flex; align-items:center; gap:8px; letter-spacing:0 !important;
+}
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .panel:not(.modal,.modal > .panel) > .cab::after{ display:none !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .panel:not(.modal,.modal > .panel) > .cab > .ic:not(:empty){
+  flex:0 0 24px; width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font-size:13px; line-height:1; text-shadow:none;
+  background:radial-gradient(circle at 50% 28%,#ffffff 0,var(--t-orbe) 55%,var(--t-orbe-borde) 100%);
+  border:1px solid rgba(255,255,255,.85); box-shadow:0 1px 2px rgba(0,0,0,.35);
+}
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .panel:not(.modal,.modal > .panel) > .cuerpo{
+  background:transparent !important; border:0 !important; box-shadow:none !important; margin:0 !important; padding:12px !important; color:var(--t-texto) !important;
+}
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .panel.agua:not(.modal,.modal > .panel) > .cab{ background:var(--t-cab-agua) !important; color:var(--t-cab-agua-t) !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .panel.alerta:not(.modal,.modal > .panel) > .cab{ background:var(--t-cab-alerta) !important; color:var(--t-cab-alerta-t) !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .panel.grave:not(.modal,.modal > .panel) > .cab{ background:var(--t-cab-grave) !important; color:var(--t-cab-grave-t) !important; }
+/* texto dentro de paneles y ventanas */
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(.panel,.ventana-so) :is(p,li,td,span,label,div,b,strong,h2,h3,h4){ text-shadow:none; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .mini{ color:var(--t-suave) !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(h2,h3,.tit){ color:var(--t-titulo-seccion,var(--t-texto)); }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .fila{ border-bottom-color:var(--t-linea) !important; color:var(--t-texto) !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) table th{ color:var(--t-suave); background:transparent; border-bottom:1px solid var(--t-linea); }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) table tbody tr:hover > td{ background:var(--t-hover); }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(.resul,.etq,.story-card,.banco-cta){ color:var(--t-texto); }
+/* opciones de decisión = command links */
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .op{
+  position:relative; padding:9px 12px 9px 38px !important; border-radius:3px !important; text-shadow:none !important;
+  border:1px solid var(--t-op-borde) !important; background:var(--t-op) !important; color:var(--t-op-t) !important; box-shadow:none !important;
+}
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .op::before{ content:"➜"; position:absolute; left:12px; top:9px; font:700 17px/1 var(--f-cuerpo); color:var(--t-flecha); }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .op:hover:not(:disabled){ border-color:var(--t-acento) !important; background:var(--t-hover) !important; transform:none !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .op :is(b,strong,.t){ color:var(--t-op-t); }
+/* botón gris estándar */
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .btn-aqua.gris{
+  color:var(--t-gris-t) !important; text-shadow:none !important; border:1px solid var(--t-gris-borde) !important; border-radius:3px !important;
+  background:var(--t-gris) !important; box-shadow:inset 0 0 0 1px rgba(255,255,255,.12) !important;
+}
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .btn-aqua.gris:hover:not(:disabled){ border-color:var(--t-acento) !important; box-shadow:0 0 8px var(--t-acento) !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .btn-aqua.gris::before,html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .btn-aqua.gris::after{ display:none; }
+/* campos */
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(input[type=text],input[type=number],input[type=search],input[type=email],input[type=password],input:not([type]),select,textarea){
+  background:var(--t-campo) !important; color:var(--t-campo-t) !important; border:1px solid var(--t-campo-borde) !important; border-radius:2px;
+}
+/* fichas / filtros */
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(.ficha,.fichas button:not(.btn-aqua)){ background:var(--t-ficha) !important; color:var(--t-ficha-t) !important; border:1px solid var(--t-ficha-borde) !important; border-radius:3px; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) :is(.ficha,.fichas button:not(.btn-aqua)):is(.on,.sel,[aria-selected="true"],[aria-pressed="true"]){ background:var(--t-ficha-on) !important; color:var(--t-ficha-on-t) !important; border-color:var(--t-acento) !important; }
+/* barras de progreso: riel del tema */
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .barrita{ --t-barra-riel:var(--t-riel); --t-barra-borde:var(--t-riel-borde); }
+/* avisos: globos */
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) #avisos{ left:auto; right:16px; transform:none; bottom:96px; align-items:flex-end; gap:8px; max-width:360px; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .aviso{
+  min-width:220px; max-width:340px; text-align:left !important; padding:10px 14px; border-radius:6px;
+  background:var(--t-aviso) !important; color:var(--t-aviso-t) !important; border:1px solid var(--t-aviso-borde); text-shadow:none;
+  font:400 13px/1.35 var(--f-cuerpo); box-shadow:0 6px 16px rgba(0,0,0,.35);
+}
+@media (max-width:900px){ html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) #avisos{ right:auto; left:50%; transform:translateX(-50%); align-items:center; } }
+/* la barra de tareas y el lateral */
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) #barra{ background:var(--t-tareas) !important; border-bottom:1px solid var(--t-tareas-borde) !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .bd{ background:var(--t-chip) !important; border:1px solid var(--t-chip-borde) !important; }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .bd .k{ color:var(--t-chip-k) !important; font:600 9.5px/1.3 var(--f-cuerpo); }
+html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) .bd .v{ color:var(--t-chip-v) !important; font:600 13.5px/1.25 var(--f-dato); text-shadow:none !important; }
+@media (min-width:901px){
+  html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]).nav-lateral #menu{ background:var(--t-lateral) !important; border-right:1px solid var(--t-tareas-borde) !important; }
+  html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]).nav-lateral #menu .mi{
+    color:var(--t-lat-t) !important; background:transparent !important; border:1px solid transparent !important; box-shadow:none !important;
+    text-shadow:var(--t-lat-sombra) !important; font:600 13px/1.15 var(--f-cuerpo) !important; border-radius:4px !important;
+  }
+  html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]).nav-lateral #menu .mi:hover{ background:var(--t-hover) !important; border-color:var(--t-lat-hover-borde) !important; transform:none; }
+  html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]).nav-lateral #menu .mi[aria-selected="true"]{
+    color:var(--t-lat-on-t) !important; background:var(--t-lat-on) !important; border-color:var(--t-acento) !important; text-shadow:none !important;
+  }
+}
+
+/* ================= 3 · DARKAERO (tema negro): vidrio negro de Vista ================= */
+html body[data-tema="negro"]{
+  --t-fondo:radial-gradient(70% 55% at 18% 8%,rgba(40,120,170,.35),transparent 70%),radial-gradient(60% 45% at 85% 90%,rgba(20,150,120,.22),transparent 70%),linear-gradient(180deg,#070b12 0%,#04070c 100%);
+  --t-texto:#e3ebf5; --t-suave:#93a6bb; --t-linea:rgba(140,170,210,.16); --t-titulo-seccion:#f3f8ff;
+  --t-vidrio:linear-gradient(180deg,rgba(255,255,255,.14) 0,rgba(255,255,255,.03) 30px,rgba(255,255,255,0) 31px),linear-gradient(104deg,transparent 14%,rgba(255,255,255,.07) 24%,transparent 25%),rgba(14,20,30,.8);
+  --t-vidrio-borde:rgba(0,0,0,.9); --t-vidrio-luz:rgba(255,255,255,.16);
+  --t-titulo:#ffffff; --t-titulo-sombra:0 0 8px #000,0 0 3px #000;
+  --t-cliente:#0f151d; --t-cliente-borde:#000; --t-pie:linear-gradient(180deg,#171e28,#10161e);
+  --t-panel:linear-gradient(180deg,#18202a,#121820); --t-panel-borde:#2a3545; --t-panel-sombra:0 4px 14px rgba(0,0,0,.55);
+  --t-cab:linear-gradient(180deg,#3a4758 0%,#253040 49%,#161e29 50%,#1e2835 100%); --t-cab-t:#f0f6ff; --t-cab-sombra:0 1px 2px #000; --t-cab-l:#06090d; --t-cab-luz:rgba(255,255,255,.18);
+  --t-cab-agua:linear-gradient(180deg,#2d5660 0%,#1a3a43 49%,#0f262d 50%,#163239 100%); --t-cab-agua-t:#aef4ff;
+  --t-cab-alerta:linear-gradient(180deg,#5a4a2a 0%,#3d3019 49%,#2a200e 50%,#352812 100%); --t-cab-alerta-t:#ffd88c;
+  --t-cab-grave:linear-gradient(180deg,#5c2e2e 0%,#3e1c1c 49%,#2b1010 50%,#361616 100%); --t-cab-grave-t:#ffaa9c;
+  --t-orbe:#7cc2ff; --t-orbe-borde:#1d5fa6;
+  --t-op:rgba(255,255,255,.04); --t-op-borde:rgba(140,180,230,.22); --t-op-t:#d6e9ff; --t-flecha:#62d862; --t-acento:#4aa8ff; --t-hover:rgba(80,160,255,.14);
+  --t-gris:linear-gradient(180deg,#46505e 0%,#2c343f 49%,#1c222a 50%,#28303b 100%); --t-gris-t:#eef4fb; --t-gris-borde:#05080c;
+  --t-campo:#0a0f15; --t-campo-t:#e8f0fa; --t-campo-borde:#3a4656;
+  --t-ficha:linear-gradient(180deg,#2b3440,#1b222b); --t-ficha-t:#d6e3f2; --t-ficha-borde:#3a4656; --t-ficha-on:linear-gradient(180deg,#2f79c8,#1a4f8f); --t-ficha-on-t:#fff;
+  --t-riel:linear-gradient(180deg,#0b0f14,#1a2029 50%,#11161d 50%,#161c24); --t-riel-borde:#000;
+  --t-aviso:linear-gradient(180deg,#2a3440,#161c24); --t-aviso-t:#eef4fb; --t-aviso-borde:#000;
+  --t-tareas:linear-gradient(180deg,rgba(60,70,85,.9) 0%,rgba(20,26,34,.95) 50%,rgba(6,9,13,.97) 51%,rgba(14,18,24,.97) 100%); --t-tareas-borde:#000;
+  --t-chip:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03)); --t-chip-borde:rgba(255,255,255,.18); --t-chip-k:#9fb3c8; --t-chip-v:#ffffff;
+  --t-lateral:linear-gradient(180deg,rgba(14,19,27,.92),rgba(6,9,13,.95)); --t-lat-t:#dfe9f5; --t-lat-sombra:0 1px 2px #000; --t-lat-hover-borde:rgba(255,255,255,.25);
+  --t-lat-on:linear-gradient(180deg,rgba(90,160,230,.55),rgba(30,90,170,.55) 50%,rgba(10,60,130,.6) 50%,rgba(40,110,190,.6)); --t-lat-on-t:#fff;
+}
+html body[data-tema="negro"] #fondo .pasto{ background:none !important; }
+html body[data-tema="negro"] .aurora{ opacity:.45; }
+html body[data-tema="negro"] :is(.bolsa-graf,.cotiza svg,.graf-bolsa){ background:#0b1017 !important; }
+html body[data-tema="negro"] .banco-cta{ background:linear-gradient(180deg,#1d2632,#141b24) !important; border-color:#2e3a4b !important; box-shadow:none !important; }
+html body[data-tema="negro"] .so-dir .dir-ruta{ background:rgba(0,0,0,.55) !important; color:#e8f0fa !important; border-color:#000 !important; }
+html body[data-tema="negro"] .so-dir .dir-ruta .sep{ color:#8ea2b8; }
+
+/* ================= 4 · CLARO: Windows 7 Basic, limpio y con color ================= */
+html body[data-tema="claro"]{
+  --t-fondo:radial-gradient(60% 50% at 80% 0%,rgba(120,190,255,.28),transparent 70%),radial-gradient(50% 40% at 0% 100%,rgba(140,230,190,.25),transparent 70%),linear-gradient(180deg,#f7fafd,#e8eef5);
+  --t-texto:#1b2a3a; --t-suave:#5a6c80; --t-linea:rgba(40,70,110,.14); --t-titulo-seccion:#12304f;
+  --t-vidrio:linear-gradient(180deg,#e6eef8 0,#d3e0ef 30px,#c9d8ea 31px,#c4d4e8 100%);
+  --t-vidrio-borde:#7d97b6; --t-vidrio-luz:rgba(255,255,255,.8);
+  --t-titulo:#12263d; --t-titulo-sombra:none; --t-titulo-peso:600;
+  --t-cliente:#ffffff; --t-cliente-borde:#9fb3ca; --t-pie:#f0f3f7;
+  --t-panel:#ffffff; --t-panel-borde:#d3dde8; --t-panel-sombra:0 2px 8px rgba(30,60,100,.08);
+  --t-cab:linear-gradient(180deg,#ffffff 0%,#f4f7fb 49%,#e8eef5 50%,#f1f5fa 100%); --t-cab-t:#1e395b; --t-cab-sombra:none; --t-cab-l:#d3dde8; --t-cab-luz:#fff;
+  --t-cab-agua:linear-gradient(180deg,#f3fdfd,#dff6f8); --t-cab-agua-t:#0b5563;
+  --t-cab-alerta:linear-gradient(180deg,#fffaf0,#ffefcc); --t-cab-alerta-t:#7a4300;
+  --t-cab-grave:linear-gradient(180deg,#fff6f5,#ffe0db); --t-cab-grave-t:#8a1d10;
+  --t-orbe:#bfe0ff; --t-orbe-borde:#5ea6ea;
+  --t-op:#ffffff; --t-op-borde:#d3dde8; --t-op-t:#151c55; --t-flecha:#2a9a2a; --t-acento:#3c7fb1; --t-hover:#eaf4fd;
+  --t-gris:linear-gradient(180deg,#f2f2f2 0%,#ebebeb 49%,#dddddd 50%,#cfcfcf 100%); --t-gris-t:#000; --t-gris-borde:#707070;
+  --t-campo:#ffffff; --t-campo-t:#000; --t-campo-borde:#abadb3;
+  --t-ficha:linear-gradient(180deg,#ffffff,#eef2f7); --t-ficha-t:#1e395b; --t-ficha-borde:#c3cfdc; --t-ficha-on:linear-gradient(180deg,#e5f4fc,#bfe3f6); --t-ficha-on-t:#000;
+  --t-riel:linear-gradient(180deg,#e6e6e6,#f6f6f6 50%,#dcdcdc 50%,#ececec); --t-riel-borde:#b5bec8;
+  --t-aviso:linear-gradient(180deg,#ffffe6,#fff8c8); --t-aviso-t:#000; --t-aviso-borde:#767676;
+  --t-tareas:linear-gradient(180deg,#f8fbfe 0%,#e3ecf6 50%,#d4e1ef 51%,#dde8f3 100%); --t-tareas-borde:#a9bdd4;
+  --t-chip:#ffffff; --t-chip-borde:#c3cfdc; --t-chip-k:#5a6c80; --t-chip-v:#12263d;
+  --t-lateral:#f3f6fa; --t-lat-t:#1e395b; --t-lat-sombra:none; --t-lat-hover-borde:#b8d6f2;
+  --t-lat-on:linear-gradient(180deg,#e5f4fc,#c4e5f6); --t-lat-on-t:#000;
+}
+html body[data-tema="claro"] #barra .marca .nombre, html body[data-tema="claro"] #barra .marca .ver{ color:#12263d !important; text-shadow:none !important; }
+/* un toque de color: cada panel lleva su franja arriba según lo que es */
+html body[data-tema="claro"] .panel:not(.modal,.modal > .panel){ border-top:3px solid #5ea6ea !important; }
+html body[data-tema="claro"] .panel.agua:not(.modal,.modal > .panel){ border-top-color:#35b8c8 !important; }
+html body[data-tema="claro"] .panel.alerta:not(.modal,.modal > .panel){ border-top-color:#f0a52c !important; }
+html body[data-tema="claro"] .panel.grave:not(.modal,.modal > .panel){ border-top-color:#e0553d !important; }
+
+/* ================= 5 · INSANO: caramelo Y2K / XP Luna, estridente pero legible ================= */
+html body[data-tema="insano"]{
+  --t-fondo:linear-gradient(135deg,#ff7ad9 0%,#ffd86b 25%,#7dfcb2 50%,#6bd9ff 75%,#b98bff 100%);
+  --t-texto:#241036; --t-suave:#5e3f7a; --t-linea:rgba(120,40,160,.18); --t-titulo-seccion:#3b0a5e;
+  --t-vidrio:linear-gradient(180deg,#ff5fb8 0%,#d63cff 45%,#8a2be2 50%,#b05cff 100%);
+  --t-vidrio-borde:#4b0b7a; --t-vidrio-luz:rgba(255,255,255,.55);
+  --t-titulo:#ffffff; --t-titulo-sombra:0 1px 0 #3b0060,0 0 6px rgba(80,0,120,.6); --t-titulo-peso:700;
+  --t-cliente:#fffaff; --t-cliente-borde:#4b0b7a; --t-pie:#fbeaff;
+  --t-panel:#ffffff; --t-panel-borde:#ff5fb8; --t-panel-borde-ancho:2px; --t-panel-sombra:4px 4px 0 rgba(75,11,122,.35);
+  --t-cab:linear-gradient(90deg,#ff4fb0,#ff9a3d 35%,#ffe14d 55%,#3ee6a0 78%,#39c6ff); --t-cab-t:#ffffff; --t-cab-sombra:0 1px 0 #5a1070,1px 0 0 #5a1070,-1px 0 0 #5a1070,0 -1px 0 #5a1070; --t-cab-l:#4b0b7a; --t-cab-luz:rgba(255,255,255,.4); --t-cab-peso:800;
+  --t-cab-agua:linear-gradient(90deg,#00d2ff,#3ee6a0); --t-cab-agua-t:#fff;
+  --t-cab-alerta:linear-gradient(90deg,#ff9a3d,#ffe14d); --t-cab-alerta-t:#fff;
+  --t-cab-grave:linear-gradient(90deg,#ff2d6f,#ff7a3d); --t-cab-grave-t:#fff;
+  --t-orbe:#ffe14d; --t-orbe-borde:#ff4fb0;
+  --t-op:#ffffff; --t-op-borde:#d9a6ff; --t-op-t:#3b0a5e; --t-flecha:#ff2d9a; --t-acento:#b43cff; --t-hover:#fff0fb;
+  --t-gris:linear-gradient(180deg,#ffffff 0%,#f6e6ff 49%,#ead0ff 50%,#f3e0ff 100%); --t-gris-t:#3b0a5e; --t-gris-borde:#8a2be2;
+  --t-campo:#ffffff; --t-campo-t:#241036; --t-campo-borde:#b43cff;
+  --t-ficha:linear-gradient(180deg,#ffffff,#fbe8ff); --t-ficha-t:#3b0a5e; --t-ficha-borde:#d9a6ff; --t-ficha-on:linear-gradient(180deg,#ff8fd2,#ff4fb0); --t-ficha-on-t:#fff;
+  --t-riel:linear-gradient(180deg,#f3e6ff,#ffffff 50%,#ecd9ff 50%,#f6ecff); --t-riel-borde:#b43cff;
+  --t-aviso:linear-gradient(180deg,#fffbe0,#ffe8fb); --t-aviso-t:#241036; --t-aviso-borde:#b43cff;
+  --t-tareas:linear-gradient(180deg,#5ac8ff 0%,#2f8fff 50%,#1f6ff0 51%,#3b8cff 100%); --t-tareas-borde:#12378a;
+  --t-chip:rgba(255,255,255,.22); --t-chip-borde:rgba(255,255,255,.6); --t-chip-k:#ffffff; --t-chip-v:#ffffff;
+  --t-lateral:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,240,252,.85)); --t-lat-t:#3b0a5e; --t-lat-sombra:none; --t-lat-hover-borde:#ff8fd2;
+  --t-lat-on:linear-gradient(180deg,#ff8fd2,#ff4fb0); --t-lat-on-t:#fff;
+}
+html body[data-tema="insano"] #barra .bd .v{ text-shadow:0 1px 0 #12378a !important; }
+html body[data-tema="insano"] .cielo{ background-size:300% 300% !important; animation:insanoFondo 18s ease-in-out infinite alternate; }
+@keyframes insanoFondo{ from{ background-position:0% 50% } to{ background-position:100% 50% } }
+html body[data-tema="insano"] .panel:not(.modal,.modal > .panel) > .cab{ background-size:200% 100% !important; animation:insanoCab 6s linear infinite; }
+@keyframes insanoCab{ from{ background-position:0% 0 } to{ background-position:200% 0 } }
+html body[data-tema="insano"] #fondo :is(.pasto,.destello){ background:none !important; }

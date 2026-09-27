@@ -125,7 +125,8 @@ function canvasBolsa(hist){
   const bw=80, bh=28;
   const buf=document.createElement("canvas"); buf.width=bw; buf.height=bh;
   const g=buf.getContext("2d");
-  g.fillStyle="#d8e6f4"; g.fillRect(0,0,bw,bh);
+  const oscuro=typeof document!=="undefined"&&document.body&&document.body.getAttribute("data-tema")==="negro";   /* 7.9087 · DarkAero */
+  g.fillStyle=oscuro?"#0b1017":"#d8e6f4"; g.fillRect(0,0,bw,bh);
   const sube=arr[arr.length-1]>=arr[0];
   g.fillStyle=sube?"#1e9e4622":"#c0392b22";
   g.beginPath();

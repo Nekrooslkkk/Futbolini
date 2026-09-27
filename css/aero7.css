@@ -394,3 +394,26 @@ body[data-tema="aero"] #btnTemas{ font-family:"Segoe UI Symbol","DejaVu Sans","N
 body[data-tema="aero"] .modal > .panel > .cab .ic{ background:none !important; border:0 !important; box-shadow:none !important; width:auto; height:auto; }
 body[data-tema="aero"] .plop-ie-tit{ align-items:flex-start !important; }
 body[data-tema="aero"] .plop-ie-x{ margin-top:-6px !important; }
+
+/* ---------- 14. 7.9087 · lo que tenía Vista (y el 7 perdió) ---------- */
+/* vidrio de Vista: más transparente, un poco verdoso y con reflejos diagonales marcados */
+body[data-tema="aero"]{ --w7-vidrio:rgba(92,150,196,.56); }
+body[data-tema="aero"] :is(.ventana-so,.modal.panel,.modal > .panel){
+  background-image:
+    linear-gradient(180deg,rgba(255,255,255,.55) 0,rgba(255,255,255,.14) 30px,rgba(255,255,255,0) 31px),
+    linear-gradient(104deg,transparent 10%,rgba(255,255,255,.4) 18%,transparent 19%,transparent 30%,rgba(255,255,255,.22) 36%,transparent 37%,transparent 66%,rgba(255,255,255,.2) 75%,transparent 76%),
+    linear-gradient(90deg,rgba(20,60,70,.12),rgba(255,255,255,.1) 50%,rgba(20,60,70,.12)) !important;
+}
+/* barra de comandos del Explorador de Vista: negra brillante con reflejo */
+.so-cmd{ display:flex; flex-wrap:wrap; gap:2px; padding:3px 6px; margin:0 0 0; border:1px solid #000;
+  background:linear-gradient(180deg,#5a6f84 0%,#2c3f55 45%,#0f2136 50%,#1b3450 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35); }
+.so-cmd-b{ border:1px solid transparent; background:transparent; color:#fff; font:400 12.5px var(--f-cuerpo,sans-serif);
+  padding:3px 9px; border-radius:3px; cursor:pointer; text-shadow:0 1px 1px #000; }
+.so-cmd-b:hover{ border-color:rgba(255,255,255,.45); box-shadow:inset 0 0 8px rgba(120,200,255,.55);
+  background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.08) 50%,rgba(120,190,255,.18) 50%,rgba(120,190,255,.3)); }
+@media (max-width:700px){ .so-cmd{ display:none; } }
+/* el Escritorio: los paneles son gadgets de la barra lateral de Vista (marco de vidrio negro) */
+body[data-tema="aero"] #vista[data-sec="escritorio"] .panel:not(.modal,.modal > .panel){
+  box-shadow:0 0 0 1px rgba(0,0,0,.6), 0 0 0 5px rgba(18,32,44,.55), 0 0 0 6px rgba(255,255,255,.25), 0 8px 20px rgba(0,30,20,.35) !important;
+}

@@ -1725,6 +1725,78 @@ devDoctorRegistrar({id:"metas_realistas", area:"contenido", n:"Metas de temporad
   if(rk.rank>9&&E.objetivos.some(function(o){ return o.id==="sud27"; })) falta.push("piden Sudamericana con el "+rk.rank+"° plantel de "+rk.n);
   return falta.length?_dmal(falta.length+" meta(s) imposible(s)",falta):_dok("división "+div+" · "+rk.rank+"° plantel de "+rk.n+" · "+E.objetivos.length+" metas posibles");
 }});
+/* 7.9087 · reporte del autor: "no se ve el movimiento de las barras", "que el oscuro sea oscuro de verdad",
+   "que se lean bien las letras" y "todo lo animado se quita con Animaciones OFF, con doctor" */
+function _docSondaBarra(){
+  var h=document.createElement("div"); h.style.cssText="position:absolute;left:-9999px;top:0;width:300px";
+  h.innerHTML='<div class="barrita"><i style="width:60%;--c:#4fc34a"></i></div><div class="aviso">x</div>';
+  document.body.appendChild(h); void h.offsetHeight;
+  var a=getComputedStyle(h.querySelector(".barrita i"),"::after"), av=getComputedStyle(h.querySelector(".aviso"));
+  var r={pulso:a.animationName, pulsoVisible:a.display!=="none", aviso:av.animationName, trans:av.transitionDuration};
+  h.remove(); return r;
+}
+devDoctorRegistrar({id:"animaciones_off", area:"interfaz", n:"Barras con movimiento Vista · Animaciones OFF deja todo quieto",
+  arreglo:"css/temas7.css: sección 1 (barras) y 2 (body.anim-off). El Modo liviano (body.perf) no debe congelar las barras.", fn:function(){
+  if(typeof document==="undefined"||!document.body) return _dok("sin DOM");
+  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches) return _dok("el sistema pide menos movimiento: todo quieto por diseño");
+  var b=document.body, off=b.classList.contains("anim-off"), perf=b.classList.contains("perf"), falta=[];
+  try{
+    b.classList.remove("anim-off","perf");
+    var on=_docSondaBarra(); if(on.pulso==="none"||!on.pulso||!on.pulsoVisible) falta.push("las barras no tienen el pulso de Vista (animación "+on.pulso+")");
+    b.classList.add("perf");
+    var lv=_docSondaBarra(); if(lv.pulso==="none"||!lv.pulsoVisible) falta.push("el Modo liviano congela las barras (debe apagar solo lo pesado)");
+    b.classList.remove("perf"); b.classList.add("anim-off");
+    var q=_docSondaBarra(); if(q.pulsoVisible&&q.pulso!=="none") falta.push("con Animaciones OFF la barra sigue moviéndose");
+    if(q.aviso!=="none") falta.push("con Animaciones OFF los avisos siguen animados ("+q.aviso+")");
+  } finally { b.classList.toggle("anim-off",off); b.classList.toggle("perf",perf); }
+  if(typeof barrasLlenar!=="function") falta.push("las barras no se llenan al entrar a una sección (falta barrasLlenar en aero7.js)");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("barras vivas (también en liviano) · OFF deja todo quieto");
+}});
+function _docColorFondo(e){
+  for(var n=e;n&&n!==document.documentElement;n=n.parentElement){
+    var cs=getComputedStyle(n), m=(cs.backgroundImage||"").match(/rgba?\([^)]+\)/);
+    if(m){ var v=m[0].match(/[\d.]+/g); if(v.length<4||+v[3]>0.5) return m[0]; }
+    var bc=cs.backgroundColor, a=(bc.match(/[\d.]+/g)||[]); if(bc&&a.length&&(a.length<4||+a[3]>0.5)) return bc;
+  }
+  return "rgb(255,255,255)";
+}
+devDoctorRegistrar({id:"temas_legibles", area:"interfaz", n:"Los 4 temas se leen: contraste real, letra de pantalla, oscuro de verdad", pesado:true,
+  arreglo:"Colores de cada tema en css/temas7.css (negro/claro/insano, variables --t-*) y css/aero7.css (aero).", fn:function(){
+  if(typeof document==="undefined"||!document.body) return _dok("sin DOM");
+  var b=document.body, tema=b.getAttribute("data-tema")||"aero", falta=[], det=[];
+  var h=null;
+  try{
+    ["aero","negro","claro","insano"].forEach(function(t){
+      /* sonda NUEVA por tema: con la misma, Chrome devolvía el estilo del tema anterior (medido en doctor.sh) */
+      if(h) h.remove();
+      b.setAttribute("data-tema",t);
+      h=document.createElement("div"); h.style.cssText="position:absolute;left:-9999px;top:0;width:500px";
+      h.innerHTML='<section class="panel"><div class="cab"><span class="ic">x</span><span>Título</span></div><div class="cuerpo"><p class="t1">Texto del panel</p><p class="mini">nota</p></div></section>';
+      document.body.appendChild(h); void h.offsetHeight;
+      var p=h.querySelector(".t1"), fondo=_docColorFondo(p), k=_docContraste(getComputedStyle(p).color,fondo);
+      var km=_docContraste(getComputedStyle(h.querySelector(".mini")).color,fondo);
+      var ff=getComputedStyle(p).fontFamily;
+      det.push(t+": texto "+(Math.round(k*10)/10)+" · nota "+(Math.round(km*10)/10));
+      if(k<4.5) falta.push(t+": el texto de los paneles no se lee (contraste "+(Math.round(k*10)/10)+", mínimo 4,5)");
+      if(km<3) falta.push(t+": las notas chicas casi no se ven (contraste "+(Math.round(km*10)/10)+")");
+      if(/^\s*"?(Times|serif|monospace|Consolas|Lucida Console)/i.test(ff)) falta.push(t+": letra "+ff.split(",")[0]+" (debe ser la de pantalla, Selawik)");
+      if(t==="negro"&&_docLum(fondo)>0.06) falta.push("DarkAero no es oscuro: el fondo de los paneles tiene luminancia "+(Math.round(_docLum(fondo)*100)/100));
+    });
+  } finally { b.setAttribute("data-tema",tema); if(h) h.remove(); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta.concat(det)):_dok(det.join(" · "),det);
+}});
+/* 7.9087 · un pack nuevo de tuits metió memes de gol al pool global y el gol común en neutro volvió a forzar tuit
+   (regla 7.70). Cualquier pack de texto que se sume después pasa por acá. */
+devDoctorRegistrar({id:"tuit_gol_neutro", area:"contenido", n:"Un gol común en neutro no fuerza tuit (la erupción es solo chilensis)",
+  arreglo:"No sumes ctx:\"gol_propio\" a TUITS_MOMENTO (va en TUITS_IDIOMA.cl). Ver data-plop-equipo.js.", fn:function(){
+  if(typeof tuitDeCtx!=="function"||typeof TUITS_MOMENTO==="undefined") return _dok("sin tuits");
+  var n=TUITS_MOMENTO.filter(function(x){ return x.ctx==="gol_propio"; }).length;
+  var idi=(typeof IDIOMA!=="undefined")?IDIOMA:"neutro", falta=[];
+  if(n) falta.push(n+" tuit(s) de gol común en el pool global: en neutro cada gol sale con tuit forzado");
+  try{ if(typeof setIdioma==="function"){ setIdioma("neutro"); for(var i=0;i<12;i++){ if(tuitDeCtx("gol_propio")){ falta.push("tuitDeCtx(gol_propio) devuelve tuit en neutro"); break; } } } }
+  finally{ if(typeof setIdioma==="function") setIdioma(idi); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("gol común en neutro: sin tuit forzado");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

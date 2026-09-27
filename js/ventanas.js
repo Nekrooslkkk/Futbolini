@@ -37,8 +37,11 @@ function aplicarTema(k){
 function _reponerTemasCss(){
   /* 7.css se inyecta tarde y pisa .window-body en blanco. temas.css
      tiene que quedar DESPUÉS para que negro/claro/insano ganen. */
-  const t=document.querySelector('link[href="css/temas.css"],link[href*="temas.css"]');
+  const t=document.querySelector('link[href="css/temas.css"],link[href*="/temas.css"],link[href^="css/temas.css"]');
   if(t && t.parentNode) t.parentNode.appendChild(t);
+  /* 7.9087 · temas7.css (barras Vista, animaciones OFF, DarkAero/Claro/Insano) va detrás de todo */
+  const t7=document.querySelector('link[href*="temas7.css"]');
+  if(t7 && t7.parentNode) t7.parentNode.appendChild(t7);
 }
 
 function cargarCdnAero(){

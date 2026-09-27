@@ -4443,3 +4443,37 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   - `metas_realistas`: al revés, cazó continental en Segunda, meta de título para el 8° plantel y Sudamericana
     para el 13°.
 - **Estado:** doctor sano (3 partidas + celular) · dev 581/581 · core 1185/1185.
+
+### 7.9087 — Barras de Vista que se mueven, Animaciones OFF de verdad, DarkAero, Claro, Insano y el Vista del Aero
+**Archivos:** `css/temas7.css` (nuevo), `css/aero7.css`, `js/aero7.js`, `js/ventanas.js`, `js/bolsa.js`, `js/data-plop-equipo.js`,
+`js/dev-doctor.js`, `test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **Por qué no se movían las barras** (reporte del autor): el Modo liviano se prende solo en equipos de ≤4 núcleos o
+  ≤4 GB. Tenía una regla `body.perf *{animation-duration:.001s}` que congelaba todo.
+  - Ahora el liviano apaga solo lo pesado (desenfoques, burbujas, auroras).
+  - Las barras siguen vivas, porque son baratas.
+- **Barras de progreso de Vista en todos los temas:** gel brillante, el pulso de luz que recorre, y se llenan al entrar a
+  una sección (`barrasLlenar()`). Se acabaron las rayas diagonales.
+- **Animaciones OFF (`body.anim-off`) deja TODO quieto**, sin excepción (animaciones y transiciones). No hay código que
+  espere `animationend`: revisado.
+- **DarkAero (tema "negro"):**
+  - Vidrio negro de Vista.
+  - Fondo de paneles con luminancia < 0,06.
+  - Texto con contraste 13,7.
+  - Secciones en ventana de Explorador, igual que el Aero.
+  - Gráfico de la bolsa oscuro.
+- **Claro:** Windows 7 Basic, limpio, con franja de color por tipo de panel.
+- **Insano:** caramelo Y2K / XP Luna, con fondo y encabezados que se mueven. Legible: Selawik y contornos nítidos,
+  nada de Times.
+- **Aero con lo de Vista:**
+  - Vidrio más transparente y verdoso con reflejos marcados.
+  - **Barra de comandos negra del Explorador de Vista** con un acceso por panel de la sección (lleva a él).
+  - Los paneles del Escritorio con marco de gadget de la barra lateral de Vista.
+- **Suite core en rojo que venía de 7.9086** ("en neutro un gol común no fuerza tuit"). `data-plop-equipo.js` metía memes de
+  `gol_propio` al pool global. Ahora se quedan afuera y el envoltorio respeta cuando la base dice "sin tuit" y la erupción
+  chilensis. El resto del pack no se tocó.
+- **Doctor (todos verificados al revés):**
+  - `animaciones_off`: liviano congelando barras, OFF sin regla global.
+  - `temas_legibles`: contraste real en los 4 temas, letra de pantalla, oscuro de verdad. Cazó texto gris en DarkAero.
+    Usa una sonda nueva por tema, porque Chrome devolvía el estilo del tema anterior.
+  - `tuit_gol_neutro`.
+- **Estado:** doctor sano (3 partidas + celular, 81 chequeos) · dev 585/585 · core 1185/1185 · barrido 5 partidas × 12 secciones × PC/celular sin hallazgos.

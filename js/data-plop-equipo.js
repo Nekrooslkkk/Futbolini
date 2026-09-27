@@ -266,6 +266,8 @@ const PLOP_MEME=[
 (function(){
   if(typeof TUITS_MOMENTO!=="undefined" && Array.isArray(TUITS_MOMENTO)){
     PLOP_MEME.forEach(function(t){
+      /* 7.9087 (Claude) · gol_propio NO va al pool global: por diseño un gol común en neutro no fuerza tuit */
+      if(t.ctx==="gol_propio") return;
       if(!TUITS_MOMENTO.some(function(x){ return x.txt===t.txt; })) TUITS_MOMENTO.push({ctx:t.ctx,quien:t.quien,txt:t.txt});
     });
   }
@@ -302,6 +304,11 @@ const PLOP_MEME=[
     return txt.replace(/\{L\}/g,L).replace(/\{G\}/g,meta.gente).replace(/\{M\}/g,meta.mito).replace(/\{P\}/g,meta.pico);
   }
   function envuelto(ctx){
+    /* 7.9087 (Claude) · la base decide SI hay tuit: si dice que no (gol común en neutro) no se inventa uno,
+       y la erupción chilensis del gol no se reemplaza (tests core "en neutro un gol común no fuerza tuit") */
+    var b0=base(ctx);
+    if(!b0) return b0;
+    if(ctx==="gol_propio" && /GOO+|CTM/i.test(b0.txt||"")) return b0;
     try{
       ok._ctx=ctx;
       var r=Math.random();
@@ -323,7 +330,7 @@ const PLOP_MEME=[
         }
       }
     }catch(e){}
-    return base(ctx);
+    return b0;
   }
   Object.keys(base).forEach(function(k){ envuelto[k]=base[k]; });
   envuelto._eq=true;

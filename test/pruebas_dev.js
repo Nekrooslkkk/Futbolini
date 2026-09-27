@@ -1594,6 +1594,20 @@
       t(r2.ok,"doctor partido_pc_estable: "+r2.txt+(r2.ok?"":" · "+r2.detalle.join(" | ")));
     },"Metas 7.9083");
 
+    grupo("Temas y animaciones · 7.9087");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      ["animaciones_off","temas_legibles"].forEach(function(id){
+        var r=DOCTOR_CHECKS.filter(function(c){ return c.id===id; })[0].fn();
+        t(r.ok,"doctor "+id+": "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      });
+      document.body.setAttribute("data-tema","negro"); SEC="finanzas"; render();
+      t(!!document.querySelector("#vista > .ventana-so.in-vista"),"DarkAero también abre las secciones en ventana");
+      document.body.setAttribute("data-tema","aero"); render();
+      t(!!document.querySelector("#vista .so-cmd .so-cmd-b"),"la ventana tiene la barra de comandos de Vista con accesos a los paneles");
+      SEC="escritorio"; render();
+    },"Temas 7.9087");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

@@ -15,7 +15,8 @@ const AERO7_COLUMNAS=["finanzas","institucion","mercado","vida","historia","carr
 const AERO7_SIN_VENTANA=["escritorio","redes","ajustes","partido","full"];
 const AERO7_NAV={atras:[],adelante:[],moviendo:false};
 
-function _aero7Activo(){ return typeof document!=="undefined"&&!!document.body&&typeof esAero==="function"&&esAero(); }
+/* 7.9087 · DarkAero (tema negro) también vive en ventanas de Explorador */
+function _aero7Activo(){ if(typeof document==="undefined"||!document.body) return false; const t=document.body.getAttribute("data-tema")||"aero"; return t==="aero"||t==="negro"; }
 function _aero7Seccion(id){ return (typeof SECCIONES!=="undefined"&&SECCIONES.find(s=>s[0]===id))||(id==="avisos"?["avisos","🔔","Avisos"]:null); }
 
 /* ---------- 1. ventana de Explorador por sección ---------- */
@@ -37,6 +38,7 @@ function ventanaDeSeccion(){
   win.classList.toggle("so-una-col",AERO7_COLUMNAS.indexOf(sec)<0);
   win.dataset.sec=sec;
   if(!win.querySelector(":scope > .so-dir")) barraDirecciones(win,sec);
+  barraComandosVista(win);
   return true;
 }
 function barraDirecciones(win,sec){
@@ -58,6 +60,23 @@ function barraDirecciones(win,sec){
   dir.appendChild(ruta);
   const barra=win.querySelector(":scope > .so-barra");
   if(barra) barra.insertAdjacentElement("afterend",dir); else win.insertBefore(dir,win.firstChild);
+}
+/* 7.9087 · barra de comandos de Vista (la franja negra brillante del Explorador): un botón por panel de la
+   sección que te lleva a él. Es navegación de verdad, no adorno. */
+function barraComandosVista(win){
+  const cu=win._cuerpo||win.querySelector(".so-cuerpo"); if(!cu) return;
+  let cmd=win.querySelector(":scope > .so-cmd");
+  const paneles=[].slice.call(cu.querySelectorAll(":scope > .panel, :scope > * > .panel")).filter(p=>p.querySelector(":scope > .cab"));
+  if(paneles.length<3){ if(cmd) cmd.remove(); return; }
+  if(!cmd){ cmd=el("div","so-cmd"); cu.insertAdjacentElement("beforebegin",cmd); }
+  cmd.innerHTML="";
+  paneles.slice(0,8).forEach(p=>{
+    const sp=p.querySelectorAll(":scope > .cab > span"), t=sp.length?sp[sp.length-1].textContent.trim():"";
+    if(!t) return;
+    const b=el("button","so-cmd-b",escHtml(t.length>22?t.slice(0,21)+"…":t)); b.type="button"; b.title=t;
+    b.onclick=()=>{ try{ p.scrollIntoView({block:"start",behavior:document.body.classList.contains("anim-off")?"auto":"smooth"}); window.scrollBy(0,-70); }catch(e){} };
+    cmd.appendChild(b);
+  });
 }
 /* historial de atrás/adelante: lo alimenta irA */
 function aero7Navegar(paso){
@@ -109,7 +128,17 @@ function aero7Fondo(){
 /* ---------- enganches ---------- */
 (function(){
   const envolver=(nom,fn)=>{ const o=window[nom]; if(typeof o!=="function"||o._a7) return; const w=fn(o); Object.keys(o).forEach(k=>w[k]=o[k]); w._a7=true; w._orig=o; window[nom]=w; };
+  /* 7.9087 · al entrar a otra sección las barras se llenan (clase un momento; el CSS la ignora con Animaciones OFF) */
+  let _secLlenada=null, _tLlenar=null;
+  function barrasLlenar(){
+    const v=document.getElementById("vista"); if(!v||!E) return;
+    const sec=v.dataset.sec; if(sec===_secLlenada) return;
+    _secLlenada=sec; v.classList.add("llenando");
+    clearTimeout(_tLlenar); _tLlenar=setTimeout(()=>{ const x=document.getElementById("vista"); if(x) x.classList.remove("llenando"); },1000);
+  }
+  window.barrasLlenar=barrasLlenar;
   envolver("render",o=>function(){ const r=o.apply(this,arguments);
+    try{ barrasLlenar(); }catch(e){}
     try{ if(ventanaDeSeccion()&&typeof marcarVistaConVentana==="function") marcarVistaConVentana(); aero7Iconos(); }catch(e){ console.error("aero7:",e); }
     return r; });
   /* el historial se anota ANTES de pintar: así el botón Atrás ya sabe que hay adónde volver */

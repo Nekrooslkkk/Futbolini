@@ -1865,3 +1865,10 @@ Vicente pidió seguir con estadios y con tuits de Plop, caleta, por equipo. Meme
 
 No toqué `mundo.js`, `calendario-sofa.js`, `partido.js`, `arco3d.js`, `cancha.js`, `motor.js`, `aero7.css`, `plop-motor.js` ni `data-voz.js`. VERSION 7.9086. Seguí desde 7.9087.
 
+
+**7.9087 (Claude) · temas y un arreglo en `data-plop-equipo.js`.**
+- **Nuevo `css/temas7.css`:** barras de Vista, Animaciones OFF y DarkAero, Claro e Insano con variables `--t-*`.
+- **Lo que toqué en `data-plop-equipo.js`:** los memes de `gol_propio` NO entran a `TUITS_MOMENTO`, y el envoltorio
+  consulta primero a la base (si la base dice "sin tuit", no se inventa uno). Rompía el core
+  ("en neutro un gol común no fuerza tuit").
+- El doctor `tuit_gol_neutro` lo vigila. El resto del pack quedó igual.
