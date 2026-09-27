@@ -1815,6 +1815,55 @@ devDoctorRegistrar({id:"temporadas_archivo", area:"motor", n:"Temporadas pasadas
   if(kb>600) falta.push("el archivo pesa "+kb+" KB (el tope razonable es 600): revisar ARCHIVO_COMPLETAS");
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok((A.temps||[]).length+" temporada(s) archivada(s) · en curso "+((act&&act.fechas.length)||0)+" fecha(s) · "+kb+" KB");
 }});
+/* 7.9089 · PLOP: perfil de red social (nombre visible, @usuario, bio) que no toca tu nombre real */
+devDoctorRegistrar({id:"plop_perfil", area:"interfaz", n:"PLOP: perfil editable como red social, sin tocar tu nombre real",
+  arreglo:"js/plop-perfil.js: guardarPerfilPlop() guarda plopNombre/plopUser/plopBio; cabeceraPerfilPlop() pinta el perfil.", fn:function(){
+  if(typeof guardarPerfilPlop!=="function") return _dmal("no cargó js/plop-perfil.js",["falta el script en index.html"]);
+  if(!E||!E.perfil) return _dok("sin partida");
+  var falta=[], snap=clonarPartida(E);
+  try{
+    var real=E.perfil.nombre;
+    if(!guardarPerfilPlop("Nombre de prueba","@sonda_doc","bio de prueba")){
+      if(handleDT()!=="@sonda_doc") falta.push("guardar el perfil no cambia tu @ (queda "+handleDT()+")");
+      if(plopNombreVisible()!=="Nombre de prueba") falta.push("guardar el perfil no cambia el nombre visible");
+      if(E.perfil.nombre!==real) falta.push("cambiar el nombre de PLOP cambió tu nombre real ("+real+" → "+E.perfil.nombre+")");
+    } else falta.push("un perfil válido fue rechazado");
+    if(!guardarPerfilPlop("x","@","")) falta.push("acepta un usuario vacío («@»)");
+    var cab=cabeceraPerfilPlop();
+    if(!cab.querySelector(".plopp-editar")) falta.push("el perfil no tiene «Editar perfil»");
+    if(cab.textContent.indexOf("Nombre de prueba")<0) falta.push("la cabecera del perfil no muestra el nombre visible");
+  } catch(e){ falta.push("explota: "+e.message); }
+  finally{ restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("perfil editable · nombre real intacto · usuario validado");
+}});
+/* 7.9089 · pizarra por formación y automática; química alcanzable a 100 en cualquier formación */
+devDoctorRegistrar({id:"pizarra_quimica", area:"motor", n:"Pizarra automática no empeora, recuerda por formación y deja llegar a 100",
+  arreglo:"js/pizarra-auto.js: asegurarPizarra(), pizarraOptima(), sesionDuplas(); techo de química en partido.js (clamp 100).", fn:function(){
+  if(typeof asegurarPizarra!=="function") return _dmal("no cargó js/pizarra-auto.js",["falta el script en index.html"]);
+  if(!E||!E.tactica||typeof onceIdeal!=="function") return _dok("sin partida");
+  var falta=[], snap=clonarPartida(E);
+  try{
+    var once=onceIdeal(), t=E.tactica;
+    t.pizarra=null; t.pizQuimica=null; t._pizGente=null;
+    var clasica=quimicaEquipo(once).prom; asegurarPizarra(once); var auto=quimicaEquipo(once).prom;
+    if(auto<clasica) falta.push("la pizarra automática empeora la química ("+clasica+" → "+auto+")");
+    /* memoria por formación: una manual en 3-5-2 vuelve al volver a 3-5-2 */
+    t.form="3-5-2"; asegurarPizarra(once); t.pizarra=pizarraDesdeFormacion(once); t.pizarras["3-5-2"]={manual:t.pizarra};
+    t.form="4-4-2"; asegurarPizarra(once);
+    if(t.pizarra) falta.push("al cambiar de formación se arrastra la pizarra manual de la otra");
+    t.form="3-5-2"; asegurarPizarra(once);
+    if(!t.pizarra) falta.push("al volver a una formación no vuelve su pizarra guardada");
+    /* techo: con duplas trabajadas al máximo y partidos juntos se llega a 100 */
+    t.pizarra=null; E.afinidad={}; E.juntos=E.juntos||{};
+    paresConectados(once).forEach(function(pr){ var k=pr[0].n<pr[1].n?pr[0].n+"|"+pr[1].n:pr[1].n+"|"+pr[0].n; E.afinidad[k]=AFINIDAD_MAX; E.juntos[k]=30; });
+    var tope=quimicaEquipo(once).prom;
+    if(tope<100) falta.push("con todas las duplas trabajadas la química tope es "+tope+" (debe llegar a 100)");
+    E.flags=E.flags||{}; delete E.flags.duplasSem; var s1=sesionDuplas(once), s2=sesionDuplas(once);
+    if(s2.ok) falta.push("la sesión de duplas se puede repetir en la misma semana");
+  } catch(e){ falta.push("explota: "+e.message); }
+  finally{ restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("automática ≥ clásica · memoria por formación · tope 100 · 1 sesión por semana");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");

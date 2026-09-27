@@ -1623,6 +1623,17 @@
       SEC="escritorio"; render();
     },"Temporadas 7.9088");
 
+    grupo("PLOP perfil · 7.9089");
+    safe(function(){
+      nuevaPartida("CC",2026,"historico");
+      var r=DOCTOR_CHECKS.filter(function(c){ return c.id==="plop_perfil"; })[0].fn();
+      t(r.ok,"doctor plop_perfil: "+r.txt+(r.ok?"":" · "+r.detalle.join(" | ")));
+      REDES_PEST="yo"; SEC="redes"; render();
+      t(!!document.querySelector("#vista .plopp .plopp-editar"),"el perfil personal muestra la cabecera con Editar perfil");
+      t(!!document.querySelector("#vista .plopp-sesiones .plopp-sesion"),"el cambio de cuenta es un selector de sesiones con avatar y @");
+      REDES_PEST="club"; SEC="escritorio"; render();
+    },"PLOP perfil 7.9089");
+
     OUT.push("\n════════════════════════");
     OUT.push((BAD===0?"✅ TODO VERDE":"❌ HAY FALLOS")+" · "+OK+"/"+(OK+BAD)+" checks");
     OUT.push("PRUEBAS_DEV_DONE:"+(BAD===0?"PASS":"FAIL"));

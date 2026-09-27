@@ -493,7 +493,7 @@ function quimicaEquipo(once){
      Ahora la media se AMPLIFICA con el balance bueno/malo de los lazos conectados, así
      juntar a los que congenian se nota de verdad y se puede llegar alto (o bajo). */
   let prom=Math.round(media + (buenos-malos)/total*40);
-  prom=clamp(prom,15,97);
+  prom=clamp(prom,15,100);   /* 7.9089 · con duplas trabajadas se llega a 100 (pizarra-auto.js) */
   /* 7.9079 · la química heredada se EXPRESA con partidos juntos: al llegar el DT pesa el 40 % y llega
      al 100 % cuando el once suma ~12 partidos juntos. Antes una partida nueva arrancaba con −4 a +5,3
      según un sorteo por pareja (medido en 47 clubes) y eso movía ±0,3 pts/partido (doctor motor_vs_ia). */

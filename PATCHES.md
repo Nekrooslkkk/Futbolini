@@ -4507,3 +4507,30 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   del calendario, y un `pts:-999` en un club. El archivo muestra lo que se jugó fecha a fecha; el doctor no exige
   cuadratura ahí. Revisar el cierre de zonas de Segunda.
 - **Estado:** doctor sano (3 partidas + celular, 82 chequeos) · dev 590/590 · core 1185/1185.
+
+### 7.9089 — PLOP con perfil de red social · pizarra automática por formación
+**Archivos:** `js/plop-perfil.js` (nuevo), `js/pizarra-auto.js` (nuevo), `js/partido.js` (techo de química 97→100), `js/dev-doctor.js`,
+`test/pruebas_dev.js`, `js/util.js`, `index.html`
+- **PLOP, perfil del DT como red social** (pedido: "tipo perfil real, cambiarte el nombre como en una red social,
+  me gusta como el Twitter antiguo"):
+  - Cabecera de perfil estilo 2009: retrato, nombre visible, @usuario, bio, ciudad, "se unió en", y los
+    contadores plops · seguidores · favoritos.
+  - **Editar perfil** ahí mismo. El nombre de PLOP (`plopNombre`) no toca tu nombre real.
+  - El cambio de cuenta ahora es un **selector de sesiones** con avatar y @.
+  - "Me gusta" pasa a **★ Favoritos**; solo cambia el rótulo, la lógica de likes es la misma.
+  - La caja vieja "Tu cuenta" se va.
+- **Pizarra 2.0** (pedido: "que tenga que ver con las formaciones, que quede guardada, que se automatice, y llegar a
+  100 con cualquier formación"):
+  - **Automática:** el once se acomoda solo dentro de su formación buscando la mejor química; cada uno queda en
+    su línea. Va en `E.tactica.pizQuimica` y solo define vecinos: la forma táctica del motor no cambia
+    (doctor `motor_vs_ia` sano).
+  - **Nunca empeora:** si la clásica rinde más, se usa la clásica. Medido: CC 55→63, Linares 73→89, U 66→66.
+  - **Por formación:** cada formación recuerda su pizarra manual y la mejor automática.
+  - **Sesión de duplas** (1 por semana): +10 de ganas de jugar juntos (tope 30) a las 3 duplas con más roce, y
+    moral +2. Con ~13–27 semanas de trabajo, cualquier formación llega a **100**. El techo antes era 97.
+  - En la pizarra manual: **✨ Acomodar solo** y **🤝 Sesión de duplas**. Guardar la deja en la memoria de esa
+    formación.
+- **Doctor (verificados al revés):**
+  - `plop_perfil`: cazó que cambiar el nombre de PLOP pisara el real.
+  - `pizarra_quimica`: cazó el techo en 97.
+- **Estado:** doctor sano · dev 593/593 · core 1185/1185.
