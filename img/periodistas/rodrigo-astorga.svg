@@ -1,11 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="grodrigo-astorga" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity=".55"/>
-      <stop offset="0.45" stop-color="#0e4d92"/>
-      <stop offset="1" stop-color="#0a1a10"/>
+    <linearGradient id="avarodrigoastorga" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e4d92"/>
+      <stop offset="1" stop-color="#12161c"/>
     </linearGradient>
   </defs>
-  <circle cx="32" cy="32" r="30" fill="url(#grodrigo-astorga)" stroke="rgba(255,255,255,.7)" stroke-width="2"/>
-  <text x="32" y="39" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="22" fill="#fff">RA</text>
+  <circle cx="32" cy="32" r="30" fill="url(#avarodrigoastorga)" stroke="rgba(255,255,255,.8)" stroke-width="2"/>
+  <path d="M10 64 C18 44 46 44 54 64" fill="#1b2330"/>
+  <circle cx="32" cy="30" r="10" fill="#e0b48a"/>
+  <path d="M18 27 C22 16 42 16 46 27" fill="#1a120c"/>
+  <rect x="45" y="36" width="2.4" height="12" rx="1" fill="#e8eaee"/>
+  <circle cx="46.2" cy="35" r="2.6" fill="#111"/>
+  <text x="32" y="58" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="8" fill="#fff">RA</text>
 </svg>

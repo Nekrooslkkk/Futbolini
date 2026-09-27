@@ -1,9 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs><linearGradient id="gluka" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#ffffff" stop-opacity=".55"/>
-    <stop offset="0.45" stop-color="#0e4d92"/>
-    <stop offset="1" stop-color="#0a1a10"/>
-  </linearGradient></defs>
-  <circle cx="32" cy="32" r="30" fill="url(#gluka)" stroke="rgba(255,255,255,.7)" stroke-width="2"/>
-  <text x="32" y="39" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="22" fill="#fff">LT</text>
+  <defs>
+    <linearGradient id="avalukatudor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e4d92"/>
+      <stop offset="1" stop-color="#12161c"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="url(#avalukatudor)" stroke="rgba(255,255,255,.8)" stroke-width="2"/>
+  <path d="M10 64 C18 44 46 44 54 64" fill="#1b2330"/>
+  <circle cx="32" cy="30" r="10" fill="#c68642"/>
+  <path d="M19 28 C24 14 40 14 45 28 L43 22 C36 12 28 12 21 22 Z" fill="#1a120c"/>
+  <rect x="45" y="36" width="2.4" height="12" rx="1" fill="#e8eaee"/>
+  <circle cx="46.2" cy="35" r="2.6" fill="#111"/>
+  <text x="32" y="58" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="8" fill="#fff">LT</text>
 </svg>

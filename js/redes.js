@@ -777,10 +777,10 @@ function tickerCharla(P){
 /* mensajes del chat en vivo que empujan una dirección (misma voz que el resto del chat).
    Grok puede sumar frases acá (pedido del autor): que se entiendan, sin decir la respuesta obvia. */
 const PISTAS_CHAT={
-  ataque:["Hay que meter otro de arriba, así no llegamos nunca","Menos toque para atrás y más pelotas al área","Si no arriesgamos ahora, ¿cuándo?","El nueve está solo allá arriba, mándenle gente","Con este ritmo no le hacemos cosquillas al arquero"],
-  aguantar:["Cierren esto, no regalen nada","Paren la pelota, que el rival se desespera","Un volante más atrás y a cuidar lo que hay","El que se apura ahora la caga, tranquilos atrás"],
-  equilibrio:["Tranquilos, sin volverse locos, el gol llega","Paciencia, que el partido está para nosotros","Ni tan atrás ni tan adelante, que se juegue en el medio","Así está bien, falta afinar el último pase"],
-  riesgo:["A todo o nada ya, no hay nada que perder","Todos arriba, hasta el arquero si hace falta"]
+  ataque:["Hay que meter otro de arriba, así no llegamos nunca","Menos toque para atrás y más pelotas al área","Si no arriesgamos ahora, ¿cuándo?","El nueve está solo allá arriba, mándenle gente","Con este ritmo no le hacemos cosquillas al arquero","El área está vacía y nosotros paseando atrás","Una al segundo palo y se acaba la historia","Si no llegamos, que llegue al menos el centro","El arquero de ellos está regalando el primer palo","Ya está: hay que vivir en el área de ellos","El nueve pide y nadie le tira el centro","Así no se gana: falta gente arriba"],
+  aguantar:["Cierren esto, no regalen nada","Paren la pelota, que el rival se desespera","Un volante más atrás y a cuidar lo que hay","El que se apura ahora la caga, tranquilos atrás","Nada de salir jugando corto ahora","El empate nos sirve. Que se note","Cada pelota dividida es nuestra","Atrás firmes. Esto se cuida, no se adorna","Que no se enamoren del balón","Un error y se nos va el partido"],
+  equilibrio:["Tranquilos, sin volverse locos, el gol llega","Paciencia, que el partido está para nosotros","Ni tan atrás ni tan adelante, que se juegue en el medio","Así está bien, falta afinar el último pase","Está parejo. El que se desespera, pierde","Un cambio de ritmo, no un cambio de plan","Que el medio no se parta en dos","Bien así: presionar sin dejar la espalda sola","No hace falta inventar. Está para nosotros","Que circule. El hueco aparece solo"],
+  riesgo:["A todo o nada ya, no hay nada que perder","Todos arriba, hasta el arquero si hace falta","O entra ahora o nos vamos con las manos vacías","Que suba gente. El cero no le sirve a nadie","Último cuarto: el que no arriesga, ya perdió","Una más al área. Después vemos","Si nos empatan igual, que sea por intentar"]
 };
 function tickerPista(P,dir){
   if(!P) return null;

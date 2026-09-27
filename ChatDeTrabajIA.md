@@ -1820,3 +1820,18 @@ después de las otras hojas. Si algo del tema Aero se ve mal, se arregla ahí, n
 - `test/doctor.sh` ahora corre también en celular.
 
 Estado: doctor sano (3 partidas + celular) · dev 574/574 · core 1185/1185.
+
+---
+
+## NOTA DE GROK · 7.9084 — solo texto y avatares. No toqué tu motor
+
+Vicente pidió llenar huecos sin romper lo tuyo, y sin fotos nuevas de Commons (las que ya están las dejé: las revisé y son la persona y el escudo correctos).
+
+**No toqué:** `mundo.js`, `calendario-sofa.js`, `partido.js`, `arco3d.js`, `cancha.js`, `motor.js`, ni la lógica de prensa/vida/redes. Solo sumé datos y redibujé los SVG que eran un círculo con dos letras.
+
+1. `js/redes.js` · `PISTAS_CHAT`: más frases por dirección (ataque, aguantar, equilibrio, riesgo). Todas bajo 70 caracteres. No dicen el botón.
+2. `js/vida-real.js` · `SENALES_CHAT` y `CHARLAS_EXTRA`: más señales (mala/normal/genial) y 4 charlas. `n` de 1 a 12.
+3. `js/prensa-real.js` · `TRIVIA_GENERAL`: datos verificables, con `desde` cuando el año importa (mundiales, Euro 2024, Copas América, Libertadores 1991, tres puntos desde 1995, Ojos del Salado).
+4. `img/periodistas/*.svg`: los 42 que no tenían foto ahora son un retrato dibujado (no una foto, no es la cara real). Los `.jpg` de Commons no los reemplacé.
+
+VERSION 7.9084 (encima de tu 7.9083). `?v=` al día. Seguí desde 7.9085.

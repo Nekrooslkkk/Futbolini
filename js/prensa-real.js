@@ -126,7 +126,25 @@ const TRIVIA_GENERAL=[
   {q:"En un 4-3-3, ¿cuántos delanteros hay?",op:["Tres","Cuatro","Dos"],sol:0},
   {q:"Si un jugador está en offside pero no participa en la jugada, ¿se cobra?",op:["No","Sí, siempre","Solo en el área"],sol:0},
   {q:"¿Puede un gol hacerse directo desde un saque de banda?",op:["No","Sí","Solo con el pie"],sol:0},
-  {q:"¿Puede hacerse un gol directo de córner?",op:["Sí","No","Solo en el alargue"],sol:0}
+  {q:"¿Puede hacerse un gol directo de córner?",op:["Sí","No","Solo en el alargue"],sol:0},
+  {q:"¿Qué selección ganó el Mundial 1970?",op:["Brasil","Italia","Alemania"],sol:0,desde:1970},
+  {q:"¿Qué selección ganó el Mundial 1998?",op:["Francia","Brasil","Croacia"],sol:0,desde:1998},
+  {q:"¿Dónde se jugó el Mundial 1998?",op:["Francia","Japón","México"],sol:0,desde:1998},
+  {q:"¿Qué selección ganó el Mundial 2006?",op:["Italia","Francia","Alemania"],sol:0,desde:2006},
+  {q:"¿Qué selección ganó el Mundial 2018?",op:["Francia","Croacia","Bélgica"],sol:0,desde:2018},
+  {q:"¿Quién ganó la Euro 2024?",op:["España","Inglaterra","Francia"],sol:0,desde:2024},
+  {q:"¿Quién ganó la Copa América 2019?",op:["Brasil","Perú","Argentina"],sol:0,desde:2019},
+  {q:"¿Quién ganó la Copa América 2021?",op:["Argentina","Brasil","Colombia"],sol:0,desde:2021},
+  {q:"¿Cuántos mundiales tiene Italia?",op:["Cuatro","Tres","Cinco"],sol:0,desde:2006},
+  {q:"¿Qué país organizó el Mundial 1986?",op:["México","España","Argentina"],sol:0,desde:1986},
+  {q:"¿En qué ciudad está el Maracaná?",op:["Río de Janeiro","São Paulo","Brasilia"],sol:0},
+  {q:"¿Cuál es la capital de Colombia?",op:["Bogotá","Medellín","Cali"],sol:0},
+  {q:"¿Cuál es el cerro más alto de Chile?",op:["Ojos del Salado","Aconcagua","Tupungato"],sol:0},
+  {q:"¿Cuántos puntos da un triunfo en el fútbol profesional?",op:["Tres","Dos","Uno"],sol:0,desde:1995},
+  {q:"Dos amarillas en el mismo partido son…",op:["Una roja","Nada","Un penal"],sol:0},
+  {q:"¿Puede el arquero agarrar el balón con la mano fuera del área?",op:["No","Sí","Solo en un saque de meta"],sol:0},
+  {q:"Para que haya offside, además de la posición, hace falta…",op:["Participar en la jugada","Que sea delantero","Que el línea lo dude"],sol:0},
+  {q:"Colo-Colo ganó la Copa Libertadores en…",op:["1991","1993","2006"],sol:0,desde:1991}
 ];
 function _triviaCulta(){
   const anio=(E&&E.anio)||2026;

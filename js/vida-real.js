@@ -91,16 +91,20 @@ function _personaDe(m){
   return m.persona;
 }
 const SENALES_CHAT={
-  mala:["Te pregunta cuánto ganas antes que cómo te llamas.","Al tercer mensaje te pide entradas para 10 amigos.","Habla mal de todos sus ex. De todos.","Te manda un audio de 4 minutos pidiendo que le deposites «hasta el lunes»."],
-  normal:["Contesta a su ritmo, sin apuro. Normal.","Te cuenta de su pega con cansancio honesto.","Se ríe de tus chistes malos, a veces."],
-  genial:["Te pregunta cómo te fue en la semana y se acuerda de lo que le dijiste.","Te manda un meme del rival que te hace reír de verdad.","No sabe nada de fútbol y no finge: te cae bien igual."]
+  mala:["Te pregunta cuánto ganas antes que cómo te llamas.","Al tercer mensaje te pide entradas para 10 amigos.","Habla mal de todos sus ex. De todos.","Te manda un audio de 4 minutos pidiendo que le deposites «hasta el lunes».","Te deja en visto cuando hablas de tu pega y contesta al tiro si hablas de plata.","Te pide el WhatsApp al segundo mensaje, «porque la app es lenta».","La foto no calza con la persona que llega."],
+  normal:["Contesta a su ritmo, sin apuro. Normal.","Te cuenta de su pega con cansancio honesto.","Se ríe de tus chistes malos, a veces.","Llega cinco minutos tarde y avisa.","Te habla de su mamá sin usarla de discurso.","Tiene opinión del domingo y no te la impone."],
+  genial:["Te pregunta cómo te fue en la semana y se acuerda de lo que le dijiste.","Te manda un meme del rival que te hace reír de verdad.","No sabe nada de fútbol y no finge: te cae bien igual.","Se acuerda del nombre de tu ayudante.","Te dice que el domingo no puede, tiene turno, y propone el martes.","Te escucha el partido de fondo y no se burla cuando gritas."]
 };
 const CHARLAS_EXTRA=[
  {q:"¿Hijos? ¿Quieres, tienes, ni loco?",op:[{t:"Algún día, con calma.",n:10},{t:"Ya tengo mis cosas armadas.",n:6},{t:"Ni loco.",n:2}]},
  {q:"¿Qué te gusta hacer cuando no es fútbol?",op:[{t:"Cocinar para gente que quiero.",n:12},{t:"Nada: todo es fútbol.",n:1},{t:"Caminar sin teléfono.",n:10}]},
  {q:"Última vez que lloraste",op:[{t:"Con una película, sin vergüenza.",n:11},{t:"Con un descenso, y no me arrepiento.",n:7},{t:"No lloro.",n:2}]},
  {q:"¿Qué no perdonas?",op:[{t:"La mentira.",n:9},{t:"Que me dejen plantado.",n:7},{t:"Que no me pregunten cómo estoy.",n:12}]},
- {q:"¿Tu familia sabe que estás en esta app?",op:[{t:"Mi mamá me la instaló.",n:12},{t:"No, y que siga así.",n:5},{t:"Ni sé qué es mi familia.",n:1}]}
+ {q:"¿Tu familia sabe que estás en esta app?",op:[{t:"Mi mamá me la instaló.",n:12},{t:"No, y que siga así.",n:5},{t:"Ni sé qué es mi familia.",n:1}]},
+ {q:"Un domingo de local, ¿qué haces?",op:[{t:"Voy a la cancha, obvio.",n:8},{t:"Lo veo en la casa, tranquilo.",n:10},{t:"Si no es final, me da lo mismo.",n:3}]},
+ {q:"¿Cómo te va con la plata?",op:[{t:"Me alcanza y no presumo.",n:11},{t:"Siempre justo, pero pago lo mío.",n:8},{t:"Eso no se pregunta.",n:2}]},
+ {q:"Si discutes, ¿cómo lo cierras?",op:[{t:"Hablo cuando se me pasa.",n:11},{t:"Me voy y vuelvo al rato.",n:7},{t:"Grito hasta ganar.",n:1}]},
+ {q:"¿Qué esperas de alguien?",op:[{t:"Que avise si no va a llegar.",n:12},{t:"Que no me cobre la cuenta.",n:4},{t:"Que no me haga preguntas.",n:2}]}
 ];
 /* el chat del Match: más preguntas y una señal de cómo es de verdad */
 chatMatch=function(match){
