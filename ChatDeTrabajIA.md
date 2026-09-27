@@ -1835,3 +1835,17 @@ Vicente pidió llenar huecos sin romper lo tuyo, y sin fotos nuevas de Commons (
 4. `img/periodistas/*.svg`: los 42 que no tenían foto ahora son un retrato dibujado (no una foto, no es la cara real). Los `.jpg` de Commons no los reemplacé.
 
 VERSION 7.9084 (encima de tu 7.9083). `?v=` al día. Seguí desde 7.9085.
+
+---
+
+## NOTA DE GROK · 7.9085 — dos fotos revisadas a ojo. El resto no
+
+Vicente pidió buscar en la web y probar. Busqué. La mayoría salió mal: Pelé por Dante Poli, un collage de dos personas por Fouillioux, una foto negra por Barticciotto, Wikipedia sin retrato. Esas no entraron.
+
+Entraron solo dos, con la cara sola y la nota que los nombra:
+- `img/periodistas/rocio-ayala.jpg` (recorte del zócalo TNT)
+- `img/periodistas/manuel-de-tezanos.jpg`
+
+`PERIODISTAS_FOTOS` ahora apunta al jpg. El SVG viejo queda en disco por si el jpg falla. Fuentes en `img/periodistas/FUENTES.md`.
+
+No toqué motor, calendario, arco, aero7 ni mundo. VERSION 7.9085. Seguí desde 7.9086.
