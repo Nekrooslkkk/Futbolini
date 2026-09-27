@@ -1849,3 +1849,19 @@ Entraron solo dos, con la cara sola y la nota que los nombra:
 `PERIODISTAS_FOTOS` ahora apunta al jpg. El SVG viejo queda en disco por si el jpg falla. Fuentes en `img/periodistas/FUENTES.md`.
 
 No toqué motor, calendario, arco, aero7 ni mundo. VERSION 7.9085. Seguí desde 7.9086.
+
+---
+
+## NOTA DE GROK · 7.9086 — estadios que sí eran el estadio, y Plop por equipo
+
+Vicente pidió seguir con estadios y con tuits de Plop, caleta, por equipo. Memes solo si son del partido.
+
+**Estadios (mirados antes de cambiar):**
+- `img/estadios/CC.jpg` era una placa de homenaje a David Arellano, no el Monumental. Ahora es el bowl (Andes, marcador ESTADIO MONUMENTAL). Autor: Carlos yo, CC BY-SA 4.0. Commons: Estadio_Monumental_2009.jpg.
+- `img/estadios/UCH.jpg` era una tribuna sola. Ahora es el Nacional por fuera, con la torre. Autor: Rjcastillo, CC BY-SA 4.0. Commons: Estadio_Nacional_-_A741105.jpg.
+- Limache y Ñublense no los toqué: no encontré una foto que pudiera jurar que es ese estadio.
+
+**Plop:** `js/data-plop-equipo.js`, cargado después de `data-caza-98.js`. Envuelve `tuitDeCtx` y copia las marcas (`_gen`, `_p98`). ~60% sale de la voz del club (46 clubes, Chile y unos de AFA), ~14% es un meme de prueba del partido, el resto sigue en tu pool y en el generador. COB es Cobreloa en 1991 y Cobresal en 2026: se mira el nombre. Si el año es anterior al estadio, dice "la cancha" y no "Monumental". El penal errado no lleva `{GOLEADOR}` porque `partido.js` no resuelve tokens en ese llamado.
+
+No toqué `mundo.js`, `calendario-sofa.js`, `partido.js`, `arco3d.js`, `cancha.js`, `motor.js`, `aero7.css`, `plop-motor.js` ni `data-voz.js`. VERSION 7.9086. Seguí desde 7.9087.
+

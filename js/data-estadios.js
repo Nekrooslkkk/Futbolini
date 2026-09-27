@@ -121,10 +121,12 @@ function sectoresDe(clubId){
 function estadioNombre(clubId){ const e=ESTADIOS_DATA[clubId]; return e?e.nombre:null; }
 function aforoDe(clubId){ const e=ESTADIOS_DATA[clubId]; return e?e.aforo:null; }
 
-/* 7.45 · fotos Wikimedia Commons (CC/PD). Crédito en pantalla. SCR no tenía foto libre. */
+/* 7.45 · fotos Wikimedia Commons (CC/PD). Crédito en pantalla. SCR no tenía foto libre.
+   7.9086 · CC era una placa, no el estadio. UCH era una tribuna sola.
+   Ahora: Monumental (Carlos yo) y Nacional por fuera (Rjcastillo). */
 const ESTADIOS_FOTOS={
-  CC:{src:"img/estadios/CC.jpg",autor:"Carlos Figueroa",lic:"CC BY-SA 4.0"},
-  UCH:{src:"img/estadios/UCH.jpg",autor:"Carlos Figueroa Rojas",lic:"CC BY-SA 4.0"},
+  CC:{src:"img/estadios/CC.jpg",autor:"Carlos yo",lic:"CC BY-SA 4.0"},
+  UCH:{src:"img/estadios/UCH.jpg",autor:"Rjcastillo",lic:"CC BY-SA 4.0"},
   UC:{src:"img/estadios/UC.jpg",autor:"JeanxcPalmer",lic:"CC BY-SA 4.0"},
   EVE:{src:"img/estadios/EVE.jpg",autor:"Carlos yo",lic:"CC BY-SA 4.0"},
   PAL:{src:"img/estadios/PAL.jpg",autor:"Carlos yo",lic:"CC BY-SA 4.0"},
