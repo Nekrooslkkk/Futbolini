@@ -4534,3 +4534,17 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
   - `plop_perfil`: cazó que cambiar el nombre de PLOP pisara el real.
   - `pizarra_quimica`: cazó el techo en 97.
 - **Estado:** doctor sano · dev 593/593 · core 1185/1185.
+
+### 7.9090 — Penal, tiro libre y córner con luz y textura · superprompt de texto
+**Archivos:** `js/arco-realismo.js` (nuevo), `PROMPT_SONNET_TEXTOS.md` (nuevo), `js/dev-doctor.js`, `js/util.js`, `index.html`
+- **Arco sin "Paint"** (reporte del autor): una capa sobre la escena 3D existente, que no toca su lógica.
+  - Pasto con grano, franjas de corte, profundidad y foco de luz.
+  - Sombras de palos y red.
+  - Contorno oscuro en todas las figuras (el look de juego flash / FIFA de la época).
+  - Tribuna que se hunde en la noche, con halos de los focos.
+  - Brillo especular en la pelota y tono de transmisión nocturna.
+  - Texto claro sobre fondo de transmisión en los tres temas.
+  - El Modo liviano apaga todos los filtros.
+- **Doctor `arco_realismo`:** al revés, sacar el grano dio "el pasto no tiene grano" en los 3 modos.
+- **`PROMPT_SONNET_TEXTOS.md`:** superprompt para la gran pasada de texto con Sonnet 5 en xhigh, en 4 bloques.
+- **Estado:** doctor sano (3 partidas + celular, 85 chequeos) · dev 593/593 · core 1185/1185.

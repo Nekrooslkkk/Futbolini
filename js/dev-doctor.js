@@ -1864,6 +1864,23 @@ devDoctorRegistrar({id:"pizarra_quimica", area:"motor", n:"Pizarra automática n
   finally{ restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("automática ≥ clásica · memoria por formación · tope 100 · 1 sesión por semana");
 }});
+/* 7.9090 · el arco con luz y textura (reporte: "se ve muy feo y Paint"); liviano lo apaga */
+devDoctorRegistrar({id:"arco_realismo", area:"interfaz", n:"Penal/TL/córner con luz y textura; el Modo liviano lo apaga",
+  arreglo:"js/arco-realismo.js envuelve _a3Pasto, _a3Tribuna, _figPersona y htmlArcoVivo (flag _real3).", fn:function(){
+  if(typeof htmlArcoVivo!=="function") return _dok("sin escena del arco");
+  var falta=[], b=document.body, perf=b.classList.contains("perf");
+  ["_a3Pasto","_a3Tribuna","_figPersona","htmlArcoVivo"].forEach(function(n){ if(!(window[n]&&window[n]._real3)) falta.push(n+" sin la capa de realismo (se pisó el enganche)"); });
+  try{
+    b.classList.remove("perf");
+    ["penal","tl","corner"].forEach(function(m){ var h=htmlArcoVivo({modo:m,barrera:m==="tl"});
+      if(h.indexOf("url(#a3Grano)")<0) falta.push(m+": el pasto no tiene grano");
+      if(h.indexOf("url(#a3Contorno)")<0) falta.push(m+": las figuras no tienen contorno");
+      if(h.indexOf("url(#a3Noche)")<0) falta.push(m+": la tribuna no tiene la bruma de noche"); });
+    b.classList.add("perf");
+    if(htmlArcoVivo({modo:"penal"}).indexOf("url(#a3Contorno)")>=0) falta.push("en Modo liviano siguen los filtros caros");
+  } finally { b.classList.toggle("perf",perf); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("grano, contorno, noche y brillo en penal/TL/córner · liviano los apaga");
+}});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];
   if(typeof VAR_REVISION==="undefined"||!(VAR_REVISION.gol<=0.3)) falta.push("el VAR revisa todos (o casi todos) los goles: no dejan gritar");
