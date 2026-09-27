@@ -201,15 +201,15 @@ function esVerificado(t){
 const PLOP_RESP_HINCHA=[
   "te leí dt. ahora a demostrar en la cancha po",
   "bien dicho. la gente pide eso hace rato",
-  "hablai lindo y el domingo se juega wn",
+  "hablas lindo y el domingo se juega wn",
   "banco. pero con hechos, no con plop",
   "si el camarín piensa lo mismo, vamos bien",
   "la barra te está escuchando. no la cagues",
   "otro comunicado. a ver si esta vez pega",
   "gracias por contestar. no todos los dt lo hacen",
-  "yo no te banco siempre pero acá tenís razón",
+  "yo no te banco siempre pero acá tienes razón",
   "la tribuna anotó. no se te olvide",
-  "decilo en la conferencia también, no sólo acá",
+  "dilo en la conferencia también, no sólo acá",
   "el que no lee a la gente después se queja del lienzo"
 ];
 const PLOP_RESP_PRENSA=[
@@ -221,7 +221,7 @@ const PLOP_RESP_PRENSA=[
 ];
 const PLOP_RESP_TROLL=[
   "ksksks el dt contestando tuits a las 2 am",
-  "hablai como si fueras guardiola po hermano",
+  "hablas como si fueras guardiola po hermano",
   "tweet más largo que tu racha de triunfos",
   "otro hilo. otro domingo. misma película",
   "cuando ganan es el plan, cuando pierden es el árbitro"
@@ -777,10 +777,10 @@ function tickerCharla(P){
 /* mensajes del chat en vivo que empujan una dirección (misma voz que el resto del chat).
    Grok puede sumar frases acá (pedido del autor): que se entiendan, sin decir la respuesta obvia. */
 const PISTAS_CHAT={
-  ataque:["Hay que meter otro de arriba, así no llegamos nunca","Menos toque para atrás y más pelotas al área","Si no arriesgamos ahora, ¿cuándo?","El nueve está solo allá arriba, mándenle gente","Con este ritmo no le hacemos cosquillas al arquero","El área está vacía y nosotros paseando atrás","Una al segundo palo y se acaba la historia","Si no llegamos, que llegue al menos el centro","El arquero de ellos está regalando el primer palo","Ya está: hay que vivir en el área de ellos","El nueve pide y nadie le tira el centro","Así no se gana: falta gente arriba"],
-  aguantar:["Cierren esto, no regalen nada","Paren la pelota, que el rival se desespera","Un volante más atrás y a cuidar lo que hay","El que se apura ahora la caga, tranquilos atrás","Nada de salir jugando corto ahora","El empate nos sirve. Que se note","Cada pelota dividida es nuestra","Atrás firmes. Esto se cuida, no se adorna","Que no se enamoren del balón","Un error y se nos va el partido"],
-  equilibrio:["Tranquilos, sin volverse locos, el gol llega","Paciencia, que el partido está para nosotros","Ni tan atrás ni tan adelante, que se juegue en el medio","Así está bien, falta afinar el último pase","Está parejo. El que se desespera, pierde","Un cambio de ritmo, no un cambio de plan","Que el medio no se parta en dos","Bien así: presionar sin dejar la espalda sola","No hace falta inventar. Está para nosotros","Que circule. El hueco aparece solo"],
-  riesgo:["A todo o nada ya, no hay nada que perder","Todos arriba, hasta el arquero si hace falta","O entra ahora o nos vamos con las manos vacías","Que suba gente. El cero no le sirve a nadie","Último cuarto: el que no arriesga, ya perdió","Una más al área. Después vemos","Si nos empatan igual, que sea por intentar"]
+  ataque:["Hay que meter otro de arriba, así no llegamos nunca","Menos toque para atrás y más pelotas al área","Si no arriesgamos ahora, ¿cuándo?","El nueve está solo allá arriba, mándenle gente","Con este ritmo no le hacemos cosquillas al arquero","El área está vacía y nosotros paseando atrás","Una al segundo palo y se acaba la historia","Si no llegamos, que llegue al menos el centro","El arquero de ellos está regalando el primer palo","Ya está: hay que vivir en el área de ellos","El nueve pide y nadie le tira el centro","Así no se gana: falta gente arriba","El lateral tiene toda la banda libre, que suba de una vez","Los volantes están jugando de memoria, hay que arriesgar el pase","Con un cambio de ritmo esto se abre","Ese quinto defensa rival sobra, hay que aprovechar el hueco","Menos vuelta y más pelota adentro del área"],
+  aguantar:["Cierren esto, no regalen nada","Paren la pelota, que el rival se desespera","Un volante más atrás y a cuidar lo que hay","El que se apura ahora la caga, tranquilos atrás","Nada de salir jugando corto ahora","El empate nos sirve. Que se note","Cada pelota dividida es nuestra","Atrás firmes. Esto se cuida, no se adorna","Que no se enamoren del balón","Un error y se nos va el partido","Manden la pelota afuera si hay que mandarla afuera","No hay premio por jugar bonito ganando así","Cada córner en contra es un peligro que no necesitamos","El que quiera lucirse ahora, que se aguante las ganas","Achicar los espacios y que corra el reloj"],
+  equilibrio:["Tranquilos, sin volverse locos, el gol llega","Paciencia, que el partido está para nosotros","Ni tan atrás ni tan adelante, que se juegue en el medio","Así está bien, falta afinar el último pase","Está parejo. El que se desespera, pierde","Un cambio de ritmo, no un cambio de plan","Que el medio no se parta en dos","Bien así: presionar sin dejar la espalda sola","No hace falta inventar. Está para nosotros","Que circule. El hueco aparece solo","Ninguna urgencia todavía, el partido recién empieza","Buen trámite. Que nadie se apure por las puras","La cancha está pareja, gana el que no se pone nervioso","Sin regalar nada pero sin dormirse tampoco","Esto se define en un detalle, no en un arrebato"],
+  riesgo:["A todo o nada ya, no hay nada que perder","Todos arriba, hasta el arquero si hace falta","O entra ahora o nos vamos con las manos vacías","Que suba gente. El cero no le sirve a nadie","Último cuarto: el que no arriesga, ya perdió","Una más al área. Después vemos","Si nos empatan igual, que sea por intentar","No queda tiempo para pensarlo dos veces","Al ataque con todo, ya no hay nada que cuidar","Si se pierde, que sea yendo para adelante","Manden hasta al lesionado de la banca si hace falta","Esto se juega de una vez, no quedan vueltas"]
 };
 function tickerPista(P,dir){
   if(!P) return null;
@@ -834,7 +834,7 @@ function titularesSemana(){
     const arr=Object.keys(E.tabla).map(id=>({id:id,pts:E.tabla[id].pts||0})).sort((a,b)=>b.pts-a.pts);
     const lider=arr[0]&&(typeof CLUB_POR_ID!=="undefined")?CLUB_POR_ID[arr[0].id]:null;
     if(arr[0]) out.push({t:"📊 "+(lider?(lider.n||lider.c):"El puntero")+" manda la tabla",
-      d:"Arriba con "+arr[0].pts+" puntos. Vos vas "+ordinal(posicionEnTabla())+"."});
+      d:"Arriba con "+arr[0].pts+" puntos. Tú vas "+ordinal(posicionEnTabla())+"."});
   }
   if(E.ultimaFecha && E.ultimaFecha.length){
     const g=E.ultimaFecha.slice().sort((a,b)=>Math.abs(b.ga-b.gb)-Math.abs(a.ga-a.gb))[0];

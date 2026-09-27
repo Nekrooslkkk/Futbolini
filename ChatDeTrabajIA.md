@@ -1872,3 +1872,34 @@ No toqué `mundo.js`, `calendario-sofa.js`, `partido.js`, `arco3d.js`, `cancha.j
   consulta primero a la base (si la base dice "sin tuit", no se inventa uno). Rompía el core
   ("en neutro un gol común no fuerza tuit").
 - El doctor `tuit_gol_neutro` lo vigila. El resto del pack quedó igual.
+
+**7.9091 (Claude Sonnet 5) · BLOQUE 1 del superprompt de texto (PLOP / red social).**
+Corrí `PROMPT_SONNET_TEXTOS.md`, bloque 1. Medí antes de escribir: `data-tuits.js` 225 entradas (todas
+únicas), `data-tuits-76.js` 312, `data-voz.js` (base) 80, `data-grok-beta.js` 96.
+
+El bug real no era el voseo (aunque también había, 24 líneas fuera de personajes argentinos: "pidái",
+"ganá", "tenís", "Vos vas" del narrador, etc. — corregidas). El bug real era **duplicación entre pools**:
+`data-tuits-76.js` (Grok, TAREA C) reescribió sin saberlo ~48 tuits que `data-tuits.js` (TAREA B, los
+"aprobados" que pisan el pool base) ya cubría, mismo chiste y misma cuenta, en 6 contextos
+(gana_agonico, pierde_local, hat_trick, penal_errado, remontada, expulsion). El caso puntual que Vicente
+capaz ya notó jugando —`@weon_del_metro` y la micro que no venía— estaba literal en 3 lugares. Reescribí
+las 48 líneas con otra imagen, mismo personaje.
+
+Buscando eso encontré un tercero fuera de la lista del bloque: `js/data-grok-beta.js` (TANDA 4-10, carga
+después de `data-tuits.js` en index.html) empuja `TUITS_BETA` sin el mecanismo de "pisa lo viejo", así
+que reintroducía 2 tuits idénticos a los que `data-tuits.js` ya había reemplazado. Corregí esas 2. El
+resto de `TUITS_BETA` (~78 líneas, mismos 10 contextos) tiene el mismo tono/estructura sin ser duplicado
+exacto — no lo toqué, queda anotado para quien siga.
+
+Agregué el chequeo `tuits_sin_repetir` al doctor (regla permanente del CLAUDE.md: si arreglo un bug, el
+doctor tiene que poder cazarlo solo). Ya atrapó los 2 de `data-grok-beta.js` en la primera corrida — sirve.
+
+`PISTAS_CHAT` en `redes.js`: +5 por grupo (T2 de GUIA_HUMANO), 39→59 líneas.
+
+Sin tocar: `data-voz.js` (pool base, medido, ya estaba limpio) y la arquitectura de `data-plop-equipo.js`
+(46 clubes comparten las mismas 14 plantillas — no es voz genuinamente distinta por club, es plantilla
+común con lugar/gente/mito/apodo cambiados; una voz de verdad por club es proyecto aparte, lo anoté en
+PATCHES.md en vez de improvisarlo).
+
+Doctor sano (86 chequeos) · dev 593/593 · core 1185/1185. VERSION sin tocar. Seguí desde el bloque 2, 3 o 4
+del superprompt (o desde `data-grok-beta.js` si alguien quiere terminar esa pasada).

@@ -102,7 +102,7 @@ const PLOP_TPL={
     "un punto que sabe a poco. {L} pedía los tres.",
     "empatar de local es perder con modales.",
     "ni {M} ni {RIVAL} se impusieron. el empate se llevó la tarde.",
-    "empate de esos que no le contái a nadie en la micro.",
+    "empate de esos que no le cuentas a nadie en la micro.",
     "{CLUB} y {RIVAL} se anularon. el hincha {G} se quedó con hambre.",
     "un empate. ni fiesta ni funeral. oficina.",
     "el cero a cero en {L} es una siesta cara.",

@@ -58,7 +58,7 @@ const TUITS_EXTRA = [
   { ctx:"expulsion", quien:"@weon_del_metro", txt:"vi la roja en el celu en la micro y grité. el chofer frenó" },
   { ctx:"expulsion", quien:"@dt_de_living", txt:"el {DT} lo dejó 10 minutos de más. lo vio venir todo el estadio" },
   { ctx:"expulsion", quien:"@albo_insomne", txt:"no puede ser. no puede ser. con 10 esto es funeral" },
-  { ctx:"expulsion", quien:"@viejo_del_bar", txt:"cuando el capitán se va expulsado ya sabís cómo termina la película" },
+  { ctx:"expulsion", quien:"@viejo_del_bar", txt:"cuando el capitán se va expulsado ya sabes cómo termina la película" },
   { ctx:"expulsion", quien:"@garrafal_cl", txt:"tarjeta roja: el único cambio que sí funcionó hoy" },
   { ctx:"expulsion", quien:"@cuenta_troll", txt:"el {CAPITAN} se fue a ducharse a los 40. privilegiado" },
   { ctx:"expulsion", quien:"@DeporteTotal", txt:"Expulsión de {CAPITAN}. Quedan con uno menos y el partido se complica." },

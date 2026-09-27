@@ -2067,6 +2067,23 @@ devDoctorRegistrar({id:"celu_prolijo", area:"interfaz", n:"En celu: ventanas a s
   return falta.length?_dmal(falta.length+" problema(s)",falta.concat(det)):_dok(det.join(" · "),det);
 }});
 
+/* 7.9091 (Claude) · bug real cazado a mano: data-tuits.js y data-tuits-76.js traían decenas de tuits
+   copiados palabra por palabra en el mismo ctx (mismo chiste, misma cuenta) → el pool de "no repite
+   en 10 fechas" estaba mintiendo. Se corrigió a mano; este chequeo evita que vuelva a colarse. */
+devDoctorRegistrar({id:"tuits_sin_repetir", area:"contenido", n:"Ningún tuit del mismo contexto repite el texto exacto (pool real, no inflado)",
+  arreglo:"Un mismo ctx no debe tener dos entradas con el mismo txt en TUITS_MOMENTO (data-tuits.js / data-tuits-76.js / data-voz.js / data-plop-equipo.js).", fn:function(){
+  if(typeof TUITS_MOMENTO==="undefined"||!Array.isArray(TUITS_MOMENTO)) return _dok("sin pool de tuits");
+  var porCtx={}, dupes=[];
+  TUITS_MOMENTO.forEach(function(t){
+    if(!t||!t.ctx||!t.txt) return;
+    porCtx[t.ctx]=porCtx[t.ctx]||{};
+    if(porCtx[t.ctx][t.txt]) dupes.push(t.ctx+": «"+t.txt.slice(0,50)+"…»");
+    else porCtx[t.ctx][t.txt]=1;
+  });
+  return dupes.length?_dmal(dupes.length+" tuit(s) repetido(s) dentro de su propio contexto",dupes.slice(0,8)):
+    _dok((TUITS_MOMENTO.length)+" tuits en el pool, sin repetidos dentro de su contexto");
+}});
+
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){
   opts=opts||{};
