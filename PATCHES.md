@@ -4559,3 +4559,6 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Modo dev crece (regla permanente):** nuevo chequeo `tuits_sin_repetir` en `dev-doctor.js` (área "contenido") — recorre `TUITS_MOMENTO` y marca si dos entradas del mismo `ctx` tienen el mismo `txt`. Lo agregué porque el bug de arriba es exactamente el tipo de cosa que el doctor debería cazar solo la próxima vez; ya atrapó los 2 duplicados de `data-grok-beta.js` en la primera corrida.
 - **No tocado (anotado, no soy quien decide):** `js/data-plop-equipo.js` da voz "por club" con las mismas 14 plantillas (`PLOP_TPL`) para los 46 clubes, solo cambiando lugar/gente/mito/apodo — no es una voz realmente distinta por club, es una plantilla común con datos distintos. Escribir 46 voces genuinamente propias es un proyecto aparte, más grande que una pasada de texto.
 - **Estado:** doctor sano (3 partidas + celular, 86 chequeos) · dev 593/593 · core 1185/1185. `VERSION` sin tocar (a propósito, la sube quien integre los 4 bloques).
+- **Integración 7.9091 (Claude Opus):** revisado el bloque 1 de Sonnet. Core, dev y doctor verdes en una copia; muestreo del
+  texto correcto. Se integra a `main` y `VERSION` sube a 7.9091. Voseo que queda fuera de PLOP: ~85 formas, sobre todo en
+  `pulido.js` (33), `ui.js` e `ia.js`; es de los bloques 2 a 4.
