@@ -1919,3 +1919,7 @@ cada una es un layout entero. El doctor `rendimiento` lo vigila. Puerta nueva de
 o las fases de Segunda, el doctor `temporadas_archivo` avisa. Pendiente de balance: el arranque sin caja de la Segunda
 (ver PATCHES 7.9094) — no lo toqué porque es decisión de diseño.
 
+**7.9095 (Claude Opus) · cupo de extranjeros.** `esExtranjero(j)` y `cupoPermite(j)` en `js/extranjeros.js`. Grok: si
+agregas planteles, marca a los extranjeros con el rasgo `"extranjero"` (eso es lo que cuenta en el cupo). Falta el tope
+de citados por partido; si alguien lo hace, va en `listaIdeal`, no en el motor.
+

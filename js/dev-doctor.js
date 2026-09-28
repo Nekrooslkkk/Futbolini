@@ -1971,6 +1971,35 @@ devDoctorRegistrar({id:"deuda_centavos", area:"motor", n:"Una deuda de centavos 
   } finally { restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("deudas de 0,3 a 400 se cobran sin reventar");
 }});
+/* 7.9095 · cupo de extranjeros: no se inscribe uno más sobre el cupo (fichaje directo ni preacuerdo) */
+devDoctorRegistrar({id:"cupo_extranjeros", area:"motor", n:"Cupo de extranjeros: no entra uno más con el cupo lleno; los nacionales sí",
+  arreglo:"js/extranjeros.js: CUPO_EXT (Bases ANFP 2026) y los enganches _ext de modalComprar/ejecutarPreacuerdo/cerrarFichaje.", fn:function(){
+  if(typeof cupoPermite!=="function") return _dmal("no cargó js/extranjeros.js",["falta el script en index.html"]);
+  var falta=[];
+  ["modalComprar","ejecutarPreacuerdo","cerrarFichaje","pintarResultadosMercado"].forEach(function(n){ if(!(window[n]&&window[n]._ext)) falta.push(n+" no respeta el cupo (se pisó el enganche)"); });
+  if(!E||!E.plantel) return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sin partida");
+  var c=cupoExtranjeros(), snap=clonarPartida(E), det="";
+  try{
+    var gu=window.guardar, nt=window.notificar; window.guardar=function(){}; window.notificar=function(){};
+    try{
+      E.plata=99999;
+      var base={pos:"VOL",edad:26,nivel:60,proy:60,valor:50,sueldo:5,precio:10,pidesueldo:5};
+      while(extranjerosPlantel().length<c.inscritos) E.plantel.push(Object.assign({},base,{n:"_sonda_ext_"+E.plantel.length,rasgos:["extranjero"]}));
+      var n0=E.plantel.length;
+      cerrarFichaje(Object.assign({},base,{n:"_sonda_ext_extra",rasgos:["extranjero"]}),{precio:1,sueldo:1,rol:"titular"});
+      if(E.plantel.length!==n0) falta.push("con el cupo lleno ("+c.inscritos+") igual se inscribió un extranjero más");
+      cerrarFichaje(Object.assign({},base,{n:"_sonda_nac",rasgos:[]}),{precio:1,sueldo:1,rol:"titular"});
+      if(E.plantel.length!==n0+1) falta.push("con el cupo lleno no se pudo fichar a un NACIONAL (el cupo es solo para extranjeros)");
+      if(typeof esClubArg==="function"&&(E.anio|0)>=2010&&E.eraBase!=="arg2026"){
+        var arg=(typeof idsArgentina==="function"?idsArgentina():[])[0];
+        if(arg&&!esExtranjero(Object.assign({},base,{n:"_sonda_arg",rasgos:[],clubId:arg}))) falta.push("un jugador de la liga argentina ("+arg+") no cuenta como extranjero para un club chileno");
+      }
+    } finally { window.guardar=gu; window.notificar=nt; }
+  } finally { restaurarPartida(snap); }
+  det=etiquetaCupo();
+  if(extranjerosPlantel().length>c.inscritos) det+=" · tu plantel real viene sobre el cupo (no se va nadie; solo no entran más)";
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(det);
+}});
 devDoctorRegistrar({id:"rendimiento", area:"interfaz", n:"Rinde en un celu barato: guardado agrupado, cinta sin scrollIntoView, secciones medidas", pesado:true,
   arreglo:"js/rendimiento.js (guardarAgrupado/guardarAhora) y js/ui.js pintarDock (scrollLeft solo al cambiar de sección).", fn:function(){
   var falta=[];

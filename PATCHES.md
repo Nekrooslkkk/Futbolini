@@ -4632,3 +4632,19 @@ Medido con la CPU 6× más lenta (Chrome, CDP `Emulation.setCPUThrottlingRate`) 
   escándalo. Jugando a mano no pasa si eliges bien, pero el arranque es muy brusco. Pendiente para el autor.
 - **Estado:** doctor sano (4 partidas + celular, 89 chequeos) · dev 593/593 · core 1185/1185.
 
+### 7.9095 — Cupo de extranjeros (nacional ≠ extranjero en el mercado)
+Nuevo `js/extranjeros.js`. Regla real de las Bases ANFP 2026: **Primera inscribe 6 extranjeros y cita 5 por partido;
+Primera B inscribe 5.** Segunda: no estaba en las fuentes revisadas → 4 **estimado** (lo dice en pantalla). Otras épocas:
+aproximado (3 antes del 2000).
+- Extranjero = rasgo `"extranjero"` de los datos (~500 jugadores reales) **o** jugador de una liga de otro país (uno de
+  River para un club chileno). Al firmarlo se le deja el rasgo para que siga contando.
+- Con el cupo lleno no se puede negociar ni inscribir otro extranjero (hay que vender, ceder o dejar ir uno). El
+  preacuerdo con un extranjero espera cupo, no se cobra ni se pierde. Los nacionales entran igual.
+- Mercado: 🌎 en cada extranjero y arriba "🌎 Extranjeros 4/6 (máx. 5 por partido)".
+- Si el plantel real ya viene sobre el cupo (CC y la U traen 7 marcados), nadie se va: solo no entran más.
+- **No hecho:** el tope de citados por partido (5 de 6 en Primera) no se aplica todavía a la lista del partido.
+- **Dev:** doctor `cupo_extranjeros` (90 chequeos): enganches presentes; con el cupo lleno un extranjero no entra y un
+  nacional sí; un jugador de la liga argentina cuenta como extranjero. Al revés: sin la barrera de `cerrarFichaje` →
+  "con el cupo lleno (6) igual se inscribió un extranjero más".
+- **Estado:** doctor sano (4 partidas + celular, 90 chequeos) · dev 593/593 · core 1185/1185.
+

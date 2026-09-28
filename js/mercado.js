@@ -714,7 +714,7 @@ function pintarResultadosMercado(box,firma){
   if(!lista.length) box.appendChild(el("p","mini",q?"Nadie con esa búsqueda.":"El ayudante no encuentra nada que te mejore dentro de tu caja."));
   lista.forEach(j=>{
     const d=el("div","resul mitad");
-    d.innerHTML="<b>"+(j.real?"● ":"")+escHtml(j.n)+" <span class='mini'>("+escHtml(j.club||"—")+")</span></b><br>"+
+    d.innerHTML="<b>"+(j.real?"● ":"")+escHtml(j.n)+(typeof esExtranjero==="function"&&esExtranjero(j)?" <span title='Extranjero: ocupa cupo'>🌎</span>":"")+" <span class='mini'>("+escHtml(j.club||"—")+")</span></b><br>"+
       j.pos+" · "+j.edad+" años · nivel "+j.nivel+(j.proy>j.nivel+4?" · proy "+j.proy:"")+
       " · piden <b>"+plata(j.precio)+"</b> + sueldo "+plata(j.pidesueldo)+
       (j._porque?"<div class='mini merc-porque'>🧭 "+escHtml(j._porque)+"</div>":"");
