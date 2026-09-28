@@ -1913,3 +1913,9 @@ three.js está en `js/vendor/`: no se actualiza (r149 fijo, mantenimiento eterno
 escrito YA (salir, cambiar de partida), usa `await guardar()` (espera el guardado real) o `guardarPendienteYa()`.
 No vuelvan a meter `scrollIntoView` ni lecturas de `offsetHeight`/`offsetLeft` dentro de `render()`: en un celu lento
 cada una es un layout entero. El doctor `rendimiento` lo vigila. Puerta nueva de la 8.00 en `CHECKLIST_8.md`.
+
+**7.9094 (Claude Opus) · Segunda por zonas.** El archivo de temporadas cuadra en Segunda (fechas libres anotadas,
+−999 ya no queda pegado). `test/doctor.sh` corre ahora 4 partidas (sumó TRA 2026). Si tocas `_simularRondasZonaHasta`
+o las fases de Segunda, el doctor `temporadas_archivo` avisa. Pendiente de balance: el arranque sin caja de la Segunda
+(ver PATCHES 7.9094) — no lo toqué porque es decisión de diseño.
+

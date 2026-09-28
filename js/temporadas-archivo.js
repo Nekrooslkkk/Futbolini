@@ -51,7 +51,7 @@ function _archIdx(act,id){
 function archivoAnotarFecha(part){
   if(!part||part.tipo!=="liga"||!E||!E.tabla) return false;
   /* las liguillas (ascenso/permanencia) no son la tabla de la temporada: se suman un momento y se revierten */
-  if(/liguilla/i.test(part.fase||"")) return false;
+  if(/liguilla|playoff/i.test(part.fase||"")) return false;   /* 7.9093 · el playoff de 4° tampoco (Segunda) */
   const act=archivoActual(); if(!act) return false;
   /* la lista de la liga puede no estar lista cuando nace la partida: se completa con la liga vigente */
   ((typeof clubesLigaActual==="function")?clubesLigaActual():[]).forEach(c=>{ if(c&&c.id&&act.ids.indexOf(c.id)<0){ act.ids.push(c.id); act.noms[c.id]=_archNom(c.id); } });
@@ -289,7 +289,7 @@ function resumenSimulacion(desde){
 /* la fecha recién simulada, en vivo (el modo lento de una sola fecha) */
 function fechaEnVivo(t,k){
   modal(function(box){
-    box.appendChild(el("div","cab",'<span class="ic">📺</span><span>Fecha '+(t.fechas[k-1]&&t.fechas[k-1].f||k)+' en vivo</span>'));
+    box.appendChild(el("div","cab",'<span class="ic">📺</span><span>'+((t.fechas[k-1]&&t.fechas[k-1].f)==="libre"?"Fecha libre (descansaste)":"Fecha "+(t.fechas[k-1]&&t.fechas[k-1].f||k))+' en vivo</span>'));
     const c=el("div","cuerpo"); box.appendChild(c);
     const host=el("div","repe"); c.appendChild(host);
     const ok=el("button","btn-aqua ancho verde","Seguir"); ok.style.marginTop="8px"; ok.onclick=()=>{ _repeParar(); cerrarModal(); }; c.appendChild(ok);

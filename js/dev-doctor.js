@@ -563,7 +563,10 @@ function _calPaso(st, cuantos){
   try{
     while(cuantos-- > 0 && st.i<st.esc.length){
       var s=st.esc[st.i], d=s.d, local=s.local;
-      var part=Object.assign({},st.molde,{local:local, fuerzaRival:Math.round(st.mio-d), jugado:false, tipo:"liga"});
+      /* 7.9093 · el árbitro sale de la fecha: con un solo molde los 200 partidos tenían EL MISMO árbitro, y si
+         tocaba uno casero la brecha salía -0,37 (Segunda: TRA, CNA) sin que el motor tuviera nada. Ahora rota
+         como en una temporada real (1 de cada 5 es casero, a favor o en contra según la localía). */
+      var part=Object.assign({},st.molde,{local:local, fuerzaRival:Math.round(st.mio-d), jugado:false, tipo:"liga", fecha:"cal"+st.j});
       var P=iniciarPartido(part,"simular"); correrHasta(P,90);
       var gm=local?P.gl:P.gv, gr=local?P.gv:P.gl;
       if(gm>gr) s.w++; else if(gm===gr) s.e++; else s.l++;
@@ -1807,13 +1810,15 @@ devDoctorRegistrar({id:"temporadas_archivo", area:"motor", n:"Temporadas pasadas
   var falta=[];
   ["simularResto","nuevoAnio","aceptarClub","nuevaPartida"].forEach(function(n){ if(!(window[n]&&window[n]._arch)) falta.push(n+" no anota en el archivo (se pisó el enganche)"); });
   if(!E) return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sin partida");
-  var A=E.archivo||{temps:[]}, act=A.actual, faseUnica=!/^2026c/.test(E.eraBase||"");
-  if(act&&act.fechas&&act.fechas.length&&!act.desde&&faseUnica){
+  /* 7.9093 · la Segunda (zonas de 7 con fecha libre) ya no se exime: las fechas libres también se anotan */
+  var A=E.archivo||{temps:[]}, act=A.actual;
+  Object.keys(E.tabla||{}).forEach(function(id){ var x=E.tabla[id]; if(x&&Math.abs(x.pts||0)>=900) falta.push(id+" quedó con "+x.pts+" pts en la tabla (un puntaje de ordenar se quedó pegado)"); });
+  if(act&&act.fechas&&act.fechas.length&&!act.desde){
     var rec=tablaDeArchivo(act,act.fechas.length);
     var mal=rec.filter(function(r){ var x=E.tabla&&E.tabla[r.id]; return x&&(x.pts!==r.pts||x.gf!==r.gf||x.gc!==r.gc||x.pj!==r.pj); });
     if(mal.length) falta.push("la temporada en curso no cuadra: "+mal.slice(0,3).map(function(r){ return r.id+" "+r.pts+" pts anotados vs "+E.tabla[r.id].pts; }).join(", "));
   }
-  (A.temps||[]).forEach(function(t){ if(t.descuadres&&!/^2026c|Segunda/.test((t.liga||"")+(t.eraBase||""))&&t.n>8) falta.push(t.anio+" "+t.club+": "+t.descuadres+" equipos no cuadran con la tabla real"); });
+  (A.temps||[]).forEach(function(t){ if(t.descuadres&&t.n>=6) falta.push(t.anio+" "+t.club+": "+t.descuadres+" equipos no cuadran con la tabla real"); });
   var kb=Math.round(JSON.stringify(A).length/1024);
   if(kb>600) falta.push("el archivo pesa "+kb+" KB (el tope razonable es 600): revisar ARCHIVO_COMPLETAS");
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok((A.temps||[]).length+" temporada(s) archivada(s) · en curso "+((act&&act.fechas.length)||0)+" fecha(s) · "+kb+" KB");
@@ -1952,6 +1957,20 @@ devDoctorRegistrar({id:"rendimiento_ui", area:"interfaz", n:"La escena del penal
 }});
 
 /* 7.9038 · "apretar cualquier cosa me manda arriba" y "se pierde el relato del partido" */
+/* 7.9094 · una deuda de centavos (0 < deuda < 0,5) reventaba la semana: sim_temporadas lo cazaba a veces (LIM) */
+devDoctorRegistrar({id:"deuda_centavos", area:"motor", n:"Una deuda de centavos no revienta la semana",
+  arreglo:"js/motor.js tickCuotaDeuda: si recotarDeuda no arma plan, la deuda se da por pagada.", fn:function(){
+  if(!E||typeof tickCuotaDeuda!=="function") return _dok("sin partida");
+  var snap=clonarPartida(E), falta=[];
+  try{
+    [0.3,0.49,1,400].forEach(function(d){
+      E.deuda=d; E.deudaPlan=null; E.plata=1000;
+      try{ tickCuotaDeuda(); if(typeof cuotaDeuda==="function") cuotaDeuda(); }catch(e){ falta.push("deuda "+d+": "+e.message); }
+      if(!(E.deuda>=0)) falta.push("deuda "+d+" quedó en "+E.deuda);
+    });
+  } finally { restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("deudas de 0,3 a 400 se cobran sin reventar");
+}});
 devDoctorRegistrar({id:"rendimiento", area:"interfaz", n:"Rinde en un celu barato: guardado agrupado, cinta sin scrollIntoView, secciones medidas", pesado:true,
   arreglo:"js/rendimiento.js (guardarAgrupado/guardarAhora) y js/ui.js pintarDock (scrollLeft solo al cambiar de sección).", fn:function(){
   var falta=[];

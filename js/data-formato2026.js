@@ -203,6 +203,8 @@ function _simularRondasZonaHasta(hastaRonda){
       _aplicarFilaTabla(E.tabla, a.id, b.id, goles[0], goles[1]);
     }
     E.flags.zonaCSim[r]=1;
+    /* 7.9093 · la fecha en que descansas también va al archivo de temporadas (si no, la tabla repetida no cuadra) */
+    if(typeof archivoAnotarFecha==="function"){ try{ archivoAnotarFecha({tipo:"liga",fase:"zonal",fecha:"libre",jornada:fecha}); }catch(e){} }
   }
   try{ if(typeof mundoAlcanzarRonda==="function") mundoAlcanzarRonda(tope+1); }catch(e){}
 }
@@ -1314,9 +1316,13 @@ function filasTablaActual(){
         :((typeof _ordenSimDiv==="function")?_ordenSimDiv(ids):ids);
     });
     if(E.eraBase==="2026c"&&E.tabla&&E.tabla[E.club]){
+      /* 7.9093 · el ±999 es solo para ORDENAR (la liguilla ya decidió): se devuelve el puntaje real al tiro.
+         Antes quedaba pegado y el cierre mostraba tu club con −999 pts en la tabla y en el archivo. */
+      var ptsReal=E.tabla[E.club].pts;
       if(E.flags&&E.flags.ligaCCampeon) E.tabla[E.club].pts=999;
       else if(E.flags&&E.flags.ligaCBaja) E.tabla[E.club].pts=-999;
-      orden["2026c"]=(typeof _ordenRealDiv==="function")?_ordenRealDiv((E.ligaMod["2026c"]||[]).slice()):orden["2026c"];
+      try{ orden["2026c"]=(typeof _ordenRealDiv==="function")?_ordenRealDiv((E.ligaMod["2026c"]||[]).slice()):orden["2026c"]; }
+      finally{ E.tabla[E.club].pts=ptsReal; }
     }
     var pr=orden[2026]||[];
     var b=orden["2026b"]||[];

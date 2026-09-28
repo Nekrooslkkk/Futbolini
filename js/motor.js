@@ -1050,6 +1050,8 @@ function tickCuotaDeuda(){
   if(!E) return;
   if(!(E.deuda>0)){ E.deudaPlan=null; return; }
   if(!E.deudaPlan) recotarDeuda();
+  /* 7.9094 · deuda de centavos (0 < deuda < 0,5): recotarDeuda la redondea a 0 y no arma plan → se da por pagada */
+  if(!E.deudaPlan){ E.deuda=0; return; }
   const c=Math.min(E.deudaPlan.cuota,E.deuda);
   if(c<=0){ E.deudaPlan=null; return; }
   if(E.plata>=c){

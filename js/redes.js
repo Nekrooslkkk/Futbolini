@@ -826,7 +826,7 @@ function noticiaPosible(){
     {t:"🏥 Parte médico en la liga",d:"Varios equipos llegan con bajas por lesión a esta fecha. El calendario apretado pasa la cuenta."},
     {t:"🔥 Otro técnico en la cuerda floja",d:"En otro club la hinchada pide la cabeza del DT tras un mal arranque. El fútbol no perdona."}
   ];
-  return pool[(E.idx+E.anio)%pool.length];
+  return pool[(((E.idx|0)+(parseInt(E.anio,10)||0))%pool.length+pool.length)%pool.length];
 }
 function titularesSemana(){
   const out=[];

@@ -15,7 +15,8 @@ Sistemas que el autor pidió y todavía no existen o están a medias.
 - [x] **Penal, tiro libre y córner en 3D real** estilo PES 2006 (7.9092)
 - [x] **Rendimiento base:** guardado agrupado, cinta del celu sin layout forzado (7.9093; doctor `rendimiento`)
 - [ ] **Mercado:** cupo de extranjeros y diferencia real nacional/extranjero (hoy no existe) · negociación más viva
-- [ ] **Segunda por zonas:** cierre de temporada (un club queda con −999 pts; la tabla del cierre no cuadra fecha a fecha)
+- [x] **Segunda por zonas:** cierre de temporada cuadra fecha a fecha, sin −999 (7.9094)
+- [ ] **Segunda: arranque sin caja** → 18 decisiones de finanzas en 3 semanas y crisis de escándalo si se delega (decisión del autor)
 - [ ] **Voz por club en PLOP** (hoy 14 plantillas iguales para 46 clubes; anotado por Sonnet en 7.9091)
 - [ ] **Economía y Vida/carrera:** el autor dijo "quedó corto" sin detalle → pedirle 5 líneas de juego real
 - [ ] Textos: bloques 2, 3 y 4 de `PROMPT_SONNET_TEXTOS.md` (prensa, decisiones, vida y poder)

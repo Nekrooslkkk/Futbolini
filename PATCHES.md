@@ -4610,3 +4610,25 @@ Medido con la CPU 6× más lenta (Chrome, CDP `Emulation.setCPUThrottlingRate`) 
   los ms salen 0; en un navegador real salen de verdad.)
 - `CHECKLIST_8.md`: nueva puerta de la 8.00 "rinde en un celu barato" con números.
 - **Estado:** doctor sano (3 partidas + celular, 88 chequeos) · dev 593/593 · core 1185/1185.
+
+### 7.9094 — Segunda por zonas: el cierre cuadra fecha a fecha (y 3 bugs que salieron al reproducirlo)
+- **El −999:** `procesarAscensoDescenso` (data-formato2026.js) ponía ±999 pts a tu club para ORDENAR la Segunda
+  (la liguilla ya decidió quién sube o baja) y lo dejaba pegado en la tabla del cierre. Ahora devuelve el puntaje real.
+- **La tabla no cuadraba:** las zonas son de 7, cada ronda descansa uno. Tus 2 fechas libres se simulaban fuera del
+  calendario (`_simularRondasZonaHasta`) y nunca llegaban al archivo de temporadas. Ahora se anotan ("Fecha libre
+  (descansaste)" en la repetición). El playoff de 4° tampoco se anota (la tabla se revierte después, como las liguillas).
+  Probado con 8 clubes de Segunda simulando la temporada completa: 0 descuadres.
+- **Deuda de centavos:** con 0 < deuda < 0,5, `recotarDeuda` redondeaba a 0, no armaba plan y `tickCuotaDeuda`
+  reventaba ("reading 'cuota'"). Salía a veces en `sim_temporadas` (LIM). Se da por pagada.
+- **Calibrador motor vs IA:** usaba un solo partido molde para los 200 de prueba = el mismo árbitro siempre. Si tocaba
+  uno casero, la brecha daba −0,37 (Segunda: TRA, CNA) y parecía que el motor castigaba al jugador. Ahora el árbitro
+  rota como en una temporada real. El motor no se tocó.
+- `noticiaPosible` (redes.js) ya no devuelve `undefined` si `E.anio` no es número (el Escritorio reventaba).
+- **Dev:** `temporadas_archivo` ya no exime a la Segunda y caza cualquier club con |pts| ≥ 900. Nuevo `deuda_centavos`.
+  `test/doctor.sh` suma TRA 2026 (Segunda por zonas) a las partidas por defecto. Al revés: sin el enganche de la fecha
+  libre → "TRA 14 pts anotados vs 16"; sin el arreglo de deuda → "2 problema(s)"; con −999 → falla.
+- **Anotado, sin tocar (balance):** un club de Segunda arranca sin caja (plata < 120) y le llueven decisiones de
+  finanzas (18 en 3 semanas). Si se delegan (simular), el riesgo pasa de 44 a 80+ en 3 semanas y salta la crisis de
+  escándalo. Jugando a mano no pasa si eliges bien, pero el arranque es muy brusco. Pendiente para el autor.
+- **Estado:** doctor sano (4 partidas + celular, 89 chequeos) · dev 593/593 · core 1185/1185.
+

@@ -14,7 +14,7 @@ if [ -z "$CHROME_BIN" ]; then
   done
 fi
 if [ -z "$CHROME_BIN" ]; then echo "⚠ Sin Chromium: no se puede correr el doctor."; exit 0; fi
-PARTIDAS=("$@"); [ ${#PARTIDAS[@]} -eq 0 ] && PARTIDAS=("CC,2026,historico" "CC,1991,historico" "LIN,2026,historico")
+PARTIDAS=("$@"); [ ${#PARTIDAS[@]} -eq 0 ] && PARTIDAS=("CC,2026,historico" "CC,1991,historico" "LIN,2026,historico" "TRA,2026,historico")   # TRA = Segunda por zonas (7.9094)
 python3 - <<'PY'
 s=open("index.html",encoding="utf-8").read()
 inject='<pre id="out">corriendo...</pre>\n<script src="test/doctor.js"></script>\n</body>'
