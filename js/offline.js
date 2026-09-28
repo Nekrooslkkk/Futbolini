@@ -39,7 +39,7 @@ function offlineEnLinea(){ return typeof navigator==="undefined"||navigator.onLi
 if(typeof window!=="undefined"){
   window.addEventListener("beforeinstallprompt",function(e){ e.preventDefault(); OFFLINE.instalar=e; if(typeof _offlinePintar==="function") _offlinePintar(); });
   window.addEventListener("online",function(){ document.body&&document.body.classList.remove("sin-red"); if(typeof aviso==="function") aviso(T("off_volvio","Volvió internet. La nube y las fuentes se reconectan solas.")); });
-  window.addEventListener("offline",function(){ document.body&&document.body.classList.add("sin-red"); if(typeof aviso==="function") aviso(T("off_cayo","Sin internet. Seguís jugando: la partida se guarda en este equipo.")); });
+  window.addEventListener("offline",function(){ document.body&&document.body.classList.add("sin-red"); if(typeof aviso==="function") aviso(T("off_cayo","Sin internet. Sigues jugando: la partida se guarda en este equipo.")); });
   if(document.readyState==="complete") offlineRegistrar();
   else window.addEventListener("load",offlineRegistrar);
 }
@@ -51,7 +51,7 @@ function _offlinePintar(){
   c.innerHTML="";
   const est=OFFLINE.estado;
   let linea;
-  if(!offlineSoportado()) linea=T("off_nosop","Este navegador (o abrir el archivo directo) no permite dejar el juego instalado. Igual podés descargar tu partida abajo.");
+  if(!offlineSoportado()) linea=T("off_nosop","Este navegador (o abrir el archivo directo) no permite dejar el juego instalado. Igual puedes descargar tu partida abajo.");
   else if(!est) linea=T("off_prep","Preparando la copia local del juego…");
   else linea=T("off_ok","Listo para jugar sin internet")+": <b>"+est.archivos+"</b> "+T("off_arch","archivos del juego")+(est.cdn?(" + <b>"+est.cdn+"</b> "+T("off_cdn","de fuentes/estilos")):"")+" · v"+escHtml(String(est.version));
   c.appendChild(el("p",null,(offlineListo()?"✅ ":"⏳ ")+linea));

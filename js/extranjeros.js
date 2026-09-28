@@ -49,6 +49,50 @@ function etiquetaCupo(){
   const n=extranjerosPlantel().length;
   return "🌎 Extranjeros "+n+"/"+c.inscritos+(c.citados<c.inscritos?" (máx. "+c.citados+" por partido)":"")+(c.aprox?" · "+c.fuente:"");
 }
+/* ---------- citados por partido (Primera: 6 inscritos, 5 citados) ----------
+   Los citados son la lista entera del partido (once + banca). Si hay más extranjeros que el tope, sale el que
+   menos rinde y entra el mejor nacional de su puesto (o el mejor nacional que haya). */
+function topeCitadosExt(){ const c=cupoExtranjeros(); return c?c.citados:99; }
+function _extScore(j){ return (typeof scoreOnce==="function")?scoreOnce(j):(j.nivel||0); }
+function ajustarOnceCupo(once){
+  const tope=topeCitadosExt(), fuera=[];
+  if(!once||once.filter(esExtranjero).length<=tope){ ajustarOnceCupo.fuera=fuera; return once; }
+  const out=once.slice(), disp=(typeof dispPlantel==="function")?dispPlantel():[];
+  const exts=out.filter(esExtranjero).sort((a,b)=>_extScore(a)-_extScore(b));
+  let sobran=exts.length-tope;
+  for(const j of exts){
+    if(sobran<=0) break;
+    const libres=disp.filter(x=>out.indexOf(x)<0&&!esExtranjero(x));
+    const r=libres.filter(x=>x.pos===j.pos).sort((a,b)=>_extScore(b)-_extScore(a))[0]
+          ||(j.pos!=="ARQ"?libres.filter(x=>x.pos!=="ARQ").sort((a,b)=>_extScore(b)-_extScore(a))[0]:null);
+    if(!r) continue;
+    out[out.indexOf(j)]=r; fuera.push(j.n); sobran--;
+  }
+  ajustarOnceCupo.fuera=fuera;
+  return out;
+}
+function ajustarListaCupo(lista,nOnce){
+  const tope=topeCitadosExt();
+  if(!lista||lista.filter(esExtranjero).length<=tope) return lista;
+  const once=lista.slice(0,nOnce), banca=lista.slice(nOnce);
+  let libres=Math.max(0,tope-once.filter(esExtranjero).length);
+  const nueva=[];
+  banca.forEach(j=>{ if(!esExtranjero(j)) nueva.push(j); else if(libres>0){ nueva.push(j); libres--; } });
+  const usados=once.concat(nueva);
+  const disp=((typeof dispPlantel==="function")?dispPlantel():[]).filter(x=>usados.indexOf(x)<0&&!esExtranjero(x)).sort((a,b)=>_extScore(b)-_extScore(a));
+  /* banca automática: el hueco lo llena el mejor nacional. Banca manual: se respeta tu elección y el hueco queda
+     vacío (no se mete a nadie que dejaste afuera a propósito). */
+  const manual=!!(E&&E.tactica&&Array.isArray(E.tactica.bancaManual)&&E.tactica.bancaManual.length);
+  while(!manual&&nueva.length<banca.length&&disp.length) nueva.push(disp.shift());
+  return once.concat(nueva);
+}
+/* quién queda fuera de la lista del partido por el cupo (texto corto, vacío si nadie) */
+function resumenCupoPartido(){
+  if(!E||typeof listaIdeal!=="function"||!listaIdeal._orig||!onceIdeal._orig) return "";
+  const sin=listaIdeal._orig(onceIdeal._orig()), con=listaIdeal();
+  const fuera=sin.filter(j=>esExtranjero(j)&&con.indexOf(j)<0);
+  return fuera.length?"fuera por el tope de "+topeCitadosExt()+" citados: "+fuera.map(j=>j.n).join(", "):"";
+}
 /* ---------- enganches ---------- */
 (function(){
   const envolver=(nom,fn)=>{ const o=window[nom]; if(typeof o!=="function"||o._ext) return; const w=fn(o); Object.keys(o).forEach(k=>w[k]=o[k]); w._ext=true; w._orig=o; window[nom]=w; };
@@ -73,6 +117,11 @@ function etiquetaCupo(){
     if(ext&&nuevo&&!(nuevo.rasgos&&nuevo.rasgos.indexOf("extranjero")>=0)) nuevo.rasgos=(nuevo.rasgos||[]).concat(["extranjero"]);
     return nuevo;
   });
+  /* nadie entra a la cancha ni a la banca sobre el tope de citados */
+  envolver("onceIdeal",o=>function(){ const r=o.apply(this,arguments); try{ return ajustarOnceCupo(r); }catch(e){ return r; } });
+  envolver("listaIdeal",o=>function(once){ const r=o.apply(this,arguments); try{ return ajustarListaCupo(r,(once||[]).length||11); }catch(e){ return r; } });
+  /* la previa avisa si el cupo deja a alguien importante afuera */
+  envolver("checklistPrevia",o=>function(){ const r=o.apply(this,arguments); try{ const fu=resumenCupoPartido(); if(fu&&Array.isArray(r)) r.push({warn:true,ok:false,t:"Cupo de extranjeros",d:"Hoy "+fu+". Solo "+topeCitadosExt()+" extranjeros por partido (Bases ANFP)."}); }catch(e){} return r; });
   /* el mercado muestra el cupo arriba de la lista */
   envolver("pintarResultadosMercado",o=>function(box){
     const r=o.apply(this,arguments);

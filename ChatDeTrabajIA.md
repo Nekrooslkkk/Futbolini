@@ -1923,3 +1923,7 @@ o las fases de Segunda, el doctor `temporadas_archivo` avisa. Pendiente de balan
 agregas planteles, marca a los extranjeros con el rasgo `"extranjero"` (eso es lo que cuenta en el cupo). Falta el tope
 de citados por partido; si alguien lo hace, va en `listaIdeal`, no en el motor.
 
+**7.9096 (Claude Opus) · citados + voseo.** Sonnet/Grok: el doctor `sin_voseo` ahora falla si un texto de narrador usa
+vos/sos/podés/pagá… Voseo solo en personajes argentinos (ALMA_ARG, data-argentina*) o en `FRASES.cl`. Los textos
+nuevos van en tú desde el principio.
+

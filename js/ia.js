@@ -75,8 +75,8 @@ function cerebroLocal(){
   if(part && typeof fuerzaEquipo==="function" && typeof onceIdeal==="function"){
     const fz=fuerzaEquipo(onceIdeal()).base, dif=fz-part.fuerzaRival;
     let lec,tip;
-    if(dif>6){ lec="Sos favorito ante "+part.rivalNombre+"."; tip="Presiona arriba y busca el arco temprano; no lo dejes crecer."; }
-    else if(dif<-6){ lec=part.rivalNombre+" llega más fuerte."; tip="Ordenate atrás, aguanta y salí de contra con los rápidos."; }
+    if(dif>6){ lec="Eres favorito ante "+part.rivalNombre+"."; tip="Presiona arriba y busca el arco temprano; no lo dejes crecer."; }
+    else if(dif<-6){ lec=part.rivalNombre+" llega más fuerte."; tip="Ordénate atrás, aguanta y sal de contra con los rápidos."; }
     else { lec="Está parejo con "+part.rivalNombre+"."; tip="Lo define un detalle: pelota parada y no regalar el mediocampo."; }
     ins.push({cat:"partido",ic:"⚽",prio:9,t:lec,d:tip});
   }
@@ -93,15 +93,15 @@ function cerebroLocal(){
       d:enRiesgo[0].pr.txt+". "+(enRiesgo.length>1?"(y "+(enRiesgo.length-1)+" más). ":"")+"El directorio evalúa esto al cierre."});
   }
   /* 4 · plata y deuda */
-  if((E.plata||0)<80) ins.push({cat:"plata",ic:"💰",prio:6,t:"Caja flaca ("+plata(E.plata||0)+")",d:"No firmes renovaciones caras esta semana; primero equilibrá el flujo."});
-  if((E.deuda||0)>(E.plata||0)*3) ins.push({cat:"plata",ic:"💰",prio:6,t:"La deuda te come",d:"Un préstamo más y el directorio se pone nervioso. Pensá en vender un prescindible."});
+  if((E.plata||0)<80) ins.push({cat:"plata",ic:"💰",prio:6,t:"Caja flaca ("+plata(E.plata||0)+")",d:"No firmes renovaciones caras esta semana; primero equilibra el flujo."});
+  if((E.deuda||0)>(E.plata||0)*3) ins.push({cat:"plata",ic:"💰",prio:6,t:"La deuda te come",d:"Un préstamo más y el directorio se pone nervioso. Piensa en vender un prescindible."});
   /* 5 · camarín y hinchada */
   if(E.ind&&E.ind.moral<45) ins.push({cat:"camarin",ic:"👥",prio:5,t:"Camarín cortado (moral "+Math.round(E.ind.moral)+")",d:"Una charla o un once que no sea de castigo. Ganar cura casi todo."});
   if(E.ind&&E.ind.hinchada<40) ins.push({cat:"hinchada",ic:"🚩",prio:5,t:"La hinchada se está yendo",d:"Un resultado, un precio de entrada más bajo o un gesto con la barra."});
   /* 6 · piernas cansadas */
   if(typeof onceIdeal==="function"){
     const cans=onceIdeal().filter(j=>(j.cansancio||0)>=18);
-    if(cans.length>=2) ins.push({cat:"fisico",ic:"🏃",prio:4,t:cans.length+" titulares con las piernas pesadas",d:"Pensá en rotar o entrenar suave; forzar es pedir una lesión."});
+    if(cans.length>=2) ins.push({cat:"fisico",ic:"🏃",prio:4,t:cans.length+" titulares con las piernas pesadas",d:"Piensa en rotar o entrenar suave; forzar es pedir una lesión."});
   }
   /* 7 · racha */
   const sinGanar=(E.temporada&&E.temporada.sinGanar)||0;
@@ -134,13 +134,13 @@ function preguntarAyudante(q){
   if(t("quimic","congenia","dupla","llevan bien")){
     if(typeof quimicaEquipo==="function" && typeof onceIdeal==="function"){ const x=quimicaEquipo(onceIdeal());
       const nb=x.buenos||0, nm=x.malos||0;
-      return "La química está en "+x.prom+"/100 ("+nb+" dupla"+(nb!==1?"s":"")+" que congenia"+(nb!==1?"n":"")+", "+nm+" con roce). Para subirla, en la pizarra juntá a jugadores de edad parecida, con rasgos en común, dos ídolos de la casa, o que ya jugaron juntos."; }
+      return "La química está en "+x.prom+"/100 ("+nb+" dupla"+(nb!==1?"s":"")+" que congenia"+(nb!==1?"n":"")+", "+nm+" con roce). Para subirla, en la pizarra junta a jugadores de edad parecida, con rasgos en común, dos ídolos de la casa, o que ya jugaron juntos."; }
   }
   if(t("plata","caja","deuda","dinero","economi","finanz","presupuesto")){
     const d=(E.deuda||0), c=(E.plata||0);
     let r="Caja del club: "+plata(c)+" · Deuda: "+plata(d)+". ";
     if(c<80) r+="La caja está flaca: cuida los gastos y no firmes renovaciones caras esta semana.";
-    else if(d>c*3) r+="La deuda te supera: pensá en vender un prescindible o abonar antes que pedir más crédito.";
+    else if(d>c*3) r+="La deuda te supera: piensa en vender un prescindible o abonar antes que pedir más crédito.";
     else r+="Estás relativamente sano; con cabeza puedes moverte en el mercado.";
     return r+" (Tu plata personal es aparte: "+plata((E.personal&&E.personal.bolsillo)||0)+".)";
   }
@@ -152,26 +152,26 @@ function preguntarAyudante(q){
   if(t("hinchada","barra","gente","socios","publico")){
     const h=Math.round((E.ind&&E.ind.hinchada)||50);
     if(h<45) return "La hinchada se está enfriando (hinchada "+h+"). Un resultado, un precio de entrada más bajo o un gesto con la barra ayudan.";
-    return "La hinchada te banca (hinchada "+h+"). Aprovechá el envión de local.";
+    return "La hinchada te banca (hinchada "+h+"). Aprovecha el envión de local.";
   }
   if(t("objetivo","meta","directorio","piden","espera","exig")){
     if(Array.isArray(E.objetivos) && typeof progresoObjetivo==="function"){
       const en=E.objetivos.map(o=>({o:o,pr:progresoObjetivo(o)}));
       const risk=en.filter(x=>x.pr.estado==="riesgo");
       if(risk.length) return "Cuidado: «"+risk[0].o.t+"» está en riesgo — "+risk[0].pr.txt+". El directorio lo evalúa al cierre.";
-      return "Vas en línea con lo que se espera de ti. Seguí sumando y no te relajes.";
+      return "Vas en línea con lo que se espera de ti. Sigue sumando y no te relajes.";
     }
   }
   if(t("fich","compr","refuerzo","mercado","vend","transferi")){
     const c=(E.plata||0);
-    if(c>250) return "Hay caja para moverse ("+plata(c)+"): un refuerzo puntual en tu posición más floja puede cambiarte la temporada. Mirá Mercado.";
+    if(c>250) return "Hay caja para moverse ("+plata(c)+"): un refuerzo puntual en tu posición más floja puede cambiarte la temporada. Mira Mercado.";
     return "La caja no da para lujos ("+plata(c)+"). Si quieres reforzar, primero vende un prescindible o busca un préstamo/representante.";
   }
   if(t("cansad","fisic","lesion","piernas","rotar","descans")){
     if(typeof onceIdeal==="function"){ const cans=onceIdeal().filter(j=>(j.cansancio||0)>=18);
       const les=(E.plantel||[]).filter(j=>j.lesion>0&&!j.vendido);
       let r="";
-      if(cans.length>=2) r+=cans.length+" titulares vienen con las piernas pesadas: pensá en rotar o entrenar suave. ";
+      if(cans.length>=2) r+=cans.length+" titulares vienen con las piernas pesadas: piensa en rotar o entrenar suave. ";
       if(les.length) r+=les.length+" lesionado"+(les.length>1?"s":"")+" fuera. ";
       return r||"El plantel llega entero, sin cansancio preocupante ni lesionados clave.";
     }

@@ -424,7 +424,7 @@ const DECISIONES=[
    grupos:{hinchada:18,prensa:8,anfp:-10},rep:{dureza:8,publica:-3},
    bien:{txt:"El Monumental llega hirviendo desde tres días antes.",ef:{hinchada:12},mods:[{id:"caldera",n:"Ambiente hostil",anios:1,ef:{local:5}}]},
    mitad:{txt:"Ruido, titulares y un rival que llegó enrabiado.",ef:{hinchada:6,riesgo:6}},
-   mal:{txt:"La provocación se devolvió como bumerán: el rival la usó de combustible y a vos te multaron.",
+   mal:{txt:"La provocación se devolvió como bumerán: el rival la usó de combustible y a ti te multaron.",
      ef:{plata:-70,riesgo:10},grupos:{anfp:-15}}}
  ]}
 ];
@@ -586,7 +586,7 @@ const BOLSA=[
 /* --- b_joya | cantera --- */
 {id:"b_joya",buzon:"cantera",peso:"medio",cuando:E=>E.ind.cantera>55,
  t:"Una joya de la cantera prende las alarmas",
- d:"{JOVEN} tiene 17 años y ya no desentona en los entrenamientos del primer equipo. Un par de clubes grandes mandaron ojeadores a las últimas prácticas. Hay que decidir qué hacer con el proyecto antes de que decida el mercado por vos.",
+ d:"{JOVEN} tiene 17 años y ya no desentona en los entrenamientos del primer equipo. Un par de clubes grandes mandaron ojeadores a las últimas prácticas. Hay que decidir qué hacer con el proyecto antes de que decida el mercado por ti.",
  posturas:{comunidad:20,hinchada:15,directorio:-10,tecnico:10},
  consejo:{deportivo:"Si lo cuidamos y le damos minutos, en dos años vale el triple.",
    tesorero:"Una venta ahora resuelve el año. Un proyecto es una promesa; la plata es plata.",
@@ -618,7 +618,7 @@ const BOLSA=[
  posturas:{directorio:25,sponsors:20,hinchada:-10,comunidad:-15,prensa:-10},
  consejo:{deportivo:"Con esa plata pido dos refuerzos. Lo demás no es tema mío.",
    tesorero:"Es la diferencia entre llegar a fin de año o no. Nunca vi una oferta así.",
-   prensa:"Prepará el comunicado, porque te van a preguntar por esto en cada rueda de prensa."},
+   prensa:"Prepara el comunicado, porque te van a preguntar por esto en cada rueda de prensa."},
  op:[
   {t:"Firmar el contratón",d:"La plata manda.",dif:30,
    ef:{plata:360},grupos:{directorio:15,sponsors:15,comunidad:-15,hinchada:-8},rep:{credibilidad:-6},

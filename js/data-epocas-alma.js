@@ -42,7 +42,7 @@ var ALMA_TIPOS={
       {dif:40, grupos:{camarin:10,hinchada:6,directorio:4}, ef:{moral:4},
        bien:"El grupo campeón sigue junto. En el camarín se nota que el club les creyó.",
        mitad:"Se sostiene casi todo. Un par de salidas dolieron más de lo previsto.",
-       mal:"Quedarse quieto también es una decisión: el rival se movió y vos no."},
+       mal:"Quedarse quieto también es una decisión: el rival se movió y tú no."},
       {dif:32, ef:{plata:180}, grupos:{directorio:14,sponsors:8,hinchada:-14,camarin:-8},
        bien:"Se vendió caro y en el mejor momento. La caja queda sana; la gente no lo va a olvidar.",
        mitad:"Entró plata, se fue una pieza querida y el equipo perdió algo que no estaba en la planilla.",

@@ -195,7 +195,7 @@ const DEC_PROC=[
      posturas:{camarin:22,directorio:-12},
      op:[
       {t:"Cumplir lo prometido",dif:24,req:{plata:60},ef:{plata:-60,moral:6},grupos:{camarin:14,directorio:-8},
-       bien:{txt:"Cumpliste tu palabra. "+quien+" y el grupo lo registran: con vos se puede confiar.",ef:{moral:4},rep:{credibilidad:6}},
+       bien:{txt:"Cumpliste tu palabra. "+quien+" y el grupo lo registran: contigo se puede confiar.",ef:{moral:4},rep:{credibilidad:6}},
        mitad:{txt:"Cumpliste, aunque tarde. Quedó saldado sin aplausos.",ef:{}},
        mal:{txt:"Cumpliste, pero el resto ya arma fila con el mismo reclamo.",ef:{deuda:40}}},
       {t:"Pedir un poco más de tiempo",dif:44,grupos:{camarin:-6},
@@ -226,7 +226,7 @@ const DEC_PROC=[
        mitad:{txt:"Rodó a medias, pero es tuyo.",ef:{}},
        mal:{txt:"No jugó y encima se resintió.",ef:{cantera:-2}}},
       {t:"No, lo quiero acá",dif:20,grupos:{comunidad:6},
-       bien:{txt:"Le diste minutos vos y explotó en casa.",ef:{cantera:4,plantel:2}},
+       bien:{txt:"Le diste minutos tú y explotó en casa.",ef:{cantera:4,plantel:2}},
        mitad:{txt:"Jugó poco, se quedó en el molde.",ef:{}},
        mal:{txt:"No sumó y se frustró en la banca.",ef:{moral:-3}}}
      ]};
@@ -295,7 +295,7 @@ const DEC_PROC=[
      op:[
       {t:"Aceptar el horario y cobrar",dif:22,ef:{plata:100},grupos:{sponsors:10,camarin:-6},
        bien:{txt:"Entró la plata de TV.",mods:[{id:"trasnoche",n:"Partido nocturno pesado",anios:1,ef:{}}]},
-       mitad:{txt:"Cobrás, pero el plantel llega justo.",ef:{}},
+       mitad:{txt:"Cobras, pero el plantel llega justo.",ef:{}},
        mal:{txt:"El equipo acusó el trasnoche y el desgaste.",ef:{moral:-3}}},
       {t:"Exigir horario de tarde",dif:40,grupos:{sponsors:-10},
        bien:{txt:"Respetan al hincha y al futbolista. Buena imagen.",grupos:{hinchada:6}},
@@ -334,7 +334,7 @@ const DEC_PROC=[
       {t:"Encaminar el reclamo a la mesa de la barra",dif:34,
        bien:{txt:"Le diste un canal al reclamo. Ganaste tiempo.",ef:{}},
        mitad:{txt:"Aceptaron hablar, sin garantías.",ef:{}},
-       mal:{txt:"Sintieron que los usás y se cerraron.",grupos:{hinchada:-6}}}
+       mal:{txt:"Sintieron que los usas y se cerraron.",grupos:{hinchada:-6}}}
      ]};
  }},
  {buzon:"finanzas",peso:"bajo",gen:function(){
@@ -376,7 +376,7 @@ const DEC_PROC=[
    if(E.flags.puertaBarra==null || (E.idx-E.flags.puertaBarra)>4) return null;
    delete E.flags.puertaBarra;   /* se consume la semilla */
    return {t:"Tensión en la puerta 8",
-     d:"Después del pacto roto, la barra apareció caldeada en la puerta del estadio. Piden reunión de urgencia; seguridad quiere desalojar. Vos tienes la última palabra.",
+     d:"Después del pacto roto, la barra apareció caldeada en la puerta del estadio. Piden reunión de urgencia; seguridad quiere desalojar. Tú tienes la última palabra.",
      posturas:{hinchada:-20,anfp:-10,prensa:10},
      op:[
       {t:"Bajar a hablar y recomponer",dif:40,req:{capital:6},ef:{capital:-6},grupos:{hinchada:12},
@@ -479,11 +479,11 @@ const DEC_PROC=[
  {buzon:"refuerzos",peso:"bajo",gen:function(){
    const club=otroClub();
    return {t:"Rumor: viene un refuerzo de renombre",
-     d:"La prensa dice que estás por traer a un jugador de renombre de "+club+". La hinchada ya se ilusiona y vende entradas por adelantado. Vos sabes que todavía no hay nada firmado.",
+     d:"La prensa dice que estás por traer a un jugador de renombre de "+club+". La hinchada ya se ilusiona y vende entradas por adelantado. Tú sabes que todavía no hay nada firmado.",
      posturas:{hinchada:12,prensa:8,directorio:-4},
      op:[
       {t:"Confirmar el interés y prometer que se cierra",dif:44,grupos:{hinchada:12,prensa:4},rep:{credibilidad:-4},
-       bien:{txt:"Se dio: llegó el refuerzo y sos un genio.",ef:{plata:-90,plantel:3,prestigio:3}},
+       bien:{txt:"Se dio: llegó el refuerzo y eres un genio.",ef:{plata:-90,plantel:3,prestigio:3}},
        mitad:{txt:"Se cayó a último momento. La gente quedó tibia.",ef:{},grupos:{hinchada:-8}},
        mal:{txt:"Nunca hubo nada. Quedaste como vendehumo.",grupos:{hinchada:-14,prensa:-8},rep:{credibilidad:-8}}},
       {t:"Bajar la espuma: «no hay nada firmado»",dif:22,grupos:{prensa:5},rep:{credibilidad:6},

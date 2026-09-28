@@ -4648,3 +4648,19 @@ aproximado (3 antes del 2000).
   "con el cupo lleno (6) igual se inscribió un extranjero más".
 - **Estado:** doctor sano (4 partidas + celular, 90 chequeos) · dev 593/593 · core 1185/1185.
 
+### 7.9096 — Tope de citados por partido + la voz del juego en tú (voseo fuera)
+- **Citados (Bases ANFP 2026: Primera 5 por partido):** `onceIdeal` y `listaIdeal` (enganches en `js/extranjeros.js`)
+  nunca llevan más extranjeros que el tope. Sale el que menos rinde y entra el mejor nacional de su puesto. Con banca
+  manual se respeta tu elección: el hueco queda vacío, no se mete a nadie que dejaste afuera. Plantel ▸ Once probable
+  dice "🌎 Extranjeros 7/6 · fuera por el tope de 5 citados: …" y la previa lo avisa en el checklist.
+  Colo-Colo 2026 deja fuera a Vozinha y Pastrán; la U, a Juan Ignacio Díaz.
+- **Voseo:** ~190 textos de narrador, ayuda y decisiones pasaron de vos a tú (podés→puedes, sos→eres, pagá→paga,
+  a vos→a ti, resolvela y seguí→resuélvela y sigue…). Se cambió solo dentro de strings (no comentarios ni variables).
+  Queda: el idioma **Chilensis** (`FRASES.cl`, voseo chileno a propósito, solo se corrigieron "podés" y "Elegí") y los
+  tuits de hinchas con chilenismos. Typo arreglado: "no fichería" → "no fiches".
+- **Dev:** nuevo `sin_voseo` (91 chequeos): escanea los datos en memoria (DECISIONES, BOLSA, EVENTOS, CRISIS, LOGROS,
+  ESTATUTOS…, FRASES.neutro) y lo que se pinta en 7 secciones en idioma neutro. Cazó uno real que se me había pasado
+  (data-afa-rigor: "te golpea a vos primero"). `cupo_extranjeros` revisa también la lista del partido; al revés: sin el
+  enganche de `listaIdeal` → "la lista del partido lleva 7 extranjeros (tope 5 citados)".
+- **Estado:** doctor sano (4 partidas + celular, 91 chequeos) · dev 593/593 · core 1185/1185.
+

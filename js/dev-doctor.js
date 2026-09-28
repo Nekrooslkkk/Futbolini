@@ -1996,9 +1996,46 @@ devDoctorRegistrar({id:"cupo_extranjeros", area:"motor", n:"Cupo de extranjeros:
       }
     } finally { window.guardar=gu; window.notificar=nt; }
   } finally { restaurarPartida(snap); }
+  /* 7.9096 · la lista del partido (once + banca) respeta el tope de citados */
+  if(typeof listaIdeal==="function"&&typeof topeCitadosExt==="function"){
+    var lis=listaIdeal(), nx=lis.filter(esExtranjero).length, tp=topeCitadosExt();
+    if(nx>tp) falta.push("la lista del partido lleva "+nx+" extranjeros (tope "+tp+" citados)");
+    if(!(onceIdeal&&onceIdeal._ext)||!(listaIdeal&&listaIdeal._ext)) falta.push("onceIdeal/listaIdeal no aplican el tope de citados (se pisó el enganche)");
+  }
   det=etiquetaCupo();
+  var fu=(typeof resumenCupoPartido==="function")?resumenCupoPartido():""; if(fu) det+=" · "+fu;
   if(extranjerosPlantel().length>c.inscritos) det+=" · tu plantel real viene sobre el cupo (no se va nadie; solo no entran más)";
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok(det);
+}});
+/* 7.9096 · la voz del juego es de TÚ (CLAUDE.md, GUIA_HUMANO §4): voseo solo en personajes argentinos o en el
+   idioma Chilensis. Se escanean los datos en memoria y lo que se pinta en cada sección (idioma neutro). */
+var VOSEO_RX=/(?:^|[^\wáéíóúñ])(vos|sos|podés|tenés|querés|sabés|hacés|decís|venís|quedás|perdés|seguís|ganás|jugás|dormís|pagá|vendé|cedé|bajá|subí la|cerrá|mirá|pensá|jugá|tomá|hacé|tené|andá|fijate|reunite|arreglate|resolvela|podís|tenís|querís|sabís|jugái|negociái|dejái|firmái)(?![\wáéíóúñ])/i;
+function devVoseo(){
+  var out=[], vistos={};
+  function mira(donde,txt){ if(!txt||out.length>=12) return; var m=String(txt).match(VOSEO_RX); if(m){ var k=donde+m[1]; if(vistos[k]) return; vistos[k]=1;
+    var i=String(txt).toLowerCase().indexOf(m[1].toLowerCase()); out.push(donde+": «"+String(txt).slice(Math.max(0,i-40),i+30).replace(/\s+/g," ")+"»"); } }
+  ["BOLSA","DECISIONES","EVENTOS","CRISIS","LOGROS","DEC_PROC","ESTATUTOS","GRUPOS","INTERACCIONES","LUJOS","REPUTACION","SALIDAS","ENCADENADAS","CHARLAS_MATCH","VIDA_PROC","ALMA_9077","ALMA_EPOCA"].forEach(function(n){
+    var v; try{ v=window[n]!==undefined?window[n]:eval("typeof "+n+"!=='undefined'?"+n+":undefined"); }catch(e){ v=undefined; }
+    if(v===undefined) return;
+    var txt; try{ txt=JSON.stringify(v); }catch(e){ return; }
+    (txt.match(/"(?:[^"\\]|\\.){12,}"/g)||[]).forEach(function(s){ mira(n,s); });
+  });
+  if(typeof FRASES!=="undefined"&&FRASES.neutro) Object.keys(FRASES.neutro).forEach(function(k){ mira("FRASES.neutro."+k,FRASES.neutro[k]); });
+  return out;
+}
+devDoctorRegistrar({id:"sin_voseo", area:"contenido", pesado:true, n:"La voz del juego es de tú (voseo solo en argentinos o en Chilensis)",
+  arreglo:"Cambiar la forma por la de tú (puedes, tienes, eres, piensa, cierra…). Los personajes argentinos van en ALMA_ARG / data-argentina*.", fn:function(){
+  var falta=devVoseo();
+  /* lo que se pinta: cada sección en idioma neutro, en una partida chilena */
+  if(E&&typeof render==="function"&&E.eraBase!=="arg2026"){
+    var sec=SEC, idi=(typeof IDIOMA!=="undefined")?IDIOMA:null;
+    try{ if(idi!==null) IDIOMA="neutro";
+      ["escritorio","finanzas","plantel","mercado","calendario","historia","vida"].forEach(function(s){ SEC=s; try{ render(); }catch(e){ return; }
+        var v=document.getElementById("vista"); var t=v?v.innerText:""; var m=t.match(VOSEO_RX);
+        if(m&&falta.length<14){ var i=t.toLowerCase().indexOf(m[1].toLowerCase()); falta.push("pantalla "+s+": «"+t.slice(Math.max(0,i-40),i+30).replace(/\s+/g," ")+"»"); } });
+    } finally { if(idi!==null) IDIOMA=idi; SEC=sec; try{ render(); }catch(e){} }
+  }
+  return falta.length?_dmal(falta.length+" texto(s) con voseo fuera de lugar",falta):_dok("sin voseo en datos ni en pantalla (idioma neutro)");
 }});
 devDoctorRegistrar({id:"rendimiento", area:"interfaz", n:"Rinde en un celu barato: guardado agrupado, cinta sin scrollIntoView, secciones medidas", pesado:true,
   arreglo:"js/rendimiento.js (guardarAgrupado/guardarAhora) y js/ui.js pintarDock (scrollLeft solo al cambiar de sección).", fn:function(){

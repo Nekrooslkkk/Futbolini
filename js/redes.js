@@ -595,7 +595,7 @@ function redesReaccion(tipo,data){
 /* campañas del Community Manager (requiere E.staff.cm) */
 function campanaCM(tipo){
   if(!E.staff||!E.staff.cm){
-    if(typeof aviso==="function") aviso("Primero contratá un Community Manager (Finanzas)");
+    if(typeof aviso==="function") aviso("Primero contrata un Community Manager (Finanzas)");
     return;
   }
   if(tipo==="humo"){

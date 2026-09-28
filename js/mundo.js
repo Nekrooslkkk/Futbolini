@@ -1373,7 +1373,7 @@ function panelMundoCalendario(v){
       const p=panel("Lo que se jugó en el país","🌎","agua");
       p.cuerpo.appendChild(el("p","mini","Misma física que tus partidos. Si un grande gana en Primera y tú estás en Segunda, ya sabes quién llega brígido."));
       const lista=(E.mundo.pais||[]).slice(-20).reverse();
-      if(!lista.length) p.cuerpo.appendChild(el("p","mini","Todavía no hay fecha simulada del resto. Jugá o avanzá una y aparece."));
+      if(!lista.length) p.cuerpo.appendChild(el("p","mini","Todavía no hay fecha simulada del resto. Juega o avanza una y aparece."));
       lista.forEach(x=>{
         const d=el("div","fila");
         d.innerHTML="<span>"+(x.liga?("<span class='mini'>"+x.liga+" · </span>"):"")+x.a+" vs "+x.b+"</span><b>"+x.ga+"-"+x.gb+"</b>";
@@ -1451,7 +1451,7 @@ function panelMundoCalendario(v){
     if(!L){ cont.appendChild(cabTabla("Tabla","📊",[],"No hay tabla para esta liga en esta época.")); return; }
     const propia=_ligaKeyJugador();
     cont.appendChild(cabTabla(L.nom,"📊", mundoFilasLiga(t),
-      t===propia?"Esta es TU liga: los puntos son los que se jugaron (vos + el resto de la fecha).":"No la jugái vos: cada fecha se simula con la misma física.",
+      t===propia?"Esta es TU liga: los puntos son los que se jugaron (tú + el resto de la fecha).":"No la juegas tú: cada fecha se simula con la misma física.",
       false));
     if(t==="2026b"){ const plb=mundoPanelLiguillaB(); if(plb) cont.appendChild(plb); }
   }

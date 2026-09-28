@@ -307,7 +307,7 @@ function aplicarSaltoFed(){
   if(n>=3 && !E.fed.conmebolOk){
     E.fed.conmebolOk=true; subio="conmebol";
     if(typeof notificar==="function") notificar({t:"🌎 Peso en la CONMEBOL",tipo:"bueno",bandeja:true,
-      d:"La confederación te reconoce. El siguiente escalón es la FIFA (seguí presionando)."});
+      d:"La confederación te reconoce. El siguiente escalón es la FIFA (sigue presionando)."});
   }
   if(n>=6 && !E.fed.fifaOk){
     E.fed.fifaOk=true; subio="fifa";
@@ -1417,7 +1417,7 @@ function procesarAscensoDescenso(){
   E.ascensoMsg=msg;
   if(typeof activarLiga==="function") activarLiga(E.eraBase);
   if(typeof notificar==="function"){
-    /* "los que bajaron con vos" / "los que subieron con vos": el resto de los cupos aparte del jugador */
+    /* "los que bajaron contigo" / "los que subieron contigo": el resto de los cupos aparte del jugador */
     const otrosBajan=(msg.bajan||[]).filter(id=>id!==E.club), otrosSuben=(msg.suben||[]).filter(id=>id!==E.club);
     if(msg.tipo==="ascenso") notificar({t:"🎉 ¡ASCENSO a "+_nombreDiv(msg.up)+"!",tipo:"bueno",bandeja:true,d:E.clubNombre+" sube"+(otrosSuben.length?" junto a "+_nombresLista(otrosSuben):"")+". Bajó "+_nombresLista(msg.bajan)+". El año que viene se juega en "+_nombreDiv(msg.up)+"."});
     else if(msg.tipo==="descenso") notificar({t:"📉 Descenso a "+_nombreDiv(msg.lo),tipo:"malo",bandeja:true,d:E.clubNombre+" perdió la categoría"+(otrosBajan.length?" junto a "+_nombresLista(otrosBajan):"")+". Subió "+_nombresLista(msg.suben)+". El año que viene se pelea el ascenso en "+_nombreDiv(msg.lo)+"."});

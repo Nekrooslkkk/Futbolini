@@ -343,9 +343,9 @@ const LUJOS=[
  {t:"Colección de autos clásicos",tipo:"auto",costo:180,req:70,ef:{prestigio:4},d:"Un galpón lleno de fierros que nunca vas a manejar. Perfecto."},
  {t:"Chef privado y nutricionista de lujo",tipo:"prop",costo:120,req:70,ef:{moral:5,prestigio:2},d:"Comes mejor que tus delanteros. Y se nota."},
  /* --- club enorme (prestigio ≥ 85): territorio de magnate delirante --- */
- {t:"Isla privada en el Pacífico",tipo:"prop",costo:400,req:85,ef:{prestigio:8,riesgo:6},d:"Tu propio pedazo de mundo. Ya no sos DT, sos un villano de James Bond."},
+ {t:"Isla privada en el Pacífico",tipo:"prop",costo:400,req:85,ef:{prestigio:8,riesgo:6},d:"Tu propio pedazo de mundo. Ya no eres DT, eres un villano de James Bond."},
  {t:"Un tigre de mascota",tipo:"prop",costo:150,req:85,ef:{prestigio:4,riesgo:14},d:"Como cierto dueño de club. La comunidad y la SAG NO están felices."},
- {t:"Estatua tuya afuera del estadio",tipo:"prop",costo:300,req:85,ef:{prestigio:10,riesgo:10},d:"Te mandaste a hacer un monumento a vos mismo, en vida. La modestia murió."},
+ {t:"Estatua tuya afuera del estadio",tipo:"prop",costo:300,req:85,ef:{prestigio:10,riesgo:10},d:"Te mandaste a hacer un monumento a ti mismo, en vida. La modestia murió."},
  {t:"Cohete privado para la pretemporada",tipo:"auto",costo:600,req:92,ef:{prestigio:14,riesgo:12},d:"Gira de pretemporada… en órbita. El delirio total. La ANFP no sabe ni qué decir."}
 ];
 function comprarLujo(l){

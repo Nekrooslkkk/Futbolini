@@ -9,7 +9,7 @@
      DONAR.btc      = "bc1q...."          // dirección on-chain
      DONAR.lnurl    = ""                 // opcional Lightning
      DONAR.explorer = ""                 // si vacío: mempool.space/address/<btc>
-     DONAR.libro    = [                  // lo publicás vos cuando hay movimiento
+     DONAR.libro    = [                  // lo publicas tú cuando hay movimiento
        {fecha:"2026-09", btc:"0.001", para:"hosting", alias:"El Pibe", nota:"Railway"}
        // alias es OPCIONAL. Si no va, el libro dice «anónimo».
      ]

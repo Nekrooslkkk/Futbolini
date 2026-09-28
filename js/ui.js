@@ -1038,7 +1038,7 @@ function abrirDecision(d,enModal){
         c.innerHTML='<div class="quien">'+n+'</div>'+resolverTokens(d.consejo[k],E);
         p.cuerpo.appendChild(c);
       });
-      if(cal<50) p.cuerpo.appendChild(el("p","mini","Tu equipo asesor no es de los mejores. Tomá sus lecturas con pinzas."));
+      if(cal<50) p.cuerpo.appendChild(el("p","mini","Tu equipo asesor no es de los mejores. Toma sus lecturas con pinzas."));
     }
     const ya=E.decHechas[d.id+"_"+E.anio];
     if(ya){
@@ -1553,7 +1553,7 @@ function vistaFinanzas(){
         modal(box=>{
           box.appendChild(el("div","cab",'<span class="ic">🔁</span><span>Refinanciar la deuda</span>'));
           const c=el("div","cuerpo"); box.appendChild(c);
-          c.appendChild(el("p","mini","Es un cambio grande. Mirá qué pasa, paso a paso, antes de confirmar:"));
+          c.appendChild(el("p","mini","Es un cambio grande. Mira qué pasa, paso a paso, antes de confirmar:"));
           c.appendChild(el("div","resul mitad","<b>1.</b> Tu interés semanal baja de <b>"+plata(pv.interesAntes)+"</b> a <b>"+plata(pv.interesDesp)+"</b> por semana. Respiras en la caja."));
           c.appendChild(el("div","resul mitad","<b>2.</b> A cambio, la deuda total sube de <b>"+plata(pv.deudaAntes)+"</b> a <b>"+plata(pv.deudaDesp)+"</b> (cuesta "+plata(pv.costo)+" por estirar el plazo)."));
           c.appendChild(el("div","resul mitad","<b>3.</b> Dura unos años. Mientras esté activa no puedes volver a refinanciar. Al directorio no le encanta estirar deuda."));
@@ -1720,6 +1720,8 @@ function vistaPlantel(){
     const form=(E.tactica&&E.tactica.form)||"4-4-2";
     pOnce.cuerpo.appendChild(el("p","mini",(typeof T==="function"?T("pla_form","Formación"):"Formación")+" <b>"+form+"</b>. "+
       (typeof T==="function"?T("pla_pizarra_hint","La pizarra se arma en la previa del partido."):"La pizarra se arma en la previa del partido.")));
+    /* 7.9096 · cupo de extranjeros: cuántos hay y quién queda fuera de la lista por el tope de citados */
+    if(typeof etiquetaCupo==="function"){ const fu=(typeof resumenCupoPartido==="function")?resumenCupoPartido():""; pOnce.cuerpo.appendChild(el("p","mini pla-cupo",escHtml(etiquetaCupo()+(fu?" · "+fu:"")))); }
     const tOnce=el("table","tabla-plantel");
     tOnce.innerHTML="<thead><tr><th>Jugador</th><th>Pos</th><th class='n'>Niv</th><th class='n'>For</th></tr></thead>";
     const tbO=el("tbody");
@@ -2006,7 +2008,7 @@ function panelCopas(v){
               const est=f.jugado?(f.ga>f.gb?"ok":(f.ga<f.gb?"mal":"neu")):"neu";
               pc.cuerpo.appendChild(el("div","fila mini","<span>"+escHtml(f.nA)+" vs "+escHtml(f.nB)+"</span><b class='etq "+est+"'>"+marc+"</b>"));
             });
-            if(fix.cerrado) pc.cuerpo.appendChild(el("p","mini",T("cop_sorteo_pendiente","Los grupos del país ya terminaron su fase. La fase eliminatoria del resto del país no está modelada; seguí las tablas de arriba.")));
+            if(fix.cerrado) pc.cuerpo.appendChild(el("p","mini",T("cop_sorteo_pendiente","Los grupos del país ya terminaron su fase. La fase eliminatoria del resto del país no está modelada; sigue las tablas de arriba.")));
           }
         }
       }
@@ -2044,7 +2046,7 @@ function panelCopasPais(v){
       pc.cuerpo.appendChild(el("div","fila","<span><span class='mini'>"+x.liga+" · </span>"+x.a+" vs "+x.b+"</span><b>"+x.ga+"-"+x.gb+"</b>"));
     });
   } else {
-    pc.cuerpo.appendChild(el("p","mini","Todavía no se jugó una fecha de copa en el país. Avanzá o jugá la tuya y acá se llena."));
+    pc.cuerpo.appendChild(el("p","mini","Todavía no se jugó una fecha de copa en el país. Avanza o juega la tuya y acá se llena."));
   }
   /* 7.9022 · el hueco que reportó el autor: acá SOLO se veía lo jugado.
      Ahora también se ve lo que viene, con "—" como ya hace panelCopas. */
@@ -2056,7 +2058,7 @@ function panelCopasPais(v){
         pc.cuerpo.appendChild(el("div","fila","<span><span class='mini'>"+escHtml(x.liga)+" · </span>"+escHtml(x.a)+" vs "+escHtml(x.b)+"</span><b class='etq neu'>—</b>"));
       });
     } else if(typeof copasPaisConPendientes==="function" && !copasPaisConPendientes()){
-      pc.cuerpo.appendChild(el("p","mini",T("cop_sorteo_pendiente","Los grupos del país ya terminaron su fase. La fase eliminatoria del resto del país no está modelada; seguí las tablas de arriba.")));
+      pc.cuerpo.appendChild(el("p","mini",T("cop_sorteo_pendiente","Los grupos del país ya terminaron su fase. La fase eliminatoria del resto del país no está modelada; sigue las tablas de arriba.")));
     }
   }
   if(E.mundo&&E.mundo.copas){
@@ -4092,10 +4094,10 @@ function avanzarRapido(hastaFin){
     if(E.carrera.fin){ freno="fin de la carrera"; break; }
     if(E.carrera.enParo){ freno="quedaste sin club"; break; }
     if(E.dinastia&&E.dinastia.sucesionPendiente){ freno="hay una sucesión que resolver"; break; }
-    if(typeof crisisActiva==="function" && crisisActiva()){ freno="hay una crisis que atender — resolvela y seguí"; break; }
+    if(typeof crisisActiva==="function" && crisisActiva()){ freno="hay una crisis que atender — resuélvela y sigue"; break; }
     delegarDecisionesPendientes();
     const part=proximoPartido();
-    if(!part){ freno="fin de la temporada — apretá Avanzar para el cierre"; break; }
+    if(!part){ freno="fin de la temporada — aprieta Avanzar para el cierre"; break; }
     if(!part.jugado){
       const antes=(E.temporada&&E.temporada.pg)||0;
       const P=iniciarPartido(part,"simular");
@@ -4184,7 +4186,7 @@ function simularTemporadasSync(nTemps){
       avanzarRapido(true);
       for(let k=0;k<6 && typeof proximoPartido==="function" && proximoPartido() && delegarCrisis();k++) avanzarRapido(true);
       if(typeof proximoPartido==="function" && proximoPartido()){
-        freno="se frenó antes del cierre (sucesión: resolvela y seguí)"; break;
+        freno="se frenó antes del cierre (sucesión: resuélvela y sigue)"; break;
       }
       if(typeof finDeTemporada==="function") finDeTemporada();
       if(E.liguillaPend){
@@ -4271,7 +4273,7 @@ function simularTemporadasAsync(nTemps){
         delegadas++; return avanzarRapidoLote(progresoFecha, listo);
       }
       if(typeof proximoPartido==="function" && proximoPartido()){
-        freno="se frenó antes del cierre (sucesión: resolvela y seguí)";
+        freno="se frenó antes del cierre (sucesión: resuélvela y sigue)";
         return fin();
       }
       /* el campeón del año que CIERRA, antes de reiniciar la tabla (si no,

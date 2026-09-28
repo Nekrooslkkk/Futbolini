@@ -49,7 +49,7 @@ document.addEventListener("keydown",partidoTeclas);
 function checklistPrevia(part,once){
   const items=[];
   const clasico=(typeof esClasico==="function")&&esClasico(part)&&part.tipo!=="amistoso";
-  if(part.tipo==="amistoso") items.push({warn:false,ok:true,t:"Amistoso — bajo riesgo",d:"No cuenta para la tabla ni gasta la semana. Rueda minutos y sube la forma; podís probar el once tranquilo."});
+  if(part.tipo==="amistoso") items.push({warn:false,ok:true,t:"Amistoso — bajo riesgo",d:"No cuenta para la tabla ni gasta la semana. Rueda minutos y sube la forma; puedes probar el once tranquilo."});
   if(clasico) items.push({warn:false,ok:true,t:"Hoy es CLÁSICO ante "+part.rivalNombre,d:"Vale doble para la gente. Es tu objetivo institucional del año."});
   if(typeof arbitroDe==="function"){
     const arb=arbitroDe(part);
@@ -1456,7 +1456,7 @@ function modalPlanVivo(){
       const cuerpo=(typeof montarBarraSO==="function")
         ? montarBarraSO(box,"Plan en el "+P.min+"'","📋",function(){ reanudar(); })
         : (function(){ box.appendChild(el("div","cab",'<span class="ic">📋</span><span>Plan en vivo</span>')); const c=el("div","cuerpo"); box.appendChild(c); return c; })();
-      cuerpo.appendChild(el("p","mini","Cambiás ahora y se siente YA. Más de dos retoques marean al equipo (baja el orden)."));
+      cuerpo.appendChild(el("p","mini","Cambias ahora y se siente YA. Más de dos retoques marean al equipo (baja el orden)."));
       if(typeof lecturaPlan==="function") cuerpo.appendChild(el("div","resul mitad","<b>Lectura:</b> "+lecturaPlan()));
       keys.forEach(function(row){
         const k=row[0], lab=row[1], ops=row[2];
@@ -1505,7 +1505,7 @@ function modalEntretiempo(){
     const ops=[
       {t:"Los reto: esto no se aguanta",d:"Orden y bronca. Sube el orden, cansa un poco.",ef:{orden:2.4,empuje:0.6,desgaste:0.8}},
       {t:"Tranquilos, el plan está",d:"No tocar nada. Confianza.",ef:{orden:1.2,empuje:0.4}},
-      {t:"Segundo tiempo de infarto",d:"Todos arriba. Generás, te abrís.",ef:{ataque:2.6,riesgoPlan:2,orden:-1.6,desgaste:1.4}},
+      {t:"Segundo tiempo de infarto",d:"Todos arriba. Generas, te abres.",ef:{ataque:2.6,riesgoPlan:2,orden:-1.6,desgaste:1.4}},
       {t:"Aguanten atrás y salgan de contra",d:"Bus estacionado. Esperan el error.",ef:{orden:2.8,ataque:-0.6,riesgoPlan:-1}}
     ];
     ops.forEach(function(o){
@@ -2114,7 +2114,7 @@ function _arcoOcultarMira(svg){
 }
 /* ¡Patear! apagado dice por qué: primero se apunta */
 function _arcoBotonTiro(txt){
-  const b=el("button","btn-aqua ancho verde",_tt("arco_apunta","Tocá el arco para apuntar"));
+  const b=el("button","btn-aqua ancho verde",_tt("arco_apunta","Toca el arco para apuntar"));
   b.disabled=true;
   b._listo=function(){ if(b.disabled){ b.disabled=false; b.textContent=txt; } };
   return b;

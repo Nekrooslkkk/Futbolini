@@ -32,7 +32,7 @@
  ]},
 {id:"b_forma_banca",tag:"camarin",buzon:"camarin",peso:"medio",cuando:E=>E.plantel.filter(j=>!j.vendido).length>16,
  t:"La banca está caliente",
- d:"Tres suplentes sienten que no existen. El {VETERANO} habla por ellos: o rotás de verdad o se te va a poner pesado el ambiente de los que no juegan.",
+ d:"Tres suplentes sienten que no existen. El {VETERANO} habla por ellos: o rotas de verdad o se te va a poner pesado el ambiente de los que no juegan.",
  posturas:{camarin:15,tecnico:-5},
  op:[
   {t:"Prometer minutos y cumplirlos",d:"Rotación real la próxima fecha.",dif:38,grupos:{camarin:8,tecnico:-4},
@@ -82,7 +82,7 @@
   {t:"Pedir un crédito y seguir gastando",d:"Hoy se compite, mañana se paga.",dif:54,grupos:{directorio:-8,hinchada:6},
    bien:{txt:"El crédito llegó y el mercado se movió. El futuro ya verá.",ef:{plata:160,deuda:180}},
    mitad:{txt:"Entra plata, sube la deuda, y el directorio anota cada peso.",ef:{plata:120,deuda:150}},
-   mal:{txt:"El banco se puso pesado y el recargo duele. Competís con una soga al cuello.",ef:{plata:80,deuda:200},grupos:{directorio:-12}}}
+   mal:{txt:"El banco se puso pesado y el recargo duele. Compites con una soga al cuello.",ef:{plata:80,deuda:200},grupos:{directorio:-12}}}
  ]},
 {id:"b_aguinaldo",tag:"plata",buzon:"finanzas",peso:"medio",cuando:E=>E.calendario[E.idx]&&(E.calendario[E.idx].f.m===12||E.calendario[E.idx].f.m===1),
  t:"Aguinaldo: el plantel pregunta",
@@ -109,7 +109,7 @@
  op:[
   {t:"Firmar: la caja manda",d:"Plata ahora, ruido después.",dif:40,grupos:{sponsors:12,hinchada:-10,comunidad:-6},
    bien:{txt:"El contrato se firmó y el estadio, a la larga, se acostumbró.",ef:{plata:160}},
-   mitad:{txt:"Entra plata y silbidos. Convivís con las dos cosas.",ef:{plata:120,hinchada:-4}},
+   mitad:{txt:"Entra plata y silbidos. Convives con las dos cosas.",ef:{plata:120,hinchada:-4}},
    mal:{txt:"Quemaron una camiseta en la puerta. El sponsor pide cláusulas de imagen.",ef:{plata:90,riesgo:8},grupos:{prensa:-8}}},
   {t:"Negociar manga y training",d:"Menos plata, menos guerra.",dif:36,grupos:{sponsors:6,hinchada:-2},
    bien:{txt:"Quedó en la manga. Nadie feliz, nadie en la calle.",ef:{plata:80}},
@@ -140,7 +140,7 @@
  ]},
 {id:"b_entradas_barra",tag:"barra",buzon:"hinchada",peso:"medio",cuando:E=>!!E.barra,
  t:"Cien entradas «para la gente»",
- d:"Piden un paquete de entradas a precio de socio. Sabés que no van todas a familias. El tesorero ya hizo la cuenta.",
+ d:"Piden un paquete de entradas a precio de socio. Sabes que no van todas a familias. El tesorero ya hizo la cuenta.",
  posturas:{hinchada:12,directorio:-8,anfp:-6},
  op:[
   {t:"Darlas y controlar la puerta",d:"Plata menos, lío menos.",dif:40,grupos:{hinchada:8,directorio:-4},
@@ -163,7 +163,7 @@
  op:[
   {t:"Votar con los grandes",d:"Calendario y TV, a cambio de lealtad.",dif:42,grupos:{anfp:10,sponsors:6,comunidad:-8},
    bien:{txt:"Te anotaron en el bando que gana. El fixture, de momento, no te castiga.",ef:{plata:40,prestigio:2}},
-   mitad:{txt:"Ganó el bando. A vos te llegó un poco. A los hinchas, el relato de siempre.",ef:{plata:20}},
+   mitad:{txt:"Ganó el bando. A ti te llegó un poco. A los hinchas, el relato de siempre.",ef:{plata:20}},
    mal:{txt:"Ganaron ellos y igual te dejaron el viaje largo de local el feriado.",ef:{plata:10},grupos:{comunidad:-6}}},
   {t:"Votar con los chicos",d:"Principio, costo político.",dif:44,grupos:{comunidad:10,anfp:-8,directorio:-4},
    bien:{txt:"El bloque chico te aplaudió. Un voto no cambia el mapa, cambia con quién tomás café.",ef:{prestigio:3}},
@@ -171,7 +171,7 @@
    mal:{txt:"Perdieron y te marcaron. El próximo fixture es un poema malo.",ef:{moral:-2},grupos:{anfp:-10}}},
   {t:"Abstenerse y no pelear",d:"Ni con unos ni con otros.",dif:38,grupos:{anfp:0},
    bien:{txt:"Pasaste piola. A veces no estar es un oficio.",ef:{}},
-   mitad:{txt:"Los dos bandos te anotaron como tibio. Seguís en el medio.",grupos:{directorio:-2}},
+   mitad:{txt:"Los dos bandos te anotaron como tibio. Sigues en el medio.",grupos:{directorio:-2}},
    mal:{txt:"«No tuvo opinión.» La columna del lunes te usó de ejemplo.",grupos:{prensa:-6,directorio:-4}}}
  ]},
 {id:"b_anfp_sancion",tag:"anfp",buzon:"institucional",peso:"alto",cuando:E=>E.ind.riesgo>40,
@@ -194,7 +194,7 @@
  ]},
 {id:"b_prensa_filtracion",tag:"prensa",buzon:"prensa",peso:"medio",cuando:E=>E.rep&&E.rep.prensa<45,
  t:"Se filtró una conversación tuya",
- d:"Un periodista tiene un audio donde hablás mal de un jugador o del directorio. Todavía no lo publica. Te da «la chance de explicar».",
+ d:"Un periodista tiene un audio donde hablas mal de un jugador o del directorio. Todavía no lo publica. Te da «la chance de explicar».",
  posturas:{prensa:18,camarin:-8,directorio:-6},
  op:[
   {t:"Salir a dar la cara",d:"Conferencia ya.",dif:40,grupos:{prensa:6,credibilidad:4},
@@ -274,8 +274,8 @@
    mitad:{txt:"No fue brillante ni suicida. El ciclo sigue.",rep:{credibilidad:2}},
    mal:{txt:"Titubiaste. El panel te pasó por encima.",rep:{credibilidad:-4},grupos:{prensa:-8}}},
   {t:"Mandar al jefe de prensa",d:"Que hable el cargo, no la cara.",dif:40,grupos:{prensa:-4,directorio:2},
-   bien:{txt:"El jefe zafó con frases hechas. Vos seguís trabajando.",ef:{}},
-   mitad:{txt:"Nadie se convenció. Al menos no fuiste vos en la silla.",ef:{}},
+   bien:{txt:"El jefe zafó con frases hechas. Tú sigues trabajando.",ef:{}},
+   mitad:{txt:"Nadie se convenció. Al menos no fuiste tú en la silla.",ef:{}},
    mal:{txt:"El jefe se mandó una. Ahora el titular eres tú, igual.",grupos:{prensa:-8,directorio:-4}}},
   {t:"Atacar: «juegan ellos, opinan estos»",d:"Guerra con la prensa.",dif:60,grupos:{hinchada:8,prensa:-14},rep:{dureza:8},
    bien:{txt:"La tribuna lo festejó. La prensa, herida, igual te va a esperar.",ef:{hinchada:4,riesgo:4}},
@@ -316,7 +316,7 @@
    mal:{txt:"Llegó sin ritmo y se vio. Plata gasta, hueco sigue.",ef:{plata:-70}}},
   {t:"Correr la pizarra y aguantar",d:"Sin nombres nuevos.",dif:48,grupos:{tecnico:8,directorio:4},
    bien:{txt:"El esquema nuevo funcionó. A veces menos es más.",ef:{moral:3}},
-   mitad:{txt:"Se defiende peor, se ataca igual. Sobrevivís.",ef:{}},
+   mitad:{txt:"Se defiende peor, se ataca igual. Sobrevives.",ef:{}},
    mal:{txt:"El hueco se notó demasiado. El técnico pide «una solución de verdad».",ef:{moral:-4},grupos:{tecnico:-6}}}
  ]},
 {id:"b_medico_infiltrar",tag:"lesion",buzon:"preparacion",peso:"alto",cuando:E=>E.ind.plantel>52,
@@ -339,7 +339,7 @@
  ]},
 {id:"b_socios_asamblea",tag:"institucional",buzon:"institucional",peso:"medio",cuando:E=>E.ind.socios<45||(E.grupos&&E.grupos.socios&&E.grupos.socios.aprob<0),
  t:"Los socios piden asamblea",
- d:"Juntaron firmas. Quieren oírte. El directorio prefiere que no se abra el micrófono. Si no vas, van a hablar de vos igual.",
+ d:"Juntaron firmas. Quieren oírte. El directorio prefiere que no se abra el micrófono. Si no vas, van a hablar de ti igual.",
  posturas:{socios:18,directorio:-10},
  op:[
   {t:"Ir y escuchar de verdad",d:"Tiempo, ego y un vaso de agua.",dif:38,grupos:{socios:12,directorio:-4},
@@ -347,13 +347,13 @@
    mitad:{txt:"Hubo gritos y un café. La asamblea no destituye hoy.",ef:{socios:2}},
    mal:{txt:"Te silbaron. El acta quedó fea. El directorio dice «te lo advertimos».",ef:{socios:-2},grupos:{directorio:-6}}},
   {t:"Mandar al presidente del club",d:"Que se coma él el sapo.",dif:44,grupos:{directorio:4,socios:-8},
-   bien:{txt:"El presidente zafó con oficio. Vos seguís en la práctica.",ef:{}},
+   bien:{txt:"El presidente zafó con oficio. Tú sigues en la práctica.",ef:{}},
    mitad:{txt:"La asamblea se enojó de que no fueras. Quedó en un comunicado.",grupos:{socios:-4}},
    mal:{txt:"«El DT no da la cara.» Titular previsible y efectivo.",grupos:{socios:-10,prensa:-6}}},
   {t:"Cerrar filas con el directorio",d:"Institución antes que asamblea.",dif:50,grupos:{directorio:10,socios:-12},
    bien:{txt:"El directorio te cubre. Los socios, por ahora, no tienen los votos.",ef:{capital:3}},
    mitad:{txt:"Quedaste del lado del poder. La tribuna de socios se enfría.",ef:{socios:-2}},
-   mal:{txt:"La asamblea se agrandó. Ahora el tema sos vos y el directorio juntos.",ef:{capital:-4},grupos:{socios:-14}}}
+   mal:{txt:"La asamblea se agrandó. Ahora el tema eres tú y el directorio juntos.",ef:{capital:-4},grupos:{socios:-14}}}
  ]},
 {id:"b_tv_horario",tag:"plata",buzon:"institucional",peso:"bajo",cuando:E=>true,
  t:"La TV quiere mover el horario",
@@ -398,7 +398,7 @@
  op:[
   {t:"Reestructurar y frenar el mercado",d:"Oxígeno caro.",dif:40,grupos:{directorio:8,tecnico:-10},
    bien:{txt:"El banco aflojó. El técnico resongó y armó con lo que hay.",ef:{deuda:-120,plata:40,plantel:-1}},
-   mitad:{txt:"Pagás menos por mes, por más meses. El mercado se enfría.",ef:{deuda:-60,plata:20}},
+   mitad:{txt:"Pagas menos por mes, por más meses. El mercado se enfría.",ef:{deuda:-60,plata:20}},
    mal:{txt:"El recargo era peor de lo que leíste. La soga sigue.",ef:{deuda:40},grupos:{directorio:-6}}},
   {t:"Vender un nombre para calmarlos",d:"El {CRACK} es la ficha.",dif:52,grupos:{hinchada:-12,directorio:10},
    bien:{txt:"Se vendió y el banco sonrió. La tribuna, no.",ef:{deuda:-200},accion:"venderToken:CRACK"},
@@ -417,7 +417,7 @@
   {t:"Bancarlo en público",d:"El vestuario es uno.",dif:36,grupos:{camarin:10,prensa:2},
    bien:{txt:"El grupo cerró filas. La frase quedó como honestidad, no como cisma.",ef:{moral:5},rep:{credibilidad:3}},
    mitad:{txt:"Se calmó. El titular duró un día.",ef:{moral:2}},
-   mal:{txt:"El directorio lo leyó como que no controlás el micrófono.",grupos:{directorio:-8}}},
+   mal:{txt:"El directorio lo leyó como que no controlas el micrófono.",grupos:{directorio:-8}}},
   {t:"Llamarlo y cortarle el mix",d:"Disciplina de discurso.",dif:44,grupos:{prensa:-4,directorio:6,camarin:-6},
    bien:{txt:"Entendió. El próximo mix fue un lugar común perfecto.",ef:{moral:-1},rep:{dureza:3}},
    mitad:{txt:"Se enojó un rato y después se le pasó.",ef:{}},
@@ -429,7 +429,7 @@
  ]},
 {id:"b_hinchada_precios",tag:"barra",buzon:"hinchada",peso:"medio",cuando:E=>true,
  t:"La galería se queja del precio",
- d:"Un lienzo pide «entradas populares». El tesorero muestra la planilla. Si bajás, entra más gente y menos plata por cabeza. Si no, el recinto se enfría.",
+ d:"Un lienzo pide «entradas populares». El tesorero muestra la planilla. Si bajas, entra más gente y menos plata por cabeza. Si no, el recinto se enfría.",
  posturas:{hinchada:14,directorio:-6,socios:6},
  op:[
   {t:"Bajar la galería un rato",d:"Gesto popular.",dif:34,grupos:{hinchada:10,directorio:-4},
@@ -483,7 +483,7 @@
  ]},
 {id:"b_cantera_ojeador",tag:"cantera",buzon:"cantera",peso:"medio",cuando:E=>E.ind.cantera>=45,
  t:"Un ojeador de un grande está en el baby",
- d:"Lo vieron con una libreta en el partido de cadetes. Pregunta por el {JOVEN}. Si no mueves ficha, la conversación se va a dar igual, sin vos.",
+ d:"Lo vieron con una libreta en el partido de cadetes. Pregunta por el {JOVEN}. Si no mueves ficha, la conversación se va a dar igual, sin ti.",
  posturas:{directorio:8,comunidad:6,tecnico:4},
  op:[
   {t:"Sentar al pibe y renovar ya",d:"Clausular antes de que llamen.",dif:38,req:{plata:50},grupos:{directorio:6,comunidad:4},
@@ -507,7 +507,7 @@
   {t:"Bancarlo en la conferencia",d:"El ciclo sigue.",dif:40,grupos:{tecnico:12,camarin:6,directorio:-8},
    bien:{txt:"El grupo cerró filas. El directorio, por esta semana, afloja.",ef:{moral:6}},
    mitad:{txt:"Ganaste tiempo. El tema no se fue.",ef:{moral:2}},
-   mal:{txt:"El directorio lo leyó como que no escuchás. La silla se calienta igual.",grupos:{directorio:-10}}},
+   mal:{txt:"El directorio lo leyó como que no escuchas. La silla se calienta igual.",grupos:{directorio:-10}}},
   {t:"Pedirle un once más conservador",d:"Señal táctica, no cesantía.",dif:36,grupos:{tecnico:-4,directorio:6},
    bien:{txt:"Aceptó el pedido. El equipo se repliega y el directorio respira.",ef:{moral:1}},
    mitad:{txt:"Lo hizo a regañadientes. El once se ve raro.",ef:{}},
@@ -519,7 +519,7 @@
  ]},
 {id:"b_comunidad_fiesta",tag:"institucional",buzon:"institucional",peso:"bajo",cuando:E=>E.grupos&&E.grupos.comunidad,
  t:"La comunidad pide la cancha para una fiesta",
- d:"Un 18, una colectividad, un barrio. Quieren el recinto un domingo sin fútbol. El pasto se resiente. La gente, si decís que no, también.",
+ d:"Un 18, una colectividad, un barrio. Quieren el recinto un domingo sin fútbol. El pasto se resiente. La gente, si dices que no, también.",
  posturas:{comunidad:16,directorio:-4,tecnico:-4},
  op:[
   {t:"Prestar el recinto y cuidar el pasto",d:"Gesto, costo de cancha.",dif:32,grupos:{comunidad:12,tecnico:-4},
@@ -529,7 +529,7 @@
   {t:"Cobrar un arriendo justo",d:"Ni regalo ni portazo.",dif:34,grupos:{comunidad:4,directorio:4},
    bien:{txt:"Entró un poco de plata y la fiesta se hizo. Oficio.",ef:{plata:25,comunidad:1}},
    mitad:{txt:"Resongaron el precio y igual vinieron.",ef:{plata:15}},
-   mal:{txt:"Lo leyeron como que les cobrás el barrio. La fiesta se fue a otro lado.",grupos:{comunidad:-6}}},
+   mal:{txt:"Lo leyeron como que les cobras el barrio. La fiesta se fue a otro lado.",grupos:{comunidad:-6}}},
   {t:"No: el pasto es de los jugadores",d:"Prioridad deportiva.",dif:46,grupos:{tecnico:8,comunidad:-10},
    bien:{txt:"El local se juega en cancha linda. El barrio, por ahora, no te lo cobra.",ef:{plantel:2}},
    mitad:{txt:"El técnico agradece. La comunidad anota.",ef:{}},

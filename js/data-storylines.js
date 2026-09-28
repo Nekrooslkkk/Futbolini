@@ -85,7 +85,7 @@ const ARCOS_EQUIPO = {
       {id:"uc_2", t:"Cantera o vitrina", ctx:"La UC vive de formar y vender. Aparece una oferta enorme por tu joya de inferiores, justo cuando el equipo la necesita.",
        ops:[
         {t:"Vender y reinvertir en el club", d:"El modelo cruzado en estado puro: se forma y se vende.", ef:{plata:150}, grupos:{directorio:10,sponsors:6,hinchada:-8,camarin:-4}, mem:"vendiste a la joya de la cantera, fiel al modelo UC", va:"uc_3"},
-        {t:"Retenerla y apostar por ella", d:"Romántico y caro. Si sale bien, sos un genio.", grupos:{hinchada:12,camarin:8,directorio:-8}, mem:"retuviste a la joya de la UC contra la lógica de caja", va:"uc_3"}
+        {t:"Retenerla y apostar por ella", d:"Romántico y caro. Si sale bien, eres un genio.", grupos:{hinchada:12,camarin:8,directorio:-8}, mem:"retuviste a la joya de la UC contra la lógica de caja", va:"uc_3"}
        ]},
       {id:"uc_3", t:"El sello cruzado", ctx:"Fin de ciclo del arco: la prensa pregunta qué es hoy la Católica. Tu respuesta define la marca del club por años.",
        ops:[
@@ -107,7 +107,7 @@ const ARCOS_EQUIPO = {
       {id:"pal_2", t:"La camiseta que emociona", ctx:"La camiseta de Palestino es símbolo para mucha gente dentro y fuera de la cancha. Aparece la chance de una edición especial que homenajea las raíces de la colectividad; también atrae ruido y opiniones de todos lados.",
        ops:[
         {t:"Sacar la edición con orgullo", d:"La comunidad se emociona; te ganas un cariño enorme.", ef:{prestigio:6}, grupos:{comunidad:14,hinchada:10,socios:6}, mem:"sacaste una camiseta que emocionó a la comunidad de Palestino", va:"pal_3"},
-        {t:"Mantener bajo perfil, foco en el fútbol", d:"Prudente. Evitás ruido, pero la gente esperaba el gesto.", grupos:{prensa:4,comunidad:-6}, mem:"bajaste el perfil identitario de Palestino por prudencia", va:"pal_3"}
+        {t:"Mantener bajo perfil, foco en el fútbol", d:"Prudente. Evitas ruido, pero la gente esperaba el gesto.", grupos:{prensa:4,comunidad:-6}, mem:"bajaste el perfil identitario de Palestino por prudencia", va:"pal_3"}
        ]},
       {id:"pal_3", t:"Chico de plata, grande de alma", ctx:"Palestino compite con clubes de más recursos. La comunidad banca, pero la caja obliga a vender. La pregunta de siempre: ¿hasta dónde se puede soñar sin traicionar la identidad?",
        ops:[
@@ -123,7 +123,7 @@ const ARCOS_EQUIPO = {
     capitulos:[
       {id:"lim_1", t:"El sueño de un pueblo", ctx:"Deportes Limache, con una cancha modesta y un pueblo entero detrás, llegó a jugar entre los grandes. La ilusión es total, pero la realidad es cruel: menos plata, menos plantel, y clubes que te miran como carne de goleada.",
        ops:[
-        {t:"Salir a competir sin complejos", d:"Contagiás al plantel y al pueblo. A pelearla de igual a igual.", ef:{moral:8}, grupos:{hinchada:12,camarin:8,comunidad:10}, mem:"encaraste la primera de Limache sin complejos", va:"lim_2"},
+        {t:"Salir a competir sin complejos", d:"Contagias al plantel y al pueblo. A pelearla de igual a igual.", ef:{moral:8}, grupos:{hinchada:12,camarin:8,comunidad:10}, mem:"encaraste la primera de Limache sin complejos", va:"lim_2"},
         {t:"Ser realistas: sobrevivir primero", d:"Prudente. Menos épica, más cabeza fría.", grupos:{directorio:8,camarin:4,hinchada:-4}, mem:"planteaste la primera de Limache como pura supervivencia", va:"lim_2"}
        ]},
       {id:"lim_2", t:"Te quieren robar la joya", ctx:"Un grande te ofrece una fortuna por tu mejor jugador, el que ilusiona al pueblo. Para Limache esa plata es un año entero de tranquilidad; para la gente, es venderles el sueño.",
@@ -150,7 +150,7 @@ const ARCOS_GENERICOS = [
        ops:[
         {t:"Invertir y modernizar de verdad", d:"Plata que no se ve en la tabla, pero el plantel lo nota.", ef:{plata:-70,moral:6}, grupos:{camarin:12,tecnico:8,prensa:4}, mem:"modernizaste el complejo del club", cierra:true},
         {t:"Un parche y a otra cosa", d:"Sale barato hoy, caro mañana.", ef:{plata:-15}, grupos:{camarin:-4,prensa:-3}, mem:"tapaste con un parche el complejo que se cae", cierra:true},
-        {t:"Que aguanten, hay cosas más urgentes", d:"Ahorrás, pero el grupo lo siente.", grupos:{camarin:-10,tecnico:-6}, mem:"dejaste el complejo del club abandonado", cierra:true}
+        {t:"Que aguanten, hay cosas más urgentes", d:"Ahorras, pero el grupo lo siente.", grupos:{camarin:-10,tecnico:-6}, mem:"dejaste el complejo del club abandonado", cierra:true}
        ]}
     ]
   },
@@ -159,7 +159,7 @@ const ARCOS_GENERICOS = [
     desc:"Un histórico del club, recién retirado, golpea la puerta para sumarse.",
     cond:E=>((E.ind&&E.ind.prestigio)||50)>=40,
     capitulos:[
-      {id:"gi_1", t:"El ídolo en la puerta", ctx:"Un ídolo del club, recién colgados los botines, quiere sumarse al proyecto: cuerpo técnico, inferiores, lo que sea. La gente lo ama. Vos sabes que el ídolo con cargo es un arma de doble filo.",
+      {id:"gi_1", t:"El ídolo en la puerta", ctx:"Un ídolo del club, recién colgados los botines, quiere sumarse al proyecto: cuerpo técnico, inferiores, lo que sea. La gente lo ama. Tú sabes que el ídolo con cargo es un arma de doble filo.",
        ops:[
         {t:"Sumarlo al cuerpo técnico", d:"La hinchada estalla de alegría. Ojo si después hay que echarlo.", grupos:{hinchada:14,camarin:6,tecnico:-4}, mem:"sumaste a un ídolo del club al cuerpo técnico", va:"gi_2"},
         {t:"Darle las inferiores", d:"Lo cuidas lejos del primer equipo. Sabio.", grupos:{hinchada:8,comunidad:8,tecnico:4}, mem:"le diste las inferiores a un ídolo del club", cierra:true},
@@ -167,8 +167,8 @@ const ARCOS_GENERICOS = [
        ]},
       {id:"gi_2", t:"Ídolo con cargo", ctx:"El ídolo ya está adentro y opina de todo. La prensa lo cita, la hinchada lo respalda por encima tuyo. El vestuario mira cómo reaccionas.",
        ops:[
-        {t:"Marcarle la cancha con respeto", d:"Ordenás sin romper. Si te banca, quedas grande.", ef:{capital:-4}, grupos:{camarin:8,tecnico:8}, rep:{dureza:4,credibilidad:4}, mem:"le marcaste la cancha al ídolo con cargo, sin romper", cierra:true},
-        {t:"Dejarlo hacer para no pelear", d:"Evitás el conflicto, pero pierdes autoridad.", grupos:{hinchada:6,camarin:-8,tecnico:-6}, rep:{credibilidad:-4}, mem:"dejaste que el ídolo con cargo te pasara por encima", cierra:true}
+        {t:"Marcarle la cancha con respeto", d:"Ordenas sin romper. Si te banca, quedas grande.", ef:{capital:-4}, grupos:{camarin:8,tecnico:8}, rep:{dureza:4,credibilidad:4}, mem:"le marcaste la cancha al ídolo con cargo, sin romper", cierra:true},
+        {t:"Dejarlo hacer para no pelear", d:"Evitas el conflicto, pero pierdes autoridad.", grupos:{hinchada:6,camarin:-8,tecnico:-6}, rep:{credibilidad:-4}, mem:"dejaste que el ídolo con cargo te pasara por encima", cierra:true}
        ]}
     ]
   },
@@ -189,9 +189,9 @@ const ARCOS_GENERICOS = [
     id:"gen_barra", t:"La puerta de la galería",
     desc:"La barra pide mesa. No es un trámite: es poder en la calle.",
     capitulos:[
-      {id:"gb_1", t:"Quieren hablar", ctx:"Piden mesa: entradas, viajes, un gesto. Si los ignorás, el domingo se siente. Si les das todo, el directorio se asusta.",
+      {id:"gb_1", t:"Quieren hablar", ctx:"Piden mesa: entradas, viajes, un gesto. Si los ignoras, el domingo se siente. Si les das todo, el directorio se asusta.",
        ops:[
-        {t:"Sentarte y escuchar", d:"No prometés. Escuchar ya baja un cambio.", grupos:{hinchada:8,directorio:-2,comunidad:4}, mem:"te sentaste con la barra sin vender el club", cierra:true},
+        {t:"Sentarte y escuchar", d:"No prometes. Escuchar ya baja un cambio.", grupos:{hinchada:8,directorio:-2,comunidad:4}, mem:"te sentaste con la barra sin vender el club", cierra:true},
         {t:"Cerrarles la puerta", d:"Orden institucional. El estadio se puede vaciar o calentar.", grupos:{directorio:8,hinchada:-12,anfp:4}, mem:"le cerraste la puerta a la barra", cierra:true},
         {t:"Un pacto chico, por escrito", d:"Viajes o un palco. Queda registro. Después cobran.", ef:{plata:-25}, grupos:{hinchada:10,directorio:-6}, mem:"cerraste un pacto chico con la barra", cierra:true}
        ]}

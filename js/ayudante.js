@@ -122,7 +122,7 @@ function ayudanteHacerTodoSeguro(){
 
 /* ---------- Tesorero con nivel de riesgo (enseña cuánto arriesgar) ---------- */
 const TESORERO_RIESGO={
-  prudente:{n:"Prudente", semanas:6, abono:0.7, d:"Guarda 6 semanas de gastos y usa casi todo lo demás para bajar deuda. Dormís tranquilo; no queda plata para fichar."},
+  prudente:{n:"Prudente", semanas:6, abono:0.7, d:"Guarda 6 semanas de gastos y usa casi todo lo demás para bajar deuda. Duermes tranquilo; no queda plata para fichar."},
   medio:{n:"Medio", semanas:4, abono:0.5, d:"4 semanas de colchón y la mitad del excedente a la deuda. Un equilibrio."},
   agresivo:{n:"Agresivo", semanas:2, abono:0.2, d:"Solo 2 semanas de colchón y poco a la deuda: queda caja para fichar, pero un mes malo te deja sin sueldos."}
 };

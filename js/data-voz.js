@@ -208,11 +208,11 @@ const TRIVIA_VOZ=[
 
 /* ---------- F) logros extra ---------- */
 const LOGROS_VOZ=[
-  {id:"silencio_local",n:"Se fue la luz",d:"Perdé de local sin marcar un gol."},
+  {id:"silencio_local",n:"Se fue la luz",d:"Pierde de local sin marcar un gol."},
   {id:"diez_visita",n:"Con uno menos, de visita",d:"Suma de visita después de una roja propia."},
   {id:"no_se_jode",n:"Con este club no se jode",d:"Gana un clásico."},
   {id:"micro_cantando",n:"El chofer me miró raro",d:"Gana de visita en el último minuto (80+)."},
-  {id:"luna_penal",n:"La mandó a la luna",d:"Errá un penal y aun así no pierdas el partido."},
+  {id:"luna_penal",n:"La mandó a la luna",d:"Erra un penal y aun así no pierdas el partido."},
   {id:"el_1_es_el_dt",n:"El 1 se comió el partido",d:"Termina 0-0 de visita."},
   {id:"tres_del_9",n:"Dejen de hablar",d:"Un mismo delantero hace 3 goles en un partido."},
   {id:"pueblo_lleno",n:"Que quepa el pueblo",d:"Gana de local con un club chico (LIM, CAL, COB, NUB)."},

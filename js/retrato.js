@@ -96,7 +96,7 @@ function espejoDT(){
   const g=function(m,fe){ return f?fe:m; };
   if(S.sucio) return T("esp_sucio","Duermes con el celular en la mano. Cada llamada puede ser la fiscalía.");
   if(S.estres>=75) return T("esp_roto","El cargo se te ve en la cara: ojeras, canas nuevas y una sonrisa que ya no sale.");
-  if(S.estres>=50) return T("esp_tenso","Dormís mal. En la casa ya no preguntan cómo te fue.");
+  if(S.estres>=50) return T("esp_tenso","Duermes mal. En la casa ya no preguntan cómo te fue.");
   if(S.sinGanar>=3) return T("esp_racha","Tres sin ganar. Se nota en cómo caminas por el pasillo.");
   if(S.bien>=80) return T("esp_bien","Hoy te reconoces en el espejo. Disfrútalo: en este cargo dura poco.");
   return g(T("esp_normal","Cansado, pero entero. Por ahora."),T("esp_normal_f","Cansada, pero entera. Por ahora."));

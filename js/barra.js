@@ -27,7 +27,7 @@ function pactosBarra(){
     .sort((a,b)=>b.nivel-a.nivel)[0];
   const L=[
     {tipo:"aliento", t:"Darles lugar para lienzos, bombos y trapos",
-     d:"La barra copa la tribuna con todo. Aliento asegurado, pero atás al club a un grupo que no rinde cuentas.",
+     d:"La barra copa la tribuna con todo. Aliento asegurado, pero atas al club a un grupo que no rinde cuentas.",
      costo:0, ef:{riesgo:6}, grupos:{hinchada:8,prensa:-4}, resumen:"aliento a cambio de vista gorda"},
     {tipo:"logistica", t:"Entradas y un viaje al norte",
      d:"Apoyas pasajes y entradas para el próximo viaje largo. Cuesta plata, pero la mesa lo valora.",

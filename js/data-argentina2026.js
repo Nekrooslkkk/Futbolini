@@ -139,7 +139,7 @@ function _mkCopaArg(clubId, spec, ronda){
     local:false, sede:spec.sede||"cancha neutral",
     f:spec.f||{m:2,d:18}, jugado:false,
     clima:(typeof climaDeFecha==="function")?climaDeFecha((spec.f&&spec.f.m)||2,"copaArg"+clubId+ronda):"despejado",
-    nota:"Copa Argentina 2026: partido único, empate a penales (sin alargue). Cruce documentado; el marcador lo jugás vos.",
+    nota:"Copa Argentina 2026: partido único, empate a penales (sin alargue). Cruce documentado; el marcador lo juegas tú.",
     notaId:"CA26-"+clubId+"-"+(ronda||"32")
   };
 }

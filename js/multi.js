@@ -127,7 +127,7 @@ function modalDuelo(){
       /* ---------- elegir rol ---------- */
       if(pantalla==="inicio"){
         c.appendChild(el("p","mini","Juega un duelo dirigido contra un amigo, sin cuentas ni servidor: se conectan copiando y pegando un código (por WhatsApp, Discord, lo que sea). La conexión es directa entre ustedes dos."));
-        const bh=el("button","btn-aqua ancho verde","🧑‍✈️ Crear una sala (invitas vos)");
+        const bh=el("button","btn-aqua ancho verde","🧑‍✈️ Crear una sala (invitas tú)");
         bh.onclick=async function(){ bh.disabled=true; bh.textContent="Generando código…";
           try{ const cod=await mpCrearSala(); pintar("host",{cod:cod}); }
           catch(e){ pintar("error",{msg:e.message}); } };
@@ -141,14 +141,14 @@ function modalDuelo(){
       }
       /* ---------- anfitrión: mostrar código + pegar respuesta ---------- */
       else if(pantalla==="host"){
-        c.appendChild(el("h3","sub","1 · Pasale este código a tu amigo"));
+        c.appendChild(el("h3","sub","1 · Pásale este código a tu amigo"));
         const ta=el("textarea","entrada"); ta.value=datos.cod; ta.readOnly=true; ta.rows=3; ta.style.width="100%"; ta.style.fontSize="10px";
         c.appendChild(ta);
         const bc=el("button","btn-aqua chico","📋 Copiar código"); bc.style.marginTop="4px";
         bc.onclick=function(){ mpCopiar(ta.value); bc.textContent="✓ Copiado"; };
         c.appendChild(bc);
-        c.appendChild(el("h3","sub","2 · Pegá acá la RESPUESTA que te devuelve"));
-        const rt=el("textarea","entrada"); rt.rows=3; rt.style.width="100%"; rt.style.fontSize="10px"; rt.placeholder="Pegá acá el código de respuesta de tu amigo…";
+        c.appendChild(el("h3","sub","2 · Pega acá la RESPUESTA que te devuelve"));
+        const rt=el("textarea","entrada"); rt.rows=3; rt.style.width="100%"; rt.style.fontSize="10px"; rt.placeholder="Pega acá el código de respuesta de tu amigo…";
         c.appendChild(rt);
         const bcon=el("button","btn-aqua ancho verde","Conectar"); bcon.style.marginTop="6px";
         bcon.onclick=async function(){ if(!rt.value.trim()) return; bcon.disabled=true; bcon.textContent="Conectando…";
@@ -159,8 +159,8 @@ function modalDuelo(){
       }
       /* ---------- visitante: pegar invitación, generar respuesta ---------- */
       else if(pantalla==="guest"){
-        c.appendChild(el("h3","sub","1 · Pegá el código que te pasaron"));
-        const it=el("textarea","entrada"); it.rows=3; it.style.width="100%"; it.style.fontSize="10px"; it.placeholder="Pegá acá el código de invitación…";
+        c.appendChild(el("h3","sub","1 · Pega el código que te pasaron"));
+        const it=el("textarea","entrada"); it.rows=3; it.style.width="100%"; it.style.fontSize="10px"; it.placeholder="Pega acá el código de invitación…";
         c.appendChild(it);
         const bg=el("button","btn-aqua ancho verde","Generar mi respuesta"); bg.style.marginTop="6px";
         bg.onclick=async function(){ if(!it.value.trim()) return; bg.disabled=true; bg.textContent="Generando…";
@@ -170,7 +170,7 @@ function modalDuelo(){
         c.appendChild(botonVolver(pintar));
       }
       else if(pantalla==="guestResp"){
-        c.appendChild(el("div","resul bien","Casi listo. Pasale ESTA respuesta a tu amigo y esperá a que apriete «Conectar»."));
+        c.appendChild(el("div","resul bien","Casi listo. Pásale ESTA respuesta a tu amigo y espera a que apriete «Conectar»."));
         c.appendChild(el("h3","sub","2 · Devolvele este código"));
         const ta=el("textarea","entrada"); ta.value=datos.resp; ta.readOnly=true; ta.rows=3; ta.style.width="100%"; ta.style.fontSize="10px";
         c.appendChild(ta);
@@ -187,7 +187,7 @@ function modalDuelo(){
         c.appendChild(el("div","resul bien","🔗 Conectado con <b>"+(MP.rival||"tu amigo")+"</b>. Elijan su club y aprieten «Listo»."));
         /* estado de ambos */
         const est=el("div","duelo-vs");
-        est.innerHTML="<div class='duelo-lado"+(MP.miListo?" listo":"")+"'><div class='mini'>VOS</div><b>"+(MP.miClub?mpNombreClub(MP.miClub):"— elige —")+"</b>"+(MP.miListo?" ✅":"")+"</div>"+
+        est.innerHTML="<div class='duelo-lado"+(MP.miListo?" listo":"")+"'><div class='mini'>Tú</div><b>"+(MP.miClub?mpNombreClub(MP.miClub):"— elige —")+"</b>"+(MP.miListo?" ✅":"")+"</div>"+
           "<div class='duelo-x'>VS</div>"+
           "<div class='duelo-lado"+(MP.rivalListo?" listo":"")+"'><div class='mini'>"+(MP.rival||"RIVAL")+"</div><b>"+(MP.rivalClub?mpNombreClub(MP.rivalClub):"eligiendo…")+"</b>"+(MP.rivalListo?" ✅":"")+"</div>";
         c.appendChild(est);
@@ -271,7 +271,7 @@ function modalDuelo(){
           br.onclick=function(){ MP.miListo=false; MP.rivalListo=false; MP.miClub=null; MP.rivalClub=null; MP.duel=null; mpEnviar({tipo:"revancha"}); pintar("lobby",{}); };
           c.appendChild(br);
         } else {
-          c.appendChild(el("p","mini","Esperá a que el anfitrión proponga la revancha, o cierra."));
+          c.appendChild(el("p","mini","Espera a que el anfitrión proponga la revancha, o cierra."));
         }
         const x=el("button","btn-aqua ancho gris","Cerrar"); x.style.marginTop="6px";
         x.onclick=function(){ mpReset(); cerrarModal(); }; c.appendChild(x);
@@ -326,7 +326,7 @@ function modalDuelo(){
 const DUELO_OPS=[
   {t:"🗡️ Salir al ataque", d:"Más peligro arriba, pero quedas abierto.", aggr:1},
   {t:"⚖️ Jugar equilibrado", d:"Ni muy arriba ni muy atrás.", aggr:0},
-  {t:"🛡️ Meterse atrás", d:"Defendés bien, pero te cuesta llegar.", aggr:-1}
+  {t:"🛡️ Meterse atrás", d:"Defiendes bien, pero te cuesta llegar.", aggr:-1}
 ];
 const DUELO_RONDAS=9;   /* ~9 jugadas clave = un partido comprimido */
 function fuerzaClub(id){

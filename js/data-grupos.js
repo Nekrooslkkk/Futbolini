@@ -17,7 +17,7 @@ const GRUPOS=[
   banca:"Llena el estadio, empuja y te cubre cuando la tabla aprieta.",
   castigo:"Funas, lienzos, incidentes y estadio vacío."},
  {id:"camarin",    n:"Camarín",           ic:"👕", quiere:"Sueldos al día, premios y respeto al grupo.",
-  banca:"Corre por vos los partidos feos. El capitán te cierra filas.",
+  banca:"Corre por ti los partidos feos. El capitán te cierra filas.",
   castigo:"Paro, filtraciones y rendimiento en el piso."},
  {id:"tecnico",    n:"Cuerpo técnico",    ic:"📋", quiere:"Autoridad, los refuerzos que pidió y continuidad.",
   banca:"Alinea el once con tu plan y no te discute en la tele.",
@@ -100,7 +100,7 @@ const ESTATUTOS=[
    {id:"prohibicion",n:"Prohibición",d:"Cero trato. Desalojo y denuncia.",ef:{hinchada:-25,prensa:12,anfp:10},mod:{riesgo:-0.25,ingresoTaquilla:-0.08}},
    {id:"tolerancia",n:"Tolerancia",d:"Se mira para el lado.",ef:{},mod:{}},
    {id:"alianza",n:"Alianza",d:"Se les da algo a cambio de orden.",ef:{hinchada:18,prensa:-8},mod:{riesgo:0.15,ingresoTaquilla:0.08}},
-   {id:"cogobierno",n:"Cogobierno de tribuna",d:"Deciden con vos. Peligroso.",ef:{hinchada:32,prensa:-20,anfp:-15,directorio:-15},mod:{riesgo:0.4,ingresoTaquilla:0.15}}
+   {id:"cogobierno",n:"Cogobierno de tribuna",d:"Deciden contigo. Peligroso.",ef:{hinchada:32,prensa:-20,anfp:-15,directorio:-15},mod:{riesgo:0.4,ingresoTaquilla:0.15}}
   ]},
  {id:"finanzas", n:"Política financiera", ic:"💰",
   op:[
@@ -114,7 +114,7 @@ const ESTATUTOS=[
    {id:"neutral",n:"Neutral en la ANFP",d:"No te metes en nada.",ef:{},mod:{}},
    {id:"bloque_grandes",n:"Bloque de los grandes",d:"Los que llevan gente mandan.",ef:{anfp:15,prensa:-5},mod:{ingresoTV:0.15}},
    {id:"bloque_chicos",n:"Bloque con los provinciales",d:"Reparto parejo y muchos votos.",ef:{anfp:10,comunidad:10},mod:{ingresoTV:-0.05,capitalAnual:4}},
-   {id:"ruptura",n:"Ruptura",d:"Negociás tu propia televisión.",ef:{anfp:-45,sponsors:20},mod:{ingresoTV:0.35,capitalAnual:-6}}
+   {id:"ruptura",n:"Ruptura",d:"Negocias tu propia televisión.",ef:{anfp:-45,sponsors:20},mod:{ingresoTV:0.35,capitalAnual:-6}}
   ]}
 ];
 const ESTATUTO_INICIAL={
@@ -130,7 +130,7 @@ function estatutoOpcion(catId,opId){
 }
 /* ---------- REPUTACIÓN PERSONAL (tu carrera, no la del club) ---------- */
 const REPUTACION=[
- {id:"publica",     n:"Imagen pública", ic:"🌐", d:"Cómo te ve la gente de fútbol en general. Si llega a cero, sos inempleable."},
+ {id:"publica",     n:"Imagen pública", ic:"🌐", d:"Cómo te ve la gente de fútbol en general. Si llega a cero, eres inempleable."},
  {id:"credibilidad",n:"Credibilidad",   ic:"📌", d:"Si tu palabra vale. Sube cumpliendo, baja prometiendo al voleo."},
  {id:"prensa",      n:"Trato con la prensa", ic:"🎤", d:"Cuánto te cubren las espaldas cuando se pone fea."},
  {id:"dureza",      n:"Mano dura",      ic:"✊", d:"Fama de imponerte. Sirve con el camarín, asusta a los socios."}

@@ -824,21 +824,21 @@ function avanzarFaseSegunda(part){
       if(posL===1){
         E.flags.ligaCCampeon=true;
         notificar({t:"Campeón de Segunda · ASCENSO",tipo:"bueno",
-          d:"1° de la liguilla de ascenso. "+etqL+". Subís a Primera B. La liguilla se jugó partido a partido (12 PJ, se partió de 0)."});
+          d:"1° de la liguilla de ascenso. "+etqL+". Subes a Primera B. La liguilla se jugó partido a partido (12 PJ, se partió de 0)."});
         if(typeof aplicarEfectos==="function") aplicarEfectos({moral:8,prestigio:5,plata:120});
       } else {
         if(tabL[0]&&tabL[0].id!==E.club) E.flags.ligaCSube=tabL[0].id;   /* 7.9035 · sube el que la ganó, no uno al azar */
         notificar({t:"Se acabó la liguilla de ascenso",tipo:"neutro",
-          d:"Cerraste "+posL+"° de la liguilla. "+etqL+". No alcanzaste el 1°. Te quedás en Segunda."});
+          d:"Cerraste "+posL+"° de la liguilla. "+etqL+". No alcanzaste el 1°. Te quedas en Segunda."});
       }
     } else {
       if(posL===tabL.length || posL===0){
         E.flags.ligaCBaja=true;
         notificar({t:"Descenso a Tercera A",tipo:"malo",
-          d:"Último de la liguilla de permanencia. "+etqL+". Perdés la categoría. En el juego la cadena mueve 1 a la B (la Tercera A no es jugable)."});
+          d:"Último de la liguilla de permanencia. "+etqL+". Pierdes la categoría. En el juego la cadena mueve 1 a la B (la Tercera A no es jugable)."});
       } else {
         notificar({t:"Salvaste la categoría",tipo:"bueno",
-          d:"Liguilla de permanencia: "+posL+"° de "+tabL.length+". "+etqL+". Te quedás en Segunda."});
+          d:"Liguilla de permanencia: "+posL+"° de "+tabL.length+". "+etqL+". Te quedas en Segunda."});
       }
     }
   }
@@ -1061,25 +1061,25 @@ function _avanzarLiguillaBViejo(part){
   if(pos===1){
     E.flags.ligaBCampeon=true;
     notificar({t:"Campeón de la B · ASCENSO DIRECTO",tipo:"bueno",
-      d:"1° de la fase regular. "+etq+". Subís directo a Primera. El segundo cupo lo define la liguilla (2°–8°)."});
+      d:"1° de la fase regular. "+etq+". Subes directo a Primera. El segundo cupo lo define la liguilla (2°–8°)."});
     if(typeof aplicarEfectos==="function") aplicarEfectos({moral:8,prestigio:6,plata:200});
     return;
   }
   if(pos===16||pos===ids.length){
     E.flags.ligaBBaja=true;
     notificar({t:"Descenso a Segunda",tipo:"malo",
-      d:"Último de la Liga de Ascenso. Bajás a Segunda División. El 1° de Segunda sube a la B."});
+      d:"Último de la Liga de Ascenso. Bajas a Segunda División. El 1° de Segunda sube a la B."});
     return;
   }
   if(pos>=9){
     notificar({t:"Fuera de la liguilla",tipo:"neutro",
-      d:"Terminaste "+pos+"°. "+etq+". A la liguilla entran 2° a 8°. El 1° ya subió; el último baja. Te quedás en la B."});
+      d:"Terminaste "+pos+"°. "+etq+". A la liguilla entran 2° a 8°. El 1° ya subió; el último baja. Te quedas en la B."});
     return;
   }
   E.flags.liguillaBFase=true;
   if(pos===2){
     notificar({t:"Liguilla: bye a semis",tipo:"bueno",
-      d:"2° de la regular. "+etq+". Esperás en semifinales. 3°–8°, 4°–7° y 5°–6° se cruzan; te toca el peor clasificado de los que pasen."});
+      d:"2° de la regular. "+etq+". Esperas en semifinales. 3°–8°, 4°–7° y 5°–6° se cruzan; te toca el peor clasificado de los que pasen."});
     var rivS=_rivalSemiB(ids);
     _sembrarLlaveB("Semifinal", rivS, LIGUILLA_B_FECHAS.Semifinal);
   } else {
@@ -1113,14 +1113,14 @@ function _resolverLiguillaBViejo(part, yo, otro){
   if(!pasa){
     _sacarTorneoPendiente("Liguilla de Ascenso");
     notificar({t:"Fuera de la liguilla de ascenso",tipo:"malo",
-      d:"Caíste en "+ronda+" ("+acc.gf+"-"+acc.gc+")."+penalTxt+" El segundo cupo se lo lleva otro. Te quedás en la B."});
+      d:"Caíste en "+ronda+" ("+acc.gf+"-"+acc.gc+")."+penalTxt+" El segundo cupo se lo lleva otro. Te quedas en la B."});
     if(typeof aplicarEfectos==="function") aplicarEfectos({moral:-4,prestigio:-2});
     return;
   }
   if(ronda==="FINAL"){
     E.flags.ligaBLiguilla=true;
     notificar({t:"¡ASCENSO por liguilla!",tipo:"bueno",
-      d:"Ganaste la liguilla de la B ("+acc.gf+"-"+acc.gc+")."+penalTxt+" El campeón de la fase regular ya tiene el primer cupo; vos sos el segundo a Primera."});
+      d:"Ganaste la liguilla de la B ("+acc.gf+"-"+acc.gc+")."+penalTxt+" El campeón de la fase regular ya tiene el primer cupo; tú eres el segundo a Primera."});
     if(typeof aplicarEfectos==="function") aplicarEfectos({moral:8,prestigio:6,plata:180});
     if(typeof aplicarGrupos==="function") aplicarGrupos({hinchada:14,camarin:12,directorio:12});
     if(E.titulos&&E.titulos.indexOf(E.anio+" · Liguilla de Ascenso")<0) E.titulos.push(E.anio+" · Liguilla de Ascenso");
@@ -1193,7 +1193,7 @@ function filasTablaActual(){
     lig.forEach(function(p){ if(p.rivalId&&ids.indexOf(p.rivalId)<0) ids.push(p.rivalId); });
   }
   nota=fase==="liguillaAscenso"
-    ?"Liguilla de ascenso: 7 clubes, ida y vuelta, puntaje desde 0 (no arrastra la zonal). Volvés a cruzar rivales de tu zona: es el formato real, no un bug. El 1° sube a Primera B. Esta tabla se juega partido a partido."
+    ?"Liguilla de ascenso: 7 clubes, ida y vuelta, puntaje desde 0 (no arrastra la zonal). Vuelves a cruzar rivales de tu zona: es el formato real, no un bug. El 1° sube a Primera B. Esta tabla se juega partido a partido."
     :"Liguilla de permanencia: 7 clubes, tabla nueva. Los últimos pierden la categoría.";
   return {ids:ids, nota:nota, titulo:fase==="liguillaAscenso"?"Liguilla de ascenso · 7 clubes":"Liguilla de permanencia · 7 clubes", filas:computed};
 }
@@ -1489,7 +1489,7 @@ function cuposChileDesde(pos, copaChile, b){
     if(champYaLib) ccSubLibre=true;
   }
   if(cc&&yaLib) vias.push("Copa Chile: el repechaje Chile 4 lo juega el subcampeón (bases ANFP art. 81: el campeón ya tiene Libertadores)");
-  if(ccSubLibre) vias.push("subcampeón de Copa Chile: el campeón ya tiene Libertadores, heredás el repechaje Chile 4 (bases ANFP art. 81)");
+  if(ccSubLibre) vias.push("subcampeón de Copa Chile: el campeón ya tiene Libertadores, heredas el repechaje Chile 4 (bases ANFP art. 81)");
   if(soyPlayoffTercero&&(ccLibre||ccSubLibre)){
     lib=true;
     vias.push(playoffTerceroPos===3
@@ -1775,7 +1775,7 @@ function cuposChileDesde(pos, copaChile, b){
     {ctx:"copa_liga",quien:"@doña_clarita",txt:"otro torneo. otro domingo. otra entrada. y después se quejan que no va gente"},
     {ctx:"copa_liga",quien:"@cuenta_troll",txt:"la ANFP inventó un torneo pa llenar la grilla y ahora es el Chile 3. chile."},
     {ctx:"copa_liga",quien:"@RadioGolAM",txt:"Copa de la Liga: solo Primera, cuatro grupos, pasa el 1°. El campeón se lleva cupo continental."},
-    {ctx:"copa_liga",quien:"@datofutbol",txt:"si ganás la Liga y la Libertadores, el Chile 1 se lo queda el 2°. un club, un asiento. no es invento"},
+    {ctx:"copa_liga",quien:"@datofutbol",txt:"si ganas la Liga y la Libertadores, el Chile 1 se lo queda el 2°. un club, un asiento. no es invento"},
     {ctx:"copa_liga",quien:"@RadioGolAM",txt:"Cascada ANFP: si el campeón de Copa Chile ya está en Libertadores, el repechaje Chile 4 lo juega el subcampeón."},
     {ctx:"copa_liga",quien:"@pibe_de_la_popular",txt:"el dt dijo que es «para sumar minutos». traducido: no la siente"},
     {ctx:"supercopa",quien:"@barra_del_fondo",txt:"SUPERCOPA. FINAL FOUR. EL AÑO EMPIEZA ACÁ O EMPIEZA CON CARA LARGA."},
@@ -1783,7 +1783,7 @@ function cuposChileDesde(pos, copaChile, b){
     {ctx:"supercopa",quien:"@cuenta_troll",txt:"antes era un partido. ahora son tres. la ANFP descubrió que se puede cobrar más entradas"},
     {ctx:"supercopa",quien:"@RadioGolAM",txt:"Supercopa en Sausalito. Cuatro equipos, sin tercer puesto. El que pierde la semi se va a la playa."},
     {ctx:"supercopa",quien:"@hincha_de_ley",txt:"el primer título del año no se regala. aunque sea enero"},
-    {ctx:"supercopa",quien:"@datofutbol",txt:"Coquimbo la levantó en 2026 desde el punto penal. Eso ya es dato. Lo de ahora lo escribís tú"},
+    {ctx:"supercopa",quien:"@datofutbol",txt:"Coquimbo la levantó en 2026 desde el punto penal. Eso ya es dato. Lo de ahora lo escribes tú"},
     {ctx:"liguilla",quien:"@barra_del_fondo",txt:"LIGUILLA. ACÁ SE SUBE O SE LLORA. NO HAY MEDIA TABLA QUE VALGA."},
     {ctx:"liguilla",quien:"@doña_clarita",txt:"ya no es «vamos a ver». ahora cada pelota es un año"},
     {ctx:"liguilla",quien:"@pibe_de_la_popular",txt:"el 4° se juega un partido y se le va la vida. formato enfermo. me encanta"},
