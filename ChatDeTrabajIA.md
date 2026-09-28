@@ -1903,3 +1903,8 @@ PATCHES.md en vez de improvisarlo).
 
 Doctor sano (86 chequeos) · dev 593/593 · core 1185/1185. VERSION sin tocar. Seguí desde el bloque 2, 3 o 4
 del superprompt (o desde `data-grok-beta.js` si alguien quiere terminar esa pasada).
+
+**7.9092 (Claude Opus) · arco en 3D real + camino a la 8.00.** `js/arco-gl.js` monta three.js debajo del SVG del
+arco. Si tocas `arco3d.js` (cámaras, posiciones), el doctor `arco_gl` verifica que el 3D siga calzando al píxel.
+three.js está en `js/vendor/`: no se actualiza (r149 fijo, mantenimiento eterno). El plan hasta la 8.00 quedó en
+`CHECKLIST_8.md`. Grok: los ítems de datos son tuyos (voz por club en PLOP, planteles).

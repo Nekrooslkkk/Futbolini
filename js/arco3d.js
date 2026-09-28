@@ -18,7 +18,9 @@
    - Pateador de espalda con carrera; festejo con papel picado y repetición en cámara lenta.
    - La escena no crece: el dibujo vive en una capa absoluta; el tamaño lo pone solo el escenario.
    ============================================================ */
-const ARCO3D={gyLinea:150, fDc:33, pxMetro:54.6, bolaY:216, bolaR:0.11};
+const ARCO3D={gyLinea:150, fDc:33, pxMetro:54.6, bolaY:216, bolaR:0.11, cornerX:33.4, cornerZ:0.6};
+/* 7.9092 · imán del córner: centros de primer palo, punto penal y segundo palo (coordenadas de la lógica) */
+const ARCO_IMAN=[{zona:"primer",x:84,y:78},{zona:"penal",x:180,y:128},{zona:"segundo",x:276,y:78}];
 ARCO3D.gx0=180-ARCO3D.fDc*3.66; ARCO3D.gx1=180+ARCO3D.fDc*3.66;
 /* ---------- cámaras ---------- */
 function _camMirando(C,T,F,cy){
@@ -29,7 +31,9 @@ function _camMirando(C,T,F,cy){
 function camaraArco(modo,lado){
   if(modo==="corner"){
     const sg=lado==="der"?1:-1;
-    const cam=_camMirando({x:28*sg,y:12,z:26},{x:2*sg,y:0,z:5},520,118);
+    /* 7.9092 · cámara de córner estilo PES 2006 (pedido del autor): alta, detrás del banderín, pelota abajo
+       y el arco al fondo. Los tres destinos quedan a ~18 px: el imán (arcoIman) los hace apuntables en celu. */
+    const cam=_camMirando({x:38*sg,y:10,z:-10},{x:20*sg,y:0,z:8},260,120);
     cam.modo="corner"; cam.lado=lado==="der"?"der":"izq"; cam.sg=sg; cam.frontal=false; cam.Zb=11;
     return cam;
   }
@@ -313,7 +317,7 @@ function htmlArcoVivo(opts){
   const lbx=opts.bolaX!=null?opts.bolaX:180, lby=opts.bolaY!=null?opts.bolaY:220;
   let sbx=180, sby=ARCO3D.bolaY, bolaS;
   if(cam.frontal){ bolaS=ARCO3D.bolaR*(cam.F/(cam.Dc-cam.Zb))/8; }
-  else { sbx=lado==="der"?318:42; sby=224; bolaS=1.05; }
+  else { const pb=proyectar(cam,ARCO3D.cornerX*cam.sg,0,ARCO3D.cornerZ); sbx=+pb.x.toFixed(1); sby=+pb.y.toFixed(1); bolaS=Math.max(0.42,ARCO3D.bolaR*pb.k*1.8/8); }
   const trib=_a3Tribuna(cam,hc,sem), arco=_a3Arco(cam);
   /* arquero en la línea (en el córner, un paso hacia el segundo palo) */
   const Xk=cam.frontal?((opts.arqX!=null?opts.arqX:180)-180)*7.32/260:-cam.sg*0.8;
@@ -334,8 +338,11 @@ function htmlArcoVivo(opts){
       _a3Figura(cam,s*2.6,3.4,kitWall,"arco-def",{i:sem+1}), _a3Figura(cam,-s*1.2,4.2,kitWall,"arco-def",{i:sem+2}), _a3Figura(cam,s*0.2,8.6,kitWall,"arco-def",{i:sem+3}),
       _a3Figura(cam,s*3.1,4.8,kitAtk,"arco-atk",{i:sem+4,espalda:true,num:4}), _a3Figura(cam,-s*2.8,5.6,kitAtk,"arco-atk",{i:sem+5,espalda:true,num:2}), _a3Figura(cam,-s*0.4,10.2,kitAtk,"arco-atk",{i:sem+6,espalda:true,num:9})
     ].sort((a,b)=>a.k-b.k);
+    const pf=proyectar(cam,34*cam.sg,0,0), kf=pf.k/ARCO3D.pxMetro;
     area='<g id="arco-area">'+figs.map(f=>f.svg).join("")+'</g>'+
-      '<g id="arco-flag" transform="translate('+(lado==="der"?344:16)+' 236)"><rect x="-1" y="-42" width="2.2" height="42" fill="#f4f4f4"/><polygon points="1.2,-42 22,-35 1.2,-27" fill="#f0c419"/></g>';
+      '<g id="arco-flag" transform="translate('+pf.x.toFixed(1)+' '+pf.y.toFixed(1)+') scale('+kf.toFixed(3)+')"><rect x="-1.4" y="-82" width="2.8" height="82" fill="#f4f4f4"/><polygon points="1.4,-82 30,-72 1.4,-60" fill="#f0c419"/></g>'+
+      '<g id="arco-iman" opacity="0">'+ARCO_IMAN.map(z=>{ const w=_legadoAMundo(cam,z.x,z.y), q=proyectar(cam,w.X,w.Y,w.Z), r=Math.max(7,1.1*q.k);
+        return '<ellipse class="a3-iman" data-zona="'+z.zona+'" cx="'+q.x.toFixed(1)+'" cy="'+q.y.toFixed(1)+'" rx="'+r.toFixed(1)+'" ry="'+(r*0.45).toFixed(1)+'" fill="rgba(255,213,74,.18)" stroke="#ffd54a" stroke-width="1.2" stroke-dasharray="3 2"/>'; }).join("")+'</g>';
   }
   /* el que patea, de espalda: corre a la pelota cuando se patea */
   let pat="";
@@ -344,8 +351,9 @@ function htmlArcoVivo(opts){
     pat='<g id="a3-pateador" transform="translate('+pp.x.toFixed(1)+' '+pp.y.toFixed(1)+') scale('+kk.toFixed(3)+')" data-x="'+pp.x.toFixed(1)+'" data-y="'+pp.y.toFixed(1)+'" data-esc="'+kk.toFixed(3)+'">'+
       '<g class="a3-pat">'+_figPersona({kit:kitAtk, pose:"parado", espalda:true, num:opts.dorsal||10, piel:ARCO_PIELES[(sem+3)%ARCO_PIELES.length], pelo:ARCO_PELOS[(sem+2)%ARCO_PELOS.length]})+'</g></g>';
   } else {
-    const kk=1.05, px=lado==="der"?sbx+20:sbx-20;
-    pat='<g id="a3-pateador" transform="translate('+px+' 256) scale('+kk+')" data-x="'+px+'" data-y="256" data-esc="'+kk+'">'+
+    /* el que cobra, afuera de la cancha y detrás de la pelota (de espalda a la cámara) */
+    const pp=proyectar(cam,(ARCO3D.cornerX+1.1)*cam.sg,0,ARCO3D.cornerZ-1.2), kk=+(pp.k/ARCO3D.pxMetro).toFixed(3), px=+pp.x.toFixed(1), py=+pp.y.toFixed(1);
+    pat='<g id="a3-pateador" transform="translate('+px+' '+py+') scale('+kk+')" data-x="'+px+'" data-y="'+py+'" data-esc="'+kk+'">'+
       '<g class="a3-pat">'+_figPersona({kit:kitAtk, pose:"parado", espalda:true, num:opts.dorsal||7, piel:ARCO_PIELES[(sem+3)%ARCO_PIELES.length], pelo:ARCO_PELOS[(sem+2)%ARCO_PELOS.length]})+'</g></g>';
   }
   return ''+
@@ -401,7 +409,19 @@ function _arcoPunto(svg, ev){
   const m=svg.getScreenCTM&&svg.getScreenCTM();
   if(m&&svg.createSVGPoint){ const pt=svg.createSVGPoint(); pt.x=cx; pt.y=cy; const q=pt.matrixTransform(m.inverse()); s={x:q.x,y:q.y}; }
   else { const r=svg.getBoundingClientRect(); s={x:(cx-r.left)*360/r.width, y:(cy-r.top)*240/r.height}; }
-  return _camDe(svg)?arcoS2L(svg,s.x,s.y):s;
+  const cam=_camDe(svg);
+  if(!cam) return s;
+  return (!cam.frontal&&!svg._sinIman)?arcoIman(svg,s.x,s.y):arcoS2L(svg,s.x,s.y);
+}
+/* 7.9092 · en el córner el dedo cae al destino más cercano si está a menos de 24 px (primer palo, penal o
+   segundo palo). Lejos de los tres, se apunta libre (por ejemplo, para mandarla larga o corta a propósito). */
+function arcoIman(svg,xs,ys){
+  const cam=_camDe(svg); let mejor=null;
+  ARCO_IMAN.forEach(z=>{ const w=_legadoAMundo(cam,z.x,z.y), q=proyectar(cam,w.X,w.Y,w.Z), d=Math.hypot(q.x-xs,q.y-ys);
+    if(d<24&&(!mejor||d<mejor.d)) mejor={d:d,z:z}; });
+  const g=svg.querySelector("#arco-iman");
+  if(g){ g.setAttribute("opacity","1"); [].forEach.call(g.querySelectorAll(".a3-iman"),e=>e.setAttribute("fill",mejor&&e.getAttribute("data-zona")===mejor.z.zona?"rgba(255,213,74,.55)":"rgba(255,213,74,.18)")); }
+  return mejor?{x:mejor.z.x,y:mejor.z.y}:arcoS2L(svg,xs,ys);
 }
 function _arcoMira(svg, aim, x0, y0){
   const mira=svg.querySelector("#arco-mira"), tray=svg.querySelector("#arco-linea");
@@ -470,7 +490,7 @@ function _correPateador(svg,cb){
   if(!g||!bola||quieto){ if(cb) cb(); return; }
   const x0=parseFloat(g.getAttribute("data-x")), y0=parseFloat(g.getAttribute("data-y")), k=parseFloat(g.getAttribute("data-esc"));
   const cam=_camDe(svg), bx=cam.sbx, by=cam.sby;
-  const x1=cam.frontal?bx-26*k/1.4:(cam.lado==="der"?bx+16:bx-16), y1=cam.frontal?by+10:y0-6;
+  const x1=cam.frontal?bx-26*k/1.4:x0+(bx-x0)*0.72, y1=cam.frontal?by+10:y0+(by-y0)*0.72;
   const t0=performance.now();
   (function paso(t){
     const u=Math.min(1,(t-t0)/A3_CARRERA), e=u*u*(3-2*u), salto=-Math.abs(Math.sin(u*Math.PI*3))*5;

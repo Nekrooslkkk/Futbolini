@@ -4562,3 +4562,30 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **Integración 7.9091 (Claude Opus):** revisado el bloque 1 de Sonnet. Core, dev y doctor verdes en una copia; muestreo del
   texto correcto. Se integra a `main` y `VERSION` sube a 7.9091. Voseo que queda fuera de PLOP: ~85 formas, sobre todo en
   `pulido.js` (33), `ui.js` e `ia.js`; es de los bloques 2 a 4.
+
+### 7.9092 — Penal, tiro libre y córner en 3D REAL (WebGL, estilo PES 2006) · camino a la 8.00
+**Archivos:** `js/arco-gl.js` (nuevo), `js/vendor/three.min.js` (three.js r149, MIT, local), `js/arco3d.js`, `js/ui.js`,
+`js/dev-doctor.js`, `CHECKLIST_8.md`, `js/util.js`, `index.html`
+- **3D de verdad** (pedido del autor con foto del PES 2006): canvas WebGL con three.js debajo del SVG.
+  - Estadio nocturno: tribunas elevadas con muro, ~5.000 hinchas instanciados con los colores del club, techo,
+    torres de focos con halo, anillo de estadio y cielo.
+  - Cancha: pasto con franjas y grano, líneas.
+  - Arco con palos, soportes y red.
+  - Jugadores con volumen: piernas, brazos con pivote, número en la espalda. Sombras en tiempo real.
+- **La lógica no cambió.** La jugada sigue en el SVG (dedo, mira, probabilidades, animaciones). Cada cuadro se leen la
+  pelota, el arquero (salto, giro, brazos), el pateador y los del área, y se ubican en 3D con una cámara idéntica: la
+  proyección se arma desde `camaraArco` y el `getScreenCTM` del SVG, así que la repetición con zoom también calza.
+- **Córner con cámara PES:** alta, detrás del banderín, pelota abajo y arco al fondo. Los destinos quedan a ~18 px,
+  así que hay **imán**: el dedo cae a primer palo, penal o segundo palo si está a menos de 24 px, con anillos que se
+  iluminan. La pelota, el pateador y el banderín ahora se proyectan desde el mundo, no desde puntos fijos.
+- **Se degrada, no se rompe:** sin WebGL o sin three.js → el SVG de siempre. Modo liviano: sin sombras, menos público,
+  resolución 1×.
+  - Ajustes ▸ Pantalla: "🏟️ 3D real / ✏️ Dibujo clásico".
+  - three.js se precarga en segundo plano y queda en la caché offline (`<link rel="prefetch">`).
+- **Doctor:**
+  - `arco_gl`: three.js local, enganche en pie, cámara 3D = cámara SVG al píxel en penal y córner, jugador ~1,8 m.
+    Al revés: correr la cámara 0,5 m dio "cae a 16,5 px del SVG".
+  - `arco_3d`: la separación del córner baja de 25 a 14 px y se exige el imán, que atrapa el dedo.
+- **`CHECKLIST_8.md` reescrito:** fase A (terminar), fase B (pulir), las 3 puertas de la 8.00 y la serie 8.0x (pulir y
+  agregar equipos, jugadores, fotos y textos).
+- **Estado:** doctor sano (3 partidas + celular, 87 chequeos) · dev 593/593 · core 1185/1185.

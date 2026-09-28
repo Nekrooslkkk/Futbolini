@@ -1425,7 +1425,10 @@ devDoctorRegistrar({id:"arco_3d", area:"interfaz", n:"Arco 3D: cámara real (arc
         /* córner: primer palo, punto penal y segundo palo tienen que verse separados para apuntar */
         var zp=arcoL2S(svg,70,50), zc=arcoL2S(svg,180,141), zs=arcoL2S(svg,290,50);
         var sep=Math.min(Math.hypot(zp.x-zc.x,zp.y-zc.y),Math.hypot(zs.x-zc.x,zs.y-zc.y),Math.hypot(zp.x-zs.x,zp.y-zs.y));
-        if(sep<25) falta.push("córner: primer palo, penal y segundo palo quedan a "+Math.round(sep)+" px entre sí (no se puede apuntar)");
+        /* 7.9092 · cámara PES (el arco queda al fondo): se exige 14 px y el imán que atrapa el dedo */
+        if(sep<14) falta.push("córner: primer palo, penal y segundo palo quedan a "+Math.round(sep)+" px entre sí (no se puede apuntar)");
+        if(typeof arcoIman!=="function"||!svg.querySelector("#arco-iman .a3-iman")) falta.push("córner: sin imán de destinos (con la cámara PES no se puede apuntar en celu)");
+        else { var zc2=arcoL2S(svg,84,78), q2=arcoIman(svg,zc2.x+9,zc2.y+5); if(!(q2.x===84&&q2.y===78)) falta.push("córner: el imán no atrapa el dedo cerca del primer palo"); }
       }
       [[70,60],[180,100],[290,150],[120,168]].forEach(function(p){
         var s=arcoL2S(svg,p[0],p[1]), q=arcoS2L(svg,s.x,s.y);
@@ -1880,6 +1883,28 @@ devDoctorRegistrar({id:"arco_realismo", area:"interfaz", n:"Penal/TL/córner con
     if(htmlArcoVivo({modo:"penal"}).indexOf("url(#a3Contorno)")>=0) falta.push("en Modo liviano siguen los filtros caros");
   } finally { b.classList.toggle("perf",perf); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("grano, contorno, noche y brillo en penal/TL/córner · liviano los apaga");
+}});
+/* 7.9092 · penal, tiro libre y córner en 3D real (three.js). La cámara 3D tiene que caer en el mismo píxel
+   que la del SVG (si no, la pelota 3D no está donde el dedo apunta). Sin WebGL, queda el SVG. */
+devDoctorRegistrar({id:"arco_gl", area:"interfaz", n:"Arco en 3D real: three.js local, cámara idéntica al SVG, respaldo sin WebGL", pesado:true,
+  arreglo:"js/arco-gl.js: _glCamara/_glProyeccion arman la cámara desde camaraArco; three.js vive en js/vendor/three.min.js.", fn:function(){
+  if(typeof arcoGLMontar!=="function") return _dmal("no cargó js/arco-gl.js",["falta el script en index.html"]);
+  var falta=[];
+  var pre=document.querySelector('link[href*="vendor/three.min.js"]'); if(!pre) falta.push("three.js no está en index.html (sin eso no queda guardado para jugar sin internet)");
+  if(!(window._arcoMontarSvg&&window._arcoMontarSvg._gl)) falta.push("_arcoMontarSvg no monta el 3D (se pisó el enganche)");
+  if(typeof THREE==="undefined") return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("three.js todavía no cargó (se carga solo, en segundo plano): se revisa en la próxima corrida");
+  /* la cámara 3D proyecta igual que la del SVG: 4 puntos del mundo en penal y en córner */
+  ["penal","corner"].forEach(function(modo){
+    var cam=camaraArco(modo,"izq"), cg=_glCamara(cam), W=360, H=240, f=cam.F;
+    cg.projectionMatrix.set(2*f/W,0,(W-2*180)/W,0, 0,2*f/H,(2*cam.cy-H)/H,0, 0,0,-1.0015,-0.6,0,0,-1,0);
+    [[0,0,0],[3.66,2.44,0],[-9.16,0,5.5],[0,0,11]].forEach(function(p){
+      var v=new THREE.Vector3(p[0],p[1],p[2]).project(cg), x=(v.x+1)/2*W, y=(1-v.y)/2*H, s=proyectar(cam,p[0],p[1],p[2]);
+      if(Math.hypot(x-s.x,y-s.y)>0.6) falta.push(modo+": el punto ("+p+") cae a "+Math.hypot(x-s.x,y-s.y).toFixed(1)+" px del SVG");
+    });
+  });
+  var j=jugador3D({kit:["#ff0000","#000000"],num:9}), box=new THREE.Box3().setFromObject(j), alto=box.max.y-box.min.y;
+  if(alto<1.6||alto>2.0) falta.push("los jugadores 3D miden "+alto.toFixed(2)+" m (deben medir cerca de 1,8)");
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("cámara 3D = cámara SVG al píxel · jugador de "+alto.toFixed(2)+" m · three.js local");
 }});
 devDoctorRegistrar({id:"motor_goles", area:"motor", n:"Marcadores creíbles y VAR solo en jugadas dudosas", fn:function(){
   var falta=[];

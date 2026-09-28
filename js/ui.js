@@ -3653,6 +3653,17 @@ function vistaAjustes(host){
     fperf.appendChild(b);
   });
   p.cuerpo.appendChild(fperf);
+  /* 7.9092 · penal, tiro libre y córner en 3D real (WebGL) o el dibujo clásico */
+  p.cuerpo.appendChild(el("label","lb","Penales, tiros libres y córners"));
+  const f3d=el("div","fichas");
+  const gl3On=!(typeof arcoGLApagado==="function"&&arcoGLApagado());
+  [[true,"🏟️ 3D real"],[false,"✏️ Dibujo clásico"]].forEach(([on,n])=>{
+    const b=el("button","ficha",n);
+    b.setAttribute("aria-pressed",gl3On===on?"true":"false");
+    b.onclick=()=>{ try{ localStorage.setItem("futbolini_arcogl",on?"on":"off"); }catch(e){} if(on&&typeof cargarThree==="function") cargarThree(); render(); };
+    f3d.appendChild(b);
+  });
+  p.cuerpo.appendChild(f3d);
   p.cuerpo.appendChild(el("p","mini","El modo liviano apaga burbujas, desenfoques y animaciones pesadas: el juego vuela en equipos lentos o celulares viejos. Se autoenciende solo si detecta un equipo flaco."));
   /* 7.69 · idioma / registro (neutro · chilensis · português) */
   if(typeof IDIOMAS_DISPONIBLES!=="undefined" && typeof setIdioma==="function"){
