@@ -1952,6 +1952,20 @@ devDoctorRegistrar({id:"rendimiento_ui", area:"interfaz", n:"La escena del penal
 }});
 
 /* 7.9038 · "apretar cualquier cosa me manda arriba" y "se pierde el relato del partido" */
+devDoctorRegistrar({id:"rendimiento", area:"interfaz", n:"Rinde en un celu barato: guardado agrupado, cinta sin scrollIntoView, secciones medidas", pesado:true,
+  arreglo:"js/rendimiento.js (guardarAgrupado/guardarAhora) y js/ui.js pintarDock (scrollLeft solo al cambiar de sección).", fn:function(){
+  var falta=[];
+  if(typeof devRendimiento!=="function") return _dmal("no cargó js/rendimiento.js",["falta el script en index.html"]);
+  if(!(window.guardar&&window.guardar._rend)) falta.push("guardar() no está agrupado: cada acción vuelve a escribir la partida entera");
+  if(typeof pintarDock==="function"&&/scrollIntoView\(/.test(_docFuente(pintarDock))) falta.push("pintarDock usa scrollIntoView en cada repintado (25 % del tiempo en un celu lento)");
+  if(typeof guardarAhora==="function"&&(_docFuente(guardarAhora).match(/JSON\.stringify/g)||[]).length>1) falta.push("guardarAhora convierte la partida a texto más de una vez");
+  if(!E) return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sin partida: solo se revisó el código");
+  var r=devRendimiento();
+  if(!r.agrupa) falta.push("5 guardar() seguidos no se juntaron en uno");
+  if(r.kbPartida>3000) falta.push("la partida pesa "+r.kbPartida+" KB (guardar se pone lento; revisar qué crece sin tope)");
+  var txt="peor sección: "+r.peor+" "+r.secciones[r.peor]+" ms · partida "+r.kbPartida+" KB · a texto "+r.stringify+" ms";
+  return falta.length?_dmal(falta.length+" problema(s) · "+txt,falta):_dok(txt);
+}});
 devDoctorRegistrar({id:"scroll_estable", area:"interfaz", n:"Apretar un botón no te manda arriba (ni en el partido)", fn:function(){
   var falta=[];
   if(typeof _renderCuerpo!=="function") falta.push("repintar una sección vacía la página y el scroll vuelve arriba");

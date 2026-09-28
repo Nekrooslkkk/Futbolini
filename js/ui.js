@@ -90,7 +90,12 @@ function pintarDock(){
   }
   d.appendChild(row);
   const onTab=row.querySelector(".dock-tab.on");
-  if(onTab) try{ onTab.scrollIntoView({inline:"center",block:"nearest"}); }catch(e){}
+  /* 7.9093 · rendimiento: centrar con scroll-into-view obliga a recalcular toda la página (25 % del tiempo de cada repintado en un
+     celu lento). Solo se centra la pestaña cuando cambió la sección, y moviendo la cinta, no la página. */
+  if(onTab&&pintarDock._sec!==SEC){ pintarDock._sec=SEC;
+    /* medir en el próximo cuadro: leer offsetLeft a mitad del repintado obliga a un layout extra (42 % en celu lento) */
+    const centrar=()=>{ try{ if(row.isConnected) row.scrollLeft=Math.max(0,onTab.offsetLeft-(row.clientWidth-onTab.offsetWidth)/2); }catch(e){} };
+    if(typeof requestAnimationFrame==="function") requestAnimationFrame(centrar); else centrar(); }
 }
 function abrirMasMovil(){
   modal(function(box){
@@ -196,7 +201,8 @@ function pintarMenu(){
    es la misma, se sostiene el alto mientras se repinta y se vuelve a donde estabas. Cambiar de
    sección sí empieza arriba (irA). */
 function render(){
-  const v=$("#vista"), misma=!!(E&&render._sec===SEC&&v), y=window.scrollY||0, alto=v?v.offsetHeight:0;
+  /* 7.9093 · el alto se mide solo si hace falta (misma sección): medirlo siempre forzaba un layout extra */
+  const v=$("#vista"), misma=!!(E&&render._sec===SEC&&v), y=misma?(window.scrollY||0):0, alto=misma?v.offsetHeight:0;
   if(misma&&alto) v.style.minHeight=alto+"px";
   try{ _renderCuerpo(); }
   finally{

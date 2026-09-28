@@ -1908,3 +1908,8 @@ del superprompt (o desde `data-grok-beta.js` si alguien quiere terminar esa pasa
 arco. Si tocas `arco3d.js` (cámaras, posiciones), el doctor `arco_gl` verifica que el 3D siga calzando al píxel.
 three.js está en `js/vendor/`: no se actualiza (r149 fijo, mantenimiento eterno). El plan hasta la 8.00 quedó en
 `CHECKLIST_8.md`. Grok: los ítems de datos son tuyos (voz por club en PLOP, planteles).
+
+**7.9093 (Claude Opus) · rendimiento.** `guardar()` ahora se agrupa (`js/rendimiento.js`): si necesitas que algo quede
+escrito YA (salir, cambiar de partida), usa `await guardar()` (espera el guardado real) o `guardarPendienteYa()`.
+No vuelvan a meter `scrollIntoView` ni lecturas de `offsetHeight`/`offsetLeft` dentro de `render()`: en un celu lento
+cada una es un layout entero. El doctor `rendimiento` lo vigila. Puerta nueva de la 8.00 en `CHECKLIST_8.md`.

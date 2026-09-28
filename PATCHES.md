@@ -4589,3 +4589,24 @@ Medido antes de tocar (herramientas que quedan en 🩺 Doctor), corregido de ra�
 - **`CHECKLIST_8.md` reescrito:** fase A (terminar), fase B (pulir), las 3 puertas de la 8.00 y la serie 8.0x (pulir y
   agregar equipos, jugadores, fotos y textos).
 - **Estado:** doctor sano (3 partidas + celular, 87 chequeos) · dev 593/593 · core 1185/1185.
+
+### 7.9093 — Rendimiento: que un celu barato juegue lo mismo que uno caro
+Pedido del autor: "tenerlo súper rendido… que la experiencia sea la misma en un celular malo que en un iPhone".
+Medido con la CPU 6× más lenta (Chrome, CDP `Emulation.setCPUThrottlingRate`) y perfilado con `Profiler`:
+- **Guardar era el 38 % del tiempo:** cada acción guardaba la partida entera (~520 KB) varias veces y la pasaba a texto
+  dos veces (ranura + clave vieja). Nuevo `js/rendimiento.js`: `guardar()` se agrupa (varias llamadas = un guardado,
+  como mucho uno cada 1,5 s), un solo `JSON.stringify` para las dos claves, y al salir o cambiar de app
+  (`pagehide`/`visibilitychange`) lo pendiente se guarda al tiro. `await guardar()` sigue esperando el guardado real.
+- **La cinta del celu (pintarDock) era el 25–42 %:** `scrollIntoView` en cada repintado. Ahora solo al cambiar de
+  sección, moviendo la cinta (`scrollLeft`) y midiendo en el próximo cuadro. `render()` ya no mide el alto de la vista
+  si no hace falta (otro layout forzado).
+- **Resultado (CPU 6×):** avanzar semana ~690 → ~240–360 ms · cuadros lentos del partido 38/180 → 5–10/180 ·
+  guardar ya no bloquea. Las secciones siguen en 100–400 ms (costo repartido: layout, HTML del calendario, lista de
+  mercado): segunda pasada anotada en `CHECKLIST_8.md`.
+- Si el equipo se traba de verdad (8 tareas >120 ms en 15 s) y el jugador nunca eligió, se prende solo el Modo liviano.
+- **Dev:** `devRendimiento()` cronometra secciones, peso de la partida y paso a texto. Doctor `rendimiento` (88 chequeos):
+  guardar agrupado, cinta sin `scrollIntoView(`, un solo stringify, 5 `guardar()` = 0 guardados inmediatos, partida
+  < 3 MB. Al revés: quitar el enganche de guardar → "2 problema(s)". (En el doctor headless el reloj está detenido:
+  los ms salen 0; en un navegador real salen de verdad.)
+- `CHECKLIST_8.md`: nueva puerta de la 8.00 "rinde en un celu barato" con números.
+- **Estado:** doctor sano (3 partidas + celular, 88 chequeos) · dev 593/593 · core 1185/1185.

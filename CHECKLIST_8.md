@@ -13,6 +13,7 @@ Sistemas que el autor pidió y todavía no existen o están a medias.
 - [x] Partido en PC sin corrimiento · metas realistas · temporadas pasadas con repetición (7.9083–7.9088)
 - [x] PLOP con perfil de red social · pizarra automática con química a 100 (7.9089)
 - [x] **Penal, tiro libre y córner en 3D real** estilo PES 2006 (7.9092)
+- [x] **Rendimiento base:** guardado agrupado, cinta del celu sin layout forzado (7.9093; doctor `rendimiento`)
 - [ ] **Mercado:** cupo de extranjeros y diferencia real nacional/extranjero (hoy no existe) · negociación más viva
 - [ ] **Segunda por zonas:** cierre de temporada (un club queda con −999 pts; la tabla del cierre no cuadra fecha a fecha)
 - [ ] **Voz por club en PLOP** (hoy 14 plantillas iguales para 46 clubes; anotado por Sonnet en 7.9091)
@@ -28,12 +29,16 @@ Nada nuevo: solo que lo que hay se sienta terminado.
 - [ ] Íconos Aero propios (las 14 ranuras de `js/data-ranuras.js`) — humano o provisorios SVG
 - [ ] Fotos de estadio que faltan (15 Chile + 30 Argentina, Commons)
 - [ ] Tutorial de 5 pasos para quien entra por primera vez (lo que traben los amigos de beta)
+- [ ] Rendimiento 2ª pasada: cargar `dev-*.js` (250 KB) solo al abrir el modo dev · lista de mercado cacheada por
+      semana · calendario con filas más livianas · probar en un Android real barato (no solo CPU 6× simulada)
 - [ ] Un barrido de 3 temporadas completas con 10 clubes distintos, con el doctor en cada cierre
 
-## LAS 3 PUERTAS DE LA 8.00 (todas abiertas = se sube)
+## LAS 4 PUERTAS DE LA 8.00 (todas abiertas = se sube)
 1. **Doctor sano** en `bash test/doctor.sh` + 5 partidas más (una por época y división) y las dos suites en verde.
 2. **Cero deuda conocida:** FASE A completa, `DEUDA=""` en `test/correr_dev.sh`, cero voseo fuera de lugar.
-3. **Probado por humanos:** el autor jugó 1 temporada completa con un club chico y 2–3 amigos jugaron 30 min
+3. **Rinde en un celu barato:** con la CPU 6× más lenta (Android de ~4 años), avanzar semana < 400 ms, ninguna
+   sección > 400 ms y el partido en vivo con < 5 % de cuadros lentos. Se mide con `devRendimiento()`.
+4. **Probado por humanos:** el autor jugó 1 temporada completa con un club chico y 2–3 amigos jugaron 30 min
    sin explicación; lo que anotaron está resuelto o conscientemente dejado para 8.0x.
 
 ## DESPUÉS DE LA 8.00 · la serie 8.0x (pulir y agregar lo fácil)
