@@ -351,22 +351,22 @@ if(typeof devDoctorRegistrar==="function"){
       return f.length?_dmal(f.length+" problema(s)",f):_dok("sueldo "+plata(s)+"/semana · planilla "+plata(pl)+"/año · cita ≤ media semana");
     }});
 }
-/* 7.9113 · en el tema insano la barra de Jugar quedaba al final de la página: el body llevaba un filter animado, y un
-   filter/transform/backdrop-filter en un ANCESTRO vuelve relativo a él todo lo position:fixed. Se revisa en cada tema. */
-function fijosAtrapados(){
-  const out=[], props=["filter","transform","backdropFilter","webkitBackdropFilter","perspective"];
-  [].slice.call(document.querySelectorAll("#barra,.dock-avanza,.barra-jugar,.ctrlPartido,#btnAvanzar,nav.dock-cinta")).forEach(n=>{
-    if(!n.isConnected||getComputedStyle(n).position!=="fixed") return;
-    for(let a=n.parentElement;a&&a!==document.documentElement;a=a.parentElement){
-      const cs=getComputedStyle(a);
-      const p=props.find(k=>cs[k]&&cs[k]!=="none");
-      const will=/transform|filter|perspective/.test(cs.willChange||""), cont=/paint|layout|strict|content/.test(cs.contain||"");
-      if(p||will||cont){ out.push((n.id?"#"+n.id:"."+String(n.className).split(" ")[0])+" queda atrapado por "+(a.id?"#"+a.id:a.tagName.toLowerCase()+(a.className&&typeof a.className==="string"?"."+a.className.split(" ")[0]:""))+" ("+(p||(will?"will-change":"contain"))+": "+(p?cs[p]:(cs.willChange||cs.contain))+")"); break; }
-    }
-  });
-  return out;
-}
 if(typeof devDoctorRegistrar==="function"){
+  /* 7.9113 · en el tema insano la barra de Jugar quedaba al final de la página: el body llevaba un filter animado, y un
+     filter/transform/backdrop-filter en un ANCESTRO vuelve relativo a él todo lo position:fixed. Se revisa en cada tema. */
+  function fijosAtrapados(){
+    const out=[], props=["filter","transform","backdropFilter","webkitBackdropFilter","perspective"];
+    [].slice.call(document.querySelectorAll("#barra,.dock-avanza,.barra-jugar,.ctrlPartido,#btnAvanzar,nav.dock-cinta")).forEach(n=>{
+      if(!n.isConnected||getComputedStyle(n).position!=="fixed") return;
+      for(let a=n.parentElement;a&&a!==document.documentElement;a=a.parentElement){
+        const cs=getComputedStyle(a);
+        const p=props.find(k=>cs[k]&&cs[k]!=="none");
+        const will=/transform|filter|perspective/.test(cs.willChange||""), cont=/paint|layout|strict|content/.test(cs.contain||"");
+        if(p||will||cont){ out.push((n.id?"#"+n.id:"."+String(n.className).split(" ")[0])+" queda atrapado por "+(a.id?"#"+a.id:a.tagName.toLowerCase()+(a.className&&typeof a.className==="string"?"."+a.className.split(" ")[0]:""))+" ("+(p||(will?"will-change":"contain"))+": "+(p?cs[p]:(cs.willChange||cs.contain))+")"); break; }
+      }
+    });
+    return out;
+  }
   devDoctorRegistrar({id:"fijos_sin_atrapar", area:"interfaz", n:"En todos los temas, la barra de Jugar y lo fijo quedan pegados a la pantalla",
     arreglo:"css/temas7.css: nada de filter/transform/backdrop-filter en body ni en ancestros de lo fijo (el tema insano animaba filter en body).",
     fn:function(){
@@ -384,5 +384,18 @@ if(typeof devDoctorRegistrar==="function"){
       } finally { if(temaPrev==null) document.body.removeAttribute("data-tema"); else document.body.setAttribute("data-tema",temaPrev); }
       const uniq=f.filter((x,i)=>f.indexOf(x)===i);
       return uniq.length?_dmal(uniq.length+" problema(s)",uniq):_dok(temas.length+" temas revisados: lo fijo queda pegado a la pantalla");
+    }});
+}
+if(typeof devDoctorRegistrar==="function"){
+  /* 7.9114 · cada club del selector trae camiseta, short y medias en hex. Sin fuente, no entra (y acá se lista). */
+  devDoctorRegistrar({id:"kits_clubes", area:"datos", n:"Cada club elegible tiene camiseta, short y medias en hex",
+    arreglo:"js/data-kits.js KITS: local y visita de 3 hex #rrggbb. franja solo vertical, horizontal o banda.",
+    fn:function(){
+      if(typeof KITS!=="object"||typeof revisarKits!=="function") return _dmal("falta js/data-kits.js (KITS / revisarKits)");
+      if(typeof clubesElegibles!=="function") return _dmal("sin clubesElegibles");
+      const ids=clubesElegibles().lista.map(function(c){ return c.id; });
+      const r=revisarKits(ids, KITS);
+      const det=r.sin.map(function(id){ return "sin kit: "+id; }).concat(r.mal);
+      return r.ok?_dok(r.con+"/"+r.total+" clubes elegibles con kit"):_dmal(r.sin.length+" sin kit, "+r.mal.length+" color(es) malo(s)", det);
     }});
 }

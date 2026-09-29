@@ -4934,3 +4934,15 @@ Archivos: `css/temas7.css`, `js/dev-banco.js`, `CHECKLIST_8.md`, `ChatDeTrabajIA
 - **Medido:** despidos en la primera temporada 14 % (antes ~11 %); dentro del tope, a vigilar con los eventos nuevos.
 - **Estado:** doctor sano (4 partidas + celular, 111 chequeos) · dev 593/593 · core 1185/1185 · banco 255 sano ·
   saves 12/12.
+### 7.9114 — Camisetas reales en la cancha cenital (sobre 7.9113) en la cancha cenital
+Archivos: `js/data-kits.js` (nuevo), `js/cancha.js`, `js/dev-banco.js`, `index.html`, `js/util.js`.
+- Cada club del selector (Primera, B, Segunda, Argentina) y Cobresal/Fernández Vial de 1991 y 2006 salen con camiseta, short y medias. La franja solo donde la fuente la nombra (la UC, Audax, la UdeC, River, Boca y los rayados argentinos).
+- Si las camisetas chocan (distancia RGB menor a 120), el rival pasa al kit de visita. Si igual chocan, queda la camiseta de emergencia de antes y se le saca la franja, para no pintar una raya sobre un color inventado.
+- El arquero de la cenital sigue en oro y verde agua: no usa el kit de campo. El short y las medias de los demás salen del kit.
+- La franja se recorta a la elipse del hombro (una faja, tres rayas o la banda). Sin degradé nuevo.
+- Fuera, sin inventar short: Primero de Mayo, Eleuterio Ramírez, Gold Cross, Morning Star, Barcelona, Santiago National, Nacional, Loma Blanca. English tiene camiseta azul documentada (Litoral Press, 19 abr 2025) y nada más: también queda fuera.
+- Doctor `kits_clubes`. Al revés: un hex `blanco` y una franja `diagonal` fallan.
+- No se tocó la simulación (`_cvJuego`, `_cvDecidir`, `_cvPasoGol`), las cámaras del 3D ni el motor.
+- Se revalida encima de 7.9113 (el 7.9112 ya lo había usado Sonnet). Doctor sano, 112 chequeos (4 partidas + celular) · dev 593/593 · core 1185/1185 · banco 255 sano.
+
+

@@ -254,13 +254,37 @@ function _cvStep(P,dt,stOpc){
 }
 /* ---------- colores de camiseta (si chocan, el rival va de alternativa) ---------- */
 function _cvHex(c){ let s=String(c||"").replace("#",""); if(s.length===3) s=s[0]+s[0]+s[1]+s[1]+s[2]+s[2]; const n=parseInt(s,16); return isNaN(n)?[200,200,200]:[(n>>16)&255,(n>>8)&255,n&255]; }
+function _cvLejos(a,b){ const x=_cvHex(a), y=_cvHex(b); return Math.hypot(x[0]-y[0],x[1]-y[1],x[2]-y[2]); }
 function _cvColores(P){
   let mio="#eef3ff", riv="#e5484d";
-  try{ const ic=(typeof infoClub==="function")&&infoClub(E.club); if(ic&&ic.color) mio=ic.color; }catch(e){}
-  try{ const rid=P&&P.part&&P.part.rivalId; const ir=rid&&(typeof infoClub==="function")&&infoClub(rid); if(ir&&ir.color) riv=ir.color; }catch(e){}
-  const a=_cvHex(mio), b=_cvHex(riv);
-  if(Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])<120) riv=(a[0]+a[1]+a[2]>420)?"#1d2a44":"#f4f4f4";
-  return {mio:mio, riv:riv};
+  let shortMio=null, shortRiv=null, mediasMio=null, mediasRiv=null;
+  let franjaMio=null, franjaRiv=null, franjaColorMio=null, franjaColorRiv=null;
+  try{
+    const id=E&&E.club;
+    const deVisita=!!(P&&P.part&&P.part.local===false);
+    const p=(typeof piezaKit==="function")&&piezaKit(id, deVisita);
+    if(p){ mio=p.camiseta; shortMio=p.short; mediasMio=p.medias; franjaMio=p.franja; franjaColorMio=p.franjaColor; }
+    else { const ic=(typeof infoClub==="function")&&infoClub(id); if(ic&&ic.color) mio=ic.color; }
+  }catch(e){}
+  try{
+    const rid=P&&P.part&&P.part.rivalId;
+    const p0=(typeof piezaKit==="function")&&rid&&piezaKit(rid, false);
+    if(p0){
+      let p=p0;
+      if(_cvLejos(mio, p.camiseta)<120){ const p1=piezaKit(rid, true); if(p1) p=p1; }
+      riv=p.camiseta; shortRiv=p.short; mediasRiv=p.medias; franjaRiv=p.franja; franjaColorRiv=p.franjaColor;
+    } else {
+      const ir=rid&&(typeof infoClub==="function")&&infoClub(rid);
+      if(ir&&ir.color) riv=ir.color;
+    }
+  }catch(e){}
+  if(_cvLejos(mio, riv)<120){
+    const a=_cvHex(mio);
+    riv=(a[0]+a[1]+a[2]>420)?"#1d2a44":"#f4f4f4";
+    franjaRiv=null; franjaColorRiv=null;   /* la camiseta de emergencia no hereda la raya de un kit que no es */
+  }
+  return {mio:mio, riv:riv, shortMio:shortMio, shortRiv:shortRiv, mediasMio:mediasMio, mediasRiv:mediasRiv,
+    franjaMio:franjaMio, franjaRiv:franjaRiv, franjaColorMio:franjaColorMio, franjaColorRiv:franjaColorRiv};
 }
 /* 7.9107 · memorizados: se pedían para cada jugador en cada cuadro (22 × 60 por segundo, parseando el color) */
 const _CV_MEMO={};
@@ -407,7 +431,7 @@ function _cvArcoTop(ctx,C,lado,vib,t){
 const CV_PIEL=["#f1c9a5","#e0ac7e","#c68b5c","#a86e42","#8a5634","#5e3a22"], CV_PELO=["#1b1410","#2e2016","#4a3020","#6b4a2a","#c9a15a","#101010","#3a2a20"];
 function _cvLook(p,i){ if(!p._look){ const h=(i*2654435761)>>>0; p._look={piel:CV_PIEL[h%CV_PIEL.length],pelo:CV_PELO[(h>>5)%CV_PELO.length],pelado:((h>>9)%11)===0}; } return p._look; }
 /* jugador visto desde arriba: sombras de focos, piernas, brazos, hombros con camiseta, número, cabeza */
-function _cvJugadorTop(ctx,C,p,i,camiseta,short,medias,conNum,dueno){
+function _cvJugadorTop(ctx,C,p,i,camiseta,short,medias,conNum,dueno,franja,franjaColor){
   const S=Math.max(C.S*2.1,C.modo==="completa"?13:7);                     /* GTA: los monos más grandes que la escala real, para leerlos (y visibles en la vista completa) */
   const x=C.sx(p.x*105), y=C.sy(p.y*68);
   const look=_cvLook(p,i);
@@ -444,6 +468,16 @@ function _cvJugadorTop(ctx,C,p,i,camiseta,short,medias,conNum,dueno){
   gr.addColorStop(0,_cvSombra(camiseta,-0.25)); gr.addColorStop(0.55,camiseta); gr.addColorStop(1,_cvSombra(camiseta,0.35));
   ctx.fillStyle=gr; ctx.beginPath(); ctx.ellipse(0,0,S*0.17,S*0.31,0,0,Math.PI*2); ctx.fill();
   ctx.strokeStyle=_cvSombra(camiseta,0.5); ctx.lineWidth=Math.max(0.6,S*0.025); ctx.stroke();
+  /* franja recortada a la elipse: una faja, tres rayas o la banda. Sin degradé (el doctor pide < 4 ms). */
+  if(franja&&franjaColor){
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(0,0,S*0.17,S*0.31,0,0,Math.PI*2); ctx.clip();
+    ctx.fillStyle=franjaColor;
+    if(franja==="horizontal") ctx.fillRect(-S*0.045,-S*0.34,S*0.09,S*0.68);
+    else if(franja==="banda"){ ctx.rotate(-0.85); ctx.fillRect(-S*0.05,-S*0.5,S*0.1,S); }
+    else { const w=S*0.04; ctx.fillRect(-S*0.2,-w*2.15,S*0.4,w); ctx.fillRect(-S*0.2,-w*0.5,S*0.4,w); ctx.fillRect(-S*0.2,w*1.15,S*0.4,w); }
+    ctx.restore();
+  }
   /* número en la espalda (se lee de costado: se endereza) */
   if(conNum){ ctx.save(); ctx.rotate(-ang); ctx.fillStyle=_cvClaro(camiseta)?"#1b2230":"#fff";
     ctx.font="800 "+Math.round(S*0.26)+"px system-ui,sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
@@ -509,9 +543,11 @@ function _cvDraw(ctx,w,h,stOpc,P){
   const vibIzq=(st.redVibra>0&&st.redLado<0)?st.redVibra:0, vibDer=(st.redVibra>0&&st.redLado>0)?st.redVibra:0;
   st.jug.forEach((p,i)=>{
     const qx=C.sx(p.x*105), qy=C.sy(p.y*68); if(qx<-40||qx>w+40||qy<-40||qy>h+40) return;
-    const camiseta=p.rol==="gk"?(p.mio?"#f2c230":"#2fb5a9"):(p.mio?col.mio:col.riv);
-    const short=p.rol==="gk"?_cvSombra(camiseta,0.55):(p.mio?(col.shortMio||_cvSombra(camiseta,0.65)):(col.shortRiv||_cvSombra(camiseta,0.65)));
-    _cvJugadorTop(ctx,C,p,i,camiseta,short,_cvSombra(camiseta,0.2),conNum,i===st.own);
+    const gk=p.rol==="gk";
+    const camiseta=gk?(p.mio?"#f2c230":"#2fb5a9"):(p.mio?col.mio:col.riv);
+    const short=gk?_cvSombra(camiseta,0.55):(p.mio?(col.shortMio||_cvSombra(camiseta,0.65)):(col.shortRiv||_cvSombra(camiseta,0.65)));
+    const medias=gk?_cvSombra(camiseta,0.2):(p.mio?(col.mediasMio||_cvSombra(camiseta,0.2)):(col.mediasRiv||_cvSombra(camiseta,0.2)));
+    _cvJugadorTop(ctx,C,p,i,camiseta,short,medias,conNum,i===st.own,gk?null:(p.mio?col.franjaMio:col.franjaRiv),gk?null:(p.mio?col.franjaColorMio:col.franjaColorRiv));
   });
   _cvPelota(ctx,C,st);
   _cvArcoTop(ctx,C,0,vibIzq,st.t); _cvArcoTop(ctx,C,1,vibDer,st.t);
