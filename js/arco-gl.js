@@ -48,7 +48,10 @@ function cargarThree(){
 }
 /* se precarga cuando el navegador está libre: el primer penal ya sale en 3D */
 if(typeof window!=="undefined"){
-  const pre=()=>{ if(!arcoGLApagado()&&webglDisponible()) cargarThree(); };
+  /* 7.9107 · en conexión lenta, ahorro de datos o equipo flaco no se precarga (600 KB compitiendo con el arranque):
+     se baja al primer balón parado y mientras tanto va el dibujo clásico */
+  const flaco=()=>{ try{ const c=navigator.connection||{}; return !!(c.saveData||/(^|-)2g|3g/.test(c.effectiveType||"")||(navigator.deviceMemory&&navigator.deviceMemory<=2)||(document.body&&document.body.classList.contains("perf"))); }catch(e){ return false; } };
+  const pre=()=>{ if(!arcoGLApagado()&&!flaco()&&webglDisponible()) cargarThree(); };
   window.addEventListener("load",()=>{ setTimeout(()=>{ if(window.requestIdleCallback) window.requestIdleCallback(pre); else pre(); },2500); });
 }
 

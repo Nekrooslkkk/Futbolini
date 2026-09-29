@@ -2106,6 +2106,29 @@ devDoctorRegistrar({id:"arranque_justo", area:"motor", n:"Un club chico no nace 
   } finally { window.guardar=gu; window.notificar=nt; if(snap) restaurarPartida(snap); }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("caja de Segunda sana, ≤"+ARRANQUE_MAX_PEND+" decisiones al empezar, umbrales a escala, riesgo por quiebra 1×/semana, ayudante prudente");
 }});
+/* 7.9107 · todos los clubes con escudo (pedido del autor: "añade TODOS los logos"): archivo libre de Commons si hay,
+   estilizado con sus colores si no, y generado con la sigla para el resto (1925, CONMEBOL por nombre) */
+function devEscudos(){
+  var ids={}, add=function(id,n){ if(id&&!ids[id]) ids[id]=n||id; };
+  ["LIGA_2026","LIGA_B_2026","LIGA_C_2026","LIGA_2006","LIGA_1925","LIGA_ARG_2026"].forEach(function(k){ var L; try{ L=eval(k); }catch(e){ L=null; } if(!L) return; (Array.isArray(L)?L:Object.keys(L).map(function(x){ return L[x]; })).forEach(function(c){ if(c&&c.id) add(c.id,c.n||c.c); }); });
+  try{ (POOL_CONMEBOL||[]).forEach(function(c){ if(c&&c.n) add(c.n,c.n); }); }catch(e){}
+  var r={total:0,archivo:0,estilizado:0,generado:0,sin:[]};
+  Object.keys(ids).forEach(function(id){ r.total++;
+    var f=(typeof ESCUDOS_FOTOS!=="undefined")&&(ESCUDOS_FOTOS[id]||ESCUDOS_FOTOS["n:"+ids[id]]);
+    if(f&&f.tipo==="commons") r.archivo++; else if(f||ESCUDOS_CLUB[id]||ESCUDOS_NOMBRE[ids[id]]) r.estilizado++;
+    else if(typeof escudoHTML==="function"&&escudoHTML(id,18,"")) r.generado++; else r.sin.push(id); });
+  return r;
+}
+devDoctorRegistrar({id:"escudos_todos", area:"contenido", n:"Todos los clubes tienen escudo (libre, estilizado o generado)",
+  arreglo:"js/data-escudos.js: ESCUDOS_FOTOS (archivos libres en img/clubes, créditos en img/FUENTES.md), ESCUDOS_CLUB/ESCUDOS_NOMBRE y _escDatos (generado).", fn:function(){
+  if(typeof escudoHTML!=="function") return _dmal("no cargó data-escudos.js");
+  var r=devEscudos(), txt=r.total+" clubes: "+r.archivo+" con escudo libre de Commons · "+r.estilizado+" estilizados · "+r.generado+" generados";
+  var falta=[];
+  if(r.sin.length) falta.push(r.sin.length+" club(es) sin escudo: "+r.sin.slice(0,8).join(", "));
+  if(typeof escudoHTML==="function"&&!escudoHTML("__club_que_no_existe__",18,"")) falta.push("un club desconocido se queda sin escudo (falta el generado)");
+  var mv=(typeof _pintarPartidoCuerpo==="function")?_docFuente(_pintarPartidoCuerpo):""; if(!/eq-esc/.test(mv)) falta.push("el marcador del partido no muestra los escudos");
+  return falta.length?_dmal(falta.length+" problema(s) · "+txt,falta):_dok(txt);
+}});
 devDoctorRegistrar({id:"rendimiento", area:"interfaz", n:"Rinde en un celu barato: guardado agrupado, cinta sin scrollIntoView, secciones medidas", pesado:true,
   arreglo:"js/rendimiento.js (guardarAgrupado/guardarAhora) y js/ui.js pintarDock (scrollLeft solo al cambiar de sección).", fn:function(){
   var falta=[];
@@ -2113,6 +2136,9 @@ devDoctorRegistrar({id:"rendimiento", area:"interfaz", n:"Rinde en un celu barat
   if(!(window.guardar&&window.guardar._rend)) falta.push("guardar() no está agrupado: cada acción vuelve a escribir la partida entera");
   if(typeof pintarDock==="function"&&/scrollIntoView\(/.test(_docFuente(pintarDock))) falta.push("pintarDock usa scrollIntoView en cada repintado (25 % del tiempo en un celu lento)");
   if(typeof guardarAhora==="function"&&(_docFuente(guardarAhora).match(/JSON\.stringify/g)||[]).length>1) falta.push("guardarAhora convierte la partida a texto más de una vez");
+  /* 7.9107 · la cancha del partido medía la página en cada cuadro (clientWidth, innerHeight): tirones en celu barato */
+  if(typeof _cvSize==="function"&&/parentNode\.clientWidth\)\|\|canvas\.clientWidth|window\.innerHeight\|\|800\)\*0\.42/.test(_docFuente(_cvSize))) falta.push("la cancha vuelve a medir la página en cada cuadro (clientWidth/innerHeight en _cvSize)");
+  if(typeof _cvAncho!=="function") falta.push("falta _cvAncho (ancho de la cancha por ResizeObserver)");
   if(!E) return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("sin partida: solo se revisó el código");
   var r=devRendimiento();
   if(!r.agrupa) falta.push("5 guardar() seguidos no se juntaron en uno");

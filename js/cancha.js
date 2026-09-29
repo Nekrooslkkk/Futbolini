@@ -223,11 +223,14 @@ function _cvColores(P){
   if(Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])<120) riv=(a[0]+a[1]+a[2]>420)?"#1d2a44":"#f4f4f4";
   return {mio:mio, riv:riv};
 }
+/* 7.9107 · memorizados: se pedían para cada jugador en cada cuadro (22 × 60 por segundo, parseando el color) */
+const _CV_MEMO={};
 function _cvSombra(hex,f){
+  const key="s"+hex+"|"+f; if(_CV_MEMO[key]!==undefined) return _CV_MEMO[key];
   const c=_cvHex(hex), k=x=>Math.max(0,Math.round(x*(1-f)));
-  return "rgb("+k(c[0])+","+k(c[1])+","+k(c[2])+")";
+  return (_CV_MEMO[key]="rgb("+k(c[0])+","+k(c[1])+","+k(c[2])+")");
 }
-function _cvClaro(hex){ const c=_cvHex(hex); return (c[0]*0.3+c[1]*0.59+c[2]*0.11)>150; }
+function _cvClaro(hex){ const key="c"+hex; if(_CV_MEMO[key]!==undefined) return _CV_MEMO[key]; const c=_cvHex(hex); return (_CV_MEMO[key]=(c[0]*0.3+c[1]*0.59+c[2]*0.11)>150); }
 /* ---------- geometría: cámara de transmisión (7.9056) ----------
    La cancha se ve desde la tribuna: el lado lejano (y=0) más angosto y más arriba,
    el cercano (y=1) más ancho. Todo se dibuja a través de pt(x,y) → pantalla. */
@@ -356,14 +359,30 @@ function _cvDraw(ctx,w,h,stOpc,P){
     ctx.fillStyle="#fff"; ctx.fillText(txt,pad*1.8,pad+fs*1.1);
   }
 }
+/* 7.9107 · el ancho del contenedor se guarda con un ResizeObserver: leer clientWidth en CADA cuadro obligaba al navegador
+   a recalcular la página 60 veces por segundo mientras el partido cambiaba el relato y el chat (tirones de 1,6 s en un
+   celu barato). Ahora se mide una vez al montar y solo se vuelve a medir si el contenedor cambia de tamaño. */
+function _cvAncho(canvas){
+  const par=canvas.parentNode;
+  if(canvas._roAncho===undefined){
+    canvas._roAncho=(par&&par.clientWidth)||canvas.clientWidth||320;
+    if(par&&typeof ResizeObserver==="function"){ try{ const ro=new ResizeObserver(function(es){ if(!canvas.isConnected){ ro.disconnect(); return; } const r=es[es.length-1]; const w=Math.round(r.contentRect.width); if(w>0) canvas._roAncho=w; }); ro.observe(par); }catch(e){} }
+    else canvas._roFijo=true;
+  }
+  if(canvas._roFijo) canvas._roAncho=(par&&par.clientWidth)||canvas._roAncho;
+  return canvas._roAncho;
+}
 function _cvSize(canvas){
-  const disp=(canvas.parentNode&&canvas.parentNode.clientWidth)||canvas.clientWidth||320;
+  const disp=_cvAncho(canvas);
   /* 105×68 real. En PC se limita el alto y el ancho acompaña (no se estira ni se aplasta). */
-  const tope=Math.min(360,Math.round((window.innerHeight||800)*0.42));
+  if(_cvSize._alto===undefined){ _cvSize._alto=window.innerHeight||800; window.addEventListener("resize",function(){ _cvSize._alto=window.innerHeight||800; }); }
+  const tope=Math.min(360,Math.round(_cvSize._alto*0.42));   /* 7.9107 · innerHeight también forzaba layout en cada cuadro */
   let cssW=disp, cssH=Math.round(cssW*68/105);
   if(cssH>tope){ cssH=tope; cssW=Math.round(cssH*105/68); }
-  const dpr=Math.min(2,window.devicePixelRatio||1);
-  if(canvas._w!==cssW || canvas._h!==cssH){
+  /* modo liviano o equipo de ≤2 GB: densidad 1 (un cuarto de los píxeles; en pantalla chica casi no se nota) */
+  const flaco=_cvLiviano()||(typeof navigator!=="undefined"&&navigator.deviceMemory&&navigator.deviceMemory<=2);
+  const dpr=flaco?1:Math.min(2,window.devicePixelRatio||1);
+  if(canvas._w!==cssW || canvas._h!==cssH || canvas._dpr!==dpr){ canvas._dpr=dpr;
     canvas.style.width=cssW+"px"; canvas.style.height=cssH+"px";
     canvas.width=Math.round(cssW*dpr);
     canvas.height=Math.round(cssH*dpr);

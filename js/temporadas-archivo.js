@@ -142,7 +142,7 @@ function _repeTablaHTML(t,k){
   let h="<table class='cs-tabla repe-tabla'><thead><tr><th></th><th></th><th class='izq'>Equipo</th><th class='n'>PJ</th><th class='n'>G</th><th class='n'>E</th><th class='n'>P</th><th class='n'>GF</th><th class='n'>GC</th><th class='n'>DG</th><th class='n'>Pts</th></tr></thead><tbody>";
   ahora.forEach((r,i)=>{
     const pa=posAntes[r.id], mov=!pa?"":(pa>i+1?"<span class='sube'>▲</span>":(pa<i+1?"<span class='baja'>▼</span>":"<span class='igual'>=</span>"));
-    h+="<tr class='"+(r.id===t.club?"yo":"")+"'><td class='n pos'>"+(i+1)+"</td><td class='n'>"+mov+"</td><td class='izq'>"+escHtml((t.noms&&t.noms[r.id])||_archNom(r.id))+"</td><td class='n'>"+r.pj+"</td><td class='n'>"+r.pg+"</td><td class='n'>"+r.pe+"</td><td class='n'>"+r.pp+"</td><td class='n'>"+r.gf+"</td><td class='n'>"+r.gc+"</td><td class='n'>"+((r.gf-r.gc)>0?"+":"")+(r.gf-r.gc)+"</td><td class='n pts'>"+r.pts+"</td></tr>";
+    h+="<tr class='"+(r.id===t.club?"yo":"")+"'><td class='n pos'>"+(i+1)+"</td><td class='n'>"+mov+"</td><td class='izq'>"+((typeof escudoChip==="function")?escudoChip(r.id,16):"")+escHtml((t.noms&&t.noms[r.id])||_archNom(r.id))+"</td><td class='n'>"+r.pj+"</td><td class='n'>"+r.pg+"</td><td class='n'>"+r.pe+"</td><td class='n'>"+r.pp+"</td><td class='n'>"+r.gf+"</td><td class='n'>"+r.gc+"</td><td class='n'>"+((r.gf-r.gc)>0?"+":"")+(r.gf-r.gc)+"</td><td class='n pts'>"+r.pts+"</td></tr>";
   });
   return h+"</tbody></table>";
 }

@@ -376,6 +376,8 @@ if(typeof document!=="undefined"&&!document.getElementById("css-partido-orden"))
   st.textContent=
     "html body .momento-vivo.mv-compacto{position:static !important;left:auto !important;right:auto !important;bottom:auto !important;max-height:none !important;overflow:visible !important;margin:8px 0 !important;z-index:auto !important;box-shadow:0 2px 10px rgba(0,0,0,.18) !important}"+
     "html body.hay-momento .partido-wrap{padding-bottom:12px !important}"+
+    "html body .marcador-vivo .eq{display:flex;flex-direction:column;align-items:center;gap:4px}html body .marcador-vivo .eq-esc{display:block;line-height:0}"+
+    "@media (max-width:420px){html body .marcador-vivo .eq-esc svg,html body .marcador-vivo .eq-esc img{width:24px !important;height:24px !important}}"+
     /* el chat en vivo se repinta cada rato: el anclaje de scroll de Chrome lo seguía y mandaba la página al fondo */
     "html:has(body.en-partido),html body.en-partido,html body.en-partido #vista{overflow-anchor:none !important}"+
     "html body .mv-compacto .cab{display:flex;align-items:center;gap:6px}"+

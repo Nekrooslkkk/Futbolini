@@ -4757,3 +4757,28 @@ simular caía en crisis de escándalo en la semana 5 con el riesgo al 100. Tres 
   ve desenlaces). Al revés: ayudante ciego a desenlaces → "prefiere infiltrar al ídolo antes que hacerle caso al médico".
 - **Estado:** doctor sano (4 partidas + celular, 94 chequeos) · dev 593/593 · core 1185/1185.
 
+### 7.9107 — Probado como celu barato con 3G: el juego abre al tiro la segunda vez, el partido va más fluido, y todos los clubes con escudo
+Prueba nueva (emulación de un Moto G4: 360×640, DPR 3, CPU 4×, 3G lento de 400 kbps y 400 ms): primera carga 81 s
+(3,9 MB sin comprimir en el servidor de prueba; GitHub Pages comprime a ~1,2 MB), segunda apertura 9,7 s, partido en
+vivo con 15/240 cuadros lentos y un tirón de 1,6 s.
+- **Service worker (sw.js):** los archivos con `?v=`, three.js, fuentes e imágenes van **caché primero** (esa URL nunca
+  cambia de contenido); `index.html` sigue red primero, pero si tarda más de 3,5 s se sirve la copia. Las claves de caché
+  llevan `?v=` (una versión nueva nunca recibe un archivo viejo). **Segunda apertura con 3G lento: 9,7 s → 0,9 s. Sin
+  internet: abre en 0,7 s.**
+- **three.js se bajaba dos veces** al abrir (el `prefetch` + la precarga): ahora el `<link>` es `rel=alternate` (no descarga;
+  el service worker lo guarda igual para jugar sin internet), y con ahorro de datos, 2G/3G, ≤2 GB de RAM o modo liviano
+  no se precarga: baja en el primer balón parado (mientras, dibujo clásico).
+- **Cancha del partido (cancha.js):** `_cvSize` leía `clientWidth` e `innerHeight` en CADA cuadro (layout forzado 60 veces
+  por segundo mientras el relato cambiaba): ahora con ResizeObserver y el evento resize. Colores de camiseta
+  memorizados. Densidad 1 en modo liviano o ≤2 GB. Resultado: tareas largas > 150 ms en el partido: 3 → 0–1; cuadros
+  lentos 15 → 6 de 240; procesador libre 36 % → 49 %.
+- **Escudos para todos:** `escudoSVG` ya no devuelve vacío: por id, por nombre (tabla nueva `ESCUDOS_NOMBRE` con los 20
+  rivales de CONMEBOL y sus colores reales) o generado con la sigla en colores neutros (no se inventan colores de clubes
+  de 1925). Escudos nuevos en el **marcador del partido**, la tabla del final del partido, el mercado (club de cada
+  jugador) y las temporadas pasadas.
+- **Flujo real tocando** (celu): arranque → club → época → dock → Jugar → decisiones → partido → semanas: sin errores
+  de JS.
+- **Dev:** `escudos_todos` (106 clubes: con archivo libre, estilizados, generados; ninguno sin escudo; marcador con
+  escudos) y `rendimiento` vigila que la cancha no vuelva a medir la página por cuadro.
+- **Estado:** doctor sano (4 partidas + celular, 95 chequeos) · dev 593/593 · core 1185/1185.
+

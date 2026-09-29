@@ -1151,9 +1151,12 @@ function _pintarPartidoCuerpo(P){
   const marc=el("div","marcador marcador-vivo");
   const minTxt=(typeof textoReloj==="function")?textoReloj(P,false).replace(/^⏸ /,""):("Minuto "+P.min);
   const eh=(typeof escHtml==="function")?escHtml:function(s){ return String(s==null?"":s); };
-  marc.innerHTML='<div class="eq">'+eh(P.part.local?E.clubNombre:P.part.rivalNombre)+'</div>'+
+  /* 7.9107 · el marcador lleva los escudos (todos los clubes tienen uno) */
+  const escM=function(id){ return (typeof escudoHTML==="function")?'<span class="eq-esc">'+escudoHTML(id,30,"")+'</span>':""; };
+  const idL=P.part.local?E.club:(P.part.rivalId||P.part.rivalNombre), idV=P.part.local?(P.part.rivalId||P.part.rivalNombre):E.club;
+  marc.innerHTML='<div class="eq">'+escM(idL)+eh(P.part.local?E.clubNombre:P.part.rivalNombre)+'</div>'+
     '<div class="go-wrap"><div class="go">'+(P.gl|0)+" - "+(P.gv|0)+'</div><div class="go-min">'+eh(minTxt)+'</div></div>'+
-    '<div class="eq">'+eh(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>';
+    '<div class="eq">'+escM(idV)+eh(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>';
   p.cuerpo.appendChild(marc);
   celebrarGolSiCorresponde(P, marc);   /* 7.79 · explota la pantalla cuando cae un gol */
   let canchaCv=null;
@@ -2834,7 +2837,7 @@ function cerrarPartido(){
     const arr=tablaOrdenada();
     const t=el("table"); t.innerHTML="<thead><tr><th></th><th>Club</th><th class='n'>PJ</th><th class='n'>Pts</th></tr></thead>";
     const tb=el("tbody");
-    arr.forEach((c,i)=>{ if(i<5||c.id===E.club) tb.appendChild(el("tr",c.id===E.club?"yo":"", "<td class='n'>"+(i+1)+"</td><td>"+c.n+"</td><td class='n'>"+c.pj+"</td><td class='n'>"+c.pts+"</td>")); });
+    arr.forEach((c,i)=>{ if(i<5||c.id===E.club) tb.appendChild(el("tr",c.id===E.club?"yo":"", "<td class='n'>"+(i+1)+"</td><td>"+((typeof escudoChip==="function")?escudoChip(c.id):"")+c.n+"</td><td class='n'>"+c.pj+"</td><td class='n'>"+c.pts+"</td>")); });
     t.appendChild(tb);
     p.cuerpo.appendChild(el("h3","sub","Tabla al día")); p.cuerpo.appendChild(t);
   }

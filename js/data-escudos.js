@@ -57,9 +57,41 @@ function _escContraste(hex){
   var lum=(0.299*r+0.587*g+0.114*b)/255;
   return lum>0.6?"#111111":"#ffffff";
 }
-/* devuelve un SVG (string) del escudo estilizado, o "" si el club no está */
+/* 7.9107 · rivales de CONMEBOL (vienen por NOMBRE, sin id): colores de camiseta, dato público. Estilizado, no el oficial. */
+var ESCUDOS_NOMBRE={
+  "Flamengo":{c1:"#c8102e",c2:"#111111",txt:"FLA"}, "Palmeiras":{c1:"#006437",c2:"#ffffff",txt:"PAL"},
+  "River Plate":{c1:"#ffffff",c2:"#e31837",txt:"RIV"}, "Boca Juniors":{c1:"#003da5",c2:"#ffd100",txt:"BOC"},
+  "São Paulo":{c1:"#ffffff",c2:"#c8102e",txt:"SPF"}, "Cruzeiro":{c1:"#0033a0",c2:"#ffffff",txt:"CRU"},
+  "Racing Club":{c1:"#8fd3ff",c2:"#ffffff",txt:"RAC"}, "Nacional":{c1:"#ffffff",c2:"#0b2d6b",txt:"NAC"},
+  "LDU Quito":{c1:"#ffffff",c2:"#c8102e",txt:"LDU"}, "Atlético Nacional":{c1:"#00843d",c2:"#ffffff",txt:"ATN"},
+  "Independiente del Valle":{c1:"#0b2d6b",c2:"#111111",txt:"IDV"}, "Peñarol":{c1:"#ffd100",c2:"#111111",txt:"CAP"},
+  "Cerro Porteño":{c1:"#c8102e",c2:"#003da5",txt:"CCP"}, "Olimpia":{c1:"#ffffff",c2:"#111111",txt:"OLI"},
+  "Libertad":{c1:"#111111",c2:"#ffffff",txt:"LIB"}, "Bolívar":{c1:"#6cace4",c2:"#ffffff",txt:"BOL"},
+  "Junior":{c1:"#c8102e",c2:"#ffffff",txt:"JUN"}, "Universitario":{c1:"#f3e5c0",c2:"#9b1b30",txt:"U"},
+  "Sporting Cristal":{c1:"#6cace4",c2:"#ffffff",txt:"SC"}, "Vélez Sarsfield":{c1:"#ffffff",c2:"#0055a4",txt:"VEL"}
+};
+/* sigla de hasta 3 letras desde un nombre ("Santiago National" → SN) */
+function _escSigla(n){
+  var w=String(n||"?").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[()]/g,"").split(/[\s.-]+/)
+    .filter(function(x){ return x&&!/^(de|del|la|las|los|el|y|club|deportes|deportivo|cd|fc)$/i.test(x); });
+  if(!w.length) return "?";
+  return (w.length===1?w[0].slice(0,3):w.slice(0,3).map(function(x){ return x[0]; }).join("")).toUpperCase();
+}
+/* escudo de cualquier club: por id, por nombre (CONMEBOL) o generado con la sigla en colores neutros (no se inventan
+   colores de un club histórico que no tenemos documentado) */
+function _escDatos(id){
+  if(ESCUDOS_CLUB[id]) return ESCUDOS_CLUB[id];
+  var c=(typeof clubLookup==="function")?clubLookup(id):null, n=(c&&(c.n||c.c))||id;
+  if(ESCUDOS_NOMBRE[n]) return ESCUDOS_NOMBRE[n];
+  if(ESCUDOS_NOMBRE[id]) return ESCUDOS_NOMBRE[id];
+  if(!id) return null;
+  var NEUTROS=["#2f3e55","#3d4a3a","#4a3b3b","#34495e","#3b3f4a","#44403c"], h=0, k=String(n);
+  for(var i=0;i<k.length;i++) h=(h*31+k.charCodeAt(i))|0;
+  return {c1:NEUTROS[Math.abs(h)%NEUTROS.length], c2:"#d9dee6", txt:_escSigla(n), gen:true};
+}
+/* devuelve un SVG (string) del escudo estilizado; 7.9107: ya nunca "" (todo club tiene uno) */
 function escudoSVG(id, px){
-  var e=ESCUDOS_CLUB[id]; if(!e) return "";
+  var e=_escDatos(id); if(!e) return "";
   px=px||28;
   var txt=(e.txt||id), fs=txt.length>=3?11:(txt.length===2?14:17);
   var tc=_escContraste(e.c1);
@@ -76,7 +108,7 @@ function escudoSVG(id, px){
 var _ESC_FALLO={};
 function escudoHTML(id, px, fallbackEmoji){
   px=px||28;
-  var f=typeof ESCUDOS_FOTOS!=="undefined" && ESCUDOS_FOTOS[id];
+  var f=typeof ESCUDOS_FOTOS!=="undefined" && (ESCUDOS_FOTOS[id]||(function(){ var c=(typeof clubLookup==="function")?clubLookup(id):null; var n=(c&&(c.n||c.c))||id; return ESCUDOS_FOTOS["n:"+n]; })());
   if(f&&f.src&&!_ESC_FALLO[id]){
     /* si el archivo no carga, NO desaparece: cae al escudo estilizado (o emoji). */
     return '<img class="esc-img" src="'+f.src+'" width="'+px+'" height="'+px+'" alt="" '+
