@@ -1692,6 +1692,9 @@ function penZona(x,y){
   const t=(cx-A.x0)/w;
   const tercio = t<0.34?"izq":(t<0.66?"centro":"der");
   const alt = cy < (A.y0+A.y1)/2 ? "alto":"bajo";
+  /* 7.9097 · si ya es afuera, la mira y la pelota salen del arco. Antes el clamp
+     las dejaba adentro y el fallo se veía como un tiro alto al medio. */
+  if(fuera){ cx=clamp(x,A.x0-48,A.x1+48); cy=clamp(y,A.y0-56,A.y1); }
   return {tercio:tercio, alt:alt, fuera:fuera, cx:cx, cy:cy};
 }
 function tlClasificar(aim){
@@ -1779,6 +1782,11 @@ function penTween(el,attrs,ms,cb){
     for(const k in attrs) el.setAttribute(k,(ini[k]+(fin[k]-ini[k])*e).toFixed(1));
     if(u<1) requestAnimationFrame(paso); else if(cb) cb();
   })(performance.now());
+}
+function _dorsalDe(j){
+  const n=(j&&j.n)||"";
+  let h=7; for(let i=0;i<n.length;i++) h=(h*33+n.charCodeAt(i))|0;
+  return 1+(Math.abs(h)%30);
 }
 function _kitDe(id, fb){
   fb=fb||["#1a6ad4","#111827"];
@@ -2107,6 +2115,12 @@ function _arcoMira(svg, aim, x0, y0){
     tray.setAttribute("opacity",".85");
   }
 }
+/* un toque deja la mira; solo un deslizamiento de verdad patea al soltar */
+function _arcoSueltaPatear(svg, aim, tirado, disparar){
+  if(!aim||tirado) return;
+  const sw=svg&&svg._swipe;
+  if(sw&&(sw.cuerda||0)>=40) disparar();
+}
 function _arcoOcultarMira(svg){
   const mira=svg.querySelector("#arco-mira"), tray=svg.querySelector("#arco-linea");
   if(mira) mira.setAttribute("opacity","0");
@@ -2240,6 +2254,7 @@ function minijuegoPenal(P,pateador,opts){
   opts=opts||{};
   const arq=arqueroDe(P.rivalPlantel)||{n:"el arquero",nivel:70};
   const kit=_kitDe(P.part&&P.part.rivalId, ["#1a6ad4","#111827"]);
+  const kitAtk=_kitDe(typeof E!=="undefined"&&E&&E.club, ["#f4f4f4","#111111"]);
   let aim=null, tirado=false;
   const hinchada=_arcoHinchadaDe(P);
   modal(box=>{
@@ -2248,11 +2263,11 @@ function minijuegoPenal(P,pateador,opts){
     _hudArco(c,"penal",P);
     let pat=pateador;
     const cands=(opts.cands&&opts.cands.length)?opts.cands:[pateador];
-    const chips=_chipsPateador(c, cands, pateador, function(j){ pat=j; etiq.innerHTML="Patea <b>"+j.n+"</b>. Desliza al rincón."; });
-    const etiq=el("p","mini e3d-etiq","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Desliza desde la pelota al arco. El centro flojo se ataja.");
+    const chips=_chipsPateador(c, cands, pateador, function(j){ pat=j; etiq.innerHTML="Patea <b>"+j.n+"</b>. Toca para apuntar. Desliza para patear."; });
+    const etiq=el("p","mini e3d-etiq","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Toca para dejar la mira. Desliza para patear, o usa el botón. El centro flojo se ataja.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
-    const svg=_arcoMontarSvg(esc, htmlArcoVivo({arqX:180, modo:"penal", kitArq:kit, hinchada:hinchada, semilla:P.part&&P.part.rivalId}));
+    const svg=_arcoMontarSvg(esc, htmlArcoVivo({arqX:180, modo:"penal", kitArq:kit, kitAtk:kitAtk, dorsal:_dorsalDe(pateador), hinchada:hinchada, semilla:P.part&&P.part.rivalId}));
     const bolaG=svg.querySelector("#arco-bola");
     const arqEl=svg.querySelector("#arco-arq");
     function aSVG(ev){ return _arcoPunto(svg, ev); }
@@ -2276,7 +2291,7 @@ function minijuegoPenal(P,pateador,opts){
       const out=penResolver(aim,kdir,getEf(),pateador.nivel||70,arq.nivel||70);
       _arcoOcultarMira(svg); _animArq(arqEl, kdir, 420, {ataja:out.res==="atajado", aim:aim});
       const paloX=aim.tercio==="izq"?50:(aim.tercio==="der"?310:180);
-      const destY=out.res==="afuera"?16:(out.res==="palo"?38:aim.cy);
+      const destY=out.res==="afuera"?aim.cy:(out.res==="palo"?38:aim.cy);
       const destX=out.res==="palo"?paloX:aim.cx;
       function fin(){
         const lab=_etiquetaArco(out.res);
@@ -2305,7 +2320,7 @@ function minijuegoPenal(P,pateador,opts){
         fin();
       });
     }
-    svg.addEventListener("pointerup",function(e){ e.preventDefault(); if(aim&&!tirado) disparar(); });
+    svg.addEventListener("pointerup",function(e){ e.preventDefault(); _arcoSueltaPatear(svg, aim, tirado, disparar); });
     bpat.onclick=disparar;
     pie.appendChild(bpat);
   },{cerrarFuera:false});
@@ -2322,7 +2337,7 @@ function minijuegoTiroLibre(P){
     const esc=_abrirEscenaArco(box, _tt("arco_tl_tit","Tiro libre"), "🎯");
     const c=esc.cuerpo;
     _hudArco(c,"tl",P);
-    const etiq=el("p","mini e3d-etiq","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Desliza por arriba o al costado.");
+    const etiq=el("p","mini e3d-etiq","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Toca para apuntar. Desliza para pegarle, o usa el botón.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
     const svg=_arcoMontarSvg(esc, htmlArcoVivo({barrera:true, arqX:arqX, modo:"tl", kitArq:kit, kitWall:kit, kitAtk:kitAtk, hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
@@ -2367,7 +2382,7 @@ function minijuegoTiroLibre(P){
           });
         }
       }
-      const destY=(res==="afuera"||res==="palo")?14:(res==="barrera"?aim.cy+28:aim.cy);
+      const destY=res==="afuera"?aim.cy:(res==="palo"?38:(res==="barrera"?aim.cy+28:aim.cy));
       const destX=res==="barrera"?aim.cx+(aim.cx>180?-18:18):(res==="palo"?(aim.tercio==="izq"?50:(aim.tercio==="der"?310:aim.cx)):aim.cx);
       _animBola(bolaG,180,220,destX,destY,460,function(){
         if(res==="palo"){
@@ -2403,7 +2418,7 @@ function minijuegoTiroLibre(P){
         },820);
       }
     }
-    svg.addEventListener("pointerup",function(e){ e.preventDefault(); if(aim&&!tirado) dispararTL(); });
+    svg.addEventListener("pointerup",function(e){ e.preventDefault(); _arcoSueltaPatear(svg, aim, tirado, dispararTL); });
     bpat.onclick=dispararTL;
     pie.appendChild(bcorto);
     pie.appendChild(bpat);
@@ -2426,7 +2441,7 @@ function minijuegoCorner(P){
     const esc=_abrirEscenaArco(box, _tt("arco_cor_tit","Córner"), "🚩");
     const c=esc.cuerpo;
     _hudArco(c,"corner",P);
-    const etiq=el("p","mini e3d-etiq","Cobra <b>"+(j.n)+"</b>. Desliza el centro: primer palo, punto penal o segundo palo.");
+    const etiq=el("p","mini e3d-etiq","Cobra <b>"+(j.n)+"</b>. Toca para apuntar: se pega al primer palo, al punto penal o al segundo. Desliza para cobrar, o usa el botón.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
     const svg=_arcoMontarSvg(esc, htmlArcoVivo({modo:"corner", arqX:arqX, kitArq:kit, kitWall:kit, kitAtk:kitAtk, bolaX:bolaX, bolaY:222, lado:lado, hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
@@ -2474,7 +2489,7 @@ function minijuegoCorner(P){
           defs[0].style.transform="translateY(-10px)";
         }
       }
-      const destY=(res==="afuera")?12:(res==="defensa"?aim.cy+20:(res==="palo"?38:aim.cy));
+      const destY=res==="afuera"?aim.cy:(res==="defensa"?aim.cy+20:(res==="palo"?38:aim.cy));
       const destX=res==="palo"?(cl.zona==="primer"?54:(cl.zona==="segundo"?306:aim.cx)):aim.cx;
       function finCor(){
         const lab=_etiquetaArco(res);
@@ -2511,7 +2526,7 @@ function minijuegoCorner(P){
         finCor();
       });
     }
-    svg.addEventListener("pointerup",function(e){ e.preventDefault(); if(aim&&!tirado) dispararCor(); });
+    svg.addEventListener("pointerup",function(e){ e.preventDefault(); _arcoSueltaPatear(svg, aim, tirado, dispararCor); });
     bpat.onclick=dispararCor;
     pie.appendChild(bcorto);
     pie.appendChild(bpat);

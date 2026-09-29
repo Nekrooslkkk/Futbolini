@@ -109,7 +109,8 @@ function _glArco(scene,liviano){
   [-W,W].forEach(x=>{ for(let z=0;z>=Zb-1e-6;z-=paso){ const y=z>Zt?H:H*(z-Zb)/(Zt-Zb); pts.push(x,0,z, x,Math.max(0,y),z); }
     for(let y=0;y<=H+1e-6;y+=paso){ const zf=y>=H?Zt:Zb+(Zt-Zb)*(y/H); pts.push(x,y,0, x,y,zf); } });
   const geo=new THREE.BufferGeometry(); geo.setAttribute("position",new THREE.Float32BufferAttribute(pts,3));
-  g.add(new THREE.LineSegments(geo,new THREE.LineBasicMaterial({color:0xeef3f8,transparent:true,opacity:0.55})));
+  const red=new THREE.LineSegments(geo,new THREE.LineBasicMaterial({color:0xeef3f8,transparent:true,opacity:0.55}));
+  red.name="red"; g.add(red);
   scene.add(g); return g;
 }
 function _glPublicidad(scene,cam){
@@ -268,7 +269,7 @@ function arcoGLMontar(esc,svg,opts){
   scene.add(sol); scene.add(sol.target);
   const relleno=new THREE.DirectionalLight(0xc8d8ff,0.45); relleno.position.set(30,40,-30); scene.add(relleno);
   const hc=((svg.querySelector("#arco-cam")||{getAttribute:()=>""}).getAttribute("data-hc")||"#ffffff,#1a1a1a").split(",");
-  _glCielo(scene,hc); _glCancha(scene,cam,liviano); _glArco(scene,liviano); _glPublicidad(scene,cam); _glFocos(scene,cam);
+  _glCielo(scene,hc); _glCancha(scene,cam,liviano); const arcoG=_glArco(scene,liviano); _glPublicidad(scene,cam); _glFocos(scene,cam);
   const trib=_glTribuna(scene,cam,hc,liviano);
   if(!cam.frontal){ const bf=new THREE.Group(); const pm=_glMat(0xf4f4f4);
     const palo=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.025,1.5,8),pm); palo.position.y=0.75; palo.castShadow=true; bf.add(palo);
@@ -299,7 +300,7 @@ function arcoGLMontar(esc,svg,opts){
   sombraBola.rotation.x=-Math.PI/2; scene.add(sombraBola);
   const camGL=_glCamara(cam);
   svg.classList.add("a3gl-on");
-  const est={svg:svg, canvas:canvas, renderer:renderer, scene:scene, cam:cam, camGL:camGL, arq:arq, pat:pat, bola:bola, sombraBola:sombraBola, figuras:figuras, publico:trib.publico, t0:performance.now()};
+  const est={svg:svg, canvas:canvas, renderer:renderer, scene:scene, cam:cam, camGL:camGL, arq:arq, pat:pat, bola:bola, sombraBola:sombraBola, figuras:figuras, publico:trib.publico, arco:arcoG, red:arcoG.getObjectByName("red"), t0:performance.now()};
   ARCOGL.activos++; ARCOGL.ultimo=est;
   let W0=0,H0=0;
   const cuadro=function(t){
@@ -361,6 +362,20 @@ function _glSincronizar(est,t){
     est.bola.position.set(w.x,w.y,w.z); est.bola.rotation.x=-tb.r*Math.PI/180; est.bola.rotation.z=tb.r*Math.PI/360;
     est.sombraBola.position.set(w.x,0.015,w.z); const alto=Math.max(0,w.y-ARCO3D.bolaR);
     est.sombraBola.scale.setScalar(1+alto*0.25); est.sombraBola.material.opacity=Math.max(0.08,0.38-alto*0.08);
+    /* gol: la pelota queda en la red y la malla cede. Palo: el marco tiembla un instante. */
+    if(est.red&&est.arco){
+      const gol=svg.classList.contains("arco-golazo"), palo=svg.classList.contains("arco-alpalo");
+      if(gol){
+        if(est.cam.frontal) est.bola.position.z=Math.min(est.bola.position.z,-0.5);
+        est.red.position.z=-0.22*(0.7+0.3*Math.sin(t/80));
+        est.arco.rotation.z=0;
+      } else if(palo){
+        if(!est.paloT) est.paloT=t;
+        const u=Math.min(1,(t-est.paloT)/700);
+        est.red.position.z=0;
+        est.arco.rotation.z=Math.sin(t/28)*0.012*(1-u);
+      } else { est.red.position.z=0; est.arco.rotation.z=0; est.paloT=0; }
+    }
   }
   /* los del área saltan cuando el SVG los hace saltar */
   est.figuras.forEach(f=>{ const m=/translateY\((-?[\d.]+)px\)/.exec((f.el&&f.el.style.transform)||""); f.obj.position.y=m?Math.min(0.7,-m[1]/30):0; });
@@ -388,7 +403,9 @@ function _glSincronizar(est,t){
 if(typeof document!=="undefined"&&!document.getElementById("css-arco-gl")){
   const st=document.createElement("style"); st.id="css-arco-gl";
   st.textContent=
-    ".e3d-world>canvas.a3gl{position:absolute;inset:0;width:100%;height:100%;display:block}"+
+    ".e3d-world>canvas.a3gl{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}"+
+    /* el dibujo está escondido, pero el SVG tiene que recibir el dedo: si no, el canvas se queda el clic y no hay mira */
+    ".arco-svg.a3gl-on{pointer-events:all}"+
     /* con el 3D montado, del SVG quedan solo los controles encima */
     ".arco-svg.a3gl-on>*:not(defs):not(#arco-mira):not(#arco-linea):not(#a3-trazo):not(#a3-papel):not(#arco-iman){visibility:hidden}";
   document.head.appendChild(st);

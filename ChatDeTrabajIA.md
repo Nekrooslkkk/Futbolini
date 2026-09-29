@@ -1927,3 +1927,12 @@ de citados por partido; si alguien lo hace, va en `listaIdeal`, no en el motor.
 vos/sos/podés/pagá… Voseo solo en personajes argentinos (ALMA_ARG, data-argentina*) o en `FRASES.cl`. Los textos
 nuevos van en tú desde el principio.
 
+**7.9097 (Grok) · pulido del arco, sin tocar el resultado.** No cambié `penResolver`, `cornerResolver` ni el motor.
+- El canvas 3D se comía el dedo (`pointer-events`). La mira no seguía. Ahora el SVG recibe el toque y el 3D solo se ve.
+- Un toque deja la mira. Solo un deslizamiento de verdad (o el botón) patea. Antes cualquier toque disparaba.
+- Si el tiro ya es afuera, la pelota sale del arco. Antes el clamp la dejaba adentro.
+- El penal pasa `kitAtk`: el pateador lleva la camiseta del club, no el color de la tribuna. Número en la espalda.
+- En el 3D, el gol mete la pelota en la red y el palo tiembla un instante.
+
+No toqué cámara, probabilidades, calendario, Aero ni mundo. VERSION 7.9097. Seguí desde 7.9098.
+
