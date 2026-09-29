@@ -4859,7 +4859,7 @@ histórico o normal"). Archivos: `js/dev-banco.js` (nuevo), `test/banco.sh`+`ban
 
 ### 7.9111 — Cancha cenital tipo GTA con dibujo tipo PES · sin parpadeo en el celu · balón parado poblado · Vida a escala
 Archivos: `js/cancha.js`, `js/ui-partido.js`, `js/interfaz-aero.js`, `js/arco-gl.js`, `js/reputacion.js`,
-`js/motor.js`, `js/vida-hoy.js` (nuevo), `js/dev-banco.js`, `css/pulido.css`, `PROMPTS_IA.md` (nuevo).
+`js/motor.js`, `js/vida-hoy.js` (nuevo), `js/dev-banco.js`, `css/pulido.css`, `ChatDeTrabajIA.md`.
 - **Parpadeo del partido en el celu (causa medida con captura cuadro a cuadro):** cada repintado del partido ponía un
   canvas nuevo y vacío, y en modo liviano (30 cps) el primer dibujo se saltaba → la cancha salía verde lisa por
   instantes. Además, con pregunta abierta un `max-height` de CSS aplastaba la cancha y la estiraba de vuelta al
@@ -4892,7 +4892,7 @@ Archivos: `js/cancha.js`, `js/ui-partido.js`, `js/interfaz-aero.js`, `js/arco-gl
 - **Dev (5 chequeos nuevos, verificados al revés):** `cancha_sin_parpadeo`, `boton_texto_chico`,
   `balon_parado_poblado` (cantidad y reglamento sin WebGL), `vida_a_escala`; el banco además revisa que el sueldo
   del DT no pase un tercio de la planilla en los 255 arranques.
-- **Prompts:** `PROMPTS_IA.md` con encargos para Sonnet 5.5 (eventos de Vida, textos del balón parado), Grok 4.6
+- **Prompts:** al final de `ChatDeTrabajIA.md`, encargos para Sonnet 5.5 (eventos de Vida, textos del balón parado), Grok 4.6
   modo build (camisetas reales en la cancha, reacción del área en el 3D, caja real de B y Segunda) y ChatGPT
   (playtest de jugador nuevo).
 - **Estado:** doctor sano (4 partidas + celular, 108 chequeos) · dev 593/593 · core 1185/1185 · banco 255 sano ·
