@@ -4736,3 +4736,24 @@ Pedido del autor: "no se ve bien ordenado y en celu se pierde la cancha, todos l
   través de envoltorios: ahora siguen la cadena (`_docFuente`).
 - **Estado:** doctor sano (4 partidas + celular, 93 chequeos) · dev 593/593 · core 1185/1185.
 
+### 7.9106 — Un club chico no nace en llamas (las 2 cosas: caja real y menos lluvia de decisiones)
+Medido antes: un club de Segunda arrancaba con ~2 meses de planilla, 9–10 decisiones pendientes (Primera 4–5), y al
+simular caía en crisis de escándalo en la semana 5 con el riesgo al 100. Tres causas y un agravante:
+- **Caja inicial (data-segunda2026.js):** 4–5 meses de planilla (Trasandino 85 → 200, Santiago Morning 120 → 260…).
+  Cifras estimadas.
+- **Menos lluvia (arranque-justo.js nuevo):** se arranca con máximo 5 decisiones pendientes; el resto espera en fila y
+  entra de a una por semana (no se pierde nada). Las 5 decisiones de plata ("no alcanza para la planilla", "el
+  directorio pide caja", sueldos atrasados, sponsors) miran la caja a la escala del club (planilla/1.000, entre 0,35 y
+  1): a Colo-Colo no le cambia nada, a la Segunda no le saltan todas la primera semana.
+- **Espiral de la quiebra (motor.js):** quedar en rojo subía +3 de riesgo en CADA gasto (hasta +15 a la semana). Ahora
+  una vez por semana.
+- **El ayudante que decide cuando simulas:** elegía "la primera opción que se pueda pagar" (casi siempre la cara o la
+  arriesgada). Ahora elige por valor esperado, pesando cada desenlace (bien/mitad/mal) por su dificultad: castiga
+  riesgo y deuda, cuida la caja a la escala del club, y pesa camarín y directorio (paro y despido). Un primer intento
+  miraba solo los efectos directos y salió peor (ni veía los desenlaces); lo cazó la traza.
+- **Resultado (temporada simulada):** Trasandino, Naval y S. Morning sin crisis de escándalo, riesgo máximo 53–71, caja
+  positiva casi toda la temporada; Limache riesgo 14; Colo-Colo y la U bajan la deuda de a poco.
+- **Dev:** nuevo `arranque_justo` (caja de Segunda, tope de pendientes, umbral a escala, riesgo 1×/semana, ayudante que
+  ve desenlaces). Al revés: ayudante ciego a desenlaces → "prefiere infiltrar al ídolo antes que hacerle caso al médico".
+- **Estado:** doctor sano (4 partidas + celular, 94 chequeos) · dev 593/593 · core 1185/1185.
+

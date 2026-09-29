@@ -99,11 +99,13 @@ if(typeof ERA==="object" && ERA[2026]) ERA["2026c"]=ERA[2026];
     REN:{plantel:44,moral:48,hinchada:38,socios:28,cantera:38,estadio:36,prestigio:34,riesgo:48}
   });
   if(typeof CAJA_BASE_2026!=="undefined") Object.assign(CAJA_BASE_2026,{
-    SMO:{plata:120,deuda:120}, LSC:{plata:90,deuda:60},  OSO:{plata:110,deuda:70},
-    LIN:{plata:90,deuda:55},   CLC:{plata:80,deuda:50},  TRA:{plata:85,deuda:55},
-    COL:{plata:80,deuda:40},   OVA:{plata:80,deuda:50},  CNA:{plata:70,deuda:40},
-    BSA:{plata:70,deuda:45},   RSJ:{plata:65,deuda:35},  SCI:{plata:70,deuda:40},
-    GVE:{plata:70,deuda:45},   REN:{plata:65,deuda:45}
+    /* 7.9106 · caja inicial aproximada = 4 a 5 meses de planilla (antes ~2 meses: el club nacía quebrado y en la
+       semana 5 caía en crisis). Deudas sin cambio. Cifras estimadas, en millones de pesos 2026. */
+    SMO:{plata:260,deuda:120}, LSC:{plata:210,deuda:60},  OSO:{plata:230,deuda:70},
+    LIN:{plata:200,deuda:55},  CLC:{plata:190,deuda:50},  TRA:{plata:200,deuda:55},
+    COL:{plata:180,deuda:40},  OVA:{plata:180,deuda:50},  CNA:{plata:170,deuda:40},
+    BSA:{plata:170,deuda:45},  RSJ:{plata:160,deuda:35},  SCI:{plata:170,deuda:40},
+    GVE:{plata:170,deuda:45},  REN:{plata:160,deuda:45}
   });
   var estatutoC={propiedad:"club_social",modelo:"vendedor",identidad:"regional",barra:"tolerancia",finanzas:"austeridad",anfp:"bloque_chicos"};
   if(typeof ESTATUTO_INICIAL!=="undefined"){

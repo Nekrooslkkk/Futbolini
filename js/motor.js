@@ -569,7 +569,11 @@ function aplicarEfectos(ef){
     else if(k==="capital") E.capital=Math.max(0,(Number(E.capital)||0)+n);
     else if(E.ind&&E.ind[k]!==undefined) E.ind[k]=clamp((Number(E.ind[k])||0)+n,0,100);
   }
-  if(E.plata<0){ E.deuda+=Math.abs(E.plata)*1.2; E.plata=0; if(E.ind) E.ind.riesgo=clamp((E.ind.riesgo||0)+3,0,100); }
+  /* 7.9106 · quedar en rojo sube el riesgo UNA vez por semana (antes +3 en cada gasto: un club chico quebrado sumaba
+     +15 a la semana y en un mes caía en la crisis de escándalo sin haber hecho nada turbio) */
+  if(E.plata<0){ E.deuda+=Math.abs(E.plata)*1.2; E.plata=0;
+    const sem=(E.anio||0)+"-"+(E.idx||0);
+    if(E.ind&&E._riesgoCajaSem!==sem){ E._riesgoCajaSem=sem; E.ind.riesgo=clamp((E.ind.riesgo||0)+3,0,100); } }
   if(!isFinite(E.plata)) E.plata=0;
   if(!isFinite(E.deuda)) E.deuda=0;
 }

@@ -2084,6 +2084,28 @@ devDoctorRegistrar({id:"partido_orden", area:"interfaz", n:"Partido: marcador, c
   ["mostrarMomento","mostrarAccion"].forEach(function(n){ var f=window[n]; var ok=false; while(f){ if(f._pv){ ok=true; break; } f=f._orig; } if(!ok) falta.push(n+" no reubica la pregunta (se pisó el enganche)"); });
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("pregunta compacta: bajo la cancha en celu, al lado en PC; la página no se va al chat");
 }});
+/* 7.9106 · arranque justo: la Segunda nacía quebrada (caja ~2 meses), con 9–10 decisiones pendientes, umbrales de plata
+   de Primera y un ayudante que al simular elegía la opción cara; caía en crisis de escándalo en la semana 5 */
+devDoctorRegistrar({id:"arranque_justo", area:"motor", n:"Un club chico no nace en llamas (caja, decisiones, umbrales, ayudante)",
+  arreglo:"js/arranque-justo.js (fila de decisiones, escalaCajaClub, puntajeAyudante), data-segunda2026.js (caja) y motor.js aplicarEfectos (riesgo por caja negativa 1 vez por semana).", fn:function(){
+  if(typeof escalaCajaClub!=="function"||typeof puntajeAyudante!=="function") return _dmal("no cargó js/arranque-justo.js",["falta el script en index.html"]);
+  var falta=[], snap=E?clonarPartida(E):null;
+  var gu=window.guardar, nt=window.notificar; window.guardar=function(){}; window.notificar=function(){};
+  try{
+    if(nuevaPartida("TRA",2026,"historico")!==false){
+      if(E.plata<150) falta.push("Trasandino arranca con "+E.plata+" de caja (menos de 3 meses de planilla)");
+      if((E.decPend||[]).length>ARRANQUE_MAX_PEND) falta.push("arranca con "+E.decPend.length+" decisiones pendientes (tope "+ARRANQUE_MAX_PEND+")");
+      var bs=[].concat(typeof BOLSA!=="undefined"?BOLSA:[]).filter(function(d){ return d&&d.id==="b_sueldos"; })[0];
+      if(bs){ var p0=E.plata; E.plata=100; var chico=!!bs.cuando(E); E.plata=p0; if(chico) falta.push("a un club de planilla chica le salta «no alcanza para la planilla» con 100 de caja (umbral de Primera)"); }
+      var r0=E.ind.riesgo; aplicarEfectos({plata:-99999}); aplicarEfectos({plata:-99999}); aplicarEfectos({plata:-99999});
+      if(E.ind.riesgo-r0>3.5) falta.push("quedar en rojo 3 veces la misma semana subió el riesgo "+Math.round(E.ind.riesgo-r0)+" (debe ser 3)");
+    }
+    var d=(typeof decisionPorId==="function")?decisionPorId("b_medico_infiltrar"):null;
+    if(d&&d.op&&d.op.length>=2&&!(puntajeAyudante(d.op[0],E)>puntajeAyudante(d.op[1],E))) falta.push("el ayudante prefiere infiltrar al ídolo antes que hacerle caso al médico (no ve los desenlaces)");
+    if(!(delegarDecisionesPendientes&&delegarDecisionesPendientes._aj)) falta.push("al simular vuelve a decidir «la primera que se pueda pagar»");
+  } finally { window.guardar=gu; window.notificar=nt; if(snap) restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("caja de Segunda sana, ≤"+ARRANQUE_MAX_PEND+" decisiones al empezar, umbrales a escala, riesgo por quiebra 1×/semana, ayudante prudente");
+}});
 devDoctorRegistrar({id:"rendimiento", area:"interfaz", n:"Rinde en un celu barato: guardado agrupado, cinta sin scrollIntoView, secciones medidas", pesado:true,
   arreglo:"js/rendimiento.js (guardarAgrupado/guardarAhora) y js/ui.js pintarDock (scrollLeft solo al cambiar de sección).", fn:function(){
   var falta=[];
