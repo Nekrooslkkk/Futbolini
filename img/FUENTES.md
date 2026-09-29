@@ -262,4 +262,46 @@ Después de bajar un PNG/WEBP al lado del SVG: cambiar `ESCUDOS_FOTOS` de `.svg`
 
 **No usar** escudos de ciudad ni de universidad (Iquique, Coquimbo, La Serena, Temuco, Universidad de Concepción, Universidad de La Serena).
 
+### Escudos sumados en 7.9109 (Wikimedia Commons, licencia comprobada archivo por archivo)
+Miniaturas de 200 px. Se tomó la imagen de la ficha de Wikipedia en español (que no acepta "uso justo": todo lo que
+muestra está en Commons con licencia libre) y se verificó la licencia en Commons. Se descartaron 5 cruces equivocados
+(otro club con nombre parecido). Los clubes sin escudo libre siguen con el estilizado o el generado.
+
+| ID | Tipo | Archivo Commons | Autor | Licencia |
+|---|---|---|---|---|
+| ARG | commons | [Asociación Atlética Argentinos Juniors logo.svg](https://commons.wikimedia.org/wiki/File:Asociaci%C3%B3n_Atl%C3%A9tica_Argentinos_Juniors_logo.svg) | Asociación Atlética Argentinos Juniors | Public domain |
+| BEL | commons | [Club Atlético Belgrano 2026.svg](https://commons.wikimedia.org/wiki/File:Club_Atl%C3%A9tico_Belgrano_2026.svg) | Unknown authorUnknown author (presumably for Club Atlético Belgrano) | Public domain |
+| BOC | commons | [Club Atlético Boca Juniors logo (70 stars).png](https://commons.wikimedia.org/wiki/File:Club_Atl%C3%A9tico_Boca_Juniors_logo_(70_stars).png) | Club Atlético Boca Juniors | Public domain |
+| CLC | commons | [12-colchagua-cd.svg](https://commons.wikimedia.org/wiki/File:12-colchagua-cd.svg) | ANFP | Public domain |
+| Bolívar | commons | [Emblem bolivar.png](https://commons.wikimedia.org/wiki/File:Emblem_bolivar.png) | Club Bolívar | Public domain |
+| Cruzeiro | commons | [Cruzeiro Esporte Clube (logo).svg](https://commons.wikimedia.org/wiki/File:Cruzeiro_Esporte_Clube_(logo).svg) | Cruzeiro Esporte Clube | Public domain |
+| Independiente del Valle | commons | [Escudoindependientedelvalle2023.png](https://commons.wikimedia.org/wiki/File:Escudoindependientedelvalle2023.png) | Jonathan Erardo Ortiz Salazar | Public domain |
+| Junior | commons | [Junior Barranquilla logo.svg](https://commons.wikimedia.org/wiki/File:Junior_Barranquilla_logo.svg) | Junior de Barranquilla | Public domain |
+| Olimpia | commons | [Escudo original de Olimpia.png](https://commons.wikimedia.org/wiki/File:Escudo_original_de_Olimpia.png) | Macdivarius | CC BY-SA 4.0 |
+| Palmeiras | commons | [Palmeiras logo.svg](https://commons.wikimedia.org/wiki/File:Palmeiras_logo.svg) | Sociedade Esportiva Palmeiras | Public domain |
+| Peñarol | commons | [Escudo-club-atletico-penarol.png](https://commons.wikimedia.org/wiki/File:Escudo-club-atletico-penarol.png) | Club Atletico Cottolengo Don Orione | Public domain |
+| São Paulo | commons | [São Paulo Futebol Clube logo (2022).svg](https://commons.wikimedia.org/wiki/File:S%C3%A3o_Paulo_Futebol_Clube_logo_(2022).svg) | São Paulo FC
+ | Public domain |
+| Sporting Cristal | commons | [Escudo de Sporting Cristal 2025.svg](https://commons.wikimedia.org/wiki/File:Escudo_de_Sporting_Cristal_2025.svg) | Club Sporting Cristal | Public domain |
+| CNA | commons | [Escudo Concón National.png](https://commons.wikimedia.org/wiki/File:Escudo_Conc%C3%B3n_National.png) | Brown Pampi | CC0 |
+| DYJ | commons | [Escudo del Club Social y Deportivo Defensa y Justicia.svg](https://commons.wikimedia.org/wiki/File:Escudo_del_Club_Social_y_Deportivo_Defensa_y_Justicia.svg) | Defensa y Justicia | Public domain |
+| ELP | commons | [Estudiantes de la Plata crest (2025).svg](https://commons.wikimedia.org/wiki/File:Estudiantes_de_la_Plata_crest_(2025).svg) | Unknown authorUnknown author | Public domain |
+| GLP | commons | [Escudo del Club de Gimnasia y Esgrima La Plata (v2026).svg](https://commons.wikimedia.org/wiki/File:Escudo_del_Club_de_Gimnasia_y_Esgrima_La_Plata_(v2026).svg) | Emilio Coutaret (original design); Raúl Felices (1928 redesign); AnonymousUnknow | Public domain |
+| HUR | commons | [Emblema oficial del Club Atlético Huracán.svg](https://commons.wikimedia.org/wiki/File:Emblema_oficial_del_Club_Atl%C3%A9tico_Hurac%C3%A1n.svg) | Club Atlético Huracán | CC BY-SA 4.0 |
+| IND | commons | [Escudo del Club Atlético Independiente.svg](https://commons.wikimedia.org/wiki/File:Escudo_del_Club_Atl%C3%A9tico_Independiente.svg) | Club Atlético Independiente | Public domain |
+| INS | commons | [Escudo Instituto Atletico Central Cordoba.png](https://commons.wikimedia.org/wiki/File:Escudo_Instituto_Atletico_Central_Cordoba.png) | Instituto Alético Central Córdoba | CC BY-SA 4.0 |
+| LAN | commons | [Escudo de Lanús (sin estrellas).svg](https://commons.wikimedia.org/wiki/File:Escudo_de_Lan%C3%BAs_(sin_estrellas).svg) | Unknown authorUnknown author | Public domain |
+| LIN | commons | [Logo Deportes Linares.png](https://commons.wikimedia.org/wiki/File:Logo_Deportes_Linares.png) | Manuel Contardo Ulloa | CC BY-SA 4.0 |
+| MST | commons | [Morning Star Insignia.gif](https://commons.wikimedia.org/wiki/File:Morning_Star_Insignia.gif) | Insidergnr | CC BY-SA 3.0 |
+| NEW | commons | [Escudo del Club Atlético Newell's Old Boys de Rosario.svg](https://commons.wikimedia.org/wiki/File:Escudo_del_Club_Atl%C3%A9tico_Newell%27s_Old_Boys_de_Rosario.svg) | Estudio Shakespear | Public domain |
+| PLA | commons | [Club Altético Platense crest (2025).svg](https://commons.wikimedia.org/wiki/File:Club_Alt%C3%A9tico_Platense_crest_(2025).svg) | Unknown authorUnknown author | Public domain |
+| RAC | commons | [Escudo de Racing Club (2014).svg](https://commons.wikimedia.org/wiki/File:Escudo_de_Racing_Club_(2014).svg) | Racing Club de Avellaneda | Public domain |
+| RIV | commons | [Club Atlético River Plate logo.svg](https://commons.wikimedia.org/wiki/File:Club_Atl%C3%A9tico_River_Plate_logo.svg) | Club Atlético River Plate | Public domain |
+| ROS | commons | [Rosario Central shield.jpg](https://commons.wikimedia.org/wiki/File:Rosario_Central_shield.jpg) | Raúl Quintana Tarufetti | Public domain |
+| SAR | commons | [Escudo del Club Atlético Sarmiento de Junín.svg](https://commons.wikimedia.org/wiki/File:Escudo_del_Club_Atl%C3%A9tico_Sarmiento_de_Jun%C3%ADn.svg) | Club Atlético Sarmiento | Public domain |
+| SLO | commons | [Escudo del Club Atlético San Lorenzo de Almagro.svg](https://commons.wikimedia.org/wiki/File:Escudo_del_Club_Atl%C3%A9tico_San_Lorenzo_de_Almagro.svg) | Unknown  (Vector graphics by Trandos) | Public domain |
+| TAL | commons | [Escudo Talleres 2015.svg](https://commons.wikimedia.org/wiki/File:Escudo_Talleres_2015.svg) | Talleres | Public domain |
+| TEM | commons | [Logo Deportes Temuco.png](https://commons.wikimedia.org/wiki/File:Logo_Deportes_Temuco.png) | Club Deportes Temuco | Public domain |
+| TUC | commons | [Atletico tucuman nuevo2.svg](https://commons.wikimedia.org/wiki/File:Atletico_tucuman_nuevo2.svg) | Club Atlético Tucumán | Public domain |
+| VEL | commons | [Escudo del Club Atlético Vélez Sarsfield.svg](https://commons.wikimedia.org/wiki/File:Escudo_del_Club_Atl%C3%A9tico_V%C3%A9lez_Sarsfield.svg) | Trandos | Public domain |
 

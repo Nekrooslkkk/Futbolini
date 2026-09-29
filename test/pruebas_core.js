@@ -960,8 +960,9 @@
       var c=["SMO","LSC","OSO","LIN","CLC","TRA","COL","OVA","CNA","BSA","RSJ","SCI","GVE","REN"];
       ok(c.length===14 && c.every(function(id){ return ESCUDOS_FOTOS[id] && ESCUDOS_FOTOS[id].src; }),
         "Segunda 14/14 en ESCUDOS_FOTOS");
-      ok(c.every(function(id){ return /img\/clubes\/[A-Z]{3}\.svg$/.test(ESCUDOS_FOTOS[id].src); }),
-        "Segunda usa SVG estilizado en disco");
+      /* 7.9109 · algunos ya tienen escudo real de Commons (png): lo que importa es que sea un archivo local */
+      ok(c.every(function(id){ return /img\/clubes\/[A-Z]{3}\.(svg|png|jpg)$/.test(ESCUDOS_FOTOS[id].src); }),
+        "Segunda usa escudo en disco (estilizado o Commons)");
       ok(c.every(function(id){ return ESCUDOS_CLUB[id] && ESCUDOS_CLUB[id].c1; }),
         "Segunda 14/14 en ESCUDOS_CLUB");
       var afa=["RIV","BOC","RAC","IND","VEL","SLO","ELP","ROS","TAL","HUR","LAN","ARG","NEW","BEL","DYJ","INS","UNI","GLP","TUC","TIG","BAN","PLA","CCO","IRV","SAR","ALD","GME","RIE","ERC","BAR"];

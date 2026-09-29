@@ -4798,3 +4798,20 @@ vivo con 15/240 cuadros lentos y un tirón de 1,6 s.
   "Argentina: se juega solo el Apertura". `partido_orden` vigila el orden del resultado en el relato.
 - **Estado:** doctor sano (4 partidas + celular, 96 chequeos) · dev 593/593 · core 1185/1185.
 
+### 7.9109 — 38 escudos reales nuevos (licencia libre verificada) · ningún club sin escudo
+Pedido del autor: "añade TODOS los logos". Regla del juego: solo sin copyright (CLAUDE.md), así que se usó lo único
+legal y verificable: Wikimedia Commons con licencia libre.
+- **Método:** para cada club sin escudo real se buscó su artículo en Wikipedia en español (que no acepta imágenes de
+  "uso justo": todo lo que muestra está en Commons), se exigió que el título calce con el nombre del club, que la imagen
+  sea un escudo, y se verificó la licencia en la API de Commons (PD, CC0, CC BY, CC BY-SA). Miniaturas de 200 px.
+- **Revisión a ojo** (hoja de contacto): se descartaron 5 cruces equivocados (U. de Concepción → escudo de la
+  universidad; Racing → Racing de Córdoba; River de CONMEBOL → River uruguayo; Universitario → Universitario de Sucre;
+  Libertad → otro Libertad).
+- **Resultado:** 106 clubes · **55 con escudo real** (antes 17) · 43 estilizados · 8 generados · 0 sin escudo.
+  Sumados: 21 de AFA (River, Boca, Racing, Independiente, San Lorenzo, Vélez, Estudiantes…), Temuco, Linares, Colchagua,
+  Concón National, Morning Star (1925) y los de CONMEBOL (Palmeiras, São Paulo, Cruzeiro, Peñarol, Olimpia, Bolívar,
+  Junior, Sporting Cristal, IDV…, por nombre `"n:Nombre"`). Créditos (autor y licencia) en `img/FUENTES.md`.
+- **Dev:** `test/correr_dev.sh` comprueba que cada escudo nombrado exista en disco y que los de Commons tengan crédito.
+  Un test del núcleo pedía que la Segunda fuera solo SVG: ahora acepta archivo local (svg/png/jpg).
+- **Estado:** doctor sano (4 partidas + celular, 96 chequeos) · dev 593/593 · core 1185/1185.
+

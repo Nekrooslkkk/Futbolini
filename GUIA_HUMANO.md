@@ -127,6 +127,17 @@ anota el autor, que va en `img/FUENTES.md`.
   Casi todos tienen foto libre en Commons. (Se agregan en `img/FOTOS.txt` con su ID de 3 letras: RIV, BOC, RAC…)
 - **Escudos argentinos:** NO busques los oficiales (son marcas). El juego dibuja uno estilizado propio y así se queda.
 
+### 3.4b Escudos de clubes (7.9109)
+Todos los clubes ya tienen escudo en el juego. Hay tres tipos:
+- **Real con licencia libre** (Wikimedia Commons: dominio público, CC0, CC BY o CC BY-SA). Están en `img/clubes/`,
+  con autor y licencia en `img/FUENTES.md`.
+- **Estilizado**: forma de escudo con los colores del club y su sigla. No es el oficial.
+- **Generado**: sigla en gris, para clubes sin colores documentados (los de 1925, Cobresal).
+
+El doctor `escudos_todos` (modo dev ▸ 🩺) te dice cuántos hay de cada tipo. Si encuentras un escudo **con licencia libre
+comprobada**, pásamelo con el enlace de Commons y lo conecto. Los escudos oficiales con marca registrada sin licencia
+no se pueden usar (el juego no puede depender de algo que un club nos puede hacer bajar).
+
 ### 3.5 Imágenes a futuro (todavía sin ranura: si las haces, las conecto yo)
 - Fondo por época: `fondo-1991.jpg` (tonos cálidos, TV de tubo, pasto más seco) y `fondo-2026.jpg`.
 - Pantalla de carga: una ilustración ancha 1600×600 de una tribuna de noche con bengalas **sin** escudos ni banderas

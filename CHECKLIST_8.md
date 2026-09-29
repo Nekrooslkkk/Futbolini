@@ -15,6 +15,9 @@ Sistemas que el autor pidió y todavía no existen o están a medias.
 - [x] **Penal, tiro libre y córner en 3D real** estilo PES 2006 (7.9092)
 - [x] **Rendimiento base:** guardado agrupado, cinta del celu sin layout forzado (7.9093; doctor `rendimiento`)
 - [x] **Mercado:** cupo de extranjeros real (ANFP 2026) y 🌎 en el mercado (7.9095)
+- [x] **Escudos para todos los clubes** (libre de Commons / estilizado / generado) y en el marcador (7.9107–7.9109)
+- [x] **Liga argentina con Apertura y Clausura** (el Clausura nunca se instalaba) (7.9108)
+- [x] **Pantalla del partido ordenada** en celu y PC (7.9105)
 - [x] Mercado: tope de citados por partido (5 de 6) en la lista (7.9096)
 - [ ] Mercado: negociación más viva
 - [x] **Segunda por zonas:** cierre de temporada cuadra fecha a fecha, sin −999 (7.9094)
@@ -34,7 +37,9 @@ Nada nuevo: solo que lo que hay se sienta terminado.
 - [ ] Tutorial de 5 pasos para quien entra por primera vez (lo que traben los amigos de beta)
 - [x] Rendimiento 2ª pasada: layouts forzados de `render` fuera; scroll del celu estable (7.9103). Cargar `dev-*.js` solo
       al abrir: medido, no conviene (±50 ms)
-- [ ] Probar en un Android real barato (no solo CPU 6× simulada) — humano
+- [x] Emulación de Android barato completa (Moto G4, CPU 4×, 3G lento): segunda apertura 0,9 s, sin internet 0,7 s,
+      partido 6/240 cuadros lentos (7.9107)
+- [ ] Probar en un Android real barato (la emulación no reemplaza al teléfono) — humano
 - [ ] Un barrido de 3 temporadas completas con 10 clubes distintos, con el doctor en cada cierre
 
 ## LAS 4 PUERTAS DE LA 8.00 (todas abiertas = se sube)
