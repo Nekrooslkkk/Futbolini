@@ -90,3 +90,20 @@ function devRendimiento(){
     }).observe({entryTypes:["longtask"]});
   }catch(e){}
 })();
+
+/* 7.9103 · el scroll de ADENTRO de la ventana (celu: .so-cuerpo) sobrevive a un repintado de la misma sección.
+   Va como el envoltorio más externo de render (se instala al terminar de cargar todo): así corre después de los que
+   arman la ventana Aero y es síncrono (el doctor lo puede medir). ui.js deja además una microtarea de respaldo. */
+function _envolverScrollInterno(){
+  const o=window.render; if(typeof o!=="function"||o._scIn) return;
+  const w=function(){
+    const v=document.getElementById("vista"), misma=!!(E&&v&&render._sec===SEC);
+    const sc=misma?v.querySelector(".so-cuerpo,.window-body"):null, y=sc?sc.scrollTop:0;
+    const r=o.apply(this,arguments);
+    if(y>0){ const s2=v.querySelector(".so-cuerpo,.window-body"); if(s2&&Math.abs(s2.scrollTop-y)>2){ try{ s2.scrollTop=y; }catch(e){} } }
+    return r;
+  };
+  Object.keys(o).forEach(k=>{ try{ w[k]=o[k]; }catch(e){} }); w._scIn=true; w._orig=o; window.render=w;
+}
+if(typeof document!=="undefined"){ if(document.readyState==="complete") _envolverScrollInterno(); else window.addEventListener("load",_envolverScrollInterno); }
+

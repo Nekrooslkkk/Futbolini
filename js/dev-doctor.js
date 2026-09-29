@@ -2088,6 +2088,19 @@ devDoctorRegistrar({id:"scroll_estable", area:"interfaz", n:"Apretar un botón n
     }
     var vx=document.getElementById("vista"); if(vx) vx.style.minHeight="";
   }
+  /* 7.9103 · en el celu el scroll vive DENTRO de la ventana Aero: un repintado de la misma sección la recreaba y te
+     mandaba arriba (filtros de Mercado, Plantel, Calendario). Se prueba en Mercado si la ventana tiene scroll propio. */
+  if(E&&typeof render==="function"&&!document.body.classList.contains("con-modal")&&!document.body.classList.contains("en-partido")){
+    var secA=SEC;
+    try{ SEC="mercado"; render();
+      var ci=document.querySelector("#vista .so-cuerpo,#vista .window-body");
+      if(ci&&ci.scrollHeight>ci.clientHeight+400){
+        ci.scrollTop=300; var yi=ci.scrollTop; render();
+        var ci2=document.querySelector("#vista .so-cuerpo,#vista .window-body");
+        if(ci2&&Math.abs(ci2.scrollTop-yi)>2) falta.push("celu: repintar Mercado devuelve el scroll de la ventana a "+Math.round(ci2.scrollTop)+" (estabas en "+yi+")");
+      }
+    } finally { SEC=secA; try{ render(); }catch(e){} }
+  }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("el scroll se queda donde estabas");
 }});
 

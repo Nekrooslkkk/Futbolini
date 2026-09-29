@@ -1982,3 +1982,6 @@ club de Primera y B). Después, los bloques 2–4 que siguen pendientes.
    barrera no tapa (como en PES). Y en el celu la tribuna ocupa mucho alto en el tiro libre: prueba bajar el cuadro.
 4. **Segunda: arranque sin caja** — espera la decisión del autor (ver PATCHES 7.9094); no lo toques todavía.
 
+**7.9103 (Claude Opus) · scroll del celu.** Ojo todos: en el celular el scroll está dentro de `.so-cuerpo` (la ventana
+Aero), no en `window`. Si algo necesita "volver a donde estabas", es ese contenedor. `render` ya lo cuida.
+

@@ -209,13 +209,34 @@ function pintarMenu(){
    sección sí empieza arriba (irA). */
 function render(){
   /* 7.9093 · el alto se mide solo si hace falta (misma sección): medirlo siempre forzaba un layout extra */
-  const v=$("#vista"), misma=!!(E&&render._sec===SEC&&v), y=misma?(window.scrollY||0):0, alto=misma?v.offsetHeight:0;
+  /* 7.9103 · el alto sale de un ResizeObserver (llega después de cada layout, sin forzar uno): leer offsetHeight en
+     cada clic dentro de la misma sección era un layout entero extra (52 % del repintado de Mercado) */
+  const tk=render._tk=(render._tk||0)+1;   /* un repintado nuevo anula lo que dejó pendiente el anterior */
+  const v=$("#vista"), misma=!!(E&&render._sec===SEC&&v), y=misma?(window.scrollY||0):0;
+  if(v&&!render._ro&&typeof ResizeObserver==="function"){ try{ render._ro=new ResizeObserver(function(es){ const r=es[es.length-1]; if(r) render._alto=r.target.offsetHeight||r.contentRect.height; }); render._ro.observe(v); }catch(e){ render._ro=null; } }
+  const alto=misma?((render._ro&&render._alto)||v.offsetHeight):0;
+  /* 7.9103 · en el celu el scroll vive DENTRO de la ventana Aero (.so-cuerpo), no en la página: cada repintado la
+     recreaba y el scroll volvía a 0 (un filtro de Mercado te mandaba arriba). Se guarda y se devuelve. */
+  const scIn=misma?v.querySelector(".so-cuerpo,.window-body"):null, yIn=scIn?scIn.scrollTop:0;
   if(misma&&alto) v.style.minHeight=alto+"px";
   try{ _renderCuerpo(); }
   finally{
-    if(v) v.style.minHeight="";
     render._sec=E?SEC:null;
-    if(misma && !document.body.classList.contains("con-modal") && Math.abs((window.scrollY||0)-y)>2){ try{ window.scrollTo(0,y); }catch(e){} }
+    if(yIn>0){
+      /* los envoltorios de render (ventana Aero, etc.) corren después y recrean el contenedor: se devuelve el scroll
+         cuando terminan todos (microtarea: antes de pintar, sin salto visible) */
+      const volver=function(){ if(render._tk!==tk) return; const s2=v.querySelector(".so-cuerpo,.window-body"); if(s2&&s2!==scIn&&Math.abs(s2.scrollTop-yIn)>2){ try{ s2.scrollTop=yIn; }catch(e){} } };
+      volver(); if(typeof queueMicrotask==="function") queueMicrotask(volver); else Promise.resolve().then(volver);
+    }
+    /* 7.9103 · soltar el alto y revisar el scroll en el próximo cuadro: hacerlo acá obligaba a otro layout entero.
+       Con el alto sostenido hasta entonces el scroll no se mueve (la página nunca se achica). */
+    if(v&&misma&&alto&&typeof requestAnimationFrame==="function"&&!render._sync){
+      requestAnimationFrame(function(){ if(render._tk!==tk) return; v.style.minHeight="";
+        if(!document.body.classList.contains("con-modal") && Math.abs((window.scrollY||0)-y)>2){ try{ window.scrollTo(0,y); }catch(e){} } });
+    } else {
+      if(v) v.style.minHeight="";
+      if(misma && !document.body.classList.contains("con-modal") && Math.abs((window.scrollY||0)-y)>2){ try{ window.scrollTo(0,y); }catch(e){} }
+    }
   }
 }
 function _renderCuerpo(){

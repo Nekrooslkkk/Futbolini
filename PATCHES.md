@@ -4688,3 +4688,20 @@ Revisé lo de Grok (7.9097–7.9101, todo verde) y seguí sobre eso sin tocar `p
   "no hay teclado en PC".
 - **Estado:** doctor sano (4 partidas + celular, 92 chequeos) · dev 593/593 · core 1185/1185.
 
+### 7.9103 — En el celu un clic ya no te manda arriba · dos layouts forzados menos · barrido de bugs
+- **Bug (celu):** en el celular el scroll vive DENTRO de la ventana Aero (`.so-cuerpo`), no en la página. Cada repintado
+  de la misma sección (un filtro de Mercado, Plantel, Finanzas, Calendario) recreaba la ventana y volvía a 0. El doctor
+  no lo veía porque medía el scroll de la página. Ahora se guarda y se devuelve: envoltorio más externo de `render`
+  (`rendimiento.js`, se instala al terminar de cargar, síncrono) + microtarea de respaldo en `ui.js`.
+- **Rendimiento:** `render()` ya no lee `offsetHeight` en cada clic (ahora sale de un `ResizeObserver`) y suelta el alto
+  y revisa el scroll en el próximo cuadro. Son dos layouts enteros menos por clic dentro de una sección. Un repintado
+  nuevo anula lo pendiente del anterior (no te devuelve a un scroll viejo).
+- **Medido y descartado:** cargar el código del modo dev solo al abrirlo (264 KB). Con CPU 6× la diferencia de carga
+  entra en el ruido (±50 ms en 1,2 s); no vale el riesgo de tocar el orden de carga.
+- **Barrido:** 6 temporadas completas en el navegador (CC 2026, Trasandino en Segunda, Wanderers en la B, UC 1991,
+  CC 1989, Boca 2026) visitando todas las secciones cada 10 fechas y al cierre, y partidos en vivo dirigidos en celu y
+  PC con momentos y balón parado: cero errores de JavaScript.
+- **Dev:** `scroll_estable` prueba ahora el scroll de adentro de la ventana en Mercado (la pasada de celular lo
+  ejercita). Al revés: sin el arreglo → "celu: repintar Mercado devuelve el scroll de la ventana a 0 (estabas en 300)".
+- **Estado:** doctor sano (4 partidas + celular, 92 chequeos) · dev 593/593 · core 1185/1185.
+

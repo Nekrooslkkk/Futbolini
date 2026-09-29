@@ -32,8 +32,9 @@ Nada nuevo: solo que lo que hay se sienta terminado.
 - [ ] Íconos Aero propios (las 14 ranuras de `js/data-ranuras.js`) — humano o provisorios SVG
 - [ ] Fotos de estadio que faltan (15 Chile + 30 Argentina, Commons)
 - [ ] Tutorial de 5 pasos para quien entra por primera vez (lo que traben los amigos de beta)
-- [ ] Rendimiento 2ª pasada: cargar `dev-*.js` (250 KB) solo al abrir el modo dev · lista de mercado cacheada por
-      semana · calendario con filas más livianas · probar en un Android real barato (no solo CPU 6× simulada)
+- [x] Rendimiento 2ª pasada: layouts forzados de `render` fuera; scroll del celu estable (7.9103). Cargar `dev-*.js` solo
+      al abrir: medido, no conviene (±50 ms)
+- [ ] Probar en un Android real barato (no solo CPU 6× simulada) — humano
 - [ ] Un barrido de 3 temporadas completas con 10 clubes distintos, con el doctor en cada cierre
 
 ## LAS 4 PUERTAS DE LA 8.00 (todas abiertas = se sube)
