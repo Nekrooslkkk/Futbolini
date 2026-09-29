@@ -684,7 +684,7 @@ function festejoArcoActivo(){ return !!(_A3_FEST&&_A3_FEST.svg.isConnected&&perf
 (function(){
   const o=window._abrirEscenaArco; if(typeof o!=="function"||o._a3) return;
   const w=function(){ const r=o.apply(this,arguments);
-    try{ if(r&&r.stage){ r.stage.classList.add("e3d-v2"); const h=document.createElement("div"); h.className="a3-hint"; h.textContent="Mantén el dedo en la pelota y desliza al arco: la barra de potencia se llena mientras mantienes (si te pasas, se eleva). La curva del trazo es la comba; corto y suave es picada."; r.stage.appendChild(h); setTimeout(function(){ h.classList.add("oculto"); },5200); } }catch(e){}
+    try{ if(r&&r.stage){ r.stage.classList.add("e3d-v2"); const h=document.createElement("div"); h.className="a3-hint"; h.textContent="Toca el arco para apuntar. Mantén y desliza para patear: la barra es la potencia (si te pasas, se eleva). La curva es la comba; corto y suave es picada."; r.stage.appendChild(h); setTimeout(function(){ h.classList.add("oculto"); },4200); } }catch(e){}
     return r; };
   Object.keys(o).forEach(k=>w[k]=o[k]); w._a3=true; window._abrirEscenaArco=w;
 })();

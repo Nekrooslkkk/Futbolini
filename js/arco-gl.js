@@ -60,7 +60,14 @@ function _texPublicidad(){
   t.wrapS=THREE.RepeatWrapping; return t;
 }
 function _texNumero(n,fondo,tinta){
-  return _glCanvas(128,128,(g,w,h)=>{ g.fillStyle=fondo; g.fillRect(0,0,w,h); g.fillStyle=tinta; g.font="900 86px system-ui,Arial,sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText(String(n),w/2,h/2+6); });
+  const t=_glCanvas(128,128,(g,w,h)=>{
+    g.clearRect(0,0,w,h);
+    g.fillStyle=tinta; g.font="900 96px system-ui,Arial,sans-serif";
+    g.textAlign="center"; g.textBaseline="middle";
+    g.fillText(String(n),w/2,h/2+6);
+  });
+  t.premultiplyAlpha=false;
+  return t;
 }
 function _texPelota(){
   return _glCanvas(256,128,(g,w,h)=>{ g.fillStyle="#f4f4f4"; g.fillRect(0,0,w,h); g.fillStyle="#15181f";
@@ -213,8 +220,8 @@ function jugador3D(o){
     add(new THREE.SphereGeometry(o.arquero?0.07:0.05,10,8),o.arquero?_glMat(0xf0f0f0):mPiel,0,-0.6,0,b);
     brazos.push(b); });
   /* número en la espalda */
-  if(o.num){ const t=_texNumero(o.num,kit[0],kit[1]||"#111"); const n=new THREE.Mesh(new THREE.PlaneGeometry(0.26,0.26),new THREE.MeshStandardMaterial({map:t,roughness:0.7}));
-    n.position.set(0,1.24,-0.205); n.rotation.y=Math.PI; cuerpo.add(n); }
+  if(o.num){ const t=_texNumero(o.num,kit[0],kit[1]||"#111"); const n=new THREE.Mesh(new THREE.PlaneGeometry(0.28,0.28),new THREE.MeshStandardMaterial({map:t,roughness:0.7,transparent:true,depthWrite:false}));
+    n.position.set(0,1.28,-0.22); n.rotation.y=Math.PI; cuerpo.add(n); }
   /* poses */
   if(o.pose==="muro"){ brazos.forEach((b,i)=>{ b.rotation.x=-0.5; b.rotation.z=(i?-1:1)*0.45; }); }
   else if(o.pose==="arq"){ piernas.forEach((p,i)=>{ p.rotation.z=(i?-1:1)*0.12; }); brazos.forEach((b,i)=>{ b.rotation.z=(i?1:-1)*0.55; b.rotation.x=-0.3; }); cuerpo.position.y=-0.04; }
@@ -339,12 +346,20 @@ function _glSincronizar(est,t){
   if(pt){ const w=_glMundo(cam,pt.x,pt.y,"y",0);
     if(w){ const prev=est.pat.userData.prev, se_mueve=prev&&Math.hypot(prev.x-w.x,prev.z-w.z)>0.004;
       est.pat.position.set(w.x,0,w.z); est.pat.userData.prev={x:w.x,z:w.z};
+      const gPat=svg.querySelector("#a3-pateador");
+      const festeja=gPat&&gPat.classList.contains("a3-festeja");
+      const pateo=gPat&&gPat.classList.contains("a3-pateo");
       const blanco=cam.frontal?{x:0,z:0}:{x:0,z:11};
-      est.pat.lookAt(blanco.x,0,blanco.z);
-      const P=est.pat.userData.piernas, fase=se_mueve?Math.sin(t/60)*0.7:0;
-      P[0].rotation.x=fase; P[1].rotation.x=-fase;
-      const B=est.pat.userData.brazos; B[0].rotation.x=-fase*0.8; B[1].rotation.x=fase*0.8;
-      if(svg.querySelector("#a3-pateador.a3-festeja")){ B[0].rotation.set(0,0,-2.6); B[1].rotation.set(0,0,2.6); }
+      if(festeja&&prev) est.pat.lookAt(w.x+(w.x>=prev.x?2:-2),0,w.z);
+      else est.pat.lookAt(blanco.x,0,blanco.z);
+      const P=est.pat.userData.piernas, B=est.pat.userData.brazos;
+      if(festeja){ B[0].rotation.set(0,0,-2.6); B[1].rotation.set(0,0,2.6); P[0].rotation.x=0.35; P[1].rotation.x=-0.35; }
+      else if(pateo&&!se_mueve){ P[0].rotation.x=-1.25; P[1].rotation.x=0.35; B[0].rotation.x=0.55; B[1].rotation.x=-0.15; }
+      else {
+        const fase=se_mueve?Math.sin(t/60)*0.7:0;
+        P[0].rotation.x=fase; P[1].rotation.x=-fase;
+        B[0].rotation.x=-fase*0.8; B[1].rotation.x=fase*0.8;
+      }
     } }
   /* pelota: en pantalla la da el SVG; la distancia sale de su tamaño (tamaño ∝ 1/distancia) */
   const bEl=svg.querySelector("#arco-bola"), tb=_glTransform(bEl);

@@ -1936,3 +1936,5 @@ nuevos van en tú desde el principio.
 
 No toqué cámara, probabilidades, calendario, Aero ni mundo. VERSION 7.9097. Seguí desde 7.9098.
 
+**7.9098 (Grok) · el golpe se lee.** El 3D seguía al SVG pero el pateador no pateaba: al terminar la carrera ahora estira la pierna. Si festeja, gira hacia donde corre y levanta los brazos. El número de la espalda es el dígito, no un parche del color de la camiseta. El aviso de arriba dice que un toque solo apunta. No toqué resolver ni cámara. VERSION 7.9098.
+
