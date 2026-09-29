@@ -4716,3 +4716,23 @@ Revisé lo de Grok (7.9097–7.9101, todo verde) y seguí sobre eso sin tocar `p
   recorte viejo → "córner en celu: el encuadre muestra solo 300 de 360 de ancho".
 - **Estado:** doctor sano (4 partidas + celular, 92 chequeos, 3 corridas seguidas) · dev 593/593 · core 1185/1185.
 
+### 7.9105 — La pantalla del partido ordenada otra vez (celu y PC), con las mismas preguntas
+Pedido del autor: "no se ve bien ordenado y en celu se pierde la cancha, todos los botones; que se vea como antes
+(cuando tenía menos preguntas), pero con las mismas preguntas y descripciones".
+- **Celu:** la pregunta ya no es una hoja fija que tapa media pantalla: va justo bajo la cancha y la vista vuelve al
+  marcador. Se ven juntos marcador, cancha y pregunta. Mientras hay pregunta se esconden las estadísticas de al lado y
+  la cancha baja a 190 px (140 en pantallas bajas).
+- **PC:** la pregunta va arriba en la columna derecha, al lado de la cancha (antes iba bajo el marcador y empujaba la
+  cancha fuera de pantalla).
+- **Pregunta compacta:** opciones en grilla de 2 (1 en la columna de PC), título + descripción + efectos en letra chica,
+  categorías como etiquetas mínimas. Mismas preguntas, descripciones y efectos. Un solo bloque de estilo
+  (`css-partido-orden`) manda sobre las 4 capas viejas que peleaban (movil.css, pulido.css, interfaz-aero).
+- **Bug:** al abrir una pregunta, `chatMostrarPistas` bajaba la página hasta el chat en el celu y el anclaje de scroll
+  de Chrome seguía al chat que se repinta. Ahora la página no se mueve (`overflow-anchor:none` en el partido) y la
+  pregunta trae "💬 Lo que dice la gente ↓" para ir a leer las pistas cuando quieras.
+- Barra de control del celu: 6 botones secundarios en una fila (la cámara quedaba sola abajo). Balón parado en el
+  celu: el contenido va centrado (el córner dejaba un hoyo).
+- **Dev:** nuevo `partido_orden`. `arco_escena_3d` y un test del núcleo leían `String(mostrarAccion)` y no veían a
+  través de envoltorios: ahora siguen la cadena (`_docFuente`).
+- **Estado:** doctor sano (4 partidas + celular, 93 chequeos) · dev 593/593 · core 1185/1185.
+

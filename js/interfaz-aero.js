@@ -49,9 +49,14 @@ function chatMostrarPistas(){
   const box=document.querySelector(".chat-vivo"), lista=box&&box.querySelector(".chat-lista"), pista=lista&&lista.querySelector(".pista");
   if(!box||!lista||!pista) return false;
   lista.scrollTop=Math.max(0,pista.offsetTop-lista.offsetTop-6);
-  const movil=(typeof esMovil==="function")&&esMovil();
-  const r=box.getBoundingClientRect();
-  if(movil||r.top<0||r.bottom>window.innerHeight){ try{ window.scrollBy({top:r.top-(movil?58:90),behavior:"auto"}); }catch(e){ window.scrollBy(0,r.top-60); } }
+  /* 7.9105 · la página ya NO baja al chat (en el celu te sacaba de la cancha y la pregunta): el chat se acomoda por
+     dentro y la pregunta trae un botón para ir a leer las pistas si quieres */
+  const mom=document.querySelector(".momento-vivo");
+  if(mom&&!mom.querySelector(".mv-ir-chat")&&!(document.body.classList.contains("pv-2col"))){
+    const b=document.createElement("button"); b.type="button"; b.className="mv-ir-chat"; b.textContent="💬 Lo que dice la gente ↓";
+    b.onclick=function(){ const r=box.getBoundingClientRect(); try{ window.scrollBy({top:r.top-58,behavior:"auto"}); }catch(e){ window.scrollBy(0,r.top-58); } };
+    const cab=mom.querySelector(".cab"); (cab||mom).appendChild(b);
+  }
   return true;
 }
 (function(){
@@ -286,24 +291,36 @@ function partidoDosColumnas(){
   if(!v||v.dataset.sec!=="partido") return false;
   const ancho=window.innerWidth>=1100;
   document.body.classList.toggle("pv-2col",ancho);
-  if(!ancho) return false;
+  const moms=[].slice.call(v.querySelectorAll(".momento-vivo"));
+  moms.forEach(m=>m.classList.add("mv-compacto"));
+  if(!ancho){
+    /* 7.9105 · celu y tablet: la pregunta va justo bajo la cancha (antes era una hoja fija que tapaba media pantalla y
+       la página se iba al fondo): marcador, cancha y pregunta se ven juntos. */
+    const hud=v.querySelector(".partido-wrap .partido-hud")||v.querySelector(".partido-wrap .marcador-vivo");
+    moms.forEach(mom=>{ if(hud&&hud.parentNode&&mom.previousElementSibling!==hud) hud.insertAdjacentElement("afterend",mom); });
+    return false;
+  }
   let der=v.querySelector(":scope > .pv-der");
   if(!der){ der=el("div","pv-der"); v.appendChild(der); }
-  /* 7.9083 · la decisión del partido NO va a la columna angosta (quedaba cortada y "todo a la derecha", reporte
-     del autor): va a la columna principal, justo bajo el marcador, a todo el ancho. */
-  const marc=v.querySelector(".partido-wrap .marcador-vivo");
-  [].slice.call(v.querySelectorAll(".momento-vivo")).forEach(mom=>{
-    if(marc&&marc.parentNode&&mom.previousElementSibling!==marc) marc.insertAdjacentElement("afterend",mom);
-  });
+  /* 7.9105 · PC: la pregunta arriba en la columna derecha, al lado de la cancha (antes iba bajo el marcador y
+     empujaba la cancha fuera de la pantalla). Compacta: título + efecto por opción, sin cortarse. */
+  moms.forEach(mom=>{ if(mom.parentNode!==der||der.firstElementChild!==mom) der.insertBefore(mom,der.firstChild); });
   const chat=v.querySelector(".partido-wrap .chat-vivo"), rel=v.querySelector(".partido-wrap .relato");
   if(chat&&chat.parentNode!==der) der.appendChild(chat);
   if(rel&&rel.parentNode!==der){ const caja=el("div","pv-relato"); caja.appendChild(el("div","pv-relato-t","🎙️ Relato")); caja.appendChild(rel); der.appendChild(caja); }
   return true;
 }
+/* 7.9105 · al aparecer la pregunta, la vista vuelve al marcador (antes scrollIntoView la mandaba al fondo) */
+function _pvEncuadrar(){
+  const v=document.getElementById("vista"); if(!v||v.dataset.sec!=="partido") return;
+  const marc=v.querySelector(".marcador-vivo"); if(!marc) return;
+  const y=Math.max(0,marc.getBoundingClientRect().top+window.scrollY-58);
+  try{ window.scrollTo(0,y); }catch(e){}
+}
 (function(){
-  ["pintarPartido","mostrarMomento"].forEach(nom=>{
+  ["pintarPartido","mostrarMomento","mostrarAccion"].forEach(nom=>{
     const o=window[nom]; if(typeof o!=="function"||o._pv) return;
-    const w=function(){ const r=o.apply(this,arguments); try{ partidoDosColumnas(); }catch(e){} return r; };
+    const w=function(){ const r=o.apply(this,arguments); try{ partidoDosColumnas(); if(nom!=="pintarPartido"&&document.querySelector(".momento-vivo")) _pvEncuadrar(); }catch(e){} return r; };
     Object.keys(o).forEach(k=>w[k]=o[k]); w._pv=true; w._orig=o; window[nom]=w;
   });
 })();
@@ -321,7 +338,6 @@ if(typeof document!=="undefined"&&!document.getElementById("css-partido-2col")){
       "body.pv-2col #vista[data-sec=partido]{display:grid !important;grid-template-columns:minmax(0,1fr) minmax(380px,440px);gap:14px;align-items:start;max-width:1500px}"+
       "body.pv-2col #vista[data-sec=partido] > .partido-wrap{min-width:0}"+
       "body.pv-2col .pv-der{position:sticky;top:62px;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 74px);overflow-y:auto;overscroll-behavior:contain;padding-bottom:6px}"+
-      "body.pv-2col .partido-wrap .momento-vivo{margin:10px 0 !important;position:static !important;max-height:none !important;overflow:visible !important}"+
       "body.pv-2col .pv-der .chat-vivo{margin-top:0}"+
       "body.pv-2col .pv-der .chat-lista{max-height:min(46vh,420px) !important}"+
       "body.pv-2col .pv-relato{border-radius:12px;overflow:hidden;border:1px solid rgba(80,140,210,.35);background:rgba(236,246,255,.9)}"+
@@ -352,3 +368,44 @@ function marcarVistaConVentana(){
   const r=window.render;
   if(typeof r==="function"&&!r._cv){ const w=function(){ const x=r.apply(this,arguments); try{ marcarVistaConVentana(); }catch(e){} return x; }; Object.keys(r).forEach(k=>w[k]=r[k]); w._cv=true; w._orig=r; window.render=w; }
 })();
+
+/* 7.9105 · pregunta del partido compacta (como antes, con las mismas preguntas y descripciones). Este bloque manda sobre
+   las capas viejas (movil.css, pulido.css, interfaz-aero 144): hoja fija, 62vh, padding del fondo. */
+if(typeof document!=="undefined"&&!document.getElementById("css-partido-orden")){
+  const st=document.createElement("style"); st.id="css-partido-orden";
+  st.textContent=
+    "html body .momento-vivo.mv-compacto{position:static !important;left:auto !important;right:auto !important;bottom:auto !important;max-height:none !important;overflow:visible !important;margin:8px 0 !important;z-index:auto !important;box-shadow:0 2px 10px rgba(0,0,0,.18) !important}"+
+    "html body.hay-momento .partido-wrap{padding-bottom:12px !important}"+
+    /* el chat en vivo se repinta cada rato: el anclaje de scroll de Chrome lo seguía y mandaba la página al fondo */
+    "html:has(body.en-partido),html body.en-partido,html body.en-partido #vista{overflow-anchor:none !important}"+
+    "html body .mv-compacto .cab{display:flex;align-items:center;gap:6px}"+
+    "html body .mv-compacto .mv-ir-chat{margin-left:auto;font:600 11.5px system-ui;padding:3px 8px;border-radius:999px;border:1px solid rgba(40,90,160,.35);background:rgba(255,255,255,.75);color:#0d2c4d;cursor:pointer;white-space:nowrap}"+
+    "html body .mv-compacto .cuerpo{padding:8px 10px !important}"+
+    "html body .mv-compacto .cuerpo > p{margin:0 0 6px !important;font-size:13px !important;line-height:1.35}"+
+    "html body .mv-compacto .ops-part{display:grid !important;grid-template-columns:1fr 1fr !important;gap:5px !important}"+
+    "html body .mv-compacto .op-grupo{grid-column:1/-1;margin:4px 0 0 !important;padding:0 !important;font-size:10.5px !important;letter-spacing:.06em;opacity:.8}"+
+    "html body .mv-compacto .ops-part .op{min-height:0 !important;padding:6px 8px !important;margin:0 !important;text-align:left}"+
+    "html body .mv-compacto .ops-part .op::before{display:none !important}"+
+    "html body .mv-compacto .op .t{font-size:13.5px !important;line-height:1.25 !important;font-weight:700}"+
+    "html body .mv-compacto .op .d{font-size:11.5px !important;line-height:1.25 !important;margin-top:2px;opacity:.85}"+
+    "html body .mv-compacto .op .ef-linea{font-size:11px !important;line-height:1.25 !important;margin-top:2px}"+
+    "html body .mv-compacto .op .tecla{font-size:10px;padding:0 4px;min-width:0}"+
+    "html body .mv-compacto .hint-teclado{margin:6px 0 0 !important;font-size:11px !important}"+
+    /* en celu, mientras hay pregunta: fuera las estadísticas de al lado (vuelven al responder) y la barra de control */
+    "@media (max-width:1099px){html body.hay-momento .partido-wrap .partido-stats{display:none !important}"+
+      "html body.hay-momento .partido-wrap .cancha2d{max-height:190px !important}}"+
+    "@media (max-width:420px){html body .mv-compacto .op .t{font-size:13px !important}}"+
+    /* balón parado en el celu: si el escenario no llena el alto (córner), el contenido va centrado y no queda un hoyo */
+    "@media (max-width:760px){html body .modal.escena-3d :is(.cuerpo,.so-cuerpo,.window-body){display:flex !important;flex-direction:column !important;justify-content:center !important}}"+
+    /* barra de control del celu: 6 botones secundarios en una fila (antes 5 columnas y la cámara quedaba sola abajo) */
+    "@media (max-width:760px){html body .ctrlPartido{gap:5px !important;padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px)) !important}"+
+      "html body .ctrlPartido .ctrl-sec{grid-template-columns:repeat(6,minmax(0,1fr)) !important;gap:4px !important}"+
+      "html body .ctrlPartido .ctrl-main .btn-aqua{min-height:40px !important}"+
+      "html body .ctrlPartido .ctrl-sec .btn-aqua{min-height:36px !important;font-size:12px !important;padding:4px 2px !important}}"+
+    "@media (max-width:1099px) and (max-height:720px){html body.hay-momento .partido-wrap .cancha2d{max-height:140px !important}html body.hay-momento .partido-wrap .marcador-vivo{padding-top:4px !important;padding-bottom:4px !important}}"+
+    /* PC: en la columna derecha va de a una opción por fila (es angosta) */
+    "html body.pv-2col .pv-der .mv-compacto .ops-part{grid-template-columns:1fr !important}"+
+    "html body.pv-2col .pv-der .mv-compacto{margin:0 !important}";
+  document.head.appendChild(st);
+}
+

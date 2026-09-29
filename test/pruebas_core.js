@@ -2791,7 +2791,8 @@
       ok(VERSION==="7.9024" || /^7\.9/.test(VERSION), "VERSION 7.9024");
       ok(typeof _abrirEscenaArco==="function" && typeof minijuegoPenal==="function", "API escena 3d");
       ok(String(minijuegoPenal).indexOf("_abrirEscenaArco")>=0, "penal usa la escena");
-      ok(String(mostrarAccion).indexOf("minijuegoPenal")>=0, "dirigir abre el minijuego");
+      var srcAcc="", fAcc=mostrarAccion; while(fAcc){ srcAcc+=String(fAcc); fAcc=fAcc._orig; }   /* 7.9105 · puede venir envuelta */
+      ok(srcAcc.indexOf("minijuegoPenal")>=0, "dirigir abre el minijuego");
       nuevaPartida("CC",2026,"historico");
       var once=(E.plantel||[]).filter(function(j){ return j && j.pos!=="ARQ"; }).slice(0,11);
       ok(once.length>=3, "hay 3 para patear");

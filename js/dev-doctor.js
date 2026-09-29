@@ -367,7 +367,7 @@ devDoctorRegistrar({id:"arco_escena_3d", area:"interfaz", n:"Penal, tiro libre y
   if(typeof minijuegoCorner!=="function"||String(minijuegoCorner).indexOf("_abrirEscenaArco")<0) falta.push("el córner no abre la escena");
   if(typeof mostrarAccion!=="function") falta.push("mostrarAccion no está");
   else {
-    var src=String(mostrarAccion);
+    var src=_docFuente(mostrarAccion);
     if(src.indexOf("minijuegoPenal")<0) falta.push("dirigir un penal no entra al minijuego");
     var iDir=src.indexOf('P.modo==="dirigir"');
     var iForm=src.indexOf("¿Quién patea");
@@ -2067,6 +2067,22 @@ devDoctorRegistrar({id:"pateo", area:"interfaz", n:"Pateo: la velocidad del traz
   else if(typeof arcoGLMontar==="function"&&!/_glApagarPorLento/.test(_docFuente(arcoGLMontar))) falta.push("arcoGLMontar no usa el vigilante (se pisó)");
   if(typeof arcoGLApagado==="function"){ var prev=null; try{ prev=localStorage.getItem("futbolini_arcogl"); localStorage.setItem("futbolini_arcogl","lento"); if(!arcoGLApagado()) falta.push("con el 3D marcado lento igual se intenta montar"); }catch(e){} finally{ try{ if(prev===null) localStorage.removeItem("futbolini_arcogl"); else localStorage.setItem("futbolini_arcogl",prev); }catch(e){} } }
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("suave → colocado · rápido → potente · a lo bestia → se eleva · teclado · vigilante 3D");
+}});
+/* 7.9105 · la pantalla del partido ordenada: en PC la pregunta al lado de la cancha; en celu justo bajo la cancha y sin que
+   la página se vaya al chat (antes la hoja tapaba media pantalla y chatMostrarPistas bajaba la página) */
+devDoctorRegistrar({id:"partido_orden", area:"interfaz", n:"Partido: marcador, cancha y pregunta a la vista (celu y PC)",
+  arreglo:"js/interfaz-aero.js: partidoDosColumnas (ubica la pregunta), css-partido-orden (pregunta compacta), chatMostrarPistas (no mueve la página).", fn:function(){
+  var falta=[];
+  if(typeof partidoDosColumnas!=="function") return _dmal("no está partidoDosColumnas",["falta interfaz-aero.js"]);
+  var src=_docFuente(partidoDosColumnas);
+  if(!/partido-hud/.test(src)) falta.push("en celu la pregunta no va bajo la cancha");
+  if(!/der\.insertBefore\(mom/.test(src)) falta.push("en PC la pregunta no va arriba de la columna derecha (empuja la cancha fuera de pantalla)");
+  var css=document.getElementById("css-partido-orden"), t=css?css.textContent:"";
+  if(!/mv-compacto/.test(t)) falta.push("falta el estilo de la pregunta compacta");
+  if(!/overflow-anchor:none/.test(t)) falta.push("sin overflow-anchor:none el chat en vivo arrastra la página al fondo");
+  if(typeof chatMostrarPistas==="function"&&/movil\|\|r\.top<0/.test(_docFuente(chatMostrarPistas))) falta.push("chatMostrarPistas vuelve a bajar la página al chat en el celu");
+  ["mostrarMomento","mostrarAccion"].forEach(function(n){ var f=window[n]; var ok=false; while(f){ if(f._pv){ ok=true; break; } f=f._orig; } if(!ok) falta.push(n+" no reubica la pregunta (se pisó el enganche)"); });
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("pregunta compacta: bajo la cancha en celu, al lado en PC; la página no se va al chat");
 }});
 devDoctorRegistrar({id:"rendimiento", area:"interfaz", n:"Rinde en un celu barato: guardado agrupado, cinta sin scrollIntoView, secciones medidas", pesado:true,
   arreglo:"js/rendimiento.js (guardarAgrupado/guardarAhora) y js/ui.js pintarDock (scrollLeft solo al cambiar de sección).", fn:function(){
