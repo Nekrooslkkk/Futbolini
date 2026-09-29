@@ -650,7 +650,7 @@ function citaConPareja(){
 }
 function casarse(){
   if(!E.perfil.pareja || E.perfil.pareja.casades) return;
-  if((E.perfil.pareja.nivel||0)<60){ if(typeof aviso==="function") aviso("La relación aún no está para tanto: fortalecela con citas."); return; }
+  if((E.perfil.pareja.nivel||0)<60){ if(typeof aviso==="function") aviso("La relación aún no está para tanto: fortalécela con citas."); return; }
   const costo=costoVida(8,30);
   if(E.personal.bolsillo<costo){ if(typeof aviso==="function") aviso("No te alcanza para el casorio ("+plata(costo)+")"); return; }
   E.personal.bolsillo-=costo; E.perfil.pareja.casades=true; E.perfil.pareja.nivel=clamp(E.perfil.pareja.nivel+15,0,100);
@@ -723,16 +723,126 @@ const VIDA_PROC=[
    {t:"Darte el gusto",run:function(){ const m=costoVida(2,10); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+10,0,100); return "Te diste el gusto ("+plata(m)+"). Terapia cara pero efectiva."; }},
    {t:"Aguantar y meditar",run:function(){ E.perfil.bienestar=clamp((E.perfil.bienestar||70)+4,0,100); return "Respiraste hondo y se pasó. Gratis."; }}
   ]},
- {t:"Un perro te elige en el refugio",d:"En un refugio te mira un perro con cara de «llevame».",
+ {t:"Un perro te elige en el refugio",d:"En un refugio te mira un perro con cara de «llévame».",
   op:[
    {t:"Adoptarlo",run:function(){ aplicarEfectos({moral:4}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+10,0,100); return "Nuevo mejor amigo. La casa se llena de alegría."; }},
    {t:"Ahora no",run:function(){ return "Lo dejaste pasar. Igual te quedaste pensando."; }}
   ]}
 ];
+/* 7.9111 · vida cruzada con el poder. `req` (opcional) decide si el evento puede salir con TU estado. */
+function _vpGasto(m){ E.personal.bolsillo=Math.max(0,(E.personal.bolsillo||0)-m); }
+function _vpBien(d){ E.perfil.bienestar=clamp((E.perfil.bienestar==null?70:E.perfil.bienestar)+d,0,100); }
+function _vpPar(d){ if(E.perfil.pareja) E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel==null?65:E.perfil.pareja.nivel)+d,0,100); }
+function _vpSombra(peso,txt){ if(typeof anotarSombra==="function") anotarSombra("favor",peso,txt); }
+function _vpSombraMin(n){ return typeof sombraActual==="function"&&sombraActual()>=n; }
+function _vpHijos(a,b){ return ((E.perfil&&E.perfil.hijos)||[]).some(h=>{ if(h.fallecido) return false; const ed=edadHijo(h); return ed>=a&&ed<=b; }); }
+VIDA_PROC.push(
+ {t:"El médico te pide entradas",d:"El médico que te atiende hace años te pide cuatro entradas de platea para el clásico, «para mi hijo, que es hincha». Nunca te ha cobrado una hora de más.",
+  op:[
+   {t:"Dárselas, salen del club",run:function(){ aplicarGrupos({socios:-2}); _vpBien(2); return "Cuatro platea que otro socio pagó. El doctor te pidió el próximo control sin lista de espera."; }},
+   {t:"Comprárselas con tu plata",run:function(){ const m=costoVida(0.2,0.8); _vpGasto(m); return "Le pagaste las entradas ("+plata(m)+"). Se las recibió sin hacer preguntas."; }},
+   {t:"Explicarle que no puedes",run:function(){ _vpBien(-2); return "Le dijiste que no. Sonrió, y el próximo control lo agendó su secretaria."; }}
+  ]},
+ {t:"Tu amigo de infancia ahora es representante",d:"El de la pichanga del barrio maneja tres jugadores y te invita a almorzar. En la sobremesa te pregunta por el mediocampo del club.",
+  op:[
+   {t:"Almorzar y escucharlo",run:function(){ _vpSombra(6,"almuerzo con un representante amigo"); _vpBien(4); return "Recuerdos buenos, tres nombres sobre la mesa. La cuenta la pagó él."; }},
+   {t:"Almorzar sin hablar de trabajo",run:function(){ _vpBien(3); return "Hablaron del barrio y de la pichanga. Cuando llegó la cuenta ninguno dijo nada del club."; }},
+   {t:"Cancelar y mandarle un saludo",run:function(){ _vpBien(-4); return "Cancelaste. Entendió, aunque tardó en contestar."; }}
+  ]},
+ {t:"Tu pareja encuentra un sobre",req:()=>!!E.perfil.pareja&&_vpSombraMin(20),d:"Buscando las llaves, tu pareja encuentra un sobre con plata en el cajón de la ropa. No dice nada: lo deja arriba de la mesa antes de que llegues.",
+  op:[
+   {t:"Decir que es un pago del club",run:function(){ _vpPar(-6); _vpBien(-3); return "Asintió. El sobre quedó en la mesa hasta la noche."; }},
+   {t:"Contarle de dónde viene",run:function(){ _vpPar(-10); _vpBien(-4); return "Te escuchó completo, sin interrumpir. Esa noche durmió en la pieza de al lado."; }},
+   {t:"Cambiar de tema y cenar",run:function(){ _vpPar(-14); _vpBien(-4); return "Cenaron con la tele encendida. Nadie tocó el sobre."; }}
+  ]},
+ {t:"La directora del colegio te trata distinto",req:()=>_vpHijos(6,17),d:"En la reunión de apoderados te da la mano más tiempo que a los demás y te ofrece un cupo extra para un primo. Otros apoderados miran.",
+  op:[
+   {t:"Aceptar el cupo para tu primo",run:function(){ _vpSombra(5,"cupo en el colegio de tu hijo"); aplicarGrupos({comunidad:-2}); return "El primo entró en marzo. En la reunión siguiente nadie te saludó primero."; }},
+   {t:"Agradecer y no decir nada",run:function(){ return "Te fuiste con el saludo y sin el favor. Ella se quedó con la sonrisa puesta."; }},
+   {t:"Pedir que te traten como a todos",run:function(){ aplicarRep({credibilidad:2}); _vpBien(-1); return "Lo dijiste en voz alta, delante de otros. En el auto tu hijo no te miró."; }}
+  ]},
+ {t:"Un dirigente rival te invita a su parcela",d:"El presidente de otro club te invita «sin cámaras». Dice que hay gente que quiere conocerte y que el asado es lo de menos.",
+  op:[
+   {t:"Ir y escuchar",run:function(){ _vpSombra(8,"asado con dirigentes de otros clubes"); aplicarGrupos({anfp:4}); return "Comiste bien y prometiste poco. Al irte, dos personas anotaron tu número."; }},
+   {t:"Ir con alguien de confianza",run:function(){ aplicarGrupos({anfp:2}); return "Fueron los dos, hablaron poco. Se notó que no ibas solo."; }},
+   {t:"Decir que tienes partido",run:function(){ _vpBien(1); return "Mandaste un mensaje amable. El presidente contestó con un emoji."; }}
+  ]},
+ {t:"Un periodista sabe algo tuyo",req:()=>_vpSombraMin(20),d:"El que toma café contigo hace años te pide una primicia: quién sale en el próximo mercado. Te lo dice sin apuro, y sin tocar lo otro que sabe de ti.",
+  op:[
+   {t:"Darle la primicia",run:function(){ aplicarGrupos({prensa:6,camarin:-4}); _vpSombra(6,"datos filtrados a un periodista"); return "Salió en la portada del lunes. En el camarín preguntaron quién habló."; }},
+   {t:"Dejar que publique lo suyo",run:function(){ aplicarRep({credibilidad:-3}); _vpBien(-4); return "Publicó una versión corta de lo que sabía. Duró un día en redes."; }},
+   {t:"Cortar el café para siempre",run:function(){ aplicarGrupos({prensa:-6}); _vpBien(-2); return "No volvió a llamar. Su nombre apareció en la columna de al lado."; }}
+  ]},
+ {t:"Te llaman a las dos de la mañana",d:"Es un dirigente que necesita que hables con alguien «solo para aclarar una duda». En tu casa nadie se movió, pero todos escucharon.",
+  op:[
+   {t:"Contestar y salir al patio",run:function(){ _vpSombra(10,"llamada de madrugada por un partido"); _vpPar(-6); return "Hablaste diez minutos, en voz baja. Al volver, la luz de la pieza estaba apagada."; }},
+   {t:"No contestar",run:function(){ aplicarGrupos({directorio:-3}); return "Sonó cuatro veces. A las nueve tenías dos llamadas perdidas más."; }},
+   {t:"Contestar y decir que no",run:function(){ aplicarGrupos({directorio:-4}); aplicarRep({credibilidad:3}); return "Fuiste corto y claro. Del otro lado colgaron sin despedirse."; }}
+  ]},
+ {t:"Tu sobrino quiere probarse en la cantera",d:"Tu hermana te llama: su hijo de 16 juega en la liga del barrio y quiere una prueba en las inferiores del club. No pide nada más.",
+  op:[
+   {t:"Conseguirle la prueba",run:function(){ _vpSombra(3,"prueba para un sobrino"); _vpBien(3); return "Fue el sábado a las nueve. El entrenador de inferiores te miró desde lejos."; }},
+   {t:"Mandarlo por el canal normal",run:function(){ return "Se anotó como todos. Tu hermana entendió a medias y el niño casi nada."; }},
+   {t:"Decirle a tu hermana que no",run:function(){ _vpBien(-3); return "Quedó en silencio en el teléfono. En Navidad se sentó lejos."; }}
+  ]},
+ {t:"Cuatro hinchas te esperan afuera de tu casa",d:"Están con una bandera enrollada y buena cara. Dicen que solo quieren conversar.",
+  op:[
+   {t:"Bajar a conversar",run:function(){ aplicarGrupos({hinchada:4}); _vpSombra(6,"conversación con la barra en la puerta de tu casa"); return "Conversaron veinte minutos. Se fueron sin pedir nada, y eso también fue un mensaje."; }},
+   {t:"Avisar a conserjería",run:function(){ aplicarGrupos({hinchada:-4}); return "Conserjería les pidió que se retiraran. Una foto llegó a un grupo de WhatsApp."; }},
+   {t:"Salir por el estacionamiento",run:function(){ _vpBien(-2); return "Saliste sin que te vieran. Llegaste al club con el corazón acelerado."; }}
+  ]},
+ {t:"El banco te ofrece un crédito especial",d:"Un ejecutivo te llama «por tu perfil»: una tasa que no le dan ni a los socios. Dice que no hace falta que firmes nada urgente.",
+  op:[
+   {t:"Aceptar el crédito",run:function(){ const m=costoVida(5,20); E.personal.bolsillo=(E.personal.bolsillo||0)+m; _vpSombra(5,"crédito preferente del banco"); return "Te abonaron "+plata(m)+". Semanas después, el mismo ejecutivo te pidió una foto con el plantel."; }},
+   {t:"Pedirlo con la tasa normal",run:function(){ return "Aceptaron la tasa de siempre. El ejecutivo dejó de llamar al mes."; }},
+   {t:"Rechazar",run:function(){ return "Le agradeciste y colgaste. No te volvió a llamar."; }}
+  ]},
+ {t:"Tu pareja pide que hagas una pausa",req:()=>!!E.perfil.pareja,d:"No grita. Te dice, tranquila, que ya no te reconoce cuando llegas del camarín.",
+  op:[
+   {t:"Prometer unas vacaciones",run:function(){ const m=costoVida(1,4); _vpGasto(m); _vpPar(6); return "Reservaron tres días en el sur ("+plata(m)+"). Ella guardó el mensaje en la cocina."; }},
+   {t:"Decir que después de la temporada",run:function(){ _vpPar(-4); return "Dijo que bueno. En su tono no había fecha."; }},
+   {t:"Decir que el fútbol es tu vida",run:function(){ _vpPar(-12); _vpBien(-2); return "No discutió. Fue a lavar una taza que ya estaba limpia."; }}
+  ]},
+ {t:"Tu hijo ya no quiere ser hincha del club",req:()=>_vpHijos(8,16),d:"Llegó del colegio diciendo que se cambió de equipo. En el patio le dijeron que tu club «es de puros ladrones» y quiere que se lo desmientas.",
+  op:[
+   {t:"Contarle cómo es de verdad",run:function(){ _vpBien(-3); return "Le dijiste lo que sabes y lo que no. Te escuchó sin comer."; }},
+   {t:"Regalarle la camiseta del club",run:function(){ const m=costoVida(0.2,0.6); _vpGasto(m); return "Se la probó y se quedó callado ("+plata(m)+"). En la noche la dejó colgada."; }},
+   {t:"Reírte y cambiar de tema",run:function(){ _vpBien(-2); return "Se rió también. Te miró más tiempo del necesario."; }}
+  ]},
+ {t:"Una multa que alguien «arregla»",d:"Llegó a tu casa una multa de tránsito con tu patente. Un conocido del municipio te escribe que él la deja sin efecto en cinco minutos.",
+  op:[
+   {t:"Dejar que la arregle",run:function(){ _vpSombra(4,"multa de tránsito arreglada por un conocido"); return "Desapareció del sistema esa tarde. Al mes te pidió una entrada."; }},
+   {t:"Pagarla tú",run:function(){ const m=costoVida(0.2,0.5); _vpGasto(m); return "La pagaste en línea ("+plata(m)+") y guardaste el comprobante."; }},
+   {t:"Pagarla y avisarle que no",run:function(){ const m=costoVida(0.2,0.5); _vpGasto(m); aplicarRep({credibilidad:1}); return "Pagaste ("+plata(m)+"). Él contestó con un pulgar arriba y nada más."; }}
+  ]},
+ {t:"La señora de la feria quiere explicaciones",d:"Te dice que su marido lleva tres días sin hablarle desde el domingo. El descuento es lo de menos: quiere que le expliques el penal.",
+  op:[
+   {t:"Explicarle el penal con paciencia",run:function(){ aplicarRep({publica:2}); return "Te escuchó con los brazos cruzados. Se llevó dos kilos de duraznos sin cobrarte."; }},
+   {t:"Comprar y sonreír",run:function(){ const m=costoVida(0.2,0.6); _vpGasto(m); return "Compraste sin discutir ("+plata(m)+"). Se despidió sin creerte."; }},
+   {t:"Irte rápido",run:function(){ aplicarRep({publica:-1}); return "Apuraste el paso. Escuchaste tu nombre a tu espalda, dicho de otra manera."; }}
+  ]},
+ {t:"Tu papá llama a las once de la noche",d:"No habla de táctica ni del resultado. Te pregunta si comiste algo.",
+  op:[
+   {t:"Ir a verlo mañana",run:function(){ _vpBien(5); return "Fuiste y tomaron té en la cocina. Nadie mencionó el partido."; }},
+   {t:"Llamarlo mañana con calma",run:function(){ _vpBien(1); return "Al otro día contestó al primer tono, como si nada."; }},
+   {t:"Contestar corto: estás cansado",run:function(){ _vpBien(-3); return "La llamada duró cuarenta segundos. Después te quedaste mirando el techo."; }}
+  ]},
+ {t:"Una sociedad de representantes te quiere de socio",req:()=>(typeof _hayPoder==="function"&&_hayPoder())||_vpSombraMin(20),d:"Un empresario te propone ser socio «pasivo» de una oficina. No tendrías que hacer nada: solo mirar cuando lleguen los nombres.",
+  op:[
+   {t:"Entrar como socio",run:function(){ const m=costoVida(5,20); E.personal.bolsillo=(E.personal.bolsillo||0)+m; _vpSombra(16,"sociedad con una oficina de representantes"); return "Firmaste una hoja y te depositaron "+plata(m)+". Nadie usó la palabra «conflicto»."; }},
+   {t:"Pedir tiempo para pensarlo",run:function(){ return "Te dio un plazo y su tarjeta. La tarjeta sigue en tu billetera."; }},
+   {t:"Decir que no, en serio",run:function(){ aplicarRep({credibilidad:3}); return "Lo dijiste sin adornos. Se despidió con una sonrisa que no llegó a los ojos."; }}
+  ]}
+);
+function vidaProcElegibles(){
+  return VIDA_PROC.filter(ev=>{ try{ return !ev.req||ev.req(); }catch(e){ return false; } });
+}
 function dispararVidaProc(){
   if(!E.perfil) return false;
   if(Math.random()>0.14) return false;
-  modalVidaProc(elige(VIDA_PROC));
+  const pool=vidaProcElegibles();
+  if(!pool.length) return false;
+  modalVidaProc(elige(pool));
   return true;
 }
 function modalVidaProc(ev){
@@ -781,6 +891,25 @@ const DILEMAS_CITA=[
  {t:"Se filtra una foto de la cita",d:"Al otro día aparece en un portal: los dos en la mesa, riendo.",
   op:[{t:"No comentas. La foto habla sola.",ok:6},{t:"Pides que la bajen, haces más ruido",ok:-8},{t:"La subes tú: «sí, estábamos ahí»",ok:10}]}
 ];
+/* 7.9111 · dilemas donde el poder se sienta a la mesa */
+DILEMAS_CITA.push(
+ {t:"Te pregunta cuánto ganas de verdad",d:"Lo dice entre el postre y el café, mirando la cuenta. Sabe más de lo que ha dicho.",
+  op:[{t:"Decirle el número exacto",ok:8},{t:"Redondear hacia abajo",ok:-4},{t:"Preguntarle por qué ahora",ok:-6}]},
+ {t:"Un dirigente se sienta en la mesa de al lado",d:"Se acerca a saludarte y a ella no la mira. Se queda quince minutos hablando del mercado.",
+  op:[{t:"Presentarla y pedir que la incluya",ok:10},{t:"Hablar rápido y despedirlo",ok:4},{t:"Seguir la conversación con él",ok:-12}]},
+ {t:"El celular se enciende sobre la mesa",d:"«El reloj ya está en tu casa». El mensaje es de un representante y ella alcanzó a leerlo.",
+  op:[{t:"Decirle qué es y qué harás",ok:8},{t:"Guardar el teléfono sin decir nada",ok:-10},{t:"Bromear que es un error",ok:-4}]},
+ {t:"Pide que no vayas a la cancha este domingo",d:"Es el cumpleaños de su mamá y la fecha es de local. No lo dice enojada: lo dice como quien ya sabe la respuesta.",
+  op:[{t:"Ir al cumpleaños y oír la radio",ok:12},{t:"Ir un rato y salir temprano",ok:4},{t:"Decirle que no se puede",ok:-10}]},
+ {t:"En la mesa de al lado hablan de ti",d:"Perdiste el sábado y alguien cuchichea que a ella «la ves poco». Ella se queda mirando el mantel.",
+  op:[{t:"Tomarle la mano y no hablar",ok:8},{t:"Pedir la cuenta y salir",ok:3},{t:"Enfrentar a la mesa de al lado",ok:-8}]},
+ {t:"Te propone tres días sin celular",d:"Al sur, sin señal. Tú sabes que en tres días el mercado se mueve.",
+  op:[{t:"Aceptar y dejarlo en casa",ok:12},{t:"Aceptar, apagado en la maleta",ok:2},{t:"Decir que después del cierre",ok:-8}]},
+ {t:"Tu ex se sienta dos mesas más allá",d:"Llegó con amigos. Tu pareja lo notó antes que tú.",
+  op:[{t:"Contarle quién es, sin adornos",ok:8},{t:"Pedir cambiarse de mesa",ok:2},{t:"Saludar como si nada",ok:-6}]},
+ {t:"Habla de la casa de antes",d:"La de la esquina, donde el fútbol era un domingo y no un trabajo. Nunca la había nombrado en voz alta.",
+  op:[{t:"Prometer volver en algunos años",ok:6},{t:"Llevarla a verla este fin de semana",ok:12},{t:"Decir que ese barrio ya no existe",ok:-6}]}
+);
 function chatMatch(match){
   asegurarTinder();
   let i=0, pts=0;

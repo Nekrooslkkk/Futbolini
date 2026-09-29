@@ -161,7 +161,23 @@ function _cvSeparar(J,dt){
   }
 }
 /* ---------- REPETICIÓN del gol: la jugada que termina en la red ---------- */
-function _cvArmarGol(st,lado,quien,min){
+/* 7.9111 · lo que va antes del nombre en el cartel: [si lo hago yo, si lo hace el rival] · máximo 22 caracteres */
+const CV_CARTELES={
+  golazo:["⚽ Golazo · ","Golazo rival · "],
+  contra:["Regalo del rival · ","Gol en contra · "],
+  descuento:["⚽ Sobre la hora · ","Gol rival al final · "],
+  empate:["⚽ El empate · ","Empata el rival · "]
+};
+function _cvCartel(mio,ctx,min){
+  ctx=ctx||{};
+  let k=null;
+  if(ctx.tipo==="autogol") k="contra";
+  else if(ctx.yo!=null&&ctx.yo===ctx.otro) k="empate";
+  else if((min||0)>=90) k="descuento";
+  else if(ctx.tipo==="tiro libre") k="golazo";
+  return k?CV_CARTELES[k][mio?0:1]:(mio?"⚽ ":"Gol rival · ");
+}
+function _cvArmarGol(st,lado,quien,min,ctx){
   const mio=lado>0, J=st.jug;
   const del=J.map((p,i)=>({p:p,i:i})).filter(c=>c.p.mio===mio&&c.p.rol!=="gk");
   const porRol=r=>del.filter(c=>c.p.rol===r);
@@ -169,7 +185,7 @@ function _cvArmarGol(st,lado,quien,min){
   const ala=Math.random()<0.5?0.17:0.83, fin=0.47+Math.random()*0.06, dur=mio?3.4:2.6;
   const W=[{a:0.52,y:0.5},{a:0.76,y:ala},{a:0.86,y:0.5+(Math.random()-0.5)*0.12},{a:1.012,y:fin}];
   st.seq={tipo:"gol",lado:lado,t:0,dur:dur,mio:mio,A:A,B:B,C:C,W:W,
-    cartel:(mio?"⚽ ":"Gol rival · ")+(quien||"")+(min?" "+min+"'":"")};
+    cartel:_cvCartel(mio,ctx,min)+(quien||"")+(min?" "+min+"'":"")};
   const pA=J[A]; pA.x=_cvX(mio,W[0].a); pA.y=W[0].y;
   st.ball.x=pA.x; st.ball.y=pA.y; st.pase=null; st.own=-1;
 }
@@ -221,8 +237,9 @@ function _cvStep(P,dt,stOpc){
   if(P && !stOpc){
     const mk=_cvMarcador(P);
     const ult=(P.golesDetalle||[]).slice(-1)[0]||{};
-    if(mk.yo>st.lastYo) _cvArmarGol(st,1,ult.quien,ult.min);
-    else if(mk.otro>st.lastOtro) _cvArmarGol(st,-1,ult.quien,ult.min);
+    const cx={tipo:ult.tipo,yo:mk.yo,otro:mk.otro};
+    if(mk.yo>st.lastYo) _cvArmarGol(st,1,ult.quien,ult.min,cx);
+    else if(mk.otro>st.lastOtro) _cvArmarGol(st,-1,ult.quien,ult.min,cx);
     st.lastYo=mk.yo; st.lastOtro=mk.otro;
     if(P._penalSeq && st.penalSeq!==P._penalSeq && !st.seq){
       st.penalSeq=P._penalSeq; st.penalSeen=P._penalCancha||1; st.penalDive=1.6; st._penY=(Math.random()<0.5?-1:1)*_cvRnd(0.03,0.07);
@@ -609,7 +626,7 @@ function cvRepeticionGol(canvas, gol, info){
   if(!canvas) return;
   if(_cvRepRAF) cancelAnimationFrame(_cvRepRAF);
   const st=_cvNuevoEstado(null), lado=gol&&gol.propio?1:-1;
-  _cvArmarGol(st,lado,gol&&gol.quien,gol&&gol.min);
+  _cvArmarGol(st,lado,gol&&gol.quien,gol&&gol.min,{tipo:gol&&gol.tipo});
   st.seq.sinSaque=true;   /* la repetición termina con la pelota en la red */
   const Pfalso={part:{rivalId:info&&info.rivalId}};
   let last=performance.now();

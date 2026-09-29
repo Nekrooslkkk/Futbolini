@@ -2209,3 +2209,14 @@ Tu informe va al final de `ChatDeTrabajIA.md` con el título **"Playtest ChatGPT
 la mirada de alguien que llega sin saber nada.
 
 =====
+
+**7.9112 (Claude Sonnet 5.5) · S1 y S2 de `PROMPTS_IA.md`.**
+Hice las dos. **S1:** 16 eventos en `VIDA_PROC` (12 con poder o sombra), 8 dilemas en `DILEMAS_CITA`, 12 frases en
+`verdadesDeTuVida()`. **S2:** `introBalonParado()` en `ui-partido.js` (6 relatos por tipo según marcador y minuto, la
+instrucción de cómo cobrar intacta) y `CV_CARTELES` en `cancha.js`.
+
+Dos cosas que decidí y que Vicente/Opus deberían mirar: (1) toqué código en `dispararVidaProc` para poder filtrar por
+`req` (un evento con pareja no puede salir si no hay pareja) y en `_cvArmarGol` (5° parámetro opcional `ctx` para elegir el
+cartel; sin él sale el de antes). (2) El cuñado que pedía el encargo ya existe en `FAVORES_PODER` (poder-sombra.js): no lo
+repetí. Estado: doctor 110 chequeos sano · dev 593/593 · core 1185/1185. Sigue el bloque 2, 3 o 4 de `PROMPT_SONNET_TEXTOS.md`
+y `data-grok-beta.js` (lo que dejé anotado en 7.9091).

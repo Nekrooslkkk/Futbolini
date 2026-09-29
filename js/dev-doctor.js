@@ -2351,6 +2351,69 @@ devDoctorRegistrar({id:"tuits_sin_repetir", area:"contenido", n:"Ningún tuit de
     _dok((TUITS_MOMENTO.length)+" tuits en el pool, sin repetidos dentro de su contexto");
 }});
 
+/* 7.9111 (Sonnet 5.5) · eventos de Vida que cruzan tu vida con tu poder: bien formados, corren sin explotar,
+   la plata personal va por costoVida (nunca ri()), sin voseo en lo que lees y sin textos repetidos */
+devDoctorRegistrar({id:"vida_eventos", area:"contenido", n:"Eventos y dilemas de Vida: bien formados, corren, plata a escala del sueldo, sin voseo",
+  arreglo:"js/reputacion.js: VIDA_PROC (req opcional) y DILEMAS_CITA; frases en js/vida-hoy.js. La plata personal va con costoVida(a,b).", fn:function(){
+  if(typeof VIDA_PROC==="undefined"||typeof DILEMAS_CITA==="undefined") return _dmal("no cargó js/reputacion.js");
+  var falta=[], vistos={}, voseo=/(?:^|[^a-záéíóúñ])(vos|tenés|sabés|hacé|decí|mirá|contame|llevame|\w+(?:ái|ís))(?![a-záéíóúñ])/i, snap=clonarPartida(E), poder=0, textos=[];
+  var revisa=function(s,donde){ if(!s) return; textos.push(s); if(voseo.test(s)&&!/país|maíz|raíz/i.test(s)) falta.push(donde+": voseo en «"+s.slice(0,50)+"»"); };
+  try{
+    VIDA_PROC.forEach(function(ev,i){
+      if(!ev.t||!ev.d||!Array.isArray(ev.op)||ev.op.length<2){ falta.push("VIDA_PROC["+i+"] mal formado"); return; }
+      if(vistos[ev.t]) falta.push("evento repetido: "+ev.t); vistos[ev.t]=1;
+      revisa(ev.t,ev.t); revisa(ev.d,ev.t);
+      try{ if(ev.req) ev.req(); }catch(e){ falta.push(ev.t+": req explota — "+e.message); }
+      var src=""; ev.op.forEach(function(o,j){
+        if(!o.t||typeof o.run!=="function"){ falta.push(ev.t+" opción "+(j+1)+" sin run"); return; }
+        revisa(o.t,ev.t); src+=String(o.run);
+        try{ var r=o.run(); if(!r||typeof r!=="string") falta.push(ev.t+" opción "+(j+1)+" no devuelve texto"); else revisa(r,ev.t+" (resultado)");
+          if(!isFinite(E.personal.bolsillo)||!isFinite(E.perfil.bienestar)) falta.push(ev.t+" opción "+(j+1)+" deja NaN en bolsillo o bienestar"); }
+        catch(e){ falta.push(ev.t+" opción "+(j+1)+" explota — "+e.message); }
+      });
+      if(/bolsillo/.test(src)&&/[^a-zA-Z_.]ri\(/.test(src)) falta.push(ev.t+": plata personal con ri() (usa costoVida)");
+      if(/_vpSombra\(|anotarSombra|aplicarGrupos|aplicarRep/.test(src)) poder++;
+    });
+    DILEMAS_CITA.forEach(function(d,i){
+      if(!d.t||!d.d||!Array.isArray(d.op)||d.op.length<2||d.op.some(function(o){ return !o.t||typeof o.ok!=="number"; })) falta.push("DILEMAS_CITA["+i+"] mal formado");
+      else { revisa(d.t,d.t); revisa(d.d,d.t); d.op.forEach(function(o){ revisa(o.t,d.t); }); }
+    });
+    if(typeof verdadesDeTuVida==="function") verdadesDeTuVida().forEach(function(v){ revisa(v.t,"Tu vida hoy"); });
+  } catch(e){ falta.push("explota: "+e.message); }
+  finally { restaurarPartida(snap); }
+  if(poder<8) falta.push("solo "+poder+" eventos tocan poder, grupos o sombra (el mínimo es 8)");
+  var rep={}; textos.forEach(function(s){ rep[s]=(rep[s]||0)+1; });
+  Object.keys(rep).forEach(function(s){ if(rep[s]>1&&s.length>25) falta.push("texto repetido ("+rep[s]+"×): «"+s.slice(0,50)+"»"); });
+  return falta.length?_dmal(falta.length+" problema(s)",falta.slice(0,10)):_dok(VIDA_PROC.length+" eventos ("+poder+" cruzan el poder) · "+DILEMAS_CITA.length+" dilemas de cita");
+}});
+
+/* 7.9111 (Sonnet 5.5) · el cartel del balón parado: el relato cambia con el minuto y el marcador y no repite
+   seguido; la instrucción de cómo cobrar queda igual; los carteles de la repetición caben (22 caracteres) */
+devDoctorRegistrar({id:"balon_parado_textos", area:"contenido", n:"Balón parado: relato variado por minuto y marcador, instrucción intacta, carteles cortos",
+  arreglo:"js/ui-partido.js: _BP_RELATO / _BP_INSTR / introBalonParado; js/cancha.js: CV_CARTELES (máx. 22 caracteres antes del nombre).", fn:function(){
+  if(typeof introBalonParado!=="function"||typeof _BP_RELATO==="undefined") return _dmal("no está introBalonParado en ui-partido.js");
+  var falta=[], voseo=/(?:^|[^a-záéíóúñ])(vos|tenés|sabés|hacé|decí|mirá|\w+(?:ái|ís))(?![a-záéíóúñ])/i, marc={g:[2,0],e:[1,1],p:[0,2]}, n=0;
+  ["penal","tl","corner"].forEach(function(tipo){
+    if(_BP_RELATO[tipo].length<6) falta.push(tipo+": menos de 6 variantes de relato");
+    Object.keys(marc).forEach(function(m){ ["n","t"].forEach(function(t){
+      var P={min:t==="t"?85:30,gl:marc[m][0],gv:marc[m][1],once:[],part:{local:true}}, vistos={}, ant=null;
+      if(typeof miMarcador!=="function") return;
+      for(var i=0;i<12;i++){
+        var s=introBalonParado(tipo,P,{n:"Pérez"},{n:"Soto"}); n++;
+        if(!s||s.indexOf("<b>")<0) falta.push(tipo+" "+m+t+": sin nombre en <b>");
+        if(s===ant) falta.push(tipo+" "+m+t+": repite la misma línea dos veces seguidas");
+        if(voseo.test(s)) falta.push(tipo+": voseo en «"+s.slice(0,40)+"»");
+        vistos[s]=1; ant=s;
+      }
+      if(Object.keys(vistos).length<2) falta.push(tipo+" "+m+t+": una sola variante posible (no hay con qué variar)");
+    }); });
+  });
+  if(typeof CV_CARTELES==="object") Object.keys(CV_CARTELES).forEach(function(k){ CV_CARTELES[k].forEach(function(s){ if(s.length>22) falta.push("cartel «"+s+"» pasa de 22 caracteres ("+s.length+")"); }); });
+  else falta.push("falta CV_CARTELES en cancha.js");
+  ["penal","tl","corner"].forEach(function(t){ if(!_BP_INSTR[t]||_BP_INSTR[t].length<40) falta.push("falta la instrucción de "+t); });
+  return falta.length?_dmal(falta.length+" problema(s)",falta.slice(0,10)):_dok(n+" cartuchos probados en 3 tipos × 6 situaciones · "+Object.keys(CV_CARTELES).length+" carteles de repetición");
+}});
+
 /* ============ MOTOR DEL DOCTOR ============ */
 function devDoctor(opts){
   opts=opts||{};

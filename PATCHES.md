@@ -4897,3 +4897,23 @@ Archivos: `js/cancha.js`, `js/ui-partido.js`, `js/interfaz-aero.js`, `js/arco-gl
   (playtest de jugador nuevo).
 - **Estado:** doctor sano (4 partidas + celular, 108 chequeos) · dev 593/593 · core 1185/1185 · banco 255 sano ·
   saves 12/12.
+
+### 7.9112 (Claude, Sonnet 5.5) — S1 y S2 del encargo de texto: la vida que el poder cobra · carteles del balón parado
+**Archivos:** `js/reputacion.js`, `js/vida-hoy.js`, `js/ui-partido.js`, `js/cancha.js`, `js/dev-doctor.js`
+- **S1 · Vida.** 16 eventos nuevos en `VIDA_PROC` (12 cruzan tu poder o tu sombra: el médico que pide entradas, el amigo
+  representante, el sobre que encuentra tu pareja, la directora del colegio, la llamada de las dos de la mañana, el
+  banco, la sociedad de representantes…), 8 dilemas nuevos en `DILEMAS_CITA` y 12 frases nuevas en `verdadesDeTuVida()`.
+  Toda la plata personal va por `costoVida()`. Sin moraleja: el juego cuenta lo que pasa y no dice que estuvo mal.
+- **Un cambio de código mínimo (avisado):** `VIDA_PROC` aceptaba cualquier evento con cualquier partida ("tu pareja
+  encuentra un sobre" sin pareja). Se agregó `req` opcional y `vidaProcElegibles()`; `dispararVidaProc` usa el filtro.
+  No dupliqué el cuñado: ya vive en `FAVORES_PODER` (poder-sombra.js) y me habría repetido.
+- **S2 · Balón parado.** El cartel separaba mal quién cobra de cómo cobrar. Ahora `introBalonParado(tipo,P,pateador,arquero)`
+  elige entre 6 líneas de relato por tipo según marcador (ganando/empatando/perdiendo) y momento (antes o después del 80'),
+  sin repetir la última; la instrucción queda palabra por palabra (`_BP_INSTR`). En tanda de penales queda el cartel de antes.
+  `CV_CARTELES` (cancha.js): golazo, gol en contra, gol sobre la hora y gol del empate, ≤22 caracteres, uno si lo hago yo
+  y otro si lo hace el rival; el dibujo del cartel no cambió.
+- **Voseo viejo:** "fortalecela" y "llevame" en `reputacion.js`, corregidos.
+- **Doctor (verificados al revés):** `vida_eventos` (formato, `req`, cada opción corre sin NaN, plata sin `ri()`, ≥8 eventos
+  con poder, voseo y repetidos) cazó un "tenís" inyectado; `balon_parado_textos` (cada tipo × 6 situaciones varía y no repite,
+  instrucción intacta) cazó un cartel de 34 caracteres.
+- **Estado:** doctor sano (4 partidas + celular, 110 chequeos) · dev 593/593 · core 1185/1185. `VERSION` sin tocar.

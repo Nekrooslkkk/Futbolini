@@ -2118,6 +2118,53 @@ function _chipsPateador(host, lista, actual, onPick){
   host.appendChild(row);
   return {get:function(){ return cur; }};
 }
+/* 7.9111 · el cartel del balón parado separa QUIÉN cobra (relato, cambia con minuto y marcador) de CÓMO
+   se cobra (instrucción: ayuda, no relato, va siempre igual). m = marcador (g/e/p), t = momento (n antes del 80', t desde el 80'). */
+const _BP_INSTR={
+  penal:"Desliza hacia el arco: más rápido, más fuerte; la curva del trazo le da efecto. O toca para apuntar y usa el botón. El centro flojo se ataja.",
+  penalChip:"Desliza hacia el arco: más rápido, más fuerte. O toca para apuntar y usa el botón.",
+  tl:"La barrera tapa el centro bajo. Desliza hacia el arco (rápido = fuerte, trazo curvo = comba) o toca para apuntar y usa el botón.",
+  corner:"Toca el primer palo, el punto penal o el segundo, y cobra con el botón. O desliza: más rápido, más fuerte."
+};
+const _BP_RELATO={
+  penal:[
+    {m:"gep",t:"n",h:(x,a)=>"Hay penal. <b>"+x+"</b> pone la pelota y <b>"+a+"</b> se acomoda bajo el travesaño."},
+    {m:"gep",t:"nt",h:(x,a)=>"El estadio se calló. <b>"+x+"</b> tiene la pelota en las manos y <b>"+a+"</b> lo mira."},
+    {m:"g",t:"nt",h:(x,a)=>"Vas arriba y este penal puede cerrar el partido. <b>"+x+"</b> ante <b>"+a+"</b>."},
+    {m:"e",t:"nt",h:(x,a)=>"Está parejo y el penal puede romperlo. <b>"+x+"</b> se la queda; <b>"+a+"</b> no se mueve."},
+    {m:"p",t:"nt",h:(x,a)=>"Vienes perdiendo y este penal es el único camino corto. <b>"+x+"</b> ante <b>"+a+"</b>."},
+    {m:"gep",t:"t",h:(x,a)=>"Pasó el 80'. Un penal ahora no es un tiro: es el partido. <b>"+x+"</b> ante <b>"+a+"</b>."}
+  ],
+  tl:[
+    {m:"gep",t:"n",h:x=>"Falta al borde del área. <b>"+x+"</b> mide los pasos."},
+    {m:"gep",t:"nt",h:x=>"El árbitro marca la distancia. <b>"+x+"</b> se queda con la pelota."},
+    {m:"g",t:"nt",h:x=>"Vas arriba y esta pelota parada se puede cuidar o aprovechar. Cobra <b>"+x+"</b>."},
+    {m:"e",t:"nt",h:x=>"Empatados, y esta pelota parada puede ser lo único que se abra. Cobra <b>"+x+"</b>."},
+    {m:"p",t:"nt",h:x=>"Vienes abajo y la falta está a tiro. <b>"+x+"</b> puede cambiarte la tarde."},
+    {m:"gep",t:"t",h:x=>"Pasó el 80'. Cada falta pesa el doble. <b>"+x+"</b> la mira y espera el silbato."}
+  ],
+  corner:[
+    {m:"gep",t:"n",h:x=>"Córner. <b>"+x+"</b> va a la esquina y el área se llena."},
+    {m:"gep",t:"nt",h:x=>"Todos suben al área. <b>"+x+"</b> acomoda la pelota en la esquina."},
+    {m:"g",t:"nt",h:x=>"Vas arriba y este córner es una pelota más para cuidar o cerrar. Cobra <b>"+x+"</b>."},
+    {m:"e",t:"nt",h:x=>"Empate: un córner puede ser la diferencia. <b>"+x+"</b> mira el área."},
+    {m:"p",t:"nt",h:x=>"Vienes abajo y no queda tiempo para pensarlo. Cobra <b>"+x+"</b>."},
+    {m:"gep",t:"t",h:x=>"Pasó el 80'. Un córner ahora no se pierde. <b>"+x+"</b> a la esquina."}
+  ]
+};
+const _bpUlt={};
+function introBalonParado(tipo,P,pateador,arquero){
+  const lista=_BP_RELATO[tipo]; if(!lista) return "";
+  const mm=(typeof miMarcador==="function"&&P)?miMarcador(P):[0,0];
+  const m=mm[0]>mm[1]?"g":(mm[0]<mm[1]?"p":"e"), t=((P&&P.min)||0)>=80?"t":"n";
+  const cand=lista.filter(v=>v.m.indexOf(m)>=0&&v.t.indexOf(t)>=0);
+  const libres=cand.filter(v=>v!==_bpUlt[tipo]);
+  const v=(typeof elige==="function")?elige(libres.length?libres:cand):(libres[0]||cand[0]);
+  if(!v) return "";
+  _bpUlt[tipo]=v;
+  const apeA=arquero&&arquero.n?arquero.n:"el arquero";
+  return v.h((pateador&&pateador.n)||"el pateador",apeA);
+}
 function minijuegoPenal(P,pateador,opts){
   opts=opts||{};
   const arq=arqueroDe(P.rivalPlantel)||{n:"el arquero",nivel:70};
@@ -2131,8 +2178,8 @@ function minijuegoPenal(P,pateador,opts){
     _hudArco(c,"penal",P);
     let pat=pateador;
     const cands=(opts.cands&&opts.cands.length)?opts.cands:[pateador];
-    const chips=_chipsPateador(c, cands, pateador, function(j){ pat=j; etiq.innerHTML="Patea <b>"+j.n+"</b>. Desliza hacia el arco: más rápido, más fuerte. O toca para apuntar y usa el botón."; });
-    const etiq=el("p","mini e3d-etiq","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Desliza hacia el arco: más rápido, más fuerte; la curva del trazo le da efecto. O toca para apuntar y usa el botón. El centro flojo se ataja.");
+    const chips=_chipsPateador(c, cands, pateador, function(j){ pat=j; etiq.innerHTML=(opts.tanda?"Patea <b>"+j.n+"</b>.":introBalonParado("penal",P,j,arq))+" "+_BP_INSTR.penalChip; });
+    const etiq=el("p","mini e3d-etiq",(opts.tanda?"Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>.":introBalonParado("penal",P,pateador,arq))+" "+_BP_INSTR.penal);
     c.appendChild(etiq);
     c.appendChild(esc.stage);
     const svg=_arcoMontarSvg(esc, htmlArcoVivo({arqX:180, modo:"penal", kitArq:kit, kitAtk:kitAtk, dorsal:_dorsalDe(pateador), hinchada:hinchada, semilla:P.part&&P.part.rivalId}));
@@ -2206,7 +2253,7 @@ function minijuegoTiroLibre(P){
     const esc=_abrirEscenaArco(box, _tt("arco_tl_tit","Tiro libre"), "🎯");
     const c=esc.cuerpo;
     _hudArco(c,"tl",P);
-    const etiq=el("p","mini e3d-etiq","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Desliza hacia el arco (rápido = fuerte, trazo curvo = comba) o toca para apuntar y usa el botón.");
+    const etiq=el("p","mini e3d-etiq",introBalonParado("tl",P,j)+" "+_BP_INSTR.tl);
     c.appendChild(etiq);
     c.appendChild(esc.stage);
     const svg=_arcoMontarSvg(esc, htmlArcoVivo({barrera:true, arqX:arqX, modo:"tl", kitArq:kit, kitWall:kit, kitAtk:kitAtk, dorsal:_dorsalDe(j), hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
@@ -2312,7 +2359,7 @@ function minijuegoCorner(P){
     const esc=_abrirEscenaArco(box, _tt("arco_cor_tit","Córner"), "🚩");
     const c=esc.cuerpo;
     _hudArco(c,"corner",P);
-    const etiq=el("p","mini e3d-etiq","Cobra <b>"+(j.n)+"</b>. Toca el primer palo, el punto penal o el segundo, y cobra con el botón. O desliza: más rápido, más fuerte.");
+    const etiq=el("p","mini e3d-etiq",introBalonParado("corner",P,j)+" "+_BP_INSTR.corner);
     c.appendChild(etiq);
     c.appendChild(esc.stage);
     const svg=_arcoMontarSvg(esc, htmlArcoVivo({modo:"corner", arqX:arqX, kitArq:kit, kitWall:kit, kitAtk:kitAtk, dorsal:_dorsalDe(j), bolaX:bolaX, bolaY:222, lado:lado, hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
