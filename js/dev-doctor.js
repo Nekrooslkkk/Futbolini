@@ -1421,6 +1421,10 @@ devDoctorRegistrar({id:"arco_3d", area:"interfaz", n:"Arco 3D: cámara real (arc
     document.body.appendChild(svg);
     try{
       var cam=_camDe(svg);
+      /* 7.9102 · el que patea entra entero en cuadro (antes quedaba cortado en el borde izquierdo del celu) */
+      var pg=svg.querySelector("#a3-pateador");
+      if(pg){ var px=+pg.getAttribute("data-x"), py=+pg.getAttribute("data-y"), pk=+pg.getAttribute("data-esc"), cab=py-pk*ARCO3D.pxMetro*1.85;
+        if(px<60||px>330||py>242||cab<0) falta.push(modo+": el pateador queda fuera de cuadro (x "+Math.round(px)+", pies "+Math.round(py)+", cabeza "+Math.round(cab)+")"); }
       if(cam.frontal){
         var a=arcoL2S(svg,50,38), b=arcoL2S(svg,310,168), r=(b.x-a.x)/(b.y-a.y);
         if(Math.abs(r-3)>0.06) falta.push(modo+": el arco mide "+r.toFixed(2)+":1 (uno real: 3:1)");
@@ -1429,7 +1433,8 @@ devDoctorRegistrar({id:"arco_3d", area:"interfaz", n:"Arco 3D: cámara real (arc
         var zp=arcoL2S(svg,70,50), zc=arcoL2S(svg,180,141), zs=arcoL2S(svg,290,50);
         var sep=Math.min(Math.hypot(zp.x-zc.x,zp.y-zc.y),Math.hypot(zs.x-zc.x,zs.y-zc.y),Math.hypot(zp.x-zs.x,zp.y-zs.y));
         /* 7.9092 · cámara PES (el arco queda al fondo): se exige 14 px y el imán que atrapa el dedo */
-        if(sep<14) falta.push("córner: primer palo, penal y segundo palo quedan a "+Math.round(sep)+" px entre sí (no se puede apuntar)");
+        /* 7.9102 · cámara más atrás y con zoom: ~21 px. Se exige 18 */
+        if(sep<18) falta.push("córner: primer palo, penal y segundo palo quedan a "+Math.round(sep)+" px entre sí (no se puede apuntar)");
         if(typeof arcoIman!=="function"||!svg.querySelector("#arco-iman .a3-iman")) falta.push("córner: sin imán de destinos (con la cámara PES no se puede apuntar en celu)");
         else { var zc2=arcoL2S(svg,84,78), q2=arcoIman(svg,zc2.x+9,zc2.y+5); if(!(q2.x===84&&q2.y===78)) falta.push("córner: el imán no atrapa el dedo cerca del primer palo"); }
       }
@@ -2036,6 +2041,23 @@ devDoctorRegistrar({id:"sin_voseo", area:"contenido", pesado:true, n:"La voz del
     } finally { if(idi!==null) IDIOMA=idi; SEC=sec; try{ render(); }catch(e){} }
   }
   return falta.length?_dmal(falta.length+" texto(s) con voseo fuera de lugar",falta):_dok("sin voseo en datos ni en pantalla (idioma neutro)");
+}});
+/* 7.9102 · sistema de pateo: potencia = velocidad del trazo, teclado en PC, y el 3D que se apaga solo si no da */
+devDoctorRegistrar({id:"pateo", area:"interfaz", n:"Pateo: la velocidad del trazo es la potencia, teclado en PC, 3D que se apaga solo si va lento",
+  arreglo:"js/arco3d.js (velPicoTrazo, potDeVelocidad, _a3Teclado) y js/arco-gl.js (ARCOGL_VIG, _glApagarPorLento).", fn:function(){
+  var falta=[];
+  if(typeof potDeVelocidad!=="function"||typeof velPicoTrazo!=="function") return _dmal("no hay potencia por velocidad",["falta velPicoTrazo/potDeVelocidad en arco3d.js"]);
+  var ef=function(v){ return efectoConPotencia({curl:0},potDeVelocidad(v)); };
+  if(ef(0.5).efecto!=="colocado") falta.push("un trazo suave (0,5) no sale colocado");
+  if(ef(1.6).efecto!=="potente") falta.push("un trazo rápido (1,6) no sale potente");
+  if(!ef(2.6).pasado) falta.push("un trazo a lo bestia (2,6) no se eleva");
+  var lento=velPicoTrazo([{x:180,y:215,t:0},{x:180,y:200,t:100},{x:180,y:185,t:200}]), rapido=velPicoTrazo([{x:180,y:215,t:0},{x:180,y:215,t:400},{x:180,y:120,t:450}]);
+  if(!(rapido>lento*3)) falta.push("la velocidad pico no ve el latigazo final (una pausa al empezar baja el tiro)");
+  if(!document._a3Teclado) falta.push("no hay teclado en PC (flechas apuntan, Espacio patea)");
+  if(typeof ARCOGL_VIG==="undefined"||typeof _glApagarPorLento!=="function") falta.push("el 3D no tiene vigilante de fluidez: en un equipo sin GPU se traba");
+  else if(typeof arcoGLMontar==="function"&&!/_glApagarPorLento/.test(_docFuente(arcoGLMontar))) falta.push("arcoGLMontar no usa el vigilante (se pisó)");
+  if(typeof arcoGLApagado==="function"){ var prev=null; try{ prev=localStorage.getItem("futbolini_arcogl"); localStorage.setItem("futbolini_arcogl","lento"); if(!arcoGLApagado()) falta.push("con el 3D marcado lento igual se intenta montar"); }catch(e){} finally{ try{ if(prev===null) localStorage.removeItem("futbolini_arcogl"); else localStorage.setItem("futbolini_arcogl",prev); }catch(e){} } }
+  return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("suave → colocado · rápido → potente · a lo bestia → se eleva · teclado · vigilante 3D");
 }});
 devDoctorRegistrar({id:"rendimiento", area:"interfaz", n:"Rinde en un celu barato: guardado agrupado, cinta sin scrollIntoView, secciones medidas", pesado:true,
   arreglo:"js/rendimiento.js (guardarAgrupado/guardarAhora) y js/ui.js pintarDock (scrollLeft solo al cambiar de sección).", fn:function(){

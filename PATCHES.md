@@ -4664,3 +4664,27 @@ aproximado (3 antes del 2000).
   enganche de `listaIdeal` → "la lista del partido lleva 7 extranjeros (tope 5 citados)".
 - **Estado:** doctor sano (4 partidas + celular, 91 chequeos) · dev 593/593 · core 1185/1185.
 
+### 7.9102 — Penal, tiro libre y córner más PES 2006 · pateo nuevo en celu y PC · el 3D que no se traba
+Revisé lo de Grok (7.9097–7.9101, todo verde) y seguí sobre eso sin tocar `penResolver`, `cornerResolver` ni probabilidades.
+- **Cámaras (arco3d.js):** penal a 2,4 m y tiro libre a 3,2 m (antes 1,7 y 2,8), a la espalda del que patea: el
+  pateador entra entero en el tercio izquierdo, detrás de la pelota (antes pegado al borde, gigante en PC y cortado en
+  el celu). La línea de gol y la pelota quedan donde siempre. Córner: cámara más atrás y con más zoom, elegida con una
+  búsqueda de 2.880 cámaras (pelota abajo y visible, arco entero, zonas separadas): figuras y área al doble, las zonas
+  primer palo / penal / segundo palo pasan de ~15 a ~21 px.
+- **Pateo:** la potencia es la **velocidad** del trazo (pico en una ventana de hasta 90 ms), no el tiempo con el dedo
+  apretado: suave = colocado, rápido = potente, a lo bestia = se eleva; la curva del trazo es la comba. Antes un trazo
+  rápido salía flojo. La barra se llena en vivo mientras deslizas.
+- **Teclado en PC (estilo PES):** flechas mueven la mira (en el córner saltan entre las 3 zonas), 1/2/3 el efecto,
+  Espacio/Enter patea. Con la escena abierta Espacio ya no pausa el partido de fondo.
+- **3D que no se traba:** vigilante de fluidez en `arco-gl.js`: si los primeros cuadros van a menos de ~15 fps (equipo
+  sin GPU, driver bloqueado) el 3D se apaga solo, queda el dibujo clásico y se avisa; se recuerda ("lento") y se
+  vuelve a prender en Ajustes ▸ Pantalla. Medido en este servidor (sin GPU): el penal pasaba ~450 ms por cada
+  movimiento del mouse; con el vigilante el hilo queda 89 % libre. Con la escena quieta (apuntando) el 3D redibuja a
+  4 fps en vez de 60 (batería).
+- Textos de ayuda del penal, tiro libre, córner y la pista del escenario explican el pateo nuevo.
+- **Dev:** nuevo `pateo` (potencia por velocidad, latigazo final, teclado, vigilante, "lento" apaga). Cazó un error mío
+  (la ventana se estiraba hasta la pausa inicial). `arco_3d` exige al pateador dentro de cuadro y 18 px entre zonas del
+  córner. Al revés: con las cámaras viejas → "penal: el pateador queda fuera de cuadro (x 25…)"; sin teclado →
+  "no hay teclado en PC".
+- **Estado:** doctor sano (4 partidas + celular, 92 chequeos) · dev 593/593 · core 1185/1185.
+

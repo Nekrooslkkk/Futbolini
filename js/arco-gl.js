@@ -16,7 +16,21 @@
      futbolini_arcogl = "off" (Ajustes ▸ Pantalla).
    ============================================================ */
 const ARCOGL={cargando:null, activos:0, ultimo:null};
-function arcoGLApagado(){ try{ return localStorage.getItem("futbolini_arcogl")==="off"; }catch(e){ return false; } }
+/* "off" = lo apagó el jugador · "lento" = se apagó solo porque el equipo no daba (7.9102) */
+function arcoGLApagado(){ try{ const v=localStorage.getItem("futbolini_arcogl"); return v==="off"||v==="lento"; }catch(e){ return false; } }
+function arcoGLLento(){ try{ return localStorage.getItem("futbolini_arcogl")==="lento"; }catch(e){ return false; } }
+/* vigilante: si en los primeros cuadros el 3D va a menos de ~15 fps (sin GPU, driver bloqueado, celu muy viejo)
+   se apaga solo y queda el dibujo clásico, que es liviano. El juego se degrada, no se traba. */
+const ARCOGL_VIG={desde:450, cuadros:20, maxMs:66};
+function _glApagarPorLento(est){
+  try{ localStorage.setItem("futbolini_arcogl","lento"); }catch(e){}
+  est.muerto=true; clearTimeout(est.pausa); cancelAnimationFrame(est.raf);
+  try{ est.renderer.dispose(); est.renderer.forceContextLoss(); }catch(e){}
+  try{ est.canvas.remove(); }catch(e){}
+  est.svg.classList.remove("a3gl-on");
+  ARCOGL.activos=Math.max(0,ARCOGL.activos-1); if(ARCOGL.ultimo===est) ARCOGL.ultimo=null; ARCOGL.apagadoLento=true;
+  if(typeof aviso==="function") aviso("El 3D iba lento en este equipo: sigue el dibujo clásico (lo vuelves a prender en Ajustes ▸ Pantalla)",5200);
+}
 function webglDisponible(){
   if(ARCOGL._wgl!=null) return ARCOGL._wgl;
   try{ const c=document.createElement("canvas"); ARCOGL._wgl=!!(c.getContext("webgl2")||c.getContext("webgl")); }catch(e){ ARCOGL._wgl=false; }
@@ -310,13 +324,33 @@ function arcoGLMontar(esc,svg,opts){
   svg.classList.add("a3gl-on");
   const est={svg:svg, canvas:canvas, renderer:renderer, scene:scene, cam:cam, camGL:camGL, arq:arq, pat:pat, bola:bola, sombraBola:sombraBola, figuras:figuras, publico:trib.publico, arco:arcoG, red:arcoG.getObjectByName("red"), liviano:liviano, t0:performance.now()};
   ARCOGL.activos++; ARCOGL.ultimo=est;
-  let W0=0,H0=0;
+  let W0=0,H0=0, firma="", ultRender=0; const tiempos=[];
+  /* firma de lo que se mueve: si nada cambió (apuntando quieto) se redibuja a 4 fps y no a 60 (batería) */
+  const firmaDe=function(){
+    const q=id=>{ const n=svg.querySelector(id); return n?(n.getAttribute("transform")||"")+(n.getAttribute("class")||""):""; };
+    return q("#arco-arq")+q("#a3-pateador")+q("#arco-bola")+svg.getAttribute("class")+W0+"x"+H0;
+  };
   const cuadro=function(t){
+    if(est.muerto) return;
     if(!svg.isConnected){ clearTimeout(est.pausa); cancelAnimationFrame(est.raf); try{ renderer.dispose(); renderer.forceContextLoss(); }catch(e){} ARCOGL.activos=Math.max(0,ARCOGL.activos-1); if(ARCOGL.ultimo===est) ARCOGL.ultimo=null; return; }
     if(document.hidden){ est.pausa=setTimeout(function(){ est.raf=requestAnimationFrame(cuadro); }, 320); return; }
     const rc=canvas.getBoundingClientRect();
     if(rc.width&&(Math.abs(rc.width-W0)>0.5||Math.abs(rc.height-H0)>0.5)){ W0=rc.width; H0=rc.height; renderer.setSize(W0,H0,false); }
-    if(_glProyeccion(camGL,cam,svg,canvas)){ _glSincronizar(est,t); renderer.render(scene,camGL); }
+    const f=firmaDe(), quieto=f===firma&&!svg._pateado&&!/arco-golazo|arco-alpalo/.test(svg.getAttribute("class")||"");
+    if(!(est.vigilado&&quieto&&t-ultRender<250)){
+      firma=f; ultRender=t;
+      const a0=performance.now();
+      if(_glProyeccion(camGL,cam,svg,canvas)){ _glSincronizar(est,t); renderer.render(scene,camGL); }
+      /* vigilante de fluidez: intervalo entre cuadros de los primeros ~20, pasado el arranque */
+      if(!est.vigilado&&t-est.t0>ARCOGL_VIG.desde){
+        tiempos.push(Math.max(performance.now()-a0, est.tPrev?t-est.tPrev:0));
+        const muyLento=tiempos.length>=4&&tiempos.slice(-4).every(x=>x>ARCOGL_VIG.maxMs*2);
+        if(tiempos.length>=ARCOGL_VIG.cuadros||muyLento){ est.vigilado=true;
+          const med=tiempos.slice().sort((x,y)=>x-y)[tiempos.length>>1]; est.msMediana=Math.round(med);
+          if(med>ARCOGL_VIG.maxMs&&!ARCOGL.sinVigilante){ _glApagarPorLento(est); return; } }
+      }
+      est.tPrev=t;
+    }
     est.raf=requestAnimationFrame(cuadro);
   };
   est.raf=requestAnimationFrame(cuadro);

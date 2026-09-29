@@ -43,6 +43,12 @@ listas de tres adjetivos, frases que terminan en moraleja). Tu trabajo es que ca
    sermones, aterrizar a situaciones concretas del fútbol chileno.
 4. **Vida y poder:** `js/vida-real.js`, `js/poder-sombra.js` (SOMBRA_CASA, FAVORES_PODER), `js/reputacion.js`.
    Meta: que duela. Suma 10 golpes en casa nuevos con el mismo formato.
+5. **Voz por club en PLOP (prioridad, 7.9102):** `js/data-plop-equipo.js` (`PLOP_CLUB`, `PLOP_TPL`). Hoy hay 14
+   plantillas que suenan igual para 46 clubes. Meta: que un hincha de Cobreloa no escriba como uno de la UC ni como
+   uno de Magallanes. Para cada club de Primera y B, 6 líneas propias repartidas en gana / pierde / empate / clásico,
+   con lo que ESE club vive (el desierto y Calama; la cordillera de Trasandino; el sur y la lluvia; la hinchada chica
+   pero fiel). Nada de frases puestas en boca de gente real. Chilenismos en boca de hinchas, sí; voseo, no (el doctor
+   `sin_voseo` falla si se cuela). Formato: el mismo de las entradas que ya existen, sin claves nuevas.
 
 ## Reglas de trabajo (no negociables)
 1. **Solo cambias texto dentro de comillas.** No tocas nombres de funciones, claves (`ctx`, `id`, `tono`),

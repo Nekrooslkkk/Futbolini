@@ -2375,8 +2375,8 @@ function minijuegoPenal(P,pateador,opts){
     _hudArco(c,"penal",P);
     let pat=pateador;
     const cands=(opts.cands&&opts.cands.length)?opts.cands:[pateador];
-    const chips=_chipsPateador(c, cands, pateador, function(j){ pat=j; etiq.innerHTML="Patea <b>"+j.n+"</b>. Toca para apuntar. Desliza para patear."; });
-    const etiq=el("p","mini e3d-etiq","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Toca para dejar la mira. Desliza para patear, o usa el botón. El centro flojo se ataja.");
+    const chips=_chipsPateador(c, cands, pateador, function(j){ pat=j; etiq.innerHTML="Patea <b>"+j.n+"</b>. Desliza hacia el arco: más rápido, más fuerte. O toca para apuntar y usa el botón."; });
+    const etiq=el("p","mini e3d-etiq","Patea <b>"+pateador.n+"</b> ante <b>"+arq.n+"</b>. Desliza hacia el arco: más rápido, más fuerte; la curva del trazo le da efecto. O toca para apuntar y usa el botón. El centro flojo se ataja.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
     const svg=_arcoMontarSvg(esc, htmlArcoVivo({arqX:180, modo:"penal", kitArq:kit, kitAtk:kitAtk, dorsal:_dorsalDe(pateador), hinchada:hinchada, semilla:P.part&&P.part.rivalId}));
@@ -2450,7 +2450,7 @@ function minijuegoTiroLibre(P){
     const esc=_abrirEscenaArco(box, _tt("arco_tl_tit","Tiro libre"), "🎯");
     const c=esc.cuerpo;
     _hudArco(c,"tl",P);
-    const etiq=el("p","mini e3d-etiq","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Toca para apuntar. Desliza para pegarle, o usa el botón.");
+    const etiq=el("p","mini e3d-etiq","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Desliza hacia el arco (rápido = fuerte, trazo curvo = comba) o toca para apuntar y usa el botón.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
     const svg=_arcoMontarSvg(esc, htmlArcoVivo({barrera:true, arqX:arqX, modo:"tl", kitArq:kit, kitWall:kit, kitAtk:kitAtk, dorsal:_dorsalDe(j), hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
@@ -2556,7 +2556,7 @@ function minijuegoCorner(P){
     const esc=_abrirEscenaArco(box, _tt("arco_cor_tit","Córner"), "🚩");
     const c=esc.cuerpo;
     _hudArco(c,"corner",P);
-    const etiq=el("p","mini e3d-etiq","Cobra <b>"+(j.n)+"</b>. Toca para apuntar: se pega al primer palo, al punto penal o al segundo. Desliza para cobrar, o usa el botón.");
+    const etiq=el("p","mini e3d-etiq","Cobra <b>"+(j.n)+"</b>. Toca el primer palo, el punto penal o el segundo, y cobra con el botón. O desliza: más rápido, más fuerte.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
     const svg=_arcoMontarSvg(esc, htmlArcoVivo({modo:"corner", arqX:arqX, kitArq:kit, kitWall:kit, kitAtk:kitAtk, dorsal:_dorsalDe(j), bolaX:bolaX, bolaY:222, lado:lado, hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));

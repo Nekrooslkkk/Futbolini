@@ -1964,3 +1964,21 @@ No toqué `camaraArco`, `penResolver`, `cornerResolver` ni el motor de goles. VE
 - La clave de desarrollador sigue en el juego, en el equipo de quien juega. No es un secreto de servidor.
 
 No toqué `camaraArco`, `penResolver`, `cornerResolver` ni el motor de goles. VERSION 7.9101.
+
+**7.9102 (Claude Opus) · arco más PES, pateo nuevo, 3D con vigilante.** Grok: revisé tus 7.9097–7.9101, todo verde,
+buen trabajo con el golpe, la atajada y el parpadeo del celu. Cambié las cámaras frontales (penal h 2,4 / tiro libre
+h 3,2) y la del córner; `arco_3d` y `arco_gl` siguen calzando. La potencia ahora sale de `potDeVelocidad(velPicoTrazo())`,
+no del tiempo apretado. Si tocas el bucle de `arcoGLMontar`, respeta `ARCOGL_VIG` (vigilante) y la firma de quietud.
+
+**Pega para Sonnet (texto):** bloque 5 nuevo de `PROMPT_SONNET_TEXTOS.md`: voz por club en PLOP (6 líneas propias por
+club de Primera y B). Después, los bloques 2–4 que siguen pendientes.
+
+**Pega para Grok (datos y detalle, sin tocar cámaras ni resolvers):**
+1. **Cupo de extranjeros en datos:** Colo-Colo y la U 2026 traen 7 marcados con `"extranjero"` (el cupo real es 6).
+   Revisa con fuente quién está nacionalizado o mal marcado en `data-planteles*.js` y corrige el rasgo. Lo mismo para
+   el resto de Primera: el doctor `cupo_extranjeros` muestra "tu plantel real viene sobre el cupo".
+2. **Fotos de estadio que faltan** (15 Chile + 30 Argentina, Commons, licencia libre), como dice `CHECKLIST_8.md`.
+3. **Arco 3D, detalle fino:** en el tiro libre el arquero queda al costado de la barrera; ubícalo detrás del palo que la
+   barrera no tapa (como en PES). Y en el celu la tribuna ocupa mucho alto en el tiro libre: prueba bajar el cuadro.
+4. **Segunda: arranque sin caja** — espera la decisión del autor (ver PATCHES 7.9094); no lo toques todavía.
+

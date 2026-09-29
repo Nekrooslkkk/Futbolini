@@ -3693,6 +3693,7 @@ function vistaAjustes(host){
     f3d.appendChild(b);
   });
   p.cuerpo.appendChild(f3d);
+  if(typeof arcoGLLento==="function"&&arcoGLLento()) p.cuerpo.appendChild(el("p","mini","⚠️ El 3D se apagó solo porque en este equipo iba lento. Si quieres probar de nuevo, aprieta «3D real»."));
   p.cuerpo.appendChild(el("p","mini","El modo liviano apaga burbujas, desenfoques y animaciones pesadas: el juego vuela en equipos lentos o celulares viejos. Se autoenciende solo si detecta un equipo flaco."));
   /* 7.69 · idioma / registro (neutro · chilensis · português) */
   if(typeof IDIOMAS_DISPONIBLES!=="undefined" && typeof setIdioma==="function"){

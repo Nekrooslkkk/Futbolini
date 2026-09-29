@@ -19,7 +19,7 @@ Sistemas que el autor pidió y todavía no existen o están a medias.
 - [ ] Mercado: negociación más viva
 - [x] **Segunda por zonas:** cierre de temporada cuadra fecha a fecha, sin −999 (7.9094)
 - [ ] **Segunda: arranque sin caja** → 18 decisiones de finanzas en 3 semanas y crisis de escándalo si se delega (decisión del autor)
-- [ ] **Voz por club en PLOP** (hoy 14 plantillas iguales para 46 clubes; anotado por Sonnet en 7.9091)
+- [ ] **Voz por club en PLOP** → encargado a Sonnet (bloque 5 de PROMPT_SONNET_TEXTOS.md) (hoy 14 plantillas iguales para 46 clubes; anotado por Sonnet en 7.9091)
 - [ ] **Economía y Vida/carrera:** el autor dijo "quedó corto" sin detalle → pedirle 5 líneas de juego real
 - [ ] Textos: bloques 2, 3 y 4 de `PROMPT_SONNET_TEXTOS.md` (prensa, decisiones, vida y poder)
 

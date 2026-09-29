@@ -33,11 +33,15 @@ function camaraArco(modo,lado){
     const sg=lado==="der"?1:-1;
     /* 7.9092 · cámara de córner estilo PES 2006 (pedido del autor): alta, detrás del banderín, pelota abajo
        y el arco al fondo. Los tres destinos quedan a ~18 px: el imán (arcoIman) los hace apuntables en celu. */
-    const cam=_camMirando({x:38*sg,y:10,z:-10},{x:20*sg,y:0,z:8},260,120);
+    /* 7.9102 · más atrás y con más zoom (búsqueda de 2.880 cámaras: pelota abajo y a la vista, arco entero, zonas
+       del centro lo más separadas posible): el área y las figuras se ven el doble; las zonas pasan de ~15 a ~21 px. */
+    const cam=_camMirando({x:42*sg,y:9,z:-15},{x:16*sg,y:0,z:7},380,120);
     cam.modo="corner"; cam.lado=lado==="der"?"der":"izq"; cam.sg=sg; cam.frontal=false; cam.Zb=11;
     return cam;
   }
-  const c={penal:{h:1.7,Zb:11}, tl:{h:2.8,Zb:20}}[modo]||{h:1.7,Zb:11};
+  /* 7.9102 · cámara un poco más alta, a la espalda del pateador (PES 2006): el que patea entra entero en el tercio
+     izquierdo y no tapa media pantalla. La línea de gol y la pelota quedan donde siempre (Dc se recalcula). */
+  const c={penal:{h:2.4,Zb:11}, tl:{h:3.2,Zb:20}}[modo]||{h:2.4,Zb:11};
   const Dc=c.Zb+ARCO3D.fDc*c.h*c.Zb/(ARCO3D.bolaY-ARCO3D.gyLinea), f=ARCO3D.fDc*Dc;
   return {modo:modo==="tl"?"tl":"penal", frontal:true, h:c.h, Zb:c.Zb, Dc:Dc, f:f, HZ:ARCO3D.gyLinea-ARCO3D.fDc*c.h,
     C:{x:0,y:c.h,z:Dc}, fx:0, fz:-1, rx:1, rz:0, c:1, s:0, F:f, cy:ARCO3D.gyLinea-ARCO3D.fDc*c.h};
@@ -347,7 +351,7 @@ function htmlArcoVivo(opts){
   /* el que patea, de espalda: corre a la pelota cuando se patea */
   let pat="";
   if(cam.frontal){
-    const pp=proyectar(cam,cam.modo==="tl"?-2.8:-1.9,0,cam.Zb+1.1), kk=pp.k/ARCO3D.pxMetro;
+    const pp=proyectar(cam,cam.modo==="tl"?-1.5:-1.1,0,cam.Zb+(cam.modo==="tl"?2.2:1.8)), kk=pp.k/ARCO3D.pxMetro;
     pat='<g id="a3-pateador" transform="translate('+pp.x.toFixed(1)+' '+pp.y.toFixed(1)+') scale('+kk.toFixed(3)+')" data-x="'+pp.x.toFixed(1)+'" data-y="'+pp.y.toFixed(1)+'" data-esc="'+kk.toFixed(3)+'">'+
       '<g class="a3-pat">'+_figPersona({kit:kitAtk, pose:"parado", espalda:true, num:opts.dorsal||10, piel:ARCO_PIELES[(sem+3)%ARCO_PIELES.length], pelo:ARCO_PELOS[(sem+2)%ARCO_PELOS.length]})+'</g></g>';
   } else {
@@ -568,6 +572,21 @@ function efectoConPotencia(ef,pot){
   out.pot=pot; out.pasado=pot>A3_POT.pasado;
   return out;
 }
+/* 7.9102 · la potencia es la VELOCIDAD del trazo (Score! Hero / Flick Kick), no el tiempo con el dedo apretado:
+   antes un deslizamiento rápido y decidido salía flojo y para pegarle fuerte había que deslizar lento. Se toma la
+   velocidad pico en una ventana de ~90 ms (una pausa al empezar no te baja el tiro). Unidades del SVG por ms: igual
+   en celu y PC. 1,3 → potente · 2,2 → se te eleva. */
+function velPicoTrazo(pts){
+  if(!pts||pts.length<2) return 0;
+  let best=0;
+  for(let i=1;i<pts.length;i++){
+    let j=i-1; while(j>0&&pts[i].t-pts[j-1].t<=90) j--;   /* ventana de HASTA 90 ms (al menos un tramo) */
+    const dt=Math.max(8,pts[i].t-pts[j].t), d=Math.hypot(pts[i].x-pts[j].x,pts[i].y-pts[j].y);
+    best=Math.max(best,d/dt);
+  }
+  return best;
+}
+function potDeVelocidad(vel){ return Math.max(0,Math.min(1,0.12+vel*0.36)); }
 function _a3Deslizar(stage,svg){
   let pts=null, t0=0, raf=0, cargando=false;
   const trazo=svg.querySelector("#a3-trazo");
@@ -576,8 +595,8 @@ function _a3Deslizar(stage,svg){
   stage.appendChild(barra);
   const fill=barra.querySelector("i");
   /* en el mouse la barra iba a potente solo por dejar el dedo quieto apuntando (sobre todo el córner) */
-  const cargaMs=(typeof matchMedia==="function"&&matchMedia("(pointer:fine)").matches)?1700:A3_CARGA_MS;
-  const pot=()=>Math.min(1,(performance.now()-t0)/cargaMs);
+  const pot=()=>potDeVelocidad(velPicoTrazo(pts||ultimos));
+  let ultimos=null;
   const pintar=()=>{ if(!cargando) return; const v=pot(); fill.style.width=(v*100).toFixed(1)+"%"; fill.className=v>A3_POT.pasado?"r":(v>=A3_POT.potente?"n":""); raf=requestAnimationFrame(pintar); };
   const loc=e=>{ const m=svg.getScreenCTM(); if(!m) return null; const q=svg.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const r=q.matrixTransform(m.inverse()); return {x:r.x,y:r.y,t:performance.now(),cx:e.clientX,cy:e.clientY}; };
   const soltarBarra=()=>{ cancelAnimationFrame(raf); cargando=false; setTimeout(function(){ barra.classList.remove("on"); fill.style.width="0"; },280); };
@@ -591,7 +610,8 @@ function _a3Deslizar(stage,svg){
   },true);
   stage.addEventListener("pointerup",function(e){
     if(!pts) return;
-    const v=cargando?pot():0, ult=pts[pts.length-1], trazado=efectoDeTrazo(pts); pts=null;
+    const v=cargando?pot():0, ult=pts[pts.length-1], trazado=efectoDeTrazo(pts); ultimos=pts; pts=null;
+    if(cargando){ fill.style.width=(v*100).toFixed(1)+"%"; fill.className=v>A3_POT.pasado?"r":(v>=A3_POT.potente?"n":""); }
     soltarBarra();
     if(trazo) setTimeout(function(){ trazo.setAttribute("opacity","0"); },220);
     /* un toque o una espera quieta solo dejan la mira: no cambian el efecto ni elevan el tiro */
@@ -699,7 +719,7 @@ function festejoArcoActivo(){ return !!(_A3_FEST&&_A3_FEST.svg.isConnected&&perf
 (function(){
   const o=window._abrirEscenaArco; if(typeof o!=="function"||o._a3) return;
   const w=function(){ const r=o.apply(this,arguments);
-    try{ if(r&&r.stage){ r.stage.classList.add("e3d-v2"); const h=document.createElement("div"); h.className="a3-hint"; h.textContent="Toca el arco para apuntar. Mantén y desliza para patear: la barra es la potencia (si te pasas, se eleva). La curva es la comba; corto y suave es picada."; r.stage.appendChild(h); setTimeout(function(){ h.classList.add("oculto"); },4200); } }catch(e){}
+    try{ if(r&&r.stage){ r.stage.classList.add("e3d-v2"); const h=document.createElement("div"); h.className="a3-hint"; h.textContent="Desliza hacia el arco: la velocidad es la potencia (a lo bestia, se eleva). La curva es la comba; corto y suave es picada. En PC: flechas apuntan, Espacio patea."; r.stage.appendChild(h); setTimeout(function(){ h.classList.add("oculto"); },4200); } }catch(e){}
     return r; };
   Object.keys(o).forEach(k=>w[k]=o[k]); w._a3=true; window._abrirEscenaArco=w;
 })();
@@ -754,3 +774,43 @@ if(typeof document!=="undefined"&&!document.getElementById("css-arco3d")){
     "@media (prefers-reduced-motion:reduce){.arco-svg .a3-led,.arco-svg .a3-flash,.arco-svg .a3-foco,.arco-svg .a3-papel{animation:none}}";
   document.head.appendChild(st);
 }
+
+/* ---------- 7.9102 · teclado en PC (estilo PES): flechas mueven la mira, 1/2/3 el efecto, Espacio/Enter patea ----------
+   Usa los mismos eventos de puntero que el dedo: apuntar con teclado y con mouse es la misma lógica. */
+const A3_TECLA={paso:22, x:180, y:100, iman:1};
+function _a3TeclaApuntar(svg,dx,dy){
+  const cam=_camDe(svg); if(!cam) return false;
+  if(!cam.frontal&&typeof ARCO_IMAN!=="undefined"){
+    if(dx) A3_TECLA.iman=Math.max(0,Math.min(ARCO_IMAN.length-1,A3_TECLA.iman+(dx>0?1:-1)));
+    const z=ARCO_IMAN[A3_TECLA.iman]; A3_TECLA.x=z.x; A3_TECLA.y=z.y;
+  } else {
+    A3_TECLA.x=Math.max(40,Math.min(320,A3_TECLA.x+dx*A3_TECLA.paso));
+    A3_TECLA.y=Math.max(30,Math.min(176,A3_TECLA.y+dy*A3_TECLA.paso*0.75));
+  }
+  const q=arcoL2S(svg,A3_TECLA.x,A3_TECLA.y), m=svg.getScreenCTM(); if(!m) return false;
+  const pt=svg.createSVGPoint(); pt.x=q.x; pt.y=q.y; const c=pt.matrixTransform(m);
+  const o={clientX:c.x,clientY:c.y,bubbles:true,cancelable:true,pointerId:77,isPrimary:true};
+  try{ svg.dispatchEvent(new PointerEvent("pointerdown",Object.assign({buttons:1,pressure:0.5},o))); svg.dispatchEvent(new PointerEvent("pointerup",o)); }catch(e){ return false; }
+  return true;
+}
+function _a3Teclado(e){
+  if(e.defaultPrevented||e.altKey||e.ctrlKey||e.metaKey) return;
+  const t=e.target; if(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable)) return;
+  const modal=document.querySelector("#capa-modal .modal.escena-3d")||document.querySelector("#capa-modal .modal"); if(!modal) return;
+  const svg=modal.querySelector(".e3d-stage svg"); if(!svg||svg._pateado||!svg.querySelector("#arco-cam")) return;
+  const k=e.key;
+  const mov={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[k];
+  if(mov){ e.preventDefault();
+    /* la primera flecha deja la mira al centro del arco; las siguientes la mueven */
+    if(!svg._teclaIni){ svg._teclaIni=true; A3_TECLA.x=180; A3_TECLA.y=100; A3_TECLA.iman=1; _a3TeclaApuntar(svg,0,0); }
+    else _a3TeclaApuntar(svg,mov[0],mov[1]); const h=modal.querySelector(".a3-hint"); if(h) h.classList.add("oculto"); return; }
+  if(k==="1"||k==="2"||k==="3"){ const bs=modal.querySelectorAll(".penal-ef button"); const b=bs[+k-1]; if(b){ e.preventDefault(); b.click(); } return; }
+  if(k===" "||k==="Enter"){
+    const b=[].slice.call(modal.querySelectorAll("button")).find(x=>!x.disabled&&/patear|cobrar|pegarle|¡/i.test(x.textContent)&&!/corto/i.test(x.textContent));
+    /* con la escena abierta, Espacio nunca pausa el partido de fondo ni baja la página */
+    e.preventDefault(); e.stopPropagation();
+    if(b) b.click();
+  }
+}
+if(typeof document!=="undefined"&&!document._a3Teclado){ document._a3Teclado=true; document.addEventListener("keydown",_a3Teclado,true); }
+
