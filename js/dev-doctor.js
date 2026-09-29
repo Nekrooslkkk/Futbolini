@@ -1421,6 +1421,15 @@ devDoctorRegistrar({id:"arco_3d", area:"interfaz", n:"Arco 3D: cámara real (arc
     document.body.appendChild(svg);
     try{
       var cam=_camDe(svg);
+      /* 7.9104 · en un escenario vertical de celu el córner usa el ancho entero (si no, el arco y el que cobra quedan
+         cortados en los bordes) */
+      if(!cam.frontal&&typeof _arcoVista==="function"){
+        var caja=document.createElement("div"); caja.style.cssText="position:absolute;left:-9999px;top:0;width:358px;height:475px";
+        var sv2=svg.cloneNode(true); caja.appendChild(sv2); document.body.appendChild(caja);
+        try{ _arcoVista(sv2); var vb2=(sv2.getAttribute("viewBox")||"").split(/\s+/).map(Number);
+          if(!(vb2[2]>=355)) falta.push("córner en celu: el encuadre muestra solo "+Math.round(vb2[2])+" de 360 de ancho (arco o el que cobra quedan cortados)"); }
+        finally{ caja.remove(); }
+      }
       /* 7.9102 · el que patea entra entero en cuadro (antes quedaba cortado en el borde izquierdo del celu) */
       var pg=svg.querySelector("#a3-pateador");
       if(pg){ var px=+pg.getAttribute("data-x"), py=+pg.getAttribute("data-y"), pk=+pg.getAttribute("data-esc"), cab=py-pk*ARCO3D.pxMetro*1.85;

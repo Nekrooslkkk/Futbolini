@@ -105,5 +105,10 @@ function _envolverScrollInterno(){
   };
   Object.keys(o).forEach(k=>{ try{ w[k]=o[k]; }catch(e){} }); w._scIn=true; w._orig=o; window.render=w;
 }
-if(typeof document!=="undefined"){ if(document.readyState==="complete") _envolverScrollInterno(); else window.addEventListener("load",_envolverScrollInterno); }
+/* DOMContentLoaded: ya corrieron todos los scripts (el doctor arranca ahí). En load se revisa otra vez por si alguien
+   envolvió render después (si quedó abajo, se vuelve a poner arriba). */
+if(typeof document!=="undefined"){
+  if(document.readyState!=="loading") _envolverScrollInterno(); else document.addEventListener("DOMContentLoaded",_envolverScrollInterno);
+  window.addEventListener("load",_envolverScrollInterno);
+}
 

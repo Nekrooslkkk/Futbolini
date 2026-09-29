@@ -4705,3 +4705,14 @@ Revisé lo de Grok (7.9097–7.9101, todo verde) y seguí sobre eso sin tocar `p
   ejercita). Al revés: sin el arreglo → "celu: repintar Mercado devuelve el scroll de la ventana a 0 (estabas en 300)".
 - **Estado:** doctor sano (4 partidas + celular, 92 chequeos) · dev 593/593 · core 1185/1185.
 
+### 7.9104 — El córner en el celu se ve entero · el arreglo del scroll ya no depende de cuándo carga la página
+- **Córner en celu:** el escenario vertical recortaba los costados (se veía de x 30 a 330) y el alto sobrante era
+  cielo: el arco quedaba cortado a la izquierda y el que cobra pegado a la derecha. `_arcoVista` (ui-partido.js) ahora
+  da al córner el ancho entero y limita el escenario a 360×300 (en línea con `!important`, porque la hoja del celu
+  fuerza `max-height:none`). Se ve arco, área, jugadores y el que cobra. PC y penal/tiro libre no cambian.
+- **Scroll de 7.9103:** el envoltorio se instalaba en `load`; si el juego (o el doctor) arrancaba antes, no estaba.
+  Ahora se instala en `DOMContentLoaded` y se revisa otra vez en `load`. Lo cazó la pasada de celular del doctor.
+- **Dev:** `arco_3d` simula un escenario de celu vertical y exige que el córner use el ancho entero. Al revés: con el
+  recorte viejo → "córner en celu: el encuadre muestra solo 300 de 360 de ancho".
+- **Estado:** doctor sano (4 partidas + celular, 92 chequeos, 3 corridas seguidas) · dev 593/593 · core 1185/1185.
+

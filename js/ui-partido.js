@@ -2174,10 +2174,16 @@ function _arcoVista(svg){
   if(!svg||!svg.parentNode) return;
   const r=svg.parentNode.getBoundingClientRect();
   let W=360, H=240;
+  /* 7.9104 · el córner necesita el ancho entero (arco a la izquierda, el que cobra a la derecha) y no gana nada con
+     alto extra (era medio escenario de cielo): en celu el escenario se limita a 360×300 */
+  const cam=svg.querySelector("#arco-cam"), corner=!!(cam&&cam.getAttribute("data-modo")==="corner");
   if(r.width>0&&r.height>0){
     /* en celu (vertical) se acerca la cámara: el arco manda, no la tribuna */
-    if(r.height/r.width>0.9) W=300;
-    H=Math.max(240, Math.min(480, W*r.height/r.width));   /* 7.9068 · en celu la tribuna sube hasta el techo */
+    if(r.height/r.width>0.9&&!corner) W=300;
+    H=Math.max(240, Math.min(corner?300:480, W*r.height/r.width));   /* 7.9068 · en celu la tribuna sube hasta el techo */
+    if(corner){ const st=svg.closest(".e3d-stage"); if(st){ const tope=Math.round(r.width*300/360)+"px";
+      /* la hoja del celu fuerza max-height:none !important y flex 1: en línea con important gana */
+      if(st.style.getPropertyValue("max-height")!==tope){ st.style.setProperty("max-height",tope,"important"); st.style.setProperty("flex","0 0 auto","important"); } } }
   }
   /* 7.9037 · en PC la escena crecía sola (~1 px cada 250 ms): el alto del escenario seguía al
      dibujo y el dibujo se recalculaba con ese alto; el redondeo subía una décima por vuelta.
