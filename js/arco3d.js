@@ -453,7 +453,9 @@ function _vueloBola(svg,bolaG,a,b,s0,sEnd,enArco,ms,cb){
     const u=Math.min(1,(t-t0)/ms), e=1-Math.pow(1-u,2.2);
     const x=(1-e)*(1-e)*a.x+2*(1-e)*e*cx+e*e*b.x, y=(1-e)*(1-e)*a.y+2*(1-e)*e*cy+e*e*b.y;
     const s=1/((1-e)/s0+e/sEnd);
-    bolaG.setAttribute("transform","translate("+x.toFixed(1)+" "+y.toFixed(1)+") rotate("+(u*540).toFixed(0)+") scale("+s.toFixed(3)+")");
+    const vueltas=sw&&sw.picada?200:(sw&&sw.efecto==="potente"?720:460);
+    const signo=sw&&sw.curl<-0.08?-1:1;
+    bolaG.setAttribute("transform","translate("+x.toFixed(1)+" "+y.toFixed(1)+") rotate("+(signo*u*vueltas).toFixed(0)+") scale("+s.toFixed(3)+")");
     if(sombra){
       sombra.setAttribute("cx",(piso0.x+(piso1.x-piso0.x)*e).toFixed(1)); sombra.setAttribute("cy",(piso0.y+(piso1.y-piso0.y)*e).toFixed(1));
       sombra.setAttribute("rx",(8*s).toFixed(1)); sombra.setAttribute("ry",(2.8*s).toFixed(1));
@@ -487,15 +489,20 @@ const A3_CARRERA=340;
 function _correPateador(svg,cb){
   const g=svg.querySelector("#a3-pateador"), bola=svg.querySelector("#arco-bola");
   const quieto=document.body&&document.body.classList.contains("perf");
-  if(!g||!bola||quieto){ if(cb) cb(); return; }
+  if(!g||!bola||quieto){ if(g) g.classList.add("a3-pateo"); if(cb) cb(); return; }
   const x0=parseFloat(g.getAttribute("data-x")), y0=parseFloat(g.getAttribute("data-y")), k=parseFloat(g.getAttribute("data-esc"));
   const cam=_camDe(svg), bx=cam.sbx, by=cam.sby;
   const x1=cam.frontal?bx-26*k/1.4:x0+(bx-x0)*0.72, y1=cam.frontal?by+10:y0+(by-y0)*0.72;
   const t0=performance.now();
   (function paso(t){
-    const u=Math.min(1,(t-t0)/A3_CARRERA), e=u*u*(3-2*u), salto=-Math.abs(Math.sin(u*Math.PI*3))*5;
-    g.setAttribute("transform","translate("+(x0+(x1-x0)*e).toFixed(1)+" "+(y0+(y1-y0)*e+salto).toFixed(1)+") scale("+k+") rotate("+(e*8).toFixed(1)+")");
-    if(u<1) requestAnimationFrame(paso); else { g.classList.add("a3-pateo"); if(cb) cb(); }
+    const u=Math.min(1,(t-t0)/A3_CARRERA), e=u*u*(3-2*u);
+    const planta=u>=0.62;
+    const salto=planta?0:-Math.abs(Math.sin(u*Math.PI*3))*5;
+    g.setAttribute("transform","translate("+(x0+(x1-x0)*e).toFixed(1)+" "+(y0+(y1-y0)*e+salto).toFixed(1)+") scale("+k+") rotate("+(planta?0:(e*8)).toFixed(1)+")");
+    if(planta) g.classList.add("a3-arma");
+    g.setAttribute("data-swing",u.toFixed(3));
+    if(u<1) requestAnimationFrame(paso);
+    else { g.classList.add("a3-pateo"); g.setAttribute("data-swing","1"); if(cb) cb(); }
   })(performance.now());
 }
 /* el arquero espera la carrera del pateador (si la hay) y se tira en pantalla */

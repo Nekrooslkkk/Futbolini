@@ -321,6 +321,33 @@ function arcoGLMontar(esc,svg,opts){
   return est;
 }
 /* lee el SVG y mueve el 3D */
+function _glRedBase(red){
+  const pos=red.geometry.attributes.position;
+  if(!red.userData.base) red.userData.base=new Float32Array(pos.array);
+  return red.userData.base;
+}
+/* la boca del arco no se despega del marco; el fondo hace un bolsillo junto a la pelota */
+function _glRedCede(est,t){
+  const red=est.red, pos=red.geometry.attributes.position, base=_glRedBase(red);
+  const bx=clamp(est.bola.position.x,-3.4,3.4), by=clamp(est.bola.position.y,0.15,2.35);
+  const arr=pos.array;
+  for(let i=0;i<arr.length;i+=3){
+    const fondo=Math.min(1,Math.max(0,-base[i+2]/1.05));
+    const d=Math.hypot(base[i]-bx, base[i+1]-by);
+    const cerca=Math.max(0,1-d/1.45);
+    const onda=0.78+0.22*Math.sin(t/110-d*4);
+    arr[i]=base[i]; arr[i+1]=base[i+1];
+    arr[i+2]=base[i+2]-cerca*cerca*fondo*0.9*onda;
+  }
+  pos.needsUpdate=true; red.userData.sucia=true; red.position.z=0;
+}
+function _glRedQuieta(est){
+  const red=est.red; if(!red) return;
+  if(!red.userData.sucia){ red.position.z=0; return; }
+  const pos=red.geometry.attributes.position;
+  pos.array.set(red.userData.base); pos.needsUpdate=true;
+  red.userData.sucia=false; red.position.z=0;
+}
 function _glSincronizar(est,t){
   const svg=est.svg, cam=est.cam;
   /* arquero: la cadera sale del SVG; el giro es el del SVG, alrededor del eje de la cámara */
@@ -339,6 +366,11 @@ function _glSincronizar(est,t){
       const A=est.arq.userData.brazos, ai=ang(bi)*Math.PI/180;
       if(ai){ A[0].rotation.set(0,0,-ai); A[1].rotation.set(0,0,ai); }
       else { const res=Math.sin((t-est.t0)/260)*0.08; A[0].rotation.set(-0.3,0,-0.55-res); A[1].rotation.set(-0.3,0,0.55+res); }
+      /* la atajada ya está decidida: al llegar la pelota, la abraza */
+      if(svg.classList.contains("arco-atajada")){
+        A[0].rotation.set(-1.05,0.4,-0.25);
+        A[1].rotation.set(-1.05,-0.4,0.25);
+      }
     }
   }
   /* pateador: pies en el pasto; corre si se mueve */
@@ -353,12 +385,21 @@ function _glSincronizar(est,t){
       if(festeja&&prev) est.pat.lookAt(w.x+(w.x>=prev.x?2:-2),0,w.z);
       else est.pat.lookAt(blanco.x,0,blanco.z);
       const P=est.pat.userData.piernas, B=est.pat.userData.brazos;
+      const arma=gPat&&gPat.classList.contains("a3-arma");
       if(festeja){ B[0].rotation.set(0,0,-2.6); B[1].rotation.set(0,0,2.6); P[0].rotation.x=0.35; P[1].rotation.x=-0.35; }
-      else if(pateo&&!se_mueve){ P[0].rotation.x=-1.25; P[1].rotation.x=0.35; B[0].rotation.x=0.55; B[1].rotation.x=-0.15; }
+      else if(pateo){ P[0].rotation.x=-1.32; P[1].rotation.x=0.22; B[0].rotation.x=0.62; B[1].rotation.x=-0.18; }
+      else if(arma){
+        const swing=parseFloat(gPat.getAttribute("data-swing")||"0");
+        const fase=Math.max(0,Math.min(1,(swing-0.62)/0.38));
+        const ang=fase<0.4?(fase/0.4)*1.0:1.0-((fase-0.4)/0.6)*2.32;
+        P[0].rotation.x=ang; P[1].rotation.x=0.2;
+        B[0].rotation.x=fase<0.4?-0.7:0.62; B[1].rotation.x=fase<0.4?0.25:-0.18;
+      }
       else {
         const fase=se_mueve?Math.sin(t/60)*0.7:0;
         P[0].rotation.x=fase; P[1].rotation.x=-fase;
         B[0].rotation.x=-fase*0.8; B[1].rotation.x=fase*0.8;
+        if(se_mueve) est.pat.position.y=Math.abs(Math.sin(t/110))*0.05;
       }
     } }
   /* pelota: en pantalla la da el SVG; la distancia sale de su tamaño (tamaño ∝ 1/distancia) */
@@ -377,19 +418,19 @@ function _glSincronizar(est,t){
     est.bola.position.set(w.x,w.y,w.z); est.bola.rotation.x=-tb.r*Math.PI/180; est.bola.rotation.z=tb.r*Math.PI/360;
     est.sombraBola.position.set(w.x,0.015,w.z); const alto=Math.max(0,w.y-ARCO3D.bolaR);
     est.sombraBola.scale.setScalar(1+alto*0.25); est.sombraBola.material.opacity=Math.max(0.08,0.38-alto*0.08);
-    /* gol: la pelota queda en la red y la malla cede. Palo: el marco tiembla un instante. */
+    /* gol: la red hace un bolsillo donde pega la pelota. Palo: el marco tiembla. */
     if(est.red&&est.arco){
       const gol=svg.classList.contains("arco-golazo"), palo=svg.classList.contains("arco-alpalo");
       if(gol){
-        if(est.cam.frontal) est.bola.position.z=Math.min(est.bola.position.z,-0.5);
-        est.red.position.z=-0.22*(0.7+0.3*Math.sin(t/80));
+        if(est.cam.frontal) est.bola.position.z=Math.min(est.bola.position.z,-0.22);
+        if(est.bola.position.z<1.2) _glRedCede(est,t); else _glRedQuieta(est);
         est.arco.rotation.z=0;
       } else if(palo){
         if(!est.paloT) est.paloT=t;
         const u=Math.min(1,(t-est.paloT)/700);
-        est.red.position.z=0;
+        _glRedQuieta(est);
         est.arco.rotation.z=Math.sin(t/28)*0.012*(1-u);
-      } else { est.red.position.z=0; est.arco.rotation.z=0; est.paloT=0; }
+      } else { _glRedQuieta(est); est.arco.rotation.z=0; est.paloT=0; }
     }
   }
   /* los del área saltan cuando el SVG los hace saltar */

@@ -1938,3 +1938,5 @@ No toqué cámara, probabilidades, calendario, Aero ni mundo. VERSION 7.9097. Se
 
 **7.9098 (Grok) · el golpe se lee.** El 3D seguía al SVG pero el pateador no pateaba: al terminar la carrera ahora estira la pierna. Si festeja, gira hacia donde corre y levanta los brazos. El número de la espalda es el dígito, no un parche del color de la camiseta. El aviso de arriba dice que un toque solo apunta. No toqué resolver ni cámara. VERSION 7.9098.
 
+**7.9099 (Grok) · el golpe, la atajada y la red.** La carrera carga la pierna y pega cuando sale la pelota; el giro sigue la comba. Si es atajada, la pelota muere en el guante y cae delante. Si la tapa la barrera, pica. La red hace un bolsillo donde entra, no se corre el arco entero. El tiro libre y el córner llevan el dorsal de quien cobra. No toqué resolver ni cámara. VERSION 7.9099.
+

@@ -1746,6 +1746,15 @@ function _rebotePalo(svg, bolaG, destX, destY, aim, efecto, cb){
   const by=entra?Math.min(150, destY+28):destY-22;
   _animBola(bolaG, destX, destY, bx, by, 280, function(){ cb(entra); });
 }
+/* 7.9099 · el resultado ya está. La pelota no se queda clavada en la línea:
+   en el guante la abraza y cae; en la barrera, pica delante. */
+function _pelotaCae(svg, bolaG, destX, destY, cb, enGuante){
+  if(enGuante&&svg) svg.classList.add("arco-atajada");
+  const lado=destX<180?1:-1;
+  const bx=clamp(destX+lado*(enGuante?12:18), 8, 352);
+  const by=Math.min(170, (destY||120)+(enGuante?46:34));
+  _animBola(bolaG, destX, destY, bx, by, 230, cb);
+}
 function penArqueroTira(aim,arqNivel){
   const lee=clamp(0.12+(arqNivel-70)*0.006,0.05,0.32);
   if(Math.random()<lee) return aim.tercio;
@@ -2317,6 +2326,7 @@ function minijuegoPenal(P,pateador,opts){
           });
           return;
         }
+        if(out.res==="atajado"){ _pelotaCae(svg, bolaG, destX, destY, fin, true); return; }
         fin();
       });
     }
@@ -2340,7 +2350,7 @@ function minijuegoTiroLibre(P){
     const etiq=el("p","mini e3d-etiq","Patea <b>"+j.n+"</b>. La barrera tapa el centro bajo. Toca para apuntar. Desliza para pegarle, o usa el botón.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
-    const svg=_arcoMontarSvg(esc, htmlArcoVivo({barrera:true, arqX:arqX, modo:"tl", kitArq:kit, kitWall:kit, kitAtk:kitAtk, hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
+    const svg=_arcoMontarSvg(esc, htmlArcoVivo({barrera:true, arqX:arqX, modo:"tl", kitArq:kit, kitWall:kit, kitAtk:kitAtk, dorsal:_dorsalDe(j), hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
     const bolaG=svg.querySelector("#arco-bola");
     const arqEl=svg.querySelector("#arco-arq");
     const wall=svg.querySelector("#arco-wall");
@@ -2392,6 +2402,8 @@ function minijuegoTiroLibre(P){
           });
           return;
         }
+        if(res==="atajado"){ _pelotaCae(svg, bolaG, destX, destY, pintarResTL, true); return; }
+        if(res==="barrera"){ _pelotaCae(svg, bolaG, destX, destY, pintarResTL, false); return; }
         pintarResTL();
       });
       function pintarResTL(){
@@ -2444,7 +2456,7 @@ function minijuegoCorner(P){
     const etiq=el("p","mini e3d-etiq","Cobra <b>"+(j.n)+"</b>. Toca para apuntar: se pega al primer palo, al punto penal o al segundo. Desliza para cobrar, o usa el botón.");
     c.appendChild(etiq);
     c.appendChild(esc.stage);
-    const svg=_arcoMontarSvg(esc, htmlArcoVivo({modo:"corner", arqX:arqX, kitArq:kit, kitWall:kit, kitAtk:kitAtk, bolaX:bolaX, bolaY:222, lado:lado, hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
+    const svg=_arcoMontarSvg(esc, htmlArcoVivo({modo:"corner", arqX:arqX, kitArq:kit, kitWall:kit, kitAtk:kitAtk, dorsal:_dorsalDe(j), bolaX:bolaX, bolaY:222, lado:lado, hinchada:_arcoHinchadaDe(P), semilla:P.part&&P.part.rivalId}));
     const bolaG=svg.querySelector("#arco-bola");
     const arqEl=svg.querySelector("#arco-arq");
     function aSVG(ev){ return _arcoPunto(svg, ev); }
@@ -2523,6 +2535,7 @@ function minijuegoCorner(P){
           });
           return;
         }
+        if(res==="atajado"){ _pelotaCae(svg, bolaG, destX, destY, finCor, true); return; }
         finCor();
       });
     }
