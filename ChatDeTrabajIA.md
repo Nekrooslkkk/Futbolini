@@ -1951,3 +1951,16 @@ No toqué cámara, probabilidades, calendario, Aero ni mundo. VERSION 7.9097. Se
 No toqué `camaraArco`, `penResolver`, `cornerResolver` ni el motor de goles. VERSION 7.9100.
 
 
+
+**7.9101 (Grok) · el partido en el celular deja de parpadear, y el penal tiene tiempo.**
+- El reloj del partido ya no reconstruye la cancha cada instante. Se actualizan el minuto, las estadísticas, el relato y el chat. Si hay gol, ahí sí se repinta entero.
+- Si aprietas un botón con una pregunta abierta, la hoja vuelve. Al responder se cierra y el partido sigue. La lesión no se duplica si la hoja se rearma.
+- La hoja de preguntas se recorre con el dedo, y el cuerpo de la conferencia también.
+- El menú y la cinta de abajo cambian con portugués e inglés. Lo que no pasa por el traductor sigue en español. Chilensis no se reescribió.
+- En el celular el modo oscuro ya no pinta de blanco las fichas, las tablas, la barra del partido ni el dock.
+- Simular temporada, en el modo desarrollador, usa la carga y cede el hilo. No se queda pegado.
+- El penal corre más lento: la carrera y el vuelo de la pelota. No toqué la cámara ni las probabilidades.
+- El marcador y la barra de arriba escapan el nombre del club. Una caja que no es un número ya no se come la economía.
+- La clave de desarrollador sigue en el juego, en el equipo de quien juega. No es un secreto de servidor.
+
+No toqué `camaraArco`, `penResolver`, `cornerResolver` ni el motor de goles. VERSION 7.9101.

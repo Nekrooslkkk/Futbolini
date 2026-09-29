@@ -1079,6 +1079,12 @@ function aplicarVarValidado(P, ev){
    Se sostiene el alto mientras se repinta y se vuelve exactamente a donde estabas. */
 function pintarPartido(){
   const P=P_ACTUAL; if(!P) return;
+  /* 7.9101 · un botón (velocidad, cancha, plan) vaciaba la hoja y dejaba el reloj
+     parado: las preguntas no volvían. Si había una abierta, se rearma al final. */
+  const habiaHoja=!!(MOMENTO_OPS&&MOMENTO_OPS.length)&&!P.terminado;
+  const tipoHoja=habiaHoja?(P._holdKind||"momento"):"";
+  const evHoja=habiaHoja?P._holdEv:null;
+  if(habiaHoja) MOMENTO_OPS=[];
   const v0=$("#vista"), eraPartido=!!(v0&&v0.dataset.sec==="partido");
   const y=window.scrollY||0, alto=v0?v0.offsetHeight:0;
   const rel0=v0&&v0.querySelector(".relato"), relTop=rel0?rel0.scrollTop:0;
@@ -1095,6 +1101,11 @@ function pintarPartido(){
         if(ancla!=null&&rel&&!document.body.classList.contains("pv-2col")){ const d=rel.getBoundingClientRect().top-ancla; if(Math.abs(d)>2) try{ window.scrollBy(0,d); }catch(e){} }
         else if(Math.abs((window.scrollY||0)-y)>2){ try{ window.scrollTo(0,y); }catch(e){} }
       }
+    }
+    if(tipoHoja==="momento" && typeof mostrarMomento==="function"){
+      try{ mostrarMomento(); }catch(e){}
+    } else if(tipoHoja==="accion" && evHoja && typeof mostrarAccion==="function"){
+      try{ mostrarAccion(evHoja); }catch(e){}
     }
   }
 }
@@ -1139,9 +1150,10 @@ function _pintarPartidoCuerpo(P){
   })();
   const marc=el("div","marcador marcador-vivo");
   const minTxt=(typeof textoReloj==="function")?textoReloj(P,false).replace(/^⏸ /,""):("Minuto "+P.min);
-  marc.innerHTML='<div class="eq">'+(P.part.local?E.clubNombre:P.part.rivalNombre)+'</div>'+
-    '<div class="go-wrap"><div class="go">'+P.gl+" - "+P.gv+'</div><div class="go-min">'+minTxt+'</div></div>'+
-    '<div class="eq">'+(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>';
+  const eh=(typeof escHtml==="function")?escHtml:function(s){ return String(s==null?"":s); };
+  marc.innerHTML='<div class="eq">'+eh(P.part.local?E.clubNombre:P.part.rivalNombre)+'</div>'+
+    '<div class="go-wrap"><div class="go">'+(P.gl|0)+" - "+(P.gv|0)+'</div><div class="go-min">'+eh(minTxt)+'</div></div>'+
+    '<div class="eq">'+eh(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>';
   p.cuerpo.appendChild(marc);
   celebrarGolSiCorresponde(P, marc);   /* 7.79 · explota la pantalla cuando cae un gol */
   let canchaCv=null;
@@ -1302,8 +1314,13 @@ function _pintarPartidoCuerpo(P){
     }
   }
   const rel=el("div","relato");
-  P.lineas.slice().reverse().forEach(l=>rel.appendChild(el("div","rel "+l.c,'<span class="m">'+l.m+"'</span><span>"+l.t+"</span>")));
-  if(!P.lineas.length) rel.appendChild(el("div","rel","<span class='m'>0'</span><span>Rueda la pelota en "+P.part.sede+".</span>"));
+  const ehRel=(typeof escHtml==="function")?escHtml:function(s){ return String(s==null?"":s); };
+  P.lineas.slice().reverse().forEach(function(l){
+    const cls=String(l.c||"").replace(/[^a-zA-Z0-9_-]/g,"");
+    rel.appendChild(el("div","rel "+cls,'<span class="m">'+ehRel(l.m)+"'"+'</span><span>'+ehRel(l.t)+'</span>'));
+  });
+  if(!P.lineas.length) rel.appendChild(el("div","rel","<span class='m'>0'</span><span>Rueda la pelota en "+ehRel(P.part.sede)+".</span>"));
+  rel._n=(P.lineas||[]).length;
   p.cuerpo.appendChild(rel);
   /* 7.9071 · chat en vivo completo (pedido del autor): todos los mensajes del partido, con su propio
      scroll que no salta al llegar uno nuevo. Las 3 pistas de cada decisión se marcan ACÁ, sutil. */
@@ -1342,6 +1359,84 @@ function pintarChatSolo(P){
   const st=tk.scrollTop; tk.innerHTML=""; P.ticker.forEach(t=>tk.appendChild(burbujaChat(t)));
   const cab=document.querySelector(".chat-vivo .chat-cab .mini"); if(cab) cab.textContent=P.ticker.length+" mensajes";
   P._chatN=P.ticker.length; tk.scrollTop=st;
+}
+/* 7.9101 · el tick de cada cuarto de segundo no puede vaciar la cancha: eso era el parpadeo.
+   Solo se mueven reloj, números, relato y chat. Un gol (el marcador cambió) sí repinta entero. */
+function actualizarPartidoVivo(P){
+  P=P||P_ACTUAL;
+  if(!P) return;
+  if(document.body.classList.contains("con-modal")||document.body.classList.contains("hay-momento")) return;
+  const v=document.querySelector("#vista[data-sec=partido]");
+  const marc=v&&v.querySelector(".marcador-vivo");
+  const go=marc&&marc.querySelector(".go");
+  if(!v||!go){ pintarPartido(); return; }
+  const marca=(P.gl|0)+" - "+(P.gv|0);
+  if((go.textContent||"").replace(/\s+/g," ").trim()!==marca){ pintarPartido(); return; }
+  const minTxt=(typeof textoReloj==="function")?textoReloj(P,false).replace(/^⏸ /,""):("Minuto "+P.min);
+  const gm=marc.querySelector(".go-min"); if(gm) gm.textContent=minTxt;
+  const reloj=v.querySelector(".reloj");
+  if(reloj){
+    const tramo=(typeof textoReloj==="function")?textoReloj(P,PAUSADO):(P.terminado?"Final del partido":((PAUSADO?"⏸ ":"")+"Minuto "+P.min+" · "+(P.min<=45?"1T":(P.min<90?"2T":"FT"))));
+    reloj.textContent=tramo;
+    reloj.classList.toggle("desc",!!(P._descDicho&&!P.terminado));
+  }
+  const st=v.querySelector(".stat-part");
+  if(st&&P.stats){
+    const s=P.stats;
+    const posYo=Math.round((typeof clamp==="function"?clamp(s.pos||0,0,1):(s.pos||0))*100);
+    const bs=st.querySelectorAll(".stat-pos b");
+    if(bs[0]) bs[0].textContent=posYo+"%";
+    if(bs[1]) bs[1].textContent=(100-posYo)+"%";
+    const bar=st.querySelector(".pos-bar i"); if(bar) bar.style.width=posYo+"%";
+    const ns=st.querySelectorAll(".stn");
+    const vals=[s.remMio||0,s.remRiv||0,s.arcMio||0,s.arcRiv||0,s.corMio||0,s.corRiv||0];
+    for(let i=0;i<ns.length&&i<vals.length;i++) ns[i].textContent=String(vals[i]);
+  }
+  const rel=v.querySelector(".relato");
+  if(rel){
+    const pintadas=(typeof rel._n==="number")?rel._n:0;
+    const total=(P.lineas||[]).length;
+    if(total>pintadas){
+      if(pintadas===0) rel.innerHTML="";
+      const eh=(typeof escHtml==="function")?escHtml:function(s){ return String(s==null?"":s); };
+      const nuevas=P.lineas.slice(pintadas).reverse();
+      const frag=document.createDocumentFragment();
+      nuevas.forEach(function(l){
+        const cls=String(l.c||"").replace(/[^a-zA-Z0-9_-]/g,"");
+        frag.appendChild(el("div","rel "+cls,'<span class="m">'+eh(l.m)+"'"+'</span><span>'+eh(l.t)+'</span>'));
+      });
+      rel.insertBefore(frag, rel.firstChild);
+      rel._n=total;
+    }
+  }
+  if(P.ticker&&P.ticker.length){
+    const box=v.querySelector(".chat-vivo");
+    const tk=box&&box.querySelector(".chat-lista");
+    if(!box||!tk){ pintarPartido(); return; }
+    const prevN=P._chatN||0;
+    if(P.ticker.length>prevN){
+      const delta=P.ticker.slice(0, P.ticker.length-prevN);
+      const frag=document.createDocumentFragment();
+      delta.forEach(function(t){ frag.appendChild(burbujaChat(t)); });
+      tk.insertBefore(frag, tk.firstChild);
+      const cab=box.querySelector(".chat-cab .mini"); if(cab) cab.textContent=P.ticker.length+" mensajes";
+      const prev=tk.scrollTop;
+      P._chatN=P.ticker.length;
+      if(prev>0){
+        const n=delta.length;
+        requestAnimationFrame(function(){
+          let hh=0;
+          for(let i=0;i<n&&i<tk.children.length;i++) hh+=tk.children[i].offsetHeight+5;
+          tk.scrollTop=prev+hh; P._chatScroll=tk.scrollTop;
+        });
+      }
+    }
+  }
+  if(P.apoyo){
+    const vals=v.querySelectorAll(".apoyo-v");
+    const nums=[P.apoyo.hinchada,P.apoyo.plantel,P.apoyo.criterio];
+    vals.forEach(function(nodo,i){ if(nums[i]!=null) nodo.textContent=String(Math.round(nums[i])); });
+  }
 }
 /* Loop fluido: el reloj corre y se auto-pausa SOLO cuando hay una jugada de
    peligro que decidir (penal, tiro libre, lesión) o un momento táctico. */
@@ -1394,7 +1489,7 @@ function pasoEnVivo(){
   if(ev.tipo==="corner" && ev.aFavor!==false && P.modo==="dirigir" && (!E.config||E.config.autoPausa!==false)){
     clearInterval(TIMER); pintarPartido(); mostrarAccion(ev); return;
   }
-  pintarPartido();
+  actualizarPartidoVivo(P);
 }
 function registrarTandaKick(P, aFavor, gol, pateador){
   const t=P&&P.tanda; if(!t) return;
@@ -1598,6 +1693,7 @@ function avanzarMomento(P){
 }
 function mostrarMomento(){
   const P=P_ACTUAL;
+  document.querySelectorAll(".momento-vivo").forEach(function(n){ n.remove(); });
   if(P){ P._holdKind="momento"; P._holdEv=null; }
   const m=momentoActual(P);
   const esTrivia=m.tipo==="trivia";
@@ -1635,7 +1731,9 @@ function mostrarMomento(){
           if(Math.random()<clamp(0.04+fac*0.03,0.05,0.12) && typeof anotaPropio==="function")   /* 7.9042 · antes 20–42 %: la trivia era una fábrica de goles */{ anotaPropio(P,P.min); aviso("¡Correcto! Y encima cayó el gol 🎯"); }
           else aviso("¡Correcto! Se soltaron 🎯");
         } else { P.empuje-=0.8; P.orden-=0.5; aviso("Nada que ver… se pusieron nerviosos 😬"); }
-        avanzarMomento(P); return;
+        avanzarMomento(P);
+        if(typeof pintarPartido==="function") pintarPartido();
+        return;
       }
       if(o.doping){ confirmarDoping(P,o.costo); return; }   /* async */
       /* leíste el consenso de la gente → el equipo se siente respaldado */
@@ -1644,6 +1742,7 @@ function mostrarMomento(){
         aviso("Leíste a la gente: el equipo siente el respaldo 📣");
       }
       aplicarMomento(P,o.ef); avanzarMomento(P);
+      if(typeof pintarPartido==="function") pintarPartido();
     };
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
@@ -1659,7 +1758,7 @@ function confirmarDoping(P,costo){
     const c=el("div","cuerpo"); box.appendChild(c);
     c.appendChild(el("p",null,"Cuesta <b>"+plata(costo)+"</b> y es de lo más turbio que hay. Por lo que queda de partido el equipo se agranda muchísimo… pero si te agarran, es multa, escándalo en la prensa y hasta un jugador que se descompensa. Queda en tu prontuario."));
     const ir=el("button","btn-aqua ancho verde","Sí, que jueguen «recargados»");
-    ir.onclick=()=>{ cerrarModal(); if(typeof doparEquipo==="function") doparEquipo(P,costo); aviso("El equipo salió otra vez, recargado… 💉"); avanzarMomento(P); };
+    ir.onclick=()=>{ MOMENTO_OPS=[]; cerrarModal(); if(typeof doparEquipo==="function") doparEquipo(P,costo); aviso("El equipo salió otra vez, recargado… 💉"); avanzarMomento(P); if(typeof pintarPartido==="function") pintarPartido(); };
     const no=el("button","btn-aqua ancho gris","No, así no"); no.style.marginTop="6px";
     no.onclick=()=>{ cerrarModal(); mostrarMomento(); };   /* vuelve a la charla, no gastó el momento */
     c.appendChild(ir); c.appendChild(no);
@@ -1744,7 +1843,7 @@ function _rebotePalo(svg, bolaG, destX, destY, aim, efecto, cb){
   const entra=paloEntra(aim, efecto);
   const bx=entra?(180*0.55+destX*0.45):destX+(destX<180?-36:36);
   const by=entra?Math.min(150, destY+28):destY-22;
-  _animBola(bolaG, destX, destY, bx, by, 280, function(){ cb(entra); });
+  _animBola(bolaG, destX, destY, bx, by, 420, function(){ cb(entra); });
 }
 /* 7.9099 · el resultado ya está. La pelota no se queda clavada en la línea:
    en el guante la abraza y cae; en la barrera, pica delante. */
@@ -1753,7 +1852,7 @@ function _pelotaCae(svg, bolaG, destX, destY, cb, enGuante){
   const lado=destX<180?1:-1;
   const bx=clamp(destX+lado*(enGuante?12:18), 8, 352);
   const by=Math.min(170, (destY||120)+(enGuante?46:34));
-  _animBola(bolaG, destX, destY, bx, by, 230, cb);
+  _animBola(bolaG, destX, destY, bx, by, 380, cb);
 }
 function penArqueroTira(aim,arqNivel){
   if(!aim||!aim.tercio) return elige(["izq","centro","der"]);
@@ -2322,7 +2421,7 @@ function minijuegoPenal(P,pateador,opts){
           pintarPartido(); reanudarPronto();
         },820);
       }
-      _animBola(bolaG,180,220,destX,destY,480,function(){
+      _animBola(bolaG,180,220,destX,destY,820,function(){
         if(out.res==="palo"){
           _rebotePalo(svg, bolaG, destX, destY, aim, getEf(), function(entra){
             if(entra) out.res="palo_in";
@@ -2398,7 +2497,7 @@ function minijuegoTiroLibre(P){
       }
       const destY=res==="afuera"?aim.cy:(res==="palo"?38:(res==="barrera"?aim.cy+28:aim.cy));
       const destX=res==="barrera"?aim.cx+(aim.cx>180?-18:18):(res==="palo"?(aim.tercio==="izq"?50:(aim.tercio==="der"?310:aim.cx)):aim.cx);
-      _animBola(bolaG,180,220,destX,destY,460,function(){
+      _animBola(bolaG,180,220,destX,destY,780,function(){
         if(res==="palo"){
           _rebotePalo(svg, bolaG, destX, destY, aim, (typeof getEf==="function"?getEf():"colocado"), function(entra){
             if(entra){ res="palo_in"; motivo="El palo la manda adentro."; }
@@ -2531,7 +2630,7 @@ function minijuegoCorner(P){
           pintarPartido(); reanudarPronto();
         },820);
       }
-      _animBola(bolaG,bolaX,222,destX,destY,520,function(){
+      _animBola(bolaG,bolaX,222,destX,destY,900,function(){
         if(res==="palo"){
           _rebotePalo(svg, bolaG, destX, destY, aim, "colocado", function(entra){
             if(entra){ res="palo_in"; motivo="El palo la manda adentro."; }
@@ -2569,6 +2668,7 @@ function centroTiroLibre(P){
 }
 function mostrarAccion(ev){
   const P=P_ACTUAL;
+  document.querySelectorAll(".momento-vivo").forEach(function(n){ n.remove(); });
   if(P){ P._holdKind="accion"; P._holdEv=ev; }
   let titulo="", opciones=[];
   if(ev.tipo==="penal"){
@@ -2597,8 +2697,9 @@ function mostrarAccion(ev){
       {t:"Centro al área, que salga solo",run:()=> (typeof centroCorner==="function"?centroCorner(P):linea(P,P.min,"Centro al área."))},
       {t:"Corto, armar de nuevo",run:()=>linea(P,P.min,"Córner en corto. Rearman sin apuro.")}
     ];
-  } else { /* lesión */
-    const j=lesionEnPartido(P);
+  } else { /* lesión: reabrir la hoja no puede lesionar a otro */
+    let j=P&&P._lesionJugador;
+    if(!j){ j=lesionEnPartido(P); if(P) P._lesionJugador=j; }
     titulo="Lesión de "+(j?j.n:"un jugador");
     opciones=[
       {t:"Meter un recambio fresco",run:()=>{ P.empuje+=0.2; linea(P,P.min,"Entra sangre nueva por el lesionado."); }},
@@ -2612,7 +2713,7 @@ function mostrarAccion(ev){
   opciones.forEach((o,i)=>{
     const b=el("button","op");
     b.innerHTML='<div class="t"><span class="tecla">'+(i+1)+'</span> '+o.t+'</div>';
-    b.onclick=()=>{ MOMENTO_OPS=[]; const async=o.run(); if(!async){ pintarPartido(); reanudarPronto(); } };
+    b.onclick=()=>{ MOMENTO_OPS=[]; if(P) P._lesionJugador=null; const async=o.run(); if(!async){ pintarPartido(); reanudarPronto(); } };
     ops.appendChild(b); MOMENTO_OPS.push(b);
   });
   p.cuerpo.appendChild(ops);

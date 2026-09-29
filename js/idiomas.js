@@ -218,7 +218,13 @@ var FRASES={
     merc_obj_lluvia:"Ventana abierta: cierra ahora si te convence.",
     merc_obj_quieto:"Ventana cerrada: puedes negociar y dejar el trato hecho.",
     merc_obj_abierta:"Ventana abierta: cierra ahora si te convence. Son jugadores de los otros clubes, no inventados.",
-    merc_obj_cerrada:"Ventana cerrada: puedes negociar y dejar el trato hecho."
+    merc_obj_cerrada:"Ventana cerrada: puedes negociar y dejar el trato hecho.",
+    sec_escritorio:"Escritorio", sec_institucion:"Institución", sec_finanzas:"Finanzas", sec_plantel:"Plantel",
+    sec_mercado:"Mercado", sec_estadio:"Estadio", sec_redes:"Redes", sec_calendario:"Calendario",
+    sec_historia:"Historia", sec_carrera:"Carrera", sec_vida:"Vida", sec_ajustes:"Ajustes",
+    dock_jugar:"Jugar", dock_avanzar:"Avanzar", dock_mas:"Más", mas_tit:"Más del club",
+    mas_txt:"Institución, plata, redes y el resto. Avanzar y el partido siguen abajo, al alcance del pulgar.",
+    mas_avance:"Avance rápido", mas_tema:"Cambiar tema", mas_cerrar:"Cerrar"
   },
   /* --- CHILENSIS (de verdad): -ai/-ís, 'po', 'cachái', sin voseo argentino. --- */
   cl:{
@@ -385,7 +391,13 @@ var FRASES={
     merc_obj_lluvia:"Ventana abierta: cierra ahora si te convence.",
     merc_obj_quieto:"Ventana cerrada: podí negociar y dejar el trato hecho.",
     merc_obj_abierta:"Ventana abierta: cierra ahora si te convence. Son jugadores de los otros clubes, no inventados.",
-    merc_obj_cerrada:"Ventana cerrada: podí negociar y dejar el trato hecho."
+    merc_obj_cerrada:"Ventana cerrada: podí negociar y dejar el trato hecho.",
+    sec_escritorio:"Escritorio", sec_institucion:"Institución", sec_finanzas:"Plata", sec_plantel:"Plantel",
+    sec_mercado:"Mercado", sec_estadio:"Estadio", sec_redes:"Redes", sec_calendario:"Calendario",
+    sec_historia:"Historia", sec_carrera:"Carrera", sec_vida:"Vida", sec_ajustes:"Ajustes",
+    dock_jugar:"Jugar", dock_avanzar:"Avanzar", dock_mas:"Más", mas_tit:"Más del club",
+    mas_txt:"Institución, plata, redes y el resto. Avanzar y el partido siguen abajo, al alcance del pulgar.",
+    mas_avance:"Avance rápido", mas_tema:"Cambiar tema", mas_cerrar:"Cerrar"
   },
   /* --- PORTUGUÊS (arranque; el usuario/Grok lo afinan). --- */
   pt:{
@@ -580,7 +592,13 @@ var FRASES={
     merc_obj_lluvia:"Janela aberta: feche agora se convencer.",
     merc_obj_quieto:"Janela fechada: você pode negociar e deixar o trato feito.",
     merc_obj_abierta:"Janela aberta: feche agora se convencer. São jogadores dos outros clubes, não inventados.",
-    merc_obj_cerrada:"Janela fechada: você pode negociar e deixar o trato feito."
+    merc_obj_cerrada:"Janela fechada: você pode negociar e deixar o trato feito.",
+    sec_escritorio:"Escritório", sec_institucion:"Instituição", sec_finanzas:"Finanças", sec_plantel:"Elenco",
+    sec_mercado:"Mercado", sec_estadio:"Estádio", sec_redes:"Redes", sec_calendario:"Calendário",
+    sec_historia:"História", sec_carrera:"Carreira", sec_vida:"Vida", sec_ajustes:"Ajustes",
+    dock_jugar:"Jogar", dock_avanzar:"Avançar", dock_mas:"Mais", mas_tit:"Mais do clube",
+    mas_txt:"Instituição, dinheiro, redes e o resto. Avançar e o jogo continuam embaixo, no alcance do polegar.",
+    mas_avance:"Avanço rápido", mas_tema:"Mudar tema", mas_cerrar:"Fechar"
   },
   en:{
     ini_headline:"You don't run a team. You run an institution.",
@@ -774,7 +792,13 @@ var FRASES={
     merc_obj_lluvia:"Window open: close now if it convinces you.",
     merc_obj_quieto:"Window closed: you can negotiate and leave the deal done.",
     merc_obj_abierta:"Window open: close now if it convinces you. These are real players from other clubs, not made up.",
-    merc_obj_cerrada:"Window closed: you can negotiate and leave the deal done."
+    merc_obj_cerrada:"Window closed: you can negotiate and leave the deal done.",
+    sec_escritorio:"Desk", sec_institucion:"Institution", sec_finanzas:"Finances", sec_plantel:"Squad",
+    sec_mercado:"Market", sec_estadio:"Stadium", sec_redes:"Social", sec_calendario:"Calendar",
+    sec_historia:"History", sec_carrera:"Career", sec_vida:"Life", sec_ajustes:"Settings",
+    dock_jugar:"Play", dock_avanzar:"Advance", dock_mas:"More", mas_tit:"More of the club",
+    mas_txt:"Institution, money, social and the rest. Advance and the match stay within thumb reach.",
+    mas_avance:"Fast forward", mas_tema:"Change theme", mas_cerrar:"Close"
   }
 };
 

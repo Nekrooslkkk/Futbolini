@@ -542,3 +542,103 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
 /* 7.9039 · una sola campana de avisos: la de la barra de arriba, también en el celu */
 .campana{display:none !important}
 @media (max-width:720px){ body.con-dock #btnAvisos{display:inline-flex !important;align-items:center} }
+
+/* 7.9101 · celu: la hoja de preguntas se recorre, y el modo oscuro no se lava de blanco */
+@media (max-width:720px){
+  .momento-vivo{
+    position:fixed !important;
+    left:8px !important; right:8px !important;
+    bottom:calc(8px + env(safe-area-inset-bottom,0px)) !important;
+    z-index:160 !important;
+    max-height:min(78dvh, calc(100dvh - 72px)) !important;
+    overflow-y:auto !important;
+    margin:0 !important;
+    -webkit-overflow-scrolling:touch;
+  }
+  body.hay-momento .partido-wrap{padding-bottom:12px !important}
+  .modal > .cuerpo,
+  .modal.panel > .cuerpo,
+  body[data-tema="aero"] .modal.panel > .cuerpo,
+  body[data-tema="aero"] .modal.ventana-so .so-cuerpo,
+  body[data-tema="aero"] .modal.ventana-so .window-body,
+  html.cdn-7 body[data-tema="aero"] .modal.ventana-so .window-body{
+    max-height:calc(78dvh - 72px) !important;
+  }
+  body[data-tema="negro"] .pick-tab,
+  body[data-tema="negro"] .cinta-agua .ficha{
+    background:#121820 !important;
+    border-color:#2a3545 !important;
+    box-shadow:none !important;
+    color:#e8f0fa !important;
+    text-shadow:none !important;
+  }
+  body[data-tema="negro"] .pick-tab[aria-pressed="true"],
+  body[data-tema="negro"] .cinta-agua .ficha[aria-pressed="true"]{
+    background:#1a4f8f !important;
+    color:#fff !important;
+    border-color:#4aa8ff !important;
+  }
+  body[data-tema="negro"] .pick-buscar{
+    background:#0c1218 !important;
+    color:#e8f0fa !important;
+    border-color:#2a3545 !important;
+    box-shadow:none !important;
+  }
+  body[data-tema="negro"] .tabla-plantel tbody tr,
+  body[data-tema="negro"] .tabla-liga tbody tr,
+  body[data-tema="negro"] .riv-pasado,
+  body[data-tema="negro"] .fed-paso,
+  body[data-tema="negro"] .jor-row,
+  body[data-tema="negro"] .grupo-fila{
+    background:#121820 !important;
+    color:#e8f0fa !important;
+    border-color:#2a3545 !important;
+    box-shadow:none !important;
+  }
+  body[data-tema="negro"] .tabla-plantel tbody td,
+  body[data-tema="negro"] .tabla-liga tbody td,
+  body[data-tema="negro"] .fed-paso .fed-n,
+  body[data-tema="negro"] .grupo-fila{
+    color:#e8f0fa !important;
+  }
+  body[data-tema="negro"] .ctrlPartido,
+  body[data-tema="negro"] .barra-jugar,
+  body[data-tema="negro"] .modal .so-pie,
+  body[data-tema="negro"] .modal .modal-pie,
+  body[data-tema="negro"] .modal.ventana-so .so-pie{
+    background:#0c1218 !important;
+    border-top-color:#2a3545 !important;
+    box-shadow:0 -6px 18px rgba(0,0,0,.5) !important;
+    color:#e8f0fa !important;
+  }
+  body[data-tema="negro"] .momento-vivo{
+    background:#121820 !important;
+    color:#e8f0fa !important;
+  }
+  body[data-tema="negro"] .momento-vivo .op{
+    background:#0c1218 !important;
+    color:#e8f0fa !important;
+    border-color:#2a3545 !important;
+  }
+  body[data-tema="negro"] .momento-vivo .op-grupo,
+  body[data-tema="negro"] .momento-vivo .ef-linea,
+  body[data-tema="negro"] .momento-vivo .mini{
+    color:#c5d4e6 !important;
+  }
+  body[data-tema="negro"] #dock{
+    background:linear-gradient(180deg,#1a2430,#0c1218) !important;
+    border-top-color:#2a3545 !important;
+    box-shadow:0 -6px 18px rgba(0,0,0,.55) !important;
+  }
+  body[data-tema="negro"] .dock-avanza{
+    background:linear-gradient(180deg,#24507a,#14324f) !important;
+    border-color:#3a546c !important;
+    box-shadow:none !important;
+  }
+  body[data-tema="negro"] .dock-tab{color:#d5e4f5 !important}
+  body[data-tema="negro"] .dock-tab.on{
+    background:rgba(74,168,255,.22) !important;
+    border-color:#4aa8ff !important;
+    color:#fff !important;
+  }
+}

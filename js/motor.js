@@ -556,15 +556,22 @@ function agregarMod(m){
 }
 function limpiarMods(){ E.mods=E.mods.filter(m=>m.hasta>=E.anio); }
 function aplicarEfectos(ef){
-  if(!ef) return;
+  if(!ef||!E) return;
+  /* 7.9101 · una caja que no es número (partida tocada) se comía la economía para siempre */
+  if(typeof E.plata!=="number"||!isFinite(E.plata)) E.plata=0;
+  if(typeof E.deuda!=="number"||!isFinite(E.deuda)) E.deuda=0;
   for(const k in ef){
     const v=ef[k];
-    if(k==="plata") E.plata+=v;
-    else if(k==="deuda") E.deuda=Math.max(0,E.deuda+v);
-    else if(k==="capital") E.capital=Math.max(0,E.capital+v);   /* sin tope superior */
-    else if(E.ind[k]!==undefined) E.ind[k]=clamp(E.ind[k]+v,0,100);
+    const n=typeof v==="number"?v:Number(v);
+    if(!isFinite(n)) continue;
+    if(k==="plata") E.plata+=n;
+    else if(k==="deuda") E.deuda=Math.max(0,E.deuda+n);
+    else if(k==="capital") E.capital=Math.max(0,(Number(E.capital)||0)+n);
+    else if(E.ind&&E.ind[k]!==undefined) E.ind[k]=clamp((Number(E.ind[k])||0)+n,0,100);
   }
-  if(E.plata<0){ E.deuda+=Math.abs(E.plata)*1.2; E.plata=0; E.ind.riesgo=clamp(E.ind.riesgo+3,0,100); }
+  if(E.plata<0){ E.deuda+=Math.abs(E.plata)*1.2; E.plata=0; if(E.ind) E.ind.riesgo=clamp((E.ind.riesgo||0)+3,0,100); }
+  if(!isFinite(E.plata)) E.plata=0;
+  if(!isFinite(E.deuda)) E.deuda=0;
 }
 function aplicarGrupos(g){ if(!g) return; for(const k in g){ if(E.grupos[k]) E.grupos[k].aprob=clamp(E.grupos[k].aprob+g[k],-100,100); } }
 function aplicarRep(r){ if(!r) return; for(const k in r){ if(E.rep[k]!==undefined) E.rep[k]=clamp(E.rep[k]+r[k],0,100); } }

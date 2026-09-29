@@ -11,6 +11,9 @@ const SECCIONES=[
  ["carrera","🎖️","Carrera"],["vida","🪪","Vida"],["ajustes","⚙️","Ajustes"]
  /* 7.9039 · Avisos ya no es sección del menú: es el historial, se abre con la 🔔 de arriba (una sola) */
 ];
+function nomSeccion(id, fb){
+  return (typeof T==="function")?T("sec_"+id, fb):fb;
+}
 function irA(s){
   if(s==="ajustes" && typeof abrirAjustes==="function"){ abrirAjustes(); return; } /* 7.9027: ventana */
   if(typeof partidoEnCurso==="function" && partidoEnCurso() && typeof pausarPartidoHold==="function"){
@@ -56,7 +59,9 @@ function pintarDock(){
   d.classList.toggle("dock-cinta", !compact);
   const part=typeof proximoPartido==="function"?proximoPartido():null;
   const jugar=!!(part&&!part.jugado);
-  const av=el("button","dock-avanza",jugar?"⚽ Jugar":"Avanzar");
+  const etJ=(typeof T==="function")?T("dock_jugar","Jugar"):"Jugar";
+  const etA=(typeof T==="function")?T("dock_avanzar","Avanzar"):"Avanzar";
+  const av=el("button","dock-avanza",jugar?("⚽ "+etJ):etA);
   av.type="button";
   av.setAttribute("aria-label",jugar?("Jugar "+(part.local?"vs ":"en ")+(part.rivalNombre||"el próximo")):"Avanzar la semana");
   if(jugar&&part&&part.rivalNombre) av.title=(part.local?"vs ":"visita a ")+part.rivalNombre;
@@ -72,7 +77,7 @@ function pintarDock(){
   SECCIONES.forEach(function(s){ porId[s[0]]=s; });
   idsDockMovil().forEach(function(id){
     const s=porId[id]; if(!s) return;
-    const b=el("button","dock-tab"+(SEC===id?" on":""),'<span class="ic">'+s[1]+'</span><span>'+s[2]+'</span>');
+    const b=el("button","dock-tab"+(SEC===id?" on":""),'<span class="ic">'+s[1]+'</span><span>'+nomSeccion(id,s[2])+'</span>');
     b.type="button"; b.setAttribute("aria-current",SEC===id?"page":"false");
     if(id==="escritorio"&&E.decPend&&E.decPend.length) b.appendChild(el("span","pip",String(E.decPend.length)));
     if(id==="avisos"&&typeof notifsNoLeidas==="function"&&notifsNoLeidas()) b.appendChild(el("span","pip",notifsNoLeidas()>9?"9+":String(notifsNoLeidas())));
@@ -81,7 +86,8 @@ function pintarDock(){
   });
   if(compact){
     const masOn=DOCK_IDS.indexOf(SEC)<0;
-    const mas=el("button","dock-tab"+(masOn?" on":""),'<span class="ic">⋯</span><span>Más</span>');
+    const etM=(typeof T==="function")?T("dock_mas","Más"):"Más";
+    const mas=el("button","dock-tab"+(masOn?" on":""),'<span class="ic">⋯</span><span>'+etM+'</span>');
     mas.type="button"; mas.setAttribute("aria-label","Más secciones");
     const nAvis=typeof notifsNoLeidas==="function"?notifsNoLeidas():0;
     if(nAvis) mas.appendChild(el("span","pip",nAvis>9?"9+":String(nAvis)));
@@ -100,9 +106,9 @@ function pintarDock(){
 function abrirMasMovil(){
   modal(function(box){
     box.classList.add("modal-mas");
-    box.appendChild(el("div","cab",'<span class="ic">⋯</span><span>Más del club</span>'));
+    box.appendChild(el("div","cab",'<span class="ic">⋯</span><span>'+((typeof T==="function")?T("mas_tit","Más del club"):"Más del club")+'</span>'));
     const c=el("div","cuerpo"); box.appendChild(c);
-    c.appendChild(el("p","mini","Institución, plata, redes y el resto. Avanzar y el partido siguen abajo, al alcance del pulgar."));
+    c.appendChild(el("p","mini",(typeof T==="function")?T("mas_txt","Institución, plata, redes y el resto. Avanzar y el partido siguen abajo, al alcance del pulgar."):"Institución, plata, redes y el resto. Avanzar y el partido siguen abajo, al alcance del pulgar."));
     const g=el("div","mas-grid");
     SECCIONES.forEach(function(s){
       const id=s[0], ic=s[1], n=s[2];
@@ -111,7 +117,7 @@ function abrirMasMovil(){
          pero a 390px la barra lo cortaba fuera de pantalla: quedaba inalcanzable
          en celular. La cinta deslizable lo arregla; esto es la red de seguridad. */
       if(id==="redes"&&!redesDisponibles()) return;
-      const b=el("button","mas-item"+(SEC===id?" on":""),'<span class="ic">'+ic+'</span><span>'+n+'</span>');
+      const b=el("button","mas-item"+(SEC===id?" on":""),'<span class="ic">'+ic+'</span><span>'+nomSeccion(id,n)+'</span>');
       b.type="button";
       if(id==="avisos"&&typeof notifsNoLeidas==="function"&&notifsNoLeidas()) b.appendChild(el("span","pip",String(notifsNoLeidas())));
       b.onclick=function(){ cerrarModal(); irA(id); };
@@ -123,13 +129,13 @@ function abrirMasMovil(){
     const bcu=el("button","btn-aqua ancho","👤 "+T("mas_cuenta","Cuenta"));
     bcu.onclick=function(){ cerrarModal(); const b=$("#btnCuenta"); if(b) b.click(); };
     acc.appendChild(bcu);
-    const br=el("button","btn-aqua ancho","⏩ Avance rápido");
+    const br=el("button","btn-aqua ancho","⏩ "+((typeof T==="function")?T("mas_avance","Avance rápido"):"Avance rápido"));
     br.onclick=function(){ cerrarModal(); if(typeof modalAvanceRapido==="function") modalAvanceRapido(); };
     acc.appendChild(br);
-    const bt=el("button","btn-aqua ancho","◐ Cambiar tema"); bt.style.marginTop="6px";
+    const bt=el("button","btn-aqua ancho","◐ "+((typeof T==="function")?T("mas_tema","Cambiar tema"):"Cambiar tema")); bt.style.marginTop="6px";
     bt.onclick=function(){ cerrarModal(); const b=$("#btnTemas"); if(b) b.click(); };
     acc.appendChild(bt);
-    const bc=el("button","btn-aqua ancho gris","Cerrar"); bc.style.marginTop="6px"; bc.onclick=cerrarModal;
+    const bc=el("button","btn-aqua ancho gris",(typeof T==="function")?T("mas_cerrar","Cerrar"):"Cerrar"); bc.style.marginTop="6px"; bc.onclick=cerrarModal;
     acc.appendChild(bc);
     c.appendChild(acc);
   },{clase:"modal-mas"});
@@ -175,8 +181,9 @@ function pintarBarra(){
    ["Capital",E.capital+"/100",E.capital<15,"bd-sec"],
    ["Imagen",Math.round(E.rep.publica)+"/100",E.rep.publica<25,"bd-sec"]
   ];
+  const eh=(typeof escHtml==="function")?escHtml:function(s){ return String(s==null?"":s); };
   datos.forEach(([k,v,al,cls])=>{
-    bd.appendChild(el("div","bd"+(al?" alerta":"")+(cls?" "+cls:""),'<div class="k">'+k+'</div><div class="v">'+v+'</div>'));
+    bd.appendChild(el("div","bd"+(al?" alerta":"")+(cls?" "+cls:""),'<div class="k">'+eh(k)+'</div><div class="v">'+eh(v)+'</div>'));
   });
 }
 function pintarMenu(){
@@ -186,7 +193,7 @@ function pintarMenu(){
   SECCIONES.forEach(([id,ic,n])=>{
     if(id==="ajustes") return; /* 7.9004 · Ajustes vive solo como ⚙️ en la barra */
     if(id==="redes" && !redesDisponibles()) return;   /* sin redes sociales en épocas pre-Twitter */
-    const b=el("button","mi",'<span>'+ic+'</span><span>'+n+'</span>');
+    const b=el("button","mi",'<span>'+ic+'</span><span>'+nomSeccion(id,n)+'</span>');
     b.setAttribute("role","tab");
     b.setAttribute("aria-selected",SEC===id?"true":"false");
     if(id==="escritorio"&&E.decPend.length) b.appendChild(el("span","pip",String(E.decPend.length)));
@@ -3758,8 +3765,8 @@ function vistaAjustes(host){
     pg.cuerpo.appendChild(el("h3","sub","Plata y club"));
     cheat("Caja club +1000",()=>aplicarEfectos({plata:1000}));
     cheat("Caja club MAX",()=>{ E.plata=99999; });
-    cheat("Bolsillo +500",()=>{ E.personal.bolsillo+=500; });
-    cheat("Bolsillo +100.000",()=>{ E.personal.bolsillo+=100000; });
+    cheat("Bolsillo +500",()=>{ if(!E.personal) E.personal={bolsillo:0}; E.personal.bolsillo=(E.personal.bolsillo||0)+500; });
+    cheat("Bolsillo +100.000",()=>{ if(!E.personal) E.personal={bolsillo:0}; E.personal.bolsillo=(E.personal.bolsillo||0)+100000; });
     cheat("Capital +50",()=>{ E.capital=Math.min(999,(E.capital||0)+50); });
     cheat("Deuda = 0",()=>{ E.deuda=0; });
     cheat("Riesgo = 0",()=>{ E.ind.riesgo=0; });
@@ -3829,7 +3836,12 @@ function vistaAjustes(host){
     pdev.cuerpo.appendChild(el("h3","sub","Avanzar / simular"));
     cheatd("Avanzar semana",()=>{ if(typeof avanzar==="function") avanzar(); });
     cheatd("Simular 5 fechas",()=>{ if(typeof avanzarRapido==="function"){ for(let i=0;i<5;i++) avanzarRapido(false); } });
-    cheatd("Simular temporada",()=>{ if(typeof avanzarRapido==="function") avanzarRapido(true); });
+    const bsim=el("button","btn-aqua chico","Simular temporada"); bsim.style.margin="4px 4px 0 0";
+    bsim.onclick=function(){
+      if(typeof simularTemporadasAsync==="function"){ simularTemporadasAsync(1); return; }
+      if(typeof avanzarRapido==="function"){ avanzarRapido(true); guardar(); render(); }
+    };
+    pdev.cuerpo.appendChild(bsim);
     cheatd("Saltar de año",()=>{ if(typeof nuevoAnio==="function") nuevoAnio(); });
     pdev.cuerpo.appendChild(el("h3","sub","Inyectar / probar"));
     cheatd("Forzar decisión",()=>{ if(typeof generarDecisionProc==="function"){ const d=generarDecisionProc(); if(d) E.decPend.push({id:d.id,clave:d.id+"_"+E.anio,peso:d.peso}); } });

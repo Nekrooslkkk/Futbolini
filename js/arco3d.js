@@ -485,7 +485,7 @@ function _animBola(bolaG, x0,y0, x1,y1, ms, cb, s1){
   }
   _vueloBola(svg,bolaG,a,b,s0,sEnd,enArco,ms,cb);
 }
-const A3_CARRERA=760;
+const A3_CARRERA=1100;
 function _correPateador(svg,cb){
   const g=svg.querySelector("#a3-pateador"), bola=svg.querySelector("#arco-bola");
   const quieto=document.body&&document.body.classList.contains("perf");
