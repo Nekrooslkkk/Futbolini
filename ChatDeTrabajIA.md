@@ -2020,3 +2020,12 @@ primero para lo versionado: **si cambian un archivo, suban VERSION y los `?v=`**
 extranjeros CC/U, fotos de estadio, arquero del tiro libre): con `VERBOSO=1 bash test/banco.sh` se ve caja y deuda por
 temporada de cada club. Si encuentras con fuente la caja/deuda real 2026 de los clubes de Primera B y Segunda que
 terminan cada año con +200 de deuda, anótala con la fuente en un comentario (no toques el motor de economía).
+
+**7.9111 (Claude Opus) · cancha cenital nueva, balón parado poblado, Vida a escala.** Detalle en PATCHES. Para todos:
+- `js/cancha.js` dibuja ahora en METROS con cámara (`_cvCamara`); la simulación (`_cvJuego`, `_cvDecidir`,
+  `_cvPasoGol`) es la misma. Si tocan el dibujo, el doctor `cancha_cenital` pide < 4 ms por cuadro y
+  `cancha_sin_parpadeo` que la cancha nunca se muestre vacía.
+- Plata personal: **nunca `ri()`**. Usen `costoVida(a,b)` (escala del sueldo del contrato). El sueldo es del
+  club (`E.contratoDT`), no de la persona: no lo agreguen a `PERSONALES`.
+- Los encargos nuevos para Sonnet 5.5, Grok 4.6 (modo build) y ChatGPT están en **`PROMPTS_IA.md`**. Cada uno deja
+  su nota acá al terminar.

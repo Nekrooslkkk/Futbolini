@@ -1165,7 +1165,8 @@ function _pintarPartidoCuerpo(P){
     const hud=el("div","partido-hud");
     if(verCancha){
       const colC=el("div","partido-cancha");
-      canchaCv=el("canvas","cancha2d"); canchaCv.setAttribute("aria-hidden","true");
+      /* 7.9111 · el mismo canvas de antes (con su dibujo): uno nuevo salía en verde hasta el siguiente cuadro */
+      canchaCv=(typeof canchaReusable==="function"&&canchaReusable())||el("canvas","cancha2d"); canchaCv.setAttribute("aria-hidden","true");
       colC.appendChild(canchaCv); hud.appendChild(colC);
     }
     const colS=el("div","partido-stats");
@@ -1342,7 +1343,7 @@ function _pintarPartidoCuerpo(P){
     tk.addEventListener("scroll",()=>{ P._chatScroll=tk.scrollTop; },{passive:true});
   }
   const wrap=el("div","partido-wrap"); wrap.appendChild(p); v.appendChild(wrap);
-  if(canchaCv && typeof montarCancha==="function"){ requestAnimationFrame(()=>montarCancha(canchaCv)); }
+  if(canchaCv && typeof montarCancha==="function") montarCancha(canchaCv);   /* 7.9111 · al tiro, no en el cuadro siguiente */
 }
 /* 7.9071 · una burbuja del chat: avatar con iniciales, handle, minuto, texto y me gusta */
 function burbujaChat(t){

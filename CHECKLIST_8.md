@@ -20,6 +20,10 @@ Sistemas que el autor pidió y todavía no existen o están a medias.
 - [x] **Pantalla del partido ordenada** en celu y PC (7.9105)
 - [x] Mercado: tope de citados por partido (5 de 6) en la lista (7.9096)
 - [ ] Mercado: negociación más viva
+- [x] **Cancha en vivo cenital tipo GTA con dibujo tipo PES**, sin parpadeo en el celu (7.9111)
+- [x] Balón parado 3D con el área poblada por reglamento (7.9111)
+- [x] Vida: "Tu vida hoy" + sueldo y gastos a la escala del club (7.9111)
+- [ ] Camisetas reales en la cancha → encargado a Grok (G1 de `PROMPTS_IA.md`)
 - [x] **Segunda por zonas:** cierre de temporada cuadra fecha a fecha, sin −999 (7.9094)
 - [x] **Segunda: arranque sin caja** → caja real + fila de decisiones + umbrales a escala + ayudante prudente (7.9106)
 - [ ] **Voz por club en PLOP** → encargado a Sonnet (bloque 5 de PROMPT_SONNET_TEXTOS.md) (hoy 14 plantillas iguales para 46 clubes; anotado por Sonnet en 7.9091)

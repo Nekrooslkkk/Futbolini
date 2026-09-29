@@ -4856,3 +4856,44 @@ histórico o normal"). Archivos: `js/dev-banco.js` (nuevo), `test/banco.sh`+`ban
   Es crudo pero coherente con Segunda/B; queda para cuando el autor diga qué le quedó corto de la economía.
 - **Estado:** doctor sano (4 partidas + celular, 104 chequeos) · dev 593/593 · core 1185/1185 · banco 255×3 sano ·
   saves 12/12.
+
+### 7.9111 — Cancha cenital tipo GTA con dibujo tipo PES · sin parpadeo en el celu · balón parado poblado · Vida a escala
+Archivos: `js/cancha.js`, `js/ui-partido.js`, `js/interfaz-aero.js`, `js/arco-gl.js`, `js/reputacion.js`,
+`js/motor.js`, `js/vida-hoy.js` (nuevo), `js/dev-banco.js`, `css/pulido.css`, `PROMPTS_IA.md` (nuevo).
+- **Parpadeo del partido en el celu (causa medida con captura cuadro a cuadro):** cada repintado del partido ponía un
+  canvas nuevo y vacío, y en modo liviano (30 cps) el primer dibujo se saltaba → la cancha salía verde lisa por
+  instantes. Además, con pregunta abierta un `max-height` de CSS aplastaba la cancha y la estiraba de vuelta al
+  responder. Ahora `canchaReusable()` devuelve el mismo canvas entre repintados, `montarCancha()` dibuja al tiro,
+  el `ResizeObserver` sigue al canvas si cambia de contenedor, y el alto con pregunta lo pone `_cvSize` sin
+  romper el 105×68. Antes: varios cuadros vacíos por minuto; después: 0 en 675 cuadros.
+- **Cancha en vivo nueva (pedido: "como el GTA 1/2 pero con gráfica de PES"):** cámara cenital que sigue la pelota
+  con retardo (34 m de largo a la vista; tocando la cancha se alterna con la vista completa, se guarda en
+  `E.config.camCancha`). Mundo en metros con textura del estadio pintada una vez (pasto a franjas con damero y
+  grano, luz de 4 focos, zonas peladas, líneas FIFA, banderines, carteles LED, tribuna con gente vista desde
+  arriba). Jugadores vistos desde arriba: dos sombras de focos, piernas y brazos que se cruzan al correr, hombros
+  con degradé de la camiseta, número, cabeza con pelo (piel y pelo fijos por jugador); miran hacia donde corren o
+  a la pelota. Pelota con gajos que giran y altura con sombra corrida. Arcos con red que se infla con el gol y
+  travesaño por encima de los jugadores. Radar abajo a la derecha y el nombre del que lleva la pelota. La
+  simulación no cambió, salvo dos jugadas nuevas: **conducciones** (el dueño encara un rato) y la **estirada del
+  arquero** en los remates. 1,6 ms por cuadro.
+- **Balón parado 3D poblado ("hay como 5 en cancha"):** el SVG solo trae a los que sirven para apuntar; el 3D ahora
+  completa la jugada con `sitiosExtras(cam)`: córner con ~20 en el área y el árbitro, tiro libre con 13 (a los
+  costados, sin tapar el arco) y penal con todos fuera del área a 9,15 m. En celular liviano va la mitad. El
+  penal casi no cambia en pantalla: la cámara está detrás del pateador y por reglamento nadie más cae en cuadro.
+  Estadio: la tribuna del fondo se aleja (pista de tartán), dos bandejas con anillo LED y fotógrafos detrás del arco.
+- **Vida:** tarjeta **"Tu vida hoy"** arriba (edad, bienestar, pareja, hijos, cuántas semanas aguantas sin sueldo,
+  sombra) con lo que te está pasando dicho sin anestesia (`verdadesDeTuVida()`, sale del estado), accesos rápidos a
+  cada panel y la edición de identidad plegada. **La plata de la vida estaba en otra escala:** el DT cobraba 8 M por
+  semana en cualquier club (en Segunda casi lo de Colo-Colo) y una cita costaba hasta 30 M. Ahora el sueldo es del
+  **contrato** (`sueldoContratoDT()`, ≈22 % de la planilla / 52: Colo-Colo ~15, Audax ~5, Segunda ~2, 1925 ~0,6),
+  los ahorros iniciales son 5 semanas de ese sueldo, y todos los gastos personales van con `costoVida(a,b)` a esa
+  escala. El sueldo semanal ya no se redondea a entero. "soltero" → "sin pareja".
+- **Texto ilegible:** la línea chica de los botones azules (charla del entretiempo) salía azul oscuro sobre azul.
+- **Dev (5 chequeos nuevos, verificados al revés):** `cancha_sin_parpadeo`, `boton_texto_chico`,
+  `balon_parado_poblado` (cantidad y reglamento sin WebGL), `vida_a_escala`; el banco además revisa que el sueldo
+  del DT no pase un tercio de la planilla en los 255 arranques.
+- **Prompts:** `PROMPTS_IA.md` con encargos para Sonnet 5.5 (eventos de Vida, textos del balón parado), Grok 4.6
+  modo build (camisetas reales en la cancha, reacción del área en el 3D, caja real de B y Segunda) y ChatGPT
+  (playtest de jugador nuevo).
+- **Estado:** doctor sano (4 partidas + celular, 108 chequeos) · dev 593/593 · core 1185/1185 · banco 255 sano ·
+  saves 12/12.

@@ -80,6 +80,8 @@ function _bRevisarEstado(momento,f){
   if(typeof proximoPartido==="function"&&!proximoPartido()) f.push(momento+": no hay próximo partido (calendario vacío)");
   if(typeof cupoExtranjeros==="function"&&!cupoExtranjeros()) f.push(momento+": sin regla de cupo de extranjeros");
   fixtureProblemas().slice(0,3).forEach(x=>f.push(momento+": fixture · "+x));
+  if(typeof ingresoPersonalSemanal==="function"&&typeof planillaAnualClub==="function"){ const s=ingresoPersonalSemanal(), pl=planillaAnualClub(E);
+    if(pl>0&&s*52>pl*0.35) f.push(momento+": el DT cobra "+s+" M/semana con planilla "+Math.round(pl)+" M/año"); }
 }
 function bancoUno(id,pt,modo,temps){
   const f=[], t0=Date.now(), nT=Math.max(1,Math.min(10,temps|0||1));
@@ -269,5 +271,83 @@ if(typeof devDoctorRegistrar==="function"){
       }catch(e){ f.push("EXCEPCIÓN: "+e.message); }
       finally{ window.guardar=gu; restaurarPartida(snap); }
       return f.length?_dmal(f.length+" problema(s)",f):_dok("edad, hijos, bolsillo, logros, sombra y ranura viajan contigo");
+    }});
+}
+if(typeof devDoctorRegistrar==="function"){
+  /* 7.9111 · el parpadeo verde del celu: cada repintado del partido ponía un canvas nuevo y vacío, y en modo liviano el
+     primer dibujo se saltaba; además, con pregunta abierta un max-height de CSS aplastaba la cancha y la estiraba de vuelta */
+  devDoctorRegistrar({id:"cancha_sin_parpadeo", area:"interfaz", n:"La cancha del partido nunca se muestra vacía ni se aplasta con las preguntas",
+    arreglo:"js/cancha.js montarCancha() dibuja al tiro y canchaReusable() devuelve el mismo canvas; el alto con pregunta lo pone _cvSize (no CSS).",
+    fn:function(){
+      if(typeof montarCancha!=="function"||typeof _cvDraw!=="function") return _dmal("sin cancha");
+      const f=[];
+      if(typeof canchaReusable!=="function") f.push("falta canchaReusable(): cada repintado del partido pone un canvas nuevo (en blanco)");
+      const guard={st:_cvSt,cv:_cvCanvas,raf:_cvRAF};
+      const caja=document.createElement("div"); caja.style.cssText="position:absolute;left:-9999px;top:0;width:360px";
+      const cv=document.createElement("canvas"); caja.appendChild(cv); document.body.appendChild(caja);
+      try{
+        _cvRAF=0; _cvSt=null;
+        montarCancha(cv);
+        if(_cvRAF) cancelAnimationFrame(_cvRAF);
+        const g=cv.getContext("2d"), d=g.getImageData(0,0,cv.width,cv.height).data;
+        let min=765,max=0; for(let i=0;i<d.length;i+=4*97){ const v=d[i]+d[i+1]+d[i+2]; if(v<min) min=v; if(v>max) max=v; }
+        if(max-min<60) f.push("recién montada, la cancha está lisa (vacía hasta el cuadro siguiente: el parpadeo verde)");
+      }catch(e){ f.push("EXCEPCIÓN: "+e.message); }
+      finally{ caja.remove(); _cvSt=guard.st; _cvCanvas=guard.cv; _cvRAF=guard.raf; }
+      let css=""; try{ Array.from(document.querySelectorAll("style")).forEach(s=>{ css+=s.textContent; }); }catch(e){}
+      if(/hay-momento[^{]*\.cancha2d\{max-height/.test(css)) f.push("hay un max-height de CSS para la cancha con pregunta abierta (la aplasta y la estira: parpadea)");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("se dibuja al montarla, se reutiliza entre repintados y el alto lo decide _cvSize");
+    }});
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"boton_texto_chico", area:"interfaz", n:"El texto chico de un botón se lee (mismo color que el botón)",
+    arreglo:"css/pulido.css: html body .btn-aqua .mini{color:inherit}",
+    fn:function(){
+      const b=document.createElement("button"); b.className="btn-aqua ancho"; b.innerHTML="<b>x</b><div class='mini'>y</div>";
+      const caja=document.createElement("div"); caja.className="modal"; caja.style.cssText="position:absolute;left:-9999px"; caja.appendChild(b); document.body.appendChild(caja);
+      try{ const cb=getComputedStyle(b).color, cm=getComputedStyle(b.querySelector(".mini")).color;
+        return cb===cm?_dok("el texto chico usa el color del botón ("+cb+")"):_dmal("texto chico "+cm+" sobre un botón de texto "+cb+" (en los azules no se lee)"); }
+      finally{ caja.remove(); }
+    }});
+}
+if(typeof devDoctorRegistrar==="function"){
+  /* 7.9111 · "hay como 5 en cancha": el 3D completa cada jugada con los que faltan, en posiciones de reglamento */
+  devDoctorRegistrar({id:"balon_parado_poblado", area:"interfaz", n:"Córner y tiro libre en 3D con la cancha poblada, todos donde manda el reglamento",
+    arreglo:"js/arco-gl.js sitiosExtras(cam): atacantes, defensores y árbitro por jugada; _glExtras los pone en la escena.",
+    fn:function(){
+      if(typeof sitiosExtras!=="function") return _dmal("falta sitiosExtras (el 3D solo muestra al pateador, la barrera y el arquero)");
+      const f=[], det=[];
+      const casos=[{n:"córner",cam:{frontal:false,sg:1},min:16},{n:"córner izq",cam:{frontal:false,sg:-1},min:16},{n:"tiro libre",cam:{frontal:true,modo:"tl",Zb:20},min:10},{n:"penal",cam:{frontal:true,modo:"penal",Zb:11},min:8}];
+      casos.forEach(c=>{
+        const r=sitiosExtras(c.cam), j=r.sitios.filter(q=>q.eq!=="arb");
+        det.push(c.n+": "+j.length+" jugadores + "+(r.sitios.length-j.length)+" árbitro");
+        if(j.length<c.min) f.push(c.n+": solo "+j.length+" jugadores de relleno (mínimo "+c.min+")");
+        if(!r.sitios.some(q=>q.eq==="arb")) f.push(c.n+": sin árbitro");
+        if(c.cam.modo==="penal") r.sitios.forEach(q=>{ const d=Math.hypot(q.x,q.z-11), dentro=q.z<16.5&&Math.abs(q.x)<20.16;
+          if(q.eq!=="arb"&&(dentro||d<9.15||q.z<11)) f.push("penal: un jugador en ("+q.x+","+q.z+") está dentro del área o a menos de 9,15 m"); });
+        if(c.cam.modo==="tl") r.sitios.forEach(q=>{ if(q.eq==="def"&&Math.hypot(q.x,q.z-c.cam.Zb)<9.15) f.push("tiro libre: un defensor a menos de 9,15 m de la pelota"); if(q.eq!=="arb"&&q.z<8&&Math.abs(q.x)<3.66) f.push("tiro libre: alguien parado delante del arco (tapa dónde apuntas)"); });
+        if(!c.cam.frontal){ const ocup={}; r.sitios.forEach(q=>{ const k=Math.round(q.x)+","+Math.round(q.z); if(ocup[k]) f.push(c.n+": dos jugadores en el mismo lugar ("+k+")"); ocup[k]=1; }); }
+      });
+      return f.length?_dmal(f.length+" problema(s)",f.concat(det)):_dok(det.join(" · "));
+    }});
+}
+if(typeof devDoctorRegistrar==="function"){
+  /* 7.9111 · la plata de la vida a la escala del club: antes el DT de Segunda cobraba 8 M por semana (casi lo de
+     Colo-Colo), una cita costaba hasta 30 M y el bolsillo se redondeaba a entero cada semana */
+  devDoctorRegistrar({id:"vida_a_escala", area:"motor", n:"Vida: el sueldo es del contrato con el club y los gastos van a su escala",
+    arreglo:"js/reputacion.js sueldoContratoDT() (≈22 % de la planilla / 52), factorVida() y costoVida(); js/motor.js paga el sueldo a dos decimales.",
+    fn:function(){
+      if(!E) return _dok("sin partida");
+      if(typeof sueldoContratoDT!=="function"||typeof costoVida!=="function") return _dmal("faltan sueldoContratoDT/costoVida (el sueldo es igual en todos los clubes)");
+      const f=[], s=ingresoPersonalSemanal(), pl=(typeof planillaAnualClub==="function")?planillaAnualClub(E):0;
+      if(pl>0&&s*52>pl*0.35) f.push("el DT cobra "+plata(s)+" por semana con una planilla de "+plata(pl)+" al año (más de un tercio de la planilla)");
+      let caro=0; for(let i=0;i<20;i++) if(costoVida(0.2,0.9)>s*0.5) caro++;
+      if(caro) f.push("una cita cuesta más de media semana de sueldo");
+      const guard=E.contratoDT;
+      try{ E.contratoDT={club:"__otro__",sueldo:999}; if(sueldoContratoDT()===999) f.push("el contrato no se rehace al cambiar de club (el sueldo de un grande te sigue a la Segunda)"); }
+      finally{ E.contratoDT=guard; }
+      if(typeof tickSemana==="function"&&/bolsillo\+ingresoPersonalSemanal\(\)\)\)/.test(_docFuente(tickSemana))) f.push("el sueldo semanal se redondea a entero (se come los sueldos chicos)");
+      if(typeof verdadesDeTuVida==="function"&&!verdadesDeTuVida().length) f.push("«Tu vida hoy» sale vacía");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("sueldo "+plata(s)+"/semana · planilla "+plata(pl)+"/año · cita ≤ media semana");
     }});
 }

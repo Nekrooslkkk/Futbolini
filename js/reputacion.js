@@ -25,13 +25,33 @@ function romano(n){ const m=[[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"
 function nombreGeneracion(raiz,gen){ raiz=String(raiz||"DT").trim(); if(gen<=1) return raiz; if(gen===2) return raiz+" Jr."; return raiz+" "+romano(gen); }
 
 /* dinero personal del DT: su sueldo del cargo (escala con prestigio y títulos) */
+/* 7.9111 · el sueldo es del CONTRATO con el club, no tuyo: se fija al firmar (≈22 % de la planilla anual / 52).
+   Antes era 8 M por semana para todos: en Segunda cobrabas casi lo mismo que en Colo-Colo, y al cambiar de club
+   (tu vida ahora viaja contigo) el sueldo de un grande te seguía a la Segunda. */
+function sueldoContratoDT(){
+  if(!E) return 0;
+  if(!E.contratoDT||E.contratoDT.club!==E.club){
+    const pl=(typeof planillaAnualClub==="function")?planillaAnualClub(E):0;
+    const s=pl>0?clamp(Math.round(pl*0.22/52*10)/10,0.4,18):8;
+    E.contratoDT={club:E.club, anio:E.anio, sueldo:s};
+  }
+  return E.contratoDT.sueldo;
+}
 function ingresoPersonalSemanal(){
   if(!E.personal) return 0;
   if(E.flags.sinSueldoDT) return 0;
-  const base=E.personal.sueldo||8;
-  const extra=Math.round((E.ind.prestigio-50)*0.12 + (E.titulos?E.titulos.length:0)*1.2 + (E.dinastia?E.dinastia.generacion*0.5:0));
-  return Math.max(2, base+extra);
+  const base=sueldoContratoDT();
+  const tit=E.titulos?E.titulos.length:0, gen=E.dinastia?E.dinastia.generacion:1;
+  const extra=base*(0.06*tit+0.03*(gen-1));
+  return Math.max(0.3, Math.round((base+extra)*10)/10);
 }
+/* lo que cuesta vivir, a la escala de tu sueldo (un DT de Segunda no paga cenas de 30 M) */
+function factorVida(){
+  const s=(E&&E.contratoDT&&E.contratoDT.sueldo)||sueldoContratoDT()||8;
+  const inf=(typeof inflacionEra==="function")?inflacionEra():1.4;
+  return clamp(s/13,0.15,1.4)*inf/1.4;
+}
+function costoVida(a,b){ return Math.max(0.05, Math.round((a+Math.random()*(b-a))*factorVida()*100)/100); }
 
 /* ---------- avatares tipo MSN/Aero (esferas vidriosas 3D) ---------- */
 const AVATARES=["😎","orb-azul","orb-verde","orb-celeste","orb-morado","orb-naranja","orb-rosa"];
@@ -93,7 +113,7 @@ function resolverSalida(ev,modo){
       if(typeof postProc==="function") postProc(elige(typeof HANDLES_HINCHA!=="undefined"?HANDLES_HINCHA:["@hincha"]),"hincha","El DT haciéndola en la noche 😎 crack dentro y fuera de la cancha","bueno");
     }
   } else {
-    const costo=ri(5,22);
+    const costo=costoVida(0.3,1.5);
     E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
     aplicarEfectos({moral:2}); tono="neutro";
     txt="Salida tranquila y sin cámaras. Te costó "+plata(costo)+" del bolsillo, pero la prensa ni se enteró.";
@@ -294,7 +314,7 @@ function likeCandidato(cand){
   guardar();
 }
 function invitarSalir(match){
-  const costo=ri(10,40); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
+  const costo=costoVida(0.3,1.2); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
   if(E.perfil.pareja){
     if(Math.random()<0.5){
       aplicarRep({publica:-ri(6,14),credibilidad:-ri(2,6)}); aplicarGrupos({prensa:-8}); aplicarEfectos({moral:-4});
@@ -461,11 +481,16 @@ function vistaVida(){
     b.onclick=()=>{ E.perfil.orientacion=k; guardar(); render(); }; fo.appendChild(b);
   });
   info.appendChild(fo);
+  /* 7.9111 · los datos de identidad se editan poco: van plegados y arriba queda quién eres */
+  const det=el("details","vida-editar"); det.appendChild(el("summary",null,"✏️ Editar nombre, nacimiento, género y orientación"));
+  while(info.firstChild) det.appendChild(info.firstChild);
+  info.appendChild(el("div","vida-nombre","<b>"+escHtml(E.perfil.nombre||"DT")+"</b> <span class='mini'>· "+edadDT()+" años</span>"));
+  info.appendChild(det);
   win.appendChild(info);
   p.cuerpo.appendChild(win);
   p.cuerpo.appendChild(fila("Bolsillo personal",plata(E.personal.bolsillo)));
   p.cuerpo.appendChild(fila("Sueldo del cargo","+"+plata(ingresoPersonalSemanal())+" por semana"));
-  p.cuerpo.appendChild(fila("Pareja",E.perfil.pareja?(E.perfil.pareja.n+" (desde "+E.perfil.pareja.desde+")"):"soltero"));
+  p.cuerpo.appendChild(fila("Pareja",E.perfil.pareja?(E.perfil.pareja.n+" (desde "+E.perfil.pareja.desde+")"):"sin pareja"));
   p.cuerpo.appendChild(fila("Dinastía",E.dinastia.linaje+" · "+relacionSucesor(E.dinastia.generacion)+" (gen. "+E.dinastia.generacion+")"));
   /* bienestar / estrés */
   const bien=E.perfil.bienestar||70;
@@ -617,7 +642,7 @@ function citaConPareja(){
   if(!E.perfil.pareja) return;
   E.perfil.pareja.semanasSinCita=0;
   if(Math.random()<0.62 && typeof dilemaCita==="function"){ dilemaCita(); return; }
-  const costo=ri(8,30); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
+  const costo=costoVida(0.2,0.9); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
   E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel||65)+15,0,100);
   aplicarEfectos({moral:3}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+6,0,100);
   notificar({t:"Cita con "+E.perfil.pareja.n,tipo:"bueno",d:"Una noche linda: la relación se fortalece y recargas energía. Costó "+plata(costo)+".",bandeja:false});
@@ -626,7 +651,7 @@ function citaConPareja(){
 function casarse(){
   if(!E.perfil.pareja || E.perfil.pareja.casades) return;
   if((E.perfil.pareja.nivel||0)<60){ if(typeof aviso==="function") aviso("La relación aún no está para tanto: fortalecela con citas."); return; }
-  const costo=ri(25,70);
+  const costo=costoVida(8,30);
   if(E.personal.bolsillo<costo){ if(typeof aviso==="function") aviso("No te alcanza para el casorio ("+plata(costo)+")"); return; }
   E.personal.bolsillo-=costo; E.perfil.pareja.casades=true; E.perfil.pareja.nivel=clamp(E.perfil.pareja.nivel+15,0,100);
   aplicarEfectos({moral:8}); aplicarRep({publica:5}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+10,0,100);
@@ -638,7 +663,7 @@ function tenerHijo(){
   if(!E.perfil.pareja){ if(typeof aviso==="function") aviso("Primero necesitas pareja."); return; }
   if((E.perfil.pareja.nivel||0)<55){ if(typeof aviso==="function") aviso("La relación necesita estar más sólida para dar ese paso."); return; }
   if(E.perfil.hijos.length>=4){ if(typeof aviso==="function") aviso("Ya tienes una familia numerosa."); return; }
-  const costo=ri(10,30); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
+  const costo=costoVida(1,4); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
   var nombre;
   if(E.perfil.hijos.length===0) nombre=nombreGeneracion(E.dinastia.raiz, E.dinastia.generacion+1);
   else { const nom=(typeof NOMBRES_PILA!=="undefined")?elige(NOMBRES_PILA):"Nuevo"; nombre=nom+" "+(apellidoDinastia()||E.dinastia.raiz); }
@@ -649,7 +674,7 @@ function tenerHijo(){
   guardar(); render();
 }
 function tomarRespiro(){
-  const costo=ri(15,40);
+  const costo=costoVida(1.5,5);
   if(E.personal.bolsillo<costo){ if(typeof aviso==="function") aviso("No te alcanza para el respiro ("+plata(costo)+")"); return; }
   E.personal.bolsillo-=costo; E.perfil.bienestar=clamp((E.perfil.bienestar||70)+22,0,100); aplicarEfectos({moral:2});
   notificar({t:"Te tomaste un respiro",tipo:"bueno",d:"Unos días para ti: bajas el estrés y vuelves con la cabeza fresca. Costó "+plata(costo)+".",bandeja:false});
@@ -659,8 +684,8 @@ function tomarRespiro(){
 const VIDA_PROC=[
  {t:"Un viejo amigo te pide plata",d:"Un amigo de toda la vida te pide un préstamo para salir de un apuro.",
   op:[
-   {t:"Prestarle sin dudar",run:function(){ const m=ri(20,50); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); aplicarEfectos({moral:3}); return "Le prestaste "+plata(m)+". Los amigos son los amigos."; }},
-   {t:"Ayudarlo con la mitad",run:function(){ const m=ri(10,25); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); return "Le diste una mano parcial ("+plata(m)+")."; }},
+   {t:"Prestarle sin dudar",run:function(){ const m=costoVida(2,8); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); aplicarEfectos({moral:3}); return "Le prestaste "+plata(m)+". Los amigos son los amigos."; }},
+   {t:"Ayudarlo con la mitad",run:function(){ const m=costoVida(1,4); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); return "Le diste una mano parcial ("+plata(m)+")."; }},
    {t:"Decirle que no",run:function(){ E.perfil.bienestar=clamp((E.perfil.bienestar||70)-4,0,100); return "Le dijiste que no. Quedó raro, pero es tu plata."; }}
   ]},
  {t:"Reaparece un amor del pasado",d:"Un ex de otra época te escribe de la nada. La nostalgia golpea.",
@@ -675,7 +700,7 @@ const VIDA_PROC=[
   ]},
  {t:"Susto de salud",d:"Un dolor te manda al médico de urgencia. Nada grave, pero un aviso.",
   op:[
-   {t:"Hacerte todos los chequeos",run:function(){ const m=ri(10,30); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+12,0,100); return "Te cuidaste ("+plata(m)+"). El cuerpo lo agradece."; }},
+   {t:"Hacerte todos los chequeos",run:function(){ const m=costoVida(0.4,1.5); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+12,0,100); return "Te cuidaste ("+plata(m)+"). El cuerpo lo agradece."; }},
    {t:"Ignorarlo y seguir",run:function(){ E.perfil.bienestar=clamp((E.perfil.bienestar||70)-10,0,100); return "Lo dejaste pasar. El estrés va a pasar la cuenta."; }}
   ]},
  {t:"Premio a la trayectoria",d:"Una revista te elige entre las personalidades del año del deporte.",
@@ -685,17 +710,17 @@ const VIDA_PROC=[
   ]},
  {t:"Un familiar necesita ayuda",d:"Un familiar la está pasando mal y recurre a ti.",
   op:[
-   {t:"Estar presente y apoyarlo",run:function(){ const m=ri(15,35); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); aplicarEfectos({moral:4}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+4,0,100); return "La familia primero. Diste una mano ("+plata(m)+")."; }},
+   {t:"Estar presente y apoyarlo",run:function(){ const m=costoVida(1,5); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); aplicarEfectos({moral:4}); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+4,0,100); return "La familia primero. Diste una mano ("+plata(m)+")."; }},
    {t:"Estar poco por el trabajo",run:function(){ E.perfil.bienestar=clamp((E.perfil.bienestar||70)-6,0,100); return "El fútbol te comió el tiempo. Te quedó la culpa."; }}
   ]},
  {t:"Te ofrecen un negocio",d:"Un conocido te propone invertir en un negocio que «no puede fallar».",
   op:[
-   {t:"Meterle plata",run:function(){ const m=ri(30,70); if(E.personal.bolsillo<m) return "No te alcanzaba, quedó en nada."; E.personal.bolsillo-=m; if(Math.random()<0.45){ const g=Math.round(m*(1.4+Math.random())); E.personal.bolsillo+=g; return "¡Salió bien! Recuperaste "+plata(g)+"."; } return "Se fue todo al tacho. Adiós "+plata(m)+"."; }},
+   {t:"Meterle plata",run:function(){ const m=costoVida(5,20); if(E.personal.bolsillo<m) return "No te alcanzaba, quedó en nada."; E.personal.bolsillo-=m; if(Math.random()<0.45){ const g=Math.round(m*(1.4+Math.random())); E.personal.bolsillo+=g; return "¡Salió bien! Recuperaste "+plata(g)+"."; } return "Se fue todo al tacho. Adiós "+plata(m)+"."; }},
    {t:"Pasar, huele a humo",run:function(){ return "Mejor no. La plata en el bolsillo."; }}
   ]},
  {t:"Crisis de la mediana edad",d:"Te da por replantearte todo. ¿Y si te das ese capricho?",
   op:[
-   {t:"Darte el gusto",run:function(){ const m=ri(20,50); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+10,0,100); return "Te diste el gusto ("+plata(m)+"). Terapia cara pero efectiva."; }},
+   {t:"Darte el gusto",run:function(){ const m=costoVida(2,10); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-m); E.perfil.bienestar=clamp((E.perfil.bienestar||70)+10,0,100); return "Te diste el gusto ("+plata(m)+"). Terapia cara pero efectiva."; }},
    {t:"Aguantar y meditar",run:function(){ E.perfil.bienestar=clamp((E.perfil.bienestar||70)+4,0,100); return "Respiraste hondo y se pasó. Gratis."; }}
   ]},
  {t:"Un perro te elige en el refugio",d:"En un refugio te mira un perro con cara de «llevame».",
@@ -823,7 +848,7 @@ function dilemaCita(){
     ev.op.forEach(o=>{
       const b=el("button","op"); b.innerHTML='<div class="t">'+o.t+'</div>';
       b.onclick=()=>{
-        const costo=ri(8,28); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
+        const costo=costoVida(0.2,0.9); E.personal.bolsillo=Math.max(0,E.personal.bolsillo-costo);
         E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel||65)+o.ok,0,100);
         E.perfil.bienestar=clamp((E.perfil.bienestar||70)+(o.ok>0?5:-2),0,100);
         aplicarEfectos({moral:o.ok>0?2:-1});

@@ -215,6 +215,8 @@ function nuevaPartida(clubId,anio,modo,extra){
   E._fuerzaV=2;
   calibrarPlantelALaTabla();
   ajustarSueldosAlMercado();
+  /* 7.9111 · ahorros de arranque: unas cinco semanas del sueldo de este club (no 50 M para todos) */
+  if(typeof sueldoContratoDT==="function"&&E.personal){ delete E.contratoDT; E.personal.bolsillo=Math.round(sueldoContratoDT()*5*10)/10; }
   guardar();
 }
 /* 7.9029 · tu once rinde lo que la liga dice que es tu club. Los planteles
@@ -1183,7 +1185,8 @@ function tickSemana(){
   if(typeof actualizarBolsa==="function") actualizarBolsa();
   if(typeof gestionTesorero==="function") gestionTesorero();
   /* plata personal del DT: entra su sueldo del cargo (menos si renunció por redención) */
-  if(E.personal && typeof ingresoPersonalSemanal==="function"){ E.personal.bolsillo=Math.max(0,Math.round(E.personal.bolsillo+ingresoPersonalSemanal())); }
+  /* 7.9111 · a dos decimales: redondear a entero cada semana se comía los sueldos chicos (2,2 → 2) */
+  if(E.personal && typeof ingresoPersonalSemanal==="function"){ E.personal.bolsillo=Math.max(0,Math.round((E.personal.bolsillo+ingresoPersonalSemanal())*100)/100); }
   /* Vida 3.0: la relación se enfría si no la cuidas; el bienestar deriva y sufre con la mala racha */
   if(E.perfil){
     if(E.perfil.pareja) E.perfil.pareja.nivel=clamp((E.perfil.pareja.nivel||65)-(E.perfil.pareja.casades?0.4:0.9),0,100);

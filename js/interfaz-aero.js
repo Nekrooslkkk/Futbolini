@@ -395,7 +395,7 @@ if(typeof document!=="undefined"&&!document.getElementById("css-partido-orden"))
     "html body .mv-compacto .hint-teclado{margin:6px 0 0 !important;font-size:11px !important}"+
     /* en celu, mientras hay pregunta: fuera las estadísticas de al lado (vuelven al responder) y la barra de control */
     "@media (max-width:1099px){html body.hay-momento .partido-wrap .partido-stats{display:none !important}"+
-      "html body.hay-momento .partido-wrap .cancha2d{max-height:190px !important}}"+
+      "}"+   /* 7.9111 · el alto de la cancha con pregunta lo fija _cvSize (sin aplastar el dibujo) */
     "@media (max-width:420px){html body .mv-compacto .op .t{font-size:13px !important}}"+
     /* balón parado en el celu: si el escenario no llena el alto (córner), el contenido va centrado y no queda un hoyo */
     "@media (max-width:760px){html body .modal.escena-3d :is(.cuerpo,.so-cuerpo,.window-body){display:flex !important;flex-direction:column !important;justify-content:center !important}}"+
@@ -404,7 +404,7 @@ if(typeof document!=="undefined"&&!document.getElementById("css-partido-orden"))
       "html body .ctrlPartido .ctrl-sec{grid-template-columns:repeat(6,minmax(0,1fr)) !important;gap:4px !important}"+
       "html body .ctrlPartido .ctrl-main .btn-aqua{min-height:40px !important}"+
       "html body .ctrlPartido .ctrl-sec .btn-aqua{min-height:36px !important;font-size:12px !important;padding:4px 2px !important}}"+
-    "@media (max-width:1099px) and (max-height:720px){html body.hay-momento .partido-wrap .cancha2d{max-height:140px !important}html body.hay-momento .partido-wrap .marcador-vivo{padding-top:4px !important;padding-bottom:4px !important}}"+
+    "@media (max-width:1099px) and (max-height:720px){html body.hay-momento .partido-wrap .marcador-vivo{padding-top:4px !important;padding-bottom:4px !important}}"+
     /* PC: en la columna derecha va de a una opción por fila (es angosta) */
     "html body.pv-2col .pv-der .mv-compacto .ops-part{grid-template-columns:1fr !important}"+
     "html body.pv-2col .pv-der .mv-compacto{margin:0 !important}";

@@ -149,16 +149,33 @@ function _glPublicidad(scene,cam){
 function _glTribuna(scene,cam,hc,liviano){
   const g=new THREE.Group(), filas=[], cemento=_glMat(0x151a24,{roughness:0.95});
   /* gradas: detrás del arco (a lo ancho) y, en el córner, la del costado lejano */
-  const bloques=[{eje:"x", desde:-70, hasta:70, fija:-12, dir:-1, base:2.4}];
-  if(!cam.frontal) bloques.push({eje:"z", desde:-6, hasta:80, fija:-cam.sg*42, dir:-cam.sg, base:2.4});
+  /* 7.9111 · la tribuna del fondo se aleja (foso + pista), y son dos bandejas con un anillo LED entre medio */
+  const bloques=[{eje:"x", desde:-70, hasta:70, fija:-14.5, dir:-1, base:2.6}];
+  if(!cam.frontal) bloques.push({eje:"z", desde:-8, hasta:80, fija:-cam.sg*43, dir:-cam.sg, base:2.6});
+  const texLed=_texPublicidad();
+  /* pista (tartán) entre los carteles y la tribuna, y los fotógrafos agachados detrás del arco */
+  const pista=new THREE.Mesh(new THREE.PlaneGeometry(150,9.6),_glMat(0x7a3b2c,{roughness:1})); pista.rotation.x=-Math.PI/2; pista.position.set(0,0.006,-9.6); pista.receiveShadow=!liviano; g.add(pista);
+  const mFoto=_glMat(0x22262e,{roughness:0.8}), mLente=_glMat(0x0a0a0a,{roughness:0.3,metalness:0.4});
+  for(let k=0;k<(liviano?4:9);k++){ const x=-13+k*3.2+(k>4?9:0); if(Math.abs(x)<4.2) continue;
+    const f=new THREE.Group(); const cu=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.62,0.42),mFoto); cu.position.y=0.31; f.add(cu);
+    const ca=new THREE.Mesh(new THREE.SphereGeometry(0.11,8,6),_glMat(["#e0ae84","#c68b5e","#9c6641"][k%3])); ca.position.y=0.72; f.add(ca);
+    const le=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.07,0.34,8),mLente); le.rotation.x=Math.PI/2; le.position.set(0,0.66,0.26); f.add(le);
+    f.position.set(x,0,-5.3); f.lookAt(x*0.3,0,12); g.add(f); }
   const personas=[];
   bloques.forEach(b=>{
     /* muro bajo la primera fila (el público no está al nivel del pasto) */
     const muro=new THREE.Mesh(new THREE.BoxGeometry(b.eje==="x"?b.hasta-b.desde:0.5,b.base,b.eje==="x"?0.5:b.hasta-b.desde),_glMat(0x1a2130));
     if(b.eje==="x") muro.position.set((b.desde+b.hasta)/2,b.base/2,b.fija+0.4); else muro.position.set(b.fija+0.4*(-b.dir),b.base/2,(b.desde+b.hasta)/2);
     g.add(muro);
-    for(let i=0;i<22;i++){
-      const y=b.base+i*0.62, off=b.fija+b.dir*(i*0.85), largo=b.hasta-b.desde;
+    for(let i=0;i<24;i++){
+      const alta=i>=11, y=b.base+i*0.6+(alta?1.6:0), off=b.fija+b.dir*(i*0.82+(alta?1.8:0)), largo=b.hasta-b.desde;
+      if(i===11){ /* anillo LED entre bandejas */
+        const t=texLed.clone(); t.needsUpdate=true; t.repeat.set(largo/40,1);
+        const led=new THREE.Mesh(new THREE.BoxGeometry(b.eje==="x"?largo:0.3,1.3,b.eje==="x"?0.3:largo),[_glMat(0x111822),_glMat(0x111822),_glMat(0x111822),_glMat(0x111822),new THREE.MeshBasicMaterial({map:t}),new THREE.MeshBasicMaterial({map:t})]);
+        const oLed=b.fija+b.dir*(i*0.82+0.2);
+        if(b.eje==="x") led.position.set((b.desde+b.hasta)/2,y+0.4,oLed); else { led.position.set(oLed,y+0.4,(b.desde+b.hasta)/2); led.rotation.y=b.dir>0?-Math.PI/2:Math.PI/2; led.geometry=new THREE.BoxGeometry(largo,1.3,0.3); }
+        g.add(led);
+      }
       const esc=new THREE.Mesh(new THREE.BoxGeometry(b.eje==="x"?largo:0.85,0.62,b.eje==="x"?0.85:largo),cemento);
       if(b.eje==="x") esc.position.set((b.desde+b.hasta)/2,y-0.31,off); else esc.position.set(off,y-0.31,(b.desde+b.hasta)/2);
       esc.receiveShadow=!liviano; g.add(esc);
@@ -167,14 +184,14 @@ function _glTribuna(scene,cam,hc,liviano){
     }
     /* techo */
     const techo=new THREE.Mesh(new THREE.BoxGeometry(b.eje==="x"?b.hasta-b.desde+4:14,0.4,b.eje==="x"?14:b.hasta-b.desde+4),_glMat(0x0c1119));
-    if(b.eje==="x") techo.position.set(0,b.base+22*0.62+4,b.fija+b.dir*13); else techo.position.set(b.fija+b.dir*13,b.base+22*0.62+4,(b.desde+b.hasta)/2);
+    if(b.eje==="x") techo.position.set(0,b.base+24*0.6+1.6+4,b.fija+b.dir*15); else techo.position.set(b.fija+b.dir*15,b.base+24*0.6+1.6+4,(b.desde+b.hasta)/2);
     g.add(techo);
   });
   /* el público: cuerpo con la camiseta del equipo (mayoría) o ropa de calle, y cabeza */
-  const pal=[hc[0],hc[0],hc[1]||"#ffffff",hc[0],"#23293a","#8a8272","#3a4050",hc[1]||"#ffffff"].map(c=>new THREE.Color(c).multiplyScalar(0.62));
+  const pal=[hc[0],hc[0],hc[1]||"#ffffff",hc[0],"#23293a","#8a8272","#3a4050",hc[1]||"#ffffff"].map(c=>new THREE.Color(c).multiplyScalar(0.74));
   const pieles=["#f2c9a0","#e0ae84","#c68b5e","#9c6641","#6e4429"].map(c=>new THREE.Color(c));
   const n=personas.length;
-  const cuerpo=new THREE.InstancedMesh(new THREE.CylinderGeometry(0.17,0.2,0.48,7),new THREE.MeshLambertMaterial(),n);
+  const cuerpo=new THREE.InstancedMesh(new THREE.CylinderGeometry(0.15,0.18,0.42,7),new THREE.MeshLambertMaterial(),n);
   const cabeza=new THREE.InstancedMesh(new THREE.SphereGeometry(0.1,8,6),new THREE.MeshLambertMaterial(),n);
   const M=new THREE.Matrix4();
   personas.forEach((p,i)=>{ const alto=Math.random()<0.3?0.18:0;
@@ -206,6 +223,55 @@ function _glFocos(scene,cam){
     halo.scale.set(26,26,1); halo.position.set(x,35,z); g.add(halo);
   });
   scene.add(g);
+}
+
+/* ---------- 7.9111 · el resto de la cancha: nadie juega un córner con 5 tipos en el área ----------
+   Pedido del autor: "hay como 5 en cancha". El SVG trae solo a los que importan para apuntar (pateador, barrera, un par
+   en el área); el 3D completa la jugada como en la tele, con las distancias del reglamento:
+   · córner: ~8 atacantes y ~9 defensores en el área, uno en corto, el árbitro.
+   · tiro libre: atacantes y marcas a los costados del área (no delante del arco: no tapan dónde apuntas), otro
+     pateador al lado de la pelota, el árbitro midiendo la barrera.
+   · penal: todos fuera del área y a 9,15 m (la medialuna), el árbitro al borde del área.
+   En celular liviano va la mitad (cada mono son ~20 mallas). Nadie se pone encima de una figura del SVG. */
+/* dónde va cada uno (función pura: el doctor la revisa sin WebGL) → {bola:{x,z}, sitios:[{x,z,eq}]} */
+function sitiosExtras(cam){
+  const sg=cam.sg||1, sitios=[];
+  let bola;
+  if(!cam.frontal){
+    bola={x:sg*ARCO3D.cornerX,z:ARCO3D.cornerZ};
+    [[-2,6.2],[2.2,7.6],[0.3,11.2],[-5.2,9.4],[5.4,10.3],[-8.2,13],[7.2,14.1],[1.2,17.6],[sg*27.5,5.5]].forEach(q=>sitios.push({x:q[0],z:q[1],eq:"atk"}));
+    [[-1.1,5.3],[3.1,6.4],[-3.6,8.1],[1.6,9.6],[-6.6,11.2],[4.6,12.1],[sg*3.2,0.8],[-sg*3.4,0.9],[0,16.2],[sg*30.2,9.8],[-10.5,21]].forEach(q=>sitios.push({x:q[0],z:q[1],eq:"def"}));
+    sitios.push({x:-sg*13,z:19.5,eq:"arb"});
+  } else if(cam.modo==="tl"){
+    bola={x:0,z:cam.Zb};
+    [[-5.8,6.4],[6.3,7.2],[-9.4,11.2],[9.8,12.2],[1.5,cam.Zb+0.8],[-13,15.5]].forEach(q=>sitios.push({x:q[0],z:q[1],eq:"atk"}));
+    [[-4.3,5.4],[4.9,6.1],[-7.8,9.2],[8.3,8.8],[-11.8,14.2],[12.4,15.1],[15.5,19]].forEach(q=>sitios.push({x:q[0],z:q[1],eq:"def"}));
+    sitios.push({x:7.2,z:cam.Zb-3.2,eq:"arb"});
+  } else {
+    bola={x:0,z:11};
+    [[-8.1,17.6],[-13.2,17.3],[8.4,17.5],[13.4,17.9],[-4.2,20.6],[16.4,18.6]].forEach(q=>sitios.push({x:q[0],z:q[1],eq:"atk"}));
+    [[-10.4,19.1],[-15.6,18.4],[10.6,19.3],[5.1,20.5],[-17.4,17.2],[3.2,21.4]].forEach(q=>sitios.push({x:q[0],z:q[1],eq:"def"}));
+    sitios.push({x:7.6,z:16.9,eq:"arb"});
+  }
+  return {bola:bola, sitios:sitios};
+}
+function _glExtras(scene,cam,kits,figuras,liviano,pieles,pelos){
+  const se=sitiosExtras(cam), bola=se.bola, sitios=se.sitios;
+  const ocupado=(x,z)=>figuras.some(f=>Math.hypot(f.obj.position.x-x,f.obj.position.z-z)<1.3);
+  const lista=liviano?sitios.filter((q,i)=>q.eq==="arb"||i%2===0):sitios;
+  const out=[];
+  lista.forEach((q,i)=>{
+    if(ocupado(q.x,q.z)) return;
+    const kit=q.eq==="arb"?["#141414","#141414"]:(q.eq==="atk"?kits.atk:kits.def);
+    const j=jugador3D({kit:kit, media:q.eq==="arb"?"#141414":undefined, pose:"parado", num:q.eq==="arb"?0:[3,5,6,8,11,14,15,17,18,20,21,23][i%12],
+      piel:pieles[(i*5+2)%pieles.length], pelo:pelos[(i*3+1)%pelos.length]});
+    j.position.set(q.x,0,q.z);
+    /* miran la pelota, con algo de desorden (en un córner nadie está derechito) */
+    j.lookAt(bola.x+(Math.random()-0.5)*3,0,bola.z+(Math.random()-0.5)*3);
+    if(j.userData.brazos&&q.eq!=="arb") j.userData.brazos.forEach((b,k)=>{ b.rotation.z=(k?1:-1)*(0.1+Math.random()*0.35); b.rotation.x=-Math.random()*0.4; });
+    scene.add(j); out.push(j);
+  });
+  return out;
 }
 
 /* ---------- jugadores con volumen ---------- */
@@ -314,6 +380,7 @@ function arcoGLMontar(esc,svg,opts){
     j.lookAt(atk?0:(cam.frontal?0:34*cam.sg),0,atk?-2:(cam.frontal?cam.Zb:1));
     scene.add(j); figuras.push({el:hijo,obj:j});
   });
+  const extras=_glExtras(scene,cam,kits,figuras,liviano,pieles,pelos);
   const arq=jugador3D({kit:kits.arq, pose:"arq", arquero:true, piel:pieles[2], pelo:pelos[1]});
   scene.add(arq);
   const pat=jugador3D({kit:kits.atk, pose:"parado", num:opts.dorsal||(cam.frontal?10:7), piel:pieles[3], pelo:pelos[2]});
@@ -325,7 +392,7 @@ function arcoGLMontar(esc,svg,opts){
   sombraBola.rotation.x=-Math.PI/2; scene.add(sombraBola);
   const camGL=_glCamara(cam);
   svg.classList.add("a3gl-on");
-  const est={svg:svg, canvas:canvas, renderer:renderer, scene:scene, cam:cam, camGL:camGL, arq:arq, pat:pat, bola:bola, sombraBola:sombraBola, figuras:figuras, publico:trib.publico, arco:arcoG, red:arcoG.getObjectByName("red"), liviano:liviano, t0:performance.now()};
+  const est={svg:svg, canvas:canvas, renderer:renderer, scene:scene, cam:cam, camGL:camGL, arq:arq, pat:pat, bola:bola, sombraBola:sombraBola, figuras:figuras, extras:extras, publico:trib.publico, arco:arcoG, red:arcoG.getObjectByName("red"), liviano:liviano, t0:performance.now()};
   ARCOGL.activos++; ARCOGL.ultimo=est;
   let W0=0,H0=0, firma="", ultRender=0; const tiempos=[];
   /* firma de lo que se mueve: si nada cambió (apuntando quieto) se redibuja a 4 fps y no a 60 (batería) */
