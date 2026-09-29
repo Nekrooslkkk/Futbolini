@@ -417,10 +417,15 @@ body[data-tema="negro"] .cs-fila,body[data-tema="negro"] .cs-grupo,body[data-tem
 body[data-tema="negro"] .cs-eqs .cs-l,body[data-tema="negro"] .cs-marc{color:#eaf6ff}
 #vista[data-sec="calendario"]:has(> .cs){column-count:1 !important;display:block}
 #vista[data-sec="calendario"] > .cs{break-inside:auto}
-.cs{max-width:960px}
+.cs{width:100%;max-width:none;margin:0}
 .cs-buscar .pick-buscar{max-width:none !important;display:block}
 
 /* 7.9061 · amistosos */
 .copa-form{display:grid;grid-template-columns:1fr;gap:4px}
 @media(min-width:640px){ .copa-form{grid-template-columns:140px 1fr} .copa-form .lb{align-self:center} }
 .copa-form .entrada{width:100%}
+.am-host{width:100%}
+.am-host .fichas{flex-wrap:wrap}
+.am-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:8px}
+.am-lista .op,.am-lista .resul{width:100%;margin:0;text-align:left}
+@media(max-width:520px){ .am-lista{grid-template-columns:1fr} }

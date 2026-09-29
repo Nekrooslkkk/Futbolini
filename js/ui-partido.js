@@ -1756,9 +1756,13 @@ function _pelotaCae(svg, bolaG, destX, destY, cb, enGuante){
   _animBola(bolaG, destX, destY, bx, by, 230, cb);
 }
 function penArqueroTira(aim,arqNivel){
-  const lee=clamp(0.12+(arqNivel-70)*0.006,0.05,0.32);
+  if(!aim||!aim.tercio) return elige(["izq","centro","der"]);
+  /* 7.9100 · antes leía el tiro ~12 % y el resto era un lado al azar: el centro flojo
+     no se atajaba y el arquero se iba para cualquier parte. El rincón sigue siendo más ciego. */
+  const base=aim.tercio==="centro"?0.78:(aim.alt==="bajo"?0.62:0.50);
+  const lee=clamp(base+((arqNivel||70)-70)*0.003,0.34,0.86);
   if(Math.random()<lee) return aim.tercio;
-  return elige(["izq","izq","centro","der","der"]);
+  return elige(["izq","centro","der"].filter(function(x){ return x!==aim.tercio; }));
 }
 function penResolver(aim,kdir,efecto,patNivel,arqNivel){
   if(aim.fuera) return {res:"afuera",p:0};

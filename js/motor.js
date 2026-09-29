@@ -1684,7 +1684,29 @@ async function borrarPartida(id){
   await Store.del(slotKey(id));
   const lista=(await slotsLista()).filter(s=>s.id!==id);
   await slotsGuardarLista(lista);
-  if(await slotActivoId()===id) await slotFijarActivo(lista.length?lista[lista.length-1].id:null);
+  const era=await slotActivoId()===id;
+  const leg=await Store.get(LLAVE);
+  if(era){
+    if(lista.length){
+      const sig=lista[lista.length-1].id;
+      await slotFijarActivo(sig);
+      const est=await Store.get(slotKey(sig));
+      if(est&&est.club) await Store.set(LLAVE,est); else await Store.del(LLAVE);
+    } else {
+      await slotFijarActivo(null);
+      await Store.del(LLAVE);
+    }
+  } else if(leg&&leg._slot===id){
+    await Store.del(LLAVE);
+  }
+}
+/* borra el índice, cada ranura y el save viejo: si no, al entrar volvía la partida */
+async function borrarTodasLasPartidas(){
+  const lista=await slotsLista();
+  for(let i=0;i<lista.length;i++){ try{ await Store.del(slotKey(lista[i].id)); }catch(e){} }
+  await slotsGuardarLista([]);
+  await slotFijarActivo(null);
+  await Store.del(LLAVE);
 }
 async function cargarPartida(id){
   const est=await Store.get(slotKey(id));

@@ -1940,3 +1940,14 @@ No toqué cámara, probabilidades, calendario, Aero ni mundo. VERSION 7.9097. Se
 
 **7.9099 (Grok) · el golpe, la atajada y la red.** La carrera carga la pierna y pega cuando sale la pelota; el giro sigue la comba. Si es atajada, la pelota muere en el guante y cae delante. Si la tapa la barrera, pica. La red hace un bolsillo donde entra, no se corre el arco entero. El tiro libre y el córner llevan el dorsal de quien cobra. No toqué resolver ni cámara. VERSION 7.9099.
 
+**7.9100 (Grok) · el arquero lee, la potencia no se llena al apuntar, y vuelven los amistosos.**
+- El arquero ya no se tira a un lado al azar: lee el centro seguido, el rincón alto menos. `penResolver` no se tocó.
+- En el PC la barra de potencia arranca solo cuando deslizas de verdad. Un toque o dejar el mouse quieto en el córner no te manda el tiro a potente. Con mouse la barra llena más lento.
+- La carrera dura un poco más, con dos pasos y un golpe que sigue después del contacto. Las rodillas doblan al volver la pierna. El arquero se tira con el cuerpo, no solo con los brazos. La cámara del córner queda igual: desde el banderín el arco se ve de canto y el imán está calibrado a eso.
+- En el celular el 3D baja la resolución y apaga sombras. Si la pestaña no se ve, deja de dibujar.
+- Simular hasta el fin de la temporada muestra la carga de Futbolini y cede el hilo. La carga de inicio está en el HTML, así se ve antes de que terminen los scripts, y la barra no se queda llena y quieta.
+- Borrar una partida también borra el save viejo, así no vuelve al entrar. En Mis partidas hay «Borrar todas».
+- Calendario → Amistosos otra vez, en la misma ventana Aero (el CDN de Windows 7 sigue). La lista va en grilla y el calendario usa el ancho de la ventana, no una columna angosta a la izquierda.
+No toqué `camaraArco`, `penResolver`, `cornerResolver` ni el motor de goles. VERSION 7.9100.
+
+

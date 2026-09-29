@@ -121,7 +121,6 @@ function _csPartidos(cont){
   const pl=panel(T("cal_sig","Lo que viene")+" y lo jugado","📅");
   const f=el("div","fichas cs-chips");
   [["todos","Todos"],["liga","Liga"],["copas","Copas"]].forEach(([k,n])=>{ const b=el("button","ficha",n); b.setAttribute("aria-pressed",u.filtro===k?"true":"false"); b.onclick=()=>{ u.filtro=k; irA("calendario"); }; f.appendChild(b); });
-  if(typeof modalAmistosos==="function"){ const ba=el("button","ficha","🤝 Amistosos"); ba.onclick=()=>modalAmistosos(); f.appendChild(ba); }
   pl.cuerpo.appendChild(f);
   const lista=(E.calendario||[]).map((c,i)=>({c:c,i:i})).filter(x=>u.filtro==="todos"||(u.filtro==="liga"?x.c.tipo==="liga":x.c.tipo!=="liga"));
   const mesHoy=prox&&prox.f?prox.f.m:12;
@@ -276,19 +275,23 @@ function _csBuscador(cont){
   box.appendChild(inp); box.appendChild(res);
   cont.appendChild(box);
 }
+function _csAmistosos(cont){
+  if(typeof pintarCentroAmistosos==="function") pintarCentroAmistosos(cont);
+  else cont.appendChild(el("p","mini","Los amistosos no cargaron. Recarga la página."));
+}
 function vistaCalendarioSofa(){
   const v=$("#vista"), u=_csUI();
   const cont=el("div","cs");
   _csBuscador(cont);
   const tabs=el("div","cs-tabs"); tabs.setAttribute("role","tablist");
-  const TABS=[["partidos","Partidos"],["tablas","Tablas"],["copas","Copas"],["resultados","Resultados"],["temporadas","📼 Temporadas"]];
+  const TABS=[["partidos","Partidos"],["tablas","Tablas"],["copas","Copas"],["amistosos","Amistosos"],["resultados","Resultados"],["temporadas","📼 Temporadas"]];
   if(u.equipo) TABS.push(["equipo",_csNom(u.equipo)]);
   TABS.forEach(([k,n])=>{ const b=el("button","cs-tab"+(u.tab===k?" on":""),escHtml(n)); b.setAttribute("role","tab"); b.setAttribute("aria-selected",u.tab===k?"true":"false");
     b.onclick=()=>{ u.tab=k; irA("calendario"); }; tabs.appendChild(b); });
   cont.appendChild(tabs);
   const cuerpo=el("div","cs-cuerpo"); cont.appendChild(cuerpo);
   try{
-    ({partidos:_csPartidos,tablas:_csTablas,copas:_csCopas,resultados:_csResultados,equipo:_csEquipo,
+    ({partidos:_csPartidos,tablas:_csTablas,copas:_csCopas,amistosos:_csAmistosos,resultados:_csResultados,equipo:_csEquipo,
       temporadas:function(c){ if(typeof panelTemporadas==="function") panelTemporadas(c); }}[u.tab]||_csPartidos)(cuerpo);
   }catch(e){ cuerpo.appendChild(el("p","mini","No se pudo dibujar: "+e.message)); }
   v.appendChild(cont);

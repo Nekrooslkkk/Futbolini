@@ -485,7 +485,7 @@ function _animBola(bolaG, x0,y0, x1,y1, ms, cb, s1){
   }
   _vueloBola(svg,bolaG,a,b,s0,sEnd,enArco,ms,cb);
 }
-const A3_CARRERA=340;
+const A3_CARRERA=760;
 function _correPateador(svg,cb){
   const g=svg.querySelector("#a3-pateador"), bola=svg.querySelector("#arco-bola");
   const quieto=document.body&&document.body.classList.contains("perf");
@@ -497,8 +497,10 @@ function _correPateador(svg,cb){
   (function paso(t){
     const u=Math.min(1,(t-t0)/A3_CARRERA), e=u*u*(3-2*u);
     const planta=u>=0.62;
-    const salto=planta?0:-Math.abs(Math.sin(u*Math.PI*3))*5;
-    g.setAttribute("transform","translate("+(x0+(x1-x0)*e).toFixed(1)+" "+(y0+(y1-y0)*e+salto).toFixed(1)+") scale("+k+") rotate("+(planta?0:(e*8)).toFixed(1)+")");
+    const ciclo=planta?1:(u/0.62), pasos=ciclo*2, f=pasos-Math.floor(Math.min(1.999,pasos));
+    const salto=planta?0:-Math.pow(Math.sin(f*Math.PI),1.35)*5.5;
+    const ladeo=planta?0:Math.sin(pasos*Math.PI)*5;
+    g.setAttribute("transform","translate("+(x0+(x1-x0)*e).toFixed(1)+" "+(y0+(y1-y0)*e+salto).toFixed(1)+") scale("+k+") rotate("+ladeo.toFixed(1)+")");
     if(planta) g.classList.add("a3-arma");
     g.setAttribute("data-swing",u.toFixed(3));
     if(u<1) requestAnimationFrame(paso);
@@ -567,32 +569,38 @@ function efectoConPotencia(ef,pot){
   return out;
 }
 function _a3Deslizar(stage,svg){
-  let pts=null, t0=0, raf=0;
+  let pts=null, t0=0, raf=0, cargando=false;
   const trazo=svg.querySelector("#a3-trazo");
   const barra=document.createElement("div"); barra.className="a3-pot";
   barra.innerHTML='<div class="a3-pot-t">Potencia</div><div class="a3-pot-b"><i></i><span class="a3-pot-m" style="left:'+(A3_POT.potente*100)+'%"></span><span class="a3-pot-m r" style="left:'+(A3_POT.pasado*100)+'%"></span></div>';
   stage.appendChild(barra);
   const fill=barra.querySelector("i");
-  const pot=()=>Math.min(1,(performance.now()-t0)/A3_CARGA_MS);
-  const pintar=()=>{ if(!pts) return; const v=pot(); fill.style.width=(v*100).toFixed(1)+"%"; fill.className=v>A3_POT.pasado?"r":(v>=A3_POT.potente?"n":""); raf=requestAnimationFrame(pintar); };
+  /* en el mouse la barra iba a potente solo por dejar el dedo quieto apuntando (sobre todo el córner) */
+  const cargaMs=(typeof matchMedia==="function"&&matchMedia("(pointer:fine)").matches)?1700:A3_CARGA_MS;
+  const pot=()=>Math.min(1,(performance.now()-t0)/cargaMs);
+  const pintar=()=>{ if(!cargando) return; const v=pot(); fill.style.width=(v*100).toFixed(1)+"%"; fill.className=v>A3_POT.pasado?"r":(v>=A3_POT.potente?"n":""); raf=requestAnimationFrame(pintar); };
   const loc=e=>{ const m=svg.getScreenCTM(); if(!m) return null; const q=svg.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const r=q.matrixTransform(m.inverse()); return {x:r.x,y:r.y,t:performance.now(),cx:e.clientX,cy:e.clientY}; };
-  stage.addEventListener("pointerdown",function(e){ if(svg._pateado) return; const p=loc(e); if(!p) return; pts=[p]; svg._swipe=null; t0=performance.now(); barra.classList.add("on"); cancelAnimationFrame(raf); pintar(); },true);
+  const soltarBarra=()=>{ cancelAnimationFrame(raf); cargando=false; setTimeout(function(){ barra.classList.remove("on"); fill.style.width="0"; },280); };
+  stage.addEventListener("pointerdown",function(e){ if(svg._pateado) return; const p=loc(e); if(!p) return; pts=[p]; svg._swipe=null; cargando=false; t0=0; cancelAnimationFrame(raf); barra.classList.remove("on"); fill.style.width="0"; },true);
   stage.addEventListener("pointermove",function(e){
     if(!pts) return; const p=loc(e); if(!p) return; pts.push(p); if(pts.length>80) pts.splice(1,1);
     if(trazo){ trazo.setAttribute("d","M"+pts.map(q=>q.x.toFixed(1)+","+q.y.toFixed(1)).join(" L")); trazo.setAttribute("opacity",".8"); }
-    if(pts.length>4){ const ef=efectoDeTrazo(pts); if(ef&&ef.cuerda>40) svg._swipe=ef; }
+    const ef=pts.length>4?efectoDeTrazo(pts):null;
+    if(ef&&ef.cuerda>32&&!cargando){ cargando=true; t0=performance.now(); barra.classList.add("on"); cancelAnimationFrame(raf); pintar(); }
+    if(ef&&ef.cuerda>40) svg._swipe=ef;
   },true);
   stage.addEventListener("pointerup",function(e){
     if(!pts) return;
-    const v=pot(), ult=pts[pts.length-1], ef=efectoConPotencia(efectoDeTrazo(pts),v); pts=null; cancelAnimationFrame(raf);
-    setTimeout(function(){ barra.classList.remove("on"); fill.style.width="0"; },650);
+    const v=cargando?pot():0, ult=pts[pts.length-1], trazado=efectoDeTrazo(pts); pts=null;
+    soltarBarra();
     if(trazo) setTimeout(function(){ trazo.setAttribute("opacity","0"); },220);
-    svg._swipe=(ef.cuerda||0)>=40?ef:{curl:0,picada:ef.efecto==="picadita",efecto:ef.efecto,pot:v};
-    /* la barra elige el efecto (el mismo botón de siempre: la lógica no cambia) */
+    /* un toque o una espera quieta solo dejan la mira: no cambian el efecto ni elevan el tiro */
+    if(!trazado||(trazado.cuerda||0)<40){ svg._swipe=null; return; }
+    const ef=efectoConPotencia(trazado,v);
+    svg._swipe=ef;
     const modal=stage.closest(".modal"), bs=modal?modal.querySelectorAll(".penal-ef button"):[];
     const idx={colocado:0,potente:1,picadita:2}[ef.efecto];
     if(bs[idx]) bs[idx].click();
-    /* pasado de potencia: el apunte se eleva antes de que la jugada lo lea */
     if(ef.pasado&&ult){
       const m=svg.getScreenCTM(); const q=svg.createSVGPoint(); q.x=ult.x; q.y=ult.y-(26+(v-A3_POT.pasado)*300); const c=m?q.matrixTransform(m):{x:ult.cx,y:ult.cy-40};
       try{ svg.dispatchEvent(new PointerEvent("pointermove",{clientX:c.x,clientY:c.y,buttons:1,pressure:0.5,bubbles:true})); }catch(err){}

@@ -178,13 +178,14 @@ function lanzarAmistoso(part){
   });
   envolver("tickSemana",o=>function(){ const r=o.apply(this,arguments); try{ if(!enPretemporada()) generarInvitacion(); }catch(e){} return r; });
 })();
-/* ---------- UI: el centro de amistosos ---------- */
-function modalAmistosos(){
+/* ---------- UI: el centro de amistosos (calendario y ventana) ---------- */
+function pintarCentroAmistosos(host){
   const A=_amE();
-  modal(box=>{
-    const cuerpo=(typeof montarBarraSO==="function")?montarBarraSO(box,"Amistosos","🤝",function(){ cerrarModal(); }):(function(){ const c=el("div","cuerpo"); box.appendChild(c); return c; })();
-    const tabs=el("div","fichas"); cuerpo.appendChild(tabs);
-    const cont=el("div"); cuerpo.appendChild(cont);
+  if(!host) return;
+  host.innerHTML="";
+  host.classList.add("am-host");
+  const tabs=el("div","fichas"); host.appendChild(tabs);
+  const cont=el("div","am-cuerpo"); host.appendChild(cont);
     let tab=enPretemporada()&&A.pretemp<3?"pre":(A.invit&&A.invit.length?"inv":(A.copa&&A.copa.fase!=="fin"?"copa":"pago"));
     const pintar=()=>{
       tabs.innerHTML=""; cont.innerHTML="";
@@ -193,23 +194,29 @@ function modalAmistosos(){
       if(tab==="pre"){
         if(!enPretemporada()){ cont.appendChild(el("p","mini","La pretemporada terminó: ya empezó el torneo. Mira los pagados o las invitaciones.")); return; }
         cont.appendChild(el("p","mini","Gratis, casi sin lesiones y contra rivales lógicos (tu división o la de al lado). Todos aceptan, salvo cruzar la cordillera. Te quedan <b>"+(3-A.pretemp)+"</b> de 3."));
+        const lista=el("div","am-lista");
         rivalesPretemporada().slice(0,24).forEach(x=>{ const b=el("button","op",'<div class="t">'+((typeof escudoChip==="function")?escudoChip(x.id):"")+" "+escHtml(x.n)+'</div><div class="d">'+x.t+'</div>');
-          b.disabled=A.pretemp>=3; b.onclick=()=>{ const r=jugarPretemporada(x.id); if(!r.ok) aviso(r.msg); }; cont.appendChild(b); });
+          b.disabled=A.pretemp>=3; b.onclick=()=>{ const r=jugarPretemporada(x.id); if(!r.ok) aviso(r.msg); }; lista.appendChild(b); });
+        cont.appendChild(lista);
       } else if(tab==="pago"){
         cont.appendChild(el("p","mini","Traes a un rival a tu cancha y le pagas el cachet según su tamaño (grande 15–40 M, mediano 3–8 M, chico ~1 M). Un grande llena más la tribuna. Ves el neto antes de aceptar."));
+        const lista=el("div","am-lista");
         const ids=((typeof idsClubesCpu==="function")?idsClubesCpu():[]).filter(id=>id!==E.club);
         const ord={grande:0,mediano:1,chico:2};
         ids.map(id=>({id:id,p:presupuestoAmistoso(id)})).sort((a,b)=>ord[a.p.tam]-ord[b.p.tam]||b.p.neto-a.p.neto).slice(0,30).forEach(x=>{
           const b=el("button","op",'<div class="t">'+((typeof escudoChip==="function")?escudoChip(x.id):"")+" "+escHtml(_nomClub(x.id))+' <span class="mini">('+x.p.tam+')</span></div>'+
             '<div class="d">Cachet '+plata(x.p.costo)+' · taquilla estimada '+plata(x.p.taquilla)+' · <b>neto '+(x.p.neto>=0?"+":"")+plata(x.p.neto)+'</b></div>');
-          b.onclick=()=>{ const r=jugarAmistosoPagado(x.id); if(!r.ok) aviso(r.msg); }; cont.appendChild(b); });
+          b.onclick=()=>{ const r=jugarAmistosoPagado(x.id); if(!r.ok) aviso(r.msg); }; lista.appendChild(b); });
+        cont.appendChild(lista);
       } else if(tab==="inv"){
         const inv=(A.invit||[]).filter(x=>(x.vence||0)>=(E.idx||0));
         if(!inv.length) cont.appendChild(el("p","mini","No hay invitaciones ahora. Durante la temporada llegan solas: un grande que te quiere de rival de vitrina o un chico que paga por tenerte."));
+        const lista=el("div","am-lista");
         inv.forEach(x=>{ const d=el("div","resul mitad","<b>"+escHtml(x.n)+"</b> te invita "+(x.localRival?"a su cancha":"a jugar en la tuya")+" · pagan <b>"+plata(x.pago)+"</b> · vence en "+Math.max(0,x.vence-(E.idx||0))+" fecha(s)");
           const b=el("button","btn-aqua chico verde","Aceptar y jugar"); b.style.marginTop="6px"; b.onclick=()=>{ const r=aceptarInvitacion(x.id); if(!r.ok) aviso(r.msg); };
           const n=el("button","btn-aqua chico gris","Rechazar"); n.style.margin="6px 0 0 6px"; n.onclick=()=>{ A.invit=A.invit.filter(y=>y!==x); guardar(); pintar(); };
-          d.appendChild(b); d.appendChild(n); cont.appendChild(d); });
+          d.appendChild(b); d.appendChild(n); lista.appendChild(d); });
+        if(inv.length) cont.appendChild(lista);
       } else {
         const c=A.copa;
         if(c&&c.fase!=="fin"){
@@ -244,6 +251,11 @@ function modalAmistosos(){
       }
     };
     pintar();
+}
+function modalAmistosos(){
+  modal(function(box){
+    const cuerpo=(typeof montarBarraSO==="function")?montarBarraSO(box,"Amistosos","🤝",function(){ cerrarModal(); }):(function(){ const c=el("div","cuerpo"); box.appendChild(c); return c; })();
+    pintarCentroAmistosos(cuerpo);
   },{clase:"ventana-so"});
 }
 /* el amistoso libre de siempre vive en Ajustes: "Solo jugar" */

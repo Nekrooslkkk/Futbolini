@@ -389,7 +389,7 @@ body[data-tema="aero"] .plop-ie-nav{ color:#fff !important; text-shadow:0 0 4px 
 body[data-tema="aero"] .plop-ie-cuerpo{ border:1px solid rgba(0,0,0,.52); box-shadow:0 0 0 1px rgba(255,255,255,.65); }
 
 /* ---------- 13. retoques ---------- */
-body[data-tema="aero"] #vista .ventana-so .cs{ max-width:1100px; margin-left:auto; margin-right:auto; }
+body[data-tema="aero"] #vista .ventana-so .cs{ max-width:none; width:100%; margin-left:0; margin-right:0; }
 body[data-tema="aero"] #btnTemas{ font-family:"Segoe UI Symbol","DejaVu Sans","Noto Sans Symbols 2",sans-serif; }
 body[data-tema="aero"] .modal > .panel > .cab .ic{ background:none !important; border:0 !important; box-shadow:none !important; width:auto; height:auto; }
 body[data-tema="aero"] .plop-ie-tit{ align-items:flex-start !important; }

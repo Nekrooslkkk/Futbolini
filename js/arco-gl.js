@@ -203,8 +203,9 @@ function jugador3D(o){
   const piernas=[];
   [-1,1].forEach(s=>{ const p=new THREE.Group(); p.position.set(s*0.1,0.92,0); cuerpo.add(p);
     add(new THREE.CapsuleGeometry(0.075,0.3,4,8),mPiel,0,-0.2,0,p);
-    add(new THREE.CapsuleGeometry(0.062,0.34,4,8),mMed,0,-0.6,0,p);
-    add(new THREE.BoxGeometry(0.11,0.08,0.27),mBot,0,-0.88,0.05,p);
+    const rod=new THREE.Group(); rod.position.set(0,-0.42,0); p.add(rod); p.userData.rodilla=rod;
+    add(new THREE.CapsuleGeometry(0.062,0.34,4,8),mMed,0,-0.18,0,rod);
+    add(new THREE.BoxGeometry(0.11,0.08,0.27),mBot,0,-0.46,0.05,rod);
     piernas.push(p); });
   add(new THREE.CylinderGeometry(0.19,0.2,0.24,14),mPan,0,0.88,0);
   add(new THREE.CylinderGeometry(0.215,0.175,0.56,14),mCam,0,1.2,0);
@@ -258,7 +259,7 @@ function _glTransform(el){
 function arcoGLMontar(esc,svg,opts){
   const cam=_camDe(svg); if(!cam||typeof THREE==="undefined") return null;
   opts=opts||{};
-  const liviano=!!(document.body&&document.body.classList.contains("perf"));
+  const liviano=!!(document.body&&document.body.classList.contains("perf"))||(typeof matchMedia==="function"&&matchMedia("(max-width:760px)").matches);
   const canvas=document.createElement("canvas"); canvas.className="a3gl";
   esc.world.insertBefore(canvas,svg);
   let renderer;
@@ -266,12 +267,12 @@ function arcoGLMontar(esc,svg,opts){
   catch(e){ canvas.remove(); return null; }
   renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.08;
   renderer.shadowMap.enabled=!liviano; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  renderer.setPixelRatio(liviano?1:Math.min(2,window.devicePixelRatio||1));
+  renderer.setPixelRatio(liviano?1:Math.min(1.5,window.devicePixelRatio||1));
   const scene=new THREE.Scene();
   scene.background=new THREE.Color(0x060b14); scene.fog=new THREE.Fog(0x0e1a2e,80,260);
   scene.add(new THREE.HemisphereLight(0xaec4ff,0x1c3a1c,0.62));
   const sol=new THREE.DirectionalLight(0xfff4e0,1.25); sol.position.set(-26,48,40); sol.target.position.set(0,0,5);
-  sol.castShadow=!liviano; sol.shadow.mapSize.set(2048,2048);
+  sol.castShadow=!liviano; sol.shadow.mapSize.set(liviano?512:1024,liviano?512:1024);
   Object.assign(sol.shadow.camera,{left:-26,right:26,top:26,bottom:-26,near:10,far:140}); sol.shadow.bias=-0.0004;
   scene.add(sol); scene.add(sol.target);
   const relleno=new THREE.DirectionalLight(0xc8d8ff,0.45); relleno.position.set(30,40,-30); scene.add(relleno);
@@ -307,11 +308,12 @@ function arcoGLMontar(esc,svg,opts){
   sombraBola.rotation.x=-Math.PI/2; scene.add(sombraBola);
   const camGL=_glCamara(cam);
   svg.classList.add("a3gl-on");
-  const est={svg:svg, canvas:canvas, renderer:renderer, scene:scene, cam:cam, camGL:camGL, arq:arq, pat:pat, bola:bola, sombraBola:sombraBola, figuras:figuras, publico:trib.publico, arco:arcoG, red:arcoG.getObjectByName("red"), t0:performance.now()};
+  const est={svg:svg, canvas:canvas, renderer:renderer, scene:scene, cam:cam, camGL:camGL, arq:arq, pat:pat, bola:bola, sombraBola:sombraBola, figuras:figuras, publico:trib.publico, arco:arcoG, red:arcoG.getObjectByName("red"), liviano:liviano, t0:performance.now()};
   ARCOGL.activos++; ARCOGL.ultimo=est;
   let W0=0,H0=0;
   const cuadro=function(t){
-    if(!svg.isConnected){ try{ renderer.dispose(); renderer.forceContextLoss(); }catch(e){} ARCOGL.activos=Math.max(0,ARCOGL.activos-1); if(ARCOGL.ultimo===est) ARCOGL.ultimo=null; return; }
+    if(!svg.isConnected){ clearTimeout(est.pausa); cancelAnimationFrame(est.raf); try{ renderer.dispose(); renderer.forceContextLoss(); }catch(e){} ARCOGL.activos=Math.max(0,ARCOGL.activos-1); if(ARCOGL.ultimo===est) ARCOGL.ultimo=null; return; }
+    if(document.hidden){ est.pausa=setTimeout(function(){ est.raf=requestAnimationFrame(cuadro); }, 320); return; }
     const rc=canvas.getBoundingClientRect();
     if(rc.width&&(Math.abs(rc.width-W0)>0.5||Math.abs(rc.height-H0)>0.5)){ W0=rc.width; H0=rc.height; renderer.setSize(W0,H0,false); }
     if(_glProyeccion(camGL,cam,svg,canvas)){ _glSincronizar(est,t); renderer.render(scene,camGL); }
@@ -348,6 +350,15 @@ function _glRedQuieta(est){
   pos.array.set(red.userData.base); pos.needsUpdate=true;
   red.userData.sucia=false; red.position.z=0;
 }
+/* la rodilla dobla cuando la cadera no está estirada: el golpe se ve de persona, no de palo */
+function _glDoblar(p){
+  const k=p&&p.userData&&p.userData.rodilla; if(!k) return;
+  const hip=p.rotation.x||0;
+  /* la que vuelve se dobla; la que va adelante se estira. En reposo no se llama: la altura no cambia. */
+  if(hip<-0.55) k.rotation.x=Math.max(0.05,0.9+hip*0.6);
+  else if(hip>0.15) k.rotation.x=0.1+hip*0.22;
+  else k.rotation.x=Math.min(1.2,0.22+Math.abs(hip)*1.2);
+}
 function _glSincronizar(est,t){
   const svg=est.svg, cam=est.cam;
   /* arquero: la cadera sale del SVG; el giro es el del SVG, alrededor del eje de la cámara */
@@ -364,12 +375,29 @@ function _glSincronizar(est,t){
       est.arq.userData.cuerpo.position.y=-0.04; est.arq.position.y=cad.y-0.92;
       const bi=aEl.querySelector("#arco-brazo-izq"), bd=aEl.querySelector("#arco-brazo-der"), ang=b=>{ const m=/rotate\(([-\d.]+)/.exec((b&&b.getAttribute("transform"))||""); return m?+m[1]:0; };
       const A=est.arq.userData.brazos, ai=ang(bi)*Math.PI/180;
-      if(ai){ A[0].rotation.set(0,0,-ai); A[1].rotation.set(0,0,ai); }
-      else { const res=Math.sin((t-est.t0)/260)*0.08; A[0].rotation.set(-0.3,0,-0.55-res); A[1].rotation.set(-0.3,0,0.55+res); }
+      const Cq=est.arq.userData.cuerpo;
+      if(ai){
+        const dive=Math.min(1,Math.abs(ai)/2.4);
+        A[0].rotation.set(-0.35-dive*1.15,0,-ai*0.45);
+        A[1].rotation.set(-0.35-dive*1.15,0,ai*0.45);
+        if(Cq){ Cq.rotation.x=-0.12-dive*0.42; Cq.rotation.z=(ai>0?-1:1)*dive*0.16; }
+      }
+      else {
+        const res=Math.sin((t-est.t0)/260)*0.08;
+        A[0].rotation.set(-0.3,0,-0.55-res); A[1].rotation.set(-0.3,0,0.55+res);
+        if(Cq){ Cq.rotation.x=0; Cq.rotation.z=0; }
+      }
       /* la atajada ya está decidida: al llegar la pelota, la abraza */
       if(svg.classList.contains("arco-atajada")){
         A[0].rotation.set(-1.05,0.4,-0.25);
         A[1].rotation.set(-1.05,-0.4,0.25);
+        if(Cq){ Cq.rotation.x=-0.22; Cq.rotation.z=0; }
+      }
+      const Pq=est.arq.userData.piernas;
+      if(Pq){
+        if(ai){ Pq[0].rotation.x=0.35; Pq[1].rotation.x=0.85; }
+        else { Pq[0].rotation.x=0.18; Pq[1].rotation.x=0.18; }
+        Pq.forEach(_glDoblar);
       }
     }
   }
@@ -384,23 +412,35 @@ function _glSincronizar(est,t){
       const blanco=cam.frontal?{x:0,z:0}:{x:0,z:11};
       if(festeja&&prev) est.pat.lookAt(w.x+(w.x>=prev.x?2:-2),0,w.z);
       else est.pat.lookAt(blanco.x,0,blanco.z);
-      const P=est.pat.userData.piernas, B=est.pat.userData.brazos;
+      const P=est.pat.userData.piernas, B=est.pat.userData.brazos, Cu=est.pat.userData.cuerpo;
+      if(Cu){ Cu.rotation.x=0; Cu.rotation.z=0; Cu.position.y=0; }
+      est.pat.position.y=0;
       const arma=gPat&&gPat.classList.contains("a3-arma");
+      if(!pateo) est.pat.userData.golpe=0;
       if(festeja){ B[0].rotation.set(0,0,-2.6); B[1].rotation.set(0,0,2.6); P[0].rotation.x=0.35; P[1].rotation.x=-0.35; }
-      else if(pateo){ P[0].rotation.x=-1.32; P[1].rotation.x=0.22; B[0].rotation.x=0.62; B[1].rotation.x=-0.18; }
+      else if(pateo){
+        if(!est.pat.userData.golpe) est.pat.userData.golpe=t;
+        const u=Math.min(1,(t-est.pat.userData.golpe)/320), e=u*u*(3-2*u);
+        P[0].rotation.x=-1.32+0.72*e; P[1].rotation.x=0.22-0.16*e;
+        B[0].rotation.x=0.62-0.28*e; B[1].rotation.x=-0.18+0.1*e;
+        if(Cu) Cu.rotation.x=0.2*(1-e);
+      }
       else if(arma){
         const swing=parseFloat(gPat.getAttribute("data-swing")||"0");
         const fase=Math.max(0,Math.min(1,(swing-0.62)/0.38));
         const ang=fase<0.4?(fase/0.4)*1.0:1.0-((fase-0.4)/0.6)*2.32;
         P[0].rotation.x=ang; P[1].rotation.x=0.2;
         B[0].rotation.x=fase<0.4?-0.7:0.62; B[1].rotation.x=fase<0.4?0.25:-0.18;
+        if(Cu) Cu.rotation.x=0.06+fase*0.08;
       }
       else {
-        const fase=se_mueve?Math.sin(t/60)*0.7:0;
-        P[0].rotation.x=fase; P[1].rotation.x=-fase;
-        B[0].rotation.x=-fase*0.8; B[1].rotation.x=fase*0.8;
-        if(se_mueve) est.pat.position.y=Math.abs(Math.sin(t/110))*0.05;
+        const w=se_mueve?((t/170)%1):0, s=Math.sin(w*Math.PI*2), amp=se_mueve?0.72:0;
+        P[0].rotation.x=s*amp; P[1].rotation.x=-s*amp*0.92;
+        B[0].rotation.set(-s*amp*0.65,0,0.1); B[1].rotation.set(s*amp*0.65,0,-0.1);
+        if(Cu){ Cu.rotation.x=se_mueve?0.07:0; Cu.rotation.z=se_mueve?Math.cos(w*Math.PI*2)*0.035:0; }
+        est.pat.position.y=se_mueve?Math.abs(s)*0.04:0;
       }
+      if(P) P.forEach(_glDoblar);
     } }
   /* pelota: en pantalla la da el SVG; la distancia sale de su tamaño (tamaño ∝ 1/distancia) */
   const bEl=svg.querySelector("#arco-bola"), tb=_glTransform(bEl);
@@ -436,7 +476,7 @@ function _glSincronizar(est,t){
   /* los del área saltan cuando el SVG los hace saltar */
   est.figuras.forEach(f=>{ const m=/translateY\((-?[\d.]+)px\)/.exec((f.el&&f.el.style.transform)||""); f.obj.position.y=m?Math.min(0.7,-m[1]/30):0; });
   /* gol: la tribuna salta */
-  if(svg.classList.contains("arco-golazo")&&!document.body.classList.contains("anim-off")) est.publico.position.y=Math.abs(Math.sin(t/140))*0.22;
+  if(svg.classList.contains("arco-golazo")&&!document.body.classList.contains("anim-off")&&!est.liviano) est.publico.position.y=Math.abs(Math.sin(t/140))*0.22;
   else est.publico.position.y=0;
 }
 /* ---------- enganche: cada escena de arco nueva se monta en 3D ---------- */
