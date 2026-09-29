@@ -2006,3 +2006,17 @@ primero para lo versionado: **si cambian un archivo, suban VERSION y los `?v=`**
 
 **Encargo para Sonnet:** bloque 5 de `PROMPT_SONNET_TEXTOS.md` (voz por club en PLOP), después bloques 2–4.
 
+
+**7.9110 (Claude Opus) · banco por equipo + partidas viejas.** Para todos: antes de subir, además del doctor, corran
+`bash test/banco.sh` (todos los clubes, 16 s) y `bash test/saves.sh`. **Si agregan un club**, el banco y el doctor
+`datos_clubes` dicen si le falta algo. Ojo con tres cosas que cambiaron:
+- `aceptarClub` conserva `PERSONALES` (js/carrera.js). Si agregan un campo que es de la PERSONA y no del club (vida,
+  plata propia, historial personal), súmenlo a esa lista; si no, se borra al cambiar de club.
+- Cualquier fase de torneo guardada en `E.flags` (como `argFase`/`fase2006`) tiene que volver a su inicio en
+  `nuevoAnio`; si no, el 2º año se juega distinto. El banco con `TEMPS=3` lo caza.
+- `emparejarFecha` ya no mete cruces del fixture oficial con clubes fuera de la liga.
+
+**Encargo para Grok (sigue la tanda 7.911x, datos):** además de lo de arriba (escudos libres, colores 1925,
+extranjeros CC/U, fotos de estadio, arquero del tiro libre): con `VERBOSO=1 bash test/banco.sh` se ve caja y deuda por
+temporada de cada club. Si encuentras con fuente la caja/deuda real 2026 de los clubes de Primera B y Segunda que
+terminan cada año con +200 de deuda, anótala con la fuente en un comentario (no toques el motor de economía).

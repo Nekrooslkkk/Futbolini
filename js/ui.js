@@ -292,7 +292,9 @@ function _renderCuerpo(){
 /* ---------------- inicio ---------------- */
 /* 7.68 · picker de clubes: filtros por división + buscador + cards animadas.
    Reemplaza la pared de botones por algo navegable y liviano. */
-function pickerClubes(cont){
+/* 7.9110 · la lista de clubes del selector, sola: la usa el picker y el banco de pruebas por equipo
+   (test/banco.sh), así el banco prueba EXACTAMENTE lo que el jugador puede elegir. */
+function clubesElegibles(){
   const lista=[], visto={};
   const add=(id,info,div,clasico)=>{
     if(!info||visto[id]) return; visto[id]=1;
@@ -324,6 +326,10 @@ function pickerClubes(cont){
       L.forEach(function(c){ add(c.id, (typeof CLUB_INFO_2026!=="undefined"&&CLUB_INFO_2026[c.id])||c, nom, false); });
     });
   }
+  return {lista:lista, extraLigas:extraLigas};
+}
+function pickerClubes(cont){
+  const _ce=clubesElegibles(), lista=_ce.lista, extraLigas=_ce.extraLigas;
 
   const _T=(typeof T==="function")?T:((k,d)=>d);
   /* 7.9014 · listones al mismo nivel: Primera → AFA → Primera B → Segunda. */
@@ -416,17 +422,15 @@ function pantallaInicio(){
     host.appendChild(pm);
   }
 }
-function elegirEpoca(id){
-  /* 7.98 · 1991 solo si el club JUGÓ ese Nacional (Limache 2010 no entra). */
+/* 7.9110 · los puntos de partida de un club (épocas base + glorias) en una función aparte: la usa la pantalla de elegir
+   club y el banco de pruebas (test/banco.sh), así se prueba exactamente lo mismo que puede elegir el jugador. */
+function puntosDeInicio(id){
   const jugo91=(typeof clubJugoNacional91==="function")&&clubJugoNacional91(id);
   const solo2026=!jugo91 || (typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]);
   const esB=(typeof esClubB==="function")?esClubB(id):false;
   const esC=(typeof esClubC==="function")?esClubC(id):false;
   const esArg=(typeof esClubArg==="function")?esClubArg(id):false;
-  let modo="historico", corte=false;
   const glorias=(typeof epocasDe==="function")?epocasDe(id):[];
-  /* 7.10 · UN solo selector de "cuándo empezar": épocas base + glorias unificadas,
-     sin dos selectores peleando (arregla el bug de perder continuidad al elegir gloria). */
   const puntos=[];
   if(esArg){
     puntos.push({k:"barg",tipo:"base",base:"arg2026",anio:2026,etq:"2026 · Liga Profesional"});
@@ -467,6 +471,39 @@ function elegirEpoca(id){
     }
     puntos.push({k:"g"+i,tipo:"gloria",base:b,anio:ep.anio,etq:"🏆 "+ep.etq,ep:ep});
   });
+  return puntos;
+}
+/* los argumentos con que se arranca la partida desde un punto (misma lógica que el botón Empezar) */
+function argsInicio(id, sel, modo, corte){
+  const esB=(typeof esClubB==="function")?esClubB(id):false;
+  const esC=(typeof esClubC==="function")?esClubC(id):false;
+  const esArg=(typeof esClubArg==="function")?esClubArg(id):false;
+  let anio=sel.anio;
+  if(sel.tipo==="gloria"){
+    const ob=(typeof baseEra==="function")?baseEra(sel.anio):(sel.anio>=2010?2026:1991);
+    if(typeof datosEra==="function" && !(datosEra(ob).info||{})[id]) anio=2026;
+  }
+  const extra=sel.tipo==="gloria"?{epoca:sel.ep}:(sel.base===2026&&corte?{corte:true}:null);
+  let extra2=extra;
+  if(esB||sel.base==="2026b") extra2=Object.assign(extra||{},{categoria:"B"});
+  if(esC||sel.base==="2026c") extra2=Object.assign(extra||{},{categoria:"C"});
+  if(esArg||sel.base==="arg2026") extra2=Object.assign(extra||{},{categoria:"ARG"});
+  if(sel.base===2006) extra2=Object.assign(extra2||extra||{},{categoria:"2006"});
+  if(sel.base===1925) extra2=Object.assign(extra2||extra||{},{categoria:"1925"});
+  return {id:id, anio:anio, modo:modo, extra:extra2};
+}
+function elegirEpoca(id){
+  /* 7.98 · 1991 solo si el club JUGÓ ese Nacional (Limache 2010 no entra). */
+  const jugo91=(typeof clubJugoNacional91==="function")&&clubJugoNacional91(id);
+  const solo2026=!jugo91 || (typeof CLUB_INFO==="undefined"||!CLUB_INFO[id]);
+  const esB=(typeof esClubB==="function")?esClubB(id):false;
+  const esC=(typeof esClubC==="function")?esClubC(id):false;
+  const esArg=(typeof esClubArg==="function")?esClubArg(id):false;
+  let modo="historico", corte=false;
+  const glorias=(typeof epocasDe==="function")?epocasDe(id):[];
+  /* 7.10 · UN solo selector de "cuándo empezar": épocas base + glorias unificadas,
+     sin dos selectores peleando (arregla el bug de perder continuidad al elegir gloria). */
+  const puntos=puntosDeInicio(id);
   let sel=puntos[0];
   function datosPunto(pt){
     const D=datosEra(pt.base);
@@ -596,20 +633,8 @@ function elegirEpoca(id){
           /* 7.13 · solo se redirige la era a 2026 si el club NO existe en la era
              de su año histórico (ej: Palestino 1978 → liga 91). La U 2011 y demás
              quedan igual. El año-etiqueta histórico viaja aparte en la época. */
-          let anio=sel.anio;
-          if(sel.tipo==="gloria"){
-            const ob=(typeof baseEra==="function")?baseEra(sel.anio):(sel.anio>=2010?2026:1991);
-            if(typeof datosEra==="function" && !(datosEra(ob).info||{})[id]) anio=2026;
-          }
-          const extra=sel.tipo==="gloria"?{epoca:sel.ep}
-            :(sel.base===2026&&corte?{corte:true}:null);
-          let extra2=extra;
-          if(esB||sel.base==="2026b") extra2=Object.assign(extra||{},{categoria:"B"});
-          if(esC||sel.base==="2026c") extra2=Object.assign(extra||{},{categoria:"C"});
-          if(esArg||sel.base==="arg2026") extra2=Object.assign(extra||{},{categoria:"ARG"});
-          if(sel.base===2006) extra2=Object.assign(extra2||extra||{},{categoria:"2006"});
-          if(sel.base===1925) extra2=Object.assign(extra2||extra||{},{categoria:"1925"});
-          nuevaPartida(id, anio, modo, extra2);
+          const ai=argsInicio(id, sel, modo, corte), anio=ai.anio;
+          nuevaPartida(ai.id, ai.anio, ai.modo, ai.extra);
           if(!E || !E.club) throw new Error("nuevaPartida no dejó estado E");
           cerrarModal(); SEC="escritorio"; render();
           aviso(sel.tipo==="gloria"?("Reviviste: "+sel.ep.etq):("Empieza la temporada "+anio));

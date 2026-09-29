@@ -34,3 +34,22 @@ Editá `test/pruebas_core.js`: usá `ok(cond, "nombre")` para un chequeo y
 stack si falla). Mantené cada prueba autónoma (arrancá con `nuevaPartida(...)`).
 
 > Recomendado: correr `bash test/correr.sh` antes de cada push.
+
+## Banco por equipo (`test/banco.sh`, 7.9110)
+```bash
+bash test/banco.sh                 # todos los clubes elegibles × cada época de inicio × modo, 1 temporada
+TEMPS=3 bash test/banco.sh         # 3 temporadas seguidas por partida (barrido largo, ~1 min)
+bash test/banco.sh CC,UCH RIV      # solo esos (cada argumento = un navegador)
+VERBOSO=1 bash test/banco.sh COQ   # muestra también las que pasan (directorio, caja, deuda por temporada)
+```
+Arranca cada partida por el mismo camino que el botón "Empezar" (`argsInicio`), revisa el arranque, juega la(s)
+temporada(s) y revisa cierre, archivo, fixture y año siguiente. Es LA prueba para "agregué un club, ¿funciona?".
+También mide cuántos DT echan en la primera temporada (tope 25 %: más que eso es un bug de balance).
+Todo vive en `js/dev-banco.js` (`bancoUno`, `validarDatosClub`), así el doctor lo usa sobre la partida real.
+
+## Partidas viejas (`test/saves.sh`, 7.9110)
+Los saves de `test/saves/*.json.gz` se hicieron corriendo de verdad las versiones 7.9003, 7.9053 y 7.9090 (Colo-Colo
+1991, la U 2026, Trasandino en Segunda, River en Argentina, 9 fechas jugadas). Tienen que cargar, pintar las 13
+secciones y terminar la temporada en la versión actual. Para agregar una versión: `git worktree add` de ese commit,
+inyectar un script que haga `nuevaPartida` + `avanzarRapido` y vuelque `E` en JSON, y guardarlo como
+`{v, saves:{clave:E}}` en gzip (ver PATCHES 7.9110).

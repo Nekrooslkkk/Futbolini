@@ -57,7 +57,7 @@ No es opcional ni hay que preguntarlo. Concretamente:
 - `ChatDeTrabajIA.md` — **canal único** de trabajo entre las IA (antes `GROK_CAZA.md`). Toda tanda
   deja su nota al final. No se crean archivos de coordinación nuevos.
 - `IDEAS.md` — wishlist del usuario: pendientes por hacer. Trabajá de acá cuando te digan "seguí con IDEAS".
-- `GUIA_HUMANO.md` — lo que hace el humano (imágenes, textos, limpieza L1, cómo pedirle a Grok). Si cierras
+- `GUIA_HUMANO.md` — lo que hace el humano (imágenes, textos, cómo pedirle a Grok). Si cierras
   algo de ahí o cambian líneas/archivos que cita, actualízala.
 
 ## Cómo probar (protocolo)
@@ -67,8 +67,11 @@ No es opcional ni hay que preguntarlo. Concretamente:
    para verificar cambios, usá un puerto nuevo.
 4. **Doctor antes de subir:** `bash test/doctor.sh` (doctor completo en 3 partidas aisladas; cada falla
    dice archivo:línea). Acepta partidas: `bash test/doctor.sh RIV,2026 UC,1991`.
-5. Commit con mensaje descriptivo + una línea en `PATCHES.md`. (git = el guardado permanente.)
-6. **Al subir `VERSION` (js/util.js), cambiá TODOS los `?v=` de `index.html` a la misma versión**
+5. **Banco por equipo y partidas viejas** (7.9110): `bash test/banco.sh` (todos los clubes × épocas × modos, una
+   temporada; `TEMPS=3` para el barrido largo) y `bash test/saves.sh` (saves hechos con versiones viejas tienen que
+   cargar y seguir). Si agregas un club, el banco es la prueba de que funciona.
+6. Commit con mensaje descriptivo + una línea en `PATCHES.md`. (git = el guardado permanente.)
+7. **Al subir `VERSION` (js/util.js), cambiá TODOS los `?v=` de `index.html` a la misma versión**
    (`sed -i 's/?v=VIEJA/?v=NUEVA/g' index.html`). Si no, el navegador y el service worker sirven
    JS viejo. El doctor `offline_listo` y la suite dev fallan si no calzan.
 

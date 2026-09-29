@@ -1,4 +1,4 @@
-# CHECKLIST 8.00 — el camino (actualizado 28 sep 2026, 7.9092)
+# CHECKLIST 8.00 — el camino (actualizado 29 sep 2026, 7.9110)
 
 > **Decisión del autor (28 sep 2026):** primero se termina lo que falta ("all that shit"), después se pule y se
 > pule hasta dejarlo piola, y ESO es la **8.00**. De ahí en adelante (8.01, 8.02…) es pulir y agregar cosas
@@ -28,7 +28,7 @@ Sistemas que el autor pidió y todavía no existen o están a medias.
 
 ## FASE B · Pulir hasta dejarlo piola (7.95xx → 7.99xx)
 Nada nuevo: solo que lo que hay se sienta terminado.
-- [ ] Limpieza L1: borrar las 280 líneas muertas (probado que queda verde; ver GUIA_HUMANO.md)
+- [x] Limpieza L1: borradas las 280 líneas muertas (7.9110)
 - [x] Voseo fuera de personajes argentinos → 0 en datos y pantallas; doctor `sin_voseo` lo vigila (7.9096)
 - [ ] Barra superior: 7 tarjetas es mucho → jerarquía (lo importante grande, el resto en un menú)
 - [ ] Sonidos cortos CC0 (clic, aviso, gol, pito) con interruptor y respeto a Animaciones OFF
@@ -40,10 +40,14 @@ Nada nuevo: solo que lo que hay se sienta terminado.
 - [x] Emulación de Android barato completa (Moto G4, CPU 4×, 3G lento): segunda apertura 0,9 s, sin internet 0,7 s,
       partido 6/240 cuadros lentos (7.9107)
 - [ ] Probar en un Android real barato (la emulación no reemplaza al teléfono) — humano
-- [ ] Un barrido de 3 temporadas completas con 10 clubes distintos, con el doctor en cada cierre
+- [x] Barrido largo: **todos** los clubes elegibles × cada época × modo, 3 temporadas seguidas (765 temporadas), con
+      revisión de arranque, cierre, archivo y fixture en cada año → `TEMPS=3 bash test/banco.sh` (7.9110)
+- [x] Partidas guardadas con 7.9003 / 7.9053 / 7.9090 cargan y siguen → `bash test/saves.sh` (7.9110)
+- [x] Validador de datos para clubes nuevos: doctor `datos_clubes` (7.9110)
 
 ## LAS 4 PUERTAS DE LA 8.00 (todas abiertas = se sube)
-1. **Doctor sano** en `bash test/doctor.sh` + 5 partidas más (una por época y división) y las dos suites en verde.
+1. **Doctor sano** en `bash test/doctor.sh` + 5 partidas más (una por época y división), las dos suites, el banco
+   (`TEMPS=3 bash test/banco.sh`) y las partidas viejas (`bash test/saves.sh`) en verde.
 2. **Cero deuda conocida:** FASE A completa, `DEUDA=""` en `test/correr_dev.sh`, cero voseo fuera de lugar.
 3. **Rinde en un celu barato:** con la CPU 6× más lenta (Android de ~4 años), avanzar semana < 400 ms, ninguna
    sección > 400 ms y el partido en vivo con < 5 % de cuadros lentos. Se mide con `devRendimiento()`.

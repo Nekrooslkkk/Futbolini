@@ -52,6 +52,14 @@ function _arranqueSoltarUna(){
    castiga el riesgo, cuida la caja a la escala del club y valora moral, hinchada y reputación. */
 /* valor esperado: efectos directos de la opción + desenlaces (bien/mitad/mal) pesados por su dificultad */
 function _ayudanteSuma(dst,src,f){ if(!src) return; Object.keys(src).forEach(k=>{ const v=Number(src[k]); if(isFinite(v)) dst[k]=(dst[k]||0)+v*f; }); }
+/* 7.9110 · el peso de un grupo sube cuando está enojado: con el directorio en −60 no se le quita más apoyo por
+   un +12 de camarín (el banco por equipo mostró 142 de 255 partidas despedidas en la primera temporada, la mitad
+   por decisiones delegadas que restaban directorio de a −8 cuando ya estaba en rojo). */
+function pesoGrupoAyudante(k,est){
+  const base=(k==="camarin"||k==="directorio")?0.22:0.12;
+  const g=est&&est.grupos&&est.grupos[k], a=g?Number(g.aprob)||0:0;
+  return base*(1+Math.max(0,20-a)/30);
+}
 function puntajeAyudante(op,est){
   if(!op) return -1e9;
   const dif=Number(op.dif)||40;
@@ -67,7 +75,7 @@ function puntajeAyudante(op,est){
   s-=Math.max(0,num(ef.deuda))/(35*esc);   /* la deuda pesa más que la plata que entra: un crédito no es un regalo */
   ["moral","hinchada","prestigio","plantel","cantera","socios","estadio"].forEach(k=>{ s+=num(ef[k])*0.35; });
   Object.keys(rep).forEach(k=>{ s+=num(rep[k])*(k==="dureza"?0.05:0.25); });
-  Object.keys(gr).forEach(k=>{ s+=num(gr[k])*(k==="camarin"||k==="directorio"?0.22:0.12); });   /* camarín y directorio: paro y despido */
+  Object.keys(gr).forEach(k=>{ s+=num(gr[k])*pesoGrupoAyudante(k,est||E); });   /* camarín y directorio: paro y despido */
   if(op.doping) s-=50;
   return s;
 }

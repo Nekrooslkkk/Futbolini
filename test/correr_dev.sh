@@ -8,7 +8,7 @@ for f in js/dev-*.js; do node --check "$f"; done
 # 7.9082 · funciones declaradas dos veces en js/: la copia del archivo que carga ANTES es código muerto
 # (la del que carga después la pisa). DEUDA = las que ya se sabe que sobran (ver GUIA_HUMANO.md, tarea L1).
 # Si borras una copia muerta, sácala de DEUDA. Si aparece una duplicada nueva, esto falla.
-DEUDA=" _animBola _arcoMira _arcoPunto _arqDestino _figPersona htmlArcoVivo momentoTrivia triviaMate "
+DEUDA=" "   # 7.9110: las 8 duplicadas se borraron (L1 cerrada). Tiene que quedar vacía.
 echo "· funciones duplicadas en js/"
 DUP=$(grep -ho "^function [A-Za-z_0-9]*" js/*.js | awk '{print $2}' | sort | uniq -d)
 NUEVAS=""; for f in $DUP; do case "$DEUDA" in *" $f "*) ;; *) NUEVAS="$NUEVAS $f";; esac; done

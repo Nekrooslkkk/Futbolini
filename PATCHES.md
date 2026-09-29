@@ -4815,3 +4815,44 @@ legal y verificable: Wikimedia Commons con licencia libre.
   Un test del núcleo pedía que la Segunda fuera solo SVG: ahora acepta archivo local (svg/png/jpg).
 - **Estado:** doctor sano (4 partidas + celular, 96 chequeos) · dev 593/593 · core 1185/1185.
 
+
+### 7.9110 — Banco de pruebas por equipo: cada club, cada época, 3 temporadas · y los 5 bugs que destapó
+Camino a la 8.00 (pedido del autor: "pulir lo que hay y después solo añadir equipos y probar que cada uno funcione,
+histórico o normal"). Archivos: `js/dev-banco.js` (nuevo), `test/banco.sh`+`banco.js`, `test/saves.sh`+`saves.js`+
+`test/saves/*.json.gz` (nuevos), `js/ui.js`, `js/carrera.js`, `js/motor.js`, `js/data-liga.js`, `js/arranque-justo.js`,
+`js/partido.js`, `js/ui-partido.js`.
+- **Banco por equipo:** `bash test/banco.sh` juega una temporada con TODOS los clubes elegibles × cada época de inicio
+  (base y glorias) × modo (255 partidas, 16 s en 6 procesos). `TEMPS=3` encadena 3 años (765 temporadas). Arranca por el
+  mismo camino del botón Empezar: se extrajeron `clubesElegibles()`, `puntosDeInicio(id)` y `argsInicio(...)` de
+  `ui.js`. Revisa plantel ≥18 con arquero, tabla, liga, fixture, calendario, caja sin NaN, archivo sin descuadres y el año
+  siguiente. Mide los despidos en la primera temporada (tope 25 %).
+- **Bug 1 · el directorio echaba a medio banco en la primera temporada** (142 de 255, incluido Racing saliendo 1°). Dos
+  causas medidas con una sonda de `aprob`: (a) el ayudante que decide al simular pesaba igual al directorio en +50 que en
+  −60 y seguía aceptando "+12 camarín / −8 directorio" (Mejorarle el contrato, Echarlo y limpiar la interna…); ahora
+  `pesoGrupoAyudante()` sube el peso de un grupo cuando baja de 20. (b) Perder restaba −3 y ganar sumaba +2: un equipo de
+  media tabla se hundía solo por serlo; ahora −2/+2. Resultado: 24–30 de 255 (~10 %), todos abajo y con mandato fallido.
+- **Bug 2 · Argentina y 2006 sin Clausura desde el 2º año.** La fase (`argFase`/`fase2006`) y la tabla del Apertura
+  sobrevivían al año nuevo: 14 de 28 fechas en Argentina y 18 de 36 en 2006, archivo descuadrado. `nuevoAnio` las
+  reinicia antes de armar el calendario.
+- **Bug 3 · fixture real con clubes que ya no están.** En 2026 el calendario usa cruces del fixture oficial; si la
+  simulación bajó a Limache y subió a Cobreloa, Limache seguía apareciendo, alguien quedaba sin partido o jugaba dos
+  veces y tu club perdía fechas (27 de 30). `emparejarFecha` usa un cruce oficial solo si los dos siguen en la liga, y
+  `construirCalendario` descarta el fixture real de tu club si un rival ya no está.
+- **Bug 4 · cambiar de club te cambiaba la vida.** `aceptarClub` rehacía la partida: el DT rejuvenecía, perdía pareja,
+  hijos, bolsillo, logros y la sombra (cambiar de club lavaba el pasado), y la partida perdía su ranura. Ahora
+  `PERSONALES` (perfil, personal, logros, sombra, records, dinastía, config, ranura) viaja contigo.
+- **Bug 5 · partidas viejas con un club dos veces en la fecha** (save de 7.9003): `sanearJornadas()` repara al cargar las
+  fechas por jugar.
+- **Partidas viejas:** `bash test/saves.sh` carga saves hechos corriendo de verdad 7.9003, 7.9053 y 7.9090 (4 clubes
+  cada uno), pinta las 13 secciones y termina la temporada.
+- **Deuda L1 cerrada:** borradas las 8 funciones duplicadas (~280 líneas muertas en `ui-partido.js` y `partido.js`).
+  `DEUDA` queda vacía: cualquier duplicada nueva hace fallar `correr_dev.sh`.
+- **Dev (8 chequeos nuevos, todos verificados al revés):** `datos_clubes` (validador para clubes nuevos: ficha,
+  indicadores, caja, escudo, color por época), `ayudante_directorio`, `apertura_cada_anio`, `fixture_limpio`,
+  `cambio_club_vida`, `banco_tu_club` (tu club juega una temporada, pesado), `save_ida_vuelta` (tu partida recarga y
+  sigue, pesado), `banco_no_guarda` (el banco no pisa tu guardado: `nuevaPartida` guardaba). Funciones:
+  `bancoUno`, `validarDatosClub`, `probarSaveViejo`, `fixtureProblemas`.
+- **Medido y no tocado:** los clubes chicos terminan el año con 100–300 más de deuda (crédito que deja la caja en 120).
+  Es crudo pero coherente con Segunda/B; queda para cuando el autor diga qué le quedó corto de la economía.
+- **Estado:** doctor sano (4 partidas + celular, 104 chequeos) · dev 593/593 · core 1185/1185 · banco 255×3 sano ·
+  saves 12/12.

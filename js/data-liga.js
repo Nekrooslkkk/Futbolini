@@ -442,6 +442,11 @@ function emparejarFecha(anio,nFecha,clubId,rivalId){
     if(used[k]) return;
     used[k]=1; seen[a]=1; seen[b]=1; pares.push([a,b]);
   };
+  const pool=(typeof clubesLigaActual==="function"?clubesLigaActual()
+    :(typeof LIGA_ACT!=="undefined"?LIGA_ACT:[])).map(c=>c.id);
+  /* 7.9110 · un cruce oficial vale solo si los dos siguen en la liga: si la simulación bajó a Limache y subió a
+     Cobreloa, el fixture real 2026 metía a Limache igual y dejaba a un club sin partido (o con dos) esa fecha */
+  const enLiga=id=>!pool.length||pool.indexOf(id)>=0;
   if(clubId&&rivalId) add(clubId,rivalId);
   if(typeof FIXTURES_OFICIALES==="object"){
     Object.keys(FIXTURES_OFICIALES).forEach(cid=>{
@@ -449,16 +454,39 @@ function emparejarFecha(anio,nFecha,clubId,rivalId){
       if(!fx) return;
       const m=fx.find(x=>x.fecha===nFecha);
       if(!m) return;
+      if(!enLiga(cid)||!enLiga(m.rival)) return;
       add(m.local?cid:m.rival, m.local?m.rival:cid);
     });
   }
-  const pool=(typeof clubesLigaActual==="function"?clubesLigaActual()
-    :(typeof LIGA_ACT!=="undefined"?LIGA_ACT:[])).map(c=>c.id);
   const ids=pool.filter(id=>!seen[id]);
   const hostil=(typeof E!=="undefined"&&E&&E.flags&&E.flags.fixtureHostil)?7919:0;
   const rest=shuffleSeed(ids,(anio||0)*100+(nFecha||1)*17+3+hostil);
   for(let i=0;i+1<rest.length;i+=2) add(rest[i],rest[i+1]);
   return pares;
+}
+/* 7.9110 · partidas guardadas con versiones viejas (7.9003 medido) traen fechas con un club jugando dos veces:
+   la jornada quedó grabada en el save. Al cargar se reparan las fechas que faltan jugar: tu partido primero, se
+   quitan los cruces repetidos y los que quedaron sueltos se emparejan entre ellos (misma fecha, misma zona). */
+function sanearJornadas(){
+  if(typeof E==="undefined"||!E||!Array.isArray(E.calendario)) return 0;
+  let n=0;
+  E.calendario.forEach(p=>{
+    if(!p||p.tipo!=="liga"||p.jugado||!Array.isArray(p.jornada)) return;
+    const usado={}, nueva=[], sueltos=[];
+    const mio=p.rivalId?p.jornada.find(q=>q&&((q[0]===E.club&&q[1]===p.rivalId)||(q[1]===E.club&&q[0]===p.rivalId))):null;
+    const orden=mio?[mio].concat(p.jornada.filter(q=>q!==mio)):p.jornada.slice();
+    let roto=false;
+    orden.forEach(q=>{
+      if(!q||q[0]==="__BYE__"||q[1]==="__BYE__"||q[0]===q[1]){ nueva.push(q); return; }
+      if(usado[q[0]]||usado[q[1]]){ roto=true; [q[0],q[1]].forEach(id=>{ if(!usado[id]&&sueltos.indexOf(id)<0) sueltos.push(id); }); return; }
+      usado[q[0]]=usado[q[1]]=1; nueva.push(q);
+    });
+    if(!roto) return;
+    const libres=sueltos.filter(id=>!usado[id]);
+    for(let i=0;i+1<libres.length;i+=2) nueva.push([libres[i],libres[i+1]]);
+    p.jornada=nueva; n++;
+  });
+  return n;
 }
 function construirCalendario(clubId, anio, conCopa){
   const cal=[];
@@ -474,7 +502,13 @@ function construirCalendario(clubId, anio, conCopa){
       clima:"frio", real:INTERC91.real, apodo:"Tokio 1991", notaId:"INTERC-0"
     });
   }
-  const fxOf=(typeof FIXTURES_OFICIALES!=="undefined"&&FIXTURES_OFICIALES[clubId])?FIXTURES_OFICIALES[clubId][anio]:null;
+  let fxOf=(typeof FIXTURES_OFICIALES!=="undefined"&&FIXTURES_OFICIALES[clubId])?FIXTURES_OFICIALES[clubId][anio]:null;
+  /* 7.9110 · el fixture real de tu club sirve solo si todos sus rivales siguen en tu liga (si la simulación cambió
+     ascensos y descensos, se arma uno nuevo en vez de saltarse las fechas contra el que ya no está) */
+  if(fxOf){
+    const ligaIds=((typeof clubesLigaActual==="function")?clubesLigaActual():[]).map(c=>c.id);
+    if(ligaIds.length&&fxOf.some(p=>ligaIds.indexOf(p.rival)<0)) fxOf=null;
+  }
   if(fxOf){
     fxOf.forEach((p,i)=>{
       const riv=CLUB_POR_ID[p.rival]; if(!riv) return;

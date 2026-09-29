@@ -212,11 +212,19 @@ function ofertasDeTrabajo(){
   if(E.flags.cisma) return [];
   return posibles;
 }
+/* 7.9110 · lo que es TUYO y no del club: viaja contigo al cambiar de club. Antes el DT rejuvenecía (la edad salía
+   de nuevo), perdía pareja, hijos, patrimonio, logros y la sombra (cambiar de club lavaba el pasado), y la partida
+   perdía su ranura (quedaba duplicada en Mis partidas). */
+const PERSONALES=["perfil","personal","logros","sombra","records","dinastia","config","_slot","plopLikes","plopVerif"];
 function aceptarClub(id, anioForz){
   const prev=E.rep, carrera=E.carrera, titulos=E.titulos, cronica=E.cronica;
   const histo=E.historialAnual;
   const anio=anioForz||E.anio, modo=E.modo;
+  const tuyo={}; PERSONALES.forEach(k=>{ if(E[k]!==undefined) tuyo[k]=E[k]; });
   nuevaPartida(id,anio,modo);
+  Object.keys(tuyo).forEach(k=>{ E[k]=tuyo[k]; });
+  if(E.sombra){ E.sombra.ultEvento=-99; E.sombra.ultFavor=-99; }   /* se miden en fechas del año (idx), que vuelve a 0 */
+  if(typeof normalizarEstado==="function") normalizarEstado();
   E.rep=prev; E.carrera=carrera; E.carrera.club=id; E.carrera.desde=E.anio;
   E.carrera.enParo=false; E.carrera.malos=0;
   E.titulos=titulos; E.cronica=cronica;

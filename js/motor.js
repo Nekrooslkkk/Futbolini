@@ -454,6 +454,7 @@ function normalizarEstado(){
       if(E.dinastia.raiz)   E.dinastia.raiz=textoLimpio(E.dinastia.raiz,40);
     }
   }
+  if(typeof sanearJornadas==="function") sanearJornadas();   /* 7.9110 · saves viejos con un club dos veces en la fecha */
 }
 /* 7.9991 · bolsillo personal a prueba de saves viejos o a medias */
 function bolsilloDT(delta){
@@ -1632,6 +1633,11 @@ function nuevoAnio(){
   /* 8.00 · calendario de la DIVISIÓN VIGENTE: si subiste, Copa Chile; si llegaste a Primera, también Copa de la Liga. */
   if(typeof initLigaMod==="function") initLigaMod();
   if(typeof activarLiga==="function") activarLiga(E.eraBase);
+  /* 7.9110 · Apertura/Clausura (Argentina, 2006): cada año parte en Apertura. La fase y la tabla del Apertura
+     viejo sobrevivían al cambio de año, y desde el 2º año el Clausura no se sembraba nunca (14 de 28 fechas en
+     Argentina, 18 de 36 en 2006) y el archivo quedaba descuadrado. Lo cazó el banco por equipo con TEMPS=3. */
+  if(E.flags){ if(E.flags.argFase) E.flags.argFase="apertura"; if(E.flags.fase2006) E.flags.fase2006="apertura"; }
+  delete E.tablaApertura; delete E.temporadaApertura;
   E.calendario=construirCalendario(E.club,E.anio,E.anio===1992);
   reiniciarTabla();
   repartirDecisiones();

@@ -253,34 +253,10 @@ Listo cuando: 10 entradas pegables, sin repetir situaciones de las 5 que ya hay.
 4. Si algo se rompe: en la barra izquierda, Control de código fuente (el ícono de ramitas) → clic derecho en el
    archivo → "Descartar cambios". Vuelve a como estaba.
 
-### L1 · Borrar código muerto: 8 funciones copiadas dos veces
-Hay funciones escritas dos veces en dos archivos. El navegador usa **la del archivo que carga después**; la otra no
-se ejecuta nunca, pero confunde (alguien la "arregla" y no pasa nada). Borrar la copia vieja no cambia nada del juego.
-
-| Archivo con la copia muerta | Funciones a borrar (enteras) | Líneas aprox. (7.9082) |
-|---|---|---|
-| `js/ui-partido.js` | `_figPersona` | 1800–1846 |
-| `js/ui-partido.js` | `_animBola` | 1869–1887 |
-| `js/ui-partido.js` | `htmlArcoVivo` | 1903–2043 |
-| `js/ui-partido.js` | `_arcoPunto` | 2082–2092 |
-| `js/ui-partido.js` | `_arcoMira` | 2094–2107 |
-| `js/ui-partido.js` | `_arqDestino` | 2153–2174 |
-| `js/partido.js` | `triviaMate` | 1442–1448 |
-| `js/partido.js` | `momentoTrivia` | 1499–1517 |
-
-(Las copias que se quedan están en `js/arco3d.js` y `js/prensa-real.js`. **No toques esas.**)
-
-**Paso a paso, una función por vez, empezando por la de más abajo** (así no se corren los números de las demás):
-1. `Ctrl+G` y escribe el número de línea, o `Ctrl+F` y busca `function _arqDestino(`.
-2. A la izquierda del número de línea aparece una flechita `˅` al pasar el mouse: **haz clic y la función se pliega**
-   en una sola línea.
-3. Pon el cursor en esa línea plegada, `Ctrl+Shift+K` (borra la línea: se lleva la función entera) y guarda.
-4. Comprueba (sección 8). Si algo falla, "Descartar cambios" y me avisas cuál.
-5. **No borres** lo que está entre funciones (`const ARCO_PIELES=…`, `_arcoHash`…): lo usan otros.
-6. Al terminar, abre `test/correr_dev.sh` y en la línea `DEUDA=" … "` borra los nombres que limpiaste. (Si corres
-   ese script, te avisa con ✨ cuáles ya puedes sacar.)
-
-Rinde: 280 líneas menos y una fuente de confusión menos. (Claude lo probó en una copia: sin esas funciones todo sigue verde.)
+### L1 · ~~Borrar código muerto: 8 funciones copiadas dos veces~~ ✅ HECHO (7.9110)
+Lo hizo Claude en la 7.9110 (le pediste "soluciona eso"): se borraron las 8 copias muertas de `js/ui-partido.js` y
+`js/partido.js` (~280 líneas). Quedan las de `js/arco3d.js` y `js/prensa-real.js`. `test/correr_dev.sh` ahora falla si
+aparece cualquier función declarada dos veces, así que no vuelve a pasar.
 
 ### L2 · Textos
 Todas las tareas de la sección 4 (T1 a T5) son edición segura **si solo cambias lo que está entre comillas**.
@@ -309,7 +285,7 @@ Cuidado con:
    "Clave de desarrollador". Luego aprieta **🩺 Revisar todo**.
    - Tiene que decir **SANO**. Si dice ROTO, cada problema trae el archivo y la línea (📍) y cómo se arregla (🔧).
    - "Copiar informe" y pégamelo si no entiendes.
-4. Para cambios en el partido (L1): con el modo dev activo, juega un partido y aprieta **🧪 Probar** (aparece en el
+4. Para cambios en el partido: con el modo dev activo, juega un partido y aprieta **🧪 Probar** (aparece en el
    partido): fuerza un **penal** y un **tiro libre** y chútalos. Sigue hasta el entretiempo (ahí sale la trivia).
 
 **La prueba completa** (si tienes Git Bash o WSL; si no, yo la corro al integrar):

@@ -1441,13 +1441,6 @@ const TRIVIA_FUTBOL=[
  {q:"¿De qué región es el clásico penquista (Concepción)?",op:["Biobío","Valparaíso","Coquimbo"],sol:0},
  {q:"Un tiro desde la esquina se llama…",op:["Penal","Córner","Saque de meta"],sol:1}
 ];
-function triviaMate(){
-  const a=ri(3,12), b=ri(2,9), op=elige(["+","−","×"]);
-  const r=op==="+"?a+b:(op==="−"?a-b:a*b);
-  const set=new Set([r]); while(set.size<3){ set.add(r+ri(-4,4)); }
-  const ops=[...set].sort(()=>Math.random()-0.5);
-  return {q:"Concentración: ¿cuánto es "+a+" "+op+" "+b+"?",op:ops.map(String),sol:ops.indexOf(r)};
-}
 /* opciones numéricas alrededor del valor correcto (distintas, sin negativos) */
 function _opsNum(correcto, spread){
   const set=new Set([correcto]); let g=0;
@@ -1498,25 +1491,6 @@ function triviaProc(P){
   return cand.length?elige(cand):null;
 }
 /* elige una trivia evitando las ya vistas en la carrera (no se repite semana a semana ni entre temporadas) */
-function momentoTrivia(P){
-  if(!Array.isArray(E.triviaVistas)) E.triviaVistas=[];
-  let base=null;
-  for(let intento=0;intento<7 && !base;intento++){
-    const r=Math.random();
-    const b=(r<0.42)?triviaProc(P):(r<0.72?triviaMate():elige(TRIVIA_FUTBOL));
-    if(!b) continue;
-    if(intento<6 && E.triviaVistas.indexOf(b.q)>=0) continue;   /* ya la vio → probar otra */
-    base=b;
-  }
-  if(!base) base=triviaMate();
-  E.triviaVistas.push(base.q);
-  if(E.triviaVistas.length>26) E.triviaVistas.shift();   /* cubre más de una temporada de trivias */
-  const factor=clamp(0.7+((E.ind&&E.ind.plantel)||60)/100,0.7,1.7);
-  return {tipo:"trivia", t:"Test rápido de pizarra 🧮", factor:factor,
-    d:"Minuto "+P.min+". Les tiras una pregunta para sacarlos del nervio. Si aciertan, se sueltan; si no, se traban.",
-    q:base.q, sol:base.sol,
-    op:base.op.map((t,i)=>({t:t, ok:i===base.sol}))};
-}
 /* ¿hay un momento crítico donde tiene sentido ofrecer el 'preparado especial'? */
 function momentoCritico(P){
   const [yo,otro]=miMarcador(P);
@@ -1688,7 +1662,7 @@ function terminarPartido(P){
   const ganoPens=part.penales && part.penales.gano;
   const perdioPens=part.penales && !part.penales.gano;
   if(yo>otro || ganoPens){ aplicarEfectos({moral:3,hinchada:2}); aplicarGrupos({hinchada:4,camarin:3,directorio:2,tecnico:2}); }
-  else if(yo<otro || perdioPens){ aplicarEfectos({moral:-3,hinchada:-2}); aplicarGrupos({hinchada:-4,camarin:-2,directorio:-3,prensa:-2}); }
+  else if(yo<otro || perdioPens){ aplicarEfectos({moral:-3,hinchada:-2}); aplicarGrupos({hinchada:-4,camarin:-2,directorio:-2,prensa:-2}); }   /* 7.9110 · −2 como el +2 de ganar: un equipo de media tabla no se hunde solo por ser de media tabla */
   else { aplicarGrupos({hinchada:-1}); }
   /* racha para el efecto mariposa: ganar corta la cuenta y rehabilita el aviso */
   if(E.temporada.sinGanar===undefined) E.temporada.sinGanar=0;
