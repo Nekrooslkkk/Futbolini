@@ -1,4 +1,45 @@
-# CHECKLIST 8.00 — el camino (actualizado 29 sep 2026, 7.9110)
+# CHECKLIST 8.00 — el camino (actualizado 29 sep 2026, 7.9113)
+
+## ROAD TO 8.00 · revisión completa (29 sep 2026, Opus 5.5) — Opus · Grok · Sonnet · ChatGPT
+**Dónde estamos, sin maquillaje:** el motor ya no se cae. 255 arranques × 3 temporadas sin fallas, partidas de 7.9003
+cargan y siguen, 108+ chequeos del doctor en verde. Lo que falta para la 8.00 **no es arreglar**, es **terminar de
+sentirlo**: cinco cosas de FASE A a medias, la puerta del celu barato sin volver a medir desde la cancha nueva, y la
+puerta humana sin abrir. Ninguna IA puede abrir la puerta 4: esa es tuya.
+
+### Estado de las 4 puertas
+| Puerta | Estado | Qué falta |
+|---|---|---|
+| 1 · Doctor + suites + banco + saves | 🟢 abierta | mantenerla: cada tanda corre las 5 pruebas antes de subir |
+| 2 · Cero deuda | 🟡 5 ítems | negociación, camisetas, voz PLOP, textos 2–4, "economía quedó corta" |
+| 3 · Celu barato (CPU 6×) | 🟡 sin medir | se midió a 4× (7.9107); desde la cancha cenital y el 3D poblado hay que re-medir |
+| 4 · Humanos | 🔴 cerrada | tu temporada con un club chico + 2–3 amigos 30 min |
+
+### Qué pulir, en orden (y quién)
+1. **Merge y validación de lo de Sonnet 7.9112** (eventos de Vida, carteles del balón parado) → **Opus**. Está en la
+   rama `claude/preguntas-mundo-vivo-ion29g`, falta pasarlo a `main` con las 5 pruebas.
+2. **Temas:** insano con la barra de Jugar abajo (arreglado en 7.9113: `filter` animado en el body) → **Opus**. Después,
+   una pasada de contraste por sección en negro/claro/insano (lo nuevo: "Tu vida hoy", cancha, balón parado).
+3. **Puerta 3:** medir con CPU 6× partido en vivo, avanzar semana y cada sección; si algo pasa de 400 ms, cortarlo
+   → **Opus**.
+4. **Economía larga:** correr el banco a 10 temporadas en 20 clubes y mirar deriva de caja, deuda, planilla y
+   sueldos → **Opus** mide, **Grok** trae caja/deuda real de B y Segunda con fuente (G3), **tú** dices qué te
+   quedó corto (5 líneas de juego real, sin eso no se toca).
+5. **Negociación del mercado más viva** (último sistema a medias de FASE A) → **Opus** motor, **Sonnet** las voces del
+   representante y del club vendedor.
+6. **Barra superior** (7 tarjetas → 3 grandes + menú) y **tutorial de 5 pasos** → **Opus** la estructura, **Sonnet**
+   el texto del tutorial.
+7. **Contenido que da vida:** voz por club en PLOP (bloque 5) y prensa/decisiones (bloques 2–4) → **Sonnet**.
+   Camisetas reales (G1), reacción del área en el 3D (G2), fotos de estadio, sonidos CC0 → **Grok**.
+8. **Playtest de afuera antes que el tuyo:** **ChatGPT** (C1) juega como alguien nuevo y deja el informe; así tus
+   amigos no tropiezan con lo obvio.
+9. **Puerta 4** → **tú**. Android real barato, una temporada con un club de Segunda, y los amigos.
+
+### Reglas para que cuatro IA no se pisen
+- Cada una trabaja en su rama y **Opus mezcla a `main`** después de correr las 5 pruebas (doctor, núcleo, dev, banco,
+  saves). Nadie sube a `main` sin eso.
+- Motor (`motor.js`, `partido.js`, `cancha.js` simulación, economía): solo Opus o Grok con chequeo del doctor.
+- Texto: Sonnet. Datos con fuente: Grok. Mirada de afuera: ChatGPT. Nadie inventa frases de personas reales.
+- Todo encargo y toda nota van en `ChatDeTrabajIA.md`.
 
 > **Decisión del autor (28 sep 2026):** primero se termina lo que falta ("all that shit"), después se pule y se
 > pule hasta dejarlo piola, y ESO es la **8.00**. De ahí en adelante (8.01, 8.02…) es pulir y agregar cosas

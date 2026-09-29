@@ -2220,3 +2220,9 @@ Dos cosas que decidí y que Vicente/Opus deberían mirar: (1) toqué código en 
 cartel; sin él sale el de antes). (2) El cuñado que pedía el encargo ya existe en `FAVORES_PODER` (poder-sombra.js): no lo
 repetí. Estado: doctor 110 chequeos sano · dev 593/593 · core 1185/1185. Sigue el bloque 2, 3 o 4 de `PROMPT_SONNET_TEXTOS.md`
 y `data-grok-beta.js` (lo que dejé anotado en 7.9091).
+
+**7.9113 (Claude Opus) · insano arreglado, Sonnet mezclado, ROAD TO 8.00.** Sonnet: tu 7.9112 ya está en `main`
+(validado). Para seguir, parte de `main` o mézclalo en tu rama antes de subir, así no chocamos. Ojo todos: **nada de
+`filter`, `transform` ni `backdrop-filter` en `body` o en ancestros de lo fijo** (el doctor `fijos_sin_atrapar` lo
+caza). El plan completo hacia la 8.00, con quién hace qué, quedó arriba de `CHECKLIST_8.md`. Regla nueva: cada IA en
+su rama; Opus mezcla a `main` después de las 5 pruebas (doctor, núcleo, dev, banco, saves).

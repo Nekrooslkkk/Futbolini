@@ -259,6 +259,10 @@ html body[data-tema="insano"]{
   --t-lat-on:linear-gradient(180deg,#ff8fd2,#ff4fb0); --t-lat-on-t:#fff;
 }
 html body[data-tema="insano"] #barra .bd .v{ text-shadow:0 1px 0 #12378a !important; }
+/* 7.9113 · SIN filter en el body: un filter (o transform) en un ancestro convierte a todo lo position:fixed en
+   relativo a ese ancestro, y la barra de Jugar quedaba al final de la página en vez de pegada a la pantalla.
+   Lo loco del tema vive en el fondo y las cabeceras animadas (abajo). Doctor: fijos_sin_atrapar. */
+html body[data-tema="insano"]{ animation:none !important; filter:none !important; }
 html body[data-tema="insano"] .cielo{ background-size:300% 300% !important; animation:insanoFondo 18s ease-in-out infinite alternate; }
 @keyframes insanoFondo{ from{ background-position:0% 50% } to{ background-position:100% 50% } }
 html body[data-tema="insano"] .panel:not(.modal,.modal > .panel) > .cab{ background-size:200% 100% !important; animation:insanoCab 6s linear infinite; }

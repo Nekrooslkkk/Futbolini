@@ -4917,3 +4917,20 @@ Archivos: `js/cancha.js`, `js/ui-partido.js`, `js/interfaz-aero.js`, `js/arco-gl
   con poder, voseo y repetidos) cazó un "tenís" inyectado; `balon_parado_textos` (cada tipo × 6 situaciones varía y no repite,
   instrucción intacta) cazó un cartel de 34 caracteres.
 - **Estado:** doctor sano (4 partidas + celular, 110 chequeos) · dev 593/593 · core 1185/1185. `VERSION` sin tocar.
+
+### 7.9113 — Tema insano: la barra de Jugar vuelve a la pantalla · merge de Sonnet 7.9112 · ROAD TO 8.00
+Archivos: `css/temas7.css`, `js/dev-banco.js`, `CHECKLIST_8.md`, `ChatDeTrabajIA.md` (+ lo de Sonnet 7.9112).
+- **Insano, botón Jugar abajo:** el tema animaba `filter:hue-rotate` en el `body`. Un `filter`/`transform` en un
+  ancestro vuelve relativo a él todo lo `position:fixed`, así que la barra de Jugar (`#avanceGrande`) quedaba al final
+  de la página y no pegada a la pantalla. Se saca la animación del body; lo loco del tema sigue en el fondo y las
+  cabeceras animadas (7.9087).
+- **Dev:** `fijos_sin_atrapar` recorre los 4 temas y revisa que ningún ancestro de lo fijo (barra, dock, control del
+  partido) lleve filter/transform/backdrop-filter/will-change/contain. Al revés: con el filter del insano →
+  "#avanceGrande queda atrapado por body (filter: hue-rotate)".
+- **Merge de Sonnet 7.9112** (rama `claude/preguntas-mundo-vivo-ion29g`): 16 eventos de Vida que cruzan el poder,
+  8 dilemas de cita, 12 verdades, `introBalonParado()` y `CV_CARTELES`; doctor `vida_eventos` y `balon_parado_textos`.
+  Validado con las 5 pruebas.
+- **ROAD TO 8.00:** revisión completa arriba de `CHECKLIST_8.md` (estado de las 4 puertas, qué pulir en orden y quién).
+- **Medido:** despidos en la primera temporada 14 % (antes ~11 %); dentro del tope, a vigilar con los eventos nuevos.
+- **Estado:** doctor sano (4 partidas + celular, 111 chequeos) · dev 593/593 · core 1185/1185 · banco 255 sano ·
+  saves 12/12.
