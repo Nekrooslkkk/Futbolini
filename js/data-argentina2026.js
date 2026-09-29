@@ -326,13 +326,25 @@ if(typeof registrarLiga==="function"){
     };
     construirCalendario._arg76=true;
   }
+  _hookArgTardio();
+  if(typeof clubMapaTodos==="function"){
+    try{ if(typeof _mapaTodosCache!=="undefined") _mapaTodosCache=null; }catch(e){}
+  }
+})();
+
+/* 7.9108 · BUG: estos envoltorios iban dentro del IIFE de arriba, que corre cuando carga ESTE archivo (línea 108 de
+   index.html), pero terminarPartido nace en partido.js (línea 112): el typeof daba "undefined", el envoltorio no se
+   instalaba nunca y la liga argentina se jugaba sin Clausura (14 fechas y fin de temporada). Igual que _hookFase2006:
+   se intenta al cargar y otra vez cuando ya cargó todo. */
+function _hookArgTardio(){
   if(typeof resolverCopa==="function" && !resolverCopa._argCopa){
     const origR=resolverCopa;
     resolverCopa=function(part, yo, otro){
       if(part&&part.torneo==="Copa Argentina"){ resolverCopaArgentina(part, yo, otro); return; }
       return origR(part, yo, otro);
     };
-    resolverCopa._argCopa=true;
+    try{ Object.keys(origR).forEach(function(k){ if(!(k in resolverCopa)) resolverCopa[k]=origR[k]; }); }catch(e){}   /* hereda marcas (._uni, ._e06po…) */
+    resolverCopa._argCopa=true; resolverCopa._orig=origR;
   }
   if(typeof terminarPartido==="function" && !terminarPartido._argFase){
     const origT=terminarPartido;
@@ -342,9 +354,11 @@ if(typeof registrarLiga==="function"){
       try{ avanzarFaseArg(P&&P.part); }catch(e){}
       return res;
     };
-    terminarPartido._argFase=true;
+    try{ Object.keys(origT).forEach(function(k){ if(!(k in terminarPartido)) terminarPartido[k]=origT[k]; }); }catch(e){}   /* hereda marcas (._e06fase, ._fmt54…) */
+    terminarPartido._argFase=true; terminarPartido._orig=origT;
   }
-  if(typeof clubMapaTodos==="function"){
-    try{ if(typeof _mapaTodosCache!=="undefined") _mapaTodosCache=null; }catch(e){}
-  }
-})();
+  return typeof terminarPartido==="function" && !!terminarPartido._argFase;
+}
+_hookArgTardio();
+if(typeof document!=="undefined"&&document.readyState==="loading") document.addEventListener("DOMContentLoaded",_hookArgTardio);
+

@@ -2081,6 +2081,8 @@ devDoctorRegistrar({id:"partido_orden", area:"interfaz", n:"Partido: marcador, c
   if(!/mv-compacto/.test(t)) falta.push("falta el estilo de la pregunta compacta");
   if(!/overflow-anchor:none/.test(t)) falta.push("sin overflow-anchor:none el chat en vivo arrastra la página al fondo");
   if(typeof chatMostrarPistas==="function"&&/movil\|\|r\.top<0/.test(_docFuente(chatMostrarPistas))) falta.push("chatMostrarPistas vuelve a bajar la página al chat en el celu");
+  /* 7.9108 · el relato y el marcador dicen el resultado en el mismo orden (local primero) */
+  if(typeof marcadorTxt==="function"&&E){ var tx=marcadorTxt({part:{local:false,rivalNombre:"LocalX"},gl:2,gv:0}); if(tx.indexOf("(LocalX 2 - 0")!==0) falta.push("el relato pone el resultado al revés del marcador: «"+tx+"»"); }
   ["mostrarMomento","mostrarAccion"].forEach(function(n){ var f=window[n]; var ok=false; while(f){ if(f._pv){ ok=true; break; } f=f._orig; } if(!ok) falta.push(n+" no reubica la pregunta (se pisó el enganche)"); });
   return falta.length?_dmal(falta.length+" problema(s)",falta):_dok("pregunta compacta: bajo la cancha en celu, al lado en PC; la página no se va al chat");
 }});
@@ -2128,6 +2130,39 @@ devDoctorRegistrar({id:"escudos_todos", area:"contenido", n:"Todos los clubes ti
   if(typeof escudoHTML==="function"&&!escudoHTML("__club_que_no_existe__",18,"")) falta.push("un club desconocido se queda sin escudo (falta el generado)");
   var mv=(typeof _pintarPartidoCuerpo==="function")?_docFuente(_pintarPartidoCuerpo):""; if(!/eq-esc/.test(mv)) falta.push("el marcador del partido no muestra los escudos");
   return falta.length?_dmal(falta.length+" problema(s) · "+txt,falta):_dok(txt);
+}});
+/* 7.9108 · un envoltorio escrito en un archivo que carga ANTES que la función que envuelve no se instala nunca (el typeof
+   da "undefined" y se salta en silencio). Así la liga argentina se jugaba sin Clausura. Se revisa que estén todos. */
+/* se juega de verdad la última fecha de la primera fase y se mira si el torneo pasa a la siguiente */
+function _devUltimaFecha(club,anio,esFase){
+  if(nuevaPartida(club,anio,"historico")===false) return "no se pudo crear la partida";
+  E._bulkSim=true;
+  var fase1=E.calendario.filter(function(p){ return p.tipo==="liga"&&esFase(p); });
+  if(fase1.length<2) return "calendario sin primera fase ("+fase1.length+")";
+  var ult=fase1[fase1.length-1];
+  fase1.forEach(function(p){ if(p!==ult) p.jugado=true; });
+  E.idx=E.calendario.indexOf(ult);
+  var P=iniciarPartido(ult,"simular"); correrHasta(P,90); terminarPartido(P);
+  return null;
+}
+devDoctorRegistrar({id:"ganchos_instalados", area:"motor", pesado:true, n:"Los torneos pasan de fase (Argentina, 2006, Segunda)",
+  arreglo:"Si un archivo envuelve una función que nace en un archivo posterior, el envoltorio va en una función que se llama al cargar y otra vez en DOMContentLoaded (ver _hookArgTardio, _hookFase2006).", fn:function(){
+  if(typeof terminarPartido!=="function"||typeof iniciarPartido!=="function") return _dmal("no hay motor de partido");
+  var falta=[], det=[], snap=E?clonarPartida(E):null, gu=window.guardar, nt=window.notificar, av=window.aviso;
+  window.guardar=function(){}; window.notificar=function(){}; window.aviso=function(){};
+  try{
+    var casos=[
+      ["Argentina","BOC",2026,function(p){ return p.fase==="apertura"||!p.fase; },function(){ return E.flags&&E.flags.argFase==="clausura"; },"se juega solo el Apertura (no arranca el Clausura)"],
+      ["2006","CC",2006,function(p){ return p.fase==="apertura"||!p.fase; },function(){ return E.flags&&E.flags.fase2006&&E.flags.fase2006!=="apertura"; },"después del Apertura no vienen los playoffs"],
+      ["Segunda","TRA",2026,function(p){ return p.fase==="zonal"||!p.fase; },function(){ return E.flags&&!!E.flags.segundaFase&&E.flags.segundaFase!=="zonal"; },"después de la zona no vienen las liguillas"]
+    ];
+    casos.forEach(function(c){
+      try{ var err=_devUltimaFecha(c[1],c[2],c[3]); if(err){ det.push(c[0]+": "+err); return; }
+        if(!c[4]()) falta.push(c[0]+": "+c[5]); else det.push(c[0]+" ok"); }
+      catch(e){ falta.push(c[0]+": explotó "+e.message); }
+    });
+  } finally { window.guardar=gu; window.notificar=nt; window.aviso=av; if(snap) restaurarPartida(snap); }
+  return falta.length?_dmal(falta.length+" torneo(s) trabados",falta.concat(det)):_dok(det.join(" · "));
 }});
 devDoctorRegistrar({id:"rendimiento", area:"interfaz", n:"Rinde en un celu barato: guardado agrupado, cinta sin scrollIntoView, secciones medidas", pesado:true,
   arreglo:"js/rendimiento.js (guardarAgrupado/guardarAhora) y js/ui.js pintarDock (scrollLeft solo al cambiar de sección).", fn:function(){

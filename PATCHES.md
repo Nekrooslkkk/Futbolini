@@ -4782,3 +4782,19 @@ vivo con 15/240 cuadros lentos y un tirón de 1,6 s.
   escudos) y `rendimiento` vigila que la cancha no vuelva a medir la página por cuadro.
 - **Estado:** doctor sano (4 partidas + celular, 95 chequeos) · dev 593/593 · core 1185/1185.
 
+### 7.9108 — La liga argentina se jugaba sin Clausura · el relato dice el resultado como el marcador
+- **Bug grave (data-argentina2026.js):** los envoltorios de `terminarPartido` y `resolverCopa` estaban en un archivo que
+  carga en la línea 108 de index.html, pero `terminarPartido` nace en partido.js (línea 112): el `typeof` daba
+  "undefined", el envoltorio se saltaba en silencio y **la temporada argentina terminaba después del Apertura** (14
+  fechas). Ahora van en `_hookArgTardio()`, que se llama al cargar y otra vez en DOMContentLoaded (como ya hacía 2006 con
+  `_hookFase2006`), y heredan las marcas de los envoltorios de abajo. Temporada completa de Boca: 14 → 28 fechas.
+- **Archivo de temporadas con Apertura + Clausura:** al arrancar el Clausura la tabla vuelve a cero y el archivo
+  restaba goles contra la tabla del Apertura (goles negativos, 15 descuadres). Ahora la base vuelve a cero con la tabla,
+  y el cierre compara contra la tabla anual (Apertura + Clausura). 0 descuadres.
+- **Relato:** `marcadorTxt` ponía tu club primero aunque jugaras de visita ("Colo-Colo 0 - 2 Limache" con el marcador en
+  "Limache 2 - 0 Colo-Colo"). Ahora el local primero, como en la tele.
+- **Dev:** nuevo `ganchos_instalados` (de comportamiento, no de marcas): juega de verdad la última fecha de la primera fase
+  de Argentina, 2006 y la Segunda y verifica que el torneo pase a la siguiente. Al revés: sin el gancho tardío →
+  "Argentina: se juega solo el Apertura". `partido_orden` vigila el orden del resultado en el relato.
+- **Estado:** doctor sano (4 partidas + celular, 96 chequeos) · dev 593/593 · core 1185/1185.
+

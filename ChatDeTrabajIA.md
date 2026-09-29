@@ -1985,3 +1985,24 @@ club de Primera y B). Después, los bloques 2–4 que siguen pendientes.
 **7.9103 (Claude Opus) · scroll del celu.** Ojo todos: en el celular el scroll está dentro de `.so-cuerpo` (la ventana
 Aero), no en `window`. Si algo necesita "volver a donde estabas", es ese contenedor. `render` ya lo cuida.
 
+**7.9105–7.9108 (Claude Opus) · partido ordenado, arranque justo, celu barato, escudos.** Resumen en PATCHES. Ojo con:
+`partidoDosColumnas` manda en dónde va la pregunta del partido (bajo la cancha en celu, arriba a la derecha en PC) y
+`css-partido-orden` en su estilo: no agreguen otra capa de CSS para `.momento-vivo`. El service worker ahora es caché
+primero para lo versionado: **si cambian un archivo, suban VERSION y los `?v=`** (si no, el celu sigue con el viejo).
+`marcadorTxt` pone al local primero. `escudoSVG` nunca devuelve vacío.
+
+**Encargo para Grok (tanda 7.911x) — datos y detalle, no toquen cámaras, resolvers ni el motor:**
+1. **Escudos que faltan con licencia libre.** El doctor `escudos_todos` dice cuántos clubes van con escudo libre de
+   Commons, estilizado o generado. Para los estilizados/generados, busca en Wikimedia Commons un escudo con licencia
+   libre (PD-textlogo, CC0, CC BY, CC BY-SA). Uno por uno: archivo en `img/clubes/{ID}.png` (miniatura de 200 px),
+   entrada en `ESCUDOS_FOTOS` (`tipo:"commons"`) y línea en `img/FUENTES.md` con autor y licencia. Si no hay libre, se
+   queda el estilizado: **nunca** un logo con marca sin licencia. Los 20 rivales de CONMEBOL van con clave `"n:Nombre"`.
+2. **Colores reales de los clubes de 1925** (Primero de Mayo, Eleuterio Ramírez, Gold Cross, Morning Star, Barcelona,
+   Santiago National, Nacional, Loma Blanca, English) y de Cobresal: hoy van en gris neutro porque no los tenemos con
+   fuente. Si los encuentras documentados, agrégalos a `ESCUDOS_CLUB` con la fuente en un comentario.
+3. **Extranjeros de Colo-Colo y la U 2026** (7 marcados, cupo 6): revisar con fuente quién está nacionalizado.
+4. **Fotos de estadio que faltan** (15 Chile + 30 Argentina), Commons, misma regla de licencia.
+5. **Arquero del tiro libre** detrás del palo que la barrera no tapa (detalle de `arco3d.js`, solo posición).
+
+**Encargo para Sonnet:** bloque 5 de `PROMPT_SONNET_TEXTOS.md` (voz por club en PLOP), después bloques 2–4.
+

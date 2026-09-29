@@ -784,9 +784,11 @@ function anotaRival(P,min){
   linea(P,min,"Gol de "+P.part.rivalNombre+": "+j.n+". "+marcadorTxt(P),"gol");
   const m=miMarcador(P); if(m[1]-m[0]>=2) P.abajo2=true;   /* 6.25 · para el logro de remontada */
 }
+/* 7.9108 · como en la tele y en el marcador de arriba: el LOCAL primero (antes tu club iba primero aunque jugaras de
+   visita, y el relato decía "Colo-Colo 0 - 2 Limache" con el marcador en "Limache 2 - 0 Colo-Colo") */
 function marcadorTxt(P){
-  const yo=P.part.local?P.gl:P.gv, otro=P.part.local?P.gv:P.gl;
-  return "("+E.clubNombre+" "+yo+" - "+otro+" "+P.part.rivalNombre+")";
+  const loc=P.part.local?E.clubNombre:P.part.rivalNombre, vis=P.part.local?P.part.rivalNombre:E.clubNombre;
+  return "("+loc+" "+(P.gl|0)+" - "+(P.gv|0)+" "+vis+")";
 }
 function miMarcador(P){ return P.part.local?[P.gl,P.gv]:[P.gv,P.gl]; }
 function diffMarcador(P){ const m=miMarcador(P); return (m[0]||0)-(m[1]||0); }

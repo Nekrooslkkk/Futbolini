@@ -60,7 +60,9 @@ function archivoAnotarFecha(part){
   pares.forEach(([a,b])=>{
     if(act.ids.indexOf(a)<0||act.ids.indexOf(b)<0) return;   /* solo tu liga / tu zona */
     const ta=E.tabla[a], tb=E.tabla[b]; if(!ta||!tb) return;
-    const pa=act.prev[a]||[0,0], pb=act.prev[b]||[0,0];
+    /* 7.9108 · si la tabla volvió a cero (arranca el Clausura), la base es cero y no lo que traía del Apertura */
+    const base=(id,t)=>{ const q=act.prev[id]||[0,0]; return (t.pj<q[0])?[0,0]:q; };
+    const pa=base(a,ta), pb=base(b,tb);
     if(ta.pj===pa[0]||tb.pj===pb[0]) return;          /* ese par no se jugó en esta fecha */
     plano.push(_archIdx(act,a),_archIdx(act,b),ta.gf-pa[1],tb.gf-pb[1]);
   });
@@ -69,13 +71,28 @@ function archivoAnotarFecha(part){
   act.fechas.push({f:part.fecha||act.fechas.length+1, p:plano});
   return true;
 }
+/* la tabla real del año: si hubo Apertura aparte, se suma al Clausura */
+function archivoTablaReal(){
+  const t=E.tabla||{}, ap=E.tablaApertura;
+  if(!ap||typeof ap!=="object"||!Object.keys(ap).length) return t;
+  const out={};
+  new Set(Object.keys(t).concat(Object.keys(ap))).forEach(id=>{
+    const a=ap[id]||{}, b=t[id]||{}, r={};
+    ["pj","pg","pe","pp","gf","gc","pts"].forEach(k=>{ r[k]=(a[k]||0)+(b[k]||0); });
+    out[id]=r;
+  });
+  return out;
+}
 /* al cerrar el año: la temporada pasa al archivo con su tabla final */
 function archivoCerrar(){
   const A=_archE(); if(!A||!A.actual||!A.actual.fechas.length) return null;
   const act=A.actual;
   const fin=tablaDeArchivo(act,act.fechas.length);
   /* control: la tabla reconstruida tiene que ser la real (si no, el registro se perdió una fecha) */
-  const descuadres=act.desde?0:fin.filter(r=>{ const x=E.tabla&&E.tabla[r.id]; return !x||x.pts!==r.pts||x.gf!==r.gf||x.gc!==r.gc; }).length;
+  /* 7.9108 · Apertura + Clausura (Argentina, 2006): E.tabla es solo el Clausura; el archivo guarda el año entero,
+     así que se compara contra la tabla ANUAL (las dos sumadas) */
+  const real=archivoTablaReal();
+  const descuadres=act.desde?0:fin.filter(r=>{ const x=real[r.id]; return !x||x.pts!==r.pts||x.gf!==r.gf||x.gc!==r.gc; }).length;
   const mia=fin.findIndex(r=>r.id===act.club);
   const t={anio:act.anio, club:act.club, clubNombre:act.clubNombre, liga:act.liga, pv:act.pv, ids:act.ids, noms:act.noms,
     fechas:act.fechas, campeon:fin[0]?fin[0].id:null, desde:act.desde||null, descuadres:descuadres, tuPos:mia+1, n:fin.length,
