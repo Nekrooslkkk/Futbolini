@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-const VERSION="7.9116";
+const VERSION="7.9117";
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
 function el(tag,cls,html){const n=document.createElement(tag);if(cls)n.className=cls;if(html!=null)n.innerHTML=html;return n;}
@@ -38,6 +38,28 @@ function textoLimpio(s,max){
   s=String(s==null?"":s).replace(/<[^>]*>/g,"").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"");
   if(max) s=s.slice(0,max);
   return s.trim();
+}
+/* 7.9117 · limpieza GENERAL de una partida que viene de afuera (archivo compartido, nube, almacenamiento): cientos de
+   campos de texto terminan en innerHTML y cuidarlos de a uno no alcanza. En cada texto quedan solo <b>, <i>, <em>,
+   <strong> y <br> sin atributos (los usa el propio juego); cualquier otra etiqueta se va. Se borran las claves
+   __proto__/constructor/prototype (contaminarían prototipos al mezclar objetos) y la foto de perfil tiene que ser
+   una imagen data: (una URL externa rastrearía a quien abre la partida). Devuelve cuántos textos tocó. */
+const _SANEA_ETQ=/<(?!\/?(?:b|i|em|strong|br)\s*\/?>)[^>]*>/gi;
+function saneaProfundo(obj){
+  let n=0; const vistos=new Set();
+  (function rec(o,prof){
+    if(!o||typeof o!=="object"||prof>14||vistos.has(o)) return; vistos.add(o);
+    const claves=Array.isArray(o)?null:Object.keys(o);
+    if(claves) ["__proto__","constructor","prototype"].forEach(k=>{ if(Object.prototype.hasOwnProperty.call(o,k)){ delete o[k]; n++; } });
+    const lista=Array.isArray(o)?o.map((_,i)=>i):Object.keys(o);
+    for(const k of lista){
+      const v=o[k];
+      if(typeof v==="string"){ if(v.indexOf("<")>=0){ const w=v.replace(_SANEA_ETQ,""); if(w!==v){ o[k]=w; n++; } } }
+      else if(v&&typeof v==="object") rec(v,prof+1);
+    }
+  })(obj,0);
+  try{ const p=obj&&obj.perfil; if(p&&p.avatarImg!=null&&!/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(String(p.avatarImg))){ delete p.avatarImg; n++; } }catch(e){}
+  return n;
 }
 /* Partida guardada: recorta HTML de lo que el jugador tipeó (posts, alias, nombres). */
 function saneaEstado(est){

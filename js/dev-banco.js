@@ -481,9 +481,20 @@ if(typeof devDoctorRegistrar==="function"){
         est.perfil.tinder={matches:[{n:"M"+X,bio:"x"+X,anio:E.anio}]};
         if(est.dinastia){ est.dinastia.linaje="L"+X; est.dinastia.raiz="R"+X; }
         est.clubNombre="C"+X; est.dt="D"+X;
+        /* 7.9117 · y los cientos de textos que no escribe el jugador pero viajan en el archivo */
+        est.notifs=(est.notifs||[]).concat([{t:"Aviso"+X,d:"det"+X,tipo:"malo",anio:E.anio}]);
+        est.bandeja=(est.bandeja||[]).concat([{t:"B"+X,d:"d"+X}]);
+        est.cronica=(est.cronica||[]).concat([{t:"Cr"+X,txt:"c"+X,anio:E.anio}]);
+        est.memoria=(est.memoria||[]).concat([{id:"m",tipo:"x",txt:"mem"+X,anio:E.anio,idx:0,usado:0}]);
+        est.sombra={log:[{tipo:"x",peso:1,txt:"s"+X,anio:E.anio}],vistos:{},ultEvento:-99,ultFavor:-99};
+        if(est.perfil.vidaSocial) est.perfil.vidaSocial.agenda=[{t:"Ag"+X,modo:"m"+X,anio:E.anio,txt:"a"+X}];
+        est.perfil.avatarImg="https://rastreo.example/pixel.png";
+        est.ind=Object.assign(JSON.parse('{"__proto__":{"contaminado":1}}'),est.ind);
         E=est; normalizarEstado();
+        if(({}).contaminado||Object.prototype.contaminado) f.push("una partida contaminó Object.prototype");
+        if(E.perfil.avatarImg) f.push("la foto de perfil acepta una URL externa (rastrea a quien abre la partida)");
         /* se mira el DOM apenas se pinta cada sección: el onerror se dispara después y el repintado siguiente lo borra */
-        ["escritorio","plantel","redes","carrera","vida","historia"].forEach(s=>{
+        ["escritorio","plantel","redes","carrera","vida","historia","avisos"].forEach(s=>{
           try{ SEC=s; render(); }catch(e){ f.push("la sección «"+s+"» explota con la partida manipulada: "+e.message); return; }
           const vivos=[].filter.call(document.querySelectorAll("img"),i=>/__xssDoc/.test(i.getAttribute("onerror")||""));
           vivos.forEach(i=>i.removeAttribute("onerror"));
@@ -492,6 +503,6 @@ if(typeof devDoctorRegistrar==="function"){
       }catch(e){ f.push("EXCEPCIÓN: "+e.message); }
       finally{ window.guardar=gu; restaurarPartida(snap); SEC=secPrev; try{ render(); }catch(e){} }
       if(window.__xssDoc) f.push("se ejecutó código "+window.__xssDoc+" vez/veces");
-      return f.length?_dmal(f.length+" problema(s)",f):_dok("nombre, pareja, hijos, matches, PLOP, linaje y club limpios en 6 secciones");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("partida envenenada (nombres, pareja, avisos, crónica, memoria, sombra, agenda, foto, __proto__) limpia en 7 secciones");
     }});
 }

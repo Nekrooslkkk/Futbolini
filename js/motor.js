@@ -445,6 +445,7 @@ function normalizarEstado(){
      saneaEstado cubre clubNombre/dt/plantel/timeline/plopUser; le sumo acá — sin tocar su
      archivo — los campos que quedaban sueltos: nombre del DT, linaje, pareja e hijos. */
   if(typeof saneaEstado==="function") saneaEstado(E);
+  if(typeof saneaProfundo==="function") saneaProfundo(E);   /* 7.9117 · todo texto de la partida, no solo los campos conocidos */
   if(typeof textoLimpio==="function"){
     if(E.perfil){
       if(E.perfil.nombre) E.perfil.nombre=textoLimpio(E.perfil.nombre,40)||"DT";

@@ -5002,3 +5002,19 @@ Archivos: `js/multi.js` (reescrito), `js/vendor/peerjs.min.js` (nuevo, MIT) + `j
   entera está probada con el buzón de prueba; falta abrir una sala entre dos celulares de verdad.
 - **Estado:** doctor sano (4 partidas + celular, 116 chequeos) · dev 593/593 + servidores + duelos · core 1185/1185 ·
   banco 255 sano · saves 12/12.
+
+### 7.9117 — Seguridad: limpieza profunda de toda partida que se carga
+Archivos: `js/util.js`, `js/motor.js`, `js/dev-banco.js`, `index.html` (`?v=`).
+- **Qué:** `saneaProfundo(E)` recorre la partida entera al cargar (`normalizarEstado`: archivo importado, nube, slot
+  local). Cada texto conserva solo `<b> <i> <em> <strong> <br>`; cualquier otra etiqueta (`<img onerror>`, `<script>`,
+  `<svg onload>`…) se borra. Quita claves `__proto__`/`constructor`/`prototype` (contaminación de prototipo) y la foto
+  de perfil que no sea `data:image/...;base64` (una URL externa filtraba tu IP a quien la pusiera). Antes solo se
+  limpiaban los campos conocidos; una partida envenenada colaba HTML por avisos, crónica, memoria, sombra y agenda.
+- **Costo:** 0–5 ms por carga; 0 cambios sobre partidas normales (saves viejas 12/12 intactas).
+- **Dev:** `xss_partida_cargada` ahora envenena también avisos, bandeja, crónica, memoria, sombra, agenda, la foto y el
+  prototipo, y revisa 7 secciones. Al revés (sin `saneaProfundo`): "4 problema(s) | la foto de perfil acepta una URL
+  externa / «escritorio»: 3 <img onerror> / «vida»: 3 / «avisos»: 2".
+- **Revisado sin cambios:** `/api/datos` (nadie lo aplica), service worker (no cachea `/api` ni la nube, solo mismo
+  origen + CDN permitidos), mensajes de duelo (lista blanca `mpValidarMsg`), código manual de duelo (tipo y largo).
+- **Estado:** doctor sano (4 partidas + celular) · dev 593/593 · core 1185/1185 · banco 255 sano (9 % despidos) ·
+  saves 12/12.

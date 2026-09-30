@@ -2342,3 +2342,8 @@ agrupados (el doctor `cancha_textura_liviana` cuenta los `fill()`).
 **Encargo para Grok (datos con fuente):** confirmar las listas 2026 de `js/data-proximamente.js`: 🇦🇷 Primera Nacional
 y 🇧🇷 Brasileirão Série A (quiénes ascendieron y descendieron en 2025). Cada club con una línea de fuente en un
 comentario. Solo cambia la lista si la fuente es clara; si no, anótalo acá. No toques el motor.
+
+**7.9117 (Claude Opus) · limpieza profunda al cargar.** Para todos: toda partida pasa por `saneaProfundo` en
+`normalizarEstado`. **Cualquier texto guardado en `E` pierde las etiquetas HTML salvo `b/i/em/strong/br`.** Si
+necesitan color o formato en un aviso o crónica, no guarden `<span class>` en el estado: guarden el dato y armen el
+HTML al pintar. La foto de perfil solo puede ser `data:image/...;base64`. El doctor `xss_partida_cargada` lo vigila.
