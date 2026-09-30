@@ -3661,8 +3661,11 @@ function _ajRepintar(){
 function panelCuentaNube(v, enVentana){
   if(typeof nubeActiva==="function"){
     const pn=panel("Cuenta en la nube","☁️");
-    if(!nubeActiva()){
-      /* aún sin configurar: formulario para pegar URL + anon key (admin) */
+    if(!nubeActiva()&&!(typeof devOn==="function"&&devOn())){
+      /* 7.9119 · sin nube encendida el jugador no ve un formulario de admin: ve la verdad y cómo no perder su partida */
+      pn.cuerpo.appendChild(el("p","mini","La cuenta en la nube llega más adelante. Por ahora tu partida vive <b>en este aparato</b> y el juego funciona entero sin internet. Para no perderla (o llevarla a otro equipo), usa <b>Descargar partida</b> en la pestaña Partida: te bajas un archivo y lo cargas donde quieras."));
+    }else if(!nubeActiva()){
+      /* aún sin configurar: formulario para pegar URL + anon key (admin, solo en modo dev) */
       pn.cuerpo.appendChild(el("p","mini","Para prender el login (gratis, con Supabase) pega acá la <b>URL</b> y la <b>llave pública (anon)</b> de tu proyecto. Los pasos para crear el proyecto están en <b>SETUP_NUBE.md</b>. La llave anon es <b>pública a propósito</b>: es seguro dejarla acá. La que NUNCA se pega es la <i>service_role</i>."));
       const estiloCfg="display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid rgba(0,0,0,.15);font-size:13px";
       const cfg0=(typeof nubeConfig==="function")?nubeConfig():{url:"",anonKey:""};
@@ -4835,7 +4838,10 @@ function pantallaArranque(haySave,slots){
     if(ov.dataset.listo){ clearInterval(_cargaTimer); return; }
     elCarga.textContent=cargas[_ci++ % cargas.length];
   }, 320); }
-  setTimeout(revelar, reduce?60:1300);
+  /* 7.9119 · la espera con frases es para que entrar tenga onda, no para castigar: si abrir ya tomó más de 3 s (celu
+     flaco), los botones salen al tiro. */
+  const yaEspero=(typeof performance!=="undefined"&&performance.now)?performance.now()>3000:false;
+  setTimeout(revelar, (reduce||yaEspero)?60:1300);
   ov.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!ov.dataset.listo){ e.preventDefault(); revelar(); } });
 }
 

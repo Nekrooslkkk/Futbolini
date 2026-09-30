@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-const VERSION="7.9118";
+const VERSION="7.9119";
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
 function el(tag,cls,html){const n=document.createElement(tag);if(cls)n.className=cls;if(html!=null)n.innerHTML=html;return n;}
@@ -46,6 +46,8 @@ function textoLimpio(s,max){
    una imagen data: (una URL externa rastrearía a quien abre la partida). Devuelve cuántos textos tocó. */
 /* 7.9118 · lo que la CSP (index.html) bloquea queda anotado acá: si un parche nuevo pide algo fuera de la lista, el doctor
    csp_estricta lo muestra en vez de que la función falle callada. */
+/* 7.9119 · ver css/base.css: hasta acá solo se ve (y se calcula) el splash. Es el primer escuchador, así que corre antes del init. */
+if(typeof document!=="undefined"&&document.addEventListener) document.addEventListener("DOMContentLoaded",function(){ document.documentElement.classList.add("js-listo"); });
 var CSP_VIOLACIONES=[];
 if(typeof document!=="undefined"&&document.addEventListener) document.addEventListener("securitypolicyviolation",function(e){
   if(CSP_VIOLACIONES.length>=40) return;
@@ -125,14 +127,22 @@ function saneaEstado(est){
   return est;
 }
 /* Pesos chilenos. Toda la plata del juego está en MILLONES de pesos de la época. */
+/* 7.9119 · formateadores armados UNA vez. toLocaleString con opciones crea uno nuevo por llamada (34× más lento) y plata()
+   se llama cientos de veces por pantalla: en un celu flaco eran decenas de ms por sección. Mismo texto exacto. */
+let _NF0=null, _NF1=null;
+function _nf(dec){
+  try{ if(dec){ if(!_NF1) _NF1=new Intl.NumberFormat("es-CL",{minimumFractionDigits:1,maximumFractionDigits:1}); return _NF1; }
+       if(!_NF0) _NF0=new Intl.NumberFormat("es-CL"); return _NF0; }catch(e){ return null; }
+}
+function numCL(n,dec){ const f=_nf(dec); return f?f.format(n):(dec?(+n).toFixed(1).replace(".",","):String(Math.round(+n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,".")); }
 function plata(v){
   v=+v||0;
   const a=Math.abs(v), sg=v<0?"−$":"$";
   /* 7.9039 · montos chicos (un informe, un sueldo de CM, una apuesta): en pesos, no "$0 M" o "$1 M" */
-  if(a>0 && a<1) return sg+(Math.round(a*1000)*1000).toLocaleString("es-CL");
-  if(a<10 && Math.abs(a-Math.round(a))>=0.05) return sg+a.toLocaleString("es-CL",{minimumFractionDigits:1,maximumFractionDigits:1})+" M";
+  if(a>0 && a<1) return sg+numCL(Math.round(a*1000)*1000);
+  if(a<10 && Math.abs(a-Math.round(a))>=0.05) return sg+numCL(a,1)+" M";
   const n=Math.round(v);
-  return (n<0?"−$":"$")+Math.abs(n).toLocaleString("es-CL")+" M";
+  return (n<0?"−$":"$")+numCL(Math.abs(n))+" M";
 }
 function pesosLargo(v){ return plata(v)+" (millones de pesos)"; }
 function signo(v){ return (v>0?"+":"")+Math.round(v); }

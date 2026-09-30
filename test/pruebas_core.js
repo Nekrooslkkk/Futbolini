@@ -2078,7 +2078,9 @@
       SEC="ajustes"; render();
       var txt=(document.getElementById("vista")&&document.getElementById("vista").textContent)||"";
       ok(/Cuenta en la nube/.test(txt), "Ajustes muestra cuenta");
-      ok(/Código al correo|Clave/.test(txt), "login con clave y código");
+      /* 7.9119 · con la nube apagada el jugador ve la verdad y no un formulario de admin */
+      if(typeof nubeActiva==="function"&&nubeActiva()) ok(/Código al correo|Clave/.test(txt), "login con clave y código");
+      else ok(/llega más adelante/.test(txt)&&!/anon key|Probar conexión/.test(txt), "nube apagada: aviso honesto, sin formulario de admin");
     }, "login en Ajustes");
 
     /* T53 · 7.9001 ligas clonadas jugables + reformas de verdad */

@@ -275,15 +275,18 @@ body[data-tema="aero"] .mi[aria-selected="true"]{ color:#fff; text-shadow:0 -1px
   background:linear-gradient(to bottom,#5b9be6,#2461a3 50%,#00317a 51%,#1e5b9e); border-color:#06264f; }
 
 /* --- Barras de progreso hundidas estilo Vista + variante animada (copia de archivos) --- */
-@keyframes vistaProgress{ 0%{background-position:180% 0} 100%{background-position:-20% 0} }
+@keyframes vistaProgress{ 0%{ transform:translateX(-100%) } 100%{ transform:translateX(100%) } }
 .barrita{ border-radius:3px; border:1px solid rgba(40,70,110,.4); background:rgba(255,255,255,.45);
   box-shadow:inset 0 1px 3px rgba(0,0,0,.35); }
 .barrita i{ border-radius:2px; }
 .aero-progress{ height:16px; border:1px solid #8aa0b8; border-radius:3px; background:#e9eef5;
   box-shadow:inset 0 1px 3px rgba(0,0,0,.35); overflow:hidden; }
-.aero-progress > i{ display:block; height:100%;
-  background:linear-gradient(90deg,#1e9e3a 0%,#c6f7cd 45%,#1e9e3a 90%); background-size:220% 100%;
-  animation:vistaProgress 1.15s linear infinite; box-shadow:inset 0 1px 0 rgba(255,255,255,.7); }
+.aero-progress > i{ display:block; height:100%; position:relative; overflow:hidden;
+  background:#1e9e3a; box-shadow:inset 0 1px 0 rgba(255,255,255,.7); }
+/* 7.9119 · el brillo corre con transform (antes background-position: repintado continuo) */
+.aero-progress > i::after{ content:""; position:absolute; top:0; bottom:0; left:0; width:100%; pointer-events:none;
+  background:linear-gradient(90deg,transparent 0,#c6f7cd 50%,transparent 100%); will-change:transform;
+  animation:vistaProgress 1.15s linear infinite; }
 
 /* --- Pizarra táctica: fichas de cristal con marco plateado (estilo WMP11 / Wii) --- */
 .pizarra .chip{ border-radius:4px; border:1px solid #9fb4cc;

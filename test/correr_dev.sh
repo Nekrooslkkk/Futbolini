@@ -57,6 +57,28 @@ for x in mal: print("  ❌ "+x)
 print("  ok: todos los escudos existen y los de Commons tienen crédito" if not mal else "")
 sys.exit(1 if mal else 0)
 PY
+# 7.9119 · ninguna animación infinita puede animar algo que no sea transform/opacity (repinta sin parar: CPU y batería)
+echo "· animaciones infinitas baratas"
+python3 - <<'PY' || exit 1
+import re,glob,sys
+kf={}
+for f in glob.glob("css/*.css"):
+    s=open(f,encoding="utf-8").read()
+    for m in re.finditer(r'@keyframes\s+([\w-]+)\s*\{((?:[^{}]*\{[^{}]*\})*)\s*\}',s):
+        bad=set(re.findall(r'([a-z-]+)\s*:',m.group(2)))-{"transform","opacity","offset"}
+        if bad: kf[m.group(1)]=(f,sorted(bad))
+mal=[]
+for f in glob.glob("css/*.css"):
+    s=open(f,encoding="utf-8").read()
+    for m in re.finditer(r'animation\s*:\s*([^;}]+)',s):
+        v=m.group(1)
+        if "infinite" not in v: continue
+        for k,(fk,b) in kf.items():
+            if re.search(r'(^|\s)'+re.escape(k)+r'(\s|$)',v): mal.append(f"{f}: {k} es infinita y anima {'/'.join(b)} ({fk})")
+for x in sorted(set(mal)): print("  ❌ "+x)
+print("  ok: todas las infinitas van por transform/opacity" if not mal else "")
+sys.exit(1 if mal else 0)
+PY
 # 7.9118 · la CSP del juego real: nada inline ni eval en script-src, y ningún onclick="…"/onerror="…" armado en los .js
 echo "· CSP y manejadores inline"
 python3 - <<'PY' || exit 1

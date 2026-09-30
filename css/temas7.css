@@ -263,10 +263,19 @@ html body[data-tema="insano"] #barra .bd .v{ text-shadow:0 1px 0 #12378a !import
    relativo a ese ancestro, y la barra de Jugar quedaba al final de la página en vez de pegada a la pantalla.
    Lo loco del tema vive en el fondo y las cabeceras animadas (abajo). Doctor: fijos_sin_atrapar. */
 html body[data-tema="insano"]{ animation:none !important; filter:none !important; }
-html body[data-tema="insano"] .cielo{ background-size:300% 300% !important; animation:insanoFondo 18s ease-in-out infinite alternate; }
-@keyframes insanoFondo{ from{ background-position:0% 50% } to{ background-position:100% 50% } }
-html body[data-tema="insano"] .panel:not(.modal,.modal > .panel) > .cab{ background-size:200% 100% !important; animation:insanoCab 6s linear infinite; }
-@keyframes insanoCab{ from{ background-position:0% 0 } to{ background-position:200% 0 } }
+/* 7.9119 · el insano se sigue moviendo igual, pero con transform (tarjeta gráfica): antes animaba background-position
+   de la pantalla entera y de cada cabecera → 11 % de CPU con el juego quieto. El dibujo va en un ::before más ancho
+   que se desliza. */
+html body[data-tema="insano"] .cielo{ overflow:hidden; }
+html body[data-tema="insano"] .cielo::before{ content:""; position:absolute; top:0; left:0; width:300%; height:100%;
+  background:var(--t-fondo); background-size:100% 100%; will-change:transform; pointer-events:none;
+  animation:insanoFondo 18s ease-in-out infinite alternate; }
+@keyframes insanoFondo{ from{ transform:translateX(0) } to{ transform:translateX(-66.6667%) } }
+html body[data-tema="insano"] .panel:not(.modal,.modal > .panel) > .cab{ position:relative; overflow:hidden; isolation:isolate; }
+html body[data-tema="insano"] .panel:not(.modal,.modal > .panel) > .cab::before{ content:""; position:absolute; top:0; left:0; bottom:0;
+  width:200%; z-index:-1; background:inherit; background-size:100% 100%; background-repeat:no-repeat; will-change:transform; pointer-events:none;
+  animation:insanoCab 6s ease-in-out infinite alternate; }
+@keyframes insanoCab{ from{ transform:translateX(0) } to{ transform:translateX(-50%) } }   /* va y vuelve: sin la costura que antes cruzaba la cabecera */
 html body[data-tema="insano"] #fondo :is(.pasto,.destello){ background:none !important; }
 
 /* ---------- 6. 7.9088 · 📼 temporadas: repetición fecha a fecha ---------- */
@@ -290,3 +299,8 @@ html body .cs-tab{ border:1px solid #b9c7d6 !important; border-bottom:0 !importa
   background:linear-gradient(180deg,#ffffff,#e9eef4 50%,#dde5ee 50%,#e7edf3) !important; color:#1e395b !important; font:600 13px var(--f-cuerpo) !important; box-shadow:none !important; text-shadow:none !important; }
 html body .cs-tab.on{ background:linear-gradient(180deg,#8fc3f0 0%,#4a8fd0 48%,#2e6fb4 50%,#4d93d6 100%) !important; color:#fff !important; border-color:#3c7fb1 !important; }
 html body[data-tema="negro"] .cs-tab{ background:linear-gradient(180deg,#2b3440,#1b222b) !important; color:#d6e3f2 !important; border-color:#3a4656 !important; }
+
+/* ---------- 7.9119 · Modo liviano (se prende solo en equipos flacos): los paneles fuera de la pantalla no se calculan
+   ni se pintan hasta que llegas a ellos. Cambiar de sección cuesta ~43 % menos (59 → 33 ms en PC; en un celu flaco
+   es la diferencia entre 1,2 s y 0,7 s). El tamaño estimado se recuerda al verlos una vez (auto). ---------- */
+html body.perf #vista .panel{ content-visibility:auto; contain-intrinsic-size:auto 320px; }

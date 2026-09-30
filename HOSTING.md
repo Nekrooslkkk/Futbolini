@@ -1,5 +1,9 @@
 # HOSTING.md — Railway (sin Hetzner)
 
+> **7.9119 · APAGADO.** Railway no se usa hoy: el juego no apunta a ningún servidor (`js/servidor.js` → `base: ""`) y
+> `railway.json` se borró. Esto queda como receta para cuando el juego tenga gente. Al retomarlo, `railway.json`
+> era solo `startCommand: node server/index.js` con reinicio ON_FAILURE (está en el historial de git).
+
 El juego en GitHub Pages sigue igual. Railway corre `server/index.js`:
 login, guardar partida y `/api/datos`.
 
@@ -8,7 +12,7 @@ Costo: plan Hobby ~US$5/mes.
 ## 1. Crear el servicio
 1. Entra a https://railway.com con GitHub.
 2. New Project → Deploy from GitHub repo → `Nekrooslkkk/Futbolini`.
-3. Settings → start command: `node server/index.js` (ya viene en `Procfile` / `railway.json`).
+3. Settings → start command: `node server/index.js` (ya viene en `Procfile`).
 4. Variables:
    - `PORT` lo pone Railway solo. No lo hardcodes.
    - `DATA_DIR` = `/data`

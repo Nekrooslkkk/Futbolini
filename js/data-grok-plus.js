@@ -154,15 +154,18 @@ const LIGA_UCH_1991=[
     /* resto de 1991 PRIMERO, solo con el fixture de Colo-Colo (sin pisar fechas de la U).
        vs CC: marcador real, el string home-away se mantiene. El resto: real:null. */
     if(typeof LIGA_CC_1991!=="undefined" && typeof emparejarFecha==="function" && typeof LIGA91!=="undefined"){
+      /* 7.9119 · los pares de cada fecha no dependen del club: se calculan una vez (30 llamadas, no 450). Era lo más
+         caro de abrir el juego en un celu lento. */
+      const paresFecha=LIGA_CC_1991.map(function(ccM){ return emparejarFecha(1991,ccM.fecha,"CC",ccM.rival); });
       LIGA91.forEach(function(c){
         if(c.id==="CC") return;
         const fx=[];
-        LIGA_CC_1991.forEach(function(ccM){
+        LIGA_CC_1991.forEach(function(ccM,iM){
           if(ccM.rival===c.id){
             fx.push({fecha:ccM.fecha,f:ccM.f,rival:"CC",local:!ccM.local,real:ccM.real});
             return;
           }
-          const pares=emparejarFecha(1991,ccM.fecha,"CC",ccM.rival);
+          const pares=paresFecha[iM];
           const mio=pares.find(function(p){ return p[0]===c.id||p[1]===c.id; });
           if(!mio) return;
           const local=mio[0]===c.id, riv=local?mio[1]:mio[0];

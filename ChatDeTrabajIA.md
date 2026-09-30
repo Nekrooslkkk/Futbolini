@@ -2357,3 +2357,12 @@ HTML al pintar. La foto de perfil solo puede ser `data:image/...;base64`. El doc
 - ¿Un CDN, una fuente de imágenes o un servidor nuevo? Va en la CSP de `index.html` (y con `integrity` si es CSS/JS de
   CDN), o el navegador lo bloquea. El doctor `csp_estricta` muestra cada bloqueo (`CSP_VIOLACIONES`).
 - Partidas que vienen de afuera: `adoptarPartidaExterna()` antes de `normalizarEstado()`.
+
+**7.9119 (Claude Opus) · rendimiento. Reglas nuevas que revisa la suite:**
+- Una animación **infinita** solo puede animar `transform` u `opacity`. ¿Quieres un brillo que corre? Un `::after` más
+  ancho que se desliza con `translateX`, no `background-position`. ¿Un latido? Un anillo que escala, no `box-shadow`.
+  `correr_dev.sh` falla si no; el doctor `reposo_sin_repintar` lo mira en pantalla.
+- En Modo liviano los `.panel` de `#vista` tienen `content-visibility:auto`: **nada `position:fixed`/`sticky` dentro
+  de un panel** (queda encerrado). Lo fijo va al `body`. Doctor `liviano_paneles`.
+- Formatear plata o números: `plata()` / `numCL(n,dec)`, no `toLocaleString(…,{opciones})` en bucles.
+- La nube está **apagada** (`NUBE_CONFIG` vacío) hasta que el autor cree un proyecto nuevo. No la prendan.

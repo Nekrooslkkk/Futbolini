@@ -566,3 +566,49 @@ if(typeof devDoctorRegistrar==="function"){
       return f.length?_dmal(f.length+" problema(s)",f):_dok("la de afuera ocupa la ranura que reemplaza, o una nueva");
     }});
 }
+
+/* 7.9119 · con el juego quieto no puede haber nada repintándose sin parar. Una animación infinita solo puede mover
+   transform/opacity (eso lo hace la tarjeta gráfica); left/width/background-position/box-shadow/filter obligan al
+   navegador a recalcular y pintar 60 veces por segundo: 8–11 % de CPU en reposo en un PC, el doble en un celu flaco. */
+function animacionesQueRepintan(){
+  const OK={transform:1,opacity:1,offset:1,easing:1,composite:1,computedOffset:1};
+  const malas={};
+  (typeof document!=="undefined"&&document.getAnimations?document.getAnimations():[]).forEach(a=>{
+    if(a.playState!=="running"||!a.effect) return;
+    const t=a.effect.getTiming?a.effect.getTiming():{}; if(t.iterations!==Infinity) return;
+    const props={}; (a.effect.getKeyframes?a.effect.getKeyframes():[]).forEach(k=>Object.keys(k).forEach(p=>{ if(!OK[p]) props[p]=1; }));
+    const ps=Object.keys(props); if(!ps.length) return;
+    const nom=a.animationName||"(js)"; malas[nom]=ps.join("/");
+  });
+  return malas;
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"reposo_sin_repintar", area:"rendimiento", n:"Con el juego quieto no hay animaciones que repinten la pantalla sin parar",
+    arreglo:"css/*.css: la @keyframes infinita tiene que animar solo transform/opacity (mover un ::before/::after más grande en vez de background-position, escalar un anillo en vez de box-shadow). Chequeo estático en test/correr_dev.sh",
+    fn:function(){
+      const secPrev=SEC, f=[];
+      try{ ["escritorio","plantel","finanzas","vida"].forEach(s=>{ SEC=s; try{ render(); }catch(e){}
+        const m=animacionesQueRepintan(); Object.keys(m).forEach(k=>{ const x="«"+s+"»: "+k+" anima "+m[k]; if(f.indexOf(x)<0&&f.length<8) f.push(x); }); }); }
+      finally{ SEC=secPrev; try{ render(); }catch(e){} }
+      return f.length?_dmal(f.length+" animación(es) infinita(s) que repintan",f):_dok("todas las animaciones infinitas van por transform/opacity (0 repintado en reposo)");
+    }});
+}
+
+/* 7.9119 · en Modo liviano los paneles fuera de la pantalla no se calculan (content-visibility). Eso encierra lo que
+   tengan adentro: un position:fixed dentro de un panel dejaría de pegarse a la pantalla, y algo que se sale del panel
+   se recortaría. Se mira que el ahorro esté puesto y que ningún panel tenga adentro algo fijo o pegajoso. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"liviano_paneles", area:"rendimiento", n:"Modo liviano: los paneles fuera de pantalla no se calculan, y nada fijo queda encerrado en uno",
+    arreglo:"css/temas7.css (html body.perf #vista .panel{content-visibility:auto}) · si un panel necesita algo position:fixed/sticky adentro, sácalo del panel (al body) o excluye ese panel",
+    fn:function(){
+      if(typeof document==="undefined"||!document.body) return _dok("sin pantalla");
+      const b=document.body, tenia=b.classList.contains("perf"), secPrev=SEC, f=[]; let vistos=0;
+      try{ b.classList.add("perf");
+        ["escritorio","plantel","calendario","mercado","institucion","vida","finanzas"].forEach(s=>{ SEC=s; try{ render(); }catch(e){}
+          document.querySelectorAll("#vista .panel").forEach(pn=>{ vistos++;
+            if(getComputedStyle(pn).contentVisibility!=="auto"&&f.length<6&&!f.some(x=>/no tiene content/.test(x))) f.push("«"+s+"»: el panel no tiene content-visibility:auto en Modo liviano (se calcula entero aunque no se vea)");
+            pn.querySelectorAll("*").forEach(x=>{ const p=getComputedStyle(x).position; if((p==="fixed"||p==="sticky")&&f.length<8) f.push("«"+s+"»: <"+x.tagName.toLowerCase()+" class='"+String(x.className).slice(0,30)+"'> es "+p+" dentro de un panel: en Modo liviano queda encerrado"); }); }); });
+      } finally { b.classList.toggle("perf",tenia); SEC=secPrev; try{ render(); }catch(e){} }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok(vistos+" paneles en 7 secciones: se saltan fuera de pantalla y nada fijo queda adentro");
+    }});
+}

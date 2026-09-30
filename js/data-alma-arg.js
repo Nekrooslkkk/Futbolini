@@ -85,6 +85,9 @@ var ALMA_ARG=[
   t2:"Barracas es barrio porteño de toda la vida y el club es parte del paisaje."}
 ];
 
+/* 7.9119 · miles con punto sin toLocaleString: cada llamada armaba un formateador Intl nuevo y era lo más caro de
+   cargar este archivo en un celu lento */
+function _almaMiles(n){ return String(Math.round(+n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,"."); }
 /* ---------- fábrica de arcos (2 capítulos, opciones con consecuencia real) ---------- */
 function _almaArco(c){
   var id=c.id.toLowerCase();
@@ -93,7 +96,7 @@ function _almaArco(c){
     desc:"Un arco propio de "+c.n+": lo que se decide acá queda en la memoria del club.",
     capitulos:[
       {id:"alma_"+id+"_1", t:"La casa",
-       ctx:c.t1+" El estadio "+c.est+" declara "+c.af.toLocaleString("es-AR")+
+       ctx:c.t1+" El estadio "+c.est+" declara "+_almaMiles(c.af)+
            " localidades y en "+c.ciu+" todos saben cuántas se llenan. La dirigencia pone el tema sobre la mesa: "+
            "invertir en la casa o poner esa plata en el plantel. No alcanza para las dos cosas.",
        ops:[
@@ -140,7 +143,7 @@ function _almaDecision(c){
     id:"alma26_"+id, club:c.id, anio:2026, buzon:"institucional", peso:"medio", mes:3,
     t:"El socio de "+c.n+" pregunta por el estadio",
     d:"Llega una nota de la comisión de socios. "+c.t1+" Piden una respuesta concreta sobre qué se va a hacer "+
-      "esta temporada con el "+c.est+", que hoy declara "+c.af.toLocaleString("es-AR")+" localidades. "+
+      "esta temporada con el "+c.est+", que hoy declara "+_almaMiles(c.af)+" localidades. "+
       "No es una pregunta retórica: quieren un número y una fecha.",
     posturas:{socios:35,hinchada:20,directorio:-15,prensa:10},
     consejo:{

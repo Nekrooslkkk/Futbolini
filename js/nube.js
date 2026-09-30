@@ -12,8 +12,10 @@
    ============================================================ */
 
 const NUBE_CONFIG = {
-  url: "https://jtovotunboairatszhew.supabase.co",        /* proyecto Supabase de Futbolini */
-  anonKey: "sb_publishable_QjD9L7SWCdfgYasuzIqQ2Q_ypj2g2-R"  /* llave PUBLICA (publishable) — segura en el repo; la seguridad la da RLS */
+  /* 7.9119 · apagada: el proyecto de Supabase nunca se activó de verdad (autor, 30 sep 2026). Cuando el juego tenga
+     gente, se crea uno nuevo siguiendo SETUP_NUBE.md (incluido el §2b de blindaje) y se pegan acá URL + llave pública. */
+  url: "",
+  anonKey: ""
 };
 
 const NUBE_LLAVE_SESION = "futbolini_nube_sesion";

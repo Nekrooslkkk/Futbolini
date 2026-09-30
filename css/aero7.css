@@ -219,12 +219,15 @@ body[data-tema="aero"] .barrita i{
   border-radius:0 !important; position:relative; overflow:hidden;
   background-image:linear-gradient(180deg,rgba(255,255,255,.6) 0,rgba(255,255,255,.15) 50%,rgba(0,0,0,.08) 51%,rgba(255,255,255,.12) 100%) !important;
 }
+/* 7.9119 · el destello se mueve con transform (lo hace la tarjeta gráfica). Antes animaba `left`: layout + pintado en
+   cada cuadro, 8 barras, para siempre → 10 % de CPU con el juego quieto y el doble en un celu flaco. */
 body[data-tema="aero"] .barrita i::after{
-  content:""; position:absolute; top:0; bottom:0; width:60px; left:-60px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+  content:""; position:absolute; top:0; bottom:0; left:0; width:100%;
+  background:linear-gradient(90deg,transparent 0,transparent 30%,rgba(255,255,255,.75) 50%,transparent 70%,transparent 100%);
+  transform:translateX(-100%); will-change:transform;
   animation:w7Barrido 2.6s ease-in-out infinite;
 }
-@keyframes w7Barrido{ 0%{ left:-60px } 70%,100%{ left:100% } }
+@keyframes w7Barrido{ 0%{ transform:translateX(-100%) } 70%,100%{ transform:translateX(100%) } }
 @media (prefers-reduced-motion:reduce){ body[data-tema="aero"] .barrita i::after{ animation:none; display:none } }
 body.perf[data-tema="aero"] .barrita i::after{ display:none; }
 /* barras de desplazamiento de Windows 7 */

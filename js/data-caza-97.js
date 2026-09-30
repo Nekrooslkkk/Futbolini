@@ -7,8 +7,14 @@
    Cargar DESPUÉS de data-planteles.js (ex 88–95).
    ============================================================ */
 
+/* 7.9119 · las cartas son datos fijos: el texto se arma una vez por carta (antes, JSON.stringify de la carta entera en
+   cada filtro, cada semana: el 5 % de simular una temporada). */
+var _BLOB97=(typeof WeakMap!=="undefined")?new WeakMap():null;
 function _blobDec97(d){
-  try{ return JSON.stringify(d).toLowerCase(); }catch(e){ return ((d&&d.t)||"")+" "+((d&&d.d)||""); }
+  if(_BLOB97&&d&&typeof d==="object"){ var c=_BLOB97.get(d); if(c!==undefined) return c; }
+  var b; try{ b=JSON.stringify(d).toLowerCase(); }catch(e){ b=((d&&d.t)||"")+" "+((d&&d.d)||""); }
+  if(_BLOB97&&d&&typeof d==="object") _BLOB97.set(d,b);
+  return b;
 }
 function _esAFA97(club){
   if(typeof E!=="undefined"&&E&&E.eraBase==="arg2026") return true;

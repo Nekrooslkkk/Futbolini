@@ -5052,3 +5052,32 @@ Archivos: `index.html` (CSP + referrer), `js/util.js` (`CSP_VIOLACIONES`, `globa
   estático en `correr_dev.sh`: CSP de index.html y ningún manejador inline en los `.js`.
 - **Estado:** doctor sano 118/118 (4 partidas + celular) · dev 593/593 · core 1185/1185 · servidores y duelos verdes ·
   banco 255 sano (12 % despidos) · saves 12/12.
+
+### 7.9119 — Rendimiento para celus flacos · nube y Railway desconectados
+Archivos: `css/aero7.css`, `css/temas7.css`, `css/base.css`, `css/aero.css`, `css/temas.css`, `js/util.js`, `js/ui.js`,
+`js/data-grok-plus.js`, `js/data-alma-arg.js`, `js/data-caza-97.js`, `js/nube.js`, `js/dev-banco.js`,
+`test/correr_dev.sh`, `test/pruebas_core.js`, `HOSTING.md`, `GUIA_HUMANO.md`, `railway.json` (borrado).
+- **El juego quieto gastaba CPU.** Las 8 barras de progreso de Aero animaban `left` para siempre (layout + pintado en
+  cada cuadro): **8,4 % de CPU sin hacer nada → 0 %**. El tema insano animaba `background-position` de la pantalla
+  y de cada cabecera: **10,8 % → 0,2 %** (y la cabecera ya no tiene la costura que la cruzaba). También el punto de
+  "en línea", el "EN VIVO" y la barra `.aero-progress`. Todo pasa a transform/opacity (lo mueve la tarjeta gráfica).
+  Se borraron `barLoad` y `locura`, que ya estaban apagadas.
+- **Modo liviano** (se prende solo en equipos flacos): los paneles fuera de pantalla no se calculan
+  (`content-visibility:auto`). Cambiar de sección: **59 → 33 ms** en PC (−43 %). Probado en PC y celu: ningún panel
+  visible queda en blanco al entrar (el vacío que salía en capturas de página completa era un artefacto de la captura).
+- **Abrir el juego:** mientras cargan los 130 scripts solo se calcula el splash (lo de atrás estaba oculto igual y se
+  restilaba entre script y script). `aplicarGrokPlus` calculaba los pares de cada fecha de 1991 una vez por club (450
+  llamadas → 30) y `data-alma-arg` armaba un formateador Intl por club. CPU 6×, apertura repetida: **~4,2 → ~3,6 s**.
+  Si abrir ya tomó más de 3 s, el splash muestra los botones al tiro (sin la espera de 1,3 s con frases).
+- **`plata()`**: formateadores armados una vez. `toLocaleString` con opciones armaba uno por llamada: **28× más
+  rápido**, mismo texto (0 diferencias en 5.000 montos al azar).
+- **Filtro de decisiones**: el texto de cada carta se arma una vez (WeakMap). En la temporada rápida no se nota (ruido).
+- **Nube y Railway:** el Supabase nunca se activó; `NUBE_CONFIG` queda vacío, y sin nube el jugador ve "llega más
+  adelante" + cómo descargar su partida (el formulario de URL/llave solo en modo dev). `railway.json` borrado;
+  `HOSTING.md` queda como receta. Borrar las cuentas es del autor (`GUIA_HUMANO.md` §1).
+- **Dev:** `reposo_sin_repintar` (en 4 secciones, ninguna animación infinita anima algo que no sea transform/opacity)
+  y `liviano_paneles` (content-visibility puesto y nada fixed/sticky encerrado en un panel). Al revés: con el
+  `aero7.css` viejo → "2 animaciones infinitas que repintan"; sin la regla → falla. Chequeo estático en
+  `correr_dev.sh`: ninguna `@keyframes` infinita con propiedades que repintan.
+- **Estado:** doctor sano 120/120 (4 partidas + celular) · dev 593/593 · core 1185/1185 · servidores y duelos verdes ·
+  banco 255 sano (12 %) · saves 12/12.
