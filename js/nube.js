@@ -18,6 +18,7 @@ const NUBE_CONFIG = {
 
 const NUBE_LLAVE_SESION = "futbolini_nube_sesion";
 const NUBE_CFG_LLAVE    = "futbolini_nube_cfg";   /* config pegada en el juego (URL + anon) */
+const NUBE_MAX_BYTES    = 6000000;                /* 7.9118 · tope de una partida en la nube */
 
 /* config efectiva: la baked en NUBE_CONFIG manda; si está vacía, se usa la que el
    admin pegó en Ajustes (guardada en ESTE navegador, nunca en el repo). */
@@ -169,10 +170,13 @@ async function nubeVerificarCodigo(email, token){
 async function nubeSubir(estado){
   if(!nubeLogueado()) return { ok:false, msg:"Entra a tu cuenta primero." };
   const s=nubeSesion();
-  const cuerpo=[{ user_id:s.usuario.id, data:estado, updated_at:new Date().toISOString() }];
+  const cuerpo=JSON.stringify([{ user_id:s.usuario.id, data:estado, updated_at:new Date().toISOString() }]);
+  /* 7.9118 · tope: una carrera larga pesa ~1 MB. Algo mucho más grande es un error o alguien llenando la base gratis
+     del proyecto; no se sube (la base tiene su propio tope, ver SETUP_NUBE.md §2b). */
+  if(cuerpo.length>NUBE_MAX_BYTES) return { ok:false, msg:"La partida pesa demasiado para la nube ("+Math.round(cuerpo.length/1e6)+" MB). Descárgala como archivo." };
   const pedir=()=>nubeFetch("/rest/v1/saves",{ method:"POST",
     headers:Object.assign(nubeHeaders(true),{ "Prefer":"resolution=merge-duplicates,return=minimal" }),
-    body:JSON.stringify(cuerpo) });
+    body:cuerpo });
   let r=await pedir();
   if(r.status===401 && await nubeRefrescar()) r=await pedir();
   if(!r.ok){ const j=await r.json().catch(()=>({})); return { ok:false, msg:(j&&j.message)||("Error "+r.status) }; }

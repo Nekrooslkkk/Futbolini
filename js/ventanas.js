@@ -10,6 +10,8 @@
    ============================================================ */
 
 const AERO_7_WINDOW_CDN="https://unpkg.com/7.css@0.21.1/dist/gui/window.css";
+/* 7.9118 · huella del archivo del CDN: si alguien lo cambia allá, el navegador no lo aplica y se usa la copia local */
+const AERO_7_WINDOW_SRI="sha384-0JM95ouLKbEpwi+N0zh39BvJvnl4D39y6rJsZkpn15CSnHR0+NFWyFl811yN2EEt";
 const AERO_7_WINDOW_LOCAL="css/vendor/7-window.css";
 const AERO_7_WINDOW=AERO_7_WINDOW_CDN;   /* la fuente que pide el autor */
 
@@ -50,6 +52,7 @@ function cargarCdnAero(){
   const l=document.createElement("link");
   l.id="cdn-7css";
   l.rel="stylesheet";
+  l.integrity=AERO_7_WINDOW_SRI; l.crossOrigin="anonymous";
   l.href=AERO_7_WINDOW_CDN;
   const ok=function(){
     document.documentElement.classList.add("cdn-7");
@@ -64,6 +67,7 @@ function cargarCdnAero(){
       return;
     }
     l.dataset.fb="1";
+    l.removeAttribute("integrity");   /* la copia local es nuestra: no lleva la huella del CDN */
     l.href=AERO_7_WINDOW_LOCAL;   /* sin red: mismo chrome, offline */
     l.onload=ok;
   };

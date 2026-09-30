@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-const VERSION="7.9117";
+const VERSION="7.9118";
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
 function el(tag,cls,html){const n=document.createElement(tag);if(cls)n.className=cls;if(html!=null)n.innerHTML=html;return n;}
@@ -44,6 +44,43 @@ function textoLimpio(s,max){
    <strong> y <br> sin atributos (los usa el propio juego); cualquier otra etiqueta se va. Se borran las claves
    __proto__/constructor/prototype (contaminarían prototipos al mezclar objetos) y la foto de perfil tiene que ser
    una imagen data: (una URL externa rastrearía a quien abre la partida). Devuelve cuántos textos tocó. */
+/* 7.9118 · lo que la CSP (index.html) bloquea queda anotado acá: si un parche nuevo pide algo fuera de la lista, el doctor
+   csp_estricta lo muestra en vez de que la función falle callada. */
+var CSP_VIOLACIONES=[];
+if(typeof document!=="undefined"&&document.addEventListener) document.addEventListener("securitypolicyviolation",function(e){
+  if(CSP_VIOLACIONES.length>=40) return;
+  CSP_VIOLACIONES.push((e.effectiveDirective||e.violatedDirective||"?")+" bloqueó "+(e.blockedURI||"código inline")+(e.sourceFile?" ("+String(e.sourceFile).split("/").pop().split("?")[0]+":"+(e.lineNumber||0)+")":""));
+});
+/* 7.9118 · los const globales no cuelgan de window y la CSP prohíbe eval(): el modo dev los pide por nombre acá.
+   Si una herramienta dev necesita otro, se agrega a la lista (nunca eval). */
+const _GLOBALES_LEX={
+  BOLSA:()=>typeof BOLSA!=="undefined"?BOLSA:undefined,
+  DECISIONES:()=>typeof DECISIONES!=="undefined"?DECISIONES:undefined,
+  EVENTOS:()=>typeof EVENTOS!=="undefined"?EVENTOS:undefined,
+  CRISIS:()=>typeof CRISIS!=="undefined"?CRISIS:undefined,
+  LOGROS:()=>typeof LOGROS!=="undefined"?LOGROS:undefined,
+  DEC_PROC:()=>typeof DEC_PROC!=="undefined"?DEC_PROC:undefined,
+  ESTATUTOS:()=>typeof ESTATUTOS!=="undefined"?ESTATUTOS:undefined,
+  GRUPOS:()=>typeof GRUPOS!=="undefined"?GRUPOS:undefined,
+  INTERACCIONES:()=>typeof INTERACCIONES!=="undefined"?INTERACCIONES:undefined,
+  LUJOS:()=>typeof LUJOS!=="undefined"?LUJOS:undefined,
+  REPUTACION:()=>typeof REPUTACION!=="undefined"?REPUTACION:undefined,
+  SALIDAS:()=>typeof SALIDAS!=="undefined"?SALIDAS:undefined,
+  ENCADENADAS:()=>typeof ENCADENADAS!=="undefined"?ENCADENADAS:undefined,
+  CHARLAS_MATCH:()=>typeof CHARLAS_MATCH!=="undefined"?CHARLAS_MATCH:undefined,
+  VIDA_PROC:()=>typeof VIDA_PROC!=="undefined"?VIDA_PROC:undefined,
+  ALMA_9077:()=>typeof ALMA_9077!=="undefined"?ALMA_9077:undefined,
+  ALMA_EPOCA:()=>typeof ALMA_EPOCA!=="undefined"?ALMA_EPOCA:undefined,
+  LIGA_2026:()=>typeof LIGA_2026!=="undefined"?LIGA_2026:undefined,
+  LIGA_B_2026:()=>typeof LIGA_B_2026!=="undefined"?LIGA_B_2026:undefined,
+  LIGA_C_2026:()=>typeof LIGA_C_2026!=="undefined"?LIGA_C_2026:undefined,
+  LIGA_2006:()=>typeof LIGA_2006!=="undefined"?LIGA_2006:undefined,
+  LIGA_1925:()=>typeof LIGA_1925!=="undefined"?LIGA_1925:undefined,
+  LIGA_ARG_2026:()=>typeof LIGA_ARG_2026!=="undefined"?LIGA_ARG_2026:undefined,
+  MP:()=>typeof MP!=="undefined"?MP:undefined,
+  DUELO_MAX_MALAS:()=>typeof DUELO_MAX_MALAS!=="undefined"?DUELO_MAX_MALAS:undefined
+};
+function globalPorNombre(n){ try{ if(typeof window!=="undefined"&&window[n]!==undefined) return window[n]; const f=Object.prototype.hasOwnProperty.call(_GLOBALES_LEX,n)?_GLOBALES_LEX[n]:null; return f?f():undefined; }catch(e){ return undefined; } }
 const _SANEA_ETQ=/<(?!\/?(?:b|i|em|strong|br)\s*\/?>)[^>]*>/gi;
 function saneaProfundo(obj){
   let n=0; const vistos=new Set();

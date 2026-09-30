@@ -143,7 +143,9 @@ function servirEstatico(url, res) {
   /* 7.9116 · nada de archivos ocultos (.git, .env) */
   if (path.relative(base, full).split(path.sep).some(function (x) { return x.startsWith("."); })) return false;
   if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return false;
-  res.writeHead(200, { "Content-Type": MIME[path.extname(full)] || "application/octet-stream" });
+  /* 7.9118 · nadie mete el juego en un iframe ajeno para hacerte clickear cosas (clickjacking); el tipo no se adivina */
+  res.writeHead(200, { "Content-Type": MIME[path.extname(full)] || "application/octet-stream", "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": "frame-ancestors 'self'", "Referrer-Policy": "strict-origin-when-cross-origin" });
   res.end(fs.readFileSync(full));
   return true;
 }

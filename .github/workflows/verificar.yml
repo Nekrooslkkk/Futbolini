@@ -6,11 +6,17 @@ on:
   pull_request:
     branches: [main]
 
+# 7.9118 · el token del CI solo lee: un PR o una acción comprometida no puede escribir en el repo
+permissions:
+  contents: read
+
 jobs:
   verificar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 18

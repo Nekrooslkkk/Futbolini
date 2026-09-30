@@ -597,7 +597,7 @@ function periodistasEra(){
 let _ultPeris=[];
 function fichaPeriodista(per, pregunta){
   const f=typeof fotoPeriodista==="function"?fotoPeriodista(per&&per.n):null;
-  const cara=f?'<img class="foto-peri" src="'+f.src+'" alt="" width="48" height="48" onerror="this.style.display=\'none\'">':'';
+  const cara=f?'<img class="foto-peri" src="'+f.src+'" alt="" width="48" height="48" data-ocultar-si-falla="1">':'';
   return cara+'<div><b>'+(per&&per.n||"")+'</b> <span class="mini">· '+(per&&per.m||"")+'</span><br>'+pregunta+'</div>';
 }
 function eligePeri(){

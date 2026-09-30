@@ -523,6 +523,8 @@ function dueloLugar(){ try{ const v=localStorage.getItem("futbolini_duelo_en"); 
 function panelDuelos(enAjustes){
   const p=panel("Duelos con amigos","🎮","agua");
   p.cuerpo.appendChild(el("p","mini","Una sala con código de 5 letras y contraseña, como Gartic o Haxball. Cada uno maneja su club; el partido se decide jugada a jugada. Va aparte de tu partida: no la toca."));
+  /* 7.9118 · verdad incómoda pero cierta: la conexión es directa entre los dos aparatos */
+  p.cuerpo.appendChild(el("p","mini","🔒 La conexión es directa entre los dos aparatos, así que el rival puede ver tu dirección de internet (IP), como en cualquier juego en línea directo. Juega con gente que conoces y no compartas la contraseña en público. El rival no puede ver ni tocar tu partida."));
   const b=el("button","btn-aqua ancho verde","🎮 Abrir duelos"); b.onclick=()=>modalDuelo(); p.cuerpo.appendChild(b);
   if(enAjustes){
     p.cuerpo.appendChild(el("label","lb","Acceso rápido a los duelos en"));

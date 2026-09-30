@@ -5018,3 +5018,37 @@ Archivos: `js/util.js`, `js/motor.js`, `js/dev-banco.js`, `index.html` (`?v=`).
   origen + CDN permitidos), mensajes de duelo (lista blanca `mpValidarMsg`), código manual de duelo (tipo y largo).
 - **Estado:** doctor sano (4 partidas + celular) · dev 593/593 · core 1185/1185 · banco 255 sano (9 % despidos) ·
   saves 12/12.
+
+### 7.9118 — Seguridad: CSP estricta, huella del CDN, iframes ajenos, ranuras que no se pisan, blindaje de la nube
+Archivos: `index.html` (CSP + referrer), `js/util.js` (`CSP_VIOLACIONES`, `globalPorNombre`), `js/data-escudos.js`,
+`js/ui-partido.js`, `js/dev-doctor.js`, `js/dev-cobertura.js`, `js/ventanas.js`, `js/ui.js`, `js/motor.js`,
+`js/nube.js`, `js/servidor.js`, `js/multi.js`, `servidor.js`, `server/index.js`, `.github/workflows/verificar.yml`,
+`SETUP_NUBE.md`, `GUIA_HUMANO.md`, `test/correr_dev.sh`, `test/duelo.js`, `test/servidores.js`, `js/dev-banco.js`.
+- **CSP** (`<meta http-equiv="Content-Security-Policy">`): solo corre el código del juego (`script-src 'self'`, sin
+  inline ni `eval`), imágenes solo de Commons/logos/`data:`, conexiones solo al mismo sitio, Supabase y el broker de
+  PeerJS; `object-src`/`frame-src 'none'`, `form-action 'none'`. Probado en Chromium por http: un `<img onerror>`,
+  un `<script>` y un link `javascript:` inyectados no corren, y un píxel de rastreo externo se bloquea. Jugando
+  normal (12 secciones, penal 3D, carga de PeerJS): 0 bloqueos.
+- Para que la CSP no rompiera nada: los dos `onerror="…"` escritos en HTML (escudos, foto del periodista) pasan a
+  atributos `data-*` + un escuchador de captura. El del escudo además metía el id del club **dentro de código JS sin
+  escapar**; ahora va escapado. El texto del escudo SVG también se escapa. Los 3 `eval` del modo dev se cambiaron por
+  `globalPorNombre()` (lista explícita). La suite dev permite eval solo en su copia de prueba, marcada.
+- **7.css del CDN con huella SRI**: si lo cambian en unpkg, el navegador no lo aplica y se usa la copia local (probado:
+  original → CDN; adulterado → local; sin red → local).
+- **Servidores**: `X-Frame-Options: SAMEORIGIN` + `frame-ancestors 'self'` + nosniff en lo que sirven (nadie mete
+  el juego en un iframe ajeno para hacerte clickear). `test/servidores.js` lo exige.
+- **Ranuras**: una partida importada o bajada de la nube traía el `_slot` del aparato donde nació y, si calzaba con
+  otra partida tuya, guardar la pisaba sin avisar. Ahora ocupa la ranura de la que reemplaza (o una nueva);
+  `normalizarEstado` descarta ranuras con forma rara. Archivos de más de 25 MB se rechazan antes de leerlos. Una
+  bajada de la nube que no es partida se rechaza.
+- **Nube**: tope de 6 MB por subida en el cliente; `SETUP_NUBE.md` §2b trae el SQL para el autor (tope en la base,
+  `revoke` a anon, `force row level security`) y 3 consultas para comprobar que nadie lee partidas ajenas.
+- **Railway**: `SERVIDOR_CONFIG.base` vacío. Una URL de Railway abandonada la puede reclamar otro y recibir las claves.
+- **CI**: el workflow corre con `permissions: contents: read` y sin guardar credenciales.
+- **Duelos**: aviso honesto en el panel (la conexión directa deja ver tu IP al rival; el rival no toca tu partida).
+- **Dev:** `csp_estricta` (política, que de verdad se aplique —eval tiene que fallar—, nada de `on*=` en pantalla,
+  CDN con huella, servidor propio en la lista, bloqueos de la sesión) y `partida_externa_no_pisa`. Al revés: sin CSP
+  → "index.html no tiene CSP…"; con `'unsafe-inline'` → falla; con el `E=nuevo` viejo → 4 problemas. Chequeo
+  estático en `correr_dev.sh`: CSP de index.html y ningún manejador inline en los `.js`.
+- **Estado:** doctor sano 118/118 (4 partidas + celular) · dev 593/593 · core 1185/1185 · servidores y duelos verdes ·
+  banco 255 sano (12 % despidos) · saves 12/12.

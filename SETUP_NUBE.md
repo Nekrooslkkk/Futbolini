@@ -39,6 +39,40 @@ create policy "cada quien su partida"
 Esto crea una fila por usuario y activa **Row Level Security**: cada jugador solo puede leer
 y escribir su propia partida. Nadie ve la de otro. Esa es la seguridad real.
 
+## 2b. Blindaje (7.9118) — correlo una vez, aunque ya tengas la tabla
+
+La llave pública va en el juego a propósito, así que **cualquiera puede hablarle a tu proyecto**. Lo que lo protege es
+lo de abajo. En **SQL Editor** → **New query** → pegá y **Run**:
+
+```sql
+-- 1) una partida no puede pesar más de 8 MB (una carrera larga pesa ~1 MB): nadie te llena la base gratis
+alter table public.saves drop constraint if exists saves_tamano;
+alter table public.saves add constraint saves_tamano check (pg_column_size(data) < 8000000);
+
+-- 2) sin cuenta no se toca la tabla, ni aunque un día se borre la política por error
+revoke all on table public.saves from anon;
+grant select, insert, update, delete on table public.saves to authenticated;
+
+-- 3) la regla "cada quien su partida" vale siempre
+alter table public.saves force row level security;
+```
+
+**Cómo comprobar que nadie puede leer ni borrar partidas ajenas** (también en SQL Editor):
+
+```sql
+-- tiene que salir: saves | true | true
+select relname, relrowsecurity, relforcerowsecurity from pg_class where relname = 'saves';
+-- tiene que salir VACÍO: tablas públicas sin RLS (si aparece alguna, cualquiera la lee y la borra)
+select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace
+ where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity;
+-- tiene que salir UNA política, la de "cada quien su partida", con auth.uid() = user_id
+select policyname, cmd, qual, with_check from pg_policies where schemaname = 'public';
+```
+
+Y en el panel: **Advisors → Security Advisor** (te marca en rojo cualquier tabla expuesta), **Authentication →
+Rate Limits** (dejá los de fábrica o más bajos), y **Authentication → Providers → Email**: clave mínima de 8 y
+"Leaked password protection" encendido si tu plan lo permite.
+
 ## 3. (Opcional) Sacar la confirmación por correo
 
 Para que la gente entre al toque sin confirmar el mail:

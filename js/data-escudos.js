@@ -99,13 +99,16 @@ function escudoSVG(id, px){
     '<path d="M20 2 L37 8 V22 C37 34 20 42 20 42 C20 42 3 34 3 22 V8 Z" fill="'+e.c1+'" stroke="'+e.c2+'" stroke-width="2.2"/>'+
     '<path d="M20 2 L37 8 V14 L3 14 V8 Z" fill="'+e.c2+'"/>'+
     '<circle cx="20" cy="26" r="8.5" fill="none" stroke="'+e.c2+'" stroke-width="1.4" opacity=".55"/>'+
-    '<text x="20" y="30" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="'+fs+'" fill="'+tc+'">'+txt+'</text>'+
+    '<text x="20" y="30" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="'+fs+'" fill="'+tc+'">'+_escAttr(txt)+'</text>'+
     '</svg>';
 }
 /* HTML listo para el glifo: archivo Commons/estilizado si hay, si no SVG inline, si no emoji */
 /* 7.9037 · escudo que ya falló (sin internet, archivo que falta): la próxima vez va el dibujo
    directo, sin <img> que falla de nuevo en cada tabla. */
 var _ESC_FALLO={};
+/* 7.9118 · nada de manejador onerror escrito dentro del HTML: la CSP lo bloquea y metía el id del club dentro de código.
+   Los datos van en atributos escapados y un solo escuchador (fase de captura) decide qué hacer si la imagen falla. */
+function _escAttr(v){ return String(v==null?"":v).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 function escudoHTML(id, px, fallbackEmoji){
   px=px||28;
   var f=typeof ESCUDOS_FOTOS!=="undefined" && (ESCUDOS_FOTOS[id]||(function(){ var c=(typeof clubLookup==="function")?clubLookup(id):null; var n=(c&&(c.n||c.c))||id; return ESCUDOS_FOTOS["n:"+n]; })());
@@ -113,7 +116,7 @@ function escudoHTML(id, px, fallbackEmoji){
     /* si el archivo no carga, NO desaparece: cae al escudo estilizado (o emoji). */
     return '<img class="esc-img" src="'+f.src+'" width="'+px+'" height="'+px+'" alt="" '+
       'style="width:'+px+'px;height:'+px+'px;object-fit:contain;display:block" '+
-      'onerror="if(window._escFall)_escFall(this,\''+id+'\','+px+',\''+(fallbackEmoji||"").replace(/\x27/g,"")+'\')">';
+      'data-esc-id="'+_escAttr(id)+'" data-esc-px="'+(px|0)+'" data-esc-emo="'+_escAttr(fallbackEmoji||"")+'">';
   }
   var s=escudoSVG(id, px);
   return s || (fallbackEmoji||"");
@@ -130,6 +133,12 @@ function _escFall(img, id, px, emoji){
   }catch(e){ try{ img.style.display="none"; }catch(_){ } }
 }
 if(typeof window!=="undefined") window._escFall=_escFall;
+function _imgFallo(ev){
+  var t=ev&&ev.target; if(!t||t.tagName!=="IMG"||!t.getAttribute) return;
+  if(t.hasAttribute("data-esc-id")){ var id=t.getAttribute("data-esc-id"); t.removeAttribute("data-esc-id"); _escFall(t, id, +t.getAttribute("data-esc-px")||28, t.getAttribute("data-esc-emo")||""); }
+  else if(t.hasAttribute("data-ocultar-si-falla")) t.style.display="none";
+}
+if(typeof document!=="undefined"&&document.addEventListener) document.addEventListener("error", _imgFallo, true);
 /* escudo chico inline para tablas/calendario (alineado al texto); "" si no hay */
 function escudoChip(id, px){
   px=px||18;

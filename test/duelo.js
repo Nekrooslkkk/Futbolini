@@ -4,7 +4,7 @@
   function ok(c,t){ OUT.push((c?"  ✅ ":"  ❌ ")+t); if(!c) malos++; }
   function fin(){ OUT.push("DUELO_DONE:"+(malos?"FAIL":"PASS")); document.getElementById("out").textContent=OUT.join("\n"); }
   var A,B;
-  function M(w){ return w.eval("MP"); }
+  function M(w){ return w.globalPorNombre("MP"); }
   function esperar(cond,ms){ return new Promise(function(res){ var t0=Date.now(); (function p(){ var v=false; try{ v=cond(); }catch(e){} if(v) return res(true); if(Date.now()-t0>ms) return res(false); setTimeout(p,50); })(); }); }
   function boton(w,txt){ return Array.prototype.find.call(w.document.querySelectorAll(".duelo-modal button"),function(b){ return b.textContent.indexOf(txt)>=0&&!b.disabled; }); }
   function clic(w,txt){ var b=boton(w,txt); if(b){ b.click(); return true; } return false; }
@@ -65,8 +65,8 @@
     campo(A,"password").value="otra"; clic(A,"Crear sala");
     await esperar(function(){ return A.document.querySelector(".duelo-codigo"); },5000);
     var cod2=M(A).codigo;
-    for(var i=0;i<A.eval("DUELO_MAX_MALAS");i++){ try{ await B.mpEntrarSala(cod2,"x"+i); }catch(e){} await esperar(function(){ return !M(B).conn; },3000); await new Promise(function(r){ setTimeout(r,400); }); }
-    ok(await esperar(function(){ return /cerramos la sala/.test(texto(A)); },5000),"después de "+A.eval("DUELO_MAX_MALAS")+" claves malas la sala se cierra");
+    for(var i=0;i<A.globalPorNombre("DUELO_MAX_MALAS");i++){ try{ await B.mpEntrarSala(cod2,"x"+i); }catch(e){} await esperar(function(){ return !M(B).conn; },3000); await new Promise(function(r){ setTimeout(r,400); }); }
+    ok(await esperar(function(){ return /cerramos la sala/.test(texto(A)); },5000),"después de "+A.globalPorNombre("DUELO_MAX_MALAS")+" claves malas la sala se cierra");
     fin();
   }
   window.addEventListener("load",function(){ correr().catch(function(e){ ok(false,"EXPLOTÓ: "+e.message); fin(); }); });

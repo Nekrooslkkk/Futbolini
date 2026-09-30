@@ -3382,7 +3382,16 @@ function descargarPartida(){
   setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); },200);
   aviso("Partida descargada");
 }
+/* 7.9118 · una partida que viene de afuera (archivo, nube) trae el _slot del aparato donde nació. Si calzaba con otra
+   partida tuya, guardar la pisaba sin preguntar. Ahora ocupa la ranura de la partida que reemplaza (lo que dice el
+   aviso) o una nueva si no había ninguna abierta. */
+function adoptarPartidaExterna(nuevo){
+  nuevo._slot=(E&&E.club&&typeof E._slot==="string"&&E._slot)?E._slot:nuevoSlotId();
+  return nuevo;
+}
 function cargarPartidaArchivo(f){
+  /* 7.9118 · una partida real pesa ~1 MB; un archivo de cientos de MB solo cuelga el navegador */
+  if(f&&f.size>25e6){ aviso("Ese archivo es demasiado grande para ser una partida"); return; }
   const lector=new FileReader();
   lector.onload=async()=>{
     let dato=null;
@@ -3391,7 +3400,7 @@ function cargarPartidaArchivo(f){
     if(!nuevo){ aviso("El archivo no es una partida de Futbolini"); return; }
     if(dato&&typeof dato.saveVer==="number"&&(!nuevo.saveVer||dato.saveVer>nuevo.saveVer)) nuevo.saveVer=dato.saveVer;
     if(E&&E.club && !confirm("Esto reemplaza tu partida actual por la del archivo. ¿Seguir?")) return;
-    E=nuevo; normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod();
+    E=adoptarPartidaExterna(nuevo); normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod();
     await guardar(); aviso("Partida cargada"); SEC="escritorio"; render();
   };
   lector.onerror=()=>aviso("No se pudo leer el archivo");
@@ -3502,8 +3511,9 @@ function pintarSesionNube(cc, opts){
   bBaj.onclick=async()=>{
     bBaj.disabled=true; const r=await nubeBajar(); bBaj.disabled=false;
     if(!r.ok){ aviso(r.msg); return; }
+    if(!r.estado||typeof r.estado!=="object"||!r.estado.club){ aviso("Lo que hay en la nube no es una partida válida"); return; }
     if(E&&E.club && !confirm("Esto reemplaza tu partida actual por la de la nube. ¿Seguir?")) return;
-    E=r.estado; normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod();
+    E=adoptarPartidaExterna(r.estado); normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod();
     await guardar(); if(opts.cerrar&&typeof cerrarModal==="function") cerrarModal();
     aviso("Partida bajada de la nube"); SEC="escritorio"; render();
   };

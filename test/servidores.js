@@ -10,7 +10,7 @@ function ok(c, t) { console.log((c ? "  ✅ " : "  ❌ ") + t); if (!c) malos++;
 function pedir(port, metodo, ruta, cuerpo, headers) {
   return new Promise(res => {
     const r = http.request({ host: "127.0.0.1", port, method: metodo, path: ruta, headers: Object.assign({ "Content-Type": "application/json" }, headers || {}) }, rr => {
-      let d = ""; rr.on("data", c => d += c); rr.on("end", () => res({ code: rr.statusCode, body: d }));
+      let d = ""; rr.on("data", c => d += c); rr.on("end", () => res({ code: rr.statusCode, body: d, h: rr.headers }));
     });
     r.on("error", e => res({ code: 0, body: String(e.message) }));
     if (cuerpo) r.write(cuerpo); r.end();
@@ -27,6 +27,7 @@ function levantar(args, env, port) {
   const p1 = 30000 + Math.floor(Math.random() * 20000);
   const s1 = await levantar(["servidor.js", String(p1)], {}, p1);
   ok((await pedir(p1, "GET", "/index.html")).code === 200, "sirve el juego");
+  { const r = await pedir(p1, "GET", "/index.html"); ok(r.h && r.h["x-frame-options"] === "SAMEORIGIN" && /frame-ancestors 'self'/.test(r.h["content-security-policy"] || "") && r.h["x-content-type-options"] === "nosniff", "7.9118 · no se deja meter en un iframe ajeno (clickjacking) y no adivina tipos"); }
   ok((await pedir(p1, "GET", "/%E0%A4%A")).code === 400, "una URL mal formada no lo tumba (400)");
   ok((await pedir(p1, "GET", "/index.html")).code === 200, "sigue vivo después de la URL rota");
   ok((await pedir(p1, "GET", "/.git/config")).code !== 200, "no sirve .git");
@@ -48,6 +49,7 @@ function levantar(args, env, port) {
   ok((await pedir(p2, "GET", "/api/bajar", null, { Authorization: "Bearer otro" })).code === 401, "un token inventado no entra");
   ok((await pedir(p2, "POST", "/api/datos", "{}", { "x-admin-key": "clave-admin-de-prueb" })).code === 403, "clave de admin equivocada: 403");
   ok((await pedir(p2, "GET", "/.git/config")).code !== 200, "no sirve .git");
+  { const r = await pedir(p2, "GET", "/index.html"); ok(r.code === 200 && r.h["x-frame-options"] === "SAMEORIGIN" && r.h["x-content-type-options"] === "nosniff", "7.9118 · el juego servido no se deja meter en un iframe ajeno"); }
   let bloqueado = false;
   for (let i = 0; i < 14; i++) {
     const r = await pedir(p2, "POST", "/api/entrar", JSON.stringify({ email: "a@b.cl", pass: "mala" + i }), { "X-Forwarded-For": "10.0.0." + i });

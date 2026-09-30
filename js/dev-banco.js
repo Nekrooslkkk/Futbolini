@@ -506,3 +506,63 @@ if(typeof devDoctorRegistrar==="function"){
       return f.length?_dmal(f.length+" problema(s)",f):_dok("partida envenenada (nombres, pareja, avisos, crónica, memoria, sombra, agenda, foto, __proto__) limpia en 7 secciones");
     }});
 }
+
+/* 7.9118 · CSP: el juego solo corre su propio código y solo habla con servidores de la lista. Se mira la política, que de
+   verdad esté activa (eval tiene que fallar), que nada en pantalla dependa de onclick/onerror escritos en el HTML y que
+   el navegador no haya bloqueado nada que el juego necesitaba. */
+function cspPolitica(){
+  const m=typeof document!=="undefined"&&document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+  if(!m) return null; const d={};
+  String(m.getAttribute("content")||"").split(";").forEach(x=>{ const p=x.trim().split(/\s+/); if(p[0]) d[p[0].toLowerCase()]=p.slice(1); });
+  return d;
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"csp_estricta", area:"interfaz", n:"Seguridad: la CSP deja correr solo el código del juego y hablar solo con servidores conocidos",
+    arreglo:"index.html <meta http-equiv=\"Content-Security-Policy\"> (script-src 'self', sin inline ni eval) · imágenes que fallan: atributos data-esc-id / data-ocultar-si-falla (js/data-escudos.js _imgFallo) · bloqueos en CSP_VIOLACIONES (js/util.js)",
+    fn:function(){
+      const f=[], d=cspPolitica();
+      if(!d) return _dmal("index.html no tiene CSP: cualquier HTML que se cuele puede correr código y mandar tus datos afuera");
+      const pruebas=!!document.querySelector('meta[name="futbolini-pruebas"]');
+      const sc=d["script-src"]||d["default-src"]||[];
+      ["'unsafe-inline'","*","https:","http:","data:","blob:"].forEach(x=>{ if(sc.indexOf(x)>=0) f.push("script-src permite "+x); });
+      if(sc.indexOf("'unsafe-eval'")>=0&&!pruebas) f.push("script-src permite 'unsafe-eval'");
+      [["object-src","'none'"],["base-uri","'self'"],["form-action","'none'"],["frame-src","'none'"]].forEach(x=>{ if(!d[x[0]]||d[x[0]].join(" ")!==x[1]) f.push(x[0]+" tiene que ser "+x[1]); });
+      ["img-src","connect-src","style-src","font-src","default-src"].forEach(k=>{ (d[k]||[]).forEach(v=>{ if(v==="*"||v==="https:"||v==="http:") f.push(k+" abierto a cualquier sitio ("+v+")"); }); });
+      if(sc.indexOf("'unsafe-eval'")<0){ let corre=false; try{ corre=(new Function("return 1"))()===1; }catch(e){} if(corre) f.push("la CSP está escrita pero no se aplica (eval corrió)"); }
+      const inl=[]; document.querySelectorAll("*").forEach(el=>{ for(const a of el.attributes){ if(/^on/i.test(a.name)){ inl.push("<"+el.tagName.toLowerCase()+" "+a.name+">"); break; } } });
+      if(inl.length) f.push(inl.length+" elemento(s) con "+inl[0]+" en pantalla: la CSP lo bloquea, usa addEventListener");
+      document.querySelectorAll('script[src],link[rel="stylesheet"][href]').forEach(el=>{ const u=el.getAttribute("src")||el.getAttribute("href")||"";
+        if(/^https?:/i.test(u)&&!/^https:\/\/fonts\.googleapis\.com\//.test(u)&&!el.integrity) f.push("se carga "+u.slice(0,60)+" de un CDN sin huella (integrity): si lo cambian allá, corre acá"); });
+      if(typeof AERO_7_WINDOW_SRI==="undefined"||!/^sha(256|384|512)-/.test(AERO_7_WINDOW_SRI)) f.push("7.css del CDN sin huella (js/ventanas.js AERO_7_WINDOW_SRI)");
+      const base=(typeof SERVIDOR_CONFIG!=="undefined"&&SERVIDOR_CONFIG.base)||"";
+      if(base){ let host=""; try{ host=new URL(base).origin; }catch(e){}
+        if(!/^https:/.test(base)) f.push("el servidor propio no usa https: "+base);
+        else if(!(d["connect-src"]||[]).some(v=>v===host||(v.indexOf("*.")>=0&&host.endsWith(v.split("*")[1])))) f.push("el servidor propio "+host+" no está en connect-src"); }
+      const v=(typeof CSP_VIOLACIONES!=="undefined"?CSP_VIOLACIONES:[]);
+      if(v.length) f.push(v.length+" bloqueo(s) de la CSP en esta sesión: "+v.slice(0,3).join(" · "));
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("solo código propio, sin eval, sin HTML con onclick; "+Object.keys(d).length+" reglas; 0 bloqueos");
+    }});
+}
+
+/* 7.9118 · importar un archivo o bajar de la nube reemplaza TU partida actual, nunca otra de Mis partidas por calzar
+   el _slot que traía de otro aparato. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"partida_externa_no_pisa", area:"motor", n:"Seguridad: una partida importada o bajada de la nube no pisa otra de tus partidas",
+    arreglo:"js/ui.js adoptarPartidaExterna() (cargarPartidaArchivo y el botón Bajar partida) · js/motor.js normalizarEstado() valida _slot",
+    fn:function(){
+      if(typeof adoptarPartidaExterna!=="function") return _dmal("falta adoptarPartidaExterna(): la partida de afuera guarda en la ranura que trae");
+      const f=[], prev=E;
+      try{
+        E={club:"UC",_slot:"pActual"};
+        if(adoptarPartidaExterna({club:"CC",_slot:"pOtraTuya"})._slot!=="pActual") f.push("con una partida abierta, la importada no ocupa su ranura (pisa la que traía en el archivo)");
+        E=null;
+        const n=adoptarPartidaExterna({club:"CC",_slot:"pOtraTuya"})._slot;
+        if(n==="pOtraTuya"||!n) f.push("sin partida abierta, la importada usa la ranura del archivo en vez de una nueva");
+      }finally{ E=prev; }
+      ["cargarPartidaArchivo","pintarSesionNube"].forEach(nom=>{ const fn=window[nom]; if(typeof fn!=="function") return;
+        const src=typeof _docFuente==="function"?_docFuente(fn):String(fn);
+        if(/E\s*=\s*(nuevo|r\.estado)\s*;/.test(src)) f.push(nom+"() asigna la partida de afuera sin adoptarPartidaExterna()"); });
+      if(E&&E._slot!=null&&!/^[A-Za-z0-9_-]{1,40}$/.test(String(E._slot))) f.push("tu partida tiene una ranura con forma rara: "+String(E._slot).slice(0,30));
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("la de afuera ocupa la ranura que reemplaza, o una nueva");
+    }});
+}

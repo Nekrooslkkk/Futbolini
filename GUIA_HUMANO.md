@@ -27,6 +27,14 @@ Estas cosas ni Grok ni yo las podemos hacer. Son las que más valen.
   Diez líneas así valen más que "el mercado está fome": me dicen exactamente qué arreglar.
 - [ ] **Probar en tu celular real** (no en el emulador). Lo que falla en un teléfono de verdad (teclado que tapa,
   dedo gordo, sol en la pantalla) no lo ve ningún test. Sácale pantallazos y súbelos a `img/_reportes/`.
+- [ ] **Blindar tu Supabase (10 minutos, 7.9118).** La llave pública va en el juego a propósito; lo que impide que
+  alguien lea o borre partidas ajenas, o te llene la base gratis, son las reglas de la base. Desde acá no puedo
+  entrar a revisarla. Abre `SETUP_NUBE.md` §2b, pega el SQL en *SQL Editor* → *Run*, y corre las 3 consultas de
+  comprobación: tienen que salir exactamente como dice ahí. Después mira *Advisors → Security Advisor*: no puede
+  quedar nada en rojo.
+- [ ] **Railway:** si ya no lo usas, borra el proyecto en railway.app (el juego ya no apunta ahí desde 7.9118).
+- [ ] **Tu cuenta de GitHub:** verificación en dos pasos encendida (Settings → Password and authentication). Si
+  alguien entra a tu GitHub, cambia el juego para todos: es lo más valioso que tienes que cuidar.
 - [ ] **Probar el login por código con tu correo** (desde acá no llega a Supabase; ya está en `IDEAS.md`).
 - [ ] **Planteles reales:** Limache 2026 y correcciones a los grandes. Pásalos como tabla simple
   (`nombre | posición | edad | nivel estimado`) en `data/`. Yo los convierto.

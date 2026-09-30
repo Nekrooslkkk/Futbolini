@@ -2347,3 +2347,13 @@ comentario. Solo cambia la lista si la fuente es clara; si no, anótalo acá. No
 `normalizarEstado`. **Cualquier texto guardado en `E` pierde las etiquetas HTML salvo `b/i/em/strong/br`.** Si
 necesitan color o formato en un aviso o crónica, no guarden `<span class>` en el estado: guarden el dato y armen el
 HTML al pintar. La foto de perfil solo puede ser `data:image/...;base64`. El doctor `xss_partida_cargada` lo vigila.
+
+**7.9118 (Claude Opus) · CSP estricta. LEER antes de tocar HTML o agregar recursos.**
+- **Prohibido** `onclick="…"`, `onerror="…"` o cualquier `on*=` dentro de strings HTML: la CSP lo bloquea y la función
+  muere callada. Usen `el.onclick=` / `addEventListener`. Para imágenes que pueden fallar: `data-ocultar-si-falla="1"`.
+  `correr_dev.sh` lo revisa en todos los `.js`.
+- **Prohibido** `eval` / `new Function` en el juego. Si el modo dev necesita un `const` global por nombre, agréguenlo a
+  `_GLOBALES_LEX` en `js/util.js` y usen `globalPorNombre("X")`.
+- ¿Un CDN, una fuente de imágenes o un servidor nuevo? Va en la CSP de `index.html` (y con `integrity` si es CSS/JS de
+  CDN), o el navegador lo bloquea. El doctor `csp_estricta` muestra cada bloqueo (`CSP_VIOLACIONES`).
+- Partidas que vienen de afuera: `adoptarPartidaExterna()` antes de `normalizarEstado()`.

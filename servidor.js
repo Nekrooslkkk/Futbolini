@@ -41,7 +41,8 @@ function presenciaN(id){
 
 function send(res,code,body,type){
   res.writeHead(code,{"Content-Type":type||"text/plain; charset=utf-8","Cache-Control":"no-cache",
-    "X-Content-Type-Options":"nosniff","Referrer-Policy":"same-origin"});
+    "X-Content-Type-Options":"nosniff","Referrer-Policy":"same-origin",
+    "X-Frame-Options":"SAMEORIGIN","Content-Security-Policy":"frame-ancestors 'self'"});   /* 7.9118 · sin clickjacking */
   res.end(body);
 }
 /* 7.9116 · el cuerpo de un POST tiene tope (8 KB): antes se acumulaba sin límite y se podía llenar la memoria */

@@ -2029,7 +2029,7 @@ function devVoseo(){
   function mira(donde,txt){ if(!txt||out.length>=12) return; var m=String(txt).match(VOSEO_RX); if(m){ var k=donde+m[1]; if(vistos[k]) return; vistos[k]=1;
     var i=String(txt).toLowerCase().indexOf(m[1].toLowerCase()); out.push(donde+": «"+String(txt).slice(Math.max(0,i-40),i+30).replace(/\s+/g," ")+"»"); } }
   ["BOLSA","DECISIONES","EVENTOS","CRISIS","LOGROS","DEC_PROC","ESTATUTOS","GRUPOS","INTERACCIONES","LUJOS","REPUTACION","SALIDAS","ENCADENADAS","CHARLAS_MATCH","VIDA_PROC","ALMA_9077","ALMA_EPOCA"].forEach(function(n){
-    var v; try{ v=window[n]!==undefined?window[n]:eval("typeof "+n+"!=='undefined'?"+n+":undefined"); }catch(e){ v=undefined; }
+    var v=globalPorNombre(n);
     if(v===undefined) return;
     var txt; try{ txt=JSON.stringify(v); }catch(e){ return; }
     (txt.match(/"(?:[^"\\]|\\.){12,}"/g)||[]).forEach(function(s){ mira(n,s); });
@@ -2112,7 +2112,7 @@ devDoctorRegistrar({id:"arranque_justo", area:"motor", n:"Un club chico no nace 
    estilizado con sus colores si no, y generado con la sigla para el resto (1925, CONMEBOL por nombre) */
 function devEscudos(){
   var ids={}, add=function(id,n){ if(id&&!ids[id]) ids[id]=n||id; };
-  ["LIGA_2026","LIGA_B_2026","LIGA_C_2026","LIGA_2006","LIGA_1925","LIGA_ARG_2026"].forEach(function(k){ var L; try{ L=eval(k); }catch(e){ L=null; } if(!L) return; (Array.isArray(L)?L:Object.keys(L).map(function(x){ return L[x]; })).forEach(function(c){ if(c&&c.id) add(c.id,c.n||c.c); }); });
+  ["LIGA_2026","LIGA_B_2026","LIGA_C_2026","LIGA_2006","LIGA_1925","LIGA_ARG_2026"].forEach(function(k){ var L=globalPorNombre(k); if(!L) return; (Array.isArray(L)?L:Object.keys(L).map(function(x){ return L[x]; })).forEach(function(c){ if(c&&c.id) add(c.id,c.n||c.c); }); });
   try{ (POOL_CONMEBOL||[]).forEach(function(c){ if(c&&c.n) add(c.n,c.n); }); }catch(e){}
   var r={total:0,archivo:0,estilizado:0,generado:0,sin:[]};
   Object.keys(ids).forEach(function(id){ r.total++;

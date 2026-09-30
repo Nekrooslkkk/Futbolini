@@ -9,7 +9,7 @@
    ============================================================ */
 
 const SERVIDOR_CONFIG = {
-  base: "https://web-production-363f4.up.railway.app"
+  base: ""   /* 7.9118 · vacío: Railway no se usa. Una URL muerta se la puede quedar otro y recibir las claves de los jugadores */
 };
 const SRV_LLAVE = "futbolini_srv_sesion";
 

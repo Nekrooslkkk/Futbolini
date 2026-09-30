@@ -13,7 +13,6 @@
    ============================================================ */
 (function(){
 
-  function _arr(nombre){ try{ return (typeof window[nombre]!=="undefined")?window[nombre]:(eval("typeof "+nombre+"!=='undefined'")?eval(nombre):null); }catch(e){ return null; } }
   /* const globales no cuelgan de window; los tomo por nombre explícito */
   function _DEC(){ return (typeof DECISIONES!=="undefined")?DECISIONES:[]; }
   function _ARC(){ return (typeof ARCOS_EQUIPO!=="undefined")?ARCOS_EQUIPO:{}; }

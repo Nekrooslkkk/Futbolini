@@ -57,6 +57,26 @@ for x in mal: print("  ❌ "+x)
 print("  ok: todos los escudos existen y los de Commons tienen crédito" if not mal else "")
 sys.exit(1 if mal else 0)
 PY
+# 7.9118 · la CSP del juego real: nada inline ni eval en script-src, y ningún onclick="…"/onerror="…" armado en los .js
+echo "· CSP y manejadores inline"
+python3 - <<'PY' || exit 1
+import re,sys,glob
+h=open("index.html",encoding="utf-8").read(); mal=[]
+m=re.search(r'http-equiv="Content-Security-Policy" content="([^"]+)"',h)
+if not m: mal.append("index.html sin CSP")
+else:
+    sc=next((d.split()[1:] for d in m.group(1).split(";") if d.strip().startswith("script-src")),[])
+    for x in ("'unsafe-inline'","'unsafe-eval'","*","https:","data:","blob:"):
+        if x in sc: mal.append("script-src permite "+x)
+if re.search(r'<script(?![^>]*\bsrc=)[^>]*>',h): mal.append("index.html tiene un <script> inline")
+for f in sorted(glob.glob("js/*.js")):
+    if "dev-banco" in f: continue
+    for i,l in enumerate(open(f,encoding="utf-8"),1):
+        if re.search(r"""\son(?:click|error|load|change|input|submit|mouse\w+|key\w+|focus|blur)=\\?["']""",l): mal.append(f"{f}:{i} manejador inline en HTML (usa addEventListener)")
+for x in mal: print("  ❌ "+x)
+print("  ok: CSP estricta y sin manejadores inline" if not mal else "")
+sys.exit(1 if mal else 0)
+PY
 # 7.9116 · los servidores atacados de verdad (URL rota, archivos ocultos, tokens, fuerza bruta) y el duelo en sala
 # jugado entre dos copias del juego. Si falla cualquiera, no se sube.
 echo "· servidores (servidor.js y server/index.js)"
@@ -76,6 +96,8 @@ python3 - "$PAGE" <<'PY'
 import sys
 s=open("index.html",encoding="utf-8").read()
 inject='<pre id="out">corriendo...</pre>\n<script src="test/pruebas_dev.js"></script>\n</body>'
+# 7.9118 · el editor genera .js y la prueba los valida con new Function: SOLO en esta copia se permite eval (y queda marcada)
+s=s.replace("script-src 'self'","script-src 'self' 'unsafe-eval'",1).replace('<meta charset="utf-8">','<meta charset="utf-8">\n<meta name="futbolini-pruebas" content="1">',1)
 open(sys.argv[1],"w",encoding="utf-8").write(s.replace("</body>",inject))
 PY
 cp "$PAGE" ./_pruebas_dev_tmp.html
