@@ -1,4 +1,4 @@
-# CHECKLIST 8.00 — el camino (actualizado 29 sep 2026, 7.9113)
+# CHECKLIST 8.00 — el camino (actualizado 30 sep 2026, 7.9115)
 
 ## ROAD TO 8.00 · revisión completa (29 sep 2026, Opus 5.5) — Opus · Grok · Sonnet · ChatGPT
 **Dónde estamos, sin maquillaje:** el motor ya no se cae. 255 arranques × 3 temporadas sin fallas, partidas de 7.9003
@@ -11,7 +11,7 @@ puerta humana sin abrir. Ninguna IA puede abrir la puerta 4: esa es tuya.
 |---|---|---|
 | 1 · Doctor + suites + banco + saves | 🟢 abierta | mantenerla: cada tanda corre las 5 pruebas antes de subir |
 | 2 · Cero deuda | 🟡 5 ítems | negociación, camisetas, voz PLOP, textos 2–4, "economía quedó corta" |
-| 3 · Celu barato (CPU 6×) | 🟡 sin medir | se midió a 4× (7.9107); desde la cancha cenital y el 3D poblado hay que re-medir |
+| 3 · Celu barato (CPU 6×) | 🟢 medida (7.9115) | secciones ≤212 ms, semana ≤337 ms, partido 2,5 % lentos; falta el Android real (humano) |
 | 4 · Humanos | 🔴 cerrada | tu temporada con un club chico + 2–3 amigos 30 min |
 
 ### Qué pulir, en orden (y quién)
@@ -19,8 +19,8 @@ puerta humana sin abrir. Ninguna IA puede abrir la puerta 4: esa es tuya.
    rama `claude/preguntas-mundo-vivo-ion29g`, falta pasarlo a `main` con las 5 pruebas.
 2. **Temas:** insano con la barra de Jugar abajo (arreglado en 7.9113: `filter` animado en el body) → **Opus**. Después,
    una pasada de contraste por sección en negro/claro/insano (lo nuevo: "Tu vida hoy", cancha, balón parado).
-3. **Puerta 3:** medir con CPU 6× partido en vivo, avanzar semana y cada sección; si algo pasa de 400 ms, cortarlo
-   → **Opus**.
+3. ~~**Puerta 3:** medir con CPU 6×~~ ✅ 7.9115 (y se sacó un trabón de ~2 s al entrar al partido). Queda probar en un
+   Android real → **tú**.
 4. **Economía larga:** correr el banco a 10 temporadas en 20 clubes y mirar deriva de caja, deuda, planilla y
    sueldos → **Opus** mide, **Grok** trae caja/deuda real de B y Segunda con fuente (G3), **tú** dices qué te
    quedó corto (5 líneas de juego real, sin eso no se toca).
@@ -64,7 +64,7 @@ Sistemas que el autor pidió y todavía no existen o están a medias.
 - [x] **Cancha en vivo cenital tipo GTA con dibujo tipo PES**, sin parpadeo en el celu (7.9111)
 - [x] Balón parado 3D con el área poblada por reglamento (7.9111)
 - [x] Vida: "Tu vida hoy" + sueldo y gastos a la escala del club (7.9111)
-- [ ] Camisetas reales en la cancha → encargado a Grok (G1 en `ChatDeTrabajIA.md`)
+- [x] Camisetas reales en la cancha (7.9114, `js/data-kits.js`)
 - [x] **Segunda por zonas:** cierre de temporada cuadra fecha a fecha, sin −999 (7.9094)
 - [x] **Segunda: arranque sin caja** → caja real + fila de decisiones + umbrales a escala + ayudante prudente (7.9106)
 - [ ] **Voz por club en PLOP** → encargado a Sonnet (bloque 5 de PROMPT_SONNET_TEXTOS.md) (hoy 14 plantillas iguales para 46 clubes; anotado por Sonnet en 7.9091)

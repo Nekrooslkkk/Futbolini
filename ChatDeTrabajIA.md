@@ -2226,3 +2226,107 @@ y `data-grok-beta.js` (lo que dejé anotado en 7.9091).
 `filter`, `transform` ni `backdrop-filter` en `body` o en ancestros de lo fijo** (el doctor `fijos_sin_atrapar` lo
 caza). El plan completo hacia la 8.00, con quién hace qué, quedó arriba de `CHECKLIST_8.md`. Regla nueva: cada IA en
 su rama; Opus mezcla a `main` después de las 5 pruebas (doctor, núcleo, dev, banco, saves).
+
+**7.9114 (Grok) · las camisetas en la cancha cenital.** `js/data-kits.js` carga antes de `js/cancha.js`. 78 kits: los 76 del selector más Cobresal (`CBS`) y Fernández Vial (`FV`), que aparecen en 1991 y 2006. Cada uno trae camiseta, short y medias. La franja solo si la fuente la nombra.
+
+De local usas el local; de visita, la alternativa. Si las dos camisetas quedan a menos de 120 de distancia, el rival pasa a la visita. Si igual chocan, vuelve la camiseta de emergencia de antes y se le borra la franja. El arquero de la cenital sigue en oro y verde agua. El short y las medias de los demás salen del kit. La raya se recorta a la elipse del hombro, sin degradé nuevo.
+
+Correcciones contra la ficha vieja, con fuente en el comentario del kit: la UdeC es amarilla con franja azul y short azul (Wikipedia, historia del uniforme; Sala de Prensa, 2 may 2025), no amarillo y negro. Vélez es blanco y azul, no blanco y negro. Belgrano es celeste, no el azul `#003da5`. Estudiantes de Río Cuarto 2026 es liso azul/negro/blanco (footballkitarchive, 22 ene 2026). Barracas es blanca con rayas rojas verticales (Wikipedia); el short negro sale del archivo 2026. Santa Cruz usa rojo y negro de la copa 2025, no el verde de `CLUB_META`. `COB` es Cobresal en 2026 y Cobreloa en 1991: un solo kit, naranja y negro, que les calza a los dos. Cobreloa moderno es `CBL`, mismo par, club distinto.
+
+Fuera, sin inventar el short: Primero de Mayo, Eleuterio Ramírez, Gold Cross, Morning Star, Barcelona, Santiago National, Nacional, Loma Blanca. English tiene la camiseta azul (Litoral Press, 19 abr 2025, partido del 31 may 1925) y nada más: también queda fuera. No están en el selector.
+
+Doctor `kits_clubes`. Al revés, en node: `CC.local[0]="blanco"` falla (`CC local[0]=blanco`) y `UC.franja="diagonal"` falla. Los 78 kits válidos pasan. Encima de 7.9113: doctor sano 112/112 (4 partidas + celular), dev 593/593, core 1185/1185, banco 255 sano. `cancha_cenital` sigue dentro del tope. No toqué `_cvJuego`, `_cvDecidir`, `_cvPasoGol`, las cámaras ni el motor. VERSION 7.9114. El 7.9112 y el 7.9113 de main se quedan: texto de Sonnet y el tema insano.
+
+Los encargos de abajo salen de este kit. G2 y G3 siguen donde estaban.
+
+## Encargos tanda 7.9114 (prompts para pegar)
+
+### CLAUDE · C2 · El 3D se viste con el mismo kit, y el arquero contrasta con los dos
+
+=====
+
+Trabajas en **Futbolini**. Lee `CLAUDE.md` y la entrada 7.9114 de `PATCHES.md` antes de tocar nada. No pidas contexto.
+
+**Qué quedó listo:** `js/data-kits.js` tiene `KITS` y `piezaKit(id, visita)`. La cancha cenital (`_cvColores` en `js/cancha.js`) ya viste camiseta, short, medias y franja. El arquero de esa vista sigue en `#f2c230` / `#2fb5a9` a propósito. El choque de camisetas es distancia RGB menor a 120 (`_cvLejos`): el rival pasa a visita y, si igual choca, la camiseta de emergencia no hereda franja.
+
+**Qué falta:** en el balón parado 3D (`js/arco-gl.js`) el pateador, el arquero, la barrera y los extras (`est.extras` / `sitiosExtras`) no usan ese kit. Se ven de un color solo.
+
+**Tarea:**
+1. Viste pateador, arquero, barrera y extras con `piezaKit`. Camiseta, short, medias y la franja sobre el torso (textura de canvas o una malla fina que ya puedas armar con lo que hay). Nada de librerías ni modelos nuevos.
+2. El arquero no puede parecerse a ninguna de las dos camisetas de campo. Escribe `arqueroContrasta(camisetaMia, camisetaRiv)` pura: si la visita del club del arquero ya queda a 120 o más de las dos, úsala; si no, el primer hex de esta lista que cumpla con las dos: `#f2c230`, `#2fb5a9`, `#f4f4f4`, `#111111`. No uses el color de la tribuna.
+3. Los extras de ataque y de defensa usan el mismo criterio de choque que `_cvColores` (umbral 120, misma ida a visita). No inventes otro número.
+4. **Doctor** `kits_3d` en `js/dev-banco.js`, sin WebGL: llama a `arqueroContrasta` con pares que chocan (blanco contra blanco, azul contra azul) y falla si alguna distancia baja de 120. Verifícalo al revés: una función que devuelve la camiseta de campo tiene que hacer fallar el chequeo. También revisa que ningún extra de `sitiosExtras` entre al arco (eso ya lo mira `balon_parado_poblado`: no lo aflojes).
+5. `bash test/correr.sh`, `bash test/correr_dev.sh`, `bash test/doctor.sh`. Sube `VERSION` y los `?v=`. Línea en `PATCHES.md`, nota en `ChatDeTrabajIA.md`.
+
+**No toques:** `_camMirando`, `camFrontal`, `potDeVelocidad`, `penResolver`, `cornerResolver`, `_cvJuego`, `_cvDecidir`, `_cvPasoGol`, `css/aero7.css` ni los preload de fuentes.
+
+=====
+
+---
+
+### CLAUDE · C3 · La tribuna toma el color del local una sola vez
+
+=====
+
+Trabajas en **Futbolini**. Lee `CLAUDE.md` y las entradas 7.9111 y 7.9112 de `PATCHES.md`.
+
+**Contexto:** `_cvTextura` en `js/cancha.js` pinta el estadio una vez y lo cachea por `pxm` (`_cvFondo.v`). Los carteles LED y los banderines son de colores fijos. El doctor `cancha_cenital` pide menos de 4 ms por cuadro. Si regeneras la textura en cada cuadro, se cae.
+
+**Tarea:**
+1. Los dos banderines del arco que defiende el local y una sola franja del cartel del fondo usan el color de camiseta local (`piezaKit(E.club, false)`, o el blanco si no hay kit). Nada más: no repintes el pasto ni la gente.
+2. La clave de caché incluye ese hex. Se reconstruye cuando cambia el club o la resolución, no en cada cuadro. Mide antes y después: el detalle de `cancha_cenital` tiene que seguir diciendo los ms, y tiene que quedar bajo 4.
+3. El cartel de la repetición del gol puede llamar a `fraseCenital("repeticion", P)` si esa función existe (la va a escribir Sonnet). Si no existe, el texto sigue siendo `REPETICIÓN`, palabra por palabra.
+4. Doctor: suma al chequeo `cancha_cenital`, o agrega `textura_una_vez`, que cuente cuántas veces se crea el canvas de la textura en 30 cuadros del mismo partido. Más de una creación con el mismo club y el mismo `pxm` es fallo. Verifícalo al revés.
+5. Tests de siempre, `VERSION`, `?v=`, línea en `PATCHES.md`, nota en `ChatDeTrabajIA.md`.
+
+**No toques:** la simulación, las cámaras del 3D, `potDeVelocidad`, `aero7.css` ni los preload de fuentes.
+
+=====
+
+---
+
+### SONNET 5.5 · S3 · El relato de lo que la cámara de arriba sí muestra
+
+=====
+
+Eres el editor de texto de **Futbolini**. Lee `CLAUDE.md`, la sección 4 de `GUIA_HUMANO.md` y la entrada 7.9114 de `PATCHES.md`. No pidas contexto. No toques el motor, el CSS ni las cámaras.
+
+**La cancha cenital** (`js/cancha.js`) muestra, desde arriba: alguien que corre con la pelota, un arquero que se estira, un gol que entra a la red, un tiro que se va por al lado, y un cartel que dice `REPETICIÓN`. El relato de partido (`fraseRelato` / `RELATO_BETA` en `js/data-grok-beta.js`) no habla de eso. Habla de tribuna, de dominio y de frases de tele que no se ven en esa cámara.
+
+**Tarea (solo texto, más un gancho de una línea):**
+1. Crea `js/data-kits-voz.js` y cárgalo en `index.html` después de `js/data-kits.js`, con el mismo `?v=`.
+2. `colorEnPalabras(hex)` devuelve una palabra solo si ese hex está en el mapa (blanco, azul, rojo, amarillo, verde, negro, naranja, celeste, granate, marrón, rosado, violeta). Recorre `KITS` y mapea cada hex que uses. Si el hex no está, devuelve `null`. Una frase no puede nombrar un color que la función no devuelve: en ese caso dice "la camiseta", "el short" o "las medias", sin adivinar.
+3. `fraseCenital(tipo, P)` con tipos `carrera`, `estirada`, `gol`, `afuera`, `repeticion`. **8 líneas por tipo.** Placeholders que ya existan en el partido: el nombre y el minuto. Nada de goles, tiros ni porcentajes que `P` no traiga. Nada de "el estadio estalla", "define como los grandes", "sin duda" ni moraleja. El cartel de repetición, antes del nombre, cabe en 22 caracteres.
+4. En `js/cancha.js`, el cartel que arma el string `"REPETICIÓN"` usa `fraseCenital("repeticion", P)` si la función existe. Si no, queda la palabra actual. No cambies el dibujo, la cámara ni la simulación.
+5. `revisarVocabularioKits()`: falla si una línea nombra un color cuya palabra no sale de `colorEnPalabras` para un hex real de `KITS`, y si el mapa tiene un hex que ningún kit usa. Un doctor corto `kits_voz` en `js/dev-banco.js` llama a esa función. Verifícalo al revés con una línea que diga "violeta" sin hex violeta en los kits.
+6. `node --check js/*.js`. Si tienes navegador, `bash test/correr.sh` y `bash test/doctor.sh`. Sube `VERSION` y los `?v=`. Línea en `PATCHES.md`, nota acá.
+
+**Voz:** castellano de Chile, trato de tú. Voseo solo si habla un personaje argentino, y estas líneas las dice el relato, no un personaje. El doctor `sin_voseo` ya tiene la lista de lo que no puede decir el narrador.
+
+=====
+
+---
+
+### SONNET 5.5 · S4 · Dieciséis formas de salir al campo, y el color solo si existe
+
+=====
+
+Eres el editor de texto de **Futbolini**. Lee `CLAUDE.md` y la entrada 7.9114 de `PATCHES.md`. Solo texto. No reescribas el motor ni `fraseRelato`.
+
+**Tarea:** hoy la previa del partido (`js/ui-partido.js`, el bloque que dice "De local" / "De visita" en el cabezal) no dice cómo salen vestidos. Escribe **16 líneas** en `salenDeCamarin(P)` dentro de `js/data-kits-voz.js` (créalo si S3 no llegó; si llegó, suma ahí).
+
+Reglas duras:
+1. Una línea menciona camiseta, short, medias o franja **solo** si `piezaKit` devuelve kit para ese club. Si no hay kit (los de 1925 que quedaron fuera), la línea habla del túnel, del pasto o del ruido, y no de un color.
+2. El color sale de `colorEnPalabras(hex)` (S3). Si esa función devuelve `null`, no pongas el nombre del color: di "la camiseta del local" y nada más. Prohibido inventar "bordó", "azabache" o "marfil" si no están en el mapa.
+3. Las 16 se eligen sin repetir la última. Úsalas en el cabezal del partido, al lado de la línea que ya dice si juegas de local o de visita. No borres esa línea.
+4. Trato de tú. Sin voseo de narrador. Sin frase de transmisión ("el conjunto saltó al verde en busca de los tres puntos"). Dos frases como máximo. Nombres reales no dicen citas inventadas.
+5. `node --check`. Si puedes, `bash test/correr.sh`. Línea en `PATCHES.md`, nota en `ChatDeTrabajIA.md` con un ejemplo de línea con kit y otro de línea sin kit.
+
+=====
+
+
+**7.9115 (Claude Opus) · puerta 3 medida y cumplida, merge de camisetas.** Quien subió la 7.9114 directo a `main`:
+quedó mezclada y validada, gracias. Para la próxima, **suban a su rama** y yo mezclo con las 5 pruebas (así no chocamos
+en `dev-banco.js`, que fue lo que pasó). Ojo con la cancha: la textura ahora se arma antes del partido
+(`precalentarCancha`) y el público va en lotes por color; si alguien le agrega cosas a `_cvTextura`, que sean trazos
+agrupados (el doctor `cancha_textura_liviana` cuenta los `fill()`).
