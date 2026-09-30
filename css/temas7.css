@@ -304,3 +304,21 @@ html body[data-tema="negro"] .cs-tab{ background:linear-gradient(180deg,#2b3440,
    ni se pintan hasta que llegas a ellos. Cambiar de sección cuesta ~43 % menos (59 → 33 ms en PC; en un celu flaco
    es la diferencia entre 1,2 s y 0,7 s). El tamaño estimado se recuerda al verlos una vez (auto). ---------- */
 html body.perf #vista .panel{ content-visibility:auto; contain-intrinsic-size:auto 320px; }
+
+/* ---------- 7.9120 · 🥔 MODO PAPA (js/papa.js): el juego completo, sin nada que le cueste a un celu flaco ----------
+   Nada se anima ni transiciona, sin sombras ni desenfoques (lo más caro de pintar), fondo quieto, paneles fuera de
+   pantalla sin calcular. El foco del teclado se sigue viendo (va con outline, no con sombra). */
+/* :not(#papa):not(#papa2) sube la especificidad a dos ids: los temas ponen sombras con !important y reglas más específicas */
+html.papa:not(#papa):not(#papa2) body *, html.papa:not(#papa):not(#papa2) body *::before, html.papa:not(#papa):not(#papa2) body *::after{
+  animation:none !important; transition:none !important;
+  box-shadow:none !important; text-shadow:none !important;
+  backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+}
+html.papa:not(#papa):not(#papa2) #fondo .capa:not(.cielo), html.papa:not(#papa):not(#papa2) .burbujas{ display:none !important; }
+html.papa:not(#papa):not(#papa2) .barrita i::after{ display:none !important; }
+html.papa #vista .panel{ content-visibility:auto; contain-intrinsic-size:auto 320px; }
+html.papa :focus-visible{ outline:2px solid #1e6fd9 !important; outline-offset:1px; }
+/* el botón de la pantalla de inicio */
+.arr-papa{ margin-top:14px; background:none; border:1px solid rgba(255,255,255,.55); color:#fff; border-radius:14px;
+  padding:6px 12px; font-size:12.5px; cursor:pointer; opacity:.92; }
+.arr-papa:hover{ background:rgba(255,255,255,.12); }

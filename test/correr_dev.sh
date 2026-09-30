@@ -105,6 +105,9 @@ echo "· servidores (servidor.js y server/index.js)"
 if command -v node >/dev/null 2>&1; then node test/servidores.js || exit 1; else echo "  ⚠ sin node: no se prueban los servidores"; fi
 echo "· duelos en sala"
 bash test/duelo.sh || exit 1
+# 7.9120 · 🥔 Modo papa: el juego juntado en un archivo es el mismo juego (doctor entero adentro) y el service worker lo sirve
+echo "· modo papa"
+bash test/papa.sh || exit 1
 CHROME_BIN="${CHROME:-}"
 if [ -z "$CHROME_BIN" ]; then
   for c in chromium google-chrome google-chrome-stable chromium-browser /opt/pw-browsers/chromium; do

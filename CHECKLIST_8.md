@@ -11,7 +11,7 @@ puerta humana sin abrir. Ninguna IA puede abrir la puerta 4: esa es tuya.
 |---|---|---|
 | 1 · Doctor + suites + banco + saves | 🟢 abierta | mantenerla: cada tanda corre las 5 pruebas antes de subir |
 | 2 · Cero deuda | 🟡 5 ítems | negociación, camisetas, voz PLOP, textos 2–4, "economía quedó corta" |
-| 3 · Celu barato (CPU 6×) | 🟢 medida (7.9115, 7.9119) | secciones ≤212 ms, semana ≤337 ms, partido 2,5 % lentos; 0 % CPU con el juego quieto y −43 % al cambiar de sección en liviano (7.9119); falta el Android real (humano) |
+| 3 · Celu barato (CPU 6×) | 🟢 medida (7.9115, 7.9119) | secciones ≤212 ms, semana ≤337 ms, partido 2,5 % lentos; 0 % CPU con el juego quieto y −43 % al cambiar de sección en liviano (7.9119); 🥔 Modo papa abre 3× más rápido (7.9120); falta el Android real (humano) |
 | 4 · Humanos | 🔴 cerrada | tu temporada con un club chico + 2–3 amigos 30 min |
 
 ### Qué pulir, en orden (y quién)

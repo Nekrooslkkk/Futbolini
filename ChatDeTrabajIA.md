@@ -2366,3 +2366,13 @@ HTML al pintar. La foto de perfil solo puede ser `data:image/...;base64`. El doc
   de un panel** (queda encerrado). Lo fijo va al `body`. Doctor `liviano_paneles`.
 - Formatear plata o números: `plata()` / `numCL(n,dec)`, no `toLocaleString(…,{opciones})` en bucles.
 - La nube está **apagada** (`NUBE_CONFIG` vacío) hasta que el autor cree un proyecto nuevo. No la prendan.
+
+**7.9120 (Claude Opus) · 🥔 Modo papa. LEER si tocan index.html, sw.js o agregan un .js:**
+- Con el Modo papa el juego corre **juntado en un solo archivo** (el service worker lo arma con `js/papa-armar.js`).
+  Para que eso siga funcionando: todo `.js` nuevo va en `index.html` como `<script src="js/…?v=…"></script>` (una
+  línea, ese formato exacto), empieza con `"use strict"`, y sus `const`/`let` de primer nivel van **sin sangría**
+  (los de adentro de funciones, con sangría). Nada de nombres globales que ya existan en `window` (`name`, `status`,
+  `top`…).
+- Antes de subir: `bash test/papa.sh` (corre solo dentro de `correr_dev.sh`): corre el doctor entero dentro del
+  juego juntado. Si algo solo falla ahí, casi siempre es un `typeof` de algo que se declara en un archivo posterior.
+- CSS del modo papa: `html.papa:not(#papa):not(#papa2) …` al final de `css/temas7.css`.

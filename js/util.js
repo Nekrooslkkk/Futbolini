@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-const VERSION="7.9119";
+const VERSION="7.9120";
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
 function el(tag,cls,html){const n=document.createElement(tag);if(cls)n.className=cls;if(html!=null)n.innerHTML=html;return n;}
@@ -48,6 +48,8 @@ function textoLimpio(s,max){
    csp_estricta lo muestra en vez de que la función falle callada. */
 /* 7.9119 · ver css/base.css: hasta acá solo se ve (y se calcula) el splash. Es el primer escuchador, así que corre antes del init. */
 if(typeof document!=="undefined"&&document.addEventListener) document.addEventListener("DOMContentLoaded",function(){ document.documentElement.classList.add("js-listo"); });
+/* 7.9120 · 🥔 Modo papa desde el primer cuadro, también cuando el arranque vino normal (js/papa.js) */
+try{ if(typeof localStorage!=="undefined"&&localStorage.getItem("futbolini_papa")==="1") document.documentElement.classList.add("papa"); }catch(e){}
 var CSP_VIOLACIONES=[];
 if(typeof document!=="undefined"&&document.addEventListener) document.addEventListener("securitypolicyviolation",function(e){
   if(CSP_VIOLACIONES.length>=40) return;
@@ -221,6 +223,7 @@ function burbujas(){
   const c=$("#burbujas"); if(!c) return;
   c.innerHTML="";
   if(window.matchMedia&&window.matchMedia("(max-width:720px), (prefers-reduced-motion:reduce)").matches) return;
+  if(document.documentElement.classList.contains("papa")) return;   /* 7.9120 · Modo papa: sin burbujas */
   const n=15;
   for(let i=0;i<n;i++){
     const b=el("i"), s=rnd(12,72);

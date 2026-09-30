@@ -70,6 +70,9 @@ No es opcional ni hay que preguntarlo. Concretamente:
 5. **Banco por equipo y partidas viejas** (7.9110): `bash test/banco.sh` (todos los clubes × épocas × modos, una
    temporada; `TEMPS=3` para el barrido largo) y `bash test/saves.sh` (saves hechos con versiones viejas tienen que
    cargar y seguir). Si agregas un club, el banco es la prueba de que funciona.
+   **🥔 Modo papa** (7.9120): `bash test/papa.sh` (va dentro de `correr_dev.sh`) corre el doctor dentro del juego
+   juntado en un archivo. Todo `.js` nuevo: `"use strict"`, en `index.html` con el formato de siempre, `const` de
+   primer nivel sin sangría.
 6. Commit con mensaje descriptivo + una línea en `PATCHES.md`. (git = el guardado permanente.)
 7. **Al subir `VERSION` (js/util.js), cambiá TODOS los `?v=` de `index.html` a la misma versión**
    (`sed -i 's/?v=VIEJA/?v=NUEVA/g' index.html`). Si no, el navegador y el service worker sirven

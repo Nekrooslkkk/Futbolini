@@ -617,7 +617,7 @@ function _cvSize(canvas){
   return {w:canvas.width, h:canvas.height};
 }
 function _cvLiviano(){
-  try{ return document.body.classList.contains("perf"); }catch(e){ return false; }
+  try{ return document.body.classList.contains("perf")||document.documentElement.classList.contains("papa"); }catch(e){ return false; }
 }
 function _cvFrame(ts){
   const canvas=_cvCanvas;

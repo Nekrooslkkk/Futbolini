@@ -27,6 +27,8 @@ Estas cosas ni Grok ni yo las podemos hacer. Son las que más valen.
   Diez líneas así valen más que "el mercado está fome": me dicen exactamente qué arreglar.
 - [ ] **Probar en tu celular real** (no en el emulador). Lo que falla en un teléfono de verdad (teclado que tapa,
   dedo gordo, sol en la pantalla) no lo ve ningún test. Sácale pantallazos y súbelos a `img/_reportes/`.
+  Prueba también el **🥔 Modo papa** (Ajustes ▸ Pantalla o la pantalla de inicio): ábrelo, cierra, y vuelve a abrir
+  (la carga rápida rige desde la segunda vez). Anota cuántos segundos tarda con y sin.
 - [ ] **Borrar lo que no usas (5 minutos, 7.9119).** El juego ya no apunta a ninguno de los dos, pero las cuentas
   siguen existiendo y yo no puedo entrar a ellas:
   - **Railway:** railway.app → tu proyecto → *Settings* → abajo del todo *Danger* → **Delete Project**.

@@ -52,8 +52,9 @@ function cargarCdnAero(){
   const l=document.createElement("link");
   l.id="cdn-7css";
   l.rel="stylesheet";
-  l.integrity=AERO_7_WINDOW_SRI; l.crossOrigin="anonymous";
-  l.href=AERO_7_WINDOW_CDN;
+  /* 7.9120 · Modo papa: la copia local de una (sin esperar al CDN) */
+  if(document.documentElement.classList.contains("papa")){ l.dataset.fb="1"; l.href=AERO_7_WINDOW_LOCAL; }
+  else { l.integrity=AERO_7_WINDOW_SRI; l.crossOrigin="anonymous"; l.href=AERO_7_WINDOW_CDN; }
   const ok=function(){
     document.documentElement.classList.add("cdn-7");
     _reponerTemasCss();

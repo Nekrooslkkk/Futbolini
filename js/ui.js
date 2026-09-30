@@ -3772,13 +3772,22 @@ function vistaAjustes(host){
   p.cuerpo.appendChild(el("label","lb","Rendimiento"));
   const fperf=el("div","fichas");
   const perfOn=document.body.classList.contains("perf");
-  [[false,"✨ Full efectos"],[true,"⚡ Modo liviano"]].forEach(([on,n])=>{
+  /* 7.9120 · tres niveles: full, liviano y 🥔 papa (js/papa.js) */
+  const papaOn=(typeof modoPapa==="function")&&modoPapa();
+  const nivel=papaOn?"papa":(perfOn?"liviano":"full");
+  [["full","✨ Full efectos"],["liviano","⚡ Modo liviano"],["papa","🥔 Modo papa"]].forEach(([k,n])=>{
+    if(k==="papa"&&typeof modoPapaSet!=="function") return;
     const b=el("button","ficha",n);
-    b.setAttribute("aria-pressed",perfOn===on?"true":"false");
-    b.onclick=()=>{ document.body.classList.toggle("perf",on); Store.set("futbolini3_perf",on); if(typeof burbujas==="function"&&!on) burbujas(); render(); };
+    b.setAttribute("aria-pressed",nivel===k?"true":"false");
+    b.onclick=()=>{
+      if(k==="papa"){ if(!papaOn) modoPapaSet(true); return; }
+      if(papaOn) modoPapaSet(false,true);
+      const on=k==="liviano"; document.body.classList.toggle("perf",on); Store.set("futbolini3_perf",on); if(typeof burbujas==="function"&&!on) burbujas(); render(); };
     fperf.appendChild(b);
   });
   p.cuerpo.appendChild(fperf);
+  if(typeof papaEstadoTxt==="function"){ const pe=el("p","mini",papaEstadoTxt()); pe.id="papaEstado"; p.cuerpo.appendChild(pe); }
+  p.cuerpo.appendChild(el("p","mini","🥔 <b>Modo papa</b>: para celus flacos. El juego carga hasta 5× más rápido (se junta en un solo archivo en tu equipo), nada se anima, sin sombras, cancha liviana y balón parado en dibujo. Es el mismo juego y la misma partida; vuelves a full cuando quieras."));
   /* 7.9092 · penal, tiro libre y córner en 3D real (WebGL) o el dibujo clásico */
   p.cuerpo.appendChild(el("label","lb","Penales, tiros libres y córners"));
   const f3d=el("div","fichas");
@@ -4841,7 +4850,8 @@ function pantallaArranque(haySave,slots){
   /* 7.9119 · la espera con frases es para que entrar tenga onda, no para castigar: si abrir ya tomó más de 3 s (celu
      flaco), los botones salen al tiro. */
   const yaEspero=(typeof performance!=="undefined"&&performance.now)?performance.now()>3000:false;
-  setTimeout(revelar, (reduce||yaEspero)?60:1300);
+  const papa=document.documentElement.classList.contains("papa");   /* 7.9120 · en Modo papa, sin espera */
+  setTimeout(revelar, (reduce||yaEspero||papa)?60:1300);
   ov.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!ov.dataset.listo){ e.preventDefault(); revelar(); } });
 }
 

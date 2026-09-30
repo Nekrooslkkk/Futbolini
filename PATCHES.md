@@ -5081,3 +5081,32 @@ Archivos: `css/aero7.css`, `css/temas7.css`, `css/base.css`, `css/aero.css`, `cs
   `correr_dev.sh`: ninguna `@keyframes` infinita con propiedades que repintan.
 - **Estado:** doctor sano 120/120 (4 partidas + celular) · dev 593/593 · core 1185/1185 · servidores y duelos verdes ·
   banco 255 sano (12 %) · saves 12/12.
+
+### 7.9120 — 🥔 Modo papa: el juego completo para celus flacos (se junta en un archivo en el equipo del jugador)
+Archivos nuevos: `js/papa-armar.js`, `js/papa.js`, `test/papa.sh`, `test/papa_armar.js`, `test/papa_chk.js`,
+`test/papa_sw.mjs`, `.gitignore`. Tocados: `sw.js`, `index.html`, `css/temas7.css`, `js/util.js`, `js/ui.js`,
+`js/cancha.js`, `js/arco-gl.js`, `js/ventanas.js`, `js/dev-banco.js`, `test/correr_dev.sh`.
+- **Pedido del autor:** "un botón para cambiar al modo papa, que cambie todo y esté full optimizado, pero que puedas
+  jugar el modo full igualmente". Botón en **Ajustes ▸ Pantalla** (Full / Liviano / 🥔 Papa) y en la **pantalla de
+  inicio** ("¿Tu celu sufre? Modo papa"). Si abrir el juego tardó más de 7 s, se sugiere una vez.
+- **Carga en un solo archivo, sin build:** con el Modo papa, el service worker junta los ~130 scripts en uno
+  (`js/_papa.js`, lo arma en el equipo del jugador con `js/papa-armar.js` y lo guarda para jugar sin internet) y
+  sirve un index.html con ese único script. Por qué funciona igual: todos los archivos ya son "use strict", y los
+  `const`/`let` de primer nivel pasan a `var` (separados, `typeof X` de una constante de un archivo posterior da
+  "undefined"; juntos revienta; con var vuelve a dar "undefined"). Nada pisa a `window` (lista de nombres
+  protegidos; la prueba lo verifica en el navegador). Solo se sirve si el paquete es de la misma versión que la página.
+- **Guardia:** si el paquete se corta al cargar, `js/_papa_guardia.js` (lo escribe el service worker) apaga el Modo
+  papa, recarga en normal (`?normal=1`, nunca en bucle) y el juego avisa. Probado rompiendo el paquete a propósito.
+- **Pantalla papa** (`html.papa`, desde el primer cuadro): nada se anima ni transiciona, sin sombras, sin
+  desenfoques, fondo quieto sin capas, paneles fuera de pantalla sin calcular, cancha liviana, balón parado en dibujo
+  clásico, 7.css local, sin fuentes de Google, sin espera en el splash. El foco del teclado sigue visible (outline).
+- **Medido (service worker real, apertura repetida hasta ver los botones de inicio):** CPU 6× **2,0 → 0,6 s**;
+  CPU 20× **5,3–5,9 → 2,1–2,3 s**. Mismo juego: el **doctor entero corre dentro del juego juntado** (121/121).
+- **Dev:** doctor `modo_papa` (la conversión solo toca el primer nivel y respeta window, el HTML deja paquete + guardia
+  + CSP + sin fuentes de Google, la guardia no hace bucle, y con html.papa: 0 animaciones infinitas, paneles sin sombra
+  y con content-visibility, sin aurora, cancha liviana, sin 3D, botón en Ajustes). `test/papa.sh` (va en
+  `correr_dev.sh`): arma el paquete con el mismo código, revisa que los 558 nombres de primer nivel sean globales y no
+  choquen con el navegador, corre el doctor completo adentro y prueba el service worker de punta a punta. Al revés
+  (conversión rota): falla en 15 s con "Cannot access 'NOMBRES_CANTERA' before initialization" y la lista de nombres.
+- **Estado:** doctor sano 121/121 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa) · core 1185/1185 ·
+  saves 12/12.

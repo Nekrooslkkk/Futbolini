@@ -17,7 +17,8 @@
    ============================================================ */
 const ARCOGL={cargando:null, activos:0, ultimo:null};
 /* "off" = lo apagó el jugador · "lento" = se apagó solo porque el equipo no daba (7.9102) */
-function arcoGLApagado(){ try{ const v=localStorage.getItem("futbolini_arcogl"); return v==="off"||v==="lento"; }catch(e){ return false; } }
+function arcoGLApagado(){ try{ if(localStorage.getItem("futbolini_papa")==="1") return true;   /* 7.9120 · Modo papa: dibujo clásico */
+  const v=localStorage.getItem("futbolini_arcogl"); return v==="off"||v==="lento"; }catch(e){ return false; } }
 function arcoGLLento(){ try{ return localStorage.getItem("futbolini_arcogl")==="lento"; }catch(e){ return false; } }
 /* vigilante: si en los primeros cuadros el 3D va a menos de ~15 fps (sin GPU, driver bloqueado, celu muy viejo)
    se apaga solo y queda el dibujo clásico, que es liviano. El juego se degrada, no se traba. */

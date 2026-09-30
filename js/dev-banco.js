@@ -612,3 +612,48 @@ if(typeof devDoctorRegistrar==="function"){
       return f.length?_dmal(f.length+" problema(s)",f):_dok(vistos+" paneles en 7 secciones: se saltan fuera de pantalla y nada fijo queda adentro");
     }});
 }
+
+/* 7.9120 · 🥔 Modo papa: que junte bien (misma lógica que usa sw.js) y que al prenderlo la pantalla quede de verdad
+   liviana. La prueba completa (el doctor entero corriendo DENTRO del juego juntado, y el service worker de punta a
+   punta) está en test/papa.sh. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"modo_papa", area:"rendimiento", n:"🥔 Modo papa: junta el juego sin cambiarlo y deja la pantalla liviana",
+    arreglo:"js/papa-armar.js (papaTransformar/papaHTML/papaUnir, las usa sw.js) · js/papa.js (modoPapaSet, botones) · css/temas7.css (html.papa) · cancha.js _cvLiviano · arco-gl.js arcoGLApagado. Prueba entera: bash test/papa.sh",
+    fn:function(){
+      const f=[];
+      if(typeof papaTransformar!=="function"||typeof papaHTML!=="function"||typeof papaUnir!=="function") return _dmal("no cargó js/papa-armar.js");
+      if(typeof modoPapa!=="function"||typeof modoPapaSet!=="function") return _dmal("no cargó js/papa.js");
+      const t=papaTransformar('const A=1;\n  const b=2;\nlet ÑANDÚ=3;\nconst name=4;');
+      if(!/^var A=1;/m.test(t)||!/^  const b=2;/m.test(t)||!/^var ÑANDÚ=3;/m.test(t)) f.push("papaTransformar no convierte bien los const/let de primer nivel: "+t.replace(/\n/g," ⏎ "));
+      if(!/^const name=4;/m.test(t)) f.push("papaTransformar convierte un nombre que ya existe en window (name): pisaría al navegador");
+      const h=papaHTML('<html lang="es"><head><meta http-equiv="Content-Security-Policy" content="x"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?f" rel="stylesheet"></head><body><script src="js/util.js?v=9"></script>\n<script src="js/ui.js?v=9"></script>\n</body></html>',"9");
+      if((h.match(/<script/g)||[]).length!==2||h.indexOf(PAPA_ARCHIVO+"?v=9")<0||h.indexOf(PAPA_GUARDIA+"?v=9")<0) f.push("papaHTML no deja exactamente el paquete + la guardia");
+      if(!/class="papa"/.test(h)) f.push("papaHTML no marca <html class=\"papa\"> (el primer cuadro saldría pesado)");
+      if(/<link[^>]+fonts\.g/.test(h)) f.push("papaHTML deja las fuentes de Google (una espera de red en celus flacos)");
+      if(h.indexOf("Content-Security-Policy")<0) f.push("papaHTML se comió la CSP");
+      if(!/self\.__papaOK=1/.test(papaUnir([{u:"a.js",src:"var x=1;"}]))) f.push("el paquete no marca que llegó entero: la guardia no sabría si falló");
+      if(typeof PAPA_GUARDIA_JS!=="string"||PAPA_GUARDIA_JS.indexOf("normal=1")<0) f.push("la guardia no vuelve al modo normal si el paquete falla");
+      if(typeof PAPA_GUARDIA_JS==="string"&&PAPA_GUARDIA_JS.indexOf("location.search")<0) f.push("la guardia puede quedar en bucle (no mira si ya está en ?normal=1)");
+      /* la pantalla con html.papa */
+      const html=document.documentElement, tenia=html.classList.contains("papa"), secPrev=SEC; let prevLS=null;
+      try{ prevLS=localStorage.getItem("futbolini_papa"); }catch(e){}
+      try{
+        html.classList.add("papa"); try{ localStorage.setItem("futbolini_papa","1"); }catch(e){}
+        SEC="escritorio"; try{ render(); }catch(e){}
+        const inf=(document.getAnimations?document.getAnimations():[]).filter(a=>a.playState==="running"&&a.effect&&a.effect.getTiming&&a.effect.getTiming().iterations===Infinity);
+        if(inf.length) f.push(inf.length+" animación(es) infinitas siguen corriendo en Modo papa ("+(inf[0].animationName||"?")+")");
+        const pn=document.querySelector("#vista .panel");
+        if(pn){ const cs=getComputedStyle(pn); if(cs.boxShadow!=="none") f.push("los paneles tienen sombra en Modo papa"); if(cs.contentVisibility!=="auto") f.push("los paneles fuera de pantalla se calculan en Modo papa"); }
+        const au=document.querySelector("#fondo .aurora"); if(au&&getComputedStyle(au).display!=="none") f.push("el fondo animado (aurora) sigue en Modo papa");
+        if(typeof _cvLiviano==="function"&&!_cvLiviano()) f.push("la cancha no usa su versión liviana en Modo papa");
+        if(typeof arcoGLApagado==="function"&&!arcoGLApagado()) f.push("el balón parado sigue en 3D en Modo papa");
+        const host=document.createElement("div"); try{ vistaAjustes(host); }catch(e){}
+        if(!/Modo papa/.test(host.textContent||"")) f.push("Ajustes no ofrece el botón 🥔 Modo papa");
+      } finally {
+        html.classList.toggle("papa",tenia);
+        try{ if(prevLS===null) localStorage.removeItem("futbolini_papa"); else localStorage.setItem("futbolini_papa",prevLS); }catch(e){}
+        SEC=secPrev; try{ render(); }catch(e){}
+      }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("junta sin cambiar el código (const→var solo arriba, nada de window), guardia lista, y la pantalla queda liviana"+(papaCargaJunta()?" · este arranque vino juntado":""));
+    }});
+}
