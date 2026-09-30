@@ -115,3 +115,23 @@ body.perf .icono:hover,body.perf .pick-tab:hover,body.perf .mi:hover{transform:n
   .picker-grid .icono .g{font-size:24px}
   .picker-grid .icono .n{font-size:10.5px}
 }
+/* 7.9116 · selector: cantidades, épocas por club, ligas próximamente */
+.pick-tab .pick-n{display:inline-block;margin-left:4px;padding:0 6px;border-radius:999px;font-size:10.5px;font-weight:700;background:rgba(0,0,0,.08)}
+.pick-tab.pronto{opacity:.85}
+.pick-tab.pronto .pick-n{background:rgba(224,169,42,.25)}
+.pick-eras{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;margin-top:5px}
+.pick-eras i{font-style:normal;font-size:9.5px;font-weight:700;line-height:1;padding:2px 5px;border-radius:999px;background:rgba(40,90,150,.12);color:inherit}
+.pick-eras i.gl{background:rgba(224,169,42,.22)}
+.icono.pick-pronto{filter:grayscale(.75);opacity:.72;cursor:default}
+.icono.pick-pronto .pick-lock{font-size:10px;font-weight:700;margin-top:4px;opacity:.9}
+.pick-pronto-liga{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-radius:10px;border:1px dashed rgba(120,120,140,.55);background:rgba(255,255,255,.35);cursor:pointer;text-align:left;font:inherit;color:inherit}
+.pick-pronto-liga span{font-size:12px;opacity:.8}
+.pick-nota{grid-column:1/-1;margin:-4px 2px 4px}
+/* en el celu los filtros van en varias filas (antes se cortaban a la derecha y no se veía que había más) */
+@media (max-width:720px){
+  html body .picker-tabs{flex-wrap:wrap !important;overflow-x:visible !important;gap:5px !important}
+  html body .picker-tabs{padding:2px 0 4px !important}
+  html body .picker-tabs .pick-tab{padding:6px 10px !important;min-height:32px !important;font-size:12.5px !important;flex:0 0 auto}
+  html body .picker-tabs .pick-tab .pick-n{font-size:10px;padding:0 5px}
+}

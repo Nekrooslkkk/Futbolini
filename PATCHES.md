@@ -4962,3 +4962,43 @@ Archivos: `js/cancha.js`, `js/dev-banco.js`, `CHECKLIST_8.md` (+ merge de `main`
   revés con el código anterior: "armar la textura hace 1787 fill() y 1790 arc()".
 - **Estado:** doctor sano (4 partidas + celular, 113 chequeos) · dev 593/593 · core 1185/1185 · banco 255 sano (10 %
   despidos) · saves 12/12.
+
+### 7.9116 — Duelos en sala (código + contraseña, tipo Gartic/Haxball) · selector de equipos nuevo con "Próximamente" · seguridad
+Archivos: `js/multi.js` (reescrito), `js/vendor/peerjs.min.js` (nuevo, MIT) + `js/vendor/LICENCIAS.md`, `js/cancha.js`,
+`js/ui.js`, `js/data-proximamente.js` (nuevo), `js/ajustes-real.js`, `js/idiomas.js`, `js/motor.js`, `js/reputacion.js`,
+`servidor.js`, `server/index.js`, `css/inicio.css`, `css/pulido.css`, `js/dev-banco.js`, `test/duelo.sh`+`duelo.js`+
+`peer_falso.js`, `test/servidores.js` (nuevos), `test/correr_dev.sh`, `test/pruebas_core.js`.
+- **Duelos rehechos** ("no funciona, es engorrosísimo"): antes había que copiar y devolver dos códigos gigantes.
+  Ahora es una **sala**: el que crea recibe un código de 5 letras (sin O/0/I/1 para dictarlo sin errores), le pone
+  contraseña si quiere y comparte el código o el link `?sala=CODIGO`. Sin servidor propio (sin Railway): PeerJS usa un
+  buzón público gratuito solo para presentar a los dos navegadores; el juego viaja directo (WebRTC). PeerJS se baja
+  recién al abrir Duelos. La conexión directa de antes queda en "Opciones avanzadas" por si el buzón no responde.
+- **El duelo se ve como un partido:** marcador con escudos y minuto, la misma cancha cenital (`cvDueloMontar`) que
+  marca el dominio de cada jugada y repite los goles, relato jugada a jugada y opciones compactas. 9 jugadas con un
+  reloj de 15 s por jugada: si alguien no elige, juega "equilibrado" (antes el duelo quedaba colgado).
+- **En Ajustes:** pestaña **🎮 Duelos** con el botón y la elección de dónde va el acceso rápido (Inicio, Escritorio,
+  Carrera, Redes o solo Ajustes).
+- **Seguridad de los duelos:** la contraseña nunca viaja (va su hash SHA-256 con el código); 6 claves malas cierran
+  la sala; todo mensaje del rival pasa por `mpValidarMsg` (lista blanca de tipos, números en rango, clubes de la
+  lista, 2 KB máx.) y un tope de 25 mensajes por segundo; nombres limpios y escapados. Antes el id de club que mandaba
+  el rival se pintaba sin escapar (XSS).
+- **Selector de equipos:** filtros con bandera y cantidad (en el celu en filas, antes se cortaban), cada club dice en
+  qué épocas se juega (1925 · 1991 · 2006 · 2026 y 🏆 glorias), se recuerda el último filtro. **Próximamente:**
+  🇦🇷 Primera Nacional (34 clubes) y 🇧🇷 Brasileirão Série A (20), con candado: se ven, no arrancan partida. Lista de
+  clubes **tentativa** (encargo a Grok confirmarla con fuente antes de la 8.00).
+- **Seguridad de los servidores** (probados atacándolos): `servidor.js` se caía con una URL mal formada, aceptaba
+  POST sin tope, servía archivos ocultos y `server/` (datos de usuarios) y tenía un bug de prefijo de carpeta.
+  `server/index.js` guardaba los tokens en claro, dejaba saltarse el límite de intentos inventando `X-Forwarded-For`
+  (ahora solo con `TRUST_PROXY=1`, último valor), comparaba la clave de admin sin tiempo constante y servía ocultos.
+  Contra la versión anterior la prueba marca 6 fallas; ahora 0.
+- **XSS por partida manipulada:** el nombre de la pareja vive en `pareja.n` y al cargar se limpiaba `pareja.nombre`;
+  un archivo de partida compartido ejecutaba código al abrir Vida. Ahora se limpia `n` (y los matches) y se escapa al
+  pintar.
+- **Dev:** `duelos_seguros`, `ligas_proximamente`, `xss_partida_cargada` (verificados al revés; el de XSS se corrigió
+  porque el `onerror` corre después del repintado). Pruebas nuevas enganchadas a `correr_dev.sh`: `test/duelo.sh`
+  (dos copias del juego arman sala, prueban clave mala/buena, nombre malicioso, 9 jugadas, marcador espejado, cierre
+  por fuerza bruta) y `test/servidores.js` (14 ataques).
+- **No verificado desde acá:** el buzón público real de PeerJS (este entorno no deja salir a ese servicio). La lógica
+  entera está probada con el buzón de prueba; falta abrir una sala entre dos celulares de verdad.
+- **Estado:** doctor sano (4 partidas + celular, 116 chequeos) · dev 593/593 + servidores + duelos · core 1185/1185 ·
+  banco 255 sano · saves 12/12.

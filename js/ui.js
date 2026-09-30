@@ -328,65 +328,102 @@ function clubesElegibles(){
   }
   return {lista:lista, extraLigas:extraLigas};
 }
+/* 7.9116 · selector de clubes, rehecho (pedido del autor: "mejora el menú de elección de equipos"):
+   · filtros por liga con bandera y cantidad; en el celu van en dos filas (antes se cortaban a la derecha);
+   · cada tarjeta dice en qué épocas se puede jugar ese club (1925 · 1991 · 2006 · 2026) y si trae glorias;
+   · las ligas "Próximamente" (js/data-proximamente.js) se ven con candado y no arrancan partida;
+   · se recuerda el último filtro. */
 function pickerClubes(cont){
   const _ce=clubesElegibles(), lista=_ce.lista, extraLigas=_ce.extraLigas;
-
   const _T=(typeof T==="function")?T:((k,d)=>d);
-  /* 7.9014 · listones al mismo nivel: Primera → AFA → Primera B → Segunda. */
-  const filtros=[["todos",_T("ini_f_todos","Todos")],["Primera","Primera"],["Argentina","Argentina"],["Primera B","Primera B"],["Segunda","Segunda"],["clasico",_T("ini_f_clasicos","Clásicos '91")]];
-  extraLigas.forEach(function(x){ filtros.push([x.n, x.n]); });
+  const pronto=(typeof LIGAS_PROXIMAMENTE!=="undefined")?LIGAS_PROXIMAMENTE:[];
+  const cuenta=d=>lista.filter(c=>c.div===d).length;
+  const filtros=[
+    {k:"todos", n:_T("ini_f_todos","Todos"), c:lista.length},
+    /* orden decidido en 7.9014: Primera → Argentina → Primera B → Segunda (las primeras divisiones primero) */
+    {k:"Primera", n:"🇨🇱 Primera", c:cuenta("Primera")},
+    {k:"Argentina", n:"🇦🇷 Liga Profesional", c:cuenta("Argentina")},
+    {k:"Primera B", n:"🇨🇱 Primera B", c:cuenta("Primera B")},
+    {k:"Segunda", n:"🇨🇱 Segunda", c:cuenta("Segunda")}
+  ];
+  extraLigas.forEach(x=>filtros.push({k:x.n, n:x.n, c:cuenta(x.n)}));
+  pronto.forEach(l=>filtros.push({k:"pronto:"+l.id, n:l.bandera+" "+l.corto, c:l.clubes.length, pronto:true}));
+  filtros.push({k:"clasico", n:"⭐ "+_T("ini_f_clasicos","Clásicos '91"), c:lista.filter(c=>c.clasico).length});
   let fAct="todos", q="";
+  try{ const g=localStorage.getItem("futbolini_picker_f"); if(g&&filtros.some(f=>f.k===g)) fAct=g; }catch(e){}
   const barra=el("div","picker-barra");
-  const tabs=el("div","picker-tabs"); barra.appendChild(tabs);
+  const tabs=el("div","picker-tabs"); tabs.setAttribute("role","toolbar"); tabs.setAttribute("aria-label","Ligas"); barra.appendChild(tabs);
   const inp=el("input","pick-buscar"); inp.type="search"; inp.placeholder=_T("ini_buscar","Buscar club o ciudad…"); inp.setAttribute("aria-label","Buscar club");
   barra.appendChild(inp);
   const cont2=el("span","pick-cont",""); barra.appendChild(cont2);
   const grid=el("div","iconos picker-grid");
   const tabBtns={};
-  filtros.forEach(([k,n])=>{
-    const t=el("button","pick-tab",n); t.type="button"; t.setAttribute("aria-pressed",k==="todos"?"true":"false");
-    t.onclick=()=>{ fAct=k; Object.keys(tabBtns).forEach(x=>tabBtns[x].setAttribute("aria-pressed",x===k?"true":"false")); pinta(); };
-    tabBtns[k]=t; tabs.appendChild(t);
+  filtros.forEach(f=>{
+    const t=el("button","pick-tab"+(f.pronto?" pronto":""),escHtml(f.n)+' <span class="pick-n">'+(f.pronto?"pronto":f.c)+'</span>'); t.type="button";
+    t.setAttribute("aria-pressed",f.k===fAct?"true":"false");
+    t.onclick=()=>{ fAct=f.k; try{ localStorage.setItem("futbolini_picker_f",f.k); }catch(e){}
+      Object.keys(tabBtns).forEach(x=>tabBtns[x].setAttribute("aria-pressed",x===f.k?"true":"false")); pinta(); };
+    tabBtns[f.k]=t; tabs.appendChild(t);
   });
+  /* épocas de cada club (de lo mismo que ve el botón Empezar), memorizadas */
+  const eras={};
+  const erasDe=id=>{ if(eras[id]) return eras[id];
+    let pts=[]; try{ pts=(typeof puntosDeInicio==="function")?puntosDeInicio(id):[]; }catch(e){}
+    const anios=[]; let glorias=0;
+    pts.forEach(p=>{ if(p.tipo==="gloria"){ glorias++; return; } const a=p.base==="2026b"||p.base==="2026c"||p.base==="arg2026"?2026:(typeof p.base==="number"?p.base:p.anio); if(anios.indexOf(a)<0) anios.push(a); });
+    anios.sort((x,y)=>x-y);
+    return (eras[id]={anios:anios, glorias:glorias}); };
+  function card(c,i){
+    const esc=(typeof escudoHTML==="function")?escudoHTML(c.id,36,c.esc||"⚪"):(c.esc||"⚪");
+    const er=erasDe(c.id);
+    const chips='<span class="pick-eras">'+er.anios.map(a=>'<i>'+a+'</i>').join("")+(er.glorias?'<i class="gl" title="épocas de gloria">🏆'+er.glorias+'</i>':"")+'</span>';
+    const b=el("button","icono card-in",'<span class="g">'+esc+'</span><span class="n">'+escHtml(c.n)+'</span>'+(c.ciu?'<span class="ciu">'+escHtml(c.ciu)+'</span>':'')+chips);
+    const col=(typeof colorDeClub==="function")?colorDeClub(c.id):(c.colores&&c.colores[0]);
+    if(col) b.style.borderLeft="4px solid "+col;
+    b.style.animationDelay=Math.min(i*20,340)+"ms";
+    b.title=c.n+(c.ciu?" · "+c.ciu:"")+" · "+c.div+(er.anios.length?" · "+er.anios.join(", "):"");
+    b.onclick=()=>elegirEpoca(c.id);
+    return b;
+  }
+  function cardPronto(c,i){
+    const esc=(typeof escudoHTML==="function")?escudoHTML(c.n,36,"⚪"):"⚪";
+    const b=el("button","icono card-in pick-pronto",'<span class="g">'+esc+'</span><span class="n">'+escHtml(c.n)+'</span><span class="pick-lock">🔒 '+_T("ini_pronto","Próximamente")+'</span>');
+    b.type="button"; b.setAttribute("aria-disabled","true");
+    b.style.animationDelay=Math.min(i*20,340)+"ms";
+    b.title=c.n+" · "+c.ligaN+" · llega con la 8.00";
+    b.onclick=()=>{ if(typeof aviso==="function") aviso(c.bandera+" "+c.ligaN+" llega con la 8.00: faltan los planteles, la caja y el calendario de "+c.n+".",4200); };
+    return b;
+  }
+  const liston=(txt,nota)=>{ const l=el("div","picker-liston",escHtml(txt)); grid.appendChild(l); if(nota) grid.appendChild(el("p","mini pick-nota",escHtml(nota))); };
   function pinta(){
     grid.innerHTML="";
-    const qq=q.trim().toLowerCase();
-    const vis=lista.filter(c=>(fAct==="todos"||(fAct==="clasico"?c.clasico:c.div===fAct))
-      && (!qq || c.n.toLowerCase().indexOf(qq)>=0 || (c.ciu||"").toLowerCase().indexOf(qq)>=0));
-    function card(c,i){
-      const esc=(typeof escudoHTML==="function")?escudoHTML(c.id,36,c.esc||"⚪"):(c.esc||"⚪");
-      const b=el("button","icono card-in",'<span class="g">'+esc+'</span><span class="n">'+c.n+'</span>'+(c.ciu?'<span class="ciu">'+c.ciu+'</span>':''));
-      const col=(typeof colorDeClub==="function")?colorDeClub(c.id):(c.colores&&c.colores[0]);
-      if(col) b.style.borderLeft="4px solid "+col;
-      b.style.animationDelay=Math.min(i*20,340)+"ms";
-      b.title=c.n+(c.ciu?" · "+c.ciu:"")+" · "+c.div;
-      b.onclick=()=>elegirEpoca(c.id);
-      return b;
-    }
+    const qq=q.trim().toLowerCase(), calza=(n,ciu)=>!qq||n.toLowerCase().indexOf(qq)>=0||(ciu||"").toLowerCase().indexOf(qq)>=0;
+    const esPronto=fAct.indexOf("pronto:")===0;
+    const vis=esPronto?[]:lista.filter(c=>(fAct==="todos"||(fAct==="clasico"?c.clasico:c.div===fAct)) && calza(c.n,c.ciu));
+    const prontoVis=(typeof clubesProximamente==="function")?clubesProximamente().filter(c=>(fAct==="todos"&&qq)||fAct==="pronto:"+c.liga).filter(c=>calza(c.n)):[];
     const ORDEN=["Primera","Argentina","Primera B","Segunda"];
-    extraLigas.forEach(function(x){ if(ORDEN.indexOf(x.n)<0) ORDEN.push(x.n); });
-    const ETQ={Primera:"Primera División", Argentina:"Argentina · AFA", "Primera B":"Primera B", Segunda:"Segunda División"};
+    extraLigas.forEach(x=>{ if(ORDEN.indexOf(x.n)<0) ORDEN.push(x.n); });
+    const ETQ={Primera:"🇨🇱 Primera División", Argentina:"🇦🇷 Argentina · Liga Profesional", "Primera B":"🇨🇱 Primera B", Segunda:"🇨🇱 Segunda División"};
+    let i=0;
     if(fAct==="todos" && !qq){
-      let i=0;
-      ORDEN.forEach(function(div){
-        const chunk=vis.filter(function(c){ return c.div===div; });
-        if(!chunk.length) return;
-        const lis=el("div","picker-liston");
-        lis.textContent=ETQ[div]||div;
-        grid.appendChild(lis);
-        chunk.forEach(function(c){ grid.appendChild(card(c,i++)); });
-      });
-      const resto=vis.filter(function(c){ return ORDEN.indexOf(c.div)<0; });
-      if(resto.length){
-        const lis=el("div","picker-liston"); lis.textContent=_T("ini_f_otros","Otros");
-        grid.appendChild(lis);
-        resto.forEach(function(c){ grid.appendChild(card(c,i++)); });
-      }
+      ORDEN.forEach(div=>{ const chunk=vis.filter(c=>c.div===div); if(!chunk.length) return; liston(ETQ[div]||div); chunk.forEach(c=>grid.appendChild(card(c,i++))); });
+      const resto=vis.filter(c=>ORDEN.indexOf(c.div)<0);
+      if(resto.length){ liston(_T("ini_f_otros","Otros")); resto.forEach(c=>grid.appendChild(card(c,i++))); }
+      /* las que vienen: una fila con la liga, sin llenar la pantalla de candados */
+      pronto.forEach(l=>{ const b=el("button","pick-pronto-liga",'<b>'+escHtml(l.bandera+" "+l.n)+'</b><span>🔒 Próximamente · '+l.clubes.length+' clubes · llega con la 8.00</span>'); b.type="button";
+        b.onclick=()=>tabBtns["pronto:"+l.id]&&tabBtns["pronto:"+l.id].click(); grid.appendChild(b); });
     } else {
-      vis.forEach(function(c,i){ grid.appendChild(card(c,i)); });
+      vis.forEach(c=>grid.appendChild(card(c,i++)));
+      if(prontoVis.length){
+        const l=pronto.find(x=>"pronto:"+x.id===fAct);
+        if(l) liston(l.bandera+" "+l.n+" · Próximamente", l.nota+" Se juega desde la 8.00: faltan planteles, caja y calendario. Lista de clubes tentativa (se confirma con fuente).");
+        else liston("Próximamente");
+        prontoVis.forEach(c=>grid.appendChild(cardPronto(c,i++)));
+      }
     }
-    if(!vis.length) grid.appendChild(el("p","mini","No hay clubes con ese filtro/búsqueda."));
-    cont2.textContent=vis.length+" club"+(vis.length===1?"":"es");
+    const tot=vis.length+prontoVis.length;
+    if(!tot) grid.appendChild(el("p","mini","No hay clubes con ese filtro/búsqueda."));
+    cont2.textContent=vis.length+" club"+(vis.length===1?"":"es")+(prontoVis.length?" · "+prontoVis.length+" próximamente":"");
   }
   inp.oninput=()=>{ q=inp.value; pinta(); };
   cont.appendChild(barra); cont.appendChild(grid); pinta();
@@ -413,9 +450,10 @@ function pantallaInicio(){
   /* 7.9014 · Apoyar / aviso de anuncios vive en Ajustes, no acá. */
 
   /* 7.00 · duelo P2P contra un amigo */
-  if(typeof modalDuelo==="function"){
+  /* 7.9116 · el acceso a duelos va donde lo elegiste en Ajustes (por defecto, acá) */
+  if(typeof modalDuelo==="function" && (typeof dueloLugar!=="function" || dueloLugar()==="inicio")){
     const pm=panel(_T("ini_amigo_tit","… o juega contra un amigo"),"🎮","agua");
-    pm.cuerpo.appendChild(el("p","mini",_T("ini_amigo_txt","Un duelo dirigido, en vivo, sin cuentas ni servidor: se conectan con un código y cada uno maneja su club.")));
+    pm.cuerpo.appendChild(el("p","mini",_T("ini_amigo_txt","Una sala con código de 5 letras y contraseña, como Gartic o Haxball: cada uno maneja su club y el partido se decide jugada a jugada.")));
     const bm=el("button","btn-aqua ancho verde",_T("ini_amigo_btn","🎮 Duelo con un amigo"));
     bm.onclick=()=>modalDuelo();
     pm.cuerpo.appendChild(bm);

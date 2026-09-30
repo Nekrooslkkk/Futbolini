@@ -449,6 +449,9 @@ function normalizarEstado(){
     if(E.perfil){
       if(E.perfil.nombre) E.perfil.nombre=textoLimpio(E.perfil.nombre,40)||"DT";
       if(E.perfil.pareja&&E.perfil.pareja.nombre) E.perfil.pareja.nombre=textoLimpio(E.perfil.pareja.nombre,40);
+      /* 7.9116 · el nombre de la pareja vive en .n (no en .nombre): un archivo de partida manipulado ejecutaba código al abrir Vida */
+      if(E.perfil.pareja&&E.perfil.pareja.n) E.perfil.pareja.n=textoLimpio(E.perfil.pareja.n,40);
+      if(E.perfil.tinder&&Array.isArray(E.perfil.tinder.matches)) E.perfil.tinder.matches.forEach(function(m){ if(m){ if(m.n) m.n=textoLimpio(m.n,40); if(m.bio) m.bio=textoLimpio(m.bio,200); } });
       (E.perfil.hijos||[]).forEach(function(h){ if(h&&h.nombre) h.nombre=textoLimpio(h.nombre,40); });
     }
     if(E.dinastia){

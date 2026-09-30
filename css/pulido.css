@@ -446,3 +446,24 @@ html body .btn-aqua .mini{color:inherit !important;opacity:.9}
 .vida-nombre{font-size:16px}
 body[data-tema="negro"] .vh-chip,body[data-tema="darkaero"] .vh-chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15)}
 body[data-tema="negro"] .vh-verdades li,body[data-tema="darkaero"] .vh-verdades li{background:rgba(255,255,255,.05)}
+/* 7.9116 · duelos en sala */
+.duelo-modal .duelo-campo{display:block;margin:8px 0}
+.duelo-modal .duelo-campo .mini{display:block;margin-bottom:3px}
+.duelo-modal .duelo-campo input{display:block;width:100%;box-sizing:border-box;min-height:40px;font-size:15px}
+.duelo-modal .duelo-cod-input{text-transform:uppercase;letter-spacing:.35em;font-family:var(--f-dato,monospace);font-size:22px !important;text-align:center}
+.duelo-modal .duelo-codigo{margin:6px 0 10px;text-align:center;font:800 42px/1.1 var(--f-dato,monospace);letter-spacing:.22em;
+  padding:12px 8px;border-radius:12px;background:rgba(255,255,255,.7);border:2px dashed rgba(40,110,190,.45);user-select:all}
+.duelo-modal .duelo-dos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.duelo-modal .duelo-grande{min-height:64px;font-size:15px}
+.duelo-modal .duelo-cod-mini{margin-left:auto;font-family:var(--f-dato,monospace);letter-spacing:.12em;opacity:.85}
+.duelo-modal .duelo-avanzado{margin:10px 0 4px}
+.duelo-modal .duelo-avanzado>summary{cursor:pointer;font-size:12.5px;font-weight:600}
+.duelo-modal .duelo-ta{width:100%;box-sizing:border-box;font-size:10px;min-height:64px}
+.duelo-modal .duelo-reloj{margin:8px 0 4px;font-weight:600}
+.duelo-modal .duelo-reloj b{display:inline-block;min-width:3.2em;text-align:center;border-radius:999px;padding:1px 8px;background:rgba(224,169,42,.25)}
+.duelo-modal .duelo-relato{max-height:170px;overflow:auto;margin-top:8px}
+.duelo-modal .duelo-relato .linea{padding:4px 2px;border-bottom:1px solid rgba(0,0,0,.06);font-size:13px}
+.duelo-modal .duelo-relato .linea.bien{color:#1e7a35;font-weight:600}
+.duelo-modal .duelo-relato .linea.mal{color:#b23a2a}
+.duelo-modal .partido-cancha canvas{max-width:100%}
+body[data-tema="negro"] .duelo-modal .duelo-codigo{background:rgba(255,255,255,.06);border-color:rgba(120,190,255,.4)}

@@ -260,7 +260,7 @@ function _cvColores(P){
   let shortMio=null, shortRiv=null, mediasMio=null, mediasRiv=null;
   let franjaMio=null, franjaRiv=null, franjaColorMio=null, franjaColorRiv=null;
   try{
-    const id=E&&E.club;
+    const id=(P&&P.clubMio)||(typeof E!=="undefined"&&E&&E.club);   /* 7.9116 · el duelo trae su propio club */
     const deVisita=!!(P&&P.part&&P.part.local===false);
     const p=(typeof piezaKit==="function")&&piezaKit(id, deVisita);
     if(p){ mio=p.camiseta; shortMio=p.short; mediasMio=p.medias; franjaMio=p.franja; franjaColorMio=p.franjaColor; }
@@ -700,4 +700,30 @@ function cvRepeticionGol(canvas, gol, info){
     if(st.seq || st.redVibra>0) _cvRepRAF=requestAnimationFrame(frame); else _cvRepRAF=0;
   };
   _cvRepRAF=requestAnimationFrame(frame);
+}
+
+/* ---------- 7.9116 · la cancha del DUELO: la misma de los partidos, con su propio estado ----------
+   P es un partido de mentira: {clubMio, part:{rivalId, local}, once:null}. El que la usa marca el dominio (−1..1)
+   y los goles; la cancha juega sola entre medio. Devuelve {gol(lado,quien,min), dominio(v), parar()}. */
+function cvDueloMontar(canvas, P){
+  if(!canvas) return null;
+  const st=_cvNuevoEstado(null); let dom=0, raf=0, last=performance.now(), vivo=true;
+  const Pd={clubMio:P&&P.clubMio, part:(P&&P.part)||{}, dom:[{v:0}], empuje:0};
+  const frame=function(ts){
+    if(!vivo) return;
+    if(!canvas.isConnected){ vivo=false; return; }
+    const dt=Math.min(0.05,(ts-last)/1000||0.016); last=ts;
+    Pd.dom[0].v=dom;
+    _cvStep(Pd,dt,st);
+    const s=_cvSize(canvas);
+    _cvDraw(canvas.getContext("2d"),s.w,s.h,st,Pd);
+    raf=requestAnimationFrame(frame);
+  };
+  const s0=_cvSize(canvas); _cvDraw(canvas.getContext("2d"),s0.w,s0.h,st,Pd);   /* nunca vacía */
+  raf=requestAnimationFrame(frame);
+  return {
+    gol:function(lado,quien,min){ _cvArmarGol(st,lado>0?1:-1,quien,min); },
+    dominio:function(v){ dom=_cvCl(+v||0,-1,1); },
+    parar:function(){ vivo=false; if(raf) cancelAnimationFrame(raf); raf=0; }
+  };
 }

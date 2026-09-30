@@ -57,6 +57,12 @@ for x in mal: print("  ❌ "+x)
 print("  ok: todos los escudos existen y los de Commons tienen crédito" if not mal else "")
 sys.exit(1 if mal else 0)
 PY
+# 7.9116 · los servidores atacados de verdad (URL rota, archivos ocultos, tokens, fuerza bruta) y el duelo en sala
+# jugado entre dos copias del juego. Si falla cualquiera, no se sube.
+echo "· servidores (servidor.js y server/index.js)"
+if command -v node >/dev/null 2>&1; then node test/servidores.js || exit 1; else echo "  ⚠ sin node: no se prueban los servidores"; fi
+echo "· duelos en sala"
+bash test/duelo.sh || exit 1
 CHROME_BIN="${CHROME:-}"
 if [ -z "$CHROME_BIN" ]; then
   for c in chromium google-chrome google-chrome-stable chromium-browser /opt/pw-browsers/chromium; do

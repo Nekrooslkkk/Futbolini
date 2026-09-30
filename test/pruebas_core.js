@@ -252,7 +252,8 @@
       var cards=d.querySelectorAll(".icono").length;
       ok(cards>=40, "el picker lista todos los clubes ("+cards+")");
       var tabs=d.querySelectorAll(".pick-tab").length;
-      ok(tabs===6, "hay 6 filtros (Todos/Primera/B/Segunda/Argentina/Clásicos)");
+      /* 7.9116 · + las ligas «Próximamente» (Primera Nacional, Série A): 6 base + las que vengan */
+      ok(tabs>=6+((typeof LIGAS_PROXIMAMENTE!=="undefined")?LIGAS_PROXIMAMENTE.length:0), "están los 6 filtros base (Todos/Primera/Argentina/B/Segunda/Clásicos) y los de Próximamente");
       var buscar=d.querySelector(".pick-buscar");
       ok(!!buscar, "hay buscador de club/ciudad");
     }, "Picker inicio");
@@ -1732,7 +1733,9 @@
       ok(!!document.querySelector("#vista .picker-grid, #vista .iconos"), "picker de clubes adentro");
       ok(!!document.querySelector("#vista .picker-liston"), "listones de liga en Todos");
       var tabs=[].map.call(document.querySelectorAll("#vista .pick-tab"), function(b){ return b.textContent; });
-      var iArg=tabs.indexOf("Argentina"), iB=tabs.indexOf("Primera B");
+      /* 7.9116 · las etiquetas llevan bandera y cantidad ("🇦🇷 Liga Profesional 30"): se busca por contenido */
+      var busca=function(re){ for(var i=0;i<tabs.length;i++) if(re.test(tabs[i])) return i; return -1; };
+      var iArg=busca(/Liga Profesional|Argentina/), iB=busca(/Primera B/);
       ok(iArg>=0 && iB>=0 && iArg<iB, "Argentina (AFA) antes de Primera B en la cinta");
       ok(!document.querySelector("#vista .ini-apoyar"), "el aviso de anuncio no está en el inicio");
       ok(!!document.getElementById("btnApoyar"), "₿ en la barra (atajo a Bitcoin)");

@@ -415,3 +415,83 @@ if(typeof devDoctorRegistrar==="function"){
       return r.ok?_dok(r.con+"/"+r.total+" clubes elegibles con kit"):_dmal(r.sin.length+" sin kit, "+r.mal.length+" color(es) malo(s)", det);
     }});
 }
+if(typeof devDoctorRegistrar==="function"){
+  /* 7.9116 · duelos en sala: lo que manda el rival se valida, los nombres se escapan, códigos cortos y viven en Ajustes */
+  devDoctorRegistrar({id:"duelos_seguros", area:"interfaz", n:"Duelos: sala con código y clave, mensajes del rival validados, acceso desde Ajustes",
+    arreglo:"js/multi.js mpValidarMsg() (lista blanca de tipos, números y clubes), _mpNombreLimpio/_mpEsc, panelDuelos() en Ajustes. Prueba completa: bash test/duelo.sh",
+    fn:function(){
+      if(typeof mpValidarMsg!=="function"||typeof modalDuelo!=="function") return _dmal("no cargó js/multi.js");
+      const f=[], J=JSON.stringify, club=(mpClubes()[0]||{}).id;
+      const malos=[["tipo desconocido",J({tipo:"eval",x:1})],["club que no existe",J({tipo:"club",club:"<img src=x>"})],["jugada fuera de rango",J({tipo:"duelo_pick",n:1,idx:7})],
+        ["goles negativos",J({tipo:"duelo_res",n:1,gHost:-1,gGuest:0,pH:0,pG:0})],["mensaje gigante",J({tipo:"hola",nombre:"x".repeat(3000)})],["no es JSON","{{{"]];
+      malos.forEach(x=>{ if(mpValidarMsg(x[1])!==null) f.push("acepta un mensaje con "+x[0]); });
+      if(club&&!mpValidarMsg(J({tipo:"club",club:club}))) f.push("rechaza un club válido");
+      const n=mpValidarMsg(J({tipo:"hola",nombre:"<b onclick=x>Ana</b>"}));
+      if(!n||/[<>]/.test(n.nombre)) f.push("el nombre del rival pasa con etiquetas HTML");
+      for(let i=0;i<20;i++){ const c=mpCodigoNuevo(); if(!mpCodigoValido(c)){ f.push("código de sala inválido: "+c); break; } }
+      if(mpNormalizarCodigo(" ab-c d9 ")!=="ABCD9") f.push("el código no se normaliza (mayúsculas, sin espacios)");
+      /* de comportamiento: se pinta Ajustes en una caja aparte y se busca el panel, en su pestaña */
+      if(typeof vistaAjustes==="function"&&typeof E!=="undefined"&&E){
+        const caja=document.createElement("div"), snap=clonarPartida(E); caja.style.cssText="position:absolute;left:-9999px;width:400px;visibility:hidden"; document.body.appendChild(caja);
+        try{ vistaAjustes(caja);
+          const pd=[].slice.call(caja.querySelectorAll(".panel")).find(p=>/Duelos/.test((p.querySelector(".cab")||{}).textContent||""));
+          if(!pd) f.push("los duelos no aparecen en Ajustes");
+          else if(pd.dataset&&pd.dataset.ajtab!==undefined&&pd.dataset.ajtab!=="duelos") f.push("el panel de duelos cae en la pestaña «"+pd.dataset.ajtab+"» y no en la suya");
+        }catch(e){ f.push("Ajustes se cae: "+e.message); }
+        finally{ caja.remove(); restaurarPartida(snap); }
+      }
+      if(typeof dueloLugar!=="function"||!DUELO_LUGARES.some(x=>x[0]===dueloLugar())) f.push("no se sabe dónde va el acceso rápido a duelos");
+      if(typeof cargarPeerJS!=="function") f.push("falta cargarPeerJS (PeerJS tiene que bajar recién al abrir Duelos)");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("mensajes validados, nombres limpios, códigos de 5 letras, en Ajustes (acceso rápido: "+dueloLugar()+")");
+    }});
+  /* 7.9116 · ligas próximamente: se ven en el selector, pero no arrancan partida */
+  devDoctorRegistrar({id:"ligas_proximamente", area:"contenido", n:"Ligas «Próximamente» a la vista y sin arrancar partida",
+    arreglo:"js/data-proximamente.js LIGAS_PROXIMAMENTE; en js/ui.js pickerClubes() sus tarjetas solo avisan.",
+    fn:function(){
+      if(typeof LIGAS_PROXIMAMENTE==="undefined") return _dmal("no cargó js/data-proximamente.js");
+      const f=[], det=[];
+      LIGAS_PROXIMAMENTE.forEach(l=>{ det.push(l.bandera+" "+l.n+": "+l.clubes.length+" clubes");
+        if(l.clubes.length<10) f.push(l.n+": solo "+l.clubes.length+" clubes"); if(new Set(l.clubes).size!==l.clubes.length) f.push(l.n+": clubes repetidos"); });
+      if(typeof pickerClubes!=="function") return _dmal("sin selector");
+      const liga=LIGAS_PROXIMAMENTE[0], clave="futbolini_picker_f"; let prev=null; try{ prev=localStorage.getItem(clave); localStorage.setItem(clave,"pronto:"+liga.id); }catch(e){}
+      const caja=document.createElement("div"); caja.style.cssText="position:absolute;left:-9999px;width:600px"; document.body.appendChild(caja);
+      const np=window.nuevaPartida, ep=window.elegirEpoca, av=window.aviso; let arranco=0, avisos=0;
+      window.nuevaPartida=function(){ arranco++; }; window.elegirEpoca=function(){ arranco++; }; window.aviso=function(){ avisos++; };
+      try{ pickerClubes(caja); const c=caja.querySelector(".pick-pronto");
+        if(!c) f.push("el selector no muestra las tarjetas de "+liga.n); else { c.click(); if(arranco) f.push("una tarjeta «Próximamente» arranca partida"); if(!avisos) f.push("una tarjeta «Próximamente» no dice nada al tocarla"); } }
+      catch(e){ f.push("EXCEPCIÓN: "+e.message); }
+      finally{ window.nuevaPartida=np; window.elegirEpoca=ep; window.aviso=av; caja.remove(); try{ if(prev==null) localStorage.removeItem(clave); else localStorage.setItem(clave,prev); }catch(e){} }
+      return f.length?_dmal(f.length+" problema(s)",f.concat(det)):_dok(det.join(" · ")+" · con candado");
+    }});
+}
+if(typeof devDoctorRegistrar==="function"){
+  /* 7.9116 · una partida compartida como archivo es texto de otra persona: el nombre de la pareja vivía en .n y al
+     cargar se limpiaba .nombre, así que un archivo manipulado ejecutaba código al abrir Vida */
+  devDoctorRegistrar({id:"xss_partida_cargada", area:"seguridad", n:"Una partida manipulada no ejecuta código al cargarla y recorrer las secciones", pesado:true,
+    arreglo:"js/motor.js normalizarEstado() limpia todo lo que escribe el jugador; al pintar, escHtml().",
+    fn:function(){
+      if(!E||typeof normalizarEstado!=="function") return _dok("sin partida");
+      const snap=clonarPartida(E), secPrev=SEC, gu=window.guardar, f=[];
+      const X='<img src=x onerror="window.__xssDoc=(window.__xssDoc||0)+1">';
+      window.__xssDoc=0; window.guardar=function(){};
+      try{
+        const est=JSON.parse(JSON.stringify(E));
+        est.perfil=est.perfil||{}; est.perfil.nombre="Ana"+X; est.perfil.pareja={n:"Bea"+X,desde:E.anio,nivel:60};
+        est.perfil.hijos=[{nombre:"Hijo"+X,nacido:E.anio-5}]; est.perfil.plopNombre="P"+X; est.perfil.plopUser="u"+X; est.perfil.plopBio="b"+X;
+        est.perfil.tinder={matches:[{n:"M"+X,bio:"x"+X,anio:E.anio}]};
+        if(est.dinastia){ est.dinastia.linaje="L"+X; est.dinastia.raiz="R"+X; }
+        est.clubNombre="C"+X; est.dt="D"+X;
+        E=est; normalizarEstado();
+        /* se mira el DOM apenas se pinta cada sección: el onerror se dispara después y el repintado siguiente lo borra */
+        ["escritorio","plantel","redes","carrera","vida","historia"].forEach(s=>{
+          try{ SEC=s; render(); }catch(e){ f.push("la sección «"+s+"» explota con la partida manipulada: "+e.message); return; }
+          const vivos=[].filter.call(document.querySelectorAll("img"),i=>/__xssDoc/.test(i.getAttribute("onerror")||""));
+          vivos.forEach(i=>i.removeAttribute("onerror"));
+          if(vivos.length) f.push("«"+s+"»: "+vivos.length+" <img onerror> inyectada(s) desde la partida (ej.: "+(vivos[0].parentElement?vivos[0].parentElement.textContent.slice(0,40):"")+")");
+        });
+      }catch(e){ f.push("EXCEPCIÓN: "+e.message); }
+      finally{ window.guardar=gu; restaurarPartida(snap); SEC=secPrev; try{ render(); }catch(e){} }
+      if(window.__xssDoc) f.push("se ejecutó código "+window.__xssDoc+" vez/veces");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("nombre, pareja, hijos, matches, PLOP, linaje y club limpios en 6 secciones");
+    }});
+}

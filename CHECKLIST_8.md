@@ -1,4 +1,4 @@
-# CHECKLIST 8.00 — el camino (actualizado 30 sep 2026, 7.9115)
+# CHECKLIST 8.00 — el camino (actualizado 30 sep 2026, 7.9116)
 
 ## ROAD TO 8.00 · revisión completa (29 sep 2026, Opus 5.5) — Opus · Grok · Sonnet · ChatGPT
 **Dónde estamos, sin maquillaje:** el motor ya no se cae. 255 arranques × 3 temporadas sin fallas, partidas de 7.9003
@@ -64,6 +64,11 @@ Sistemas que el autor pidió y todavía no existen o están a medias.
 - [x] Balón parado 3D con el área poblada por reglamento (7.9111)
 - [x] Vida: "Tu vida hoy" + sueldo y gastos a la escala del club (7.9111)
 - [x] Camisetas reales en la cancha (7.9114, `js/data-kits.js`)
+- [x] **Duelos en sala** con código y contraseña (tipo Gartic/Haxball), en Ajustes y con acceso rápido a elección (7.9116)
+- [ ] Probar una sala de duelo entre dos celulares reales (el buzón público no se pudo probar desde el entorno) — humano
+- [x] Selector de equipos con épocas por club y ligas **Próximamente** (Primera Nacional, Série A) (7.9116)
+- [ ] Listas 2026 de Primera Nacional y Série A confirmadas con fuente → Grok
+- [x] Seguridad: servidores atacados por prueba automática, XSS por partida manipulada cerrado (7.9116)
 - [x] **Segunda por zonas:** cierre de temporada cuadra fecha a fecha, sin −999 (7.9094)
 - [x] **Segunda: arranque sin caja** → caja real + fila de decisiones + umbrales a escala + ayudante prudente (7.9106)
 - [ ] **Voz por club en PLOP** → encargado a Sonnet (bloque 5 de PROMPT_SONNET_TEXTOS.md) (hoy 14 plantillas iguales para 46 clubes; anotado por Sonnet en 7.9091)

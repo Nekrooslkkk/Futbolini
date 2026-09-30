@@ -13,6 +13,7 @@
    ============================================================ */
 const AJ_TABS=[
   {id:"partida", n:"💾 Partida",  re:/Mis partidas|Respaldo|sin internet|Cuenta en la nube|Solo jugar/i},
+  {id:"duelos",  n:"🎮 Duelos",   re:/^Duelos/i},   /* 7.9116 · los duelos van aparte del juego: acá se abren y se elige dónde aparece el acceso */
   {id:"pantalla",n:"🎨 Pantalla", re:/^Ajustes$|^Pantalla|Animaciones/i},
   {id:"proyecto",n:"💚 Proyecto", re:/El proyecto|En este momento/i},
   {id:"trucos",  n:"😇 Trucos",   re:/Modo Dios|Modo desarrollador|Editor de contenido|Editor de la partida/i}

@@ -33,14 +33,22 @@ const PRESENCIA=new Map();
 const PRESENCIA_TTL=90000;
 function presenciaN(id){
   const now=Date.now();
-  if(id) PRESENCIA.set(String(id).slice(0,80), now);
+  /* 7.9116 · tope de 5000 presentes: alguien mandando ids inventados no llena la memoria */
+  if(id && (PRESENCIA.has(String(id).slice(0,80)) || PRESENCIA.size<5000)) PRESENCIA.set(String(id).slice(0,80), now);
   for(const [k,t] of PRESENCIA) if(now-t>PRESENCIA_TTL) PRESENCIA.delete(k);
   return Math.max(1, PRESENCIA.size);
 }
 
 function send(res,code,body,type){
-  res.writeHead(code,{"Content-Type":type||"text/plain; charset=utf-8","Cache-Control":"no-cache"});
+  res.writeHead(code,{"Content-Type":type||"text/plain; charset=utf-8","Cache-Control":"no-cache",
+    "X-Content-Type-Options":"nosniff","Referrer-Policy":"same-origin"});
   res.end(body);
+}
+/* 7.9116 · el cuerpo de un POST tiene tope (8 KB): antes se acumulaba sin límite y se podía llenar la memoria */
+function leerCuerpo(req,res,fn){
+  let raw="", corto=false;
+  req.on("data",c=>{ if(corto) return; raw+=c; if(raw.length>8192){ corto=true; send(res,413,"demasiado grande"); req.destroy(); } });
+  req.on("end",()=>{ if(!corto) fn(raw); });
 }
 function api(req,res){
   if(req.url==="/api/health"||req.url==="/api/version"){
@@ -53,20 +61,16 @@ function api(req,res){
       return true;
     }
     if(req.method==="POST"){
-      let raw="";
-      req.on("data",c=>raw+=c);
-      req.on("end",()=>{
+      leerCuerpo(req,res,raw=>{
         let id="";
-        try{ id=JSON.parse(raw||"{}").id||""; }catch(e){ id=""; }
+        try{ id=String(JSON.parse(raw||"{}").id||""); }catch(e){ id=""; }
         send(res,200,JSON.stringify({n:presenciaN(id||"anon")}),"application/json; charset=utf-8");
       });
       return true;
     }
   }
   if(req.url==="/api/pensar" && req.method==="POST"){
-    let raw="";
-    req.on("data",c=>raw+=c);
-    req.on("end",()=>{
+    leerCuerpo(req,res,raw=>{
       let j={};
       try{ j=JSON.parse(raw||"{}"); }catch(e){ j={}; }
       const t=String(j.texto||"").toLowerCase();
@@ -82,13 +86,20 @@ function api(req,res){
   }
   return false;
 }
+/* 7.9116 · qué NO se sirve: archivos ocultos (.git, .env), los datos del servidor (usuarios, partidas) y el código
+   del servidor. Y la carpeta tiene que ser la del juego de verdad: "/Futbolini-otro" empezaba con "/Futbolini". */
 function safe(p){
   const full=path.normalize(path.join(ROOT,p));
-  if(!full.startsWith(ROOT)) return null;
+  if(full!==ROOT && !full.startsWith(ROOT+path.sep)) return null;
+  const rel=path.relative(ROOT,full).split(path.sep);
+  if(rel.some(x=>x.startsWith("."))) return null;
+  if(rel[0]==="server" || rel[0]==="node_modules") return null;
   return full;
 }
 const server=http.createServer((req,res)=>{
-  const u=decodeURIComponent((req.url||"/").split("?")[0]);
+  /* 7.9116 · una URL mal formada (/%E0) tiraba el servidor entero: decodeURIComponent lanza y nadie lo atrapaba */
+  let u;
+  try{ u=decodeURIComponent((req.url||"/").split("?")[0]); }catch(e){ send(res,400,"url inválida"); return; }
   if(api(req,res)) return;
   let rel=u==="/"? "/index.html":u;
   const file=safe(rel);

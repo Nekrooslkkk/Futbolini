@@ -490,7 +490,7 @@ function vistaVida(){
   p.cuerpo.appendChild(win);
   p.cuerpo.appendChild(fila("Bolsillo personal",plata(E.personal.bolsillo)));
   p.cuerpo.appendChild(fila("Sueldo del cargo","+"+plata(ingresoPersonalSemanal())+" por semana"));
-  p.cuerpo.appendChild(fila("Pareja",E.perfil.pareja?(E.perfil.pareja.n+" (desde "+E.perfil.pareja.desde+")"):"sin pareja"));
+  p.cuerpo.appendChild(fila("Pareja",E.perfil.pareja?(escHtml(E.perfil.pareja.n)+" (desde "+E.perfil.pareja.desde+")"):"sin pareja"));
   p.cuerpo.appendChild(fila("Dinastía",E.dinastia.linaje+" · "+relacionSucesor(E.dinastia.generacion)+" (gen. "+E.dinastia.generacion+")"));
   /* bienestar / estrés */
   const bien=E.perfil.bienestar||70;
@@ -568,7 +568,7 @@ function vistaVida(){
   if(E.perfil.pareja){
     const par=E.perfil.pareja; const niv=par.nivel||65;
     const d=el("div","resul "+(niv>=50?"bien":"mal"));
-    d.innerHTML='<span class="aero-orb '+(par.orb||"orb-rosa")+' orb-chico"></span> <b>'+par.n+'</b>'+
+    d.innerHTML='<span class="aero-orb '+escHtml(par.orb||"orb-rosa")+' orb-chico"></span> <b>'+escHtml(par.n)+'</b>'+
       (par.casades?" 💍":"")+"<br>"+(par.casades?"Casados":"En pareja")+" desde "+par.desde+". "+
       (niv<30?"La relación está en crisis: si no la cuidas, se termina.":niv<55?"La relación necesita atención.":"Relación sólida: menos escándalos, más paz.")+
       '<div style="margin-top:4px"><span class="mini">Relación</span>'+barrita(niv,niv>50?"#e0563f":"#c9392c")+'</div>';
@@ -607,7 +607,7 @@ function vistaVida(){
     pt.cuerpo.appendChild(el("h3","sub","Tus matches"));
     ms.slice(0,8).forEach(m=>{
       const row=el("div","fila");
-      row.innerHTML='<span><span class="aero-orb '+(m.orb||"orb-azul")+' orb-chico"></span> '+m.n+'</span>';
+      row.innerHTML='<span><span class="aero-orb '+escHtml(m.orb||"orb-azul")+' orb-chico"></span> '+escHtml(m.n)+'</span>';
       const b=el("button","btn-aqua chico","Charlar"); b.onclick=()=>chatMatch(m);
       row.appendChild(b); pt.cuerpo.appendChild(row);
     });

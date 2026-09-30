@@ -34,9 +34,15 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ||
   .split(",").map(function (s) { return s.trim(); }).filter(Boolean);
 /* rate limiting en memoria por IP (sin dependencias). */
 const _rl = new Map();
+/* 7.9116 · la IP para el límite de intentos: X-Forwarded-For lo escribe el cliente y se podía inventar uno distinto
+   en cada intento (fuerza bruta sin límite). Solo se usa si TRUST_PROXY=1 (detrás de un proxy propio), y en ese caso
+   el ÚLTIMO valor, que es el que agrega el proxy. */
+const TRUST_PROXY = process.env.TRUST_PROXY === "1";
 function ipDe(req) {
-  const xf = (req.headers["x-forwarded-for"] || "").split(",")[0].trim();
-  return xf || (req.socket && req.socket.remoteAddress) || "?";
+  const directa = (req.socket && req.socket.remoteAddress) || "?";
+  if (!TRUST_PROXY) return directa;
+  const partes = String(req.headers["x-forwarded-for"] || "").split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+  return partes.length ? partes[partes.length - 1] : directa;
 }
 function limitar(clave, max, ventanaMs) {
   const ahora = Date.now();
@@ -85,6 +91,12 @@ function verificarPass(pass, guardado) {
   return crypto.timingSafeEqual(Buffer.from(h, "hex"), Buffer.from(nuevo, "hex"));
 }
 function nuevoToken() { return crypto.randomBytes(24).toString("hex"); }
+/* 7.9116 · el token de sesión se guarda como hash: si alguien lee usuarios.json no puede entrar como otro */
+function hashToken(t) { return crypto.createHash("sha256").update(String(t)).digest("hex"); }
+function igualSeguro(a, b) {
+  const x = Buffer.from(String(a)), y = Buffer.from(String(b));
+  return x.length === y.length && crypto.timingSafeEqual(x, y);
+}
 
 function cors(res, origin) {
   /* solo se refleja el origen si está en la lista blanca; si no, se responde con
@@ -97,7 +109,7 @@ function cors(res, origin) {
 }
 function responder(res, code, obj) {
   const body = JSON.stringify(obj);
-  res.writeHead(code, { "Content-Type": "application/json; charset=utf-8" });
+  res.writeHead(code, { "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store" });
   res.end(body);
 }
 function leerCuerpo(req) {
@@ -111,11 +123,12 @@ function leerCuerpo(req) {
 function usuarioDeToken(req) {
   const auth = req.headers["authorization"] || "";
   const tok = auth.replace(/^Bearer\s+/i, "").trim();
-  if (!tok) return null;
-  const us = cargarUsuarios();
+  if (!tok || tok.length > 200) return null;
+  const h = hashToken(tok), us = cargarUsuarios();
   for (const email in us) {
     const u = us[email];
-    if (u.token === tok && u.tokenExp > Date.now()) return { email, u };
+    const calza = u.tokenHash ? igualSeguro(u.tokenHash, h) : (u.token ? igualSeguro(u.token, tok) : false);   /* u.token: sesiones viejas */
+    if (calza && u.tokenExp > Date.now()) return { email, u };
   }
   return null;
 }
@@ -125,7 +138,10 @@ function servirEstatico(url, res) {
   let rel = url === "/" ? "/index.html" : url;
   if (rel.startsWith("/server") || rel.includes("..")) return false;
   const full = path.normalize(path.join(PUBLIC, rel));
-  if (!full.startsWith(path.normalize(PUBLIC))) return false;
+  const base = path.normalize(PUBLIC);
+  if (full !== base && !full.startsWith(base + path.sep)) return false;
+  /* 7.9116 · nada de archivos ocultos (.git, .env) */
+  if (path.relative(base, full).split(path.sep).some(function (x) { return x.startsWith("."); })) return false;
   if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return false;
   res.writeHead(200, { "Content-Type": MIME[path.extname(full)] || "application/octet-stream" });
   res.end(fs.readFileSync(full));
@@ -144,7 +160,7 @@ const rutas = {
     const us = cargarUsuarios();
     if (us[email]) return responder(res, 409, { ok: false, msg: "Ese correo ya está registrado. Entra en vez de crear." });
     const token = nuevoToken();
-    us[email] = { pass: hashPass(pass), token, tokenExp: Date.now() + TOKEN_TTL, creado: Date.now() };
+    us[email] = { pass: hashPass(pass), tokenHash: hashToken(token), tokenExp: Date.now() + TOKEN_TTL, creado: Date.now() };
     guardarUsuarios(us);
     responder(res, 200, { ok: true, token, email });
   },
@@ -156,9 +172,10 @@ const rutas = {
     const us = cargarUsuarios();
     const u = us[email];
     if (!u || !verificarPass(pass, u.pass)) return responder(res, 401, { ok: false, msg: "Correo o clave incorrectos." });
-    u.token = nuevoToken(); u.tokenExp = Date.now() + TOKEN_TTL;
+    const token = nuevoToken();
+    delete u.token; u.tokenHash = hashToken(token); u.tokenExp = Date.now() + TOKEN_TTL;
     guardarUsuarios(us);
-    responder(res, 200, { ok: true, token: u.token, email });
+    responder(res, 200, { ok: true, token, email });
   },
 
   "POST /api/subir": async (req, res) => {
@@ -188,7 +205,7 @@ const rutas = {
   },
 
   "POST /api/datos": async (req, res) => {
-    if (!ADMIN_KEY || (req.headers["x-admin-key"] || "") !== ADMIN_KEY) return responder(res, 403, { ok: false, msg: "No autorizado." });
+    if (!ADMIN_KEY || !igualSeguro(req.headers["x-admin-key"] || "", ADMIN_KEY)) return responder(res, 403, { ok: false, msg: "No autorizado." });
     const b = await leerCuerpo(req);
     if (!b || typeof b.datos !== "object") return responder(res, 400, { ok: false, msg: "Falta 'datos'." });
     b.datos.version = (b.datos.version || 0);

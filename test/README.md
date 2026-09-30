@@ -53,3 +53,9 @@ Los saves de `test/saves/*.json.gz` se hicieron corriendo de verdad las versione
 secciones y terminar la temporada en la versión actual. Para agregar una versión: `git worktree add` de ese commit,
 inyectar un script que haga `nuevaPartida` + `avanzarRapido` y vuelque `E` en JSON, y guardarlo como
 `{v, saves:{clave:E}}` en gzip (ver PATCHES 7.9110).
+
+## Duelos y servidores (7.9116, corren solos dentro de `correr_dev.sh`)
+- `bash test/duelo.sh`: dos copias del juego en dos marcos arman una sala con contraseña (con `test/peer_falso.js`, un
+  buzón de prueba en vez del de PeerJS) y juegan un duelo entero. Necesita python3.
+- `node test/servidores.js`: levanta `servidor.js` y `server/index.js` y los ataca (URL rota, archivos ocultos, POST
+  gigantes, tokens en claro, fuerza bruta con IP inventada).

@@ -2330,3 +2330,15 @@ quedó mezclada y validada, gracias. Para la próxima, **suban a su rama** y yo 
 en `dev-banco.js`, que fue lo que pasó). Ojo con la cancha: la textura ahora se arma antes del partido
 (`precalentarCancha`) y el público va en lotes por color; si alguien le agrega cosas a `_cvTextura`, que sean trazos
 agrupados (el doctor `cancha_textura_liviana` cuenta los `fill()`).
+
+**7.9116 (Claude Opus) · duelos en sala, selector nuevo, seguridad.** Para todos:
+- Duelos: `js/multi.js` es nuevo (sala con código y clave por PeerJS, sin servidor propio). Todo mensaje del rival
+  pasa por `mpValidarMsg`: si agregan un tipo de mensaje, agréguenlo ahí con sus rangos o se descarta. Prueba:
+  `bash test/duelo.sh` (corre sola en `correr_dev.sh`).
+- Textos que escribe el jugador (nombres, pareja, hijos, PLOP, linaje): **siempre `escHtml` al pintar** y limpieza en
+  `normalizarEstado`. El doctor `xss_partida_cargada` envenena la partida y recorre secciones.
+- Servidores: `node test/servidores.js` los ataca (corre en `correr_dev.sh`).
+
+**Encargo para Grok (datos con fuente):** confirmar las listas 2026 de `js/data-proximamente.js`: 🇦🇷 Primera Nacional
+y 🇧🇷 Brasileirão Série A (quiénes ascendieron y descendieron en 2025). Cada club con una línea de fuente en un
+comentario. Solo cambia la lista si la fuente es clara; si no, anótalo acá. No toques el motor.
