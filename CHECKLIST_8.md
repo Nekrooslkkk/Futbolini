@@ -15,8 +15,7 @@ puerta humana sin abrir. Ninguna IA puede abrir la puerta 4: esa es tuya.
 | 4 · Humanos | 🔴 cerrada | tu temporada con un club chico + 2–3 amigos 30 min |
 
 ### Qué pulir, en orden (y quién)
-1. **Merge y validación de lo de Sonnet 7.9112** (eventos de Vida, carteles del balón parado) → **Opus**. Está en la
-   rama `claude/preguntas-mundo-vivo-ion29g`, falta pasarlo a `main` con las 5 pruebas.
+1. ~~**Merge y validación de lo de Sonnet 7.9112**~~ ✅ 7.9113 (y la 7.9114 de camisetas en 7.9115).
 2. **Temas:** insano con la barra de Jugar abajo (arreglado en 7.9113: `filter` animado en el body) → **Opus**. Después,
    una pasada de contraste por sección en negro/claro/insano (lo nuevo: "Tu vida hoy", cancha, balón parado).
 3. ~~**Puerta 3:** medir con CPU 6×~~ ✅ 7.9115 (y se sacó un trabón de ~2 s al entrar al partido). Queda probar en un
@@ -29,7 +28,7 @@ puerta humana sin abrir. Ninguna IA puede abrir la puerta 4: esa es tuya.
 6. **Barra superior** (7 tarjetas → 3 grandes + menú) y **tutorial de 5 pasos** → **Opus** la estructura, **Sonnet**
    el texto del tutorial.
 7. **Contenido que da vida:** voz por club en PLOP (bloque 5) y prensa/decisiones (bloques 2–4) → **Sonnet**.
-   Camisetas reales (G1), reacción del área en el 3D (G2), fotos de estadio, sonidos CC0 → **Grok**.
+   ~~Camisetas reales (G1)~~ ✅ 7.9114. Reacción del área en el 3D (G2), fotos de estadio, sonidos CC0 → **Grok**.
 8. **Playtest de afuera antes que el tuyo:** **ChatGPT** (C1) juega como alguien nuevo y deja el informe; así tus
    amigos no tropiezan con lo obvio.
 9. **Puerta 4** → **tú**. Android real barato, una temporada con un club de Segunda, y los amigos.
