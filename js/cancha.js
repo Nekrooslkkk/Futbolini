@@ -302,13 +302,15 @@ function _cvTextura(pxm){
   /* tribuna: cemento con gente vista desde arriba (cabezas de colores, más densa cerca de la cancha) */
   g.fillStyle="#2b2f37"; g.fillRect(0,0,W,H);
   const cols=["#c8102e","#f4efe6","#1d4fa0","#e0a92a","#f4efe6","#20242c","#8a8f99","#d9d2c3"];
-  const nGente=Math.round(W*H/(pxm*pxm)*1.6);
+  /* 7.9113 · la gente se junta por color y se pinta en UN trazo por color (antes 17 mil fill() sueltos: ~1,5 s en un
+     celu barato al entrar al partido); cuadraditos en vez de círculos, a esa escala no se nota */
+  const nGente=Math.round(W*H/(pxm*pxm)*1.6), rg=Math.max(1,pxm*0.2), lotes=cols.map(()=>new Path2D());
   for(let i=0;i<nGente;i++){
-    const x=rnd()*W, y=rnd()*H, mx=x/pxm+M.x0, my=y/pxm+M.y0;
+    const x=rnd()*W, y=rnd()*H, mx=x/pxm+M.x0, my=y/pxm+M.y0, k=Math.floor(rnd()*cols.length);
     if(mx>-6.2&&mx<111.2&&my>-6.2&&my<74.2) continue;
-    g.fillStyle=cols[Math.floor(rnd()*cols.length)]; g.globalAlpha=0.55+rnd()*0.45;
-    g.beginPath(); g.arc(x,y,Math.max(1,pxm*0.22),0,Math.PI*2); g.fill();
+    lotes[k].rect(x-rg,y-rg,rg*2,rg*2);
   }
+  lotes.forEach((l,k)=>{ g.fillStyle=cols[k]; g.globalAlpha=0.7+(k%3)*0.1; g.fill(l); });
   g.globalAlpha=1;
   /* escalones de la tribuna (líneas de sombra paralelas a la cancha) */
   g.strokeStyle="rgba(0,0,0,.35)"; g.lineWidth=Math.max(1,pxm*0.12);
@@ -487,9 +489,14 @@ function _cvRadar(ctx,w,h,st,col){
   ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(x0+st.ball.x*rw,y0+st.ball.y*rh,d*1.1,0,Math.PI*2); ctx.fill();
   if(st.cam){ const vw=CV_VISTA_SEGUIR/105*rw, vh=vw*h/w; ctx.strokeStyle="rgba(255,255,255,.8)"; ctx.strokeRect(x0+st.cam.x/105*rw-vw/2,y0+st.cam.y/68*rh-vh/2,vw,vh); }
 }
+/* 7.9113 · la fuente y el ancho del texto se memorizan: medir y cambiar la fuente en cada cuadro pesaba en el celu */
+const _CV_ROT={};
 function _cvRotulo(ctx,x,y,txt,fs,fondo){
-  ctx.font="700 "+fs+"px system-ui,sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
-  const tw=ctx.measureText(txt).width+fs*0.9;
+  const f="700 "+fs+"px system-ui,sans-serif";
+  if(ctx.font!==f) ctx.font=f;
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  const k=f+"|"+txt; let tw=_CV_ROT[k];
+  if(tw===undefined){ if(Object.keys(_CV_ROT).length>300) for(const q in _CV_ROT) delete _CV_ROT[q]; tw=_CV_ROT[k]=ctx.measureText(txt).width+fs*0.9; }
   ctx.fillStyle=fondo; if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(x-tw/2,y-fs*0.75,tw,fs*1.5,fs*0.4); ctx.fill(); } else ctx.fillRect(x-tw/2,y-fs*0.75,tw,fs*1.5);
   ctx.fillStyle="#fff"; ctx.fillText(txt,x,y);
 }
@@ -497,7 +504,8 @@ function _cvDraw(ctx,w,h,stOpc,P){
   const st=stOpc||_cvSt; if(!st) return;
   const C=_cvCamara(st,w,h);
   /* textura a la resolución que pide esta cámara (tope 18 px/m: una cancha de 2,2 MP) */
-  const pxm=_cvCl(Math.ceil(Math.max(w/CV_VISTA_SEGUIR,C.S)),4,18);
+  /* en equipos flacos, textura a 8 px/m como tope (la mitad de memoria y de tiempo al armarla) */
+  const pxm=_cvCl(Math.ceil(Math.max(w/CV_VISTA_SEGUIR,C.S)),4,_cvLiviano()?8:18);
   const T=_cvTextura(pxm), M=CV_MUNDO;
   const vx0=C.cam.x-w/2/C.S, vy0=C.cam.y-h/2/C.S;
   ctx.fillStyle="#2b2f37"; ctx.fillRect(0,0,w,h);
@@ -613,6 +621,23 @@ function montarCancha(canvas){
   if(reduce){ _cvRAF=0; return; }
   _cvLast=performance.now()-34; _cvRAF=requestAnimationFrame(_cvFrame);
 }
+/* 7.9113 · la textura del estadio se arma en un momento muerto (en el escritorio, antes del partido) y no en el
+   primer cuadro del partido: en un celu barato eran ~220 ms de trabón justo al entrar. Misma cuenta de px/m que
+   _cvDraw, con el ancho que va a tener la cancha estimado desde la ventana. */
+function precalentarCancha(){
+  if(typeof document==="undefined"||_cvFondo) return false;
+  const cssW=Math.min(Math.max(240,(window.innerWidth||360)-40), Math.round(Math.min(360,(window.innerHeight||800)*0.42)*105/68));
+  const flaco=_cvLiviano()||(typeof navigator!=="undefined"&&navigator.deviceMemory&&navigator.deviceMemory<=2);
+  const w=Math.round(cssW*(flaco?1:Math.min(2,window.devicePixelRatio||1)));
+  _cvTextura(_cvCl(Math.ceil(w/CV_VISTA_SEGUIR),4,_cvLiviano()?8:18));
+  return true;
+}
+(function(){
+  if(typeof window==="undefined") return;
+  const pedir=function(){ const ric=window.requestIdleCallback||function(f){ return setTimeout(f,1200); };
+    ric(function(){ try{ precalentarCancha(); }catch(e){} },{timeout:6000}); };
+  window.addEventListener("load",function(){ setTimeout(pedir,2500); });
+})();
 /* 7.9111 · el canvas de la cancha se reutiliza entre repintados del partido (mismo dibujo, mismo tamaño, sin blanco) */
 function canchaReusable(){
   const c=_cvCanvas;

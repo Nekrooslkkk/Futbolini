@@ -386,3 +386,21 @@ if(typeof devDoctorRegistrar==="function"){
       return uniq.length?_dmal(uniq.length+" problema(s)",uniq):_dok(temas.length+" temas revisados: lo fijo queda pegado a la pantalla");
     }});
 }
+if(typeof devDoctorRegistrar==="function"){
+  /* 7.9113 · entrar al partido trababa ~2 s en un celu barato: la textura del estadio pintaba 17 mil personas con un
+     fill() cada una, y se armaba en el primer cuadro del partido. Ahora va por lotes de color y se arma antes. */
+  devDoctorRegistrar({id:"cancha_textura_liviana", area:"rendimiento", n:"La textura del estadio se arma con pocos trazos y antes del partido",
+    arreglo:"js/cancha.js _cvTextura(): público en un Path2D por color; precalentarCancha() la arma en un momento muerto.",
+    fn:function(){
+      if(typeof _cvTextura!=="function") return _dmal("sin cancha");
+      const f=[], P=CanvasRenderingContext2D.prototype, of=P.fill, oa=P.arc; let fills=0, arcs=0;
+      const guard=_cvFondo; let ms=0;
+      P.fill=function(){ fills++; return of.apply(this,arguments); }; P.arc=function(){ arcs++; return oa.apply(this,arguments); };
+      try{ _cvFondo=null; const a=performance.now(); _cvTextura(8); ms=performance.now()-a; }
+      catch(e){ f.push("EXCEPCIÓN: "+e.message); }
+      finally{ P.fill=of; P.arc=oa; _cvFondo=guard; }
+      if(fills+arcs>400) f.push("armar la textura hace "+fills+" fill() y "+arcs+" arc() (el público se pinta de a uno: ~2 s de trabón al entrar al partido en un celu barato)");
+      if(typeof precalentarCancha!=="function") f.push("falta precalentarCancha(): la textura se arma en el primer cuadro del partido");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok(fills+" fill() y "+arcs+" arc() · "+Math.round(ms)+" ms a 8 px/m · se arma antes del partido");
+    }});
+}
