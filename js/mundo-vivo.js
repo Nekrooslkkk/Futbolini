@@ -244,7 +244,7 @@ function modalMundoVivo(){
     }catch(e){}
     return r;
   };
-  _jorTabla._mv=true;
+  _jorTabla._mv=true; _jorTabla._orig=orig;   /* 7.9121 · el doctor lee la cadena entera */
 })();
 /* si el escritorio no tiene jornada que mostrar, el mundo igual se cuenta */
 (function wrapEscritorioMV(){

@@ -199,15 +199,49 @@ function _csCopas(cont){
   cont.appendChild(pg);
 }
 /* ---------- pestaña: resultados del país ---------- */
+/* 7.9121 · "que se pueda ver todo": antes eran los últimos 30 partidos de todas las ligas mezclados (y abría en la
+   liga argentina). Ahora: eliges la liga (la tuya primero) y ves TODAS sus fechas jugadas, con tu partido incluido.
+   Las tres últimas abiertas, el resto se abre con un toque. Abajo, lo último de las otras competencias. */
+function _csFechasLiga(key){
+  const L=E.mundo&&E.mundo.ligas&&E.mundo.ligas[key]; if(!L||!L.fx) return [];
+  const mios=(E.calendario||[]).filter(p=>p&&p.tipo==="liga"&&!p.fase&&p.jugado);
+  const out=[];
+  for(let r=0;r<(L.ronda||0);r++){
+    const filas=_csResRonda(key,r).map(x=>({a:x[0],b:x[1],ga:x[2],gb:x[3]}));
+    const par=(L.fx[r]||[]).find(x=>E.club&&(x[0]===E.club||x[1]===E.club));
+    if(par){ const p=mios.find(x=>x.fecha===r+1); if(p){ const yoL=par[0]===E.club; filas.unshift({a:par[0],b:par[1],ga:yoL?p.gf:p.gc,gb:yoL?p.gc:p.gf,yo:true,gf:p.gf,gc:p.gc}); } }
+    out.push({r:r,filas:filas});
+  }
+  return out;
+}
 function _csResultados(cont){
+  const u=_csUI(), ligas=_csLigas();
   const p=panel("Resultados","⚽","agua");
-  const lista=((E.mundo&&E.mundo.pais)||[]).slice(-30).reverse();
-  if(!lista.length) p.cuerpo.appendChild(el("p","mini","Todavía no hay fechas jugadas."));
-  let liga=null;
-  lista.forEach(x=>{
-    if(x.liga!==liga){ liga=x.liga; p.cuerpo.appendChild(el("div","cs-mes",escHtml(liga||"—"))); }
-    p.cuerpo.appendChild(_csFila({a:x.idA,b:x.idB,na:x.a,nb:x.b,ga:x.ga,gb:x.gb,cuando:"FT"}));
+  if(!ligas.length){ p.cuerpo.appendChild(el("p","mini","Todavía no hay fechas jugadas.")); cont.appendChild(p); return; }
+  if(!u.ligaRes||!ligas.some(l=>l.k===u.ligaRes)) u.ligaRes=(ligas.find(l=>l.propia)||ligas[0]).k;
+  const chips=el("div","fichas cs-chips");
+  ligas.forEach(l=>{ const b=el("button","ficha",escHtml(l.n)+(l.propia?" ★":"")); b.setAttribute("aria-pressed",u.ligaRes===l.k?"true":"false");
+    b.onclick=()=>{ u.ligaRes=l.k; irA("calendario"); }; chips.appendChild(b); });
+  p.cuerpo.appendChild(chips);
+  const fechas=_csFechasLiga(u.ligaRes).reverse();
+  if(!fechas.length) p.cuerpo.appendChild(el("p","mini","Esta liga todavía no juega ninguna fecha."));
+  fechas.forEach((f,i)=>{
+    const d=document.createElement("details"); d.className="cs-fecha-res"; if(i<3) d.open=true;
+    const tuyo=f.filas.find(x=>x.yo);
+    d.innerHTML="<summary><b>Fecha "+(f.r+1)+"</b><span class='mini'> · "+f.filas.length+" partidos"+(tuyo?" · tú: "+(tuyo.gf>tuyo.gc?"ganaste ":(tuyo.gf<tuyo.gc?"perdiste ":"empataste "))+tuyo.gf+"-"+tuyo.gc:"")+"</span></summary>";
+    f.filas.forEach(x=>{ const fl=_csFila({a:x.a,b:x.b,na:_csNom(x.a),nb:_csNom(x.b),ga:x.ga,gb:x.gb,cuando:"FT"}); if(x.yo) fl.classList.add("yo"); d.appendChild(fl); });
+    p.cuerpo.appendChild(d);
   });
+  /* lo último de todo lo demás (otras ligas, liguillas, copas del mundo simulado) */
+  const otros=((E.mundo&&E.mundo.pais)||[]).filter(x=>x.liga&&!/^(Liga de Primera|Primera)$/.test(x.liga)).slice(-40).reverse();
+  if(otros.length){
+    const d=document.createElement("details"); d.className="cs-fecha-res";
+    d.innerHTML="<summary><b>Últimos en otras competencias</b><span class='mini'> · "+otros.length+"</span></summary>";
+    let liga=null;
+    otros.forEach(x=>{ if(x.liga!==liga){ liga=x.liga; d.appendChild(el("div","cs-mes",escHtml(liga||"—"))); }
+      d.appendChild(_csFila({a:x.idA,b:x.idB,na:x.a,nb:x.b,ga:x.ga,gb:x.gb,cuando:"FT"})); });
+    p.cuerpo.appendChild(d);
+  }
   cont.appendChild(p);
 }
 /* ---------- ficha de un equipo: como si lo manejaras ---------- */

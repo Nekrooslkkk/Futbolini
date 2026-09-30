@@ -657,3 +657,111 @@ if(typeof devDoctorRegistrar==="function"){
       return f.length?_dmal(f.length+" problema(s)",f):_dok("junta sin cambiar el código (const→var solo arriba, nada de window), guardia lista, y la pantalla queda liviana"+(papaCargaJunta()?" · este arranque vino juntado":""));
     }});
 }
+
+/* 7.9121 · bug del autor: "gané con Colo-Colo pero no clasifiqué (por ende no se simuló)". En las épocas históricas el
+   campeón quedaba marcado con cupo pero la Libertadores del año siguiente nunca se armaba (el sorteo corría solo desde
+   2027), y en 1925 daba cupo a una copa que no existía. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"cupo_copa_se_juega", area:"motor", n:"El cupo a Libertadores ganado en la liga se juega al año siguiente, en cualquier época",
+    arreglo:"js/data-copas2026.js: construirCalendario (envoltorio _copas33) siembra el grupo desde 1960 · cuposEpocaChile() · resolverCopa acepta las copas sorteadas (notaId SIM…)",
+    fn:function(){
+      if(typeof construirCalendario!=="function"||typeof cuposDesdeTemporada!=="function"||!E) return _dok("sin partida");
+      const f=[], flagsPrev=JSON.stringify(E.flags||{}), anioPrev=E.anio, eraPrev=E.eraBase;
+      try{
+        E.flags=E.flags||{};
+        [1990,1992,2007,2027].forEach(y=>{ E.flags.cupoLib=true; E.flags.cupoSud=false;
+          let cal=[]; try{ cal=construirCalendario(E.club,y,true)||[]; }catch(e){ f.push(y+": construirCalendario explotó ("+e.message+")"); }
+          const lib=cal.filter(p=>p.tipo==="copa"&&p.torneo==="Copa Libertadores");
+          if(!lib.length) f.push("con cupo ganado, la Libertadores "+y+" no aparece en el calendario");
+          else if(lib.length<6) f.push("Libertadores "+y+": solo "+lib.length+" partidos de grupo"); });
+        E.eraBase=1991;
+        const q=(anio,pos)=>{ E.anio=anio; return cuposDesdeTemporada(pos,false,false); };
+        if(q(1925,1).lib) f.push("1925: el campeón clasifica a una Libertadores que todavía no existe (nace en 1960)");
+        if(!q(1991,1).lib||!q(1991,2).lib) f.push("1991: el campeón o el 2° no clasifican a Libertadores");
+        if(q(1991,3).lib) f.push("1991: el 3° clasifica (Chile tenía 2 cupos)");
+        if(q(1991,5).sud) f.push("1991: da Sudamericana, que nace en 2002");
+      } finally { E.flags=JSON.parse(flagsPrev); E.anio=anioPrev; E.eraBase=eraPrev; }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("con cupo, la Libertadores aparece en 1990, 1992, 2007 y 2027; cupos por época (nada antes de 1960)");
+    }});
+}
+
+/* 7.9121 · "cuando termina el partido a veces no dice que ganaste (Copa Chile, Copa de la Liga)": el final del partido
+   (dirigido o simulado) y el resumen de simulación dicen pasaste / campeón / subcampeón / fuera, con penales. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"desenlace_copa", area:"interfaz", n:"Al terminar un partido de copa se dice si pasaste, saliste campeón o quedaste fuera",
+    arreglo:"js/ui.js fotoCopa()/desenlaceCopa() · js/ui-partido.js cerrarPartido · js/ui.js simularDesdeAvance y jugarRapidoConRegistro",
+    fn:function(){
+      if(typeof desenlaceCopa!=="function"||typeof fotoCopa!=="function") return _dmal("falta desenlaceCopa/fotoCopa");
+      if(!E) return _dok("sin partida");
+      const f=[], calPrev=E.calendario, flagsPrev=JSON.stringify(E.flags||{}), titPrev=(E.titulos||[]).slice();
+      const mk=(ronda,jug)=>({tipo:"copa",torneo:"Copa Prueba",ronda:ronda,jugado:!!jug,f:{m:6,d:1},rivalNombre:"X"});
+      try{
+        E.flags=E.flags||{};
+        let semi=mk("Semifinal"); E.calendario=[semi]; let foto=fotoCopa(semi); semi.jugado=true; E.calendario.push(mk("FINAL"));
+        let d=desenlaceCopa(semi,foto,true); if(!d||d.tipo!=="pasa"||!/FINAL/.test(d.txt)) f.push("ganar la semifinal no dice «Pasaste a FINAL» ("+(d&&d.txt)+")");
+        semi=mk("Semifinal"); E.calendario=[semi]; foto=fotoCopa(semi); semi.jugado=true;
+        d=desenlaceCopa(semi,foto,false); if(!d||d.tipo!=="fuera") f.push("perder la semifinal no dice «fuera» (dice: "+(d&&d.txt)+")");
+        let fin=mk("FINAL"); E.calendario=[fin]; foto=fotoCopa(fin); fin.jugado=true;
+        d=desenlaceCopa(fin,foto,true); if(!d||d.tipo!=="campeon") f.push("ganar la final no dice «Campeón»");
+        d=desenlaceCopa(fin,foto,false); if(!d||d.tipo!=="sub") f.push("perder la final no dice «Subcampeón»");
+        const g1=mk("Grupo A"), g2=mk("Grupo A"); E.calendario=[g1,g2]; foto=fotoCopa(g1); g1.jugado=true;
+        if(desenlaceCopa(g1,foto,true)) f.push("a mitad de grupo ya anuncia un desenlace");
+      } finally { E.calendario=calPrev; E.flags=JSON.parse(flagsPrev); E.titulos=titPrev; }
+      const src=(n)=>{ const fn=window[n]; return typeof fn==="function"?(typeof _docFuente==="function"?_docFuente(fn):String(fn)):""; };
+      if(!/desenlaceCopa/.test(src("cerrarPartido"))) f.push("el final del partido dirigido no muestra el desenlace de copa");
+      if(!/desenlaceCopa/.test(src("simularDesdeAvance"))) f.push("el final simulado no muestra el desenlace de copa");
+      if(!/penales/.test(src("simularDesdeAvance"))) f.push("el final simulado no cuenta los penales (un 1-1 ganado en penales sale «Empate»)");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("semifinal, final, grupo y penales: dice lo que pasó");
+    }});
+  devDoctorRegistrar({id:"resultados_forzados", area:"motor", n:"Modo Dios / dev: «Ganar todo», «Perder todo» y «No echar» hacen lo que dicen",
+    arreglo:"js/partido.js iniciarPartido/terminarPartido (E.flags.diosTodo) · js/carrera.js riesgoDestitucion/destituir (E.flags.diosNoEchar) · js/ui.js bloqueResultadosForzados",
+    fn:function(){
+      if(!E||typeof clonarPartida!=="function"||typeof restaurarPartida!=="function") return _dok("sin partida");
+      const f=[], snap=clonarPartida(E), gu=window.guardar;
+      try{
+        window.guardar=function(){};
+        ["ganar","perder"].forEach(m=>{ for(let i=0;i<3;i++){ const part=proximoPartido(); if(!part||part.jugado) break;
+          E.flags.diosTodo=m; const P=iniciarPartido(part,"simular"); correrHasta(P,90); const r=terminarPartido(P)||{};
+          const ok=m==="ganar"?r.yo>r.otro:r.yo<r.otro; if(!ok){ f.push("«"+(m==="ganar"?"Ganar":"Perder")+" todo» dejó un "+r.yo+"-"+r.otro); break; } } });
+        E.flags.diosNoEchar=true; E.carrera.malos=5;
+        if(riesgoDestitucion()) f.push("con «No echar» el directorio igual puede echarte");
+        destituir("prueba del doctor"); if(E.carrera.enParo) f.push("con «No echar» destituir() igual te deja sin club");
+        const host=document.createElement("div"); E.flags.modoDios=true; if(typeof bloqueResultadosForzados==="function") bloqueResultadosForzados(host);
+        if(!/Ganar todo/.test(host.textContent)||!/Perder todo/.test(host.textContent)||!/No echar/.test(host.textContent)) f.push("faltan los botones Ganar todo / Perder todo / No echar");
+      } catch(e){ f.push("explotó: "+e.message); }
+      finally { window.guardar=gu; restaurarPartida(snap); }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("ganar y perder forzados cumplen, y con «No echar» nadie te echa");
+    }});
+}
+
+/* 7.9121 · calendario "que se pueda ver todo": pestañas visibles en el celu, Resultados de TU liga con todas las fechas,
+   copas del año en la repetición y la tabla entera en «La fecha se juega». */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"calendario_todo", area:"interfaz", n:"Calendario: se ve todo (pestañas, todas las fechas de tu liga, copas del año, tabla entera)",
+    arreglo:"js/calendario-sofa.js _csResultados/_csFechasLiga · css/pulido.css .cs-tabs (flex-wrap en celu) · js/temporadas-archivo.js archivoCopasDelAnio/_repeCopasHTML · js/ui-jornada.js _jorTabla",
+    fn:function(){
+      const f=[];
+      const src=(n)=>{ const fn=window[n]; return typeof fn==="function"?(typeof _docFuente==="function"?_docFuente(fn):String(fn)):""; };
+      if(typeof archivoCopasDelAnio!=="function"||!/copas/.test(src("archivoCerrar"))) f.push("el archivo de temporadas no guarda las copas del año");
+      if(typeof _jorTabla==="function"&&E&&typeof tablaOrdenada==="function"&&tablaOrdenada().length){
+        const jPrev=E.ultimaJornada, host=document.createElement("div");
+        try{ E.ultimaJornada={mio:{club:E.clubNombre,pos:1,posAntes:1},mov:[],mundo:[]}; _jorTabla(host); }catch(e){} finally{ E.ultimaJornada=jPrev; }
+        if(!host.querySelector("details.jor-full")) f.push("«La fecha se juega» no ofrece la tabla entera");
+      }
+      if(E&&typeof mundoEra2026==="function"&&mundoEra2026()&&E.mundo&&E.mundo.ver===2&&typeof _csResultados==="function"){
+        const secPrev=SEC, u=_csUI(), tabPrev=u.tab, ligaPrev=u.ligaRes;
+        try{
+          u.tab="resultados"; u.ligaRes=null; SEC="calendario"; render();
+          const on=document.querySelector("#vista .cs-chips .ficha[aria-pressed='true']");
+          if(on&&!/★/.test(on.textContent)) f.push("Resultados no abre en tu liga (abre en «"+on.textContent.trim()+"»)");
+          const key=(typeof _ligaKeyJugador==="function")?_ligaKeyJugador():null, L=key&&E.mundo.ligas[key];
+          const n=document.querySelectorAll("#vista details.cs-fecha-res").length;
+          if(L&&(L.ronda||0)>0&&n<(L.ronda||0)) f.push("Resultados muestra "+n+" fechas de "+L.ronda+" jugadas");
+          const tabs=document.querySelector("#vista .cs-tabs");
+          if(tabs){ const r=tabs.getBoundingClientRect(); const fuera=[...tabs.querySelectorAll(".cs-tab")].filter(t=>{ const b=t.getBoundingClientRect(); return b.right>r.right+2||b.left<r.left-2; });
+            if(fuera.length) f.push(fuera.length+" pestaña(s) del calendario quedan fuera de la pantalla ("+fuera.map(t=>t.textContent.trim()).join(", ")+")"); }
+        } finally { u.tab=tabPrev; u.ligaRes=ligaPrev; SEC=secPrev; try{ render(); }catch(e){} }
+      }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("pestañas a la vista, todas las fechas de tu liga, copas en la repetición y tabla entera");
+    }});
+}

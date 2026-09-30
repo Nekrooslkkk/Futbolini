@@ -5110,3 +5110,34 @@ Archivos nuevos: `js/papa-armar.js`, `js/papa.js`, `test/papa.sh`, `test/papa_ar
   (conversión rota): falla en 15 s con "Cannot access 'NOMBRES_CANTERA' before initialization" y la lista de nombres.
 - **Estado:** doctor sano 121/121 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa) · core 1185/1185 ·
   saves 12/12.
+
+### 7.9121 — Libertadores en todas las épocas · desenlace de copa al terminar · resumen de simulación · Ganar/Perder todo y No echar · calendario que se ve entero
+Archivos: `js/data-copas2026.js`, `js/partido.js`, `js/carrera.js`, `js/ui.js`, `js/ui-partido.js`, `js/calendario-sofa.js`,
+`js/ui-jornada.js`, `js/temporadas-archivo.js`, `js/mundo-vivo.js`, `css/pulido.css`, `js/dev-banco.js`.
+- **Bug (autor): "gané con Colo-Colo pero no clasifiqué (por ende no se simuló)".** En 2026 sí andaba; en las épocas
+  históricas (1989, 1991, 2006) el campeón quedaba marcado con cupo pero la Libertadores del año siguiente nunca se
+  armaba (el sorteo corría solo desde 2027). Ahora se siembra en cualquier año desde 1960 (si ese año ya trae la copa
+  real, como Colo-Colo 1991, no se toca) y el resolvedor avanza rondas de las copas sorteadas en cualquier época.
+  Cupos por época (`cuposEpocaChile`): nada antes de 1960 (1925 daba cupo a una copa que no existía), 2 cupos hasta
+  1997, 3 hasta 2009, Sudamericana desde 2002, Copa Chile desde 2008. Probado: 1989→1990 hasta cuartos, 1991→1992
+  hasta la final, 2006→2007 y 2026→2027 jugadas.
+- **"Cuando termina el partido a veces no dice que ganaste (Copa Chile, de la Liga)".** `fotoCopa`/`desenlaceCopa`:
+  foto de la copa antes del partido y comparación después (ronda nueva, título, eliminación), independiente de los
+  avisos. Va arriba y grande en el final dirigido y en el simulado: ✅ Pasaste a Cuartos · 🏆 ¡Campeón! · 🥈
+  Subcampeón · ❌ Fuera. El final simulado ahora cuenta los penales (un 1-1 ganado en penales salía «Empate»).
+  Validado contra los avisos reales en 4 temporadas: además, pasar de octavos a cuartos o de cuartos a semis en Copa
+  Chile y Libertadores NO generaba ningún aviso; ahora siempre se dice.
+- **Simulaciones rápidas:** la próxima fecha, el fin de temporada y "Simular 5 fechas" (dev) terminan en una ventana de
+  resumen (G/E/P, goles, tabla antes→después, desenlaces de copa y cada partido con fecha, torneo, ronda, marcador y
+  penales) en vez de un aviso de 4 s. La barra de progreso de la temporada muestra el último resultado.
+- **Modo Dios / dev (y en el Avance rápido si están prendidos):** «🏆 Ganar todo», «💀 Perder todo» y «🛡️ No echar»
+  (`E.flags.diosTodo`, `E.flags.diosNoEchar`). Con Perder todo + No echar: Colo-Colo 2026 → Primera B 2027 → Segunda
+  2028… Bloquean los logros como el resto de Modo Dios.
+- **Calendario "que se vea todo":** pestañas en dos filas en el celu (Resultados y Temporadas quedaban fuera),
+  Resultados de TU liga (antes abría en Argentina) con todas las fechas jugadas y tu partido, más lo último de otras
+  competencias; la repetición 📼 suma las copas del año (se guardan en el archivo); «La fecha se juega» trae la
+  tabla entera y todos los partidos de afuera.
+- **Dev:** `cupo_copa_se_juega`, `desenlace_copa`, `resultados_forzados`, `calendario_todo`. Al revés, rompiendo cada
+  arreglo: 3, 4, 1 y 1 problemas. `_jorTabla` (mundo-vivo) guarda `_orig` para que el doctor lea la cadena.
+- **Estado:** doctor sano 125/125 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa) · core 1185/1185 ·
+  saves 12/12 · banco 255 sano (14 % despidos, borde alto del ruido 11–14 %).

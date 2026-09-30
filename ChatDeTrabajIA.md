@@ -2376,3 +2376,11 @@ HTML al pintar. La foto de perfil solo puede ser `data:image/...;base64`. El doc
 - Antes de subir: `bash test/papa.sh` (corre solo dentro de `correr_dev.sh`): corre el doctor entero dentro del
   juego juntado. Si algo solo falla ahí, casi siempre es un `typeof` de algo que se declara en un archivo posterior.
 - CSS del modo papa: `html.papa:not(#papa):not(#papa2) …` al final de `css/temas7.css`.
+
+**7.9121 (Claude Opus) · copas en todas las épocas + desenlace + trucos.**
+- Cupos continentales de épocas históricas: `cuposEpocaChile(anio)` en `js/data-copas2026.js`. Si traen datos con
+  fuente de cuántos cupos tuvo Chile por año, se ajusta ahí (hoy: 2 hasta 1997, 3 hasta 2009, 4 después). → Grok.
+- Al terminar un partido de copa, usen `fotoCopa(part)` antes y `desenlaceCopa(part,foto,gano)` después para decir
+  qué pasó. No confíen en `notificar` para eso: en simulación masiva se silencia.
+- Modo Dios/dev: `E.flags.diosTodo` ("ganar"/"perder") y `E.flags.diosNoEchar`. Si agregan otra forma de echar al DT,
+  que pase por `destituir()` (ahí se respeta el No echar).

@@ -276,7 +276,8 @@ function sembrarGrupoSimulado(clubId, anio, torneo){
       f:fechas[i], jugado:false,
       clima:(typeof climaDeFecha==="function")?climaDeFecha(fechas[i].m,torneo+clubId+i):"despejado",
       real:null, apodo:null,
-      nota:"Sorteo del juego para "+anio+". No es el grupo CONMEBOL "+anio+" real: el 2026 ya se jugó y el de "+anio+" no se copia.",
+      nota:anio>2026?"Sorteo del juego para "+anio+". No es el grupo CONMEBOL "+anio+" real: el 2026 ya se jugó y el de "+anio+" no se copia."
+        :"Sorteo del juego para "+anio+": no es el grupo que jugó el club en la historia real.",
       notaId:"SIM-"+torneo.slice(0,3)+"-"+anio+"-"+i
     });
   }
@@ -510,10 +511,19 @@ function resolverCopaContinental33(part, yo, otro){
   }
 }
 
+/* 7.9121 · cupos por época (las eras históricas; 2026 usa cuposChileDesde con las bases ANFP). Antes daba 4 cupos a
+   Libertadores en cualquier año, también en 1925, cuando la copa no existía (nace en 1960). Aproximado: Chile tuvo 2
+   cupos hasta 1997 y 3 hasta 2009; la Sudamericana existe desde 2002; la Copa Chile da cupo desde 2008. */
+function cuposEpocaChile(anio){
+  anio=+anio||2026;
+  if(anio<1959) return {lib:0,sud:0,copaChile:false};
+  return {lib:anio<=1997?2:(anio<=2009?3:4), sud:anio>=2001?4:0, copaChile:anio>=2008};
+}
 function cuposDesdeTemporada(pos, copaChile, b){
   if(b) return {lib:false,sud:false};
-  var lib=pos<=4||!!copaChile;
-  var sud=!lib&&pos<=8;
+  var c=cuposEpocaChile((typeof E!=="undefined"&&E&&E.anio)||2026);
+  var lib=(c.lib>0&&pos<=c.lib)||(c.copaChile&&!!copaChile);
+  var sud=!lib&&c.sud>0&&pos<=c.lib+c.sud;
   return {lib:lib,sud:sud};
 }
 
@@ -597,10 +607,13 @@ function ajustarObjetivos33(objs){
         var ob=(typeof ordenFecha==="function")?ordenFecha(b.f):(b.f.m*100+(b.f.d||1));
         return oa-ob;
       });
-    } else if(anio>=2027 && typeof E!=="undefined" && E && E.flags){
-      var extra=null;
-      if(E.flags.cupoLib) extra=sembrarGrupoSimulado(clubId, anio, "Copa Libertadores");
-      else if(E.flags.cupoSud) extra=sembrarGrupoSimulado(clubId, anio, "Copa Sudamericana");
+    } else if(anio>=1960 && typeof E!=="undefined" && E && E.flags){
+      /* 7.9121 · el cupo ganado la temporada anterior se juega en CUALQUIER época (antes solo desde 2027: un campeón de
+         1991 o 2006 quedaba "clasificado" y la copa nunca aparecía). Si ese año ya trae la copa real (Colo-Colo 1991),
+         no se agrega nada. */
+      var extra=null, ya=function(t){ return cal.some(function(p){ return p.tipo==="copa"&&p.torneo===t; }); };
+      if(E.flags.cupoLib&&!ya("Copa Libertadores")) extra=sembrarGrupoSimulado(clubId, anio, "Copa Libertadores");
+      else if(E.flags.cupoSud&&!E.flags.cupoLib&&anio>=2002&&!ya("Copa Sudamericana")) extra=sembrarGrupoSimulado(clubId, anio, "Copa Sudamericana");
       if(extra){
         extra.forEach(function(p){ cal.push(p); });
         cal.sort(function(a,b){
@@ -619,7 +632,8 @@ function ajustarObjetivos33(objs){
   if(typeof resolverCopa!=="function"||resolverCopa._33) return;
   var orig=resolverCopa;
   resolverCopa=function(part, yo, otro){
-    if(part && (E&&E.anio||0)>=2026 && esCopaContinental(part) && part.torneo!=="Copa Intercontinental"){
+    /* 7.9121 · también las copas sorteadas por el juego en épocas históricas (notaId SIM…) */
+    if(part && ((E&&E.anio||0)>=2026||/^SIM/.test(part.notaId||"")) && esCopaContinental(part) && part.torneo!=="Copa Intercontinental"){
       var keepChile=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"&&p.torneo==="Copa Chile"&&!p.jugado; });
       var keepOtra=(E.calendario||[]).filter(function(p){
         return p.tipo==="copa"&&p.torneo!==part.torneo&&p.torneo!=="Copa Chile"&&!p.jugado;

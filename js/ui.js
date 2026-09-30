@@ -3893,6 +3893,7 @@ function vistaAjustes(host){
     cheat("Pareja feliz",()=>{ if(E.perfil&&E.perfil.pareja) E.perfil.pareja.nivel=100; });
     pg.cuerpo.appendChild(el("h3","sub","Resultados y eventos"));
     cheat("Ganar el próximo (forzar)",()=>{ E.flags.diosGana=true; aviso("El próximo partido lo tienes ganado."); });
+    bloqueResultadosForzados(pg.cuerpo);
     cheat("Sumar un título",()=>{ E.titulos.push("Título (Modo Dios) "+E.anio); });
     cheat("Decisión al azar",()=>{ if(typeof generarDecisionProc==="function"){ const d=generarDecisionProc(); if(d) E.decPend.push({id:d.id,clave:d.id+"_"+E.anio,peso:d.peso}); } });
     const bve=el("button","btn-aqua chico"); bve.textContent="Evento de vida"; bve.style.margin="4px 4px 0 0";
@@ -3941,8 +3942,11 @@ function vistaAjustes(host){
     };
     pdev.cuerpo.appendChild(bdoc);
     pdev.cuerpo.appendChild(el("h3","sub","Avanzar / simular"));
+    bloqueResultadosForzados(pdev.cuerpo);
     cheatd("Avanzar semana",()=>{ if(typeof avanzar==="function") avanzar(); });
-    cheatd("Simular 5 fechas",()=>{ if(typeof avanzarRapido==="function"){ for(let i=0;i<5;i++) avanzarRapido(false); } });
+    const b5f=el("button","btn-aqua chico","Simular 5 fechas"); b5f.style.margin="4px 4px 0 0";
+    b5f.onclick=()=>{ if(typeof avanzarRapido!=="function") return; let reg=[], fr=null; for(let i=0;i<5;i++){ const r=avanzarRapido(false); reg=reg.concat(r.reg||[]); if(r.freno){ fr=r.freno; break; } } guardar(); render(); if(reg.length) modalResumenSim(reg,{freno:fr}); };
+    pdev.cuerpo.appendChild(b5f);
     const bsim=el("button","btn-aqua chico","Simular temporada"); bsim.style.margin="4px 4px 0 0";
     bsim.onclick=function(){
       if(typeof simularTemporadasAsync==="function"){ simularTemporadasAsync(1); return; }
@@ -4039,19 +4043,24 @@ function simularDesdeAvance(part){
   if(!part||typeof iniciarPartido!=="function") return;
   const P=iniciarPartido(part,"simular");
   if(typeof correrHasta==="function") correrHasta(P,90);
+  const foto=fotoCopa(part);   /* 7.9121 */
   const res=(typeof terminarPartido==="function")?terminarPartido(P):{yo:0,otro:0};
+  const desen=desenlaceCopa(part,foto,res.penales?!!res.penales.gano:res.yo>res.otro);
   if(typeof persistirTicker==="function") try{ persistirTicker(P,res); }catch(e){}
   if(typeof guardar==="function") guardar();
   modal(function(box){
-    const gano=res.yo>res.otro;
-    const empate=res.yo===res.otro;
+    /* 7.9121 · los penales cuentan: antes un 1-1 que ganaste en penales salía "Empate" */
+    const pen=res.penales||null;
+    const gano=pen?!!pen.gano:res.yo>res.otro;
+    const empate=!pen&&res.yo===res.otro;
     const cuerpo=(typeof montarBarraSO==="function")
       ? montarBarraSO(box,"Final · simulado",gano?"⚽":"📄",function(){ cerrarModal(); _salirSemanaSimulada(part); })
       : (function(){ box.appendChild(el("div","cab",'<span class="ic">📄</span><span>Final del partido</span>')); const c=el("div","cuerpo"); box.appendChild(c); return c; })();
     const yoN=(typeof E!=="undefined"&&E&&E.clubNombre)||"Tú";
     const rivN=part.rivalNombre||"rival";
-    cuerpo.appendChild(el("h2","tit arco-marcador",(gano?"Victoria":(empate?"Empate":"Derrota"))));
-    cuerpo.appendChild(el("p","arco-score",escHtml(yoN)+"  "+res.yo+" – "+res.otro+"  "+escHtml(rivN)));
+    cuerpo.appendChild(el("h2","tit arco-marcador",pen?(gano?"Victoria en penales":"Derrota en penales"):(gano?"Victoria":(empate?"Empate":"Derrota"))));
+    cuerpo.appendChild(el("p","arco-score",escHtml(yoN)+"  "+res.yo+" – "+res.otro+"  "+escHtml(rivN)+(pen?" <span class='mini'>(pen. "+pen.yo+"-"+pen.el+")</span>":"")));
+    if(desen) cuerpo.appendChild(el("div","resul desenlace-copa "+(/campeon|pasa/.test(desen.tipo)?"bien":(desen.tipo==="sub"?"mitad":"mal")),"<b>"+desen.txt+"</b>"));
     cuerpo.appendChild(el("p","mini",(part.local?"Local":"Visita")+" · "+(typeof etqCompromiso==="function"?etqCompromiso(part):(part.torneo||"Liga"))+" · plan "+((E.tactica&&E.tactica.mentalidad)||"Equilibrado")+"."));
     const goles=(res.golesDetalle||[]).slice().sort(function(a,b){ return a.min-b.min; });
     if(goles.length){
@@ -4214,6 +4223,116 @@ function delegarCrisis(){
     d:"La simulación eligió «"+cr.op[idx].t+"»."+(r&&r.txt?" "+r.txt:"")});
   return cr;
 }
+/* ---------- 7.9121 · qué pasó en la copa con este partido ----------
+   Pedido del autor: "cuando termina el partido a veces no dice que ganaste (sobre todo Copa Chile o de la Liga)". El
+   marcador puede ser empate y aun así pasaste (penales, global de ida y vuelta) o saliste campeón: eso lo decide el
+   resolvedor de la copa DESPUÉS del partido y quedaba solo como aviso aparte (y en la simulación masiva los avisos se
+   silencian). Se saca una foto de la copa antes del partido y se compara después: ronda nueva, título o eliminación. */
+function fotoCopa(part){
+  if(!E||!part||part.tipo!=="copa") return null;
+  const fl={}; Object.keys(E.flags||{}).forEach(function(k){ if(/Campeon$/.test(k)) fl[k]=!!E.flags[k]; });
+  return {torneo:part.torneo, ronda:part.ronda||"", tit:(E.titulos||[]).length, flags:fl,
+    pend:(E.calendario||[]).filter(function(p){ return p.tipo==="copa"&&p.torneo===part.torneo&&!p.jugado&&p!==part; })};
+}
+const _RONDA_FINAL=/^(FINAL|Final|Final única|Intercontinental)$/;
+function desenlaceCopa(part, antes, gano){
+  if(!E||!antes||!part) return null;
+  const t=antes.torneo;
+  const pendAhora=(E.calendario||[]).filter(function(p){ return p.tipo==="copa"&&p.torneo===t&&!p.jugado; });
+  const titulo=Object.keys(E.flags||{}).some(function(k){ return /Campeon$/.test(k)&&/copa/i.test(k)&&E.flags[k]&&!antes.flags[k]; })||
+    ((E.titulos||[]).length>antes.tit&&(E.titulos||[]).slice(antes.tit).some(function(x){ return String(x).indexOf(t)>=0; }));
+  if(titulo) return {tipo:"campeon", txt:"🏆 ¡Campeón de "+t+"!"};
+  const nuevos=pendAhora.filter(function(p){ return antes.pend.indexOf(p)<0; });
+  if(nuevos.length){
+    const r=nuevos[0].ronda||"la siguiente ronda";
+    return r===antes.ronda?null:{tipo:"pasa", txt:"✅ Pasaste a "+(/^Grupo/.test(r)?"la fase de grupos":r)+" de "+t};
+  }
+  if(!pendAhora.length){
+    const esFinal=_RONDA_FINAL.test(antes.ronda)||t==="Copa Intercontinental"||t==="Supercopa";
+    if(esFinal&&gano) return {tipo:"campeon", txt:"🏆 ¡Campeón de "+t+"!"};   /* finales que no marcan flag (Intercontinental) */
+    if(esFinal) return {tipo:"sub", txt:"🥈 Subcampeón de "+t};
+    return {tipo:"fuera", txt:"❌ Quedaste fuera de "+t+(antes.ronda?" ("+antes.ronda+")":"")};
+  }
+  return null;
+}
+/* un partido simulado al toque, con su registro (lo usan la próxima fecha, fin de temporada y el modo dev) */
+function jugarRapidoConRegistro(part){
+  const foto=fotoCopa(part), posAntes=(part.tipo==="liga"&&typeof posicionEnTabla==="function")?posicionEnTabla():null;
+  const P=iniciarPartido(part,"simular");
+  correrHasta(P,90);
+  const res=terminarPartido(P)||{};
+  const yo=part.gf!=null?part.gf:(res.yo||0), otro=part.gc!=null?part.gc:(res.otro||0);
+  const pen=res.penales||null, gano=pen?!!pen.gano:yo>otro;
+  return {f:part.f, torneo:part.torneo||(part.tipo==="liga"?"Liga":"Partido"), ronda:part.ronda||"", tipo:part.tipo,
+    local:!!part.local, rival:part.rivalNombre||"", yo:yo, otro:otro, pen:pen,
+    gano:gano, empate:!pen&&yo===otro, desenlace:desenlaceCopa(part,foto,gano),
+    posAntes:posAntes, posDespues:(part.tipo==="liga"&&typeof posicionEnTabla==="function")?posicionEnTabla():null};
+}
+/* ventana de resumen: cada partido, el balance, la tabla y lo que pasó en las copas */
+function modalResumenSim(reg, extra){
+  reg=reg||[]; extra=extra||{};
+  const g=reg.filter(r=>r.gano).length, e=reg.filter(r=>r.empate).length, p=reg.length-g-e;
+  const gf=reg.reduce((a,r)=>a+r.yo,0), gc=reg.reduce((a,r)=>a+r.otro,0);
+  const liga=reg.filter(r=>r.tipo==="liga"&&r.posDespues);
+  const desen=reg.filter(r=>r.desenlace);
+  modal(function(box){
+    const tit=reg.length===1?"Final · simulado":("Resumen · "+reg.length+" partidos");
+    const cu=(typeof montarBarraSO==="function")?montarBarraSO(box,tit,"⏩",cerrarModal)
+      :(function(){ box.appendChild(el("div","cab",'<span class="ic">⏩</span><span>'+tit+'</span>')); const c=el("div","cuerpo"); box.appendChild(c); return c; })();
+    cu.classList.add("sim-resumen");
+    if(reg.length===1){
+      const r=reg[0];
+      cu.appendChild(el("h2","tit arco-marcador",r.pen?(r.gano?"Victoria en penales":"Derrota en penales"):(r.gano?"Victoria":(r.empate?"Empate":"Derrota"))));
+      cu.appendChild(el("p","arco-score",escHtml(E.clubNombre||"Tú")+"  "+r.yo+" – "+r.otro+"  "+escHtml(r.rival)+(r.pen?" <span class='mini'>(pen. "+r.pen.yo+"-"+r.pen.el+")</span>":"")));
+    } else {
+      const kp=el("div","sim-kpis");
+      [["G",g,"g"],["E",e,"e"],["P",p,"p"],["Goles",gf+"–"+gc,""]].forEach(([k,v,c])=>kp.appendChild(el("div","sim-kpi "+c,"<b>"+v+"</b><span>"+k+"</span>")));
+      cu.appendChild(kp);
+    }
+    if(liga.length){ const a=liga[0].posAntes, d=liga[liga.length-1].posDespues;
+      if(a&&d) cu.appendChild(el("p","mini","Tabla: "+ordinal(a)+" → <b>"+ordinal(d)+"</b>"+(a>d?" ▲":(a<d?" ▼":"")))); }
+    desen.forEach(r=>cu.appendChild(el("div","resul sim-desen "+(/campeon|pasa/.test(r.desenlace.tipo)?"bien":(r.desenlace.tipo==="sub"?"mitad":"mal")),"<b>"+r.desenlace.txt+"</b>")));
+    (extra.lineas||[]).forEach(t=>cu.appendChild(el("div","resul mitad",t)));
+    if(reg.length){
+      const lista=el("div","sim-lista");
+      reg.forEach(r=>{
+        const res=r.gano?"g":(r.empate?"e":"p");
+        const fila=el("div","sim-fila "+res,
+          "<span class='sim-f'>"+(typeof fechaTxt==="function"&&r.f?fechaTxt(r.f):"")+"</span>"+
+          "<span class='sim-t'>"+escHtml(r.torneo)+(r.ronda&&r.tipo!=="liga"?" · "+escHtml(r.ronda):"")+"</span>"+
+          "<span class='sim-r'>"+(r.local?"vs ":"en ")+escHtml(r.rival)+"</span>"+
+          "<b class='sim-m'>"+r.yo+"–"+r.otro+(r.pen?" <small>("+r.pen.yo+"-"+r.pen.el+" pen)</small>":"")+"</b>"+
+          "<span class='sim-chip "+res+"'>"+(r.gano?"G":(r.empate?"E":"P"))+"</span>");
+        lista.appendChild(fila);
+        if(r.desenlace) lista.appendChild(el("div","sim-fila-desen",escHtml(r.desenlace.txt)));
+      });
+      cu.appendChild(lista);
+    }
+    if(extra.freno) cu.appendChild(el("p","mini","⏸ "+escHtml(extra.freno)));
+    const b=el("button","btn-aqua ancho verde","Al escritorio"); b.onclick=function(){ cerrarModal(); if(typeof irA==="function") irA("escritorio"); };
+    cu.appendChild(b);
+  },{clase:"ventana-so"});
+}
+/* 7.9121 · Modo Dios / dev: forzar resultados de aquí en adelante y "no echar" (para ver descensos hasta el fondo).
+   Bloquea los logros igual que el resto de Modo Dios. */
+function bloqueResultadosForzados(cont){
+  if(!E||!cont) return;
+  E.flags=E.flags||{};
+  const act=E.flags.diosTodo||"normal";
+  cont.appendChild(el("label","lb","Resultados de aquí en adelante"));
+  const f=el("div","fichas");
+  [["normal","⚖️ Normal"],["ganar","🏆 Ganar todo"],["perder","💀 Perder todo"]].forEach(([k,n])=>{
+    const b=el("button","ficha",n); b.setAttribute("aria-pressed",act===k?"true":"false");
+    b.onclick=()=>{ if(k==="normal") delete E.flags.diosTodo; else { E.flags.diosTodo=k; E.flags.modoDiosUsado=true; }
+      guardar(); aviso(k==="ganar"?"🏆 Ganas todos los partidos hasta que lo apagues.":(k==="perder"?"💀 Pierdes todos los partidos hasta que lo apagues.":"⚖️ Resultados normales.")); render(); };
+    f.appendChild(b); });
+  cont.appendChild(f);
+  const ne=el("button","ficha",E.flags.diosNoEchar?"🛡️ No echar: ON":"🛡️ No echar: OFF");
+  ne.setAttribute("aria-pressed",E.flags.diosNoEchar?"true":"false");
+  ne.onclick=()=>{ E.flags.diosNoEchar=!E.flags.diosNoEchar; if(E.flags.diosNoEchar) E.flags.modoDiosUsado=true; guardar(); aviso(E.flags.diosNoEchar?"🛡️ Nadie te echa: puedes perder todo y ver los descensos.":"El directorio vuelve a poder echarte."); render(); };
+  const fe=el("div","fichas"); fe.appendChild(ne); cont.appendChild(fe);
+  cont.appendChild(el("p","mini","Para probar: títulos y copas con «Ganar todo», descensos con «Perder todo» + «No echar». Usarlo bloquea los logros de esta partida, como el resto de Modo Dios."));
+}
 function procesarSemanaRapido(){
   const neto=tickSemana();
   if(typeof chequearDesfalco==="function") chequearDesfalco();
@@ -4226,6 +4345,7 @@ function procesarSemanaRapido(){
 function avanzarRapido(hastaFin){
   if(!E||E.carrera.fin||E.carrera.enParo) return {fechas:0,partidos:0,ganados:0,freno:"sin partida activa"};
   let fechas=0,partidos=0,ganados=0,freno=null;
+  const reg=[];
   const tope=hastaFin?400:1;
   while(fechas<tope){
     if(E.carrera.fin){ freno="fin de la carrera"; break; }
@@ -4236,12 +4356,9 @@ function avanzarRapido(hastaFin){
     const part=proximoPartido();
     if(!part){ freno="fin de la temporada — aprieta Avanzar para el cierre"; break; }
     if(!part.jugado){
-      const antes=(E.temporada&&E.temporada.pg)||0;
-      const P=iniciarPartido(part,"simular");
-      correrHasta(P,90);
-      terminarPartido(P);                 /* state-puro: idx++, tabla, plata, notifs */
-      partidos++;
-      if(((E.temporada&&E.temporada.pg)||0)>antes) ganados++;
+      const r=jugarRapidoConRegistro(part);   /* state-puro: idx++, tabla, plata, notifs · 7.9121 con registro */
+      reg.push(r); partidos++;
+      if(r.gano) ganados++;
     }
     procesarSemanaRapido();
     fechas++;
@@ -4251,7 +4368,7 @@ function avanzarRapido(hastaFin){
     if(typeof render==="function"){ SEC="escritorio"; render(); }
     if(typeof guardar==="function") guardar();
   }
-  return {fechas:fechas,partidos:partidos,ganados:ganados,freno:freno};
+  return {fechas:fechas,partidos:partidos,ganados:ganados,freno:freno,reg:reg};
 }
 /* 7.9022 · avanzarRapido(true) juega una temporada ENTERA de un tirón (hasta
    400 fechas), bloqueando el hilo: el overlay de "Simular N temporadas" solo
@@ -4264,29 +4381,27 @@ function avanzarRapido(hastaFin){
 function avanzarRapidoLote(onProgreso, onListo){
   if(!E||E.carrera.fin||E.carrera.enParo){ onListo({fechas:0,partidos:0,ganados:0}); return; }
   let fechas=0, partidos=0, ganados=0;
+  const reg=[];
   const LOTE=4;
   function paso(){
-    if(!E||E._bulkCancel){ onListo({fechas:fechas,partidos:partidos,ganados:ganados}); return; }
+    if(!E||E._bulkCancel){ onListo({fechas:fechas,partidos:partidos,ganados:ganados,reg:reg}); return; }
     let enLote=0;
     while(enLote<LOTE){
-      if(E.carrera.fin||E.carrera.enParo) return onListo({fechas:fechas,partidos:partidos,ganados:ganados});
-      if(E.dinastia&&E.dinastia.sucesionPendiente) return onListo({fechas:fechas,partidos:partidos,ganados:ganados});
-      if(typeof crisisActiva==="function" && crisisActiva()) return onListo({fechas:fechas,partidos:partidos,ganados:ganados});
+      if(E.carrera.fin||E.carrera.enParo) return onListo({fechas:fechas,partidos:partidos,ganados:ganados,reg:reg});
+      if(E.dinastia&&E.dinastia.sucesionPendiente) return onListo({fechas:fechas,partidos:partidos,ganados:ganados,reg:reg});
+      if(typeof crisisActiva==="function" && crisisActiva()) return onListo({fechas:fechas,partidos:partidos,ganados:ganados,reg:reg});
       delegarDecisionesPendientes();
       const part=proximoPartido();
-      if(!part) return onListo({fechas:fechas,partidos:partidos,ganados:ganados});   /* temporada completa */
+      if(!part) return onListo({fechas:fechas,partidos:partidos,ganados:ganados,reg:reg});   /* temporada completa */
       if(!part.jugado){
-        const antes=(E.temporada&&E.temporada.pg)||0;
-        const P=iniciarPartido(part,"simular");
-        correrHasta(P,90);
-        terminarPartido(P);
-        partidos++;
-        if(((E.temporada&&E.temporada.pg)||0)>antes) ganados++;
+        const r=jugarRapidoConRegistro(part);   /* 7.9121 · con registro para el resumen */
+        reg.push(r); partidos++;
+        if(r.gano) ganados++;
       }
       procesarSemanaRapido();
       fechas++; enLote++;
     }
-    if(onProgreso) onProgreso({fechas:fechas,partidos:partidos,ganados:ganados});
+    if(onProgreso) onProgreso({fechas:fechas,partidos:partidos,ganados:ganados,ultimo:reg[reg.length-1]||null});
     setTimeout(paso,0);
   }
   setTimeout(paso,0);
@@ -4473,8 +4588,11 @@ function modalAvanceRapido(){
     box.appendChild(el("div","cab",'<span class="ic">⏩</span><span>Avance rápido</span>'));
     const cc=el("div","cuerpo"); box.appendChild(cc);
     cc.appendChild(el("p","mini","Delego todo por ti: resuelvo las decisiones con criterio, simulo los partidos al toque y avanzo. Ideal para ir rápido o hacer videos. Puedes volver a dirigir cuando quieras."));
+    /* 7.9121 · con Modo Dios o modo dev, los resultados forzados están acá mismo */
+    if((E.flags&&E.flags.modoDios)||(typeof devOn==="function"&&devOn())){ const tr=el("div","sim-trucos"); bloqueResultadosForzados(tr); cc.appendChild(tr); }
     const correr=(hastaFin)=>{ cerrarModal(); const r=avanzarRapido(hastaFin);
-      aviso("⏩ "+r.partidos+" partido"+(r.partidos!==1?"s":"")+" simulado"+(r.partidos!==1?"s":"")+" · "+r.ganados+" ganado"+(r.ganados!==1?"s":"")+(r.freno?" · "+r.freno:""),4500); };
+      /* 7.9121 · un resumen que se puede leer (cada partido, tabla y copas), no un aviso de 4 segundos */
+      if(r.reg&&r.reg.length) modalResumenSim(r.reg,{freno:r.freno}); else aviso("⏩ "+(r.freno||"nada que simular"),4500); };
     const b1=el("button","btn-aqua ancho verde","⏩ Simular la próxima fecha"); b1.onclick=()=>correr(false);
     const b2=el("button","btn-aqua ancho","⏭️ Simular hasta fin de temporada"); b2.style.marginTop="6px";
     b2.onclick=function(){
@@ -4485,14 +4603,15 @@ function modalAvanceRapido(){
       E._bulkSim=true;
       avanzarRapidoLote(function(p){
         const d=document.querySelector("#simOverlay .sim-d");
-        if(d) d.textContent="Fecha "+p.fechas+" · "+p.partidos+" partidos · "+p.ganados+" ganados";
+        const u=p.ultimo;
+        if(d) d.textContent="Fecha "+p.fechas+" · "+p.partidos+" partidos · "+p.ganados+" ganados"+(u?" · último: "+u.yo+"-"+u.otro+" "+(u.local?"vs ":"en ")+u.rival:"");
       }, function(r){
         if(E) E._bulkSim=false;
         if(typeof cerrarSimOverlay==="function") cerrarSimOverlay();
         if(typeof render==="function"){ SEC="escritorio"; render(); }
         if(typeof guardar==="function") guardar();
-        const n=r&&r.partidos||0, g=r&&r.ganados||0;
-        aviso("⏩ "+n+" partido"+(n!==1?"s":"")+" simulado"+(n!==1?"s":"")+" · "+g+" ganado"+(g!==1?"s":""),4500);
+        if(r&&r.reg&&r.reg.length) modalResumenSim(r.reg,{freno:proximoPartido()?null:"Temporada completa: aprieta Avanzar para el cierre."});
+        else aviso("⏩ nada que simular",4500);
       });
     };
     /* 7.9007 · 40 temporadas ya no traban: overlay + cancelar. */

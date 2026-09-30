@@ -600,6 +600,9 @@ function iniciarPartido(part,modo){
   if(part.tipo==="copa"){ P.empuje+=0.8; P.desgaste+=0.6; }
   /* 7 · Modo Dios: forzar ganar el próximo (se consume; se garantiza en terminarPartido) */
   if(E.flags && E.flags.diosGana){ P.ataque+=40; P.empuje+=20; P.orden+=20; P.rival=Math.max(0,P.rival-30); P.diosForzar=true; E.flags.diosGana=false; }
+  /* 7.9121 · Modo Dios / dev: "ganar todo" o "perder todo" hasta que se apague (para probar títulos, copas y descensos) */
+  if(E.flags && E.flags.diosTodo==="ganar"){ P.ataque+=40; P.empuje+=20; P.orden+=20; P.rival=Math.max(0,P.rival-30); P.diosForzar=true; }
+  else if(E.flags && E.flags.diosTodo==="perder"){ P.ataque=Math.max(0,P.ataque-40); P.rival+=30; P.diosPerder=true; }
   return P;
 }
 /* 6.18 / 7.999 · banca = concentrados que no están en el once. El que sale no reingresa (IFAB). */
@@ -1613,6 +1616,7 @@ function terminarPartido(P){
   const part=P.part;
   /* 7 · Modo Dios "ganar el próximo": garantiza el triunfo si quedó parejo/perdiendo */
   if(P.diosForzar){ if(P.part.local){ if(P.gl<=P.gv) P.gl=P.gv+1; } else { if(P.gv<=P.gl) P.gv=P.gl+1; } }
+  if(P.diosPerder){ if(P.part.local){ if(P.gv<=P.gl) P.gv=P.gl+1; } else { if(P.gl<=P.gv) P.gl=P.gv+1; } }
   const [yo,otro]=miMarcador(P);
   const posAntes=(part.tipo==="liga")?posicionEnTabla():null;
   part.jugado=true; part.gf=yo; part.gc=otro;

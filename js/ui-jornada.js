@@ -210,12 +210,33 @@ function _jorTabla(cont){
         (typeof ordinal==="function"?ordinal(m.a):m.a+"°")+"</b>"));
     });
   } else cont.appendChild(el("p","mini",_jorT("jor_quieta","La tabla no se movió con esta fecha.")));
-  const mundo=(J.mundo||[]).slice(-3);
+  /* 7.9121 · "que se pueda ver todo": la tabla entera acá mismo (se abre con un toque) */
+  try{
+    const arr=(typeof tablaOrdenada==="function")?tablaOrdenada():[];
+    if(arr.length){
+      const d=document.createElement("details"); d.className="jor-full";
+      d.innerHTML="<summary>"+_jorT("jor_tabla_toda","Ver la tabla entera")+" ("+arr.length+")</summary>";
+      const movDe={}; (J.mov||[]).forEach(function(m){ movDe[m.id]=m.de-m.a; });
+      const t=el("table","cs-tabla jor-tabla");
+      t.innerHTML="<thead><tr><th></th><th class='izq'>Equipo</th><th class='n'>PJ</th><th class='n'>DG</th><th class='n'>Pts</th></tr></thead>";
+      const tb=el("tbody");
+      arr.forEach(function(c,i){ const dm=movDe[c.id]||0;
+        tb.appendChild(el("tr",c.id===E.club?"yo":"","<td class='n'>"+(i+1)+(dm?" <span class='jor-mov "+(dm>0?"sube":"baja")+"'>"+(dm>0?"▲":"▼")+"</span>":"")+"</td><td class='izq'>"+
+          ((typeof escudoChip==="function")?escudoChip(c.id,16):"")+escHtml(c.n||c.id)+"</td><td class='n'>"+(c.pj||0)+"</td><td class='n'>"+((c.gf||0)-(c.gc||0))+"</td><td class='n'><b>"+(c.pts||0)+"</b></td>")); });
+      t.appendChild(tb); d.appendChild(t); cont.appendChild(d);
+    }
+  }catch(e){}
+  const mundo=(J.mundo||[]).slice().reverse();
   if(mundo.length){
     cont.appendChild(el("h3","sub",_jorT("jor_mundo","Mientras tanto, afuera")));
-    mundo.forEach(function(x){
-      cont.appendChild(el("div","fila mini","<span>"+escHtml((x.liga?x.liga+" · ":"")+x.a+" vs "+x.b)+"</span><b>"+x.ga+"-"+x.gb+"</b>"));
-    });
+    const fila=function(x){ return el("div","fila mini","<span>"+escHtml((x.liga?x.liga+" · ":"")+x.a+" vs "+x.b)+"</span><b>"+x.ga+"-"+x.gb+"</b>"); };
+    mundo.slice(0,3).forEach(function(x){ cont.appendChild(fila(x)); });
+    if(mundo.length>3){
+      const d=document.createElement("details"); d.className="jor-full";
+      d.innerHTML="<summary>"+_jorT("jor_mundo_todo","Ver los")+" "+mundo.length+" "+_jorT("jor_mundo_part","partidos de afuera")+"</summary>";
+      mundo.slice(3).forEach(function(x){ d.appendChild(fila(x)); });
+      cont.appendChild(d);
+    }
   }
 }
 function _jorBotones(cont,cb){

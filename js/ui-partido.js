@@ -2583,7 +2583,9 @@ function cerrarPartido(){
   if(typeof quitarHoldBar==="function") quitarHoldBar();
   document.body.classList.remove("hay-momento");
   if(typeof detenerCancha==="function") detenerCancha();
+  const _foto=(typeof fotoCopa==="function")?fotoCopa(P.part):null;   /* 7.9121 · para decir si pasaste o saliste campeón */
   const res=terminarPartido(P);
+  const _desen=(typeof desenlaceCopa==="function")?desenlaceCopa(P.part,_foto,res.penales?!!res.penales.gano:res.yo>res.otro):null;
   if(typeof persistirTicker==="function") persistirTicker(P,res);  /* 7.12 · el partido queda en el feed de Plop! */
   const ganoPens=res.penales && res.penales.gano;
   const perdioPens=res.penales && !res.penales.gano;
@@ -2593,6 +2595,8 @@ function cerrarPartido(){
     ? ((ganoPens?"Victoria":"Derrota")+" en penales "+res.yo+"-"+res.otro+" ("+res.penales.yo+"-"+res.penales.el+") ante "+P.part.rivalNombre)
     : ((gano?"Victoria ":(res.yo<res.otro?"Derrota ":"Empate "))+res.yo+"-"+res.otro+" ante "+P.part.rivalNombre);
   p.cuerpo.appendChild(el("h2","tit",tit));
+  /* 7.9121 · en copa, lo que importa va arriba y grande: pasaste, campeón o fuera (aunque el marcador diga empate) */
+  if(_desen) p.cuerpo.appendChild(el("div","resul desenlace-copa "+(/campeon|pasa/.test(_desen.tipo)?"bien":(_desen.tipo==="sub"?"mitad":"mal")),"<b>"+_desen.txt+"</b>"));
 
   /* caja de resumen: goles con minuto, tarjetas, lesiones */
   const cajita=el("div","resul mitad");

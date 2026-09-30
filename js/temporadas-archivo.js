@@ -94,7 +94,8 @@ function archivoCerrar(){
   const real=archivoTablaReal();
   const descuadres=act.desde?0:fin.filter(r=>{ const x=real[r.id]; return !x||x.pts!==r.pts||x.gf!==r.gf||x.gc!==r.gc; }).length;
   const mia=fin.findIndex(r=>r.id===act.club);
-  const t={anio:act.anio, club:act.club, clubNombre:act.clubNombre, liga:act.liga, pv:act.pv, ids:act.ids, noms:act.noms,
+  const copas=archivoCopasDelAnio();   /* 7.9121 · las copas del año también quedan en el archivo */
+  const t={anio:act.anio, club:act.club, clubNombre:act.clubNombre, liga:act.liga, pv:act.pv, ids:act.ids, noms:act.noms, copas:copas,
     fechas:act.fechas, campeon:fin[0]?fin[0].id:null, desde:act.desde||null, descuadres:descuadres, tuPos:mia+1, n:fin.length,
     final:fin.map(r=>[act.ids.indexOf(r.id),r.pj,r.pg,r.pe,r.pp,r.gf,r.gc,r.pts])};
   A.temps=A.temps.filter(x=>!(x.anio===t.anio&&x.club===t.club));
@@ -103,6 +104,25 @@ function archivoCerrar(){
   A.temps.forEach((x,i)=>{ if(i<A.temps.length-ARCHIVO_COMPLETAS) x.fechas=null; });
   A.actual=null;
   return t;
+}
+/* 7.9121 · "que se pueda ver todo": los partidos de copa del año (Copa Chile, de la Liga, Libertadores…), en orden */
+function archivoCopasDelAnio(){
+  return (E.calendario||[]).filter(p=>p&&p.tipo==="copa"&&p.jugado&&!p.amistoso).map(p=>({f:p.f?[p.f.m,p.f.d]:null, t:p.torneo||"Copa",
+    r:p.ronda||"", l:p.local?1:0, riv:p.rivalNombre||"", gf:p.gf||0, gc:p.gc||0}))
+    .sort((a,b)=>((a.f?a.f[0]*100+a.f[1]:0)-(b.f?b.f[0]*100+b.f[1]:0)));
+}
+function _repeCopasHTML(copas){
+  if(!copas||!copas.length) return null;
+  const por={}; copas.forEach(c=>{ (por[c.t]=por[c.t]||[]).push(c); });
+  const d=document.createElement("details"); d.className="repe-copas"; d.open=true;
+  d.innerHTML="<summary><b>🏆 Copas del año</b><span class='mini'> · "+copas.length+" partidos</span></summary>";
+  Object.keys(por).forEach(t=>{
+    const lista=por[t], ult=lista[lista.length-1];
+    d.appendChild(el("div","cs-mes",escHtml(t)+" <span class='mini'>· llegó a "+escHtml(ult.r||"—")+"</span>"));
+    lista.forEach(c=>{ const res=c.gf>c.gc?"g":(c.gf<c.gc?"p":"e");
+      d.appendChild(el("div","repe-p repe-copa "+res,"<span class='l'>"+(c.f&&typeof fechaTxt==="function"?fechaTxt({m:c.f[0],d:c.f[1]})+" · ":"")+escHtml(c.r)+"</span><b>"+c.gf+" – "+c.gc+"</b><span class='v'>"+(c.l?"vs ":"en ")+escHtml(c.riv)+"</span>")); });
+  });
+  return d;
 }
 /* tabla después de k fechas (recalculada desde los resultados: no se guarda, se reconstruye) */
 function tablaDeArchivo(t,k){
@@ -198,6 +218,7 @@ function pintarRepeticion(host,t,k,minuto){
     host.appendChild(res);
   }
   const tb=el("div","repe-tabla-wrap"); tb.innerHTML=_repeTablaHTML(t,(minuto!=null&&minuto<90)?k-1:(n?k:0)); host.appendChild(tb);
+  if(!REPE.modo){ const cp=_repeCopasHTML(t.enCurso?archivoCopasDelAnio():t.copas); if(cp) host.appendChild(cp); }
 }
 function _repeRapido(host,t,k){
   if(REPE.modo!=="rapido") return;

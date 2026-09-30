@@ -183,6 +183,7 @@ function evaluarMandato(pos,campeon,copa){
   return {nivel:nivel,txt:texto};
 }
 function riesgoDestitucion(){
+  if(E.flags&&E.flags.diosNoEchar) return false;   /* 7.9121 · Modo Dios / dev: "no echar" (para ver descensos hasta el fondo) */
   const dir=E.grupos.directorio.aprob;
   if(E.carrera.malos>=2) return true;
   if(dir<-65) return true;
@@ -191,6 +192,8 @@ function riesgoDestitucion(){
   return false;
 }
 function destituir(motivo){
+  /* 7.9121 · "no echar": el directorio quería echarte, queda anotado y sigues */
+  if(E&&E.flags&&E.flags.diosNoEchar){ if(typeof notificar==="function") notificar({t:"El directorio quería echarte (No echar: ON)",tipo:"malo",d:String(motivo||"")}); return; }
   E.carrera.despidos++;
   E.carrera.clubes.push({club:E.club,desde:E.carrera.desde,hasta:E.anio,titulos:E.titulos.slice()});
   aplicarRep({publica:-10,credibilidad:-6});
