@@ -2495,3 +2495,14 @@ Si la fuente no da un número, ¿cambiar número? = no y la propuesta queda igua
 Nada más. Sin introducción y sin cierre.
 ```
 
+**Tabla pegada (1 oct 2026). No cambié marcadores ni caja. VERSION sigue en 7.9123.**
+
+| fila | qué pedía | qué hice |
+|---|---|---|
+| 1991, 30 fechas | confirmar en Wikipedia | Ya estaba en 30. El artículo del Campeonato Nacional 1991 dice 16 equipos, 240 partidos y Colo-Colo con 30 PJ. No hay nada que editar. |
+| 2006 Apertura y Clausura | valor null | La tabla misma deja null. No invento marcadores. |
+| Palestino fecha 19, 5-1 | estaba en null, poner 5-1 | En `js/data-grok.js` la fecha 19 de Palestino ya es `real:"5-1"` contra Huachipato (17 ago). El archivo sugerido (`js/data-2026.js`) no existe. La URL de FIFA no abrió. No la toco. |
+| Argentina 2026, 16 partidos por zona | confirmar | El juego ya usa zona de 15, 14 PJ y un bye. 16 no calza con 15 equipos a una vuelta. La nota de la LPF (la URL trae 20226) respondió 503. No toco el motor. Sí saqué el comentario viejo que decía que el juego seguía en una rueda de 29: eso ya no es cierto. |
+| Copa Chile y Libertadores | confirmado, no pisan la liga | No había un dato para corregir. |
+| Caja, las 30 filas | no cambiar el número | Los números quedan. Varias URL son la portada del club, no un balance. |
+

@@ -12,8 +12,10 @@
    - Bajaron 2025: Godoy Cruz y San Martín (SJ).
    - Descienden 2: 1 por promedio (coeficiente) + 1 colista de la anual.
    - Campeón de cada torneo → Libertadores 2027.
-   En el juego HOY: una rueda (29 fechas) contra todos, 3 pts.
-   Zonas A/B quedan en el campo `z` para cuando se arme el formato real.
+   En el juego: Apertura por zona de 15 (14 PJ y un bye), no una rueda de 29.
+   El renglón viejo que decía «rueda de 29» ya no describe el motor (FORMAT_ARG_2026).
+   Revisión pegada el 1 oct 2026 pidió 16 partidos por zona: no entra. 15 equipos a una
+   vuelta son 14 PJ, y la nota de la LPF citada no cargó.
    ============================================================ */
 
 const LIGA_ARG_2026=[
