@@ -107,11 +107,11 @@ function parseMarcadorReal(real,local){
   if(p.length<2||isNaN(p[0])||isNaN(p[1])) return null;
   return local?{gf:p[0],gc:p[1]}:{gf:p[1],gc:p[0]};
 }
-/* Carga resultados ya jugados hasta el corte (18/08/2026) y la tabla de referencia.
+/* Carga resultados ya jugados hasta el corte (1/10/2026) y la tabla de referencia.
    No inventa partidos: usa `real` del fixture. El resto de la tabla es semilla. */
 function aplicarCorte2026(){
   if(!E||E.anio!==2026) return;
-  const corte=(typeof CORTE_2026!=="undefined")?CORTE_2026:{m:8,d:18};
+  const corte=(typeof CORTE_2026!=="undefined")?CORTE_2026:{m:10,d:1};
   if(typeof TABLA_2026_CORTE==="object"){
     Object.keys(TABLA_2026_CORTE).forEach(id=>{
       if(E.tabla[id]) Object.assign(E.tabla[id], TABLA_2026_CORTE[id]);
@@ -129,7 +129,7 @@ function aplicarCorte2026(){
   const yo=E.tabla[E.club];
   if(yo) E.temporada=Object.assign({sinGanar:0},yo);
   E.flags=E.flags||{}; E.flags.corte2026=true;
-  if(typeof pushNotif==="function") pushNotif("Cortas en agosto","El campeonato ya se jugó hasta el 18/08. Los partidos anteriores están cargados. El próximo es el que sigue.","neutro");
+  if(typeof pushNotif==="function") pushNotif("Cortas en octubre","El campeonato ya se jugó hasta el 1/10. Los partidos anteriores están cargados. El próximo es el que sigue.","neutro");
 }
 function nuevaPartida(clubId,anio,modo,extra){
   /* 7.54 · no arrastrar la liga custom (ascenso/descenso) del save anterior:

@@ -2506,3 +2506,15 @@ Nada más. Sin introducción y sin cierre.
 | Copa Chile y Libertadores | confirmado, no pisan la liga | No había un dato para corregir. |
 | Caja, las 30 filas | no cambiar el número | Los números quedan. Varias URL son la portada del club, no un balance. |
 
+**7.9124 · el fixture de Primera 2026 sí se corrige.**
+
+La pasada anterior no tocó marcadores. Esta sí. T13 tiene el calendario entero (no hacía falta quedarse en Wikipedia). Lo crucé partido a partido con el anexo.
+
+- Los 16 clubes tienen las 30 fechas. Antes solo cinco, y el resto de la fecha salía mezclado.
+- Entran los marcadores jugados hasta el 1/10: fechas 20, 21, 22 y 23 (menos uno). El corte deja de decir 18/08. Colo-Colo queda con 54 puntos en 23 PJ.
+- Sigue en null el U. de Concepción-Huachipato del 2/10. No se inventa. De la fecha 24 en adelante tampoco hay marcador.
+- La fecha 1 de T13 invierte el local (pone a D. Concepción 2-1 en el Ester Roa). La Tercera del 2 de febrero y el anexo dicen O'Higgins 2-1 en El Teniente. Quedó ese.
+- La fecha 28 de T13 repite U. de Concepción-Limache. Ese cruce es la 25. El que falta, y el que quedó, es U. de Concepción-Ñublense el 22/11, sin marcador.
+- La caja no se mueve.
+
+

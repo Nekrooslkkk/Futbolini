@@ -5178,3 +5178,14 @@ Archivos: `js/data-copas2026.js`, `js/data-proximamente.js`, `js/data-b2026.js`,
 - **Estado:** doctor sano 127/127 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa) · core 1185/1185.
   Banco TEMPS=3: 254/255. Colo-Colo 1925 al llegar a 1928 cae por sueldo del DT contra la planilla. El mismo fallo está en 7.9122 (`d93aa9f`), no lo metió esta tanda.
 
+### 7.9124 — Fixture de Primera 2026 completo (los 16), corte al 1/10
+Archivos: `js/data-liga.js`, `js/data-grok.js`, `js/data-fixture2026.js` (nuevo), `js/motor.js`, `js/ui.js`, `js/util.js`, `index.html`.
+- **El fixture malo era de datos.** Solo Colo-Colo, la U, la UC, Palestino y Limache tenían cruces oficiales. El resto de cada fecha lo armaba `emparejarFecha` al azar. Ahora los 16 tienen las 30 fechas.
+- **Fuente:** T13 (1/10/2026), cruzado partido a partido con el anexo de resultados. No quedó solo en Wikipedia.
+- **Fecha 1:** T13 escribió D. Concepción 2-1 en el Ester Roa. La Tercera del 2/02/2026 y el anexo dicen O'Higgins 2-1 en El Teniente. Quedó el de El Teniente.
+- **Fecha 28:** T13 repite U. de Concepción-Limache (ese partido es la fecha 25). El cruce que falta es U. de Concepción-Ñublense, 22/11, sin marcador.
+- **Marcadores:** se cargan los jugados hasta el 1/10, incluidas las fechas 20 a 23. Sigue en null el 2/10 (U. de Concepción vs Huachipato) y todo lo de la fecha 24 en adelante. No se inventa un resultado.
+- **Corte:** pasa del 18/08 al 1/10. Colo-Colo queda con 54 puntos en 23 PJ. U. de Concepción y Huachipato van con 22. La caja no se toca.
+- **Doctor:** `fixture_primera_2026`.
+- **Estado:** doctor sano 128/128 (4 partidas + celular) · dev 593/593 (+ papa) · core 1185/1185.
+

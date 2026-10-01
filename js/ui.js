@@ -649,23 +649,23 @@ function elegirEpoca(id){
       /* E-1 · la situación del club: por qué te metes en esto (Grok TAREA E / Claude 7.86) */
       if(typeof SITUACION_CLUB==="object" && SITUACION_CLUB[id])
         c.appendChild(el("p","mini","<b>La situación:</b> "+SITUACION_CLUB[id]));
-      /* corte 18/08 solo en la temporada 2026 actual (no en glorias históricas) */
+      /* corte 1/10 solo en la temporada 2026 actual (no en glorias históricas) */
       if((sel.base===2026) && sel.tipo!=="gloria" && !esB){
         c.appendChild(el("div","resul mitad","<b>Aviso.</b> Los planteles 2026 son <b>aproximados</b> y pueden haber cambiado en el mercado. Stats estimadas."));
         c.appendChild(el("h3","sub","Punto de la temporada"));
         const fc=el("div","fichas");
-        [["no","Temporada completa (enero)"],["si","Desde ahora (18 ago, resultados ya jugados)"]].forEach(([k,n])=>{
+        [["no","Temporada completa (enero)"],["si","Desde ahora (1 oct, resultados ya jugados)"]].forEach(([k,n])=>{
           const b=el("button","ficha",n);
           b.setAttribute("aria-pressed",(k==="si")===corte?"true":"false");
           b.onclick=()=>{ corte=(k==="si"); pintar(); };
           fc.appendChild(b);
         });
         c.appendChild(fc);
-        if(corte) c.appendChild(el("p","mini","Se cargan los partidos ya jugados del fixture (con marcador real si está) y una tabla de referencia al 18/08. Sigues desde el próximo. Colo-Colo tiene el fixture completo; los otros clubes usan la misma tabla semilla."));
+        if(corte) c.appendChild(el("p","mini","Se cargan los partidos ya jugados del fixture (con marcador real si está) y una tabla de referencia al 1/10. Sigues desde el próximo. Los 16 de Primera tienen el fixture, no solo Colo-Colo."));
       }
 
       const go=el("button","btn-aqua ancho verde",
-        sel.tipo==="gloria"?("Revivir "+sel.ep.etq):(sel.base===2026&&corte?"Seguir desde agosto 2026":("Empezar en "+sel.anio)));
+        sel.tipo==="gloria"?("Revivir "+sel.ep.etq):(sel.base===2026&&corte?"Seguir desde octubre 2026":("Empezar en "+sel.anio)));
       go.onclick=()=>{
         try{
           /* 7.13 · solo se redirige la era a 2026 si el club NO existe en la era
