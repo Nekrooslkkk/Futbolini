@@ -30,7 +30,26 @@ function _glApagarPorLento(est){
   try{ est.canvas.remove(); }catch(e){}
   est.svg.classList.remove("a3gl-on");
   ARCOGL.activos=Math.max(0,ARCOGL.activos-1); if(ARCOGL.ultimo===est) ARCOGL.ultimo=null; ARCOGL.apagadoLento=true;
-  if(typeof aviso==="function") aviso("El 3D iba lento en este equipo: sigue el dibujo clásico (lo vuelves a prender en Ajustes ▸ Pantalla)",5200);
+  if(typeof aviso==="function") aviso("Listo: dibujo clásico (el 3D lo vuelves a prender en Ajustes ▸ Pantalla)",4200);
+}
+/* 7.9123 · el autor: "no debe cambiar solo". Si el 3D va lento ya no se apaga: se OFRECE pasar al dibujo, con un
+   chip chico que no tapa la jugada. "Seguir así" no vuelve a preguntar (futbolini_3d_nopreg). Lo usa también la
+   cancha 3D del partido (cancha3d.js). */
+function ofrecerAliviar3D(host, txt, aceptar){
+  try{
+    if(!host||host.querySelector(".a3-ofrece")) return null;
+    if(localStorage.getItem("futbolini_3d_nopreg")==="1") return null;
+  }catch(e){}
+  const c=document.createElement("div"); c.className="a3-ofrece"; c.setAttribute("role","status");
+  const t=document.createElement("span"); t.textContent=txt||"🐢 El 3D va lento en este equipo.";
+  const si=document.createElement("button"); si.type="button"; si.className="btn-aqua chico"; si.textContent="Pasar a 2D";
+  const no=document.createElement("button"); no.type="button"; no.className="btn-aqua chico gris"; no.textContent="Seguir así";
+  si.onclick=function(ev){ ev.stopPropagation(); c.remove(); try{ aceptar(); }catch(e){} };
+  no.onclick=function(ev){ ev.stopPropagation(); c.remove(); try{ localStorage.setItem("futbolini_3d_nopreg","1"); }catch(e){} };
+  c.appendChild(t); c.appendChild(si); c.appendChild(no);
+  if(getComputedStyle(host).position==="static") host.style.position="relative";
+  host.appendChild(c);
+  return c;
 }
 function webglDisponible(){
   if(ARCOGL._wgl!=null) return ARCOGL._wgl;
@@ -418,7 +437,8 @@ function arcoGLMontar(esc,svg,opts){
         const muyLento=tiempos.length>=4&&tiempos.slice(-4).every(x=>x>ARCOGL_VIG.maxMs*2);
         if(tiempos.length>=ARCOGL_VIG.cuadros||muyLento){ est.vigilado=true;
           const med=tiempos.slice().sort((x,y)=>x-y)[tiempos.length>>1]; est.msMediana=Math.round(med);
-          if(med>ARCOGL_VIG.maxMs&&!ARCOGL.sinVigilante){ _glApagarPorLento(est); return; } }
+          if(med>ARCOGL_VIG.maxMs&&!ARCOGL.sinVigilante){ ARCOGL.lentoOfrecido=true;   /* 7.9123 · se ofrece, no se apaga solo */
+            ofrecerAliviar3D(esc.world.parentNode||esc.world,"🐢 El 3D va lento en este equipo ("+est.msMediana+" ms por cuadro).",function(){ _glApagarPorLento(est); }); } }
       }
       est.tPrev=t;
     }
@@ -607,6 +627,8 @@ if(typeof document!=="undefined"&&!document.getElementById("css-arco-gl")){
     ".e3d-world>canvas.a3gl{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}"+
     /* el dibujo está escondido, pero el SVG tiene que recibir el dedo: si no, el canvas se queda el clic y no hay mira */
     ".arco-svg.a3gl-on{pointer-events:all}"+
+    ".a3-ofrece{position:absolute;left:8px;right:8px;bottom:8px;z-index:5;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:7px 10px;border-radius:12px;background:rgba(10,24,44,.82);color:#fff;font-size:12px;pointer-events:auto}"+
+    ".a3-ofrece span{flex:1 1 160px}"+
     /* con el 3D montado, del SVG quedan solo los controles encima */
     ".arco-svg.a3gl-on>*:not(defs):not(#arco-mira):not(#arco-linea):not(#a3-trazo):not(#a3-papel):not(#arco-iman){visibility:hidden}";
   document.head.appendChild(st);

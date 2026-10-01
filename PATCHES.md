@@ -5162,3 +5162,43 @@ Archivos nuevos: `js/cancha3d.js`. Tocados: `index.html` (carga + `?v=`), `js/ui
   2D en Modo papa). Al revés (sin `_cvStep`): "la cancha 3D no avanza con _cvStep".
 - **Estado:** doctor sano 126/126 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa) · core 1185/1185 ·
   saves 12/12.
+
+### 7.9123 — Partida perdida (URGENTE): las partidas viven en IndexedDB y "guardado" ya no miente · córner con salida · el 3D lento ofrece, no cambia solo · charla grupal honesta · patrimonio a la vista · Quilín fuera de la Segunda
+Archivos nuevos: `js/partidas.js`, `test/partidas.mjs`, `test/partidas.sh`. Tocados: `js/motor.js` (guardar, cargarPartida,
+borrarPartida, slotMetaDe), `js/rendimiento.js` (guardarAhora devuelve el resultado), `js/ui.js` (init, pantallaArranque,
+arranquePintarLista, abrirPartidaDeLista, Mis partidas, charlaGrupal, Ajustes), `js/ui-partido.js` (córner), `js/arco-gl.js`,
+`js/cancha3d.js`, `js/vida-hoy.js`, `js/data-caza-97.js`, `js/data-proc.js`, `js/dev-doctor.js` (chequeos asíncronos),
+`js/dev-banco.js`, `css/base.css`, `css/pulido.css`, `index.html`, `test/doctor.js`, `test/correr_dev.sh`.
+- **Partida perdida ("aprieto Continuar y no carga")**, reproducido en Chromium: una partida pesa ~0,5 MB después de
+  una temporada (el 70 % son los planteles CPU) y localStorage da ~5,2 M de caracteres por sitio, con la partida abierta
+  escrita dos veces. Con ~9 partidas se llenaba: `setItem` tiraba QuotaExceededError, el error se tragaba, el reloj
+  decía "guardado 14:14" y la ranura quedaba vacía o vieja → "No se pudo cargar esa partida".
+  Ahora (`js/partidas.js`): las partidas viven en **IndexedDB** (cientos de MB, sin internet); localStorage guarda solo la
+  **copia rápida** de la partida abierta (síncrona, la que alcanza a quedar si cierras de golpe), la lista y los ajustes.
+  Al abrir, las ranuras viejas se **mudan solas** (verificadas antes de borrar) y lo que tenga datos pero no esté en la
+  lista vuelve a la lista. Cada guardado lleva sello (`E._guardadoEn`) y se abre siempre la copia más nueva. Si no se puede
+  guardar: cartel "No se pudo guardar tu partida" con **Descargar partida** y el reloj dice "⚠️ SIN GUARDAR". Cambiar de
+  partida con un guardado fallido pregunta antes. Sin IndexedDB se sigue en localStorage, avisando.
+- **Inicio**: lista ordenada (la última arriba, con "Continuar"), con **scroll propio** (no agranda la pantalla),
+  fecha y hora de cada una; una sin datos sale marcada al final ("tocar para quitarla"), no como botón mudo. Mis
+  partidas: ⬇ para bajar CUALQUIER partida, dónde viven y cuánto ocupan, y "🛡️ que el navegador no las borre".
+- **Córner que pega el juego** (no se pudo reproducir en 10 intentos con y sin 3D): ✕ "Que se juegue solo" siempre,
+  vigilante de 6 s si la animación se corta, error atrapado → el córner se despeja y el partido sigue. Ajustes ▸ Pantalla:
+  "⏩ Que se jueguen solos" (no se detiene el partido).
+- **3D lento ya no se cambia solo a 2D**: balón parado y cancha 3D ofrecen "Pasar a 2D / Seguir así" en un chip chico
+  ("Seguir así" no vuelve a preguntar). Si la cancha 3D falla, se avisa.
+- **"Apoyar a todos" siempre "0 lo sintieron"**: se contaba lo que se quería cambiar, no lo que cambió, y el apoyo nunca
+  costaba nada. Ahora mide antes/después ("quedaron igual" aparte) y al que casi no juega el discurso le suena vacío.
+- **Patrimonio en Vida**: el panel estaba (todas las épocas y saves viejos), pero el resumen de arriba solo mostraba el
+  bolsillo y en PC el salto 💎 lo dejaba bajo la barra fija. Chip 💎 patrimonio en "Tu vida hoy" + scroll-margin.
+- **Quilín con Colchagua**: los eventos generados (`data-proc.js`) no pasaban el filtro anti-fuga; ahora sí, y la
+  Segunda no recibe Consejo de Presidentes ni reparto de TV de Primera.
+- **Dev**: `devDoctorCompleto()` corre también chequeos asíncronos (`asinc:true`, tope 30 s). Nuevos: `guardado_honesto`,
+  `partidas_inventario`, `continuar_carga`, `corner_salida`, `tres_d_no_cambia_solo`, `charla_grupal_mide`,
+  `vida_patrimonio_visible`, `anfp_no_se_fuga`. Al revés contra 7.9122: 4+0+4 problemas en partidas (el inventario caza
+  una partida sin datos y rescata huérfanas), y todos los demás fallan. `test/partidas.sh` (Playwright, tiempo real):
+  navegador lleno con el formato viejo → mudanza, marca la perdida, Continuar abre; 12 partidas; cierre brusco; sin
+  IndexedDB y lleno → no miente. Bajo `--virtual-time-budget` IndexedDB es poco confiable: `test/doctor.js` usa
+  localStorage (`PARTIDAS.apagada`).
+- **Estado:** doctor sano 134/134 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas) · core
+  1185/1185 · saves 12/12 · banco 255 sano (10 % despidos).

@@ -1785,18 +1785,34 @@ function charlaGrupal(tipo){
   const k="charlaGrupal_"+E.anio+"_"+(E.idx||0);
   if(E.flags[k]){ aviso("Ya hablaste con el grupo esta semana."); return null; }
   E.flags[k]=true;
-  let sube=0, baja=0;
-  (E.plantel||[]).filter(j=>!j.vendido&&!j.cedido).forEach(j=>{
+  /* 7.9123 · el autor: "Apoyar a todos dice siempre 0 lo sintieron". Era cierto y era mentira a la vez: el apoyo
+     nunca bajaba a nadie, y se contaba lo que se QUERÍA cambiar, no lo que cambió (el que ya estaba en 100 contaba
+     como que respondió). Ahora se mide la moral/forma de verdad antes y después, y el discurso al grupo tiene costo:
+     al que casi no juega, "todos somos importantes" le suena a palabras vacías. */
+  let sube=0, baja=0, igual=0, vacios=0;
+  const vivos=(E.plantel||[]).filter(j=>!j.vendido&&!j.cedido);
+  const maxMin=vivos.reduce((m,j)=>Math.max(m,j.minutosTemporada||0),0);
+  vivos.forEach(j=>{
     if(charlaHecha(j)) return;
+    const m0=j.moral||70, f0=j.forma||70;
     const r=reaccionCharla(j,tipo);
-    const dm=Math.round(r.dm*0.6), df=Math.round(r.df*0.6);   /* en grupo pega menos que mano a mano */
-    j.moral=clamp((j.moral||70)+dm,0,100); j.forma=clamp((j.forma||70)+df,0,100);
-    if(dm+df>0) sube++; else if(dm+df<0) baja++;
+    let dm=Math.round(r.dm*0.6), df=Math.round(r.df*0.6);   /* en grupo pega menos que mano a mano */
+    if(tipo==="banco" && maxMin>=270 && (j.minutosTemporada||0)<maxMin*0.15 && m0<75){ dm=-2; vacios++; }
+    j.moral=clamp(m0+dm,0,100); j.forma=clamp(f0+df,0,100);
+    const d=Math.round((j.moral-m0)+(j.forma-f0));
+    if(d>0) sube++; else if(d<0) baja++; else igual++;
     _anotarCharla(j,tipo==="banco"?"apoyo (grupo)":"exigencia (grupo)");
   });
   if(tipo==="banco" && E.ind) E.ind.moral=clamp((E.ind.moral||50)+2,0,100);
   guardar();
-  return {sube:sube,baja:baja};
+  return {sube:sube,baja:baja,igual:igual,vacios:vacios};
+}
+function charlaGrupalTxt(r){
+  if(!r) return "";
+  const p=[r.sube+" respondieron bien"];
+  if(r.igual) p.push(r.igual+" quedaron igual");
+  p.push(r.baja+" lo sintieron"+(r.vacios?" (a "+r.vacios+" que casi no juegan el discurso les sonó vacío)":""));
+  return "Charla al grupo: "+p.join(", ")+".";
 }
 /* qué hace la moral/forma/cansancio de un jugador en la cancha (misma cuenta que fuerzaEquipo) */
 function rendimientoJugador(j){
@@ -1839,7 +1855,7 @@ function vistaPlantel(){
     [["banco","🤝 Apoyar a todos","Sube la moral, sobre todo a los golpeados."],["exigir","📣 Exigir a todos","Sube la forma de los que están bajos; al que viene golpeado lo hunde."]].forEach(([t,n,d])=>{
       const b=el("button","op"); b.disabled=hecha;
       b.innerHTML='<div class="t">'+n+(hecha?" · <span class='mini'>ya hablaste con el grupo</span>":"")+'</div><div class="d">'+d+'</div>';
-      b.onclick=()=>{ const r=charlaGrupal(t); if(r){ aviso("Charla al grupo: "+r.sube+" respondieron bien, "+r.baja+" lo sintieron."); render(); } };
+      b.onclick=()=>{ const r=charlaGrupal(t); if(r){ aviso(charlaGrupalTxt(r),6000); render(); } };
       pg.cuerpo.appendChild(b);
     });
     v.appendChild(pg); }
@@ -3407,16 +3423,38 @@ function cargarPartidaArchivo(f){
   lector.readAsText(f);
 }
 /* ---------------- mis partidas (varios slots) ---------------- */
+/* 7.9123 · antes de soltar la partida abierta: si no se pudo guardar, se pregunta (si no, se perdía lo último callado) */
+async function _soltarPartidaActual(){
+  if(!(E&&E.club)) return true;
+  const r=await guardar();
+  if(r&&!r.ok) return confirm("No se pudo guardar la partida abierta ("+(r.err||"sin espacio")+"). Si sigues, pierdes lo último que jugaste. Mejor descárgala primero (Ajustes ▸ Respaldo).\n\n¿Seguir igual?");
+  return true;
+}
 async function cambiarDeClub(){
-  if(E&&E.club){ await guardar(); }        /* guarda la actual en su slot antes de salir */
+  if(!(await _soltarPartidaActual())) return;   /* guarda la actual en su slot antes de salir */
   E=null; SEC="escritorio"; render();       /* render con E=null → pantallaInicio (elegir club) */
   aviso("Elige el club de tu nueva partida");
 }
+/* abre una partida de la lista y dice la verdad si no se puede (sin datos, o datos que no abren) */
+async function abrirPartidaDeLista(id){
+  let ok=false;
+  try{ ok=await cargarPartida(id); }
+  catch(e){
+    console.error("No se pudo abrir la partida "+id+":",e);
+    aviso("Esa partida no abre ("+String(e&&e.message||e).slice(0,80)+"). Tus datos siguen guardados: descárgala con ⬇ en Mis partidas y mándasela al autor.",9000);
+    return false;
+  }
+  if(!ok){
+    if(PARTIDAS.estado&&PARTIDAS.estado.sinDatos.indexOf(id)<0) PARTIDAS.estado.sinDatos.push(id);
+    aviso("Esa partida no tiene datos guardados (el navegador no la alcanzó a guardar). Puedes quitarla de la lista.",7000);
+  }
+  return ok;
+}
 async function continuarPartida(id){
   if(E&&E._slot===id){ aviso("Ya estás en esa partida"); return; }
-  if(E&&E.club){ await guardar(); }
-  const ok=await cargarPartida(id);
-  if(ok){ SEC="escritorio"; render(); aviso("Partida cargada"); } else aviso("No se pudo cargar esa partida");
+  if(!(await _soltarPartidaActual())) return;
+  const ok=await abrirPartidaDeLista(id);
+  if(ok){ SEC="escritorio"; render(); aviso("Partida cargada"); } else render();
 }
 async function borrarPartidaUI(id,nombre){
   if(!confirm("¿Borrar la partida de "+(nombre||"este club")+"? No se puede deshacer.")) return;
@@ -3436,6 +3474,16 @@ function panelMisPartidas(v){
   const bNueva=el("button","btn-aqua chico verde","➕ Nueva partida (elegir otro club)"); bNueva.style.marginTop="8px";
   bNueva.onclick=cambiarDeClub;
   pm.cuerpo.appendChild(bNueva);
+  /* 7.9123 · dónde viven y cuánto ocupan (y pedirle al navegador que no las borre) */
+  const info=el("p","mini mp-info"); pm.cuerpo.appendChild(info);
+  const pintarInfo=()=>{ info.textContent=(typeof partidasResumenTxt==="function")?partidasResumenTxt():""; };
+  pintarInfo();
+  if(typeof partidasMantener==="function"&&!(PARTIDAS.estado)) partidasMantener().then(pintarInfo).catch(()=>{});
+  if(typeof navigator!=="undefined"&&navigator.storage&&navigator.storage.persist){
+    const bp=el("button","btn-aqua chico"); bp.textContent="🛡️ Que el navegador no borre mis partidas"; bp.style.marginTop="6px";
+    bp.onclick=async()=>{ const r=await partidasPedirPersistencia(true); aviso(r?"Listo: el navegador no las va a borrar para hacer espacio.":"El navegador no lo concedió (pasa si el juego no está instalado). Descarga tus partidas de vez en cuando.",6000); };
+    pm.cuerpo.appendChild(bp);
+  }
   v.appendChild(pm);
   slotsLista().then(lista=>{
     cont.innerHTML="";
@@ -3450,23 +3498,30 @@ function panelMisPartidas(v){
     };
     cont.appendChild(bTodas);
     const ord=lista.slice().sort((a,b)=>(b.guardado||0)-(a.guardado||0));
+    const rotas=(PARTIDAS.estado&&PARTIDAS.estado.sinDatos)||[];
     ord.forEach(s=>{
-      const esAct=(E&&E._slot===s.id);
-      const fila=el("div","fila");
+      const esAct=(E&&E._slot===s.id), rota=!esAct&&rotas.indexOf(s.id)>=0;
+      const fila=el("div","fila"+(rota?" mp-rota":""));
       const etq=(s.epoca||("Año "+s.anio))+(s.gen>1?" · gen "+s.gen:"");
       const cuando=s.guardado?fechaCorta(s.guardado):"";
       const sp=el("span");
       if(esAct) sp.appendChild(document.createTextNode("▶ "));
+      if(rota) sp.appendChild(document.createTextNode("⚠️ "));
       const bn=el("b"); bn.textContent=s.clubNombre||s.club||"";
       sp.appendChild(bn);
-      const mini=el("span","mini"); mini.textContent=" "+etq+(cuando?" · "+cuando:"")+(esAct?" · actual":"");
+      const mini=el("span","mini"); mini.textContent=" "+etq+(cuando?" · "+cuando:"")+(esAct?" · actual":"")+(rota?" · sin datos guardados (el navegador no la alcanzó a guardar)":"");
       sp.appendChild(mini);
       fila.appendChild(sp);
       const acc=el("span","");
-      if(!esAct){
+      if(!esAct&&!rota){
         const bc=el("button","btn-aqua chico","Continuar"); bc.onclick=()=>continuarPartida(s.id); acc.appendChild(bc);
       }
-      const bd=el("button","btn-aqua chico rojo"); bd.textContent="🗑"; bd.title="Borrar"; bd.style.marginLeft="6px";
+      if(!rota){   /* 7.9123 · bajar CUALQUIER partida (sirve para rescatar una que no abre y mandársela al autor) */
+        const bb=el("button","btn-aqua chico"); bb.textContent="⬇"; bb.title="Descargar esta partida"; bb.setAttribute("aria-label","Descargar esta partida"); bb.style.marginLeft="6px";
+        bb.onclick=()=>{ if(esAct&&typeof descargarPartida==="function") descargarPartida(); else descargarPartidaDe(s.id); };
+        acc.appendChild(bb);
+      }
+      const bd=el("button","btn-aqua chico rojo"); bd.textContent="🗑"; bd.title=rota?"Quitar de la lista":"Borrar"; bd.style.marginLeft="6px";
       bd.onclick=()=>borrarPartidaUI(s.id,s.clubNombre||s.club); acc.appendChild(bd);
       fila.appendChild(acc);
       cont.appendChild(fila);
@@ -3802,6 +3857,17 @@ function vistaAjustes(host){
     });
     p.cuerpo.appendChild(fc);
     p.cuerpo.appendChild(el("p","mini","🎥 <b>3D cámara FIFA</b> (beta): el partido en 3D con cámara de transmisión que sigue la pelota, movido por la misma simulación. En desarrollo: todavía no está pulido. En Modo papa cae al cenital 2D (más liviano)."));
+  }
+  /* 7.9123 · el minijuego de córner se puede apagar (el autor: "se traba"): apagado, el córner se juega solo */
+  if(E){
+    p.cuerpo.appendChild(el("label","lb","Córners a favor (dirigiendo)"));
+    const fco=el("div","fichas"), coOn=E.config&&E.config.cornerMini===false?false:true;
+    [[true,"🚩 Los cobro yo (minijuego)"],[false,"⏩ Que se jueguen solos"]].forEach(([on,n])=>{
+      const b=el("button","ficha",n); b.setAttribute("aria-pressed",coOn===on?"true":"false");
+      b.onclick=()=>{ if(!E.config) E.config={}; E.config.cornerMini=on; guardar(); render(); aviso(on?"🚩 Vuelves a cobrar los córners":"⏩ Los córners se juegan solos: el partido no se detiene",4000); };
+      fco.appendChild(b);
+    });
+    p.cuerpo.appendChild(fco);
   }
   /* 7.9092 · penal, tiro libre y córner en 3D real (WebGL) o el dibujo clásico */
   p.cuerpo.appendChild(el("label","lb","Penales, tiros libres y córners"));
@@ -4918,6 +4984,45 @@ $("#btnTemas").onclick=()=>{
   }
 })();
 /* ---------- pantalla de arranque (que entrar no sea fome) ---------- */
+function _arrCuando(ts){
+  if(!ts) return "";
+  try{ return new Date(ts).toLocaleString("es-CL",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; }
+}
+/* 7.9123 · los botones de las partidas guardadas (se repinta solo cuando el inventario de partidas.js termina) */
+function arranquePintarLista(cont,slots){
+  const salir=cont._salir||function(){ render(); };
+  const enFoco=cont.contains(document.activeElement);
+  cont.innerHTML="";
+  const act=(E&&E._slot)||null, rotas=(PARTIDAS.estado&&PARTIDAS.estado.sinDatos)||[];
+  const rotaDe=s=>s.id!==act&&rotas.indexOf(s.id)>=0;
+  /* la última que jugaste arriba; las que no tienen datos, al final */
+  const ord=(slots||[]).slice().sort((a,b)=>(rotaDe(a)-rotaDe(b))||((b.guardado||0)-(a.guardado||0)));
+  const primera=ord.length&&!rotaDe(ord[0])?ord[0].id:null;
+  ord.forEach(s=>{
+    const rota=s.id!==act&&rotas.indexOf(s.id)>=0, nombre=s.clubNombre||s.club||"Partida";
+    const etq=(s.epoca||("Año "+s.anio))+(s.gen>1?" · generación "+s.gen:""), cuando=_arrCuando(s.guardado);
+    const b=el("button","btn-aqua ancho arranque-btn"+(s.id===primera?" verde":"")+(rota?" arr-rota":""));
+    b.type="button";
+    if(rota){
+      b.innerHTML="⚠️ "+escHtml(nombre)+"<span class='arr-mini'>sin datos: el navegador no la alcanzó a guardar · tocar para quitarla</span>";
+      b.onclick=async()=>{
+        if(!confirm("La partida de "+nombre+" no tiene datos guardados. ¿Quitarla de la lista?")) return;
+        await borrarPartida(s.id); arranquePintarLista(cont,await slotsLista());
+      };
+    } else {
+      b.innerHTML="▶ "+(s.id===primera?"Continuar · ":"")+escHtml(nombre)+"<span class='arr-mini'>"+escHtml(etq+(cuando?" · "+cuando:""))+"</span>";
+      b.onclick=async()=>{
+        if(E&&E._slot===s.id){ salir(); return; }
+        b.disabled=true; b.classList.add("cargando");
+        const ok=await abrirPartidaDeLista(s.id);
+        b.disabled=false; b.classList.remove("cargando");
+        if(ok) salir(); else arranquePintarLista(cont,await slotsLista());
+      };
+    }
+    cont.appendChild(b);
+  });
+  if(enFoco){ const f=cont.querySelector(".arranque-btn"); if(f) f.focus(); }
+}
 function pantallaArranque(haySave,slots){
   slots=slots||[];
   let ov=document.getElementById("arranque");
@@ -4935,16 +5040,11 @@ function pantallaArranque(haySave,slots){
   const btns=el("div","arr-btns");
   const salir=cb=>{ ov.classList.add("fuera"); setTimeout(()=>{ if(ov.parentNode) ov.remove(); },430); if(cb) cb(); render(); };
   if(slots.length){
-    const act=(E&&E._slot)||null;
-    const ord=slots.slice().sort((a,b)=>(b.guardado||0)-(a.guardado||0));
-    ord.forEach((s,i)=>{
-      const esAct=s.id===act;
-      const b=el("button","btn-aqua ancho arranque-btn"+((i===0)?" verde":""));
-      const etq=s.epoca||("Año "+s.anio)+(s.gen>1?" · generación "+s.gen:"");
-      b.innerHTML="▶ "+(esAct?"Continuar · ":"")+(s.clubNombre||s.club)+"<span class='arr-mini'>"+etq+"</span>";
-      b.onclick=async()=>{ if(esAct){ salir(); return; } const ok=await cargarPartida(s.id); if(ok) salir(); else aviso("No se pudo cargar esa partida"); };
-      btns.appendChild(b);
-    });
+    /* 7.9123 · la lista va ordenada (la última que jugaste arriba, con "Continuar") y con su propio scroll: con muchas
+       partidas ya no agranda la pantalla. Una partida sin datos se ve como tal, no como un botón que no hace nada. */
+    const lista=el("div","arr-lista"); lista.id="arrLista"; lista._salir=salir;
+    arranquePintarLista(lista,slots);
+    btns.appendChild(lista);
     const bn=el("button","btn-aqua ancho arranque-btn"); bn.innerHTML="➕ Nueva partida<span class='arr-mini'>elegir otro club</span>";
     bn.onclick=()=>salir(()=>{ E=null; });
     btns.appendChild(bn);
@@ -5049,21 +5149,29 @@ document.addEventListener("keydown",function(e){
   let g=null;
   try{
     let actId=await slotActivoId();
-    if(!actId && lista.length) actId=lista[lista.length-1].id;
-    if(actId && (!lista.length || lista.some(function(s){ return s.id===actId; }))) g=await Store.get(slotKey(actId));
-    if((!g||!g.club) && lista.length){
-      const otro=lista[lista.length-1];
-      if(otro) g=await Store.get(slotKey(otro.id));
-    }
+    if(!actId && lista.length) actId=slotMasNuevo(lista).id;
+    /* 7.9123 · sin esperar a IndexedDB: la copia rápida, solo si es tan nueva como dice la lista. Si no, el botón de
+       inicio abre la copia más nueva de la base (antes caía a "la última de la lista", que podía ser otra partida). */
+    g=await partidaRapidaInicio(actId,lista);
     /* sin ranuras sigue el save viejo. Con ranuras, una partida borrada no vuelve por LLAVE. */
     if((!g||!g.club) && !lista.length) g=await cargar();
   }catch(e){ console.error("No se pudo leer el save:",e); }
   let haySave=!!(g&&g.club);
   if(haySave){
-    try{ E=g; if(!E._slot && lista.length) E._slot=lista[lista.length-1].id; normalizarEstado(); aplicarEstatutosMod(); }
-    catch(e){ console.error("Save dañado, empiezo limpio:",e); E=null; haySave=false; aviso("La partida guardada estaba dañada. Se empieza de nuevo.",5000); }
+    try{ E=g; if(!E._slot && lista.length) E._slot=slotMasNuevo(lista).id; normalizarEstado(); aplicarEstatutosMod(); }
+    catch(e){ console.error("Save dañado:",e); E=null; haySave=false; aviso("La partida abierta no carga ("+String(e&&e.message||e).slice(0,60)+"). Sigue guardada: elígela de la lista o descárgala en Ajustes ▸ Mis partidas.",8000); }
   }
   pantallaArranque(haySave,lista);
+  /* 7.9123 · de fondo: muda las partidas de localStorage a IndexedDB, rescata las que no estaban en la lista y marca
+     las que no tienen datos. Si cambió algo y la pantalla de inicio sigue ahí, se repinta la lista. */
+  partidasMantener().then(async rep=>{
+    if(!rep.recuperadas.length&&!rep.sinDatos.length) return;
+    const ov=document.getElementById("arranque"); if(!ov||ov.classList.contains("fuera")) return;
+    const nueva=await slotsLista(), cont=document.getElementById("arrLista");
+    if(cont) arranquePintarLista(cont,nueva);
+    else if(nueva.length){ pantallaArranque(!!(E&&E.club),nueva); }
+    if(rep.recuperadas.length) aviso("Encontré "+rep.recuperadas.length+" partida(s) guardada(s) que no salían en tu lista: ya están de vuelta.",6000);
+  }).catch(e=>console.error("partidas:",e));
 })();
 window.addEventListener("resize",()=>{ clearTimeout(window._rb); window._rb=setTimeout(function(){ burbujas(); if(typeof pintarDock==="function") pintarDock(); },400); });
 if(window.matchMedia){

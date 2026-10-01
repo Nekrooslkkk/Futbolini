@@ -29,7 +29,7 @@ function _docDonde(){
 function devDoctorRegistrar(c){
   if(!c||!c.id||typeof c.fn!=="function") return false;
   if(DOCTOR_CHECKS.some(function(x){ return x.id===c.id; })) return false;
-  DOCTOR_CHECKS.push({id:c.id, area:c.area||"general", n:c.n||c.id, fn:c.fn, pesado:!!c.pesado, donde:c.donde||_docDonde(), arreglo:c.arreglo||""});
+  DOCTOR_CHECKS.push({id:c.id, area:c.area||"general", n:c.n||c.id, fn:c.fn, pesado:!!c.pesado, asinc:!!c.asinc, donde:c.donde||_docDonde(), arreglo:c.arreglo||""});
   return true;
 }
 function _dok(txt,detalle){ return {ok:true, txt:txt||"", detalle:detalle||[]}; }
@@ -2419,6 +2419,7 @@ function devDoctor(opts){
   opts=opts||{};
   var res={ok:0, mal:0, checks:[], t0:Date.now()};
   DOCTOR_CHECKS.forEach(function(c){
+    if(c.asinc) return;   /* 7.9123 · los que esperan al navegador (IndexedDB) corren en devDoctorCompleto */
     if(opts.soloRapidos && c.pesado) return;
     if(opts.area && c.area!==opts.area) return;
     var r, t=(typeof performance!=="undefined"?performance.now():Date.now());
@@ -2430,6 +2431,28 @@ function devDoctor(opts){
     if(r.ok) res.ok++; else res.mal++;
   });
   res.ms=Date.now()-res.t0;
+  res.total=res.ok+res.mal;
+  res.veredicto=res.mal===0?"sano":(res.mal<=2?"con detalles":"roto");
+  if(!opts.sinHistoria) _docHistoria(res);
+  return res;
+}
+/* 7.9123 · el doctor entero, también los chequeos asíncronos (los que esperan a IndexedDB: guardar, cargar, inventario
+   de partidas). Cada uno con tope de 30 s: uno que no contesta cuenta como MAL, no cuelga al doctor. */
+async function devDoctorCompleto(opts){
+  opts=opts||{};
+  var res=devDoctor(Object.assign({},opts,{sinHistoria:true}));
+  var t0=Date.now();
+  var lista=DOCTOR_CHECKS.filter(function(c){ return c.asinc&&!(opts.soloRapidos&&c.pesado)&&!(opts.area&&c.area!==opts.area); });
+  for(var i=0;i<lista.length;i++){
+    var c=lista[i], r, t=(typeof performance!=="undefined"?performance.now():Date.now());
+    try{ r=await Promise.race([Promise.resolve(c.fn()), new Promise(function(ok){ setTimeout(function(){ ok(_dmal("no terminó en 30 s")); },30000); })])||_dok(""); }
+    catch(e){ r=_dmal("EXCEPCIÓN: "+(e&&e.message||e)); }
+    r.id=c.id; r.area=c.area; r.n=c.n; r.donde=c.donde; r.arreglo=c.arreglo; r.asinc=true;
+    r.ms=Math.round((typeof performance!=="undefined"?performance.now():Date.now())-t);
+    res.checks.push(r);
+    if(r.ok) res.ok++; else res.mal++;
+  }
+  res.ms+=Date.now()-t0;
   res.total=res.ok+res.mal;
   res.veredicto=res.mal===0?"sano":(res.mal<=2?"con detalles":"roto");
   if(!opts.sinHistoria) _docHistoria(res);
@@ -2509,10 +2532,12 @@ function devPintarDoctor(cont){
   function correr(opts,label){
     salida.innerHTML=""; salida.appendChild(el("p","mini","⏳ "+label+"…"));
     setTimeout(function(){
-      var res;
-      try{ res=devDoctor(opts); }catch(e){ salida.innerHTML=""; salida.appendChild(el("p","mini","Explotó: "+e.message)); return; }
-      pintarRes(res);
-      if(typeof aviso==="function") aviso("🩺 "+res.veredicto+" · "+res.ok+"/"+res.total);
+      /* 7.9123 · con los chequeos asíncronos (partidas guardadas, IndexedDB) */
+      var p=(typeof devDoctorCompleto==="function")?devDoctorCompleto(opts):Promise.resolve(devDoctor(opts));
+      p.then(function(res){
+        pintarRes(res);
+        if(typeof aviso==="function") aviso("🩺 "+res.veredicto+" · "+res.ok+"/"+res.total);
+      }).catch(function(e){ salida.innerHTML=""; salida.appendChild(el("p","mini","Explotó: "+e.message)); });
     },30);
   }
   function btn(txt,fn){ var b=el("button","ficha",txt); b.onclick=fn; acciones.appendChild(b); return b; }
@@ -2564,9 +2589,11 @@ function devPintarDoctor(cont){
     });
   });
   btn("📋 Copiar informe",function(){
-    var t=devDoctorTexto();
-    try{ navigator.clipboard.writeText(t); if(typeof aviso==="function") aviso("Informe copiado"); }
-    catch(e){ try{ console.log(t); if(typeof aviso==="function") aviso("Informe en la consola (F12)"); }catch(x){} }
+    (typeof devDoctorCompleto==="function"?devDoctorCompleto({}):Promise.resolve(devDoctor())).then(function(res){
+      var t=devDoctorTexto(res);
+      try{ navigator.clipboard.writeText(t); if(typeof aviso==="function") aviso("Informe copiado"); }
+      catch(e){ try{ console.log(t); if(typeof aviso==="function") aviso("Informe en la consola (F12)"); }catch(x){} }
+    });
   });
   correr({soloRapidos:true},"chequeos rápidos");
 }

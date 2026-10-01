@@ -1665,19 +1665,12 @@ function capitalAnual(){
   return Math.round(clamp(c,-14,22));
 }
 /* ---------------- guardado ---------------- */
+/* 7.9123 · el guardado de verdad vive en js/partidas.js (partidaGuardarYa: copia rápida + IndexedDB, y dice la
+   verdad si no pudo). Esta es la versión sin agrupar; js/rendimiento.js la envuelve. */
 async function guardar(){
-  if(!E) return;
-  if(E._bulkSim) return;
-  E.saveVer=SAVE_VER;
-  if(!E._slot) E._slot=nuevoSlotId();
-  if(typeof saneaEstado==="function") saneaEstado(E);
-  await Store.set(slotKey(E._slot),E);
-  await Store.set(LLAVE,E);                 /* compat: el save legacy = la partida activa */
-  await slotFijarActivo(E._slot);
-  try{ await slotActualizarIndice(E); }catch(e){}
-  const n=(typeof document!=="undefined")?document.getElementById("guardadoTxt"):null;
-  if(n) n.textContent="guardado "+new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
-  if(typeof nubeAutoRespaldo==="function"){ try{ nubeAutoRespaldo(E); }catch(e){} }
+  if(!E) return null;
+  if(E._bulkSim) return null;
+  return partidaGuardarYa();
 }
 async function cargar(){ return await Store.get(LLAVE); }
 
@@ -1694,7 +1687,8 @@ async function slotsLista(){ const a=await Store.get(SLOTS_LLAVE); return Array.
 async function slotsGuardarLista(a){ await Store.set(SLOTS_LLAVE,a); }
 function slotMetaDe(est){
   return { id:est._slot, club:est.club, clubNombre:est.clubNombre||est.club, anio:est.anio,
-           epoca:est.epocaEtq||"", modo:est.modo||"", gen:(est.dinastia&&est.dinastia.generacion)||1, guardado:Date.now() };
+           epoca:est.epocaEtq||"", modo:est.modo||"", gen:(est.dinastia&&est.dinastia.generacion)||1, guardado:Date.now(),
+           t:+est._guardadoEn||0 };   /* 7.9123 · sello del último guardado: la copia que tenga uno menor es vieja */
 }
 async function slotActivoId(){ return await Store.get(ACTIVO_LLAVE); }
 async function slotFijarActivo(id){ await Store.set(ACTIVO_LLAVE,id); }
@@ -1706,17 +1700,17 @@ async function slotActualizarIndice(est){
   await slotsGuardarLista(lista);
 }
 async function borrarPartida(id){
-  await Store.del(slotKey(id));
+  await partidaBorrarDatos(id);   /* 7.9123 · IndexedDB + ranura vieja de localStorage */
   const lista=(await slotsLista()).filter(s=>s.id!==id);
   await slotsGuardarLista(lista);
   const era=await slotActivoId()===id;
   const leg=await Store.get(LLAVE);
   if(era){
-    if(lista.length){
-      const sig=lista[lista.length-1].id;
-      await slotFijarActivo(sig);
-      const est=await Store.get(slotKey(sig));
-      if(est&&est.club) await Store.set(LLAVE,est); else await Store.del(LLAVE);
+    const sig=slotMasNuevo(lista);
+    if(sig){
+      await slotFijarActivo(sig.id);
+      const est=await partidaLeer(sig.id);
+      if(est&&est.club) await partidaCopiaRapida(est); else await Store.del(LLAVE);
     } else {
       await slotFijarActivo(null);
       await Store.del(LLAVE);
@@ -1724,21 +1718,31 @@ async function borrarPartida(id){
   } else if(leg&&leg._slot===id){
     await Store.del(LLAVE);
   }
+  if(PARTIDAS.estado&&PARTIDAS.estado.sinDatos) PARTIDAS.estado.sinDatos=PARTIDAS.estado.sinDatos.filter(x=>x!==id);
 }
-/* borra el índice, cada ranura y el save viejo: si no, al entrar volvía la partida */
+/* borra el índice, cada ranura (también las que no están en la lista) y el save viejo: si no, al entrar volvía la partida */
 async function borrarTodasLasPartidas(){
   const lista=await slotsLista();
   for(let i=0;i<lista.length;i++){ try{ await Store.del(slotKey(lista[i].id)); }catch(e){} }
+  _lsLlavesPartida().forEach(_lsQuitar);
+  if(_bdSoporta()) await bdVaciar();
   await slotsGuardarLista([]);
   await slotFijarActivo(null);
   await Store.del(LLAVE);
+  if(PARTIDAS.estado) PARTIDAS.estado.sinDatos=[];
 }
+/* 7.9123 · abre la copia MÁS NUEVA que exista (IndexedDB, copia rápida o ranura vieja). Si la partida hace explotar
+   normalizarEstado, E vuelve a como estaba y el error sube: el botón lo muestra (antes moría callado). */
 async function cargarPartida(id){
-  const est=await Store.get(slotKey(id));
+  id=String(id);
+  const est=await partidaLeer(id);
   if(!est||!est.club) return false;
-  E=est; if(!E._slot) E._slot=id;
-  normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod();
-  await slotFijarActivo(id); await Store.set(LLAVE,E);
+  const prev=E;
+  E=est; E._slot=id;
+  try{ normalizarEstado(); if(typeof aplicarEstatutosMod==="function") aplicarEstatutosMod(); }
+  catch(e){ E=prev; throw e; }
+  await slotFijarActivo(id);
+  await partidaCopiaRapida(E);
   return true;
 }
 /* migra el save único viejo a un slot la primera vez (sin perder nada) */

@@ -108,6 +108,9 @@ bash test/duelo.sh || exit 1
 # 7.9120 · 🥔 Modo papa: el juego juntado en un archivo es el mismo juego (doctor entero adentro) y el service worker lo sirve
 echo "· modo papa"
 bash test/papa.sh || exit 1
+# 7.9123 · partida perdida: guardar no miente, las partidas se mudan a IndexedDB y "Continuar" abre la última (Playwright)
+echo "· partidas guardadas (navegador de verdad)"
+bash test/partidas.sh || exit 1
 CHROME_BIN="${CHROME:-}"
 if [ -z "$CHROME_BIN" ]; then
   for c in chromium google-chrome google-chrome-stable chromium-browser /opt/pw-browsers/chromium; do

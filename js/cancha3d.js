@@ -206,16 +206,27 @@ function montarCancha3D(host, P){
   est.sincronizar=sincronizar;
 
   let last=performance.now();
+  const t0=last, tiempos=[];
+  /* 7.9123 · si va lento NO se cambia solo a 2D: se ofrece (chip chico, "Seguir así" no vuelve a preguntar) */
+  const vigilar=(ms,now)=>{ if(est.vigilado||now-t0<1500) return; tiempos.push(ms);
+    if(tiempos.length<30) return; est.vigilado=true;
+    const med=tiempos.slice().sort((a,b)=>a-b)[15]; est.msMediana=Math.round(med);
+    if(med>50&&typeof ofrecerAliviar3D==="function") est.ofrecido=!!ofrecerAliviar3D(host,"🐢 La cancha 3D va lenta en este equipo ("+est.msMediana+" ms por cuadro).",function(){
+      if(E){ if(!E.config) E.config={}; E.config.cancha3d=false; if(typeof guardar==="function") guardar(); }
+      detenerCancha3D(); montarCanchaAuto(host,est.P); }); };
   function cuadro(){
     if(!canvas.isConnected){ detenerCancha3D(); return; }
-    const now=performance.now(); let dt=(now-last)/1000; last=now; if(dt>0.1) dt=0.1;
+    const now=performance.now(); let dtReal=now-last, dt=dtReal/1000; last=now; if(dt>0.1) dt=0.1;
+    if(!document.hidden) vigilar(dtReal,now);
     if(document.hidden){ est.raf=requestAnimationFrame(cuadro); return; }
     const rc=canvas.getBoundingClientRect();
     if(rc.width&&(Math.abs(rc.width-est.W0)>0.5||Math.abs(rc.height-est.H0)>0.5)){
       est.W0=rc.width; est.H0=rc.height; renderer.setSize(rc.width,rc.height,false); camGL.aspect=rc.width/Math.max(1,rc.height); camGL.updateProjectionMatrix();
     }
     try{ if(typeof _cvStep==="function") _cvStep(est.P,dt); sincronizar(dt); renderer.render(scene,camGL); }
-    catch(e){ if(window.console) console.error("cancha3d:",e); detenerCancha3D(); if(typeof montarCancha==="function"){ const cv=document.createElement("canvas"); cv.className="cancha2d"; host.appendChild(cv); montarCancha(cv); } return; }
+    catch(e){ if(window.console) console.error("cancha3d:",e); detenerCancha3D();
+      if(typeof aviso==="function") aviso("La cancha 3D tuvo un error: este partido sigue en 2D (el 3D sigue prendido para el próximo).",5000);   /* 7.9123 · nunca sin avisar */
+      if(typeof montarCancha==="function"){ const cv=document.createElement("canvas"); cv.className="cancha2d"; host.appendChild(cv); montarCancha(cv); } return; }
     est.raf=requestAnimationFrame(cuadro);
   }
   est.raf=requestAnimationFrame(cuadro);

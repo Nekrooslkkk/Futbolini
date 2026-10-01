@@ -494,3 +494,5 @@ html body:is([data-tema="negro"],[data-tema="insano"]) .sim-fila-desen{ backgrou
 .repe-copas{ margin-top:10px; border-top:1px solid rgba(20,70,120,.15); padding-top:4px; }
 .repe-copa.g b{ color:#1a7f37; } .repe-copa.p b{ color:#b3261e; }
 .jor-full{ margin:6px 0; } .jor-tabla{ width:100%; font-size:12.5px; }
+/* 7.9123 · "Ir a" de Vida (y cualquier salto a un panel): la cabecera no queda escondida bajo la barra fija de arriba */
+#vista section.panel{scroll-margin-top:72px}

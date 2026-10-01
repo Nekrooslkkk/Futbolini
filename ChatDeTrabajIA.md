@@ -2412,3 +2412,37 @@ solo datos con fuente clara. Opus mezcla y agrega los chequeos del doctor que fa
 - Afinar cámara: `CAM3D` arriba del archivo (una sola fuente de verdad). El doctor `cancha3d_motor` la vigila.
 - Pendiente (Opus, con el ojo del autor): física de pelota (arco/aire), arquero que atrapa (no congela), modelos/kits,
   y los set-pieces con barra de potencia Aero (penal/TL/córner). Hoy está APAGADO por defecto (Ajustes ▸ Pantalla).
+
+**7.9123 (Claude Opus) · partidas en IndexedDB, guardado honesto. LEER si tocan guardar/cargar o agregan algo a `E`:**
+- Las partidas viven en **IndexedDB** (`js/partidas.js`). localStorage = copia rápida de la abierta (`futbolini3_save`),
+  la lista (`futbolini3_slots`), la activa y ajustes. **Nadie escribe partidas directo a localStorage**: guardar es
+  `guardar()` (agrupado) → `partidaGuardarYa()`, que devuelve `{ok,parcial,err}` y avisa si falló. Leer una partida es
+  `partidaLeer(id)` (la copia más nueva, por `E._guardadoEn`).
+- Una partida pesa ~0,5 MB después de una temporada y el 70 % es `E.cpu.sq` (planteles CPU). Si agregan algo que crece
+  por temporada, que tenga tope (el doctor `rendimiento` avisa sobre 3 MB).
+- Chequeos asíncronos del doctor: `devDoctorRegistrar({..., asinc:true, fn:async function(){…}})`; corren en
+  `devDoctorCompleto()`. Bajo `--virtual-time-budget` IndexedDB tarda "segundos" virtuales: esas pruebas van por
+  localStorage (`PARTIDAS.apagada=true` en `test/doctor.js`) y la base se prueba con tiempo real en `test/partidas.sh`.
+- Córner: `E.config.cornerMini===false` → se juega solo. 3D: nada se apaga solo por lento, se ofrece con
+  `ofrecerAliviar3D(host,txt,aceptar)`; úsenlo si agregan otro vigilante.
+
+**ENCARGO (1 oct 2026) · IDENTIDAD REAL DE LOS CLUBES CHICOS → Sonnet (texto) / Grok (datos con fuente)**
+El autor vio "Quilín" (Consejo de Presidentes de la ANFP) en una partida con Deportes Colchagua (Segunda). La fuga está
+tapada (doctor `anfp_no_se_fuga`), pero lo de fondo es que a los chicos les llega texto genérico. Para Colchagua (CLC) y
+los 14 de la Segunda 2026:
+1. **Grok, con fuente:** estadio real (nombre, ciudad, aforo aproximado), apodo, año de fundación, rival de la zona, y
+   en qué asociación juega cada año (Segunda Profesional = ANFP, pero sin voto en el Consejo de Presidentes; ¿desde qué
+   año?). Confirmar también desde qué año la sede de la ANFP está en Quilín (para no nombrarla en 1991). Una línea de
+   fuente por dato en comentario. Sin fuente clara, no se pone.
+2. **Sonnet, texto:** 2 decisiones propias por club con ese dato real (la municipalidad dueña del estadio, el viaje
+   largo de la zona, el sponsor del valle, la cancha que se comparte). Tono del juego: realista, crudo, sin chiste fácil.
+   Trato de tú. Van en `js/data-alma-9014.js` (Primera B/Segunda) con `club:"CLC"` etc.
+3. Nada de motor. Opus mezcla y suma el chequeo si hace falta.
+
+**ENCARGO PERMANENTE · Grok cuida la página también (no solo los datos).** Cada tanda que revises: (a) integridad —
+que ningún texto diga algo real como si fuera cita, que las fuentes de datos sigan en sus comentarios; (b) seguridad —
+corre `bash test/doctor.sh` y `node test/servidores.js`, mira el doctor `csp_estricta`, `xss_partida_cargada`,
+`guardado_honesto` y `partidas_inventario`, y anota acá cualquier cosa rara (un dominio nuevo en la CSP, un `on*=` en un
+`.js`, un dato que se guarda fuera de `partidas.js`). No arregles motor: avisa con archivo:línea.
+
+**Recordatorio:** el chequeo exhaustivo de calendarios (encargo de arriba, 1 oct) sigue abierto para Sonnet/Grok.

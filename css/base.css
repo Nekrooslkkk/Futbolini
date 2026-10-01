@@ -429,6 +429,27 @@ html:not(.js-listo) body > :not(#arranque){ display:none !important; }
 #arranque.listo .arr-btns{opacity:1;transform:none;pointer-events:auto;transition:opacity .4s ease,transform .4s ease}
 .arranque-btn{font-size:1.05rem!important;padding:13px!important}
 .arr-mini{display:block;font-size:11px;font-weight:400;opacity:.85;margin-top:2px}
+/* 7.9123 · muchas partidas: la lista tiene su propio scroll y la pantalla no crece (y si igual no cabe, el splash
+   se recorre sin cortar el logo: margin:auto en vez de centrar con align-items) */
+#arranque{overflow-y:auto;overscroll-behavior:contain}
+#arranque .arr-inner{margin:auto}
+.arr-lista{display:flex;flex-direction:column;gap:10px;max-height:min(46vh,380px);overflow-y:auto;overscroll-behavior:contain;
+  padding:3px 6px 3px 3px;margin:-3px -6px -3px -3px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.55) transparent}
+.arr-lista > *{flex-shrink:0}
+.arr-lista::-webkit-scrollbar{width:7px}
+.arr-lista::-webkit-scrollbar-thumb{background:rgba(255,255,255,.5);border-radius:6px}
+.arranque-btn.arr-rota{opacity:.78;filter:saturate(.35)}
+.arranque-btn.cargando{opacity:.7;cursor:progress}
+/* 7.9123 · guardar nunca miente: si el navegador no deja guardar, se ve (y se ofrece descargar) */
+#guardadoTxt.guardado-mal{color:#c0392b;font-weight:700}
+.guardado-fallo{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:10001;
+  width:min(560px,calc(100vw - 24px));box-sizing:border-box;display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;
+  padding:12px 14px;border-radius:14px;background:linear-gradient(180deg,#fff4f2,#ffd9d3);color:#4a1410;
+  border:1px solid rgba(192,57,43,.55);box-shadow:0 8px 26px rgba(80,10,0,.28);font-size:13px;line-height:1.35}
+.guardado-fallo b{flex:1 1 100%;font-size:14px}
+.guardado-fallo span{flex:1 1 100%}
+.mp-rota{opacity:.8}
+.mp-info{margin-top:8px}
 .arr-hint{margin-top:20px;color:#cfe6fb;font-size:12px;opacity:0;animation:arrFade .6s ease both 1.3s}
 .arr-hint b{color:#fff;font-family:var(--f-dato,monospace)}
 @keyframes arrIn{from{opacity:0}to{opacity:1}}

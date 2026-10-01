@@ -16,38 +16,29 @@
    ============================================================ */
 const REND={pend:null, prom:null, ultimo:0, guardados:0, pedidos:0, MIN_MS:1500};
 
-/* guarda ya (el de siempre, con un solo JSON para las dos claves) */
+/* guarda ya. 7.9123 · la escritura vive en js/partidas.js (partidaGuardarYa: un solo JSON, copia rápida + IndexedDB) y
+   devuelve si de verdad quedó guardado ({ok, parcial, err}); antes un error de espacio se tragaba y decía "guardado". */
 async function guardarAhora(){
-  if(!E||E._bulkSim) return;
-  E.saveVer=SAVE_VER;
-  if(!E._slot) E._slot=nuevoSlotId();
-  if(typeof saneaEstado==="function") saneaEstado(E);
-  const txt=JSON.stringify(E);
-  let ok=false;
-  try{ if(window.storage&&window.storage.set){ await window.storage.set(slotKey(E._slot),txt); await window.storage.set(LLAVE,txt); ok=true; } }catch(e){}
-  if(!ok){ try{ localStorage.setItem(slotKey(E._slot),txt); localStorage.setItem(LLAVE,txt); }catch(e){ try{ await Store.set(slotKey(E._slot),E); }catch(_){} } }
-  _ram[slotKey(E._slot)]=E; _ram[LLAVE]=E;
-  REND.ultimo=performance.now(); REND.guardados++; REND.kb=Math.round(txt.length/1024);
-  await slotFijarActivo(E._slot);
-  try{ await slotActualizarIndice(E); }catch(e){}
-  const n=document.getElementById("guardadoTxt");
-  if(n) n.textContent="guardado "+new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
-  if(typeof nubeAutoRespaldo==="function"){ try{ nubeAutoRespaldo(E); }catch(e){} }
+  if(!E||E._bulkSim) return null;
+  const res=await partidaGuardarYa();
+  REND.ultimo=performance.now(); REND.guardados++;
+  if(res){ REND.kb=res.kb; REND.res=res; }
+  return res;
 }
-/* guardar(): se agrupa. Devuelve una promesa que se cumple cuando de verdad quedó guardado. */
+/* guardar(): se agrupa. Devuelve una promesa que se cumple cuando de verdad quedó guardado (con el resultado). */
 function guardarAgrupado(){
   REND.pedidos++;
-  if(!E||E._bulkSim) return Promise.resolve();
+  if(!E||E._bulkSim) return Promise.resolve(null);
   if(REND.prom) return REND.prom;
   const espera=Math.max(0,REND.MIN_MS-(performance.now()-REND.ultimo));
-  REND.prom=new Promise(res=>{ REND.pend=setTimeout(async()=>{ REND.pend=null; const p=REND.prom; REND.prom=null; try{ await guardarAhora(); }catch(e){ console.error("guardar:",e); } res(); },espera); REND.resolver=res; });
+  REND.prom=new Promise(res=>{ REND.pend=setTimeout(async()=>{ REND.pend=null; REND.prom=null; let r=null; try{ r=await guardarAhora(); }catch(e){ console.error("guardar:",e); } res(r); },espera); REND.resolver=res; });
   return REND.prom;
 }
 /* si hay un guardado esperando, que se haga ya (salir, cambiar de app, cambiar de partida) */
 async function guardarPendienteYa(){
   if(!REND.pend) return;
   clearTimeout(REND.pend); REND.pend=null; const res=REND.resolver; REND.prom=null;
-  try{ await guardarAhora(); }catch(e){} if(res) res();
+  let r=null; try{ r=await guardarAhora(); }catch(e){} if(res) res(r);
 }
 (function(){
   if(typeof window.guardar!=="function"||window.guardar._rend) return;

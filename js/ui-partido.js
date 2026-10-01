@@ -1493,7 +1493,8 @@ function pasoEnVivo(){
     resolverEventoAuto(P,ev);
   }
   if(ev.tipo==="corner" && ev.aFavor!==false && P.modo==="dirigir" && (!E.config||E.config.autoPausa!==false)){
-    clearInterval(TIMER); pintarPartido(); mostrarAccion(ev); return;
+    if(!cornerMinijuegoOn()){ if(typeof centroCorner==="function") centroCorner(P); }   /* 7.9123 · apagado: se juega solo, sin parar */
+    else { clearInterval(TIMER); pintarPartido(); mostrarAccion(ev); return; }
   }
   actualizarPartidoVivo(P);
 }
@@ -2345,6 +2346,16 @@ function minijuegoTiroLibre(P){
   },{cerrarFuera:false});
   return true;
 }
+/* 7.9123 · el autor: "el córner pega el juego". Se puede apagar (Ajustes ▸ Pantalla: los córners se juegan solos) */
+function cornerMinijuegoOn(){ return !(typeof E!=="undefined"&&E&&E.config&&E.config.cornerMini===false); }
+/* salida de emergencia: si la escena no termina (animación cortada, error), el córner se da por despejado y el partido
+   sigue. Nunca queda un modal sin salida. */
+function _cornerSalida(P,box,txt){
+  if(box&&box._cornerFin) return; if(box) box._cornerFin=true;
+  if(box&&box.isConnected) cerrarModal();
+  if(typeof linea==="function") linea(P,P.min,txt||"Córner: la defensa despeja y se sigue.");
+  try{ pintarPartido(); }catch(e){} reanudarPronto();
+}
 function minijuegoCorner(P){
   const j=((E.tactica&&E.tactica.corner&&P.once&&P.once.find(function(x){ return x.n===E.tactica.corner; }))
     || (P.once&&P.once.filter(function(x){ return x.rasgos&&x.rasgos.indexOf("juego aéreo")>=0; })[0])
@@ -2384,9 +2395,17 @@ function minijuegoCorner(P){
     const pie=(typeof montarPieSO==="function")?montarPieSO(box):c;
     const bpat=_arcoBotonTiro("¡Cobrar!");
     const bcorto=el("button","btn-aqua chico gris","En corto");
-    bcorto.onclick=function(){ if(tirado) return; tirado=true; cerrarModal(); if(typeof linea==="function") linea(P,P.min,"Córner en corto. Rearman sin apuro."); pintarPartido(); reanudarPronto(); };
+    bcorto.onclick=function(){ if(tirado) return; tirado=true; _cornerSalida(P,box,"Córner en corto. Rearman sin apuro."); };
+    /* ✕ siempre funciona, incluso con la pelota en el aire */
+    const bsalir=el("button","btn-aqua chico gris corner-salir"); bsalir.textContent="✕ Que se juegue solo"; bsalir.title="Cerrar el córner";
+    bsalir.onclick=function(){ tirado=true; if(typeof centroCorner==="function"&&!box._cornerTiro){ box._cornerFin=true; cerrarModal(); centroCorner(P); try{ pintarPartido(); }catch(e){} reanudarPronto(); } else _cornerSalida(P,box); };
     function dispararCor(){
-      if(!aim||tirado) return; tirado=true; bpat.disabled=true; _arcoOcultarMira(svg);
+      if(!aim||tirado) return; tirado=true; box._cornerTiro=true; bpat.disabled=true;
+      setTimeout(function(){ if(!box._cornerFin) _cornerSalida(P,box); },6000);   /* vigilante */
+      try{ dispararCorAdentro(); }catch(e){ console.error("córner:",e); _cornerSalida(P,box); }
+    }
+    function dispararCorAdentro(){
+      _arcoOcultarMira(svg);
       const cl=cornerClasificar(aim);
       let res=cl.res, motivo=cl.motivo||"";
       const arq=arqueroDe(P.rivalPlantel)||{n:"el arquero",nivel:70};
@@ -2419,6 +2438,7 @@ function minijuegoCorner(P){
         if(res==="gol"||res==="palo_in") svg.classList.add("arco-golazo");
         if(res==="palo") svg.classList.add("arco-alpalo");
         setTimeout(function(){
+          if(box._cornerFin) return; box._cornerFin=true;
           cerrarModal();
           if(res==="gol"||res==="palo_in"){
             j.goles=(j.goles||0)+1; P.goleadores.push(j.n);
@@ -2449,6 +2469,7 @@ function minijuegoCorner(P){
     }
     svg.addEventListener("pointerup",function(e){ e.preventDefault(); _arcoSueltaPatear(svg, aim, tirado, dispararCor); });
     bpat.onclick=dispararCor;
+    pie.appendChild(bsalir);
     pie.appendChild(bcorto);
     pie.appendChild(bpat);
   },{cerrarFuera:false});
@@ -2495,6 +2516,11 @@ function mostrarAccion(ev){
       {t:"Jugarla en corto, sin riesgo",run:()=>linea(P,P.min,"La juegan en corto y rearman con paciencia.")}
     ];
   } else if(ev.tipo==="corner"){
+    if(P && P.modo==="dirigir" && !cornerMinijuegoOn()){
+      if(typeof centroCorner==="function") centroCorner(P);
+      if(P) P._holdKind=null;
+      pintarPartido(); reanudarPronto(); return false;
+    }
     if(P && P.modo==="dirigir") return minijuegoCorner(P);
     titulo="Córner a favor";
     opciones=[

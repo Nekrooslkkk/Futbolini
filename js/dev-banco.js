@@ -798,3 +798,301 @@ if(typeof devDoctorRegistrar==="function"){
       return f.length?_dmal(f.length+" problema(s)",f):_dok("el 3D corre sobre la misma simulación (_cvStep/_cvSt), mapea 105×68 y cae al 2D en Modo papa");
     }});
 }
+
+/* 7.9123 · PARTIDA PERDIDA (bug urgente del autor: "aprieto Continuar y no carga la partida anterior"). Con ~9 partidas
+   localStorage se llenaba, el error de espacio se tragaba, el juego decía "guardado" y la ranura quedaba vacía o vieja.
+   Estos chequeos corren sobre la partida y el navegador REALES del jugador: prueban con una ranura de prueba aparte
+   y dejan la copia rápida, la lista y la partida activa como estaban (byte a byte). */
+function _docRespaldoPartidas(){
+  const r={E:E, ls:{}, ultimo:PARTIDAS.ultimo, estado:PARTIDAS.estado, ram:_ram[LLAVE]};
+  [LLAVE,SLOTS_LLAVE,ACTIVO_LLAVE].forEach(k=>{ r.ls[k]=_lsTxt(k); });
+  const n=document.getElementById("guardadoTxt"); r.txt=n?n.textContent:null; r.clase=n?n.className:"";
+  r.cartel=document.getElementById("guardadoFallo");
+  return r;
+}
+function _docRestaurarPartidas(r){
+  Object.keys(r.ls).forEach(k=>{ if(r.ls[k]==null) _lsQuitar(k); else _lsPoner(k,r.ls[k]); });
+  E=r.E; PARTIDAS.ultimo=r.ultimo; PARTIDAS.estado=r.estado;
+  if(r.ram===undefined) delete _ram[LLAVE]; else _ram[LLAVE]=r.ram;
+  if(E){ if(typeof initLigaMod==="function") initLigaMod(); if(typeof activarLiga==="function") activarLiga(E.eraBase); }
+  const n=document.getElementById("guardadoTxt"); if(n&&r.txt!=null){ n.textContent=r.txt; n.className=r.clase; }
+  const c=document.getElementById("guardadoFallo"); if(c&&c!==r.cartel) c.remove();
+  if(r.cartel&&!r.cartel.isConnected) document.body.appendChild(r.cartel);
+}
+/* ¿IndexedDB contesta rápido acá? (en las pruebas sin pantalla el tiempo es virtual y la base tarda "segundos"): si no,
+   la prueba se hace sobre localStorage, que es el mismo camino que usa el juego cuando la base no está */
+async function _docBdConfiable(){
+  if(typeof _bdSoporta!=="function"||!_bdSoporta()) return false;
+  const t=Date.now(), ll=await bdLlaves();
+  return ll!==null&&(Date.now()-t)<1000;
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"guardado_honesto", area:"motor", asinc:true,
+    n:"Guardar nunca miente: con el navegador lleno lo dice y ofrece descargar; con espacio guarda y se relee igual",
+    arreglo:"js/partidas.js partidaEscribir()/partidaGuardarYa()/avisoGuardado() · js/rendimiento.js guardarAhora() devuelve {ok,parcial,err}",
+    fn:async function(){
+      if(!E||!E.club) return _dok("sin partida abierta");
+      if(typeof _hayStorageExterno==="function"&&_hayStorageExterno()) return _dok("guardado del entorno (window.storage): no se prueba acá");
+      if(typeof guardarPendienteYa==="function") await guardarPendienteYa();
+      const f=[], resp=_docRespaldoPartidas(), id="doctorG"+Date.now().toString(36), setOrig=Storage.prototype.setItem;
+      const conBD=await _docBdConfiable(), apagPrev=PARTIDAS.apagada;
+      let donde="";
+      try{
+        E=JSON.parse(JSON.stringify(resp.E)); E._slot=id; delete E._guardadoEn;
+        /* 1) navegador lleno: lo grande no entra en localStorage y no hay IndexedDB */
+        PARTIDAS.apagada=true;
+        Storage.prototype.setItem=function(k,v){ if(String(v).length>20000) throw new DOMException("lleno (prueba del doctor)","QuotaExceededError"); return setOrig.apply(this,arguments); };
+        const r1=await guardarAhora();
+        Storage.prototype.setItem=setOrig; PARTIDAS.apagada=!conBD;
+        const reloj=document.getElementById("guardadoTxt"), txt1=reloj?reloj.textContent:"";
+        if(!r1||typeof r1.ok!=="boolean") f.push("guardarAhora() no dice si quedó guardado (devuelve "+JSON.stringify(r1)+")");
+        else if(r1.ok) f.push("con el navegador lleno dice que guardó (ok:true, en "+r1.donde.join("+")+")");
+        if(reloj&&/^guardado/i.test(txt1)) f.push("el reloj de guardado dice «"+txt1+"» sin haber guardado");
+        const cartel=document.getElementById("guardadoFallo");
+        if(!cartel) f.push("no aparece el cartel de «No se pudo guardar tu partida»");
+        else if(!/Descargar/.test(cartel.textContent)) f.push("el cartel no ofrece descargar la partida");
+        /* 2) con espacio: guarda de verdad, el cartel se va, y se relee la misma copia */
+        const r2=await guardarAhora();
+        if(!r2||!r2.ok) f.push("con espacio no pudo guardar ("+(r2&&r2.err||"sin respuesta")+")");
+        else donde=r2.donde.join("+");
+        if(document.getElementById("guardadoFallo")) f.push("el cartel de error sigue ahí después de guardar bien");
+        const leida=(typeof partidaLeer==="function")?await partidaLeer(id):null;
+        if(!leida) f.push("lo que se guardó no se puede volver a leer");
+        else if(_selloDe(leida)!==_selloDe(E)) f.push("al releer vuelve otra copia (sello "+_selloDe(leida)+" ≠ "+_selloDe(E)+")");
+      } catch(e){ f.push("explotó: "+(e&&e.message||e)); }
+      finally {
+        Storage.prototype.setItem=setOrig; PARTIDAS.apagada=!conBD;
+        try{ await partidaBorrarDatos(id); }catch(e){}
+        PARTIDAS.apagada=apagPrev;
+        _docRestaurarPartidas(resp);
+      }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("lleno → lo dice y ofrece descargar · con espacio → guarda ("+donde+") y se relee igual"+(conBD?"":" · IndexedDB lenta o ausente acá: probado sobre localStorage"));
+    }});
+
+  devDoctorRegistrar({id:"partidas_inventario", area:"motor", asinc:true,
+    n:"Tus partidas guardadas: todas tienen datos, ninguna quedó fuera de la lista, y hay espacio",
+    arreglo:"js/partidas.js partidasMantener() (mudanza a IndexedDB, rescate de las que no están en la lista, fichas sin datos) · Ajustes ▸ Mis partidas",
+    fn:async function(){
+      if(typeof partidasMantener!=="function") return _dmal("falta js/partidas.js en index.html");
+      const rep=await partidasMantener(), f=[], lista=await slotsLista();
+      const nom=id=>{ const s=lista.find(x=>x.id===id); return s?((s.clubNombre||s.club)+" "+(s.anio||"")).trim():id; };
+      const pct=Math.round(rep.usoLS/5.2e6*100);
+      if(rep.sinDatos.length) f.push(rep.sinDatos.length+" partida(s) de tu lista sin datos (el navegador no las alcanzó a guardar): "+rep.sinDatos.map(nom).join(", ")+" · quítalas en Ajustes ▸ Mis partidas o cárgalas desde un archivo descargado");
+      if(rep.bd&&rep.quedanLS) f.push(rep.quedanLS+" partida(s) siguen en localStorage aunque hay IndexedDB (la mudanza falló): "+rep.errores.slice(0,3).join(" · "));
+      if(pct>=80) f.push("localStorage al "+pct+"% "+(rep.bd?"(revisa qué más se guarda ahí)":"y sin IndexedDB: descarga y borra las partidas viejas"));
+      if(PARTIDAS.ultimo&&!PARTIDAS.ultimo.ok) f.push("el último guardado de esta sesión falló: "+(PARTIDAS.ultimo.err||"?"));
+      if(E&&E._slot&&PARTIDAS.ultimo&&PARTIDAS.ultimo.ok&&PARTIDAS.ultimo.id===E._slot&&!rep.conDatos.has(E._slot)) f.push("la partida abierta dice que se guardó pero no aparece entre las guardadas");
+      const det=[rep.total+" en la lista", rep.bd?(rep.enBD+" en IndexedDB"):"sin IndexedDB (todo en localStorage)", "localStorage "+pct+"%"];
+      if(rep.movidas) det.push(rep.movidas+" mudada(s) a IndexedDB ahora");
+      if(rep.recuperadas.length) det.push(rep.recuperadas.length+" rescatada(s) que no estaban en la lista");
+      return f.length?_dmal(f.length+" problema(s)",f.concat(det)):_dok(det.join(" · "));
+    }});
+
+  devDoctorRegistrar({id:"continuar_carga", area:"motor", asinc:true,
+    n:"Continuar abre la copia más nueva, y una partida sin datos (o que no carga) lo dice en vez de quedarse muda",
+    arreglo:"js/motor.js cargarPartida() lee con partidaLeer() (la copia más nueva) · js/partidas.js partidaRapidaInicio() · js/ui.js arranquePintarLista()/abrirPartidaDeLista()",
+    fn:async function(){
+      if(!E||!E.club) return _dok("sin partida abierta");
+      if(typeof _hayStorageExterno==="function"&&_hayStorageExterno()) return _dok("guardado del entorno (window.storage): no se prueba acá");
+      if(typeof guardarPendienteYa==="function") await guardarPendienteYa();
+      const f=[], resp=_docRespaldoPartidas(), id="doctorC"+Date.now().toString(36), av=window.aviso, ne=window.normalizarEstado, dichos=[];
+      const conBD=await _docBdConfiable(), apagPrev=PARTIDAS.apagada;
+      PARTIDAS.apagada=!conBD;
+      const base=JSON.parse(JSON.stringify(resp.E)); base._slot=id;
+      const copia=(t,marca)=>Object.assign({},base,{_guardadoEn:t, _docMarca:marca});
+      const durable=async est=>{ const txt=JSON.stringify(est);
+        if(typeof bdEscribir==="function"&&_bdSoporta()&&await bdEscribir(id,{id:id,t:est._guardadoEn,club:est.club,anio:est.anio,txt:txt})) return "IndexedDB";
+        _lsPoner(slotKey(id),txt); return "localStorage"; };
+      let lugar="";
+      try{
+        window.aviso=function(t){ dichos.push(String(t)); };
+        /* a) la copia durable quedó vieja y la nueva solo alcanzó la copia rápida (se cerró la pestaña al guardar) */
+        lugar=await durable(copia(1000,"vieja"));
+        _lsPoner(LLAVE,JSON.stringify(copia(2000,"nueva")));
+        let ok=false; try{ ok=await cargarPartida(id); }catch(e){ f.push("cargarPartida explotó: "+e.message); }
+        if(!ok) f.push("cargarPartida no abre una partida que sí tiene datos ("+lugar+" + copia rápida)");
+        else if(E._docMarca!=="nueva") f.push("Continuar abre la copia "+(E._docMarca||"?")+" de "+lugar+" aunque la copia rápida es más nueva");
+        E=resp.E;
+        /* b) al revés: la durable es la nueva y la copia rápida quedó vieja → manda la lista (sello t) */
+        lugar=await durable(copia(3000,"nueva"));
+        _lsPoner(LLAVE,JSON.stringify(copia(1000,"vieja")));
+        const lista=[{id:id, club:base.club, clubNombre:base.clubNombre, anio:base.anio, guardado:Date.now(), t:3000}];
+        if(typeof partidaRapidaInicio==="function"){ const g=await partidaRapidaInicio(id,lista); if(g&&_selloDe(g)<3000) f.push("al abrir el juego toma la copia rápida vieja aunque la lista dice que hay una más nueva"); }
+        ok=false; try{ ok=await cargarPartida(id); }catch(e){}
+        if(!ok||E._docMarca!=="nueva") f.push("con la copia rápida vieja, Continuar no abre la nueva de "+lugar);
+        E=resp.E;
+        /* c) ficha sin datos: cargarPartida dice false sin explotar y en el inicio sale marcada, no como botón mudo */
+        if(typeof partidaBorrarDatos==="function") await partidaBorrarDatos(id); else _lsQuitar(slotKey(id));
+        _lsQuitar(LLAVE);
+        let r=null; try{ r=await cargarPartida(id); }catch(e){ f.push("cargarPartida de una partida sin datos explota: "+e.message); }
+        if(r) f.push("cargarPartida de una partida sin datos dice que cargó");
+        E=resp.E;
+        if(typeof arranquePintarLista==="function"){
+          PARTIDAS.estado={sinDatos:[id], conDatos:new Set()};
+          const cont=document.createElement("div"); cont._salir=function(){};
+          arranquePintarLista(cont,lista);
+          const b=cont.querySelector(".arranque-btn");
+          if(!b||!b.classList.contains("arr-rota")) f.push("en la pantalla de inicio, una partida sin datos sale como botón normal (que no hace nada)");
+        } else f.push("falta arranquePintarLista() (la lista de partidas del inicio)");
+        /* d) datos que hacen explotar la carga: el jugador se entera y su partida abierta no cambia */
+        await durable(copia(4000,"rompe"));
+        window.normalizarEstado=function(){ throw new Error("prueba del doctor"); };
+        dichos.length=0;
+        let ok2=null;
+        try{ ok2=(typeof abrirPartidaDeLista==="function")?await abrirPartidaDeLista(id):await cargarPartida(id); }
+        catch(e){ f.push("abrir una partida que no carga revienta el botón (error sin atrapar: "+e.message+")"); }
+        finally{ window.normalizarEstado=ne; }
+        if(ok2) f.push("una partida que no carga se da por abierta");
+        if(!dichos.some(t=>/no abre|no carga/i.test(t))) f.push("abrir una partida que no carga no le dice nada al jugador");
+        if(E!==resp.E) f.push("una partida que no carga deja cambiada la partida abierta");
+      } catch(e){ f.push("explotó: "+(e&&e.message||e)); }
+      finally {
+        window.aviso=av; window.normalizarEstado=ne;
+        try{ if(typeof partidaBorrarDatos==="function") await partidaBorrarDatos(id); }catch(e){}
+        _lsQuitar(slotKey(id));
+        PARTIDAS.apagada=apagPrev;
+        _docRestaurarPartidas(resp);
+      }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("abre la copia más nueva ("+lugar+" o copia rápida), y una sin datos o que no carga lo dice"+(conBD?"":" · IndexedDB lenta o ausente acá: probado sobre localStorage"));
+    }});
+}
+
+/* 7.9123 · "el córner pega el juego": el minijuego siempre tiene salida (✕, vigilante si la animación se corta, error
+   atrapado) y se puede apagar (Ajustes ▸ Pantalla: los córners se juegan solos). */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"corner_salida", area:"interfaz", n:"El córner nunca deja el partido pegado (salida ✕, vigilante, y se puede apagar)",
+    arreglo:"js/ui-partido.js minijuegoCorner() (bsalir, vigilante 6 s, try/catch → _cornerSalida) · cornerMinijuegoOn() en pasoEnVivo/mostrarAccion · Ajustes ▸ Pantalla",
+    fn:function(){
+      const f=[];
+      if(typeof cornerMinijuegoOn!=="function") return _dmal("falta cornerMinijuegoOn(): el córner no se puede apagar");
+      const src=(n)=>{ const fn=window[n]; return typeof fn==="function"?(typeof _docFuente==="function"?_docFuente(fn):String(fn)):""; };
+      const mc=src("minijuegoCorner");
+      if(!/_cornerSalida/.test(mc)) f.push("el córner no tiene salida de emergencia (_cornerSalida)");
+      if(!/setTimeout\(function\(\)\{ if\(!box\._cornerFin\)/.test(mc.replace(/\s+/g," ").replace(/\s/g,""))&&!/_cornerFin\)\s*_cornerSalida/.test(mc)) f.push("sin vigilante: si la animación se corta el modal queda abierto");
+      if(!/Que se juegue solo/.test(mc)) f.push("falta el botón ✕ para cerrar el córner");
+      if(!/cornerMinijuegoOn/.test(src("pasoEnVivo"))) f.push("con el minijuego apagado el partido igual se detiene en cada córner");
+      /* apagado: mostrarAccion no abre el modal */
+      if(E&&typeof mostrarAccion==="function"&&typeof P_ACTUAL!=="undefined"){
+        const cfg=E.config?JSON.parse(JSON.stringify(E.config)):null, pPrev=P_ACTUAL, gu=window.guardar, pp=window.pintarPartido, rp=window.reanudarPronto;
+        try{
+          window.guardar=function(){}; window.pintarPartido=function(){}; window.reanudarPronto=function(){};
+          E.config=E.config||{}; E.config.cornerMini=false;
+          const part=(typeof proximoPartido==="function")?proximoPartido():null;
+          if(part){
+            P_ACTUAL=iniciarPartido(part,"dirigir");
+            mostrarAccion({tipo:"corner",aFavor:true});
+            if(document.querySelector("#capa-modal .modal")) f.push("con el minijuego apagado igual se abre la escena del córner");
+          }
+        } catch(e){ f.push("explotó: "+e.message); }
+        finally { cerrarModal(); P_ACTUAL=pPrev; E.config=cfg||{}; window.guardar=gu; window.pintarPartido=pp; window.reanudarPronto=rp; }
+      }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("✕ siempre, vigilante de 6 s, error atrapado y apagable");
+    }});
+}
+
+/* 7.9123 · el autor: "la cancha 3D se cambia sola a 2D cuando laguea; no debe cambiar solo". Si va lenta se OFRECE
+   pasar al 2D (chip chico); si explota, se avisa. Nada se autodegrada sin avisar. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"tres_d_no_cambia_solo", area:"interfaz", n:"El 3D lento no se cambia solo a 2D: lo ofrece (y si falla, avisa)",
+    arreglo:"js/arco-gl.js ofrecerAliviar3D() en el vigilante de arcoGLMontar · js/cancha3d.js vigilar() + aviso en el catch de cuadro()",
+    fn:function(){
+      const f=[], src=(n)=>{ const fn=window[n]; return typeof fn==="function"?(typeof _docFuente==="function"?_docFuente(fn):String(fn)):""; };
+      if(typeof ofrecerAliviar3D!=="function") return _dmal("falta ofrecerAliviar3D(): el 3D se apagaría solo");
+      const ag=src("arcoGLMontar").replace(/\s+/g," ");
+      if(/\{ ?_glApagarPorLento\(est\); ?return; ?\}/.test(ag)) f.push("el balón parado 3D se apaga solo cuando va lento (sin preguntar)");
+      if(ag&&!/ofrecerAliviar3D/.test(ag)) f.push("el balón parado 3D no ofrece pasar al dibujo");
+      const c3=src("montarCancha3D");
+      if(c3&&!/ofrecerAliviar3D/.test(c3)) f.push("la cancha 3D del partido no ofrece pasar al 2D cuando va lenta");
+      if(c3&&!/aviso\(/.test(c3)) f.push("si la cancha 3D falla cae al 2D sin avisar");
+      let prev=null; try{ prev=localStorage.getItem("futbolini_3d_nopreg"); localStorage.removeItem("futbolini_3d_nopreg"); }catch(e){}
+      try{
+        const h=document.createElement("div"); let acepto=0;
+        const chip=ofrecerAliviar3D(h,"prueba",function(){ acepto++; });
+        if(!chip) f.push("ofrecerAliviar3D no muestra nada");
+        else { const b=chip.querySelector("button"); if(b) b.click(); if(acepto!==1||h.querySelector(".a3-ofrece")) f.push("«Pasar a 2D» no hace el cambio"); }
+        const ch2=ofrecerAliviar3D(h,"prueba",function(){}); if(ch2){ const bs=ch2.querySelectorAll("button"); bs[bs.length-1].click(); }
+        if(ofrecerAliviar3D(h,"prueba",function(){})) f.push("después de «Seguir así» vuelve a preguntar");
+      } finally { try{ if(prev==null) localStorage.removeItem("futbolini_3d_nopreg"); else localStorage.setItem("futbolini_3d_nopreg",prev); }catch(e){} }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("lento → se ofrece pasar a 2D (no se cambia solo); «Seguir así» no vuelve a preguntar; error → aviso");
+    }});
+}
+
+/* 7.9123 · "Apoyar a todos dice siempre 0 lo sintieron": el conteo tiene que salir de lo que de verdad cambió */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"charla_grupal_mide", area:"motor", n:"Hablar con todo el plantel cuenta lo que de verdad cambió (y apoyar puede sonar vacío)",
+    arreglo:"js/ui.js charlaGrupal() mide moral+forma antes/después · charlaGrupalTxt()",
+    fn:function(){
+      if(!E||!E.plantel||typeof charlaGrupal!=="function") return _dok("sin partida");
+      const f=[], snap=clonarPartida(E), gu=window.guardar, av=window.aviso;
+      try{
+        window.guardar=function(){}; window.aviso=function(){};
+        const vivos=E.plantel.filter(j=>!j.vendido&&!j.cedido);
+        if(vivos.length<4) return _dok("plantel chico");
+        vivos.forEach((j,i)=>{ j.moral=i%3===0?100:(i%3===1?40:65); j.forma=70; j.minutosTemporada=i%4===0?0:900; });
+        if(E.flags) Object.keys(E.flags).filter(k=>/^charlaGrupal_|^charla_/.test(k)).forEach(k=>delete E.flags[k]);
+        vivos.forEach(j=>{ delete j._charlaIdx; delete j._charlaAnio; });
+        const antes=vivos.map(j=>(j.moral||0)+(j.forma||0));
+        const r=charlaGrupal("banco")||{};
+        let sube=0,baja=0,igual=0; vivos.forEach((j,i)=>{ const d=Math.round((j.moral+j.forma)-antes[i]); if(d>0) sube++; else if(d<0) baja++; else igual++; });
+        if(r.sube!==sube||r.baja!==baja) f.push("el aviso dice "+r.sube+" bien / "+r.baja+" mal, pero cambiaron "+sube+" para arriba / "+baja+" para abajo");
+        if(!baja) f.push("apoyar a todos nunca le cae mal a nadie (ni al que no juega): siempre «0 lo sintieron»");
+        if(typeof charlaGrupalTxt==="function"&&!/lo sintieron/.test(charlaGrupalTxt(r))) f.push("el texto del resultado no dice cuántos lo sintieron");
+      } catch(e){ f.push("explotó: "+e.message); }
+      finally { window.guardar=gu; window.aviso=av; restaurarPartida(snap); }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("cuenta lo que cambió de verdad; al que no juega el apoyo le suena vacío");
+    }});
+}
+
+/* 7.9123 · "el patrimonio desapareció de Vida": se ve el panel, el resumen de arriba lo dice, y el salto "Ir a" no lo
+   deja escondido bajo la barra fija. (vida_patrimonio revisa la plata; esto revisa que se VEA.) */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"vida_patrimonio_visible", area:"interfaz", n:"Vida: el patrimonio se ve (panel, resumen de arriba y salto sin quedar bajo la barra)",
+    arreglo:"js/vida-real.js panelPatrimonio() · js/vida-hoy.js chip 💎 de Tu vida hoy · css/pulido.css #vista section.panel{scroll-margin-top}",
+    fn:function(){
+      if(!E||!E.perfil) return _dok("sin partida");
+      const f=[], secPrev=SEC;
+      try{
+        SEC="vida"; render();
+        const v=document.getElementById("vista");
+        const pan=[...v.querySelectorAll("section.panel")].find(p=>/Patrimonio/.test((p.querySelector(".cab")||{}).textContent||""));
+        if(!pan) f.push("no hay panel de Patrimonio en Vida");
+        else {
+          if(!/Patrimonio total/.test(pan.textContent)) f.push("el panel no muestra el patrimonio total");
+          const mt=parseFloat(getComputedStyle(pan).scrollMarginTop)||0, bar=document.querySelector(".barra,#barra,header");
+          const alto=bar?bar.getBoundingClientRect().height:0;
+          if(alto>0&&mt<alto-2) f.push("al saltar a Patrimonio la cabecera queda bajo la barra fija ("+Math.round(mt)+" px de margen, barra de "+Math.round(alto)+")");
+        }
+        const hoy=v.querySelector(".vida-hoy");
+        if(hoy&&!/patrimonio/i.test((hoy.querySelector(".vh-chips")||{}).textContent||"")) f.push("«Tu vida hoy» no dice tu patrimonio (solo el bolsillo)");
+        if(hoy&&!/Patrimonio/.test((hoy.querySelector(".vh-nav")||{}).textContent||"")) f.push("los accesos de Vida no llevan a Patrimonio");
+      } catch(e){ f.push("explotó: "+e.message); }
+      finally { SEC=secPrev; try{ render(); }catch(e){} }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("panel, resumen 💎 y salto visibles");
+    }});
+}
+
+/* 7.9123 · "Quilín sale con Colchagua": la carta del Consejo de Presidentes / reparto de la TV se colaba a la Segunda
+   (y a la AFA y a 1925) porque los eventos generados (data-proc.js) no pasaban por decisionCabeEnClub. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"anfp_no_se_fuga", area:"contenido", n:"El Consejo de Presidentes y la TV de la ANFP no le llegan a quien no vota (Segunda, AFA, 1925)",
+    arreglo:"js/data-caza-97.js decisionCabeEnClub() (bloque Segunda) · js/data-proc.js generarDecisionProc/sembrarDecisionProcDeCategoria pasan el filtro",
+    fn:function(){
+      if(!E||typeof decisionCabeEnClub!=="function"||typeof DEC_PROC==="undefined") return _dok("sin partida");
+      const f=[], snap=clonarPartida(E), gu=window.guardar;
+      const fuga=(eti,blob)=>{ const b=String(blob).toLowerCase();
+        if(eti==="seg"&&/consejo de presidentes|reparto de (la )?tv|contrato de (la )?televisi|derechos de (la )?transmisi/.test(b)) return true;
+        if(eti!=="seg"&&/quil[ií]n|\banfp\b/.test(b)) return true; return false; };
+      try{
+        window.guardar=function(){};
+        [["CLC",2026,{categoria:"C"},"seg"],["RIV",2026,{categoria:"ARG"},"afa"],["CC",1925,null,"1925"]].forEach(c=>{
+          try{ E=null; nuevaPartida(c[0],c[1],"historico",c[2]||undefined); }catch(e){ return; }
+          if(!E) return;
+          const malas=decisionesDisponibles().filter(d=>fuga(c[3],JSON.stringify(d))).map(d=>d.id);
+          if(malas.length) f.push(c[0]+" "+c[1]+": cartas de la ANFP que no le tocan: "+malas.slice(0,4).join(", "));
+          let n=0; for(let i=0;i<120;i++){ const d=generarDecisionProc(); if(d&&fuga(c[3],JSON.stringify(d))){ n++; if(n===1) f.push(c[0]+" "+c[1]+": evento generado «"+(d.t||"?")+"» no le toca"); } }
+        });
+      } catch(e){ f.push("explotó: "+e.message); }
+      finally { window.guardar=gu; restaurarPartida(snap); }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("Segunda, AFA y 1925 sin Consejo de Presidentes ni TV de la ANFP (120 eventos generados por caso)");
+    }});
+}

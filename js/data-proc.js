@@ -504,6 +504,7 @@ function generarDecisionProc(){
   for(let i=0;i<orden.length;i++){
     let cont=null; try{ cont=orden[i].gen(); }catch(e){ cont=null; }
     if(!cont) continue;
+    if(typeof decisionCabeEnClub==="function"&&!decisionCabeEnClub(cont)) continue;   /* 7.9123 · los generados pasan el mismo filtro anti-fuga */
     const id="proc_"+(E._procId=(E._procId||0)+1);
     const dec=Object.assign({id:id,buzon:orden[i].buzon,peso:orden[i].peso||"medio"},cont);
     E.decProc[id]=dec;
@@ -541,6 +542,7 @@ function sembrarDecisionProcDeCategoria(cat){
   for(let i=0;i<orden.length;i++){
     let cont=null; try{ cont=orden[i].gen(); }catch(e){ cont=null; }
     if(!cont) continue;
+    if(typeof decisionCabeEnClub==="function"&&!decisionCabeEnClub(cont)) continue;   /* 7.9123 · los generados pasan el mismo filtro anti-fuga */
     const id="proc_"+(E._procId=(E._procId||0)+1);
     const dec=Object.assign({id:id,buzon:orden[i].buzon,peso:orden[i].peso||"medio"},cont);
     E.decProc[id]=dec; E.decPend.push({id:id,clave:id+"_"+E.anio,peso:dec.peso});
