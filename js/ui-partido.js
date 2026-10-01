@@ -1159,15 +1159,14 @@ function _pintarPartidoCuerpo(P){
     '<div class="eq">'+escM(idV)+eh(P.part.local?P.part.rivalNombre:E.clubNombre)+'</div>';
   p.cuerpo.appendChild(marc);
   celebrarGolSiCorresponde(P, marc);   /* 7.79 · explota la pantalla cuando cae un gol */
-  let canchaCv=null;
+  let canchaHost=null;
   const verCancha=!(E.config&&E.config.verCancha===false);
   if(P.modo!=="simular"){
     const hud=el("div","partido-hud");
     if(verCancha){
       const colC=el("div","partido-cancha");
-      /* 7.9111 · el mismo canvas de antes (con su dibujo): uno nuevo salía en verde hasta el siguiente cuadro */
-      canchaCv=(typeof canchaReusable==="function"&&canchaReusable())||el("canvas","cancha2d"); canchaCv.setAttribute("aria-hidden","true");
-      colC.appendChild(canchaCv); hud.appendChild(colC);
+      /* 7.9122 · el contenedor es el host: montarCanchaAuto decide 3D (cámara FIFA) o cenital 2D según Ajustes/Modo papa */
+      canchaHost=colC; hud.appendChild(colC);
     }
     const colS=el("div","partido-stats");
     colS.appendChild(bloqueStats(P));
@@ -1343,7 +1342,10 @@ function _pintarPartidoCuerpo(P){
     tk.addEventListener("scroll",()=>{ P._chatScroll=tk.scrollTop; },{passive:true});
   }
   const wrap=el("div","partido-wrap"); wrap.appendChild(p); v.appendChild(wrap);
-  if(canchaCv && typeof montarCancha==="function") montarCancha(canchaCv);   /* 7.9111 · al tiro, no en el cuadro siguiente */
+  if(canchaHost){   /* 7.9122 · 3D o 2D, decide montarCanchaAuto */
+    if(typeof montarCanchaAuto==="function") montarCanchaAuto(canchaHost, P);
+    else { const cv=(typeof canchaReusable==="function"&&canchaReusable())||el("canvas","cancha2d"); cv.setAttribute("aria-hidden","true"); canchaHost.appendChild(cv); if(typeof montarCancha==="function") montarCancha(cv); }
+  }
 }
 /* 7.9071 · una burbuja del chat: avatar con iniciales, handle, minuto, texto y me gusta */
 function burbujaChat(t){
@@ -2582,6 +2584,7 @@ function cerrarPartido(){
   P._holdUI=null; P._holdKind=null; P._holdEv=null;
   if(typeof quitarHoldBar==="function") quitarHoldBar();
   document.body.classList.remove("hay-momento");
+  if(typeof detenerCancha3D==="function") detenerCancha3D();
   if(typeof detenerCancha==="function") detenerCancha();
   const _foto=(typeof fotoCopa==="function")?fotoCopa(P.part):null;   /* 7.9121 · para decir si pasaste o saliste campeón */
   const res=terminarPartido(P);

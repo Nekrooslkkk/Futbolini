@@ -2384,3 +2384,31 @@ HTML al pintar. La foto de perfil solo puede ser `data:image/...;base64`. El doc
   qué pasó. No confíen en `notificar` para eso: en simulación masiva se silencia.
 - Modo Dios/dev: `E.flags.diosTodo` ("ganar"/"perder") y `E.flags.diosNoEchar`. Si agregan otra forma de echar al DT,
   que pase por `destituir()` (ahí se respeta el No echar).
+
+=====
+
+**ENCARGO DEL AUTOR (1 oct 2026) · CHEQUEO EXHAUSTIVO DE CALENDARIOS → Sonnet / Grok**
+El autor pide revisar los calendarios **exhaustivamente**. Qué revisar, con qué fuente, y cómo dejar el resultado:
+
+1. **Fixtures reales por época** (`js/data-*.js`, `FIXTURES_OFICIALES`, `LIGA_CC_1991`, `LIGA_UCH_1991`, los de 2006,
+   Argentina 2026, Liga 2026): ¿los rivales, fechas y marcadores reales (`real:"2-1"`) calzan con registros públicos?
+   Cada fecha dudosa, anótenla con la fuente (RSSSF, Wikipedia de la temporada, ANFP). **No inventen** un marcador: si
+   no hay fuente, `real:null` y el juego lo simula.
+2. **Número de fechas y vueltas por torneo/época**: 1991 (¿33 fechas?), 2006 (Apertura/Clausura + playoffs), 2026
+   (30 fechas, Copa de la Liga, Copa Chile), Argentina 2026 (Apertura/Clausura por zonas). Que `sanearJornadas` /
+   `emparejarFecha` no dejen fechas repetidas, equipos que juegan dos veces la misma fecha, ni byes mal puestos.
+3. **Coherencia con el motor de copas (7.9121)**: que Copa Chile / Copa de la Liga / Libertadores aparezcan con sus
+   rondas y fechas en el orden correcto y no pisen fechas de liga.
+4. **Herramienta para verificar sin leer a mano**: corran `bash test/banco.sh` (TEMPS=3) y miren el doctor
+   `calendario_sano`, `copas_proximos`, `copas_grupo_partidos`. Si encuentran un hoyo que el doctor NO caza, DÍGANLO
+   acá para que Opus le agregue el chequeo (regla del modo dev: cada bug deja su chequeo).
+
+**Entrega:** una tabla acá mismo (época | torneo | qué está mal | fuente | archivo:línea). **No toquen el motor** —
+solo datos con fuente clara. Opus mezcla y agrega los chequeos del doctor que falten.
+
+**7.9122 (Claude Opus) · cancha 3D (cámara FIFA), beta. LEER antes de tocar el partido en vivo:**
+- `js/cancha3d.js` es el partido en 3D. **Es una cámara de la simulación**: lee `_cvSt` y avanza con `_cvStep` (los
+  mismos de `cancha.js`). Si tocan el motor de la cancha 2D, el 3D hereda el cambio solo — no dupliquen lógica.
+- Afinar cámara: `CAM3D` arriba del archivo (una sola fuente de verdad). El doctor `cancha3d_motor` la vigila.
+- Pendiente (Opus, con el ojo del autor): física de pelota (arco/aire), arquero que atrapa (no congela), modelos/kits,
+  y los set-pieces con barra de potencia Aero (penal/TL/córner). Hoy está APAGADO por defecto (Ajustes ▸ Pantalla).

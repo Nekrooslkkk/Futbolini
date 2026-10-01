@@ -765,3 +765,36 @@ if(typeof devDoctorRegistrar==="function"){
       return f.length?_dmal(f.length+" problema(s)",f):_dok("pestañas a la vista, todas las fechas de tu liga, copas en la repetición y tabla entera");
     }});
 }
+
+/* 7.9122 · cancha 3D (cámara estilo FIFA): es una VISTA de la simulación, no un dibujo aparte. El doctor verifica que
+   el módulo cargó, que el mapeo sim→mundo es coherente, que corre sobre el mismo _cvSt (alineado con la simulación) y
+   que en Modo papa cae al cenital 2D. Lo visual lo juzga el autor; esto cuida que no se desconecte de la simulación. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"cancha3d_motor", area:"interfaz", n:"Cancha 3D: es una cámara de la simulación (mismo _cvSt) y cae al 2D en Modo papa",
+    arreglo:"js/cancha3d.js (montarCanchaAuto, cancha3dActivo) · js/ui-partido.js monta con montarCanchaAuto · interruptor en Ajustes ▸ Pantalla",
+    fn:function(){
+      const f=[];
+      ["montarCanchaAuto","cancha3dActivo","cancha3dSoportado","detenerCancha3D"].forEach(n=>{ if(typeof window[n]!=="function") f.push("falta "+n+"() (no cargó js/cancha3d.js)"); });
+      if(typeof CAM3D==="undefined"||!CAM3D||typeof CAM3D.lado!=="number") f.push("CAM3D (la cámara, única fuente de verdad) no está definida");
+      /* el partido monta con montarCanchaAuto, no con montarCancha directo (si no, nunca saldría el 3D) */
+      const src=(typeof pantallaPartido==="function"&&typeof _docFuente==="function")?_docFuente(pantallaPartido):"";
+      /* pantallaPartido puede no existir con ese nombre: busco en la función que arma el HUD */
+      const txt=[window.pantallaPartido,window.montarHUD,window.pintarPartido].map(fn=>typeof fn==="function"?(typeof _docFuente==="function"?_docFuente(fn):String(fn)):"").join("\n");
+      /* el 3D tiene que leer el estado de la simulación, no uno propio: montarCancha3D usa _cvSeed/_cvStep/_cvSt */
+      const s3=(typeof montarCancha3D==="function")?(typeof _docFuente==="function"?_docFuente(montarCancha3D):String(montarCancha3D)):"";
+      if(s3){ if(!/_cvStep/.test(s3)) f.push("la cancha 3D no avanza con _cvStep: estaría desconectada de la simulación");
+        if(!/_cvSt|est\.st/.test(s3)) f.push("la cancha 3D no lee _cvSt: no reflejaría la simulación"); }
+      /* Modo papa: cancha3dActivo() tiene que dar false con html.papa (salvo que se fuerce) */
+      if(typeof cancha3dActivo==="function"){
+        const html=document.documentElement, tenia=html.classList.contains("papa");
+        const cfgPrev=E&&E.config?JSON.parse(JSON.stringify(E.config)):null;
+        try{ if(E){ E.config=E.config||{}; E.config.cancha3d=true; delete E.config.cancha3dPapa; }
+          html.classList.add("papa");
+          if(typeof cancha3dSoportado==="function"&&cancha3dSoportado()&&cancha3dActivo()) f.push("en Modo papa la cancha 3D no cae al 2D liviano");
+        } finally { html.classList.toggle("papa",tenia); if(E) E.config=cfgPrev||{}; }
+      }
+      /* mapeo coherente: el módulo mapea sim(0..1)→metros centrados (±52.5 largo, ±34 ancho) */
+      if(s3 && !/\(simX-0\.5\)\*105|\(b\.x-0\.5\)\*105|worldZ/.test(s3.replace(/\s/g,""))&&!/105/.test(s3)) f.push("el mapeo sim→cancha no usa las medidas reales (105×68)");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("el 3D corre sobre la misma simulación (_cvStep/_cvSt), mapea 105×68 y cae al 2D en Modo papa");
+    }});
+}

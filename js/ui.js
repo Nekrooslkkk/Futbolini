@@ -3788,6 +3788,21 @@ function vistaAjustes(host){
   p.cuerpo.appendChild(fperf);
   if(typeof papaEstadoTxt==="function"){ const pe=el("p","mini",papaEstadoTxt()); pe.id="papaEstado"; p.cuerpo.appendChild(pe); }
   p.cuerpo.appendChild(el("p","mini","🥔 <b>Modo papa</b>: para celus flacos. El juego carga hasta 5× más rápido (se junta en un solo archivo en tu equipo), nada se anima, sin sombras, cancha liviana y balón parado en dibujo. Es el mismo juego y la misma partida; vuelves a full cuando quieras."));
+  /* 7.9122 · cancha del partido: cenital 2D (lo de siempre) o 3D con cámara estilo FIFA (nuevo, en pulido) */
+  if(typeof cancha3dSoportado==="function" && cancha3dSoportado()){
+    p.cuerpo.appendChild(el("label","lb","Cancha del partido en vivo"));
+    const fc=el("div","fichas");
+    const c3On=(typeof E!=="undefined"&&E&&E.config&&!!E.config.cancha3d);
+    [[false,"🗺️ Cenital 2D"],[true,"🎥 3D cámara FIFA · beta"]].forEach(([on,n])=>{
+      const b=el("button","ficha",n);
+      b.setAttribute("aria-pressed",c3On===on?"true":"false");
+      b.onclick=()=>{ if(!E.config) E.config={}; E.config.cancha3d=on; if(on&&typeof cargarThree==="function") cargarThree(); guardar(); render();
+        if(typeof aviso==="function") aviso(on?"🎥 Cancha 3D activada (beta): cámara estilo FIFA. La estamos puliendo — contame qué fai.":"🗺️ Cancha cenital 2D de vuelta.",4500); };
+      fc.appendChild(b);
+    });
+    p.cuerpo.appendChild(fc);
+    p.cuerpo.appendChild(el("p","mini","🎥 <b>3D cámara FIFA</b> (beta): el partido en 3D con cámara de transmisión que sigue la pelota, movido por la misma simulación. En desarrollo: todavía no está pulido. En Modo papa cae al cenital 2D (más liviano)."));
+  }
   /* 7.9092 · penal, tiro libre y córner en 3D real (WebGL) o el dibujo clásico */
   p.cuerpo.appendChild(el("label","lb","Penales, tiros libres y córners"));
   const f3d=el("div","fichas");

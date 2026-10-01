@@ -5141,3 +5141,24 @@ Archivos: `js/data-copas2026.js`, `js/partido.js`, `js/carrera.js`, `js/ui.js`, 
   arreglo: 3, 4, 1 y 1 problemas. `_jorTabla` (mundo-vivo) guarda `_orig` para que el doctor lea la cadena.
 - **Estado:** doctor sano 125/125 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa) · core 1185/1185 ·
   saves 12/12 · banco 255 sano (14 % despidos, borde alto del ruido 11–14 %).
+
+### 7.9122 — Cancha 3D con cámara estilo FIFA (beta, apagada por defecto) · esqueleto del nuevo motor
+Archivos nuevos: `js/cancha3d.js`. Tocados: `index.html` (carga + `?v=`), `js/ui-partido.js` (monta con
+`montarCanchaAuto`), `js/ui.js` (interruptor en Ajustes ▸ Pantalla), `js/dev-banco.js` (doctor), `js/util.js` (VERSION).
+- **Decisión del autor (1 oct 2026):** el partido en vivo con **cámara 3D estilo FIFA**, no el cenital 2D. Es el
+  cambio más grande del juego; va por tandas y el autor juzga con el ojo. Esto es **el esqueleto que ya corre**.
+- **Clave — es una CÁMARA de la simulación, no un dibujo aparte:** `cancha3d.js` lee el MISMO estado que el cenital
+  (`_cvSeed`/`_cvStep`/`_cvSt` de `cancha.js`). Cada cuadro avanza la simulación y coloca los modelos 3D donde está
+  cada jugador y la pelota. Así "la cancha mide el fútbol" de verdad (idea del autor). Mundo en metros: cancha 105×68
+  centrada, dos arcos, áreas, círculo central, tribuna; cámara de transmisión que sigue la pelota con suavizado
+  (`CAM3D` = única fuente de verdad para afinar: `lado/alto/fov/sigue_*/suave`).
+- **Seguridad del cambio:** APAGADO por defecto (`E.config.cancha3d`). Se prende en Ajustes ▸ Pantalla ("🎥 3D cámara
+  FIFA · beta"). En Modo papa cae al cenital 2D liviano; si no hay WebGL o Three, cae al 2D solo; si el 3D explota en
+  un cuadro, cae al 2D sin romper el partido. Three.js se baja lazy.
+- **Lo que FALTA (próximas tandas, con el ojo del autor):** física de pelota real (arco/aire/gravedad — hoy usa la `z`
+  de los pases), colisión y animación del arquero (que no "congele"), modelos/kits con más detalle, y los set-pieces
+  estilo Score Hero con barra de potencia Aero (penal/TL/córner, los tres). El cenital 2D sigue siendo el default.
+- **Dev:** `cancha3d_motor` (el 3D corre sobre `_cvStep`/`_cvSt` = alineado con la simulación, mapea 105×68, y cae al
+  2D en Modo papa). Al revés (sin `_cvStep`): "la cancha 3D no avanza con _cvStep".
+- **Estado:** doctor sano 126/126 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa) · core 1185/1185 ·
+  saves 12/12.
