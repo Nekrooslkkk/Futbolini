@@ -36,7 +36,7 @@ function decisionCabeEnClub(d){
   var blob=_blobDec97(d);
   if(_esAFA97(club) && (/\banfp\b/.test(blob)||/quilín|quilin/.test(blob)||/copa chile/.test(blob))) return false;
   if(_esSeg97() && /libertadores|sudamericana|copa chile|copa de la liga/.test(blob)) return false;
-  /* 7.9123 · el autor: "Quilín sale con Colchagua". La Segunda Profesional es de la ANFP, pero no vota en el Consejo
+  /* 7.9125 · el autor: "Quilín sale con Colchagua". La Segunda Profesional es de la ANFP, pero no vota en el Consejo
      de Presidentes ni reparte la TV de Primera: esas cartas (y los eventos generados que las copian) no son suyas. */
   if(_esSeg97() && /consejo de presidentes|derechos de (la )?transmisi|contrato de (la )?televisi|reparto de (la )?tv|reparto de los derechos/.test(blob)) return false;
   if(E.eraBase===1925 && /\bvar\b|libertadores|sponsor|anfp/.test(blob)) return false;

@@ -28,7 +28,7 @@ puerta humana sin abrir. Ninguna IA puede abrir la puerta 4: esa es tuya.
 6. **Barra superior** (7 tarjetas → 3 grandes + menú) y **tutorial de 5 pasos** → **Opus** la estructura, **Sonnet**
    el texto del tutorial.
 7. **Contenido que da vida:** voz por club en PLOP (bloque 5) y prensa/decisiones (bloques 2–4) → **Sonnet**.
-   ~~Camisetas reales (G1)~~ ✅ 7.9114. Reacción del área en el 3D (G2), fotos de estadio, sonidos CC0 → **Grok**.
+   ~~Camisetas reales (G1)~~ ✅ 7.9114. Reacción del área en el 3D (G2) no se hace: pisa la cancha 3D de 7.9122. Fotos de estadio siguen abiertas (sin Wikimedia, pedido del autor). Sonidos → 7.9123.
 8. **Playtest de afuera antes que el tuyo:** **ChatGPT** (C1) juega como alguien nuevo y deja el informe; así tus
    amigos no tropiezan con lo obvio.
 9. **Puerta 4** → **tú**. Android real barato, una temporada con un club de Segunda, y los amigos.
@@ -67,7 +67,7 @@ Sistemas que el autor pidió y todavía no existen o están a medias.
 - [x] **Duelos en sala** con código y contraseña (tipo Gartic/Haxball), en Ajustes y con acceso rápido a elección (7.9116)
 - [ ] Probar una sala de duelo entre dos celulares reales (el buzón público no se pudo probar desde el entorno) — humano
 - [x] Selector de equipos con épocas por club y ligas **Próximamente** (Primera Nacional, Série A) (7.9116)
-- [ ] Listas 2026 de Primera Nacional y Série A confirmadas con fuente → Grok
+- [x] Listas 2026 de Primera Nacional (36) y Série A (20) confirmadas con fuente (7.9123)
 - [x] Seguridad: servidores atacados por prueba automática, XSS por partida manipulada cerrado (7.9116)
 - [x] **Segunda por zonas:** cierre de temporada cuadra fecha a fecha, sin −999 (7.9094)
 - [x] **Segunda: arranque sin caja** → caja real + fila de decisiones + umbrales a escala + ayudante prudente (7.9106)
@@ -80,9 +80,9 @@ Nada nuevo: solo que lo que hay se sienta terminado.
 - [x] Limpieza L1: borradas las 280 líneas muertas (7.9110)
 - [x] Voseo fuera de personajes argentinos → 0 en datos y pantallas; doctor `sin_voseo` lo vigila (7.9096)
 - [ ] Barra superior: 7 tarjetas es mucho → jerarquía (lo importante grande, el resto en un menú)
-- [ ] Sonidos cortos CC0 (clic, aviso, gol, pito) con interruptor y respeto a Animaciones OFF
+- [x] Sonidos cortos (clic, aviso, gol, pito) por oscilador, con interruptor y Animaciones OFF (7.9123, `js/sonido.js`). Sin mp3.
 - [ ] Íconos Aero propios (las 14 ranuras de `js/data-ranuras.js`) — humano o provisorios SVG
-- [ ] Fotos de estadio que faltan (15 Chile + 30 Argentina, Commons)
+- [ ] Fotos de estadio que faltan (15 Chile + 30 Argentina). No se bajan de Wikimedia: el autor lo prohibió.
 - [ ] Tutorial de 5 pasos para quien entra por primera vez (lo que traben los amigos de beta)
 - [x] Rendimiento 2ª pasada: layouts forzados de `render` fuera; scroll del celu estable (7.9103). Cargar `dev-*.js` solo
       al abrir: medido, no conviene (±50 ms)

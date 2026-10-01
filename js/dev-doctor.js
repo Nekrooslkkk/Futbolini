@@ -2419,7 +2419,7 @@ function devDoctor(opts){
   opts=opts||{};
   var res={ok:0, mal:0, checks:[], t0:Date.now()};
   DOCTOR_CHECKS.forEach(function(c){
-    if(c.asinc) return;   /* 7.9123 · los que esperan al navegador (IndexedDB) corren en devDoctorCompleto */
+    if(c.asinc) return;   /* 7.9125 · los que esperan al navegador (IndexedDB) corren en devDoctorCompleto */
     if(opts.soloRapidos && c.pesado) return;
     if(opts.area && c.area!==opts.area) return;
     var r, t=(typeof performance!=="undefined"?performance.now():Date.now());
@@ -2436,7 +2436,7 @@ function devDoctor(opts){
   if(!opts.sinHistoria) _docHistoria(res);
   return res;
 }
-/* 7.9123 · el doctor entero, también los chequeos asíncronos (los que esperan a IndexedDB: guardar, cargar, inventario
+/* 7.9125 · el doctor entero, también los chequeos asíncronos (los que esperan a IndexedDB: guardar, cargar, inventario
    de partidas). Cada uno con tope de 30 s: uno que no contesta cuenta como MAL, no cuelga al doctor. */
 async function devDoctorCompleto(opts){
   opts=opts||{};
@@ -2532,7 +2532,7 @@ function devPintarDoctor(cont){
   function correr(opts,label){
     salida.innerHTML=""; salida.appendChild(el("p","mini","⏳ "+label+"…"));
     setTimeout(function(){
-      /* 7.9123 · con los chequeos asíncronos (partidas guardadas, IndexedDB) */
+      /* 7.9125 · con los chequeos asíncronos (partidas guardadas, IndexedDB) */
       var p=(typeof devDoctorCompleto==="function")?devDoctorCompleto(opts):Promise.resolve(devDoctor(opts));
       p.then(function(res){
         pintarRes(res);

@@ -207,7 +207,7 @@ function montarCancha3D(host, P){
 
   let last=performance.now();
   const t0=last, tiempos=[];
-  /* 7.9123 · si va lento NO se cambia solo a 2D: se ofrece (chip chico, "Seguir así" no vuelve a preguntar) */
+  /* 7.9125 · si va lento NO se cambia solo a 2D: se ofrece (chip chico, "Seguir así" no vuelve a preguntar) */
   const vigilar=(ms,now)=>{ if(est.vigilado||now-t0<1500) return; tiempos.push(ms);
     if(tiempos.length<30) return; est.vigilado=true;
     const med=tiempos.slice().sort((a,b)=>a-b)[15]; est.msMediana=Math.round(med);
@@ -225,7 +225,7 @@ function montarCancha3D(host, P){
     }
     try{ if(typeof _cvStep==="function") _cvStep(est.P,dt); sincronizar(dt); renderer.render(scene,camGL); }
     catch(e){ if(window.console) console.error("cancha3d:",e); detenerCancha3D();
-      if(typeof aviso==="function") aviso("La cancha 3D tuvo un error: este partido sigue en 2D (el 3D sigue prendido para el próximo).",5000);   /* 7.9123 · nunca sin avisar */
+      if(typeof aviso==="function") aviso("La cancha 3D tuvo un error: este partido sigue en 2D (el 3D sigue prendido para el próximo).",5000);   /* 7.9125 · nunca sin avisar */
       if(typeof montarCancha==="function"){ const cv=document.createElement("canvas"); cv.className="cancha2d"; host.appendChild(cv); montarCancha(cv); } return; }
     est.raf=requestAnimationFrame(cuadro);
   }

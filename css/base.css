@@ -429,7 +429,7 @@ html:not(.js-listo) body > :not(#arranque){ display:none !important; }
 #arranque.listo .arr-btns{opacity:1;transform:none;pointer-events:auto;transition:opacity .4s ease,transform .4s ease}
 .arranque-btn{font-size:1.05rem!important;padding:13px!important}
 .arr-mini{display:block;font-size:11px;font-weight:400;opacity:.85;margin-top:2px}
-/* 7.9123 · muchas partidas: la lista tiene su propio scroll y la pantalla no crece (y si igual no cabe, el splash
+/* 7.9125 · muchas partidas: la lista tiene su propio scroll y la pantalla no crece (y si igual no cabe, el splash
    se recorre sin cortar el logo: margin:auto en vez de centrar con align-items) */
 #arranque{overflow-y:auto;overscroll-behavior:contain}
 #arranque .arr-inner{margin:auto}
@@ -440,7 +440,7 @@ html:not(.js-listo) body > :not(#arranque){ display:none !important; }
 .arr-lista::-webkit-scrollbar-thumb{background:rgba(255,255,255,.5);border-radius:6px}
 .arranque-btn.arr-rota{opacity:.78;filter:saturate(.35)}
 .arranque-btn.cargando{opacity:.7;cursor:progress}
-/* 7.9123 · guardar nunca miente: si el navegador no deja guardar, se ve (y se ofrece descargar) */
+/* 7.9125 · guardar nunca miente: si el navegador no deja guardar, se ve (y se ofrece descargar) */
 #guardadoTxt.guardado-mal{color:#c0392b;font-weight:700}
 .guardado-fallo{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:10001;
   width:min(560px,calc(100vw - 24px));box-sizing:border-box;display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;

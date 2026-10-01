@@ -1,7 +1,7 @@
-/* FUTBOLINI · test/partidas.mjs (7.9123) · PARTIDA PERDIDA, de punta a punta en el navegador de verdad (Playwright,
+/* FUTBOLINI · test/partidas.mjs (7.9125) · PARTIDA PERDIDA, de punta a punta en el navegador de verdad (Playwright,
    tiempo real: IndexedDB no corre bajo --virtual-time-budget, por eso esto no va en doctor.sh).
    El bug del autor: con ~9 partidas localStorage se llenaba, el juego decía "guardado" sin guardar y "Continuar" no
-   abría la partida. Se prueba lo que vería él: navegador lleno con el formato viejo → abrir 7.9123 → todo de vuelta. */
+   abría la partida. Se prueba lo que vería él: navegador lleno con el formato viejo → abrir 7.9125 → todo de vuelta. */
 import { spawn } from "child_process";
 let pw; try{ pw=await import("playwright"); }catch(e){ pw=await import("/opt/node22/lib/node_modules/playwright/index.mjs"); }
 const port=20000+Math.floor(Math.random()*20000);

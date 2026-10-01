@@ -107,11 +107,11 @@ function parseMarcadorReal(real,local){
   if(p.length<2||isNaN(p[0])||isNaN(p[1])) return null;
   return local?{gf:p[0],gc:p[1]}:{gf:p[1],gc:p[0]};
 }
-/* Carga resultados ya jugados hasta el corte (18/08/2026) y la tabla de referencia.
+/* Carga resultados ya jugados hasta el corte (1/10/2026) y la tabla de referencia.
    No inventa partidos: usa `real` del fixture. El resto de la tabla es semilla. */
 function aplicarCorte2026(){
   if(!E||E.anio!==2026) return;
-  const corte=(typeof CORTE_2026!=="undefined")?CORTE_2026:{m:8,d:18};
+  const corte=(typeof CORTE_2026!=="undefined")?CORTE_2026:{m:10,d:1};
   if(typeof TABLA_2026_CORTE==="object"){
     Object.keys(TABLA_2026_CORTE).forEach(id=>{
       if(E.tabla[id]) Object.assign(E.tabla[id], TABLA_2026_CORTE[id]);
@@ -129,7 +129,7 @@ function aplicarCorte2026(){
   const yo=E.tabla[E.club];
   if(yo) E.temporada=Object.assign({sinGanar:0},yo);
   E.flags=E.flags||{}; E.flags.corte2026=true;
-  if(typeof pushNotif==="function") pushNotif("Cortas en agosto","El campeonato ya se jugó hasta el 18/08. Los partidos anteriores están cargados. El próximo es el que sigue.","neutro");
+  if(typeof pushNotif==="function") pushNotif("Cortas en octubre","El campeonato ya se jugó hasta el 1/10. Los partidos anteriores están cargados. El próximo es el que sigue.","neutro");
 }
 function nuevaPartida(clubId,anio,modo,extra){
   /* 7.54 · no arrastrar la liga custom (ascenso/descenso) del save anterior:
@@ -1665,7 +1665,7 @@ function capitalAnual(){
   return Math.round(clamp(c,-14,22));
 }
 /* ---------------- guardado ---------------- */
-/* 7.9123 · el guardado de verdad vive en js/partidas.js (partidaGuardarYa: copia rápida + IndexedDB, y dice la
+/* 7.9125 · el guardado de verdad vive en js/partidas.js (partidaGuardarYa: copia rápida + IndexedDB, y dice la
    verdad si no pudo). Esta es la versión sin agrupar; js/rendimiento.js la envuelve. */
 async function guardar(){
   if(!E) return null;
@@ -1688,7 +1688,7 @@ async function slotsGuardarLista(a){ await Store.set(SLOTS_LLAVE,a); }
 function slotMetaDe(est){
   return { id:est._slot, club:est.club, clubNombre:est.clubNombre||est.club, anio:est.anio,
            epoca:est.epocaEtq||"", modo:est.modo||"", gen:(est.dinastia&&est.dinastia.generacion)||1, guardado:Date.now(),
-           t:+est._guardadoEn||0 };   /* 7.9123 · sello del último guardado: la copia que tenga uno menor es vieja */
+           t:+est._guardadoEn||0 };   /* 7.9125 · sello del último guardado: la copia que tenga uno menor es vieja */
 }
 async function slotActivoId(){ return await Store.get(ACTIVO_LLAVE); }
 async function slotFijarActivo(id){ await Store.set(ACTIVO_LLAVE,id); }
@@ -1700,7 +1700,7 @@ async function slotActualizarIndice(est){
   await slotsGuardarLista(lista);
 }
 async function borrarPartida(id){
-  await partidaBorrarDatos(id);   /* 7.9123 · IndexedDB + ranura vieja de localStorage */
+  await partidaBorrarDatos(id);   /* 7.9125 · IndexedDB + ranura vieja de localStorage */
   const lista=(await slotsLista()).filter(s=>s.id!==id);
   await slotsGuardarLista(lista);
   const era=await slotActivoId()===id;
@@ -1731,7 +1731,7 @@ async function borrarTodasLasPartidas(){
   await Store.del(LLAVE);
   if(PARTIDAS.estado) PARTIDAS.estado.sinDatos=[];
 }
-/* 7.9123 · abre la copia MÁS NUEVA que exista (IndexedDB, copia rápida o ranura vieja). Si la partida hace explotar
+/* 7.9125 · abre la copia MÁS NUEVA que exista (IndexedDB, copia rápida o ranura vieja). Si la partida hace explotar
    normalizarEstado, E vuelve a como estaba y el error sube: el botón lo muestra (antes moría callado). */
 async function cargarPartida(id){
   id=String(id);

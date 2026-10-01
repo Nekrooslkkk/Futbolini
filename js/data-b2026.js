@@ -114,12 +114,25 @@ if(typeof ERA==="object" && ERA[2026]) ERA["2026b"]=ERA[2026];
     RAN:{plantel:48,moral:42,hinchada:48,socios:36,cantera:42,estadio:54,prestigio:40,riesgo:52}
   });
   if(typeof CAJA_BASE_2026!=="undefined") Object.assign(CAJA_BASE_2026,{
-    CBL:{plata:280,deuda:160}, SW:{plata:300,deuda:140}, SLQ:{plata:180,deuda:90},
-    ANT:{plata:240,deuda:130}, MAG:{plata:160,deuda:80}, UES:{plata:260,deuda:220},
-    REC:{plata:140,deuda:70},  PMO:{plata:170,deuda:85}, SMA:{plata:150,deuda:75},
-    COP:{plata:160,deuda:95},  TEM:{plata:170,deuda:100},IQQ:{plata:200,deuda:180},
-    USF:{plata:120,deuda:90},  CUR:{plata:140,deuda:110},SCR:{plata:110,deuda:70},
-    RAN:{plata:130,deuda:100}
+    /* 7.9123 · millones de pesos del juego, misma escala que Primera (CC 1200/3000 en motor.js).
+       Revisado el 1 oct 2026: no hay memoria o balance público, club por club, que dé caja y deuda en esta unidad.
+       Ningún número se mueve. La fila de cada club queda marcada para cuando haya URL. */
+    CBL:{plata:280,deuda:160}, /* sin balance público al 1 oct 2026 */
+    SW:{plata:300,deuda:140},  /* sin balance público al 1 oct 2026 */
+    SLQ:{plata:180,deuda:90},  /* sin balance público al 1 oct 2026 */
+    ANT:{plata:240,deuda:130}, /* sin balance público al 1 oct 2026 */
+    MAG:{plata:160,deuda:80},  /* sin balance público al 1 oct 2026 */
+    UES:{plata:260,deuda:220}, /* sin balance público al 1 oct 2026; la deuda alta es estimación, no un estado financiero */
+    REC:{plata:140,deuda:70},  /* sin balance público al 1 oct 2026 */
+    PMO:{plata:170,deuda:85},  /* sin balance público al 1 oct 2026 */
+    SMA:{plata:150,deuda:75},  /* sin balance público al 1 oct 2026 */
+    COP:{plata:160,deuda:95},  /* sin balance público al 1 oct 2026 */
+    TEM:{plata:170,deuda:100}, /* sin balance público al 1 oct 2026 */
+    IQQ:{plata:200,deuda:180}, /* sin balance público al 1 oct 2026; deuda alta estimada, no un estado financiero */
+    USF:{plata:120,deuda:90},  /* sin balance público al 1 oct 2026 */
+    CUR:{plata:140,deuda:110}, /* sin balance público al 1 oct 2026 */
+    SCR:{plata:110,deuda:70},  /* sin balance público al 1 oct 2026 */
+    RAN:{plata:130,deuda:100}  /* sin balance público al 1 oct 2026 */
   });
   var estatutoB={propiedad:"corporacion",modelo:"mixto",identidad:"regional",barra:"tolerancia",finanzas:"austeridad",anfp:"bloque_chicos"};
   if(typeof ESTATUTO_INICIAL!=="undefined"){

@@ -511,13 +511,18 @@ function resolverCopaContinental33(part, yo, otro){
   }
 }
 
-/* 7.9121 · cupos por época (las eras históricas; 2026 usa cuposChileDesde con las bases ANFP). Antes daba 4 cupos a
-   Libertadores en cualquier año, también en 1925, cuando la copa no existía (nace en 1960). Aproximado: Chile tuvo 2
-   cupos hasta 1997 y 3 hasta 2009; la Sudamericana existe desde 2002; la Copa Chile da cupo desde 2008. */
+/* 7.9123 · cupos con fuente, no el corte de 7.9121.
+   Libertadores: 1 club en 1960-1965 y 2 desde 1966 (Anexo:Clubes chilenos en torneos internacionales, Wikipedia, act. 15 sep 2026).
+   Tercer cupo desde 2000 (Emol, 5 jun 2021: «a partir de este año se le agrega un cupo más»).
+   Cuarto cupo desde 2017 (T13 y BioBio, 3 oct 2016, anuncio CONMEBOL; Emol confirma que en 2017 parten los 4).
+   Sudamericana: la primera edición es 2002 (CONMEBOL, historia de la copa; Wikipedia Copa Sudamericana 2002). En 2002 Chile tuvo 2, no 4.
+   El 4 de acá es el cupo moderno: no reescribí 2003-2016 año por año.
+   copaChile sigue en 2008. La ANFP (T13, 17 nov 2016) confirma al campeón de Copa Chile como Chile 3 recién para la Libertadores 2017. Antes no está claro si iba a Libertadores o a Sudamericana, así que el año no se mueve. */
 function cuposEpocaChile(anio){
   anio=+anio||2026;
-  if(anio<1959) return {lib:0,sud:0,copaChile:false};
-  return {lib:anio<=1997?2:(anio<=2009?3:4), sud:anio>=2001?4:0, copaChile:anio>=2008};
+  if(anio<1960) return {lib:0,sud:0,copaChile:false};
+  var lib=anio<1966?1:(anio<2000?2:(anio<2017?3:4));
+  return {lib:lib, sud:anio>=2002?4:0, copaChile:anio>=2008};
 }
 function cuposDesdeTemporada(pos, copaChile, b){
   if(b) return {lib:false,sud:false};

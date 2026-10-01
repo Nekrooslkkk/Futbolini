@@ -19,12 +19,12 @@
   }
   function correr(){
     try{
-      /* 7.9123 · bajo --virtual-time-budget IndexedDB tarda "segundos" virtuales y sus topes de espera saltan al azar:
+      /* 7.9125 · bajo --virtual-time-budget IndexedDB tarda "segundos" virtuales y sus topes de espera saltan al azar:
          acá las partidas van por localStorage (el mismo camino que usa el juego sin base). IndexedDB se prueba con tiempo
          real en test/partidas.sh. */
       if(typeof PARTIDAS!=="undefined") PARTIDAS.apagada=true;
       nuevaPartida(pp[0],pp[1],pp[2]||"historico");
-      /* 7.9123 · el doctor completo: también los chequeos asíncronos (guardar/cargar partidas) */
+      /* 7.9125 · el doctor completo: también los chequeos asíncronos (guardar/cargar partidas) */
       if(typeof devDoctorCompleto==="function"){
         devDoctorCompleto({sinHistoria:true}).then(function(res){ pintar(res); fin(); })
           .catch(function(e){ malos++; OUT.push("== "+pp.join(" ")+" · EXPLOTÓ: "+e.message); fin(); });

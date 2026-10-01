@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PARTIDA PERDIDA (7.9123): guardar, mudar a IndexedDB, recuperar y "Continuar", en el navegador de verdad (Playwright).
+# PARTIDA PERDIDA (7.9125): guardar, mudar a IndexedDB, recuperar y "Continuar", en el navegador de verdad (Playwright).
 # Va dentro de correr_dev.sh. Sin Playwright avisa y no falla (el doctor igual revisa lo mismo sobre localStorage).
 set -uo pipefail
 cd "$(dirname "$0")/.."

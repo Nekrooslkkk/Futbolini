@@ -680,6 +680,14 @@ if(typeof devDoctorRegistrar==="function"){
         if(!q(1991,1).lib||!q(1991,2).lib) f.push("1991: el campeón o el 2° no clasifican a Libertadores");
         if(q(1991,3).lib) f.push("1991: el 3° clasifica (Chile tenía 2 cupos)");
         if(q(1991,5).sud) f.push("1991: da Sudamericana, que nace en 2002");
+        if(q(1964,2).lib) f.push("1964: el 2° clasifica (hasta 1965 Chile llevaba 1 cupo)");
+        if(!q(1966,2).lib) f.push("1966: el 2° no clasifica (desde ahí son 2)");
+        if(q(1999,3).lib) f.push("1999: el 3° clasifica (el tercer cupo parte en 2000)");
+        if(!q(2000,3).lib) f.push("2000: el 3° no clasifica");
+        if(q(2016,4).lib) f.push("2016: el 4° clasifica (el cuarto cupo parte en 2017)");
+        if(!q(2017,4).lib) f.push("2017: el 4° no clasifica");
+        if(q(2001,8).sud) f.push("2001: da Sudamericana, que nace en 2002");
+        if(!q(2002,5).sud) f.push("2002: no da Sudamericana");
       } finally { E.flags=JSON.parse(flagsPrev); E.anio=anioPrev; E.eraBase=eraPrev; }
       return f.length?_dmal(f.length+" problema(s)",f):_dok("con cupo, la Libertadores aparece en 1990, 1992, 2007 y 2027; cupos por época (nada antes de 1960)");
     }});
@@ -799,7 +807,34 @@ if(typeof devDoctorRegistrar==="function"){
     }});
 }
 
-/* 7.9123 · PARTIDA PERDIDA (bug urgente del autor: "aprieto Continuar y no carga la partida anterior"). Con ~9 partidas
+/* 7.9123 · el sonido es un oscilador, no un archivo. Animaciones OFF y el interruptor lo callan. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"sonido_callado", area:"interfaz", n:"El sonido se calla con Animaciones OFF y con el interruptor",
+    arreglo:"js/sonido.js sonidoPermitido(). No hay mp3: es WebAudio.",
+    fn:function(){
+      if(typeof sonidoPermitido!=="function"||typeof sonar!=="function") return _dmal("no cargó js/sonido.js",["falta el script en index.html"]);
+      var b=document.body, tenia=b.classList.contains("anim-off"), prev=null, f=[];
+      try{ prev=localStorage.getItem("futbolini3_sonido"); }catch(e){}
+      try{
+        localStorage.removeItem("futbolini3_sonido");
+        b.classList.remove("anim-off");
+        if(!sonidoPermitido()) f.push("con las animaciones prendidas el sonido queda mudo");
+        b.classList.add("anim-off");
+        if(sonidoPermitido()) f.push("con Animaciones OFF el sonido sigue activo");
+        b.classList.remove("anim-off");
+        localStorage.setItem("futbolini3_sonido","off");
+        if(sonidoPermitido()) f.push("con Sonido off sigue activo");
+        sonar("gol");
+      }finally{
+        b.classList.toggle("anim-off",tenia);
+        try{ if(prev==null) localStorage.removeItem("futbolini3_sonido"); else localStorage.setItem("futbolini3_sonido",prev); }catch(e){}
+      }
+      if(String(celebrarGol).indexOf("gol-toast")<0) f.push("el festejo del gol perdió el zócalo del rival");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("callado con Animaciones OFF y con Sonido off");
+    }});
+}
+
+/* 7.9125 · PARTIDA PERDIDA (bug urgente del autor: "aprieto Continuar y no carga la partida anterior"). Con ~9 partidas
    localStorage se llenaba, el error de espacio se tragaba, el juego decía "guardado" y la ranura quedaba vacía o vieja.
    Estos chequeos corren sobre la partida y el navegador REALES del jugador: prueban con una ranura de prueba aparte
    y dejan la copia rápida, la lista y la partida activa como estaban (byte a byte). */
@@ -957,7 +992,7 @@ if(typeof devDoctorRegistrar==="function"){
     }});
 }
 
-/* 7.9123 · "el córner pega el juego": el minijuego siempre tiene salida (✕, vigilante si la animación se corta, error
+/* 7.9125 · "el córner pega el juego": el minijuego siempre tiene salida (✕, vigilante si la animación se corta, error
    atrapado) y se puede apagar (Ajustes ▸ Pantalla: los córners se juegan solos). */
 if(typeof devDoctorRegistrar==="function"){
   devDoctorRegistrar({id:"corner_salida", area:"interfaz", n:"El córner nunca deja el partido pegado (salida ✕, vigilante, y se puede apagar)",
@@ -990,7 +1025,7 @@ if(typeof devDoctorRegistrar==="function"){
     }});
 }
 
-/* 7.9123 · el autor: "la cancha 3D se cambia sola a 2D cuando laguea; no debe cambiar solo". Si va lenta se OFRECE
+/* 7.9125 · el autor: "la cancha 3D se cambia sola a 2D cuando laguea; no debe cambiar solo". Si va lenta se OFRECE
    pasar al 2D (chip chico); si explota, se avisa. Nada se autodegrada sin avisar. */
 if(typeof devDoctorRegistrar==="function"){
   devDoctorRegistrar({id:"tres_d_no_cambia_solo", area:"interfaz", n:"El 3D lento no se cambia solo a 2D: lo ofrece (y si falla, avisa)",
@@ -1017,7 +1052,7 @@ if(typeof devDoctorRegistrar==="function"){
     }});
 }
 
-/* 7.9123 · "Apoyar a todos dice siempre 0 lo sintieron": el conteo tiene que salir de lo que de verdad cambió */
+/* 7.9125 · "Apoyar a todos dice siempre 0 lo sintieron": el conteo tiene que salir de lo que de verdad cambió */
 if(typeof devDoctorRegistrar==="function"){
   devDoctorRegistrar({id:"charla_grupal_mide", area:"motor", n:"Hablar con todo el plantel cuenta lo que de verdad cambió (y apoyar puede sonar vacío)",
     arreglo:"js/ui.js charlaGrupal() mide moral+forma antes/después · charlaGrupalTxt()",
@@ -1043,7 +1078,7 @@ if(typeof devDoctorRegistrar==="function"){
     }});
 }
 
-/* 7.9123 · "el patrimonio desapareció de Vida": se ve el panel, el resumen de arriba lo dice, y el salto "Ir a" no lo
+/* 7.9125 · "el patrimonio desapareció de Vida": se ve el panel, el resumen de arriba lo dice, y el salto "Ir a" no lo
    deja escondido bajo la barra fija. (vida_patrimonio revisa la plata; esto revisa que se VEA.) */
 if(typeof devDoctorRegistrar==="function"){
   devDoctorRegistrar({id:"vida_patrimonio_visible", area:"interfaz", n:"Vida: el patrimonio se ve (panel, resumen de arriba y salto sin quedar bajo la barra)",
@@ -1071,7 +1106,7 @@ if(typeof devDoctorRegistrar==="function"){
     }});
 }
 
-/* 7.9123 · "Quilín sale con Colchagua": la carta del Consejo de Presidentes / reparto de la TV se colaba a la Segunda
+/* 7.9125 · "Quilín sale con Colchagua": la carta del Consejo de Presidentes / reparto de la TV se colaba a la Segunda
    (y a la AFA y a 1925) porque los eventos generados (data-proc.js) no pasaban por decisionCabeEnClub. */
 if(typeof devDoctorRegistrar==="function"){
   devDoctorRegistrar({id:"anfp_no_se_fuga", area:"contenido", n:"El Consejo de Presidentes y la TV de la ANFP no le llegan a quien no vota (Segunda, AFA, 1925)",

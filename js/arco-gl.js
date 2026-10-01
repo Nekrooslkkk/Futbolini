@@ -32,7 +32,7 @@ function _glApagarPorLento(est){
   ARCOGL.activos=Math.max(0,ARCOGL.activos-1); if(ARCOGL.ultimo===est) ARCOGL.ultimo=null; ARCOGL.apagadoLento=true;
   if(typeof aviso==="function") aviso("Listo: dibujo clásico (el 3D lo vuelves a prender en Ajustes ▸ Pantalla)",4200);
 }
-/* 7.9123 · el autor: "no debe cambiar solo". Si el 3D va lento ya no se apaga: se OFRECE pasar al dibujo, con un
+/* 7.9125 · el autor: "no debe cambiar solo". Si el 3D va lento ya no se apaga: se OFRECE pasar al dibujo, con un
    chip chico que no tapa la jugada. "Seguir así" no vuelve a preguntar (futbolini_3d_nopreg). Lo usa también la
    cancha 3D del partido (cancha3d.js). */
 function ofrecerAliviar3D(host, txt, aceptar){
@@ -437,7 +437,7 @@ function arcoGLMontar(esc,svg,opts){
         const muyLento=tiempos.length>=4&&tiempos.slice(-4).every(x=>x>ARCOGL_VIG.maxMs*2);
         if(tiempos.length>=ARCOGL_VIG.cuadros||muyLento){ est.vigilado=true;
           const med=tiempos.slice().sort((x,y)=>x-y)[tiempos.length>>1]; est.msMediana=Math.round(med);
-          if(med>ARCOGL_VIG.maxMs&&!ARCOGL.sinVigilante){ ARCOGL.lentoOfrecido=true;   /* 7.9123 · se ofrece, no se apaga solo */
+          if(med>ARCOGL_VIG.maxMs&&!ARCOGL.sinVigilante){ ARCOGL.lentoOfrecido=true;   /* 7.9125 · se ofrece, no se apaga solo */
             ofrecerAliviar3D(esc.world.parentNode||esc.world,"🐢 El 3D va lento en este equipo ("+est.msMediana+" ms por cuadro).",function(){ _glApagarPorLento(est); }); } }
       }
       est.tPrev=t;

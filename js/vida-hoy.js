@@ -60,7 +60,7 @@ function panelVidaHoy(){
     ["👶",hijos?hijos+(hijos===1?" hijo":" hijos"):"sin hijos"],
     ["💵",plata(bol)+(sueldo>0?" · "+Math.floor(bol/sueldo)+" sem. de sueldo":"")]
   ];
-  /* 7.9123 · el autor: "el patrimonio desapareció de Vida". El panel seguía, abajo; el resumen de arriba solo mostraba el
+  /* 7.9125 · el autor: "el patrimonio desapareció de Vida". El panel seguía, abajo; el resumen de arriba solo mostraba el
      bolsillo. Ahora el patrimonio total (bolsillo + bienes) va en el resumen, a la vista sin bajar. */
   if(typeof patrimonioTotal==="function"){ const nb=(typeof bienesPropios==="function")?bienesPropios().length:0;
     chips.push(["💎","patrimonio "+plata(patrimonioTotal())+(nb?" · "+nb+(nb===1?" bien":" bienes"):"")]); }

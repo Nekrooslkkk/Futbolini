@@ -16,7 +16,7 @@
    ============================================================ */
 const REND={pend:null, prom:null, ultimo:0, guardados:0, pedidos:0, MIN_MS:1500};
 
-/* guarda ya. 7.9123 · la escritura vive en js/partidas.js (partidaGuardarYa: un solo JSON, copia rápida + IndexedDB) y
+/* guarda ya. 7.9125 · la escritura vive en js/partidas.js (partidaGuardarYa: un solo JSON, copia rápida + IndexedDB) y
    devuelve si de verdad quedó guardado ({ok, parcial, err}); antes un error de espacio se tragaba y decía "guardado". */
 async function guardarAhora(){
   if(!E||E._bulkSim) return null;

@@ -5163,7 +5163,33 @@ Archivos nuevos: `js/cancha3d.js`. Tocados: `index.html` (carga + `?v=`), `js/ui
 - **Estado:** doctor sano 126/126 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa) · core 1185/1185 ·
   saves 12/12.
 
-### 7.9123 — Partida perdida (URGENTE): las partidas viven en IndexedDB y "guardado" ya no miente · córner con salida · el 3D lento ofrece, no cambia solo · charla grupal honesta · patrimonio a la vista · Quilín fuera de la Segunda
+### 7.9123 — Cupos con fuente, listas 2026, arquero del tiro libre, sonido. Sin G2 y sin números de caja inventados
+Archivos: `js/data-copas2026.js`, `js/data-proximamente.js`, `js/data-b2026.js`, `js/data-segunda2026.js`,
+`js/data-planteles.js`, `js/ui-partido.js`, `js/sonido.js` (nuevo), `js/dev-banco.js`, `js/util.js`, `index.html`.
+- **G2 no se hace.** La reacción de los extras del 3D pisa `js/cancha3d.js` (7.9122). No toqué cámara, `_cvStep` ni el esqueleto.
+- **Cupos Chile:** Libertadores 1 hasta 1965, 2 desde 1966, 3 desde 2000, 4 desde 2017. Sudamericana desde 2002 (antes el código decía 2001). El 4 de Sudamericana queda como cupo moderno: en 2002 Chile tuvo 2 y no reescribí 2003-2016. Copa Chile sigue en 2008. Fuentes en el comentario de `cuposEpocaChile`.
+- **Próximamente:** Primera Nacional 2026 pasa de 34 a 36 (salen Arsenal y Alvarado; entran Acassuso, Godoy Cruz, Gimnasia de Jujuy y San Martín de San Juan). Série A 2026: los 20 nombres ya estaban bien. Siguen con candado.
+- **Caja B y Segunda:** ningún número cambia. No hay balance público club por club al 1 oct 2026. Deuda media B 112,2 y Segunda 53,6 (millones del juego), igual que antes. Cada club lleva el comentario.
+- **Extranjeros:** Colo-Colo 2026 sigue con 7 marcados (el cupo es 6). No hay fuente para sacar el rasgo. La U tiene 5. Nadie se borra.
+- **Tiro libre:** el arquero va al palo libre (78 / 282), no al lado de la barrera. El córner no se mueve. La cámara no se toca.
+- **Sonido:** oscilador, sin mp3. Clic, aviso, gol y pitazo. Se calla con Animaciones OFF y con Sonido off. Doctor `sonido_callado`.
+- **Fotos de estadio:** no se bajan. El pedido del autor es sin Wikimedia.
+- **Calendario:** barrido estructural (sin inventar marcadores) en la nota de `ChatDeTrabajIA.md`. El doctor `calendario_sano` no caza fechas dobles ni un `real:` falso.
+- **Estado:** doctor sano 127/127 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa) · core 1185/1185.
+  Banco TEMPS=3: 254/255. Colo-Colo 1925 al llegar a 1928 cae por sueldo del DT contra la planilla. El mismo fallo está en 7.9122 (`d93aa9f`), no lo metió esta tanda.
+
+### 7.9124 — Fixture de Primera 2026 completo (los 16), corte al 1/10
+Archivos: `js/data-liga.js`, `js/data-grok.js`, `js/data-fixture2026.js` (nuevo), `js/motor.js`, `js/ui.js`, `js/util.js`, `index.html`.
+- **El fixture malo era de datos.** Solo Colo-Colo, la U, la UC, Palestino y Limache tenían cruces oficiales. El resto de cada fecha lo armaba `emparejarFecha` al azar. Ahora los 16 tienen las 30 fechas.
+- **Fuente:** T13 (1/10/2026), cruzado partido a partido con el anexo de resultados. No quedó solo en Wikipedia.
+- **Fecha 1:** T13 escribió D. Concepción 2-1 en el Ester Roa. La Tercera del 2/02/2026 y el anexo dicen O'Higgins 2-1 en El Teniente. Quedó el de El Teniente.
+- **Fecha 28:** T13 repite U. de Concepción-Limache (ese partido es la fecha 25). El cruce que falta es U. de Concepción-Ñublense, 22/11, sin marcador.
+- **Marcadores:** se cargan los jugados hasta el 1/10, incluidas las fechas 20 a 23. Sigue en null el 2/10 (U. de Concepción vs Huachipato) y todo lo de la fecha 24 en adelante. No se inventa un resultado.
+- **Corte:** pasa del 18/08 al 1/10. Colo-Colo queda con 54 puntos en 23 PJ. U. de Concepción y Huachipato van con 22. La caja no se toca.
+- **Doctor:** `fixture_primera_2026`.
+- **Estado:** doctor sano 128/128 (4 partidas + celular) · dev 593/593 (+ papa) · core 1185/1185.
+
+### 7.9125 — Partida perdida (URGENTE): las partidas viven en IndexedDB y "guardado" ya no miente · córner con salida · el 3D lento ofrece, no cambia solo · charla grupal honesta · patrimonio a la vista · Quilín fuera de la Segunda
 Archivos nuevos: `js/partidas.js`, `test/partidas.mjs`, `test/partidas.sh`. Tocados: `js/motor.js` (guardar, cargarPartida,
 borrarPartida, slotMetaDe), `js/rendimiento.js` (guardarAhora devuelve el resultado), `js/ui.js` (init, pantallaArranque,
 arranquePintarLista, abrirPartidaDeLista, Mis partidas, charlaGrupal, Ajustes), `js/ui-partido.js` (córner), `js/arco-gl.js`,
@@ -5200,5 +5226,7 @@ arranquePintarLista, abrirPartidaDeLista, Mis partidas, charlaGrupal, Ajustes), 
   navegador lleno con el formato viejo → mudanza, marca la perdida, Continuar abre; 12 partidas; cierre brusco; sin
   IndexedDB y lleno → no miente. Bajo `--virtual-time-budget` IndexedDB es poco confiable: `test/doctor.js` usa
   localStorage (`PARTIDAS.apagada`).
-- **Estado:** doctor sano 134/134 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas) · core
-  1185/1185 · saves 12/12 · banco 255 sano (10 % despidos).
+- **Merge**: 7.9123 y 7.9124 (Grok/Sonnet, subidos directo a `main`: cupos con fuente, sonido, fixture 2026) quedaron
+  mezclados; este parche pasa a ser 7.9125.
+- **Estado (ya mezclado):** doctor sano 136/136 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa,
+  partidas) · core 1185/1185 · saves 12/12 · banco 255 sano (15 % despidos, tope 25 %).

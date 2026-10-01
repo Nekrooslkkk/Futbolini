@@ -1,6 +1,6 @@
 "use strict";
 /* ============================================================
-   FUTBOLINI · partidas.js — 7.9123 · dónde viven tus partidas (y que "guardado" nunca mienta)
+   FUTBOLINI · partidas.js — 7.9125 · dónde viven tus partidas (y que "guardado" nunca mienta)
 
    Bug del autor (URGENTE): "aprieto Continuar en el inicio y no carga la partida anterior".
    Causa, reproducida en Chromium: una partida pesa ~0,5 MB después de una temporada (el 70 % son los planteles de

@@ -649,23 +649,23 @@ function elegirEpoca(id){
       /* E-1 · la situación del club: por qué te metes en esto (Grok TAREA E / Claude 7.86) */
       if(typeof SITUACION_CLUB==="object" && SITUACION_CLUB[id])
         c.appendChild(el("p","mini","<b>La situación:</b> "+SITUACION_CLUB[id]));
-      /* corte 18/08 solo en la temporada 2026 actual (no en glorias históricas) */
+      /* corte 1/10 solo en la temporada 2026 actual (no en glorias históricas) */
       if((sel.base===2026) && sel.tipo!=="gloria" && !esB){
         c.appendChild(el("div","resul mitad","<b>Aviso.</b> Los planteles 2026 son <b>aproximados</b> y pueden haber cambiado en el mercado. Stats estimadas."));
         c.appendChild(el("h3","sub","Punto de la temporada"));
         const fc=el("div","fichas");
-        [["no","Temporada completa (enero)"],["si","Desde ahora (18 ago, resultados ya jugados)"]].forEach(([k,n])=>{
+        [["no","Temporada completa (enero)"],["si","Desde ahora (1 oct, resultados ya jugados)"]].forEach(([k,n])=>{
           const b=el("button","ficha",n);
           b.setAttribute("aria-pressed",(k==="si")===corte?"true":"false");
           b.onclick=()=>{ corte=(k==="si"); pintar(); };
           fc.appendChild(b);
         });
         c.appendChild(fc);
-        if(corte) c.appendChild(el("p","mini","Se cargan los partidos ya jugados del fixture (con marcador real si está) y una tabla de referencia al 18/08. Sigues desde el próximo. Colo-Colo tiene el fixture completo; los otros clubes usan la misma tabla semilla."));
+        if(corte) c.appendChild(el("p","mini","Se cargan los partidos ya jugados del fixture (con marcador real si está) y una tabla de referencia al 1/10. Sigues desde el próximo. Los 16 de Primera tienen el fixture, no solo Colo-Colo."));
       }
 
       const go=el("button","btn-aqua ancho verde",
-        sel.tipo==="gloria"?("Revivir "+sel.ep.etq):(sel.base===2026&&corte?"Seguir desde agosto 2026":("Empezar en "+sel.anio)));
+        sel.tipo==="gloria"?("Revivir "+sel.ep.etq):(sel.base===2026&&corte?"Seguir desde octubre 2026":("Empezar en "+sel.anio)));
       go.onclick=()=>{
         try{
           /* 7.13 · solo se redirige la era a 2026 si el club NO existe en la era
@@ -1785,7 +1785,7 @@ function charlaGrupal(tipo){
   const k="charlaGrupal_"+E.anio+"_"+(E.idx||0);
   if(E.flags[k]){ aviso("Ya hablaste con el grupo esta semana."); return null; }
   E.flags[k]=true;
-  /* 7.9123 · el autor: "Apoyar a todos dice siempre 0 lo sintieron". Era cierto y era mentira a la vez: el apoyo
+  /* 7.9125 · el autor: "Apoyar a todos dice siempre 0 lo sintieron". Era cierto y era mentira a la vez: el apoyo
      nunca bajaba a nadie, y se contaba lo que se QUERÍA cambiar, no lo que cambió (el que ya estaba en 100 contaba
      como que respondió). Ahora se mide la moral/forma de verdad antes y después, y el discurso al grupo tiene costo:
      al que casi no juega, "todos somos importantes" le suena a palabras vacías. */
@@ -3423,7 +3423,7 @@ function cargarPartidaArchivo(f){
   lector.readAsText(f);
 }
 /* ---------------- mis partidas (varios slots) ---------------- */
-/* 7.9123 · antes de soltar la partida abierta: si no se pudo guardar, se pregunta (si no, se perdía lo último callado) */
+/* 7.9125 · antes de soltar la partida abierta: si no se pudo guardar, se pregunta (si no, se perdía lo último callado) */
 async function _soltarPartidaActual(){
   if(!(E&&E.club)) return true;
   const r=await guardar();
@@ -3474,7 +3474,7 @@ function panelMisPartidas(v){
   const bNueva=el("button","btn-aqua chico verde","➕ Nueva partida (elegir otro club)"); bNueva.style.marginTop="8px";
   bNueva.onclick=cambiarDeClub;
   pm.cuerpo.appendChild(bNueva);
-  /* 7.9123 · dónde viven y cuánto ocupan (y pedirle al navegador que no las borre) */
+  /* 7.9125 · dónde viven y cuánto ocupan (y pedirle al navegador que no las borre) */
   const info=el("p","mini mp-info"); pm.cuerpo.appendChild(info);
   const pintarInfo=()=>{ info.textContent=(typeof partidasResumenTxt==="function")?partidasResumenTxt():""; };
   pintarInfo();
@@ -3516,7 +3516,7 @@ function panelMisPartidas(v){
       if(!esAct&&!rota){
         const bc=el("button","btn-aqua chico","Continuar"); bc.onclick=()=>continuarPartida(s.id); acc.appendChild(bc);
       }
-      if(!rota){   /* 7.9123 · bajar CUALQUIER partida (sirve para rescatar una que no abre y mandársela al autor) */
+      if(!rota){   /* 7.9125 · bajar CUALQUIER partida (sirve para rescatar una que no abre y mandársela al autor) */
         const bb=el("button","btn-aqua chico"); bb.textContent="⬇"; bb.title="Descargar esta partida"; bb.setAttribute("aria-label","Descargar esta partida"); bb.style.marginLeft="6px";
         bb.onclick=()=>{ if(esAct&&typeof descargarPartida==="function") descargarPartida(); else descargarPartidaDe(s.id); };
         acc.appendChild(bb);
@@ -3858,7 +3858,7 @@ function vistaAjustes(host){
     p.cuerpo.appendChild(fc);
     p.cuerpo.appendChild(el("p","mini","🎥 <b>3D cámara FIFA</b> (beta): el partido en 3D con cámara de transmisión que sigue la pelota, movido por la misma simulación. En desarrollo: todavía no está pulido. En Modo papa cae al cenital 2D (más liviano)."));
   }
-  /* 7.9123 · el minijuego de córner se puede apagar (el autor: "se traba"): apagado, el córner se juega solo */
+  /* 7.9125 · el minijuego de córner se puede apagar (el autor: "se traba"): apagado, el córner se juega solo */
   if(E){
     p.cuerpo.appendChild(el("label","lb","Córners a favor (dirigiendo)"));
     const fco=el("div","fichas"), coOn=E.config&&E.config.cornerMini===false?false:true;
@@ -4988,7 +4988,7 @@ function _arrCuando(ts){
   if(!ts) return "";
   try{ return new Date(ts).toLocaleString("es-CL",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; }
 }
-/* 7.9123 · los botones de las partidas guardadas (se repinta solo cuando el inventario de partidas.js termina) */
+/* 7.9125 · los botones de las partidas guardadas (se repinta solo cuando el inventario de partidas.js termina) */
 function arranquePintarLista(cont,slots){
   const salir=cont._salir||function(){ render(); };
   const enFoco=cont.contains(document.activeElement);
@@ -5040,7 +5040,7 @@ function pantallaArranque(haySave,slots){
   const btns=el("div","arr-btns");
   const salir=cb=>{ ov.classList.add("fuera"); setTimeout(()=>{ if(ov.parentNode) ov.remove(); },430); if(cb) cb(); render(); };
   if(slots.length){
-    /* 7.9123 · la lista va ordenada (la última que jugaste arriba, con "Continuar") y con su propio scroll: con muchas
+    /* 7.9125 · la lista va ordenada (la última que jugaste arriba, con "Continuar") y con su propio scroll: con muchas
        partidas ya no agranda la pantalla. Una partida sin datos se ve como tal, no como un botón que no hace nada. */
     const lista=el("div","arr-lista"); lista.id="arrLista"; lista._salir=salir;
     arranquePintarLista(lista,slots);
@@ -5150,7 +5150,7 @@ document.addEventListener("keydown",function(e){
   try{
     let actId=await slotActivoId();
     if(!actId && lista.length) actId=slotMasNuevo(lista).id;
-    /* 7.9123 · sin esperar a IndexedDB: la copia rápida, solo si es tan nueva como dice la lista. Si no, el botón de
+    /* 7.9125 · sin esperar a IndexedDB: la copia rápida, solo si es tan nueva como dice la lista. Si no, el botón de
        inicio abre la copia más nueva de la base (antes caía a "la última de la lista", que podía ser otra partida). */
     g=await partidaRapidaInicio(actId,lista);
     /* sin ranuras sigue el save viejo. Con ranuras, una partida borrada no vuelve por LLAVE. */
@@ -5162,7 +5162,7 @@ document.addEventListener("keydown",function(e){
     catch(e){ console.error("Save dañado:",e); E=null; haySave=false; aviso("La partida abierta no carga ("+String(e&&e.message||e).slice(0,60)+"). Sigue guardada: elígela de la lista o descárgala en Ajustes ▸ Mis partidas.",8000); }
   }
   pantallaArranque(haySave,lista);
-  /* 7.9123 · de fondo: muda las partidas de localStorage a IndexedDB, rescata las que no estaban en la lista y marca
+  /* 7.9125 · de fondo: muda las partidas de localStorage a IndexedDB, rescata las que no estaban en la lista y marca
      las que no tienen datos. Si cambió algo y la pantalla de inicio sigue ahí, se repinta la lista. */
   partidasMantener().then(async rep=>{
     if(!rep.recuperadas.length&&!rep.sinDatos.length) return;
