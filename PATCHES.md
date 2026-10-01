@@ -5162,3 +5162,19 @@ Archivos nuevos: `js/cancha3d.js`. Tocados: `index.html` (carga + `?v=`), `js/ui
   2D en Modo papa). Al revés (sin `_cvStep`): "la cancha 3D no avanza con _cvStep".
 - **Estado:** doctor sano 126/126 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa) · core 1185/1185 ·
   saves 12/12.
+
+### 7.9123 — Cupos con fuente, listas 2026, arquero del tiro libre, sonido. Sin G2 y sin números de caja inventados
+Archivos: `js/data-copas2026.js`, `js/data-proximamente.js`, `js/data-b2026.js`, `js/data-segunda2026.js`,
+`js/data-planteles.js`, `js/ui-partido.js`, `js/sonido.js` (nuevo), `js/dev-banco.js`, `js/util.js`, `index.html`.
+- **G2 no se hace.** La reacción de los extras del 3D pisa `js/cancha3d.js` (7.9122). No toqué cámara, `_cvStep` ni el esqueleto.
+- **Cupos Chile:** Libertadores 1 hasta 1965, 2 desde 1966, 3 desde 2000, 4 desde 2017. Sudamericana desde 2002 (antes el código decía 2001). El 4 de Sudamericana queda como cupo moderno: en 2002 Chile tuvo 2 y no reescribí 2003-2016. Copa Chile sigue en 2008. Fuentes en el comentario de `cuposEpocaChile`.
+- **Próximamente:** Primera Nacional 2026 pasa de 34 a 36 (salen Arsenal y Alvarado; entran Acassuso, Godoy Cruz, Gimnasia de Jujuy y San Martín de San Juan). Série A 2026: los 20 nombres ya estaban bien. Siguen con candado.
+- **Caja B y Segunda:** ningún número cambia. No hay balance público club por club al 1 oct 2026. Deuda media B 112,2 y Segunda 53,6 (millones del juego), igual que antes. Cada club lleva el comentario.
+- **Extranjeros:** Colo-Colo 2026 sigue con 7 marcados (el cupo es 6). No hay fuente para sacar el rasgo. La U tiene 5. Nadie se borra.
+- **Tiro libre:** el arquero va al palo libre (78 / 282), no al lado de la barrera. El córner no se mueve. La cámara no se toca.
+- **Sonido:** oscilador, sin mp3. Clic, aviso, gol y pitazo. Se calla con Animaciones OFF y con Sonido off. Doctor `sonido_callado`.
+- **Fotos de estadio:** no se bajan. El pedido del autor es sin Wikimedia.
+- **Calendario:** barrido estructural (sin inventar marcadores) en la nota de `ChatDeTrabajIA.md`. El doctor `calendario_sano` no caza fechas dobles ni un `real:` falso.
+- **Estado:** doctor sano 127/127 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa) · core 1185/1185.
+  Banco TEMPS=3: 254/255. Colo-Colo 1925 al llegar a 1928 cae por sueldo del DT contra la planilla. El mismo fallo está en 7.9122 (`d93aa9f`), no lo metió esta tanda.
+

@@ -2412,3 +2412,86 @@ solo datos con fuente clara. Opus mezcla y agrega los chequeos del doctor que fa
 - Afinar cámara: `CAM3D` arriba del archivo (una sola fuente de verdad). El doctor `cancha3d_motor` la vigila.
 - Pendiente (Opus, con el ojo del autor): física de pelota (arco/aire), arquero que atrapa (no congela), modelos/kits,
   y los set-pieces con barra de potencia Aero (penal/TL/córner). Hoy está APAGADO por defecto (Ajustes ▸ Pantalla).
+
+**7.9123 (Grok) · sin G2. Cupos, listas, caja sin inventar, arquero del tiro libre, sonido.**
+
+G2 no entra: pisa la cámara 3D de 7.9122. No toqué `cancha3d.js`, `CAM3D`, `_cvStep` ni los resolvers.
+
+Fotos de estadio: no. El pedido del autor es sin Wikimedia. No bajé Commons.
+
+1925: el short de los clubes que quedaron fuera del kit sigue sin fuente. No lo inventé.
+
+### Calendario (estructural, sin marcadores inventados)
+
+| época | torneo | qué está mal | fuente | archivo:línea |
+|---|---|---|---|---|
+| 1991 | Liga (CC y U) | 30 fechas, ninguna repetida, las 30 con `real`. No contrasté el marcador contra RSSSF. La pregunta de las 33 fechas queda abierta. | barrido del array, 1 oct 2026 | `js/data-liga.js` LIGA_CC_1991 · `js/data-grok-plus.js` LIGA_UCH_1991 |
+| 2026 | Liga Primera (CC, U, UC, PAL, LIM) | 30 fechas, sin hueco ni fecha repetida. Varios `real:null` después del corte. No rellené resultados. | mismo barrido | `js/data-liga.js`, `js/data-grok.js` |
+| 2006 | Apertura/Clausura | El juego arma 18+18 y playoffs. No hay un array de marcador real para auditar fecha a fecha. | `FORMAT_2006` | `js/data-2006.js` |
+| 2026 | Argentina | No hay array `fecha` + `real` en el archivo. No puedo decir que una zona esté mal sin inventar el fixture. | lectura de `data-argentina2026.js` | `js/data-argentina2026.js` |
+| todas | doctor | `calendario_sano` mira rival vacío, autocruce y marcador si ya se jugó. No caza una fecha doble, un bye mal puesto ni un `real:"2-1"` falso. | `js/dev-doctor.js` cerca de la línea 86 | para Opus: un chequeo que cuente fechas repetidas en los arrays y un club dos veces en la misma jornada **antes** de `sanearJornadas` |
+
+El contraste marcador por marcador va en el prompt de Deepseek, más abajo. Cuando vuelva la tabla con URL, se aplica solo esa fila.
+
+### Listas 2026
+
+Primera Nacional: 36 clubes. Fuente: Ascenso del Interior, 21 dic 2025. Salen Arsenal de Sarandí y Alvarado. Entran Acassuso, Godoy Cruz, Gimnasia y Esgrima de Jujuy y San Martín de San Juan. Midland queda como Ferrocarril Midland. Siguen con candado.
+
+Série A: los 20 nombres ya calzaban. Fuente: No Ataque, 7 dic 2025, y ge, 29 dic 2025. Suben Coritiba, Athletico, Chapecoense y Remo. No cambié nombres.
+
+### Cupos
+
+`cuposEpocaChile`: 1 hasta 1965, 2 desde 1966, 3 desde 2000, 4 desde 2017. Sudamericana desde 2002, no desde 2001. El 4 de Sudamericana es el cupo de ahora: en la edición 2002 Chile tuvo 2 y no armé la tabla 2003-2016. Copa Chile sigue en 2008 porque la fuente clara (ANFP, 17 nov 2016) habla de la Libertadores 2017, no de los años de antes. El doctor `cupo_copa_se_juega` ahora falla si eso se revierte.
+
+### Caja y deuda
+
+No moví ningún número de B ni de Segunda. No hay un balance público, club por club, que entre en los millones del juego. Deuda media, igual que antes: B 112,2 (16 clubes, suma 1795) y Segunda 53,6 (14 clubes, suma 750). Cada línea dice que al 1 oct 2026 no había fuente. Si Deepseek trae URL y número, ahí se cambia.
+
+### Extranjeros 2026
+
+Colo-Colo: 7 con el rasgo (Vozinha, Sosa, Méndez, Aquino, Correa, Pastrán, Romero). El cupo es 6 inscritos y 5 en cancha. Aquino sigue citado como argentino el 11 ene 2026 (Emol). Vozinha es de Cabo Verde (Olé, 24 jul 2026). No le saqué el rasgo a nadie y no borré jugadores. La U tiene 5, bajo el cupo. Zaldivia no lo marqué extranjero.
+
+### Resto
+
+Tiro libre: el arquero pasa de 124/236 (al lado de la barrera) a 78/282 (el palo que la muralla no tapa). El córner queda en 124/236. No toqué `camaraArco`.
+
+Sonido: `js/sonido.js`, oscilador, sin archivo. Clic, aviso, gol y pitazo. Animaciones OFF lo calla. Hay interruptor en Ajustes. Doctor `sonido_callado`.
+
+Pruebas de esta tanda: doctor 127/127 (4 partidas + celular), núcleo 1185/1185, dev 593/593 con el doctor dentro del modo papa. Banco `TEMPS=3`: 254/255. La que cae es Colo-Colo 1925, al año 1928, «el DT cobra 0.5 M/semana con planilla ~68 M/año». Lo corrí también en `d93aa9f` (7.9122, sin estos cambios) y cae igual. No es de esta tanda. El doctor `calendario_sano` no vio un calendario roto en las otras 254.
+
+### Prompt para Deepseek (copiar y pegar)
+
+El formato de vuelta es este, y nada más. Sin ensayo, sin voseo, sin marcador inventado.
+
+```
+Trabajas como revisor de datos de Futbolini. No editas el repo. No inventas marcadores, deudas ni citas de personas. Si no hay una página que lo diga, el valor es null y la fuente queda vacía. Trato de tú. Sin voseo.
+
+Devuelve SOLO estas dos tablas, en markdown. Una fila por hallazgo. Si no hay hallazgo en un torneo, una sola fila que diga "sin hallazgo" y deje la fuente vacía.
+
+## CALENDARIO
+
+| época | torneo | id o fecha | qué está mal o confirmado | valor correcto o null | fuente (URL + fecha de la página) | archivo sugerido |
+
+Revisa, contra RSSSF, Wikipedia de la temporada o ANFP/AFA/CBF, y solo escribe una fila cuando el dato del juego no calza o cuando un real:null ya tiene marcador público al 1 oct 2026:
+
+1. Chile 1991. El juego tiene 30 fechas en LIGA_CC_1991 (js/data-liga.js) y LIGA_UCH_1991 (js/data-grok-plus.js), todas con real:"x-y", sin número de fecha repetido. ¿El torneo tuvo 30 o 33 fechas? Contrasta los marcadores. No rellenes de memoria.
+2. Chile 2006. Apertura y Clausura de 18 fechas más playoffs (js/data-2006.js). El juego no guarda el marcador real fecha a fecha. Si encuentras el fixture oficial, una fila por cruce que falte, con el marcador solo si la URL lo muestra.
+3. Chile 2026. LIGA_CC_2026, LIGA_UCH_2026, LIGA_UC_2026, LIGA_PAL_2026, LIGA_LIM_2026. 30 fechas. Hay real:null después del corte 18 ago 2026. Si ese partido ya se jugó, pon el marcador con URL. Si no se jugó, no inventes: valor null.
+4. Argentina 2026. data-argentina2026.js no trae un array fecha+real. Si el formato de zonas de la AFA 2026 no es el que el juego describe, una fila con la URL.
+5. Copa Chile, Copa de la Liga y Libertadores 2026: solo si una fecha de copa pisa una fecha de liga y puedes citar el calendario.
+
+## CAJA
+
+Unidad del juego: millones de pesos de juguete, no un balance. No cambies la escala. Hoy no se tocó ningún número.
+
+| club id | plata actual | deuda actual | plata propuesta o igual | deuda propuesta o igual | año | URL | fecha de la fuente | ¿cambiar número? sí/no |
+
+B: CBL 280/160, SW 300/140, SLQ 180/90, ANT 240/130, MAG 160/80, UES 260/220, REC 140/70, PMO 170/85, SMA 150/75, COP 160/95, TEM 170/100, IQQ 200/180, USF 120/90, CUR 140/110, SCR 110/70, RAN 130/100.
+
+Segunda: SMO 260/120, LSC 210/60, OSO 230/70, LIN 200/55, CLC 190/50, TRA 200/55, COL 180/40, OVA 180/50, CNA 170/40, BSA 170/45, RSJ 160/35, SCI 170/40, GVE 170/45, REN 160/45.
+
+Si la fuente no da un número, ¿cambiar número? = no y la propuesta queda igual a la actual.
+
+Nada más. Sin introducción y sin cierre.
+```
+

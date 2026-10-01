@@ -680,6 +680,14 @@ if(typeof devDoctorRegistrar==="function"){
         if(!q(1991,1).lib||!q(1991,2).lib) f.push("1991: el campeón o el 2° no clasifican a Libertadores");
         if(q(1991,3).lib) f.push("1991: el 3° clasifica (Chile tenía 2 cupos)");
         if(q(1991,5).sud) f.push("1991: da Sudamericana, que nace en 2002");
+        if(q(1964,2).lib) f.push("1964: el 2° clasifica (hasta 1965 Chile llevaba 1 cupo)");
+        if(!q(1966,2).lib) f.push("1966: el 2° no clasifica (desde ahí son 2)");
+        if(q(1999,3).lib) f.push("1999: el 3° clasifica (el tercer cupo parte en 2000)");
+        if(!q(2000,3).lib) f.push("2000: el 3° no clasifica");
+        if(q(2016,4).lib) f.push("2016: el 4° clasifica (el cuarto cupo parte en 2017)");
+        if(!q(2017,4).lib) f.push("2017: el 4° no clasifica");
+        if(q(2001,8).sud) f.push("2001: da Sudamericana, que nace en 2002");
+        if(!q(2002,5).sud) f.push("2002: no da Sudamericana");
       } finally { E.flags=JSON.parse(flagsPrev); E.anio=anioPrev; E.eraBase=eraPrev; }
       return f.length?_dmal(f.length+" problema(s)",f):_dok("con cupo, la Libertadores aparece en 1990, 1992, 2007 y 2027; cupos por época (nada antes de 1960)");
     }});
@@ -796,5 +804,32 @@ if(typeof devDoctorRegistrar==="function"){
       /* mapeo coherente: el módulo mapea sim(0..1)→metros centrados (±52.5 largo, ±34 ancho) */
       if(s3 && !/\(simX-0\.5\)\*105|\(b\.x-0\.5\)\*105|worldZ/.test(s3.replace(/\s/g,""))&&!/105/.test(s3)) f.push("el mapeo sim→cancha no usa las medidas reales (105×68)");
       return f.length?_dmal(f.length+" problema(s)",f):_dok("el 3D corre sobre la misma simulación (_cvStep/_cvSt), mapea 105×68 y cae al 2D en Modo papa");
+    }});
+}
+
+/* 7.9123 · el sonido es un oscilador, no un archivo. Animaciones OFF y el interruptor lo callan. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"sonido_callado", area:"interfaz", n:"El sonido se calla con Animaciones OFF y con el interruptor",
+    arreglo:"js/sonido.js sonidoPermitido(). No hay mp3: es WebAudio.",
+    fn:function(){
+      if(typeof sonidoPermitido!=="function"||typeof sonar!=="function") return _dmal("no cargó js/sonido.js",["falta el script en index.html"]);
+      var b=document.body, tenia=b.classList.contains("anim-off"), prev=null, f=[];
+      try{ prev=localStorage.getItem("futbolini3_sonido"); }catch(e){}
+      try{
+        localStorage.removeItem("futbolini3_sonido");
+        b.classList.remove("anim-off");
+        if(!sonidoPermitido()) f.push("con las animaciones prendidas el sonido queda mudo");
+        b.classList.add("anim-off");
+        if(sonidoPermitido()) f.push("con Animaciones OFF el sonido sigue activo");
+        b.classList.remove("anim-off");
+        localStorage.setItem("futbolini3_sonido","off");
+        if(sonidoPermitido()) f.push("con Sonido off sigue activo");
+        sonar("gol");
+      }finally{
+        b.classList.toggle("anim-off",tenia);
+        try{ if(prev==null) localStorage.removeItem("futbolini3_sonido"); else localStorage.setItem("futbolini3_sonido",prev); }catch(e){}
+      }
+      if(String(celebrarGol).indexOf("gol-toast")<0) f.push("el festejo del gol perdió el zócalo del rival");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("callado con Animaciones OFF y con Sonido off");
     }});
 }

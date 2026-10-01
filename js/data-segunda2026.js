@@ -100,12 +100,22 @@ if(typeof ERA==="object" && ERA[2026]) ERA["2026c"]=ERA[2026];
   });
   if(typeof CAJA_BASE_2026!=="undefined") Object.assign(CAJA_BASE_2026,{
     /* 7.9106 · caja inicial aproximada = 4 a 5 meses de planilla (antes ~2 meses: el club nacía quebrado y en la
-       semana 5 caía en crisis). Deudas sin cambio. Cifras estimadas, en millones de pesos 2026. */
-    SMO:{plata:260,deuda:120}, LSC:{plata:210,deuda:60},  OSO:{plata:230,deuda:70},
-    LIN:{plata:200,deuda:55},  CLC:{plata:190,deuda:50},  TRA:{plata:200,deuda:55},
-    COL:{plata:180,deuda:40},  OVA:{plata:180,deuda:50},  CNA:{plata:170,deuda:40},
-    BSA:{plata:170,deuda:45},  RSJ:{plata:160,deuda:35},  SCI:{plata:170,deuda:40},
-    GVE:{plata:170,deuda:45},  REN:{plata:160,deuda:45}
+       semana 5 caía en crisis). Deudas sin cambio. Cifras estimadas, en millones de pesos 2026.
+       7.9123 · revisado el 1 oct 2026. Sigue sin memoria pública club por club. Ningún número se mueve. */
+    SMO:{plata:260,deuda:120}, /* sin balance público al 1 oct 2026 */
+    LSC:{plata:210,deuda:60},  /* sin balance público al 1 oct 2026 */
+    OSO:{plata:230,deuda:70},  /* sin balance público al 1 oct 2026 */
+    LIN:{plata:200,deuda:55},  /* sin balance público al 1 oct 2026 */
+    CLC:{plata:190,deuda:50},  /* sin balance público al 1 oct 2026 */
+    TRA:{plata:200,deuda:55},  /* sin balance público al 1 oct 2026 */
+    COL:{plata:180,deuda:40},  /* sin balance público al 1 oct 2026 */
+    OVA:{plata:180,deuda:50},  /* sin balance público al 1 oct 2026 */
+    CNA:{plata:170,deuda:40},  /* sin balance público al 1 oct 2026 */
+    BSA:{plata:170,deuda:45},  /* sin balance público al 1 oct 2026 */
+    RSJ:{plata:160,deuda:35},  /* sin balance público al 1 oct 2026 */
+    SCI:{plata:170,deuda:40},  /* sin balance público al 1 oct 2026 */
+    GVE:{plata:170,deuda:45},  /* sin balance público al 1 oct 2026 */
+    REN:{plata:160,deuda:45}   /* sin balance público al 1 oct 2026 */
   });
   var estatutoC={propiedad:"club_social",modelo:"vendedor",identidad:"regional",barra:"tolerancia",finanzas:"austeridad",anfp:"bloque_chicos"};
   if(typeof ESTATUTO_INICIAL!=="undefined"){

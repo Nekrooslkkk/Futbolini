@@ -1073,7 +1073,13 @@ function _pj93(n,pos,edad,niv,ras){
 var S=_pj93;
 
 /* Colo-Colo · Anexo temporada 2026, act. 11 sep. DT Fernando Ortiz. Capitán Vidal.
-   Bajas documentadas: Pizarro (Central), Pavez (Alianza), Cepeda (Elche), Cortés (Argentinos), Opazo (Everton). */
+   Bajas documentadas: Pizarro (Central), Pavez (Alianza), Cepeda (Elche), Cortés (Argentinos), Opazo (Everton).
+   7.9123 · cupo ANFP 2026: 6 inscritos, 5 en cancha (Dale Albo, 14 dic 2025; Emol, 11 ene 2026).
+   Marcados extranjero, 7, y no se le saca el rasgo a ninguno: no hay fuente de nacionalización.
+   Vozinha es de Cabo Verde (Olé, 24 jul 2026). Aquino sigue contado como argentino (Emol, 11 ene 2026).
+   Méndez nació en Montevideo y Romero en Moreno (ficha de plantel, Mundo Deportivo, sep 2026).
+   Sosa, Correa y Pastrán siguen como extranjeros en esas notas. El plantel real queda sobre el cupo:
+   no se borra a nadie; el mercado no deja inscribir otro. */
 const PLANTEL_CC_FULL_2026=[
   S("Fernando de Paul","ARQ",35,78,["experiencia","seguro bajo los tres palos"]),
   S("Vozinha","ARQ",40,70,["veterano","extranjero"]),
@@ -1102,7 +1108,10 @@ const PLANTEL_CC_FULL_2026=[
 ];
 
 /* Universidad de Chile · Anexo temporada 2026, act. 11 sep. DT Fernando Gago (desde 19 mar).
-   Capitán Marcelo Díaz. Assadi vendido a AIK (cláusula, 21 ago) — no va. */
+   Capitán Marcelo Díaz. Assadi vendido a AIK (cláusula, 21 ago) — no va.
+   7.9123 · extranjeros marcados en este array: 5 (Tamayo, Reinhart, Lucero, Rivero, Reyna), bajo el cupo de 6.
+   Zaldivia no lleva el rasgo: no lo marqué extranjero sin una fuente que diga que perdió la nacionalidad chilena.
+   No se le quita el rasgo a los 5: no hay carta de nacionalización citada. */
 const PLANTEL_UCH_FULL_2026=[
   S("Gabriel Castellón","ARQ",33,78,["reflejos"]),
   S("Cristopher Toselli","ARQ",38,70,["veterano"]),

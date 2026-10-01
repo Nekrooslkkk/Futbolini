@@ -765,6 +765,7 @@ function modalConferencia(part){
   });
 }
 function arrancarPartido(part,modo){
+  if(modo!=="simular"&&typeof sonar==="function") sonar("pitazo");
   P_ACTUAL=iniciarPartido(part,modo);
   PAUSADO=false; MOMENTO_OPS=[];
   if(P_ACTUAL){ P_ACTUAL._holdUI=null; P_ACTUAL._holdKind=null; P_ACTUAL._holdEv=null; }
@@ -933,6 +934,7 @@ function golCelDuracion(propio){
   return (perf||reduce)?1600:3300;
 }
 function celebrarGol(P, propio, quien, marcEl){
+  if(typeof sonar==="function") sonar("gol");
   /* el marcador late */
   if(marcEl){ const go=marcEl.querySelector(".go"); if(go){ go.classList.remove("pulso"); void go.offsetWidth; go.classList.add("pulso"); } }
   const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
@@ -2247,7 +2249,9 @@ function minijuegoPenal(P,pateador,opts){
 function minijuegoTiroLibre(P){
   const j=((typeof pateadorDe==="function")?pateadorDe(P.once):(P.once&&P.once[0]))||{n:"el tirador",nivel:70,rasgos:[]};
   const kp=Math.random()<0.5?0:1;
-  const arqX=kp?236:124;
+  /* 7.9123 · la barrera tapa el medio de la valla (centros 151–205). El arquero no se queda pegado a la muralla:
+     va al palo que esa barrera no cubre (78 y 282, adentro del poste 50 / 310). No se mueve la cámara ni el córner. */
+  const arqX=kp?282:78;
   const kit=_kitDe(P.part&&P.part.rivalId, ["#1a6ad4","#111827"]);
   const kitAtk=_kitDe(typeof E!=="undefined"&&E&&E.club, ["#f4f4f4","#111111"]);
   let aim=null, tirado=false;
