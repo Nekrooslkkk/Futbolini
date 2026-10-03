@@ -719,7 +719,7 @@ function festejoArcoActivo(){ return !!(_A3_FEST&&_A3_FEST.svg.isConnected&&perf
 (function(){
   const o=window._abrirEscenaArco; if(typeof o!=="function"||o._a3) return;
   const w=function(){ const r=o.apply(this,arguments);
-    try{ if(r&&r.stage){ r.stage.classList.add("e3d-v2"); const h=document.createElement("div"); h.className="a3-hint"; h.textContent="Desliza hacia el arco: la velocidad es la potencia (a lo bestia, se eleva). La curva es la comba; corto y suave es picada. En PC: flechas apuntan, Espacio patea."; r.stage.appendChild(h); setTimeout(function(){ h.classList.add("oculto"); },4200); } }catch(e){}
+    try{ if(r&&r.stage){ r.stage.classList.add("e3d-v2"); const h=document.createElement("div"); h.className="a3-hint"; h.textContent="Desliza hacia el arco: la velocidad es la potencia (a lo bestia, se eleva). La curva es la comba; corto y suave es picada. En PC: flechas apuntan; mantén Espacio para cargar la potencia y suelta para patear (Enter patea al tiro)."; r.stage.appendChild(h); setTimeout(function(){ h.classList.add("oculto"); },4200); } }catch(e){}
     return r; };
   Object.keys(o).forEach(k=>w[k]=o[k]); w._a3=true; window._abrirEscenaArco=w;
 })();
@@ -747,11 +747,11 @@ if(typeof document!=="undefined"&&!document.getElementById("css-arco3d")){
     "@media (max-width:760px){html body .modal.escena-3d .e3d-stage.e3d-v2{flex:1 1 auto !important;aspect-ratio:auto !important;min-height:250px !important;max-height:none !important;margin:0 !important}}"+
     ".e3d-stage .a3-hint{position:absolute;left:8px;right:8px;top:8px;padding:6px 10px;border-radius:10px;background:rgba(5,12,24,.62);color:#e8f4ff;font-size:12px;line-height:1.35;pointer-events:none;transition:opacity .4s}"+
     ".e3d-stage .a3-hint.oculto{opacity:0}"+
-    ".e3d-stage .a3-pot{position:absolute;left:10px;bottom:10px;width:min(220px,46%);padding:5px 8px;border-radius:10px;background:rgba(5,12,24,.62);opacity:0;transition:opacity .2s;pointer-events:none}"+
+    ".e3d-stage .a3-pot{position:absolute;left:10px;bottom:10px;width:min(240px,52%);padding:6px 10px 8px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.06) 48%,rgba(0,0,0,.18) 52%),rgba(8,30,62,.72);border:1px solid rgba(255,255,255,.45);box-shadow:0 3px 12px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.5);opacity:0;transition:opacity .2s;pointer-events:none}"+
     ".e3d-stage .a3-pot.on{opacity:1}.a3-pot-t{font:800 10px system-ui;letter-spacing:1px;color:#cfe6ff;text-transform:uppercase;margin-bottom:3px}"+
-    ".a3-pot-b{position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,rgba(79,191,63,.25) 0 60%,rgba(240,180,41,.25) 60% 92%,rgba(224,60,50,.3) 92%);box-shadow:inset 0 1px 2px rgba(0,0,0,.5);overflow:hidden}"+
-    ".a3-pot-b i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;background:linear-gradient(180deg,#b6f5a8,#3fbf3a);box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}"+
-    ".a3-pot-b i.n{background:linear-gradient(180deg,#ffe08a,#f0a020)}.a3-pot-b i.r{background:linear-gradient(180deg,#ff9a8a,#d8352a)}"+
+    ".e3d-stage .a3-pot.carga{opacity:1}.a3-pot-b{position:relative;height:13px;border-radius:8px;background:linear-gradient(90deg,rgba(79,191,63,.25) 0 60%,rgba(240,180,41,.25) 60% 92%,rgba(224,60,50,.3) 92%);box-shadow:inset 0 1px 2px rgba(0,0,0,.5);overflow:hidden}"+
+    ".a3-pot-b i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:8px;background:linear-gradient(180deg,#e9ffe2 0,#9be98c 45%,#3fbf3a 55%,#2f9e2c);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 0 8px rgba(120,240,110,.6)}"+
+    ".a3-pot-b i.n{background:linear-gradient(180deg,#fff6d6 0,#ffe08a 45%,#f0a020 55%,#d98a10)}.a3-pot-b i.r{background:linear-gradient(180deg,#ffe2dc 0,#ff9a8a 45%,#d8352a 55%,#b52a20)}"+
     ".a3-pot-m{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.8)}.a3-pot-m.r{background:#ffd0cc}"+
     ".e3d-stage .a3-repe{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:6px;background:#d6262f;color:#fff;font-weight:900;font-size:12px;letter-spacing:1.5px;animation:a3Repe 1s ease-in-out infinite alternate}"+
     "@keyframes a3Repe{from{opacity:.75}to{opacity:1}}"+
@@ -805,12 +805,46 @@ function _a3Teclado(e){
     if(!svg._teclaIni){ svg._teclaIni=true; A3_TECLA.x=180; A3_TECLA.y=100; A3_TECLA.iman=1; _a3TeclaApuntar(svg,0,0); }
     else _a3TeclaApuntar(svg,mov[0],mov[1]); const h=modal.querySelector(".a3-hint"); if(h) h.classList.add("oculto"); return; }
   if(k==="1"||k==="2"||k==="3"){ const bs=modal.querySelectorAll(".penal-ef button"); const b=bs[+k-1]; if(b){ e.preventDefault(); b.click(); } return; }
-  if(k===" "||k==="Enter"){
-    const b=[].slice.call(modal.querySelectorAll("button")).find(x=>!x.disabled&&/patear|cobrar|pegarle|¡/i.test(x.textContent)&&!/corto/i.test(x.textContent));
-    /* con la escena abierta, Espacio nunca pausa el partido de fondo ni baja la página */
+  if(k===" "){
+    /* 7.9126 · estilo Score Hero: MANTENER Espacio carga la barra de potencia; al soltar, patea con esa potencia */
+    e.preventDefault(); e.stopPropagation();
+    if(e.repeat||svg._carga) return;
+    if(!svg._teclaIni){ svg._teclaIni=true; A3_TECLA.x=180; A3_TECLA.y=100; A3_TECLA.iman=1; _a3TeclaApuntar(svg,0,0); }
+    _a3CargaEmpieza(modal,svg);
+    return;
+  }
+  if(k==="Enter"){
+    const b=_a3BotonTiro(modal);
+    /* con la escena abierta, Enter/Espacio nunca pausan el partido de fondo ni bajan la página */
     e.preventDefault(); e.stopPropagation();
     if(b) b.click();
   }
 }
-if(typeof document!=="undefined"&&!document._a3Teclado){ document._a3Teclado=true; document.addEventListener("keydown",_a3Teclado,true); }
+function _a3BotonTiro(modal){ return [].slice.call(modal.querySelectorAll("button")).find(x=>!x.disabled&&/patear|cobrar|pegarle|¡/i.test(x.textContent)&&!/corto/i.test(x.textContent)); }
+/* la barra se llena en A3_CARGA_MS; pasado el 92 % se te eleva (como el deslizamiento "a lo bestia") */
+function _a3CargaEmpieza(modal,svg){
+  const barra=modal.querySelector(".a3-pot"), fill=barra&&barra.querySelector("i");
+  const c={t0:performance.now(), raf:0, v:0}; svg._carga=c;
+  if(barra) barra.classList.add("on","carga");
+  const pintar=()=>{ if(svg._carga!==c) return; c.v=Math.min(1,(performance.now()-c.t0)/A3_CARGA_MS);
+    if(fill){ fill.style.width=(c.v*100).toFixed(1)+"%"; fill.className=c.v>A3_POT.pasado?"r":(c.v>=A3_POT.potente?"n":""); }
+    c.raf=requestAnimationFrame(pintar); };
+  pintar();
+}
+function _a3CargaSuelta(e){
+  if(e.key!==" ") return;
+  const modal=document.querySelector("#capa-modal .modal.escena-3d")||document.querySelector("#capa-modal .modal"); if(!modal) return;
+  const svg=modal.querySelector(".e3d-stage svg"); if(!svg||!svg._carga) return;
+  e.preventDefault(); e.stopPropagation();
+  const c=svg._carga; svg._carga=null; cancelAnimationFrame(c.raf);
+  const v=Math.min(1,(performance.now()-c.t0)/A3_CARGA_MS);
+  const ef=efectoConPotencia({curl:0,picada:false},v);
+  const bs=modal.querySelectorAll(".penal-ef button"), idx={colocado:0,potente:1,picadita:2}[ef.efecto]; if(bs[idx]) bs[idx].click();
+  const cam=_camDe(svg);
+  if(ef.pasado&&cam&&cam.frontal){ A3_TECLA.y=Math.max(4,A3_TECLA.y-(26+(v-A3_POT.pasado)*300)); _a3TeclaApuntar(svg,0,0); }
+  svg._swipe=ef;   /* después de re-apuntar (el puntero sintético borra el trazo) */
+  const barra=modal.querySelector(".a3-pot"); if(barra) setTimeout(function(){ barra.classList.remove("carga"); },600);
+  const b=_a3BotonTiro(modal); if(b) b.click();
+}
+if(typeof document!=="undefined"&&!document._a3Teclado){ document._a3Teclado=true; document.addEventListener("keydown",_a3Teclado,true); document.addEventListener("keyup",_a3CargaSuelta,true); }
 

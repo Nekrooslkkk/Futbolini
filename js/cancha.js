@@ -80,8 +80,14 @@ function _cvDecidir(st,P){
   if(a>0.8 && Math.random()<0.45){
     const gk=_cvMasCercano(st,!o.mio,_cvX(o.mio,1),0.5,false);
     const afuera=Math.random()<0.4;
-    _cvPasar(st,gk,_cvX(o.mio,afuera?1.02:0.985),0.5+_cvRnd(afuera?0.08:-0.05,afuera?0.14:0.05)*(Math.random()<0.5?-1:1),1.3);
-    if(st.pase) st.pase.tiro=true;   /* 7.9111 · el arquero se estira a buscarla */
+    /* 7.9126 · física del remate: al arco entra entre los palos (±3,66 m = ±0,054) y bajo el travesaño (2,44 m);
+       afuera se va al lado o por arriba. zFin = altura al llegar (×11 = metros). */
+    const porArriba=afuera&&Math.random()<0.45;
+    const dy=afuera?(porArriba?_cvRnd(-0.05,0.05):_cvRnd(0.065,0.13)*(Math.random()<0.5?-1:1)):_cvRnd(-0.048,0.048);
+    _cvPasar(st,gk,_cvX(o.mio,afuera?1.02:0.985),0.5+dy,1.3);
+    if(st.pase){ st.pase.tiro=true; st.pase.afuera=afuera;   /* 7.9111 · el arquero se estira a buscarla */
+      const q=st.pase; q.dur=_cvCl(Math.hypot((q.x1-q.x0)*105,(q.y1-q.y0)*68)/26,0.45,1.1);   /* 7.9126 · ~26 m/s: le da tiempo al arquero */
+      st.pase.zFin=afuera?(porArriba?_cvRnd(0.25,0.36):_cvRnd(0.01,0.12)):_cvRnd(0.01,0.19); }
     return;
   }
   /* 7.9111 · a veces encara: conduce hacia adelante un rato en vez de soltarla al tiro */
@@ -118,11 +124,22 @@ function _cvAnimar(p,x0,y0,dt){
 function _cvJuego(st,P,dt){
   const b=st.ball;
   /* pelota: en vuelo o pegada al pie del dueño */
-  if(st.pase){
+  if(st.saque){
+    /* 7.9126 · saque de arco: la pelota que se fue queda afuera un momento y el arquero saca desde el área chica
+       (antes volvía sola rodando desde fuera de la cancha hasta sus pies) */
+    const q=st.saque; q.t-=dt; b.z=0;
+    if(q.t<=0){ st.saque=null; const g=st.jug[q.gk]; if(g){ b.x=_cvX(g.mio,0.055); b.y=0.5+(Math.random()-0.5)*0.12; g.x=b.x+(g.mio?-0.012:0.012); g.y=b.y; st.own=q.gk; st.prox=_cvRnd(0.5,0.9); } }
+  } else if(st.pase){
     const s=st.pase; s.t+=dt;
     const k=_cvCl(s.t/s.dur,0,1), e=1-Math.pow(1-k,2);
-    b.x=s.x0+(s.x1-s.x0)*e; b.y=s.y0+(s.y1-s.y0)*e; b.z=Math.sin(k*Math.PI)*(s.dur>0.7?0.5:0.15);
-    if(k>=1){ st.own=s.to>=0?s.to:_cvMasCercano(st,true,b.x,b.y,false); st.pase=null; b.z=0; st.prox=_cvRnd(0.7,1.5); }
+    b.x=s.x0+(s.x1-s.x0)*e; b.y=s.y0+(s.y1-s.y0)*e;
+    /* 7.9126 · el remate sube en línea hacia su altura final (con un poco de comba), no hace un arco de pase */
+    b.z=s.tiro?(s.zFin||0)*e+Math.sin(k*Math.PI)*0.04:Math.sin(k*Math.PI)*(s.dur>0.7?0.5:0.15);
+    if(k>=1){
+      if(s.tiro&&s.afuera){ st.pase=null; st.own=-1; st.saque={t:1.1,gk:s.to}; return; }
+      st.own=s.to>=0?s.to:_cvMasCercano(st,true,b.x,b.y,false); st.pase=null; b.z=0; st.prox=_cvRnd(0.7,1.5);
+      if(s.tiro){ st.atajada={gk:st.own,t:1.2,z:s.zFin||0}; st.prox=Math.max(st.prox,1.0); }   /* la retiene en las manos */
+    }
   } else if(st.own>=0){
     const o=st.jug[st.own];
     b.x+=(o.x+_cvX(o.mio,0.012)-b.x)*Math.min(1,dt*10); b.y+=(o.y-b.y)*Math.min(1,dt*10); b.z=0;
@@ -137,7 +154,8 @@ function _cvJuego(st,P,dt){
     let y=p.hy+(b.y-0.5)*0.32;
     if(p.rol==="gk"){ a=_cvCl(0.03+(bA<0.3?0.03:0),0.02,0.08); y=0.5+(b.y-0.5)*0.35; }
     let tx=_cvX(p.mio,_cvCl(a,0.02,0.95)), ty=_cvCl(y,0.05,0.95), v=0.13;
-    if(i===st.own && p.rol==="gk"){ tx=p.x; ty=p.y; v=0; if(st.prox>0.7) st.prox=0.7; }
+    if(st.saque&&i===st.saque.gk){ tx=_cvX(p.mio,0.045); ty=0.5; v=0.18; }
+    else if(i===st.own && p.rol==="gk"){ tx=p.x; ty=p.y; v=0; if(st.prox>0.7&&!(st.atajada&&st.atajada.t>0)) st.prox=0.7; }
     else if(i===st.own && st.conduce>0){ tx=_cvX(p.mio,_cvCl(_cvA(p,p.x)+0.16,0,0.9)); ty=_cvCl(p.y+Math.sin(st.t*3+(st._zig||0))*0.05+(0.5-p.y)*0.1,0.06,0.94); v=0.15; }
     else if(i===st.own){ tx=_cvX(p.mio,_cvCl(_cvA(p,p.x)+0.08,0,0.86)); ty=p.y+(0.5-p.y)*0.15; v=0.08; }
     else if(st.pase && st.pase.tiro && i===st.pase.to && p.rol==="gk"){ tx=p.x; ty=_cvCl(st.pase.y1,0.42,0.58); v=0.34; p._dive=Math.min(1,(p._dive||0)+dt*5); }
@@ -146,6 +164,7 @@ function _cvJuego(st,P,dt){
     if(p._dive>0&&!(st.pase&&st.pase.tiro&&i===st.pase.to)) p._dive=Math.max(0,p._dive-dt*1.6);
     _cvMover(p,tx,ty,v,dt);
   });
+  if(st.atajada){ st.atajada.t-=dt; if(st.atajada.t<=0||st.own!==st.atajada.gk) st.atajada=null; }
   if(st.conduce>0) st.conduce-=dt;
   if(st.own<0||st.pase) st.conduce=0;
   _cvSeparar(st.jug,dt);
@@ -187,7 +206,7 @@ function _cvArmarGol(st,lado,quien,min,ctx){
   st.seq={tipo:"gol",lado:lado,t:0,dur:dur,mio:mio,A:A,B:B,C:C,W:W,
     cartel:_cvCartel(mio,ctx,min)+(quien||"")+(min?" "+min+"'":"")};
   const pA=J[A]; pA.x=_cvX(mio,W[0].a); pA.y=W[0].y;
-  st.ball.x=pA.x; st.ball.y=pA.y; st.pase=null; st.own=-1;
+  st.ball.x=pA.x; st.ball.y=pA.y; st.pase=null; st.own=-1; st.saque=null; st.atajada=null;
 }
 function _cvPasoGol(st,dt){
   const s=st.seq, J=st.jug, b=st.ball, mio=s.mio; s.t+=dt;
@@ -212,7 +231,7 @@ function _cvPasoGol(st,dt){
 function _cvSaqueDelMedio(st,mioSaca){
   st.jug.forEach(p=>{ p.x=_cvX(p.mio,Math.min(p.hx,0.46)); p.y=p.hy; });
   const del=st.jug.findIndex(p=>p.mio===mioSaca&&p.rol==="fwd");
-  st.ball.x=0.5; st.ball.y=0.5; st.ball.z=0; st.pase=null;
+  st.ball.x=0.5; st.ball.y=0.5; st.ball.z=0; st.pase=null; st.saque=null; st.atajada=null;
   if(del>=0){ st.jug[del].x=_cvX(mioSaca,0.49); st.jug[del].y=0.5; st.own=del; }
   st.prox=0.9;
 }
@@ -226,7 +245,7 @@ function _cvPasoPenal(st,dt){
   else { const e=Math.min(1,(k-0.45)/0.3); b.x=spot+(_cvX(lado,1.0)-spot)*e; b.y=0.5+(st._penY||0.06)*e; }
   const gk=_cvMasCercano(st,!lado,_cvX(!lado,0.03),0.5,false);
   if(gk>=0){ const g=st.jug[gk]; g.x=_cvX(!lado,0.03); if(k>0.45) g.y+=((0.5-(st._penY||0.06)*1.4)-g.y)*Math.min(1,dt*8); }
-  if(st.penalDive<=0){ st.own=gk; st.pase=null; }
+  if(st.penalDive<=0){ st.own=gk; st.pase=null; st.saque=null; }
 }
 function _cvStep(P,dt,stOpc){
   const st=stOpc||_cvSt; if(!st) return;

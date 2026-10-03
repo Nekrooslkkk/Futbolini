@@ -789,7 +789,8 @@ if(typeof devDoctorRegistrar==="function"){
       /* pantallaPartido puede no existir con ese nombre: busco en la función que arma el HUD */
       const txt=[window.pantallaPartido,window.montarHUD,window.pintarPartido].map(fn=>typeof fn==="function"?(typeof _docFuente==="function"?_docFuente(fn):String(fn)):"").join("\n");
       /* el 3D tiene que leer el estado de la simulación, no uno propio: montarCancha3D usa _cvSeed/_cvStep/_cvSt */
-      const s3=(typeof montarCancha3D==="function")?(typeof _docFuente==="function"?_docFuente(montarCancha3D):String(montarCancha3D)):"";
+      /* 7.9126 · el 3D se partió en funciones (construir / cuadro / sincronizar): se lee todo el módulo */
+      const s3=["montarCancha3D","_c3dCuadro","_c3dSincronizar","_c3dPartido"].map(n=>{ const fn=window[n]; return typeof fn==="function"?(typeof _docFuente==="function"?_docFuente(fn):String(fn)):""; }).join("\n");
       if(s3){ if(!/_cvStep/.test(s3)) f.push("la cancha 3D no avanza con _cvStep: estaría desconectada de la simulación");
         if(!/_cvSt|est\.st/.test(s3)) f.push("la cancha 3D no lee _cvSt: no reflejaría la simulación"); }
       /* Modo papa: cancha3dActivo() tiene que dar false con html.papa (salvo que se fuerce) */
@@ -1036,7 +1037,7 @@ if(typeof devDoctorRegistrar==="function"){
       const ag=src("arcoGLMontar").replace(/\s+/g," ");
       if(/\{ ?_glApagarPorLento\(est\); ?return; ?\}/.test(ag)) f.push("el balón parado 3D se apaga solo cuando va lento (sin preguntar)");
       if(ag&&!/ofrecerAliviar3D/.test(ag)) f.push("el balón parado 3D no ofrece pasar al dibujo");
-      const c3=src("montarCancha3D");
+      const c3=["montarCancha3D","_c3dCuadro","_c3dVigilar"].map(src).join("\n");   /* 7.9126 · el 3D se partió en funciones */
       if(c3&&!/ofrecerAliviar3D/.test(c3)) f.push("la cancha 3D del partido no ofrece pasar al 2D cuando va lenta");
       if(c3&&!/aviso\(/.test(c3)) f.push("si la cancha 3D falla cae al 2D sin avisar");
       let prev=null; try{ prev=localStorage.getItem("futbolini_3d_nopreg"); localStorage.removeItem("futbolini_3d_nopreg"); }catch(e){}
@@ -1129,5 +1130,99 @@ if(typeof devDoctorRegistrar==="function"){
       } catch(e){ f.push("explotó: "+e.message); }
       finally { window.guardar=gu; restaurarPartida(snap); }
       return f.length?_dmal(f.length+" problema(s)",f):_dok("Segunda, AFA y 1925 sin Consejo de Presidentes ni TV de la ANFP (120 eventos generados por caso)");
+    }});
+}
+
+/* 7.9126 · cancha 3D reconstruida: el remate tiene física (bajo el travesaño y entre los palos si va al arco; al lado o
+   por arriba si no, con saque de arco), el arquero se tira y la retiene, la escena se REUSA entre repintados (antes se
+   rearmaba entera en cada gol/entretiempo: un tirón cada vez) y dibuja barato (todo instanciado). */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"cancha3d_fisica_rinde", area:"interfaz", n:"Cancha 3D: remates con física, arquero que ataja y escena que se reusa y dibuja barato",
+    arreglo:"js/cancha.js _cvDecidir/_cvJuego (zFin, afuera, saque, atajada) · js/cancha3d.js montarCancha3D (reuso), _c3dPiezas (instanciado), _c3dSincronizar (arquero)",
+    fn:function(){
+      const f=[], det=[];
+      if(typeof _cvNuevoEstado!=="function"||typeof _cvDecidir!=="function") return _dmal("falta la simulación de cancha.js");
+      /* 1) física del remate, sobre una simulación aparte */
+      let al=0, afu=0, malosAl=0, malosAf=0, saque=0, retenida=0, rapidos=0;
+      for(let n=0;n<160;n++){
+        const st=_cvNuevoEstado(null), del=st.jug.findIndex(p=>p.mio&&p.rol==="fwd");
+        st.jug[del].x=0.86; st.jug[del].y=0.5; st.own=del; st.ball.x=0.87; st.ball.y=0.5;
+        const r=Math.random; let k=0; Math.random=function(){ k++; return k===1?0.05:r(); };
+        try{ _cvDecidir(st,null); }finally{ Math.random=r; }
+        const q=st.pase; if(!q||!q.tiro){ f.push("forzando un remate no sale tiro"); break; }
+        const altoM=(q.zFin||0)*11, ladoM=Math.abs(q.y1-0.5)*68;
+        if(q.afuera){ afu++; if(altoM<=2.44&&ladoM<=3.66) malosAf++; }
+        else { al++; if(altoM>2.3||ladoM>3.66) malosAl++; }
+        if(q.dur<0.4) rapidos++;
+        for(let i=0;i<120&&(st.pase||st.saque);i++) _cvStep(null,0.02,st);
+        if(q.afuera&&st.saque===null&&st.own>=0&&st.jug[st.own].rol==="gk") saque++;
+        if(!q.afuera&&st.own>=0&&st.jug[st.own].rol==="gk") retenida++;
+      }
+      if(rapidos) f.push(rapidos+" remate(s) llegan en menos de 0,4 s: el arquero no alcanza ni a moverse");
+      if(malosAl) f.push(malosAl+" remate(s) «al arco» van por arriba del travesaño o fuera de los palos");
+      if(malosAf) f.push(malosAf+" remate(s) «afuera» entran por el arco (no van ni al lado ni por arriba)");
+      if(afu&&saque<afu*0.9) f.push("después de un remate afuera no hay saque de arco ("+saque+" de "+afu+")");
+      if(al&&retenida<al*0.9) f.push("el arquero no se queda con la pelota en los tiros al arco ("+retenida+" de "+al+")");
+      det.push(al+" al arco · "+afu+" afuera · "+saque+" saques de arco");
+      /* 2) la escena 3D (solo si hay WebGL y three.js cargado) */
+      if(typeof THREE!=="undefined"&&typeof cancha3dSoportado==="function"&&cancha3dSoportado()&&typeof montarCancha3D==="function"&&E){
+        const host=document.createElement("div"); host.style.cssText="position:fixed;left:-9999px;top:0;width:480px;height:270px"; document.body.appendChild(host);
+        const prevEst=C3D.est, stPrev=(typeof _cvSt!=="undefined")?_cvSt:null, P={part:{local:true,rivalId:"UCH"}, gl:0, gv:0, min:10};
+        try{
+          if(prevEst) C3D.est=null;
+          const est=montarCancha3D(host,P);
+          if(!est){ f.push("montarCancha3D no arma la escena con WebGL disponible"); }
+          else {
+            const n0=C3D.montajes;
+            const host2=document.createElement("div"); host2.style.cssText=host.style.cssText; document.body.appendChild(host2);
+            montarCancha3D(host2,P);
+            if(typeof C3D.montajes!=="number"||C3D.montajes!==n0) f.push("repintar el partido rearma la escena 3D entera (debería reusarse)");
+            if(est.canvas.parentNode!==host2) f.push("al repintar, el 3D no se muda al contenedor nuevo");
+            est.renderer.info.reset(); est.renderer.render(est.scene,est.camGL);
+            const calls=est.renderer.info.render.calls; det.push(calls+" llamadas de dibujo");
+            if(calls>70) f.push("la cancha 3D hace "+calls+" llamadas de dibujo por cuadro (tope 70): algo dejó de estar instanciado");
+            /* arquero: se tira con el remate y la retiene */
+            const S=_cvSt, gi=S.jug.findIndex(p=>!p.mio&&p.rol==="gk"), g=S.jug[gi];
+            S.pase={x0:0.8,y0:0.5,x1:0.985,y1:0.54,t:0.3,dur:0.6,to:gi,tiro:true,zFin:0.1}; g._dive=0.8;
+            _c3dSincronizar(est,0.016);
+            const m=new THREE.Matrix4(), q=new THREE.Quaternion(), pos=new THREE.Vector3(), sc=new THREE.Vector3();
+            est.piezas.torso.getMatrixAt(gi,m); m.decompose(pos,q,sc);
+            const inclinado=Math.abs(new THREE.Euler().setFromQuaternion(q,"YXZ").z)>0.4;
+            if(!inclinado) f.push("con el remate encima el arquero no se tira (queda parado: «se congela»)");
+            S.pase=null; g._dive=0; S.own=gi; S.atajada={gk:gi,t:1,z:0.1};
+            _c3dSincronizar(est,0.016);
+            if(est.bola.position.y<0.6) f.push("el arquero ataja pero la pelota queda en el pasto, no en sus manos");
+            host2.remove();
+          }
+        } catch(e){ f.push("el 3D explotó: "+e.message); }
+        finally {
+          /* deja el partido en vivo como estaba: su escena 3D y su simulación (el doctor puede correr en medio de un partido) */
+          if(C3D.est!==prevEst) detenerCancha3D();
+          host.remove(); _cvSt=stPrev; C3D.est=prevEst;
+          if(prevEst&&prevEst.canvas.isConnected&&!prevEst.raf){ prevEst.ultT=performance.now(); prevEst.raf=requestAnimationFrame(t=>_c3dCuadro(prevEst,t)); }
+        }
+      } else det.push("sin WebGL o three.js acá: solo se revisó la simulación");
+      return f.length?_dmal(f.length+" problema(s)",f.concat(det)):_dok(det.join(" · "));
+    }});
+}
+
+/* 7.9126 · balón parado estilo Score Hero: en PC se MANTIENE Espacio para cargar la barra y al soltar se patea con esa
+   potencia (antes Espacio pateaba al tiro con la potencia del botón); en el celu la potencia es la velocidad del dedo. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"barra_potencia", area:"interfaz", n:"Balón parado: mantener Espacio carga la barra de potencia y soltar patea con esa potencia",
+    arreglo:"js/arco3d.js _a3Teclado (Espacio → _a3CargaEmpieza) + keyup _a3CargaSuelta · efectoConPotencia · CSS .a3-pot",
+    fn:function(){
+      const f=[];
+      if(typeof _a3CargaEmpieza!=="function"||typeof _a3CargaSuelta!=="function") return _dmal("falta la carga con Espacio (_a3CargaEmpieza/_a3CargaSuelta)");
+      const src=(typeof _docFuente==="function")?_docFuente(_a3Teclado):String(_a3Teclado);
+      if(!/_a3CargaEmpieza/.test(src)) f.push("Espacio patea al tiro en vez de cargar la potencia");
+      if(typeof efectoConPotencia!=="function") f.push("falta efectoConPotencia");
+      else {
+        if(efectoConPotencia({},0.15).efecto!=="colocado") f.push("un toque corto no sale colocado");
+        if(efectoConPotencia({},0.75).efecto!=="potente") f.push("cargar a 3/4 no sale potente");
+        if(!efectoConPotencia({},0.97).pasado) f.push("cargar a tope no eleva el tiro (no hay riesgo en pasarse)");
+      }
+      if(!document._a3Teclado) f.push("el teclado del balón parado no está escuchando");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("toque = colocado · ¾ = potente · a tope = se eleva; en el celu, la velocidad del dedo");
     }});
 }

@@ -2551,3 +2551,13 @@ corre `bash test/doctor.sh` y `node test/servidores.js`, mira el doctor `csp_est
 `.js`, un dato que se guarda fuera de `partidas.js`). No arregles motor: avisa con archivo:línea.
 
 **Recordatorio:** el chequeo exhaustivo de calendarios (encargo de arriba, 1 oct) sigue abierto para Sonnet/Grok.
+
+**7.9126 (Claude Opus) · cancha 3D reconstruida. LEER si tocan el partido en vivo:**
+- `js/cancha3d.js` sigue siendo una CÁMARA de la simulación (`_cvStep`/`_cvSt`). Se arma UNA vez (`_c3dConstruir`) y
+  `montarCancha3D` la muda al contenedor nuevo en cada `pintarPartido`. No llamen `detenerCancha3D()` en un repintado.
+- Jugadores: `_c3dPiezas` (instanciado) + `_c3dPose` (esqueleto). Colores con `c3dCol(hex)` (sRGB→lineal).
+- Remates en `cancha.js`: `pase.zFin` (altura al llegar ×11 m), `pase.afuera`, `st.saque` (saque de arco), `st.atajada`.
+  El doctor `cancha3d_fisica_rinde` los mide.
+- Calidad: `E.config.c3dCalidad` = auto|alta|antigua; `E.config.cancha3dPapa` permite el 3D antiguo en Modo papa.
+- Pendiente (con el ojo del autor): números en la espalda, festejo del gol, repetición en 3D, córner/penal dentro de la
+  cancha 3D (hoy se abren en su escena aparte).

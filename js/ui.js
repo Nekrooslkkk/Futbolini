@@ -3857,6 +3857,24 @@ function vistaAjustes(host){
     });
     p.cuerpo.appendChild(fc);
     p.cuerpo.appendChild(el("p","mini","🎥 <b>3D cámara FIFA</b> (beta): el partido en 3D con cámara de transmisión que sigue la pelota, movido por la misma simulación. En desarrollo: todavía no está pulido. En Modo papa cae al cenital 2D (más liviano)."));
+    /* 7.9126 · calidad del 3D: Auto ajusta la resolución para que vaya fluido (nunca se cambia solo a 2D) */
+    if(c3On&&E){
+      p.cuerpo.appendChild(el("label","lb","Calidad del 3D"));
+      const fq=el("div","fichas"), cal=(E.config&&E.config.c3dCalidad)||"auto";
+      [["auto","⚙️ Auto"],["alta","✨ Alta"],["antigua","🕹️ Antigua (liviana)"]].forEach(([k,n])=>{
+        const b=el("button","ficha",n); b.setAttribute("aria-pressed",cal===k?"true":"false");
+        b.onclick=()=>{ E.config.c3dCalidad=k; guardar(); render(); aviso({auto:"⚙️ Auto: ajusta la resolución para ir fluido",alta:"✨ Alta: máxima resolución y público lleno",antigua:"🕹️ Antigua: 3D de consola vieja, liviano"}[k],3500); };
+        fq.appendChild(b);
+      });
+      p.cuerpo.appendChild(fq);
+      p.cuerpo.appendChild(el("p","mini","<b>Auto</b> baja o sube la resolución según lo que aguante tu equipo (no se cambia a 2D: si ni así va fluido, te pregunta). <b>Antigua</b> es 3D de consola vieja: baja resolución, sin público, 30 cuadros por segundo."));
+      if(document.documentElement.classList.contains("papa")){
+        const bp=el("button","ficha",E.config.cancha3dPapa?"🕹️ 3D antiguo en Modo papa: SÍ":"🕹️ Usar el 3D antiguo en Modo papa");
+        bp.setAttribute("aria-pressed",E.config.cancha3dPapa?"true":"false");
+        bp.onclick=()=>{ E.config.cancha3dPapa=!E.config.cancha3dPapa; if(E.config.cancha3dPapa&&typeof cargarThree==="function") cargarThree(); guardar(); render(); };
+        p.cuerpo.appendChild(bp);
+      }
+    }
   }
   /* 7.9125 · el minijuego de córner se puede apagar (el autor: "se traba"): apagado, el córner se juega solo */
   if(E){

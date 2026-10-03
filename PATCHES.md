@@ -5230,3 +5230,31 @@ arranquePintarLista, abrirPartidaDeLista, Mis partidas, charlaGrupal, Ajustes), 
   mezclados; este parche pasa a ser 7.9125.
 - **Estado (ya mezclado):** doctor sano 136/136 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa,
   partidas) · core 1185/1185 · saves 12/12 · banco 255 sano (15 % despidos, tope 25 %).
+
+### 7.9126 — Cancha 3D reconstruida (beta): se reusa, jugadores con cuerpo, arquero que se tira y ataja, remates con física, rinde en celus · barra de potencia con Espacio
+Archivos: `js/cancha3d.js` (reescrito), `js/cancha.js` (remates, saque de arco, atajada), `js/arco3d.js` (Espacio carga la
+potencia, barra Aero), `js/ui.js` (Calidad del 3D en Ajustes), `js/dev-banco.js`, `test/cancha3d.mjs` + `test/cancha3d.sh`
+(nuevos), `test/correr_dev.sh`.
+- **El tirón del 3D:** cada repintado del partido (gol, entretiempo, eventos) destruía y rearmaba la escena WebGL entera
+  (4 veces en 15 s) y los jugadores volvían a la formación. Ahora se arma una vez y se muda de contenedor; se libera 30 s
+  después de salir del partido.
+- **Jugadores con cuerpo:** torso, short, franja (horizontal/vertical/banda de `KITS`), brazos y piernas que corren con
+  rodilla que dobla, cabeza con piel y pelo de cada uno, medias y zapatos. Colores de camiseta en espacio lineal (el azul
+  salía celeste). Todo instanciado: ~42 llamadas de dibujo con estadio y todo (antes ~104 con cilindros).
+- **Arquero:** se tira hacia el remate (rueda el cuerpo, brazos arriba) y si ataja la pelota queda en sus manos hasta que
+  saca. **Remates (cancha.js, sirve al 2D también):** ~26 m/s (antes 0,22 s: nadie alcanzaba a moverse); al arco entran
+  bajo el travesaño y entre palos; afuera se van al lado o por arriba, y hay saque de arco.
+- **Cancha y estadio:** pasto con franjas y todas las líneas (medialunas, banderines) en una textura; tribunas en
+  escalones con público del local, techo, carteles LED, torres de luz, cielo. Cámara más cerca (lado 23 m, alto 9,5 m)
+  que no sale del campo; cartel del gol arriba (mismo texto que el cenital).
+- **Rendimiento:** Ajustes ▸ Pantalla ▸ Calidad del 3D: **Auto** (ajusta la resolución, nunca cambia solo a 2D: si ni
+  así va fluido, pregunta), **Alta**, **Antigua** (3D de consola vieja: baja resolución, sin público, 30 cps). En Modo
+  papa se puede pedir el 3D antiguo. Sin mapas de sombra (sombras de mancha).
+- **Balón parado estilo Score Hero:** en PC se **mantiene Espacio** para cargar la barra (vidrio Aero) y al soltar se
+  patea con esa potencia (toque = colocado, ¾ = potente, a tope = se eleva); Enter patea al tiro; en el celu sigue la
+  velocidad del dedo.
+- **Dev:** `cancha3d_fisica_rinde` (160 remates: altura/palos/saque/atajada; con WebGL: reuso, llamadas ≤ 70, arquero
+  que se tira y retiene; deja intacto un partido en vivo) y `barra_potencia`. Al revés contra 7.9125: 160 remates
+  demasiado rápidos, 77 "al arco" por arriba, escena rearmada. `test/cancha3d.sh` (Playwright, PC y celu en Modo papa).
+- **Estado:** doctor sano 138/138 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha
+  3D) · core 1185/1185 · saves 12/12 · banco 255 sano (10–18 % despidos según corrida, tope 25 %).
