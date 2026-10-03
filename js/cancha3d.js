@@ -321,7 +321,9 @@ function montarCancha3D(host, P){
   if(est.P!==P||est.st!==_cvSt) _c3dPartido(est,P);
   est.host=host;
   if(getComputedStyle(host).position==="static") host.style.position="relative";
-  host.appendChild(est.canvas); host.appendChild(est.hud);
+  /* 7.9127 · con un balón parado 3D en juego el canvas vive en la capa grande: no se lo robamos (vuelve al cerrar) */
+  if(!est.bp) host.appendChild(est.canvas);
+  host.appendChild(est.hud);
   _c3dCuadroUno(est);   /* nunca se ve un canvas vacío */
   if(!est.raf){ est.ultT=performance.now(); est.raf=requestAnimationFrame(t=>_c3dCuadro(est,t)); }
   return est;
@@ -354,6 +356,15 @@ function _c3dSincronizar(est,dt){
   const s=0.55+by*0.06; M.makeTranslation(est.bola.position.x,0.021,est.bola.position.z); _c3dS(M,s,1,s); sombras.setMatrixAt(22,M);
   Object.keys(est.piezas).forEach(n=>{ est.piezas[n].instanceMatrix.needsUpdate=true; });
   sombras.instanceMatrix.needsUpdate=true;
+  /* 7.9127 · balón parado en la cancha (bp3d.js): la cámara la manda la jugada (detrás del pateador o del banderín) */
+  if(est.bp&&est.bp.cam){
+    const c=est.bp.cam, kb=Math.min(1,dt*(c.suave||4));
+    est.camPos.lerp(c.pos,kb); est.mira.lerp(c.mira,kb);
+    if(Math.abs((c.fov||45)-est.fov)>0.05){ est.fov+=((c.fov||45)-est.fov)*kb; est.camGL.fov=est.fov; est.camGL.updateProjectionMatrix(); }
+    est.camGL.position.copy(est.camPos); est.camGL.lookAt(est.mira);
+    if(est.carteles){ est.carteles=""; est.hud.textContent=""; est.hud.classList.remove("on"); }
+    return;
+  }
   /* cámara de transmisión: banda lateral, elevada, sigue la pelota y mira un poco hacia donde se ataca */
   const k=Math.min(1,dt*CAM3D.suave), gol=!!S.seq;
   const dueno=S.own>=0?S.jug[S.own]:null, dir=dueno?(dueno.mio?1:-1):0;
@@ -406,7 +417,10 @@ function _c3dCuadro(est,t){
   const dt=Math.min(0.1,Math.max(0,dtReal/1000));
   _c3dVigilar(est,dtReal);
   _c3dAjusteAuto(est,dtReal);
-  try{ _c3dTam(est); if(typeof _cvStep==="function"&&!(est.P&&est.P.terminado&&!(_cvSt&&_cvSt.seq))) _cvStep(est.P,dt); _c3dSincronizar(est,dt); est.renderer.render(est.scene,est.camGL); }
+  try{ _c3dTam(est);
+    if(est.bp&&est.bp.paso) est.bp.paso(dt);   /* balón parado: la jugada mueve a todos, la simulación espera */
+    else if(typeof _cvStep==="function"&&!(est.P&&est.P.terminado&&!(_cvSt&&_cvSt.seq))) _cvStep(est.P,dt);
+    _c3dSincronizar(est,dt); est.renderer.render(est.scene,est.camGL); }
   catch(e){
     if(window.console) console.error("cancha3d:",e);
     const host=est.host; detenerCancha3D();

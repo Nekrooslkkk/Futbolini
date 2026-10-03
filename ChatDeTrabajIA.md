@@ -2561,3 +2561,12 @@ corre `bash test/doctor.sh` y `node test/servidores.js`, mira el doctor `csp_est
 - Calidad: `E.config.c3dCalidad` = auto|alta|antigua; `E.config.cancha3dPapa` permite el 3D antiguo en Modo papa.
 - Pendiente (con el ojo del autor): números en la espalda, festejo del gol, repetición en 3D, córner/penal dentro de la
   cancha 3D (hoy se abren en su escena aparte).
+
+**7.9127 (Claude Opus) · balón parado dentro de la cancha 3D + física de pelota. LEER si tocan penal/TL/córner o cancha.js:**
+- `js/bp3d.js` envuelve `minijuegoPenal/TiroLibre/Corner`: con 3D montado juega la jugada en la misma escena
+  (`C3D.est.bp` = cámara propia + `paso(dt)` que reemplaza a `_cvStep` mientras dura). Si cambian la firma de esos
+  minijuegos o de `penalEnPartido`/`cornerResolver`/`penResolver`, revisen `_bpResolver` y `_bpCerrar`.
+- Mientras `BP3D.activo` el reloj del partido no avanza (`pasoEnVivo`). No llamen `reanudarPronto` desde afuera en ese rato.
+- `cancha.js` trabaja en METROS y m/s (`CV_FIS`). Jugadores ≤ 9 m/s (`_cvMover`), pelota ≤ ~30 m/s; el doctor
+  `fisica_partido` simula 6 minutos y avisa si algo se teletransporta.
+- Pendiente para el ojo del autor: números en la espalda, festejo y repetición en 3D, el córner con el pateador en cuadro.

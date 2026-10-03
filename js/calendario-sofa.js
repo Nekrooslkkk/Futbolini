@@ -37,13 +37,15 @@ function _csResRonda(key,r){
 /* partidos de liga de un equipo: ronda, rival, localía y resultado si ya se jugó */
 function _csPartidosEquipo(id){
   const key=_csLigaDe(id); if(!key) return [];
-  const L=E.mundo.ligas[key], mios=(E.calendario||[]).filter(p=>p&&p.tipo==="liga"&&!p.fase);
+  /* 7.9127 · la Segunda (fase "zonal"), Argentina y 2006 traen fase: solo se descartan liguillas/playoffs. Antes tu
+     club salía sin resultados (sin forma) en la tabla de la Segunda. */
+  const L=E.mundo.ligas[key], mios=(E.calendario||[]).filter(p=>p&&p.tipo==="liga"&&!(p.fase&&/liguilla|playoff|final|semi|cuartos|octavos/i.test(p.fase)));
   return (L.fx||[]).map((ronda,r)=>{
     const par=(ronda||[]).find(x=>x[0]===id||x[1]===id); if(!par||par[0]===par[1]) return null;
     const local=par[0]===id, rival=local?par[1]:par[0];
     const o={r:r,local:local,rival:rival,jugado:false};
     if(E.club&&(id===E.club||rival===E.club)){
-      const p=mios.find(x=>x.fecha===r+1)||mios[r];
+      const p=mios.find(x=>x.fxRonda===r)||mios.find(x=>x.fecha===r+1&&x.fxRonda==null)||mios[r];
       if(p&&p.jugado){ o.jugado=true; const yo=p.gf||0, el=p.gc||0; if(id===E.club){ o.gf=yo; o.gc=el; } else { o.gf=el; o.gc=yo; } }
       if(p&&p.f) o.f=p.f;
     } else if(r<(L.ronda||0)){

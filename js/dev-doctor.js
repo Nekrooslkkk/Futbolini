@@ -362,9 +362,9 @@ devDoctorRegistrar({id:"sim_progreso_visible", area:"interfaz", n:"Simular tempo
 devDoctorRegistrar({id:"arco_escena_3d", area:"interfaz", n:"Penal, tiro libre y córner se patean en la cancha", fn:function(){
   var falta=[];
   if(typeof _abrirEscenaArco!=="function") falta.push("_abrirEscenaArco no está");
-  if(typeof minijuegoPenal!=="function"||String(minijuegoPenal).indexOf("_abrirEscenaArco")<0) falta.push("el penal no abre la escena");
-  if(typeof minijuegoTiroLibre!=="function"||String(minijuegoTiroLibre).indexOf("_abrirEscenaArco")<0) falta.push("el tiro libre no abre la escena");
-  if(typeof minijuegoCorner!=="function"||String(minijuegoCorner).indexOf("_abrirEscenaArco")<0) falta.push("el córner no abre la escena");
+  if(typeof minijuegoPenal!=="function"||_docFuente(minijuegoPenal).indexOf("_abrirEscenaArco")<0) falta.push("el penal no abre la escena");
+  if(typeof minijuegoTiroLibre!=="function"||_docFuente(minijuegoTiroLibre).indexOf("_abrirEscenaArco")<0) falta.push("el tiro libre no abre la escena");
+  if(typeof minijuegoCorner!=="function"||_docFuente(minijuegoCorner).indexOf("_abrirEscenaArco")<0) falta.push("el córner no abre la escena");
   if(typeof mostrarAccion!=="function") falta.push("mostrarAccion no está");
   else {
     var src=_docFuente(mostrarAccion);

@@ -1,4 +1,4 @@
-/* FUTBOLINI · test/cancha3d.mjs (7.9126) · la cancha 3D en un navegador de verdad (Playwright + WebGL por software).
+/* FUTBOLINI · test/cancha3d.mjs (7.9126 · 7.9127 penal/córner en 3D) · la cancha 3D en un navegador de verdad (Playwright + WebGL por software).
    Un partido entero de 3D: se arma UNA vez y se reusa en cada repintado, dibuja barato, no tira errores, el arquero se
    tira y ataja, y en Modo papa (si el jugador lo pide) usa la calidad Antigua. */
 import { spawn } from "child_process";
@@ -50,10 +50,28 @@ try{
     await esperar(1500);
     const min2=await p.evaluate(()=>P_ACTUAL&&P_ACTUAL.min);
     ok(min2>r.min,"el partido sigue corriendo con el 3D ("+r.min+"' → "+min2+"')");
+    if(!caso.papa){
+      /* 7.9127 · penal y córner DENTRO de la cancha 3D: se juegan, se anotan una sola vez y la cancha vuelve */
+      for(const tipo of ["penal","corner"]){
+        const a=await p.evaluate((tipo)=>{ clearInterval(TIMER); P_ACTUAL.modo="dirigir"; E.config.cornerMinijuego=true; window._g0=P_ACTUAL.gl+P_ACTUAL.gv;
+          window._lineas0=document.querySelectorAll(".relato *").length;
+          mostrarAccion(tipo==="corner"?{tipo:"corner",aFavor:true}:{tipo:"penal"});
+          const enCapa=!!document.querySelector(".bp3d-capa canvas.cancha3d");
+          pintarPartido(); pintarPartido();   /* repintados durante la jugada: no abren otra ni se roban la cancha */
+          return {enCapa:enCapa, sigue:!!document.querySelector(".bp3d-capa canvas.cancha3d"), capas:document.querySelectorAll(".bp3d-capa").length, modal:!!document.querySelector(".modal-fondo,.modal")&&document.body.classList.contains("con-modal")};
+        },tipo);
+        ok(a.enCapa&&a.sigue&&a.capas===1&&!a.modal,tipo+" 3D: se abre en la misma cancha y aguanta repintados (capas "+a.capas+(a.modal?", ¡y abrió el minijuego viejo encima!":"")+")");
+        await esperar(600); await p.keyboard.press("Enter");
+        let cerro=false; for(let i=0;i<40&&!cerro;i++){ await esperar(400); cerro=await p.evaluate(()=>!BP3D.activo&&!document.querySelector(".bp3d-capa")); }
+        const z=await p.evaluate(()=>({vuelve:C3D.est&&C3D.est.canvas.parentNode===C3D.est.host&&C3D.est.canvas.isConnected, goles:P_ACTUAL.gl+P_ACTUAL.gv-window._g0}));
+        ok(cerro&&z.vuelve,tipo+" 3D: se patea, se cierra y la cancha vuelve a su lugar");
+        ok(z.goles<=1,tipo+" 3D: el resultado se anota una sola vez ("+z.goles+" gol/es)");
+      }
+    }
     ok(err.length===0,"sin errores en la página"+(err.length?": "+err.slice(0,3).join(" | "):""));
     await ctx.close();
   }
 }catch(e){ ok(false,"error: "+(e&&e.stack||e)); }
 finally{ try{ await b.close(); }catch(e){} srv.kill(); }
-console.log(malos?"❌ CANCHA 3D: "+malos+" falla(s)":"✅ CANCHA 3D: se reusa, se ve, dibuja barato y el arquero ataja");
+console.log(malos?"❌ CANCHA 3D: "+malos+" falla(s)":"✅ CANCHA 3D: se reusa, se ve, dibuja barato, el arquero ataja y el balón parado se juega adentro");
 process.exit(malos?1:0);

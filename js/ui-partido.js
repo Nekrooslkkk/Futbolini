@@ -1456,6 +1456,7 @@ function pasoEnVivo(){
   if(PAUSADO) return;
   const P=P_ACTUAL; if(!P){ clearInterval(TIMER); return; }
   if(P._varHold || (P._celHasta && Date.now()<P._celHasta)) return;
+  if(typeof BP3D!=="undefined" && BP3D.activo) return;   /* 7.9127 · balón parado en la cancha 3D: el reloj espera */
   if(P.tanda && !P.tanda.done) return;
   if(P.terminado || (P.tanda && P.tanda.done)){ clearInterval(TIMER); pintarPartido(); cerrarPartido(); return; }
   /* momento táctico (solo dirigir). Nunca tape el descanso: si todavía no hubo

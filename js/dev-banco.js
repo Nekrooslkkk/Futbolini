@@ -1155,14 +1155,14 @@ if(typeof devDoctorRegistrar==="function"){
         else { al++; if(altoM>2.3||ladoM>3.66) malosAl++; }
         if(q.dur<0.4) rapidos++;
         for(let i=0;i<120&&(st.pase||st.saque);i++) _cvStep(null,0.02,st);
-        if(q.afuera&&st.saque===null&&st.own>=0&&st.jug[st.own].rol==="gk") saque++;
-        if(!q.afuera&&st.own>=0&&st.jug[st.own].rol==="gk") retenida++;
+        if(q.afuera&&(st.ultimaSalida==="arco"||st.ultimaSalida==="corner")) saque++;   /* 7.9127 · con física: saque de arco o córner */
+        if(!q.afuera&&(st.ultimoRemate==="atajada"||st.ultimoRemate==="rechazo"||(st.own>=0&&st.jug[st.own].rol==="gk"))) retenida++;
       }
       if(rapidos) f.push(rapidos+" remate(s) llegan en menos de 0,4 s: el arquero no alcanza ni a moverse");
       if(malosAl) f.push(malosAl+" remate(s) «al arco» van por arriba del travesaño o fuera de los palos");
       if(malosAf) f.push(malosAf+" remate(s) «afuera» entran por el arco (no van ni al lado ni por arriba)");
       if(afu&&saque<afu*0.9) f.push("después de un remate afuera no hay saque de arco ("+saque+" de "+afu+")");
-      if(al&&retenida<al*0.9) f.push("el arquero no se queda con la pelota en los tiros al arco ("+retenida+" de "+al+")");
+      if(al&&retenida<al*0.9) f.push("el arquero no ataja ni rechaza los tiros al arco ("+retenida+" de "+al+")");
       det.push(al+" al arco · "+afu+" afuera · "+saque+" saques de arco");
       /* 2) la escena 3D (solo si hay WebGL y three.js cargado) */
       if(typeof THREE!=="undefined"&&typeof cancha3dSoportado==="function"&&cancha3dSoportado()&&typeof montarCancha3D==="function"&&E){
@@ -1224,5 +1224,110 @@ if(typeof devDoctorRegistrar==="function"){
       }
       if(!document._a3Teclado) f.push("el teclado del balón parado no está escuchando");
       return f.length?_dmal(f.length+" problema(s)",f):_dok("toque = colocado · ¾ = potente · a tope = se eleva; en el celu, la velocidad del dedo");
+    }});
+}
+
+/* 7.9127 · "faltan equipos en las tablas": en la Segunda (y Argentina/2006) tus partidos traen fase y la tabla los
+   descartaba: tu club salía sin forma ni resultados en su ficha. Cada club de la liga del jugador tiene que tener su
+   forma si ya jugó. */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"tabla_forma_propia", area:"interfaz", n:"Tablas: tu club tiene su forma y sus resultados como todos (también en la Segunda)",
+    arreglo:"js/calendario-sofa.js _csPartidosEquipo (filtro de fase y fxRonda)",
+    fn:function(){
+      if(!E||!E.mundo||!E.mundo.ligas||typeof _csForma!=="function"||typeof _csLigaDe!=="function") return _dok("sin mundo de ligas en esta época");
+      const key=_csLigaDe(E.club); if(!key) return _dok("tu liga no está en el mundo de esta época");
+      const jugados=(E.calendario||[]).filter(p=>p&&p.tipo==="liga"&&p.jugado&&!(p.fase&&/liguilla|playoff|final|semi|cuartos|octavos/i.test(p.fase))).length;
+      if(!jugados) return _dok("todavía no juegas partidos de liga");
+      const f=_csForma(E.club);
+      if(!f.length) return _dmal("jugaste "+jugados+" partido(s) de liga y tu club sale sin forma en la tabla");
+      return _dok("tu forma: "+f.join(" ")+" ("+jugados+" jugados)");
+    }});
+}
+
+/* 7.9127 · física realista de la pelota (pedido del autor: "física, gravedad y toques realistas"). Juega 2 minutos de
+   la simulación de la cancha en una copia aparte y mide: nadie corre a más de ~9,8 m/s, la pelota no se teletransporta
+   ni pasa de ~36 m/s, pica cuando cae, nunca queda muerta sin que nadie la vaya a buscar, y no hay números rotos. */
+function devFisicaCancha(seg){
+  const st=_cvNuevoEstado(null), dt=1/30, N=Math.round(30*(seg||120));
+  const m={pases:0,botes:0,maxZ:0,maxJug:0,maxBola:0,teleport:0,nan:0,muerta:0,salidas:0};
+  let prevB={x:st.ball.x,y:st.ball.y}, prevSaque=null, run=0, prevPase=null; const pos=st.jug.map(p=>({x:p.x,y:p.y}));
+  for(let i=0;i<N;i++){
+    _cvStep(null,dt,st);
+    const b=st.ball, reanudo=prevSaque&&!st.saque; if(st.saque&&st.saque!==prevSaque) m.salidas++; prevSaque=st.saque;
+    if(st.pase&&st.pase!==prevPase) m.pases++; prevPase=st.pase;
+    if(![b.x,b.y,b.z].every(isFinite)){ m.nan++; break; }
+    m.maxZ=Math.max(m.maxZ,b.z*11);
+    const vb=Math.hypot((b.x-prevB.x)*105,(b.y-prevB.y)*68)/dt; prevB={x:b.x,y:b.y};
+    if(!st.saque&&!reanudo&&!st.seq){ m.maxBola=Math.max(m.maxBola,vb); if(vb>45) m.teleport++; }
+    st.jug.forEach((p,k)=>{ const v=Math.hypot((p.x-pos[k].x)*105,(p.y-pos[k].y)*68)/dt; if(!st.saque&&!reanudo) m.maxJug=Math.max(m.maxJug,v); pos[k]={x:p.x,y:p.y}; });
+    const libre=st.own<0&&!st.saque, quieta=Math.hypot(b.vx||0,b.vy||0)<0.3;
+    if(libre&&quieta&&!(st.persigue&&st.persigue.length)){ run++; m.muerta=Math.max(m.muerta,run*dt); } else run=0;
+  }
+  m.botes=st.botes||0;
+  return m;
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"fisica_partido", area:"motor", n:"Física de la cancha: velocidades humanas, pelota que vuela, pica y rueda, sin teletransportes",
+    arreglo:"js/cancha.js CV_FIS, _cvFisicaPelota, _cvPasar (patada raso/elevada), _cvControlar, _cvSalida/_cvReanudar, _cvMover (m/s), con dueño: tope 12 m/s al traer la pelota",
+    fn:function(){
+      if(typeof _cvNuevoEstado!=="function"||typeof _cvStep!=="function") return _dmal("falta la simulación de cancha.js");
+      const m=devFisicaCancha(360), f=[];   /* 6 min: con 2 el arquero que chupaba la pelota salía 1 de cada 3 veces */
+      if(m.nan) f.push("la simulación se rompe (números NaN)");
+      if(m.maxJug>9.8) f.push("un jugador corre a "+m.maxJug.toFixed(1)+" m/s (un velocista de fútbol llega a ~9)");
+      if(m.teleport) f.push("la pelota se teletransporta "+m.teleport+" vez/veces (más de 45 m/s de un cuadro a otro)");
+      if(m.maxBola>36) f.push("la pelota va a "+m.maxBola.toFixed(1)+" m/s (un remate fuerte ronda 30)");
+      if(m.botes<4) f.push("en 6 minutos la pelota casi no pica ("+m.botes+" botes): no hay balones por arriba o no cae con gravedad");
+      if(m.muerta>3) f.push("la pelota queda muerta "+m.muerta.toFixed(1)+" s sin que nadie la vaya a buscar");
+      if(m.pases<90) f.push("en 6 minutos hay solo "+m.pases+" pases/remates: el juego se traba");
+      const txt="6 min: "+m.pases+" pases · "+m.botes+" botes · alto máx "+m.maxZ.toFixed(1)+" m · jugador máx "+m.maxJug.toFixed(1)+" m/s · pelota máx "+m.maxBola.toFixed(1)+" m/s · "+m.salidas+" salidas";
+      return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
+    }});
+}
+/* 7.9127 · balón parado dentro de la cancha 3D (bp3d.js): mismas probabilidades que el minijuego de siempre,
+   mira bien orientada, barrera física con la misma parábola que se ve, y un repintado no abre la jugada dos veces */
+function _docBp3dEnvuelto(n){
+  let f=typeof window!=="undefined"?window[n]:null;
+  for(let i=0;f&&i<6;i++){ if(f._bp3d) return f; f=f._orig; }
+  return null;
+}
+function devBp3dLey(N){
+  N=N||400;
+  const P={iner:{}}, ARQ={n:"arq",nivel:72}, pat={n:"pat",nivel:72,rasgos:[]}, Z=BP3D.ARCO.z, m={pen:0,penN:0,bajo:0,alto:0,cor:0,corN:0};
+  for(let i=0;i<N;i++){
+    const jp={tipo:"penal",P:P,ARQ:ARQ,pat:pat,bola:{x:0,z:Z-11,lado:1},mira:{x:(Math.random()*2-1)*3.3,y:0.15+Math.random()*2.1}};
+    const o=_bpResolver(jp,"colocado"); m.penN++; if(o.res==="gol") m.pen++;
+    /* tiro libre de frente a 20 m: rasante contra la barrera vs por arriba de ella */
+    const tb={x:0,z:Z-20,lado:1}, mb={tipo:"tl",P:P,ARQ:ARQ,pat:pat,bola:tb,mira:{x:0.4+Math.random()*0.4,y:0.5+Math.random()*0.4}};
+    if(_bpResolver(mb,"colocado").res==="barrera") m.bajo++;
+    const ma={tipo:"tl",P:P,ARQ:ARQ,pat:pat,bola:tb,mira:{x:0.4+Math.random()*0.4,y:2.15+Math.random()*0.15}};
+    if(_bpResolver(ma,"colocado").res==="barrera") m.alto++;
+    const jc={tipo:"corner",P:P,ARQ:ARQ,pat:pat,cabeceador:pat,bola:{x:33.6,z:Z-0.6,lado:1},mira:{x:(Math.random()*2-1)*4,z:Z-6-Math.random()*6}};
+    const c=_bpResolver(jc,"colocado"); m.corN++; if(c.res==="gol") m.cor++;
+  }
+  return m;
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"bp3d_misma_ley", area:"interfaz", n:"Penal, tiro libre y córner en la cancha 3D: misma ley que el minijuego, mira orientada, barrera física, sin jugadas dobles",
+    arreglo:"js/bp3d.js (bp3dALegado, _bpResolver, _bpVuelo, envolver: BP3D.activo.P===P) · js/ui-partido.js pasoEnVivo (el reloj espera con BP3D.activo)",
+    fn:function(){
+      if(typeof BP3D==="undefined"||typeof _bpResolver!=="function") return _dmal("falta js/bp3d.js en index.html");
+      const f=[];
+      ["minijuegoPenal","minijuegoTiroLibre","minijuegoCorner"].forEach(n=>{ const w=_docBp3dEnvuelto(n);
+        if(!w) f.push(n+" no pasa por la cancha 3D (falta el envoltorio de bp3d.js)");
+        else if(String(w).indexOf("BP3D.activo.P===P")<0) f.push(n+": un repintado durante la jugada abre otra encima (el gol contaba doble)"); });
+      if(typeof _bpCerrar==="function"&&!/onRes!=="function"\)\{[^}]*reanudarPronto/.test(String(_bpCerrar))) f.push("_bpCerrar reanuda el partido también en la tanda: se patean dos penales seguidos");
+      if(typeof pasoEnVivo==="function"&&String(pasoEnVivo).indexOf("BP3D.activo")<0) f.push("pasoEnVivo no espera al balón parado 3D: el reloj corre mientras pateas");
+      /* la mira: lo que ves a la izquierda es la izquierda del arco de siempre */
+      const zi=penZona(bp3dALegado(2.8,0.6).x,bp3dALegado(2.8,0.6).y), zd=penZona(bp3dALegado(-2.8,0.6).x,bp3dALegado(-2.8,0.6).y), zc=penZona(bp3dALegado(0,1.9).x,bp3dALegado(0,1.9).y);
+      if(zi.tercio!=="izq"||zd.tercio!=="der"||zc.tercio!=="centro"||zc.alt!=="alto") f.push("la mira está dada vuelta: izquierda 3D → "+zi.tercio+", derecha → "+zd.tercio+", centro alto → "+zc.tercio+"/"+zc.alt);
+      const ida=bp3dDesdeLegado(bp3dALegado(1.7,1.1).x,bp3dALegado(1.7,1.1).y);
+      if(Math.abs(ida.x-1.7)>0.01||Math.abs(ida.y-1.1)>0.01) f.push("bp3dDesdeLegado no deshace bp3dALegado");
+      const m=devBp3dLey(400), pen=m.pen/m.penN, cor=m.cor/m.corN;
+      if(pen<0.55||pen>0.93) f.push("penales 3D: "+Math.round(pen*100)+"% de gol (la ley de siempre da ~70–85%)");
+      if(m.bajo<360) f.push("un tiro libre rasante al medio pasa la barrera "+(400-m.bajo)+"/400 veces");
+      if(m.alto>40) f.push("un tiro libre por arriba de la barrera (2,2 m) la pega "+m.alto+"/400 veces: la barrera no usa la parábola");
+      if(cor>0.35) f.push("córner 3D: "+Math.round(cor*100)+"% de gol (cornerResolver da ~3–15%, como el fútbol real)");
+      const txt="penal "+Math.round(pen*100)+"% gol · TL rasante "+m.bajo+"/400 a la barrera, por arriba "+m.alto+"/400 · córner "+Math.round(cor*100)+"% gol";
+      return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
     }});
 }

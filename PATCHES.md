@@ -5258,3 +5258,33 @@ potencia, barra Aero), `js/ui.js` (Calidad del 3D en Ajustes), `js/dev-banco.js`
   demasiado rápidos, 77 "al arco" por arriba, escena rearmada. `test/cancha3d.sh` (Playwright, PC y celu en Modo papa).
 - **Estado:** doctor sano 138/138 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha
   3D) · core 1185/1185 · saves 12/12 · banco 255 sano (10–18 % despidos según corrida, tope 25 %).
+
+### 7.9127 — Penal, tiro libre y córner DENTRO de la cancha 3D · física de verdad en la pelota · forma del club propio en todas las tablas
+Pedido del autor: "penal/córner dentro de la cancha 3D" y "física realista, gravedad realista, toques realistas, tipo PES 2006".
+- **`js/bp3d.js` (nuevo):** con la cancha 3D y dirigiendo, el balón parado se juega en LA MISMA cancha del partido: la
+  vista se agranda (capa `.bp3d-capa`), la cámara se pone detrás del pateador (penal/TL) o detrás del banderín (córner),
+  los 22 se acomodan (todos fuera del área en el penal, barrera de 4 a 9,15 m, área llena en el córner) y apuntas sobre el
+  arco de verdad. Celu: arrastra y desliza rápido para patear. PC: flechas/mouse, MANTÉN Espacio y suelta (barra Aero),
+  Enter patea. "✕ Que se juegue solo" y vigilante de 60 s. Las probabilidades son LAS MISMAS (penZona, penArqueroTira,
+  penResolver, tlClasificar, cornerResolver, paloEntra, penalEnPartido): `bp3dALegado` traduce la mira 3D al arco de
+  siempre. La barrera es física: la altura sale de la misma parábola que se anima (`_bpVuelo`; TL colocado 21 m/s, penal
+  23, a lo bestia 29). Funciona en la tanda (onRes). Sin 3D sigue el minijuego de siempre (envoltorio de minijuegoPenal/
+  TiroLibre/Corner).
+- **Arreglos de la tanda:** un repintado durante la jugada volvía a pedir `mostrarAccion` y abría el minijuego viejo
+  encima (el gol contaba doble) → el envoltorio ignora la misma jugada; `pasoEnVivo` espera con `BP3D.activo` (el reloj
+  corría mientras pateabas); `montarCancha3D` no se roba el canvas de la capa; en la tanda no se reanuda dos veces.
+- **Física (js/cancha.js):** `CV_FIS` (g 9,81, aire, rebote 0,52, roce del pasto) y `_cvFisicaPelota`: la pelota vuela,
+  pica y rueda; pases raso/elevado con velocidad de patada real (`_cvPasar`), remates parabólicos a 24–30 m/s, conducción
+  a toques, saques (lateral/córner/arco) con el que saca caminando al punto, atajada o rechazo. Dos teletransportes
+  cazados: el arquero que "chupaba" la pelota a 2 m (hasta 50 m/s → tope 12 m/s al traerla) y `_cvSeparar` (burbuja de
+  3,4 m que empujaba a un jugador lanzado hasta 10,8 m/s → 1,5 m y roce de máx. 0,7 m/s).
+- **Tablas:** el club propio no tenía forma (últimos 5) en Segunda/Argentina/2006 (`js/calendario-sofa.js`
+  `_csPartidosEquipo`: filtra liguilla/playoffs por `fase` y busca la fecha por `fxRonda`).
+- **Dev:** `bp3d_misma_ley` (envoltorios, mira orientada, ida y vuelta de la mira, 400 penales ~70 % de gol, TL rasante
+  400/400 a la barrera y por arriba 0/400, córner 3–5 %, sin jugadas dobles, reloj quieto, tanda sin doble reanudar),
+  `fisica_partido` (ahora 6 min simulados: con 2 el bug del arquero salía 1 de cada 3), `tabla_forma_propia`,
+  `devFisicaCancha(seg)`, `devBp3dLey(N)`. `arco_escena_3d` lee la fuente por debajo de los envoltorios (`_docFuente`).
+  `test/cancha3d.mjs`: penal y córner 3D en navegador de verdad (se abren, aguantan repintados, se patean, se anotan una
+  vez, la cancha vuelve). Al revés: 7 roturas de bp3d cazadas; sin el tope el doctor marca 41–44 m/s.
+- **Estado:** doctor sano 141/141 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
+  · core 1185/1185 · saves ok · banco 255 sano (14 % despidos, tope 25 %).
