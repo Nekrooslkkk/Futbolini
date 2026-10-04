@@ -2570,3 +2570,11 @@ corre `bash test/doctor.sh` y `node test/servidores.js`, mira el doctor `csp_est
 - `cancha.js` trabaja en METROS y m/s (`CV_FIS`). Jugadores ≤ 9 m/s (`_cvMover`), pelota ≤ ~30 m/s; el doctor
   `fisica_partido` simula 6 minutos y avisa si algo se teletransporta.
 - Pendiente para el ojo del autor: números en la espalda, festejo y repetición en 3D, el córner con el pateador en cuadro.
+
+**7.9128 (Claude Opus) · toques con movimiento + gestos 3D + línea de potencia. LEER si tocan cancha.js o cancha3d.js:**
+- `p._acc={tipo,t,dur,...}` es el gesto en curso de cada jugador (lo pone `_cvAccion`, avanza en `_cvJuego` y en
+  `_bpPaso`). Si agregan un tipo nuevo, denle su pose en `C3D_ACCIONES` (cancha3d.js): el doctor `acciones_cancha` falla
+  si una acción no tiene gesto.
+- `_c3dGesto` arma la pose de cada cuadro SIN crear objetos (`_c3dCopia`, `est.gestos`). No usen JSON ni `new` ahí.
+- Balón parado 3D: la potencia es `medidorPotencia` (aguja de ida y vuelta). `jug.pot` cambia el resultado (flojo/bestia).
+- Charla al grupo: "lejos" = fuera de los 18 citados en pretemporada; con minutos jugados, <15 % del que más jugó.

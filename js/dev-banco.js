@@ -1056,7 +1056,7 @@ if(typeof devDoctorRegistrar==="function"){
 /* 7.9125 · "Apoyar a todos dice siempre 0 lo sintieron": el conteo tiene que salir de lo que de verdad cambió */
 if(typeof devDoctorRegistrar==="function"){
   devDoctorRegistrar({id:"charla_grupal_mide", area:"motor", n:"Hablar con todo el plantel cuenta lo que de verdad cambió (y apoyar puede sonar vacío)",
-    arreglo:"js/ui.js charlaGrupal() mide moral+forma antes/después · charlaGrupalTxt()",
+    arreglo:"js/ui.js charlaGrupal() mide moral+forma antes/después; lejos() = fuera de los 18 citados (pretemporada) · charlaGrupalTxt() sin ceros",
     fn:function(){
       if(!E||!E.plantel||typeof charlaGrupal!=="function") return _dok("sin partida");
       const f=[], snap=clonarPartida(E), gu=window.guardar, av=window.aviso;
@@ -1072,7 +1072,15 @@ if(typeof devDoctorRegistrar==="function"){
         let sube=0,baja=0,igual=0; vivos.forEach((j,i)=>{ const d=Math.round((j.moral+j.forma)-antes[i]); if(d>0) sube++; else if(d<0) baja++; else igual++; });
         if(r.sube!==sube||r.baja!==baja) f.push("el aviso dice "+r.sube+" bien / "+r.baja+" mal, pero cambiaron "+sube+" para arriba / "+baja+" para abajo");
         if(!baja) f.push("apoyar a todos nunca le cae mal a nadie (ni al que no juega): siempre «0 lo sintieron»");
-        if(typeof charlaGrupalTxt==="function"&&!/lo sintieron/.test(charlaGrupalTxt(r))) f.push("el texto del resultado no dice cuántos lo sintieron");
+        const tx=typeof charlaGrupalTxt==="function"?charlaGrupalTxt(r):"";
+        if(/(^|\D)0 /.test(tx)) f.push("el texto muestra un cero que parece error: «"+tx+"»");
+        /* 7.9127 · lo que el autor ve de verdad: pretemporada (nadie jugó un minuto), moral normal, plantel real */
+        restaurarPartida(snap); window.guardar=function(){}; window.aviso=function(){};
+        if(E.flags) Object.keys(E.flags).filter(k=>/^charlaGrupal_/.test(k)).forEach(k=>delete E.flags[k]);
+        E.plantel.forEach(j=>{ j.minutosTemporada=0; j.moral=70; delete j._charlaIdx; delete j._charlaAnio; });
+        const r0=charlaGrupal("banco")||{}, t0=charlaGrupalTxt(r0);
+        if(!r0.baja&&E.plantel.filter(j=>!j.vendido&&!j.cedido).length>18) f.push("en pretemporada apoyar a todos sigue diciendo que a nadie le sonó vacío: «"+t0+"»");
+        if(/(^|\D)0 /.test(t0)) f.push("pretemporada: el texto muestra un cero que parece error: «"+t0+"»");
       } catch(e){ f.push("explotó: "+e.message); }
       finally { window.guardar=gu; window.aviso=av; restaurarPartida(snap); }
       return f.length?_dmal(f.length+" problema(s)",f):_dok("cuenta lo que cambió de verdad; al que no juega el apoyo le suena vacío");
@@ -1329,5 +1337,59 @@ if(typeof devDoctorRegistrar==="function"){
       if(cor>0.35) f.push("córner 3D: "+Math.round(cor*100)+"% de gol (cornerResolver da ~3–15%, como el fútbol real)");
       const txt="penal "+Math.round(pen*100)+"% gol · TL rasante "+m.bajo+"/400 a la barrera, por arriba "+m.alto+"/400 · córner "+Math.round(cor*100)+"% gol";
       return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
+    }});
+}
+/* 7.9128 · "que si la pelota los toca haya movimiento": la simulación dispara acciones (patear, controlar con pie/muslo/
+   pecho, cabecear, dividida, quite) en cantidades de fútbol de verdad, y la cámara 3D tiene un gesto para cada una */
+function devAccionesCancha(seg){
+  const st=_cvNuevoEstado(null), dt=1/30, N=Math.round(30*(seg||360)), vistos=new Set(), n={};
+  for(let i=0;i<N;i++){ _cvStep(null,dt,st);
+    st.jug.forEach(p=>{ if(p._acc&&!vistos.has(p._acc)){ vistos.add(p._acc); n[p._acc.tipo]=(n[p._acc.tipo]||0)+1; } }); }
+  return n;
+}
+function _docTiposAccion(){
+  const src=[_cvPasar,_cvDecidir,_cvControlar,_cvCabezazo,_cvDividida,_cvQuite].filter(f=>typeof f==="function").map(String).join("\n");
+  const t=new Set(); src.replace(/_cvAccion\([^,]+,\s*"([a-z]+)"/g,(m,k)=>t.add(k));
+  const c=String(_cvControlar).match(/"(atrapa|control|muslo|pecho|cabeza)"/g)||[]; c.forEach(k=>t.add(k.replace(/"/g,"")));
+  String(_cvPasar).replace(/"(centro|patada)"/g,(m,k)=>t.add(k));
+  return [...t];
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"acciones_cancha", area:"motor", n:"Toques con movimiento: cabezazos, pecho, divididas y quites en cantidades reales, y un gesto 3D para cada uno",
+    arreglo:"js/cancha.js _cvAccion, _cvControlar (pie/muslo/pecho), _cvCabezazo, _cvDividida, _cvQuite · js/cancha3d.js C3D_ACCIONES, _c3dGesto",
+    fn:function(){
+      if(typeof _cvAccion!=="function"||typeof _cvCabezazo!=="function") return _dmal("faltan las acciones en cancha.js (_cvAccion/_cvCabezazo)");
+      const n=devAccionesCancha(360), f=[], g=k=>n[k]||0;
+      const aire=g("cabeza"), pecho=g("pecho")+g("muslo"), suelo=g("dividida")+g("entrada"), rem=g("remate"), pases=g("patada")+g("centro");
+      if(aire<3) f.push("en 6 minutos hay "+aire+" cabezazos (en la realidad ~8): los balones largos no llegan a la cabeza");
+      if(pecho<2) f.push("en 6 minutos casi nadie la para con el pecho o el muslo ("+pecho+")");
+      if(suelo<3) f.push("en 6 minutos hay "+suelo+" divididas/quites: nadie disputa la pelota");
+      if(suelo>45) f.push("en 6 minutos hay "+suelo+" divididas/quites: parece rugby");
+      if(rem>14) f.push("en 6 minutos hay "+rem+" remates (en la realidad 1–2): ritmo de futbolito");
+      if(pases<40) f.push("en 6 minutos hay solo "+pases+" pases");
+      if(typeof C3D_ACCIONES!=="undefined"){
+        const sin=_docTiposAccion().filter(k=>!C3D_ACCIONES[k]);
+        if(sin.length) f.push("acciones sin gesto en la cancha 3D (se verían como si nada): "+sin.join(", "));
+      }
+      if(typeof _c3dClave==="function"&&/JSON\.parse|JSON\.stringify/.test(String(_c3dClave))) f.push("_c3dClave copia con JSON en cada cuadro: en el compu papa traba");
+      const txt="6 min: "+pases+" pases · "+aire+" cabezazos · "+pecho+" pecho/muslo · "+suelo+" divididas/quites · "+rem+" remates";
+      return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
+    }});
+  /* 7.9128 · la potencia es una línea que va y viene: verde bien, roja muy fuerte; el buen pateador la tiene más lenta */
+  devDoctorRegistrar({id:"medidor_potencia", area:"interfaz", n:"Balón parado 3D: la potencia es una línea que va y viene (verde bien, roja muy fuerte)",
+    arreglo:"js/bp3d.js medidorPotencia, medidorValor, medidorPeriodo, MEDIDOR_ZONAS · bp3dJugar (Espacio/click paran la línea)",
+    fn:function(){
+      if(typeof medidorValor!=="function"||typeof medidorZona!=="function") return _dmal("falta el medidor en js/bp3d.js");
+      const f=[], T=medidorPeriodo(70,false); let mn=1,mx=0,salto=0,prev=null;
+      for(let t=0;t<=T*1.5;t+=T/200){ const v=medidorValor(t,T); mn=Math.min(mn,v); mx=Math.max(mx,v); if(prev!=null) salto=Math.max(salto,Math.abs(v-prev)); prev=v; }
+      if(mn>0.02||mx<0.98) f.push("la línea no recorre toda la barra ("+mn.toFixed(2)+"–"+mx.toFixed(2)+")");
+      if(salto>0.05) f.push("la línea salta en vez de moverse ("+salto.toFixed(2)+" de un paso al otro)");
+      if(!(medidorPeriodo(85,false)>medidorPeriodo(60,false))) f.push("el buen pateador no tiene la línea más lenta");
+      if(!(medidorPeriodo(70,true)<medidorPeriodo(70,false))) f.push("la presión (tanda, final) no acelera la línea");
+      const z=[0.15,0.45,0.8,0.97].map(v=>medidorZona(v).k).join(",");
+      if(z!=="flojo,bien,fuerte,bestia") f.push("las zonas no calzan: "+z+" (gris flojo, verde bien, amarillo fuerte, rojo a lo bestia)");
+      if(typeof bp3dJugar==="function"){ const s=String(bp3dJugar); if(s.indexOf("medidorPotencia")<0) f.push("el balón parado 3D no usa la línea de potencia"); if(/A3_CARGA_MS/.test(s)) f.push("el balón parado 3D sigue con la barra que se carga apretando"); }
+      if(typeof _bpResolver==="function"&&String(_bpResolver).indexOf("jug.pot")<0) f.push("la potencia no cambia el resultado del córner (flojo/a lo bestia)");
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("línea de ida y vuelta en "+T.toFixed(1)+" s (nivel 70) · zonas "+z);
     }});
 }

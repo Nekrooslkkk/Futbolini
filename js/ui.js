@@ -1789,15 +1789,22 @@ function charlaGrupal(tipo){
      nunca bajaba a nadie, y se contaba lo que se QUERÍA cambiar, no lo que cambió (el que ya estaba en 100 contaba
      como que respondió). Ahora se mide la moral/forma de verdad antes y después, y el discurso al grupo tiene costo:
      al que casi no juega, "todos somos importantes" le suena a palabras vacías. */
+  /* 7.9127 · seguía saliendo "0 lo sintieron" en todos los equipos: el costo solo corría con 270 minutos jugados, o sea
+     nunca al principio. El que sabe que no va a jugar lo sabe desde la pretemporada: si no entra ni entre los 18
+     citados, "todos somos importantes" no se lo cree. */
   let sube=0, baja=0, igual=0, vacios=0;
   const vivos=(E.plantel||[]).filter(j=>!j.vendido&&!j.cedido);
   const maxMin=vivos.reduce((m,j)=>Math.max(m,j.minutosTemporada||0),0);
+  /* pretemporada: el que no entra ni entre los 18 citados (11 + 7 en la banca) sabe que no va a jugar */
+  const once=(typeof onceIdeal==="function")?(onceIdeal()||[]):[];
+  const resto=vivos.filter(j=>once.indexOf(j)<0).sort((a,b)=>(b.nivel||60)-(a.nivel||60)), citados=new Set(once.concat(resto.slice(0,7)));
+  const lejos=j=>maxMin>=270?((j.minutosTemporada||0)<maxMin*0.15):(vivos.length>18&&once.length>=11&&!citados.has(j));
   vivos.forEach(j=>{
     if(charlaHecha(j)) return;
     const m0=j.moral||70, f0=j.forma||70;
     const r=reaccionCharla(j,tipo);
     let dm=Math.round(r.dm*0.6), df=Math.round(r.df*0.6);   /* en grupo pega menos que mano a mano */
-    if(tipo==="banco" && maxMin>=270 && (j.minutosTemporada||0)<maxMin*0.15 && m0<75){ dm=-2; vacios++; }
+    if(tipo==="banco" && lejos(j) && m0<75){ dm=-2; df=0; vacios++; }
     j.moral=clamp(m0+dm,0,100); j.forma=clamp(f0+df,0,100);
     const d=Math.round((j.moral-m0)+(j.forma-f0));
     if(d>0) sube++; else if(d<0) baja++; else igual++;
@@ -1805,13 +1812,21 @@ function charlaGrupal(tipo){
   });
   if(tipo==="banco" && E.ind) E.ind.moral=clamp((E.ind.moral||50)+2,0,100);
   guardar();
-  return {sube:sube,baja:baja,igual:igual,vacios:vacios};
+  return {tipo:tipo,sube:sube,baja:baja,igual:igual,vacios:vacios};
 }
+/* 7.9127 · "0 lo sintieron" se leía como error ("lo sintieron" también es "les llegó"). Ahora dice qué pasó, sin ceros raros */
 function charlaGrupalTxt(r){
   if(!r) return "";
-  const p=[r.sube+" respondieron bien"];
-  if(r.igual) p.push(r.igual+" quedaron igual");
-  p.push(r.baja+" lo sintieron"+(r.vacios?" (a "+r.vacios+" que casi no juegan el discurso les sonó vacío)":""));
+  const ex=r.tipo==="exigir", n=(k,uno,varios)=>k+" "+(k===1?uno:varios);
+  const p=[];
+  if(r.sube) p.push(n(r.sube,ex?"se puso las pilas":"se motivó",ex?"se pusieron las pilas":"se motivaron"));
+  if(r.igual) p.push(n(r.igual,"quedó igual","quedaron igual"));
+  if(r.baja){
+    const otros=r.baja-(r.vacios||0);
+    if(r.vacios) p.push(n(r.vacios,"no se lo creyó","no se lo creyeron")+" (no "+(r.vacios===1?"juega":"juegan")+" y el discurso les sonó vacío)");
+    if(otros>0) p.push(n(otros,ex?"se cerró":"se lo tomó mal",ex?"se cerraron":"se lo tomaron mal"));
+  } else p.push("nadie se lo tomó a mal");
+  if(!r.sube&&!r.igual&&!r.baja) return "Charla al grupo: ya habías hablado con todos esta semana.";
   return "Charla al grupo: "+p.join(", ")+".";
 }
 /* qué hace la moral/forma/cansancio de un jugador en la cancha (misma cuenta que fuerzaEquipo) */

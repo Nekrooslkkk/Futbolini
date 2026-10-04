@@ -53,7 +53,8 @@ try{
     if(!caso.papa){
       /* 7.9127 · penal y córner DENTRO de la cancha 3D: se juegan, se anotan una sola vez y la cancha vuelve */
       for(const tipo of ["penal","corner"]){
-        const a=await p.evaluate((tipo)=>{ clearInterval(TIMER); P_ACTUAL.modo="dirigir"; E.config.cornerMinijuego=true; window._g0=P_ACTUAL.gl+P_ACTUAL.gv;
+        /* el reloj en pausa mientras se mide: si no, un gol del partido que sigue se contaba como del penal */
+        const a=await p.evaluate((tipo)=>{ clearInterval(TIMER); PAUSADO=true; P_ACTUAL.modo="dirigir"; E.config.cornerMinijuego=true; window._g0=P_ACTUAL.gl+P_ACTUAL.gv;
           window._lineas0=document.querySelectorAll(".relato *").length;
           mostrarAccion(tipo==="corner"?{tipo:"corner",aFavor:true}:{tipo:"penal"});
           const enCapa=!!document.querySelector(".bp3d-capa canvas.cancha3d");
@@ -66,6 +67,7 @@ try{
         const z=await p.evaluate(()=>({vuelve:C3D.est&&C3D.est.canvas.parentNode===C3D.est.host&&C3D.est.canvas.isConnected, goles:P_ACTUAL.gl+P_ACTUAL.gv-window._g0}));
         ok(cerro&&z.vuelve,tipo+" 3D: se patea, se cierra y la cancha vuelve a su lugar");
         ok(z.goles<=1,tipo+" 3D: el resultado se anota una sola vez ("+z.goles+" gol/es)");
+        await p.evaluate(()=>{ PAUSADO=false; });
       }
     }
     ok(err.length===0,"sin errores en la página"+(err.length?": "+err.slice(0,3).join(" | "):""));

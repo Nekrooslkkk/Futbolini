@@ -5288,3 +5288,38 @@ Pedido del autor: "penal/córner dentro de la cancha 3D" y "física realista, gr
   vez, la cancha vuelve). Al revés: 7 roturas de bp3d cazadas; sin el tope el doctor marca 41–44 m/s.
 - **Estado:** doctor sano 141/141 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
   · core 1185/1185 · saves ok · banco 255 sano (14 % despidos, tope 25 %).
+
+### 7.9128 — Línea de potencia que va y viene · toques con movimiento (cabezazos, pecho, divididas, quites) · cuerpos y animación tipo PES 2006 · público pintado · "0 lo sintieron" arreglado de verdad
+Pedidos del autor: "la potencia debe ser una línea que se mueve: en verde se tira bien, en roja muy fuerte"; "se ve muy
+robótico, nada parecido al PES 2006"; "recibir con el pecho, pelotas divididas, cabezazos en jugada, que si la pelota
+los toca haya movimiento"; "sigue apareciendo en todos los equipos 0 lo sintieron cuando apoyas a todos".
+- **Línea de potencia (js/bp3d.js `medidorPotencia`):** la aguja va y viene sola sobre gris (flojo), verde (bien),
+  amarillo (fuerte) y rojo (a lo bestia, se eleva). Se para con Espacio, Enter, click en la cancha o "¡Patear!"; la
+  dirección la da la mira (el mouse apunta solo con moverse; en celu se arrastra). El buen pateador tiene la línea más
+  lenta (nivel 60 → 2,4 s ida y vuelta, 85 → 3,4 s); la tanda y el final apretado la aceleran 15 %. Flojo = −10 al
+  pateador y 3/4 de velocidad; en el córner, flojo lo despeja el primero y a lo bestia se va largo. Picadita como opción.
+- **Toques con movimiento (js/cancha.js):** `_cvAccion` marca cada gesto (patada, remate, centro, control, muslo,
+  pecho, cabeza, salto, dividida, entrada, atrapa). Nuevo: `_cvCabezazo` (duelo aéreo: saltan los que están abajo, gana
+  el mejor salto; cabezazo al arco, despeje o peinada a ~12 m/s), control según la altura a la que llega (pie/muslo/
+  pecho; la pelota cae del pecho al pie), `_cvDividida` (llegan los dos: a veces uno la gana limpio, si no chocan y la
+  pelota salta), `_cvQuite` (el que presiona mete la pierna). Balones largos medidos (antes el roce del aire los hacía
+  caer 3–7 m antes del compañero: nadie cabeceaba) y que llegan al pecho o a la cabeza; el que cae a plomo se deja picar.
+  Ritmo más real: ~1,5 s con la pelota (antes 0,9), menos pelotazo, remates 0,45 → 0,16. Medido en 6 min: ~100 pases,
+  ~6 cabezazos, ~10 pecho/muslo, ~16 divididas/quites, ~4–5 remates.
+- **Cuerpos y animación (js/cancha3d.js):** torso con forma (cintura, pecho, hombros), cuello, manos, brazos y piernas en
+  cápsula (sin cortes en codo/rodilla), botines redondeados, short que cubre el muslo. GESTOS: carrera de verdad
+  (zancada según la velocidad, rebote de cadera, tronco inclinado, brazos opuestos con codo a 90° al picar; parado,
+  atento y respirando) + poses clave por acción (`C3D_ACCIONES`) mezcladas suave; el cuerpo gira suave hacia donde mira;
+  salto en cabezazos. Sombras de verdad del foco en calidad Alta. Público pintado sobre la rampa de cada tribuna (como
+  el PES 2006) en vez de 1800 cubos; pasto verde de transmisión. La pelota rueda hacia donde va.
+- **Balón parado 3D:** el pateador hace la patada de verdad; en el córner el que va a cabecear corre y salta.
+- **Charla al grupo:** el costo del apoyo solo corría con 270 minutos jugados (al principio, siempre "0 lo sintieron"):
+  ahora en pretemporada al que no entra ni entre los 18 citados el discurso le suena vacío. Y el texto ya no muestra
+  ceros que parecen error: "24 se motivaron, 4 no se lo creyeron (no juegan…)" / "nadie se lo tomó a mal".
+- **Dev:** `acciones_cancha` (cantidades reales de cada toque, cada acción tiene su gesto 3D, sin JSON por cuadro),
+  `medidor_potencia` (recorre toda la barra sin saltos, más lenta al bueno, más rápida con presión, zonas correctas, el
+  córner usa la potencia), `charla_grupal_mide` ahora prueba la pretemporada REAL (minutos en 0) y que no haya ceros
+  raros. `devAccionesCancha(seg)`. `test/cancha3d.mjs` pausa el reloj al medir (un gol del partido se contaba como del
+  penal). Al revés: sin gesto para "entrada", quites ×17 ("parece rugby"), bp3d sin medidor, ui.js viejo → todos cazados.
+- **Estado:** doctor sano 143/143 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
+  · core 1185/1185 · saves ok · banco 255 sano (14 % despidos).
