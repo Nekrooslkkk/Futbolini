@@ -1550,13 +1550,31 @@ if(typeof devDoctorRegistrar==="function"){
 function devManiquiSuma(){ let peor=0, donde=0;
   for(let v=0;v<=9.5;v+=0.1){ const s=Object.keys(MODELO3D.pesos).reduce((a,k)=>a+_m3dPeso(k,v),0); if(Math.abs(s-1)>peor){ peor=Math.abs(s-1); donde=v; } }
   return {peor:peor, donde:donde}; }
+/* 7.9131 · integridad del crédito del maniquí: nombra a Quaternius y la licencia, y no inventa "captura de movimiento"
+   (la fuente, quaternius.com, solo dice CC0 y hecho en Blender). Devuelve los problemas; pinta Ajustes en una caja aparte */
+function devManiquiCredito(){
+  const f=[], C=(typeof MODELO3D_CREDITO==="string")?MODELO3D_CREDITO:"";
+  if(!/Quaternius/.test(C)||!/CC0/.test(C)) f.push("el crédito del maniquí no nombra a Quaternius y la licencia CC0");
+  const inventa=/captur|mocap|personas reales/i;
+  if(inventa.test(C)) f.push("el crédito dice que las animaciones son capturadas de personas: la fuente (quaternius.com) no lo dice");
+  if(typeof vistaAjustes!=="function"||typeof E==="undefined"||!E||typeof clonarPartida!=="function") return f;
+  const caja=document.createElement("div"), snap=clonarPartida(E); caja.style.cssText="position:absolute;left:-9999px;width:400px;visibility:hidden"; document.body.appendChild(caja);
+  try{ if(!E.config) E.config={}; E.config.cancha3d=true; vistaAjustes(caja);
+    const t=caja.textContent||"", i=t.indexOf("Jugadores 3D");
+    if(i>=0){ const sec=t.slice(i,i+700);   /* sin WebGL no se muestra la sección: no hay nada que revisar */
+      if(C&&sec.indexOf(C)<0) f.push("Ajustes ▸ Jugadores 3D no muestra el crédito del maniquí (Quaternius, CC0)");
+      if(inventa.test(sec)) f.push("Ajustes ▸ Jugadores 3D dice que las animaciones son capturadas de personas (no está en la fuente)"); }
+  }catch(e){ f.push("Ajustes se cae al pintarse: "+e.message); }
+  finally{ caja.remove(); restaurarPartida(snap); }
+  return f;
+}
 if(typeof devDoctorRegistrar==="function"){
   devDoctorRegistrar({id:"modelo_jugador", area:"interfaz", asinc:true,
-    n:"Jugadores 3D realistas: el maniquí CC0 carga (también sin servidor), viste los colores del club y los gestos mueven bien los huesos",
-    arreglo:"js/modelo3d.js (modelo3dCargar: .glb o el .js en base64 con file://; _m3dLeerGLB; modelo3dMaterial; modelo3dAndar; modelo3dGesto) · img/modelos/jugador.glb/.js (scripts/modelo_jugador.py) · js/cancha3d.js _c3dUsarModelo/_c3dPoseModelo/vigilante",
+    n:"Jugadores 3D realistas: el maniquí CC0 carga (también sin servidor), viste los colores del club, los gestos mueven bien los huesos y el crédito no inventa nada",
+    arreglo:"js/modelo3d.js (modelo3dCargar: .glb o el .js en base64 con file://; _m3dLeerGLB; modelo3dMaterial; modelo3dAndar; modelo3dGesto; MODELO3D_CREDITO) · img/modelos/jugador.glb/.js (scripts/modelo_jugador.py) · js/cancha3d.js _c3dUsarModelo/_c3dPoseModelo/vigilante · js/ui.js vistaAjustes ▸ Jugadores 3D",
     fn:async function(){
       if(typeof modelo3dCargar!=="function") return _dmal("falta js/modelo3d.js en index.html");
-      const f=[], s=devManiquiSuma();
+      const f=devManiquiCredito(), s=devManiquiSuma();
       if(s.peor>0.01) f.push("la mezcla quieto/caminar/trotar/piquear no suma 1 a "+s.donde.toFixed(1)+" m/s (el cuerpo se achica o se deforma)");
       if(typeof _c3dVigilar==="function"&&String(_c3dVigilar).indexOf("_c3dSacarModelo")<0) f.push("si el maniquí va lento, el vigilante no vuelve a los jugadores clásicos antes de ofrecer el 2D");
       if(typeof c3dModeloQuerido==="function"&&c3dModeloQuerido({perfil:{plano:true}})) f.push("en calidad Antigua se usaría el maniquí (tiene que ir el cuerpo clásico)");

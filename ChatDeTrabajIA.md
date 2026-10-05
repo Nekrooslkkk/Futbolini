@@ -2600,5 +2600,9 @@ corre `bash test/doctor.sh` y `node test/servidores.js`, mira el doctor `csp_est
   `modelo_jugador` falla si se dan vuelta.
 - El modelo se regenera con `python3 scripts/modelo_jugador.py UAL1_Standard.glb img/modelos/jugador.glb` (escribe también el .js).
   El paquete original (CC0) se baja de quaternius.com / itch.io. No commiteen el paquete entero: solo el .glb/.js preparados.
-- Pendiente con el ojo del autor: números y nombre en la espalda, caras/pelo con forma, animación de patada capturada (hoy la
-  patada es el gesto sumado encima), festejos.
+- Pendiente con el ojo del autor: números y nombre en la espalda, caras/pelo con forma, una animación de patada de verdad (hoy
+  la patada es el gesto sumado encima), festejos.
+
+**7.9131 (Claude Opus) · corrección de integridad (mía):** dije "movimientos capturados de personas" sobre las animaciones de
+Quaternius sin haberlo leído en ninguna fuente. La fuente solo dice CC0 y hecho en Blender. Si escriben créditos o textos sobre
+assets: **solo lo que diga la fuente**, y el crédito del maniquí se cambia en `MODELO3D_CREDITO` (el doctor `modelo_jugador` lo vigila).

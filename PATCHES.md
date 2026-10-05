@@ -5358,12 +5358,13 @@ repetición (tener 3 cámaras)"; "que los esqueletos sean más smooth, todavía 
   tanda, repetición sin gol / sin cámara lenta / sin reloj, sim y gestos de 7.9128 (sin inercia, sin preparación, corte
   de pose), brazos del mismo lado → todos cazados.
 - **Encontrado, para la próxima:** el paquete CC0 "Universal Animation Library" de Quaternius (maniquí de cuerpo
-  continuo, esqueleto de 65 huesos, 43 animaciones de captura de movimiento: quieto, caminar, trotar, piquear, saltar,
-  golpe en el pecho…) se puede bajar y tiene licencia de dominio público: es el camino para cuerpos "smooth" de verdad.
+  continuo, esqueleto de 65 huesos, 43 animaciones [7.9131: acá decía «de captura de movimiento»; la fuente no lo
+  dice]: quieto, caminar, trotar, piquear, saltar, golpe en el pecho…) se puede bajar y tiene licencia de dominio
+  público: es el camino para cuerpos "smooth" de verdad.
 - **Estado:** doctor sano 147/147 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
   · core 1185/1185 · saves ok · banco 255 sano (16 % despidos).
 
-### 7.9130 — Jugadores realistas: maniquí CC0 animado con movimientos capturados (cuerpo continuo, sin cortes) · la repetición ya no se cae si el equipo va lento
+### 7.9130 — Jugadores realistas: maniquí CC0 animado (cuerpo continuo, sin cortes) · la repetición ya no se cae si el equipo va lento
 Pedidos del autor: "que los esqueletos sean más smooth, más suaves, realistas: todavía hay robotismo"; "si descargas
 modelos, sería genial (PES 2006)".
 - **El cuerpo (js/modelo3d.js, nuevo · img/modelos/):** los 22 son un maniquí de UNA malla con esqueleto de 65 huesos
@@ -5372,7 +5373,8 @@ modelos, sería genial (PES 2006)".
   que no se usa (texturas, escalas, dedos animados) y marca cada vértice con su zona del uniforme →
   `img/modelos/jugador.glb` (0,69 MB · 8.546 vértices · 13.744 triángulos · 6 animaciones) + `jugador.js` (lo mismo en
   base64: carga con file:// y sin servidor). Lector glTF propio de 190 líneas: cero librerías nuevas.
-- **Movimiento capturado de personas:** quieto, caminar, trotar y piquear se mezclan según la velocidad (sin cortes:
+- **Animaciones del paquete** [7.9131: acá decía «movimiento capturado de personas»; la fuente no lo dice]: quieto,
+  caminar, trotar y piquear se mezclan según la velocidad (sin cortes:
   la mezcla suma siempre 1). El paso avanza con la zancada REAL de cada animación (medida en el paquete) y las tres
   arrancan con el mismo pie (`_m3dFasesPie`): los pies no patinan ni cambian de paso al acelerar. Encima van los gestos
   del fútbol de siempre (`C3D_ACCIONES`: patada, remate, pecho, muslo, cabezazo, salto, dividida, entrada, atrapa) como
@@ -5404,3 +5406,24 @@ modelos, sería genial (PES 2006)".
 - **Créditos:** `img/FUENTES.md` ▸ Modelos 3D y `js/vendor/LICENCIAS.md` (Quaternius, CC0).
 - **Estado:** doctor sano 148/148 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D
   con los 22 maniquíes, 55 llamadas de dibujo por cuadro) · core 1185/1185 · saves ok · banco 255 sano (17 % despidos).
+
+### 7.9131 — Integridad: el crédito del maniquí ya no dice "movimientos capturados de personas" (la fuente no lo dice)
+- **Qué estaba mal:** en 7.9130 Ajustes ▸ Jugadores 3D decía que el maniquí andaba "con movimientos capturados de
+  personas reales", y la bitácora lo repetía (también en 7.9129: "43 animaciones de captura de movimiento"). Revisado
+  contra las fuentes: la página del paquete (quaternius.com/packs/universalanimationlibrary.html), el License.txt del
+  paquete (CC0 1.0) y la nota de digitalproduction.com (feb 2026) solo dicen que es **CC0** y que se hizo **en
+  Blender** (el .glb lo confirma: "Khronos glTF Blender I/O"). Ninguna dice captura de movimiento. Regla del repo:
+  nada inventado como real.
+- **Arreglo:** el crédito vive en UNA constante, `MODELO3D_CREDITO` (js/modelo3d.js), y Ajustes la usa: "las
+  animaciones del paquete «Universal Animation Library» de Quaternius (licencia libre CC0)". Comentarios de
+  cancha3d.js/modelo3d.js/ui.js, BRIEFING y ChatDeTrabajIA corregidos; las entradas viejas quedan marcadas
+  "[7.9131: acá decía…]" (no se borra el error, se corrige a la vista).
+- **Dev:** `modelo_jugador` ahora revisa el crédito (`devManiquiCredito`): nombra a Quaternius y CC0, no dice
+  captura/mocap/"personas reales", y pinta Ajustes en una caja aparte para ver que la sección Jugadores 3D muestre ese
+  crédito tal cual. Al revés: el texto viejo en ui.js → 2 fallas; la constante inventando → 2 fallas.
+- **Encontrado, para la próxima:** "Universal Animation Library 2 [Standard]" (Quaternius, CC0 según su License.txt,
+  en opengameart.org) usa el MISMO esqueleto de 65 huesos. Revisado dentro del .glb: barrida (Slide_Start/Loop/Exit:
+  la cadera baja al pasto), caída por choque (Hit_Knockback), pararse del suelo (LayToIdle), lanzamiento por arriba
+  (OverhandThrow), "no" con la cabeza (Idle_No_Loop), brazos cruzados, salto, y un maniquí femenino. No trae patada.
+- **Estado:** doctor sano 148/148 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
+  · core 1185/1185 · saves ok · banco 255 sano (11 % despidos).

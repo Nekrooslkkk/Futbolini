@@ -49,7 +49,7 @@ temporadas. (Pedir el harness a Claude Code si hace falta; no está en el repo d
   Los goles los decide el motor; la física solo en el rebote del balón parado (`st.bpVivo`).
 - `cancha3d.js` — la cámara 3D de esa simulación (three.js): cuerpos, gestos `C3D_ACCIONES`, repetición del gol, vigilante.
 - `bp3d.js` — penal/tiro libre/córner dentro de la cancha 3D (línea de potencia, mira, jugada viva hasta que la sacan).
-- `modelo3d.js` — los jugadores realistas (maniquí CC0 de Quaternius en `img/modelos/`, animaciones capturadas).
+- `modelo3d.js` — los jugadores realistas (maniquí CC0 de Quaternius en `img/modelos/`, con sus animaciones).
 - `dev-doctor.js` / `dev-banco.js` — el doctor (`devDoctor()`): cada arreglo deja su chequeo acá.
 - `css/` — `base.css`, `aero.css`, `temas.css` (estética Frutiger Aero).
 

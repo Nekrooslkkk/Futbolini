@@ -422,7 +422,7 @@ function _c3dPose(est,i,o){
 }
 
 /* ---------- 7.9130 · JUGADORES CON EL MANIQUÍ (modelo3d.js) ----------
-   En calidad Alta y Auto los 22 usan el maniquí CC0 animado (cuerpo continuo, animaciones capturadas); en Antigua y en
+   En calidad Alta y Auto los 22 usan el maniquí CC0 animado (cuerpo continuo, animaciones del paquete); en Antigua y en
    Modo papa, el cuerpo clásico. Ajustes ▸ Jugadores 3D lo cambia. Si el modelo no llega o algo falla, quedan los
    clásicos; si el equipo no aguanta, el vigilante vuelve a los clásicos antes de ofrecer el 2D. */
 function c3dModeloQuerido(est){
@@ -471,7 +471,7 @@ function _c3dPoseModelo(est,i,o,v,dt,fase){
     ax.set(0,0,1).applyQuaternion(R.quaternion); qr.setFromAxisAngle(ax,o.roll);
     h1.set(0,0.93,0).applyQuaternion(R.quaternion); R.position.add(h1); h1.applyQuaternion(qr); R.position.sub(h1); R.quaternion.premultiply(qr);
   }
-  /* piernas y brazos: la animación capturada según la velocidad; durante un gesto se va hacia "quieto" y manda el gesto */
+  /* piernas y brazos: la animación del paquete según la velocidad; durante un gesto se va hacia "quieto" y manda el gesto */
   I.pesoLoco=1-(o.brazos?1:(o.wAcc||0));
   const f=modelo3dAndar(I,v,dt,fase);
   if(o.brazos) modelo3dGesto(I,_c3dPoseBrazos(o),1);

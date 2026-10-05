@@ -3883,18 +3883,19 @@ function vistaAjustes(host){
       });
       p.cuerpo.appendChild(fq);
       p.cuerpo.appendChild(el("p","mini","<b>Auto</b> baja o sube la resolución según lo que aguante tu equipo (no se cambia a 2D: si ni así va fluido, te pregunta). <b>Antigua</b> es 3D de consola vieja: baja resolución, sin público, 30 cuadros por segundo."));
-      /* 7.9130 · jugadores con el maniquí animado (cuerpo continuo, movimientos capturados) o los clásicos (livianos) */
+      /* 7.9130 · jugadores con el maniquí animado (cuerpo continuo, animaciones del paquete) o los clásicos (livianos).
+         7.9131 · el texto decía "movimientos capturados de personas": la fuente no lo dice (solo CC0 y hecho en Blender) */
       p.cuerpo.appendChild(el("label","lb","Jugadores 3D"));
       const fj=el("div","fichas"), jug3=(E.config&&E.config.c3dJugadores)||"modelo";
       [["modelo","🧍 Realistas"],["clasicos","🧱 Clásicos (livianos)"]].forEach(([k,n])=>{
         const b=el("button","ficha",n); b.setAttribute("aria-pressed",jug3===k?"true":"false");
         b.onclick=()=>{ E.config.c3dJugadores=k; guardar();
           if(typeof C3D!=="undefined"&&C3D.est){ if(k==="clasicos") _c3dSacarModelo(C3D.est); else { C3D.est.m3dLento=false; _c3dIntentarModelo(C3D.est); } }
-          render(); aviso(k==="modelo"?"🧍 Jugadores realistas: cuerpo entero y movimientos capturados de personas reales.":"🧱 Jugadores clásicos: más livianos para equipos lentos.",3500); };
+          render(); aviso(k==="modelo"?"🧍 Jugadores realistas: cuerpo entero que se dobla sin cortes y anda con animaciones de verdad.":"🧱 Jugadores clásicos: más livianos para equipos lentos.",3500); };
         fj.appendChild(b);
       });
       p.cuerpo.appendChild(fj);
-      p.cuerpo.appendChild(el("p","mini","<b>Realistas</b>: maniquí con el uniforme del club, que camina, trota y pica con movimientos capturados de personas (licencia libre CC0, de Quaternius). Si tu equipo no da, vuelve solo a los <b>clásicos</b>. En Antigua y en Modo papa van los clásicos."));
+      p.cuerpo.appendChild(el("p","mini","<b>Realistas</b>: maniquí con el uniforme del club, que camina, trota y pica con "+(typeof MODELO3D_CREDITO==="string"?MODELO3D_CREDITO:"las animaciones de Quaternius (CC0)")+". Si tu equipo no da, vuelve solo a los <b>clásicos</b>. En Antigua y en Modo papa van los clásicos."));
       if(document.documentElement.classList.contains("papa")){
         const bp=el("button","ficha",E.config.cancha3dPapa?"🕹️ 3D antiguo en Modo papa: SÍ":"🕹️ Usar el 3D antiguo en Modo papa");
         bp.setAttribute("aria-pressed",E.config.cancha3dPapa?"true":"false");

@@ -6,7 +6,8 @@
    - El cuerpo es UNA malla continua con esqueleto (65 huesos): se dobla en codos y rodillas sin cortes. Sale del paquete
      "Universal Animation Library" de Quaternius, licencia CC0 (dominio público), preparado por scripts/modelo_jugador.py
      (img/modelos/jugador.glb, ~0,7 MB, se guarda para jugar sin internet).
-   - Corre con ANIMACIONES CAPTURADAS (quieto, caminar, trotar, piquear) mezcladas según la velocidad y con los pasos
+   - Corre con las ANIMACIONES DEL PAQUETE (quieto, caminar, trotar, piquear; hechas en Blender por Quaternius: la
+     fuente no dice que sean de captura de movimiento, así que no lo decimos) mezcladas según la velocidad y con los pasos
      sincronizados (los pies no patinan); los gestos del fútbol (patada, pecho, cabezazo, quite, arquero) van ENCIMA,
      rotando los huesos con las mismas poses de C3D_ACCIONES.
    - Los colores del club se pintan por zona del cuerpo (piel, camiseta con franjas, short, medias, botines, pelo).
@@ -20,6 +21,9 @@ const MODELO3D={ url:"img/modelos/jugador.glb", estado:"nada", datos:null, error
   anclas:[0, 0.4, 1.5, 2.8, 5.4, 7.4, 9.5],
   pesos:{Idle_Loop:[1,0,0,0,0,0,0], Walk_Loop:[0,1,1,0,0,0,0], Jog_Fwd_Loop:[0,0,0,1,1,0,0], Sprint_Loop:[0,0,0,0,0,1,1]} };
 const M3D_LOCO=["Walk_Loop","Jog_Fwd_Loop","Sprint_Loop"];
+/* 7.9131 · el crédito que ve el jugador (Ajustes ▸ Jugadores 3D). Integridad: solo lo que dice la fuente (quaternius.com:
+   CC0, hecho en Blender). Antes decía "movimientos capturados de personas" y eso no está en ninguna parte: el doctor lo vigila */
+const MODELO3D_CREDITO="las animaciones del paquete «Universal Animation Library» de Quaternius (licencia libre CC0)";
 
 /* ---------- lectura del GLB ---------- */
 function _m3dLeerGLB(ab){
