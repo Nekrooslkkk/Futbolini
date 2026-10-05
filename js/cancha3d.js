@@ -281,32 +281,46 @@ function _c3dMiembro(P,a,b,c,idx,B,jx,jy,jz,ang1,abd,ang2,l1,l2,cIdx,pie){
    Un gesto = ángulos del cuerpo: {lift, roll, pitch (tronco adelante), twist, nod, legs:[{t,k,a}], arms:[{s,a,e}]}.
    pierna: t = muslo (− adelante), k = rodilla, a = abrir · brazo: s = hombro (− adelante/arriba), a = abrir, e = codo.
    La pierna 0 es la DERECHA del jugador (mira a +Z: su derecha es −X): con esa patea. */
-function _c3dGestoVacio(){ return {lift:0,roll:0,pitch:0,twist:0,nod:0,legs:[{t:0,k:0,a:0,p:0},{t:0,k:0,a:0,p:0}],arms:[{s:0,a:0,e:0},{s:0,a:0,e:0}]}; }
+function _c3dGestoVacio(){ return {lift:0,roll:0,pitch:0,twist:0,nod:0,lean:0,pelvis:0,legs:[{t:0,k:0,a:0,p:0},{t:0,k:0,a:0,p:0}],arms:[{s:0,a:0,e:0},{s:0,a:0,e:0}]}; }
 function _c3dMezcla(o,g,w){
   if(w<=0) return o; if(w>1) w=1; const L=(a,b)=>a+(b-a)*w;
-  ["lift","roll","pitch","twist","nod"].forEach(k=>{ o[k]=L(o[k],g[k]); });
+  ["lift","roll","pitch","twist","nod","lean","pelvis"].forEach(k=>{ o[k]=L(o[k]||0,g[k]||0); });
   for(let k=0;k<2;k++){ ["t","k","a","p"].forEach(q=>{ o.legs[k][q]=L(o.legs[k][q],g.legs[k][q]); }); ["s","a","e"].forEach(q=>{ o.arms[k][q]=L(o.arms[k][q],g.arms[k][q]); }); }
   return o;
 }
-/* carrera: zancada según la velocidad (m/s), rebote de cadera, tronco inclinado, brazos opuestos con codo a 90° al picar */
+/* carrera · 7.9129 (el autor: "que los esqueletos sean más smooth, todavía hay robotismo"):
+   - Los brazos van contra las piernas (pierna derecha adelante → brazo izquierdo adelante). En 7.9126 iban del mismo
+     lado, como camina un robot; ya estaba bien desde 7.9128 y ahora el doctor (movimiento_suave) lo vigila.
+   - Todo depende de la velocidad, sin cortes: quieto → caminar → trotar → picar se mezclan suave (antes había un "si
+     va lento, pose de parado" que saltaba de golpe). Caminando no hay rebote ni vuelo; corriendo, sí.
+   - El ritmo de los pasos lo da la velocidad (fase propia en _c3dSincronizar): 1,6 pasos/s caminando hasta 4,6 picando.
+   - La cadera gira con el paso y los hombros contra ella; el pie empuja al despegar; el cuerpo se inclina en las curvas
+     (lean) y la cabeza se queda derecha aunque el tronco se incline (en _c3dPose). */
 function _c3dCarrera(o,v,fase,t,i){
-  const a=Math.min(1,v/7.5), trote=Math.min(1,v/3);
-  o.pitch=0.03+0.16*a; o.lift=Math.abs(Math.sin(fase))*0.045*trote; o.twist=Math.sin(fase)*0.12*trote;
+  const q=_c3dSuave(Math.min(1,v/0.7)), run=_c3dSuave(Math.max(0,Math.min(1,(v-2.1)/1.5))), a=Math.min(1,v/8.5), w=1-run;
+  const amp=w*(0.17+0.07*Math.min(v,2.5))+run*(0.3+0.52*a);
+  const rodVuelo=w*0.5+run*(0.55+1.25*a), rodBase=w*0.07+run*0.2;
+  const brazo=w*(0.16+0.06*Math.min(v,2.5))+run*(0.3+0.6*a), codo=w*0.32+run*(0.95+0.5*a);
+  o.pitch=(w*0.03+run*(0.06+0.15*a))*q; o.lift=run*Math.abs(Math.sin(fase))*0.05*(0.4+a);
+  o.twist=Math.sin(fase)*(0.06+0.09*run)*q; o.pelvis=-Math.sin(fase)*(0.05+0.06*run)*q;
   for(let k=0;k<2;k++){
     const ph=fase+(k?Math.PI:0), sw=Math.sin(ph), atras=Math.max(0,-Math.cos(ph));
-    o.legs[k].t=-sw*(0.25+0.6*a)*trote+0.05; o.legs[k].k=(0.12+0.25*trote)+(0.35+1.25*a)*atras*trote; o.legs[k].a=(k?1:-1)*0.03;
-    o.arms[k].s=sw*(0.25+0.65*a)*trote+0.05; o.arms[k].a=(k?1:-1)*(0.1+0.05*a); o.arms[k].e=-(0.35+1.1*trote*(0.4+0.6*a));
+    const L=o.legs[k], A=o.arms[k];
+    L.t=(-sw*amp+0.04*run)*q; L.k=(rodBase+rodVuelo*atras)*q; L.a=(k?1:-1)*0.03; L.p=0.3*atras*run*q;
+    /* el brazo de este lado va para atrás cuando la pierna de este lado va adelante */
+    A.s=(sw*brazo+0.05)*q; A.a=(k?1:-1)*(0.08+0.06*run); A.e=-(0.25+codo*(0.75+0.25*Math.max(0,-sw)))*q;
   }
-  if(trote<0.15){   /* parado: atento, rodillas un poco dobladas, respira */
-    const r=Math.sin(t*2.1+i)*0.02;
-    o.pitch=0.06+r; o.legs[0].k=o.legs[1].k=0.18; o.legs[0].t=o.legs[1].t=-0.06; o.arms[0].e=o.arms[1].e=-0.45; o.arms[0].s=o.arms[1].s=0.05+r;
+  if(q<1){   /* parado: atento, rodillas apenas dobladas, respira (se mezcla según cuán quieto está) */
+    const r=Math.sin(t*2.1+i*1.7)*0.02, w2=1-q;
+    o.pitch+=(0.06+r)*w2;
+    for(let k=0;k<2;k++){ o.legs[k].k+=0.16*w2; o.legs[k].t+=-0.05*w2; o.arms[k].e+=-0.45*w2; o.arms[k].s+=(0.05+r)*w2; o.arms[k].a+=(k?1:-1)*0.1*w2; }
   }
   return o;
 }
 const _c3dSuave=u=>u<=0?0:(u>=1?1:u*u*(3-2*u));
 /* claves de una acción en el tiempo u (0..1): interpola entre poses [u0, gesto] */
 function _c3dCopia(d,o){
-  d.lift=o.lift; d.roll=o.roll; d.pitch=o.pitch; d.twist=o.twist; d.nod=o.nod;
+  d.lift=o.lift; d.roll=o.roll; d.pitch=o.pitch; d.twist=o.twist; d.nod=o.nod; d.lean=o.lean||0; d.pelvis=o.pelvis||0;
   for(let k=0;k<2;k++){ const a=d.legs[k], b=o.legs[k]; a.t=b.t; a.k=b.k; a.a=b.a; a.p=b.p; const c=d.arms[k], e=o.arms[k]; c.s=e.s; c.a=e.a; c.e=e.e; }
   return d;
 }
@@ -345,8 +359,8 @@ const C3D_ACCIONES={
 const C3D_QUIETO=_c3dGestoVacio();
 C3D_ACCIONES.centro=C3D_ACCIONES.remate; C3D_ACCIONES.despeje=C3D_ACCIONES.remate;
 /* el gesto de un jugador en este cuadro: carrera mezclada con la acción (entra y sale suave, nada de saltos de pose) */
-function _c3dGesto(o,p,v,t,i){
-  _c3dCarrera(o,v,p._paso||0,t,i);
+function _c3dGesto(o,p,v,t,i,fase){
+  _c3dCarrera(o,v,fase!=null?fase:(p._paso||0),t,i);
   const ac=p._acc, cl=ac&&C3D_ACCIONES[ac.tipo];
   if(cl){
     const u=Math.min(1,ac.t/Math.max(0.05,ac.dur)), w=Math.min(1,u/0.15,(1-u)/0.18+0.15);
@@ -361,6 +375,7 @@ function _c3dPose(est,i,o){
   const P=est.piezas, K=_c3dM(), B=K.B, c=C3D_CUERPO;
   if(!o.legs) _c3dCarrera(Object.assign(o,_c3dGestoVacio()),0,0,0,i);
   B.makeTranslation(o.x,o.lift||0,o.z); _c3dR(B,0,o.yaw,0);
+  if(o.lean) _c3dR(B,0,0,o.lean);   /* 7.9129 · se inclina en la curva (desde los pies, como en la cancha) */
   if(o.roll){ _c3dT(B,0,c.cadera,0); _c3dR(B,0,0,o.roll); _c3dT(B,0,-c.cadera,0); }
   /* tronco: gira desde la cadera (inclinación y torsión); hombros, cuello, cabeza y brazos cuelgan de él */
   const TR=K.T2||(K.T2=new THREE.Matrix4());
@@ -371,14 +386,17 @@ function _c3dPose(est,i,o){
   else if(fr==="vertical"){ K.W.copy(TR); _c3dT(K.W,0,0.33,0); _c3dS(K.W,0.11,0.56,0.3); P.franja.setMatrixAt(i,K.W); }
   else if(fr==="banda"){ K.W.copy(TR); _c3dT(K.W,0,0.35,0); _c3dR(K.W,0,0,0.75); _c3dS(K.W,0.1,0.62,0.3); P.franja.setMatrixAt(i,K.W); }
   else P.franja.setMatrixAt(i,K.cero);
-  K.W.copy(B); _c3dT(K.W,0,c.cadera-0.04,0); P.short.setMatrixAt(i,K.W);
+  /* la cadera gira con el paso: el short y las piernas salen de ella */
+  const BL=K.BL||(K.BL=new THREE.Matrix4()); BL.copy(B); if(o.pelvis) _c3dR(BL,0,o.pelvis,0);
+  K.W.copy(BL); _c3dT(K.W,0,c.cadera-0.04,0); P.short.setMatrixAt(i,K.W);
   K.W.copy(TR); _c3dT(K.W,0,0.66,0.0); P.cuello.setMatrixAt(i,K.W);
-  K.W.copy(TR); _c3dT(K.W,0,0.69,0); _c3dR(K.W,o.nod||0,0,0); _c3dT(K.W,0,0.12,0.015); P.cabeza.setMatrixAt(i,K.W);
+  /* la cabeza se queda derecha mirando al frente aunque el tronco se incline o gire (como en la cancha) */
+  K.W.copy(TR); _c3dT(K.W,0,0.69,0); _c3dR(K.W,(o.nod||0)-(o.pitch||0)*0.7,-(o.twist||0)*0.6,0); _c3dT(K.W,0,0.12,0.015); P.cabeza.setMatrixAt(i,K.W);
   _c3dT(K.W,0,0.03,-0.012); if(est.pelados[i]) _c3dS(K.W,0,0,0); P.pelo.setMatrixAt(i,K.W);
   /* piernas (desde la cadera, sin la inclinación del tronco) */
   for(let k=0;k<2;k++){
     const s=k?1:-1, L=o.legs[k];
-    _c3dMiembro(P,"muslo","media","zapato",i*2+k,B,s*c.ancho_cad,c.cadera,0,L.t,s*0.02+L.a,L.k,c.muslo,c.pierna,null,L.p);
+    _c3dMiembro(P,"muslo","media","zapato",i*2+k,BL,s*c.ancho_cad,c.cadera,0,L.t,s*0.02+L.a,L.k,c.muslo,c.pierna,null,L.p);
   }
   /* brazos */
   const esArq=est.gk[i]>=0, hy=c.hombro-c.cadera-0.04;
@@ -467,24 +485,31 @@ function _c3dSincronizar(est,dt){
   let manos=null;
   const tAhora=performance.now()/1000;
   est.giro=est.giro||[];
+  const fr=_c3dFotoNueva(est,dt);   /* 7.9129 · la grabadora de la repetición (-1 si este cuadro no se guarda) */
   S.jug.forEach((p,i)=>{
     const x=wx(p.y), z=wz(p.x);
     /* 7.9128 · el cuerpo gira suave hacia donde mira (antes daba vuelta de golpe: muy robótico) */
     const ang=(typeof p._ang==="number")?p._ang:0, g0=est.giro[i]!=null?est.giro[i]:ang, dg=Math.atan2(Math.sin(ang-g0),Math.cos(ang-g0));
     const giro=est.giro[i]=g0+dg*Math.min(1,dt*(p._acc?16:9));
     const v=(p._vel||0)/0.14;   /* _vel es la velocidad suavizada ×0,14 (cancha.js _cvAnimar) */
-    est.gestos=est.gestos||[]; const o=_c3dGesto(_c3dCopia(est.gestos[i]||(est.gestos[i]=_c3dGestoVacio()),C3D_QUIETO),p,v,tAhora,i);
-    o.x=x; o.z=z; o.yaw=giro; o.brazos=null;
+    /* 7.9129 · el ritmo de los pasos sale de la velocidad (1,6 pasos/s caminando → 4,6 picando) y la inclinación de la
+       curva, de cuánto gira yendo rápido */
+    est.fase=est.fase||[]; est.giroV=est.giroV||[];
+    est.fase[i]=((est.fase[i]||i*0.7)+dt*Math.PI*(v<0.15?0:Math.min(4.6,1.6+0.34*v)))%(Math.PI*200);
+    const gv=(est.giroV[i]||0)+((dt>0?dg*Math.min(1,dt*(p._acc?16:9))/dt:0)-(est.giroV[i]||0))*Math.min(1,dt*6); est.giroV[i]=gv;
+    est.gestos=est.gestos||[]; const o=_c3dGesto(_c3dCopia(est.gestos[i]||(est.gestos[i]=_c3dGestoVacio()),C3D_QUIETO),p,v,tAhora,i,est.fase[i]);
+    o.x=x; o.z=z; o.yaw=giro; o.brazos=null; o.lean=Math.max(-0.3,Math.min(0.3,-gv*v*0.035));
     if(p.rol==="gk"){
       const pase=S.pase;
       if((p._dive||0)>0.05){
         const destX=pase&&pase.tiro?wx(pase.y1):wx(S.ball.y), lado=Math.sign(destX-x)||1;
         const d=Math.min(1,p._dive), lat=Math.cos(ang)*lado;   /* hacia qué lado queda en SU marco */
         o.roll=-Math.sign(lat||1)*d*1.25; o.lift=Math.sin(d*Math.PI)*0.35; o.x=x+lado*d*0.7; o.brazos="arriba";
-        o.legs[0].k=o.legs[1].k=0.2; o.legs[0].t=-0.1; o.legs[1].t=0.25; o.pitch=0;
+        o.legs[0].k=o.legs[1].k=0.2; o.legs[0].t=-0.1; o.legs[1].t=0.25; o.pitch=0; o.lean=0; o.pelvis=0;
       } else if(S.atajada&&S.atajada.gk===i&&S.own===i){ o.brazos="abrazo"; }
     }
     _c3dPose(est,i,o);
+    if(fr>=0) _c3dGrabarJug(est.grab.buf,fr,i,o);
     const sl=Math.max(0,o.lift); M.makeTranslation(o.x,0.02,o.z); _c3dS(M,(1.1+sl)*(est.perfil.sombras?0.75:1),1,(1.1+sl)*(est.perfil.sombras?0.75:1)); sombras.setMatrixAt(i,M);
     if(o.brazos==="abrazo"){ K.v.set(0,1.15,0.32).applyMatrix4(K.B); manos=K.v.clone(); }
     p._yaw3d=giro;
@@ -497,6 +522,10 @@ function _c3dSincronizar(est,dt){
   if(dist>1e-4&&dist<3){ const ax=K.v.set(ddz,0,-ddx).normalize(); est.bola.rotateOnWorldAxis(ax,dist/0.15); est.bolaGiro=(est.bolaGiro||new THREE.Vector3()).copy(ax).multiplyScalar(dist/0.15/Math.max(dt,1e-3)); }
   else if(est.bolaGiro&&bp.y>0.3){ const w=est.bolaGiro.length(); if(w>0.01) est.bola.rotateOnWorldAxis(K.v.copy(est.bolaGiro).normalize(),w*dt); }
   ult.copy(bp);
+  if(fr>=0) _c3dGrabarBola(est.grab.buf,fr,est.bola);
+  /* gol del partido (la jugada armada de cancha.js): cuando termina, va la repetición */
+  if(S.seq&&S.seq.tipo==="gol"){ if(S.seq.red&&est.golSeq!==S.seq){ est.golSeq=S.seq; est.golSeqT=0; } }
+  if(est.golSeq){ est.golSeqT+=dt; if(S.seq!==est.golSeq||est.golSeqT>1.6){ est.golSeq=null; est.repPendiente=0.25; } }
   const s=0.55+by*0.06; M.makeTranslation(est.bola.position.x,0.021,est.bola.position.z); _c3dS(M,s,1,s); sombras.setMatrixAt(22,M);
   Object.keys(est.piezas).forEach(n=>{ est.piezas[n].instanceMatrix.needsUpdate=true; });
   sombras.instanceMatrix.needsUpdate=true;
@@ -527,6 +556,165 @@ function _c3dSincronizar(est,dt){
   /* cartel del gol (el mismo texto que el cenital) */
   const txt=S.seq&&S.seq.cartel?S.seq.cartel:"";
   if(txt!==est.carteles){ est.carteles=txt; est.hud.textContent=txt; est.hud.classList.toggle("on",!!txt); }
+}
+/* ---------- 7.9129 · REPETICIÓN DEL GOL ----------
+   Pedido del autor: "repeticiones buenas, darle tiempo, que no sea tan rápido todo; si es gol, nomás repetición; tener
+   3 cámaras". La cancha 3D GRABA lo que dibuja (los 22 con su pose, la pelota con su giro) en los últimos 12 s. Cuando hay
+   gol —del partido o de un balón parado 3D— la jugada se pasa otra vez, en cámara lenta, con tres cámaras:
+   1) Transmisión (la de la tele, más cerrada) · 2) Detrás del arco · 3) A ras del pasto, siguiendo la pelota.
+   El reloj del partido espera (P._celHasta) y "⏭ Saltar" corta. Solo los goles se repiten. */
+const C3D_REP={hz:40, seg:12, camaras:[
+  {n:"Transmisión", desde:-3.6, hasta:0.9, vel:0.8},
+  {n:"Detrás del arco", desde:-2.0, hasta:0.7, vel:0.55},
+  {n:"A ras del pasto", desde:-1.5, hasta:0.6, vel:0.42}]};
+const C3D_FJ=26, C3D_FB=8, C3D_FT=1+C3D_FB+22*C3D_FJ;   /* datos por jugador · por pelota · por foto */
+function _c3dFotoNueva(est,dt){
+  let g=est.grab;
+  if(!g){ const cap=C3D_REP.hz*C3D_REP.seg; g=est.grab={buf:new Float32Array(cap*C3D_FT), cap:cap, n:0, cab:0, t:0, ult:-1}; }
+  g.t+=dt;
+  if(g.ult>=0&&g.t-g.ult<1/C3D_REP.hz*0.95) return -1;
+  g.ult=g.t; const i=g.cab; g.cab=(g.cab+1)%g.cap; g.n=Math.min(g.cap,g.n+1);
+  const off=i*C3D_FT; g.buf[off]=g.t; return off;
+}
+function _c3dGrabarJug(B,off,i,o){
+  let k=off+1+C3D_FB+i*C3D_FJ;
+  B[k++]=o.x; B[k++]=o.z; B[k++]=o.yaw; B[k++]=o.lift||0; B[k++]=o.roll||0; B[k++]=o.pitch||0; B[k++]=o.twist||0; B[k++]=o.nod||0;
+  for(let q=0;q<2;q++){ const L=o.legs[q]; B[k++]=L.t; B[k++]=L.k; B[k++]=L.a; B[k++]=L.p||0; }
+  for(let q=0;q<2;q++){ const A=o.arms[q]; B[k++]=A.s; B[k++]=A.a; B[k++]=A.e; }
+  B[k++]=o.brazos==="arriba"?1:(o.brazos==="abrazo"?2:0); B[k++]=1; B[k++]=o.lean||0; B[k++]=o.pelvis||0;
+}
+function _c3dGrabarBola(B,off,bola){
+  let k=off+1; const p=bola.position, q=bola.quaternion;
+  B[k++]=p.x; B[k++]=p.y; B[k++]=p.z; B[k++]=q.x; B[k++]=q.y; B[k++]=q.z; B[k++]=q.w; B[k++]=0;
+}
+/* las fotos en orden (de la más vieja a la más nueva) */
+function _c3dFotos(g){ const out=[]; for(let j=0;j<g.n;j++){ const i=(g.cab-g.n+j+g.cap)%g.cap; out.push(i*C3D_FT); } return out; }
+/* ¿dónde está el gol en la grabación? la última vez que la pelota cruzó la línea entre los palos y bajo el travesaño */
+function _c3dGolEnGrabacion(g){
+  const F=_c3dFotos(g), B=g.buf;
+  for(let j=F.length-1;j>0;j--){
+    const a=F[j-1], b=F[j], za=Math.abs(B[a+3]), zb=Math.abs(B[b+3]);
+    if(zb>=52.5&&za<52.5&&Math.abs(B[b+1])<3.9&&B[b+2]<2.7) return {t:B[b], lado:Math.sign(B[b+3])||1, x:B[b+1], j:j};
+  }
+  return null;
+}
+/* el plan (puro, lo usa el doctor): dónde está el gol y qué tramo muestra cada cámara, a qué velocidad */
+function _c3dRepPlan(g){
+  if(!g||g.n<20) return null;
+  const gol=_c3dGolEnGrabacion(g); if(!gol) return null;
+  const F=_c3dFotos(g), t0=g.buf[F[0]], t1=g.buf[F[F.length-1]];
+  const plan=C3D_REP.camaras.map((c,k)=>({k:k, n:c.n, vel:c.vel, a:Math.max(t0,gol.t+c.desde), b:Math.min(t1,gol.t+c.hasta)})).filter(c=>c.b-c.a>0.6);
+  if(!plan.length) return null;
+  return {gol:gol, plan:plan, fotos:F, total:plan.reduce((s2,c)=>s2+(c.b-c.a)/c.vel,0)};
+}
+/* arranca la repetición del último gol grabado; op.alTerminar se llama al final (o al saltarla) */
+function c3dRepetir(est,op){
+  op=op||{};
+  if(!est||est.rep||!est.grab) return false;
+  const pl=_c3dRepPlan(est.grab); if(!pl) return false;   /* sin gol en la grabación no hay repetición: solo los goles */
+  const gol=pl.gol, plan=pl.plan, total=pl.total;
+  est.rep={gol:gol, plan:plan, c:0, t:plan[0].a, fotos:pl.fotos, op:op, cam:null, total:total, inicio:performance.now()};
+  /* el reloj del partido espera toda la repetición (se libera al terminar o al saltar) */
+  if(est.P){ est.P._celHasta=Math.max(est.P._celHasta||0,Date.now()+total*1000+1500); est.P._repGol=true; }
+  _c3dRepHud(est);
+  C3D.repeticiones=(C3D.repeticiones||0)+1;
+  return true;
+}
+function _c3dRepHud(est){
+  if(!est.repHud){
+    const h=document.createElement("div"); h.className="c3d-rep";
+    h.innerHTML='<div class="c3d-rep-barra a"></div><div class="c3d-rep-barra b"></div><div class="c3d-rep-tag"><b>⟲ REPETICIÓN</b><span></span></div><button type="button" class="c3d-rep-saltar">⏭ Saltar</button>';
+    h.querySelector(".c3d-rep-saltar").onclick=function(ev){ ev.stopPropagation(); _c3dRepFin(est,true); };
+    est.repHud=h;
+  }
+  const r=est.rep, c=r&&r.plan[r.c];
+  if(c) est.repHud.querySelector("span").textContent="Cámara "+(c.k+1)+" · "+c.n;
+  const padre=est.canvas.parentNode; if(padre&&est.repHud.parentNode!==padre) padre.appendChild(est.repHud);
+  est.repHud.classList.remove("corte"); void est.repHud.offsetWidth; est.repHud.classList.add("on","corte");
+}
+function _c3dRepFin(est,saltada){
+  const r=est.rep; if(!r) return; est.rep=null;
+  if(est.repHud){ est.repHud.classList.remove("on"); const h=est.repHud; setTimeout(function(){ if(!est.rep&&h.parentNode) h.parentNode.removeChild(h); },300); }
+  if(est.P){ est.P._celHasta=Date.now()+250; est.P._repGol=false; }
+  est.bolaUlt=null;
+  if(saltada) C3D.repSaltadas=(C3D.repSaltadas||0)+1;
+  try{ if(typeof r.op.alTerminar==="function") r.op.alTerminar(); }catch(e){ if(window.console) console.error("repetición:",e); }
+}
+/* una foto intermedia (para la cámara lenta): mezcla dos fotos guardadas */
+function _c3dRepFoto(est,t){
+  const r=est.rep, F=r.fotos, B=est.grab.buf;
+  let j=1; while(j<F.length-1&&B[F[j]]<t) j++;
+  const a=F[j-1], b=F[j], ta=B[a], tb=B[b], u=tb>ta?Math.max(0,Math.min(1,(t-ta)/(tb-ta))):0;
+  return {a:a, b:b, u:u};
+}
+function _c3dRepPintar(est,dt){
+  const r=est.rep, c=r.plan[r.c], B=est.grab.buf, K=_c3dM(), M=K.W;
+  /* el reloj espera MIENTRAS dure (se renueva cada cuadro: en un equipo lento la repetición tarda más de lo calculado) */
+  if(est.P) est.P._celHasta=Math.max(est.P._celHasta||0,Date.now()+1200);
+  r.t+=dt*c.vel;
+  if(r.t>c.b){ r.c++; if(r.c>=r.plan.length){ _c3dRepFin(est,false); return; } r.t=r.plan[r.c].a; r.cam=null; _c3dRepHud(est); return _c3dRepPintar(est,0); }
+  const f=_c3dRepFoto(est,r.t), L=(i)=>B[f.a+i]+(B[f.b+i]-B[f.a+i])*f.u;
+  const ang=(i)=>{ const x=B[f.a+i], y=B[f.b+i], d=Math.atan2(Math.sin(y-x),Math.cos(y-x)); return x+d*f.u; };
+  est.gestos=est.gestos||[];
+  for(let i=0;i<22;i++){
+    const o=est.gestos[i]||(est.gestos[i]=_c3dGestoVacio()), k=1+C3D_FB+i*C3D_FJ;
+    o.x=L(k); o.z=L(k+1); o.yaw=ang(k+2); o.lift=L(k+3); o.roll=L(k+4); o.pitch=L(k+5); o.twist=L(k+6); o.nod=L(k+7);
+    for(let q=0;q<2;q++){ const g=o.legs[q], kk=k+8+q*4; g.t=L(kk); g.k=L(kk+1); g.a=L(kk+2); g.p=L(kk+3); }
+    for(let q=0;q<2;q++){ const g=o.arms[q], kk=k+16+q*3; g.s=L(kk); g.a=L(kk+1); g.e=L(kk+2); }
+    const br=B[(f.u<0.5?f.a:f.b)+k+22]; o.brazos=br===1?"arriba":(br===2?"abrazo":null); o.lean=L(k+24); o.pelvis=L(k+25);
+    _c3dPose(est,i,o);
+    const sl=Math.max(0,o.lift); M.makeTranslation(o.x,0.02,o.z); _c3dS(M,(1.1+sl)*(est.perfil.sombras?0.75:1),1,(1.1+sl)*(est.perfil.sombras?0.75:1)); est.sombras.setMatrixAt(i,M);
+  }
+  /* la pelota: posición y giro grabados (el giro mezclado suave) */
+  const bx=L(1), by=L(2), bz=L(3); est.bola.position.set(bx,by,bz);
+  const qa=K.qa||(K.qa=new THREE.Quaternion()), qb=K.qb||(K.qb=new THREE.Quaternion());
+  qa.set(B[f.a+4],B[f.a+5],B[f.a+6],B[f.a+7]); qb.set(B[f.b+4],B[f.b+5],B[f.b+6],B[f.b+7]); est.bola.quaternion.copy(qa).slerp(qb,f.u);
+  const s2=0.55+by*0.06; M.makeTranslation(bx,0.021,bz); _c3dS(M,s2,1,s2); est.sombras.setMatrixAt(22,M);
+  Object.keys(est.piezas).forEach(n=>{ est.piezas[n].instanceMatrix.needsUpdate=true; });
+  est.sombras.instanceMatrix.needsUpdate=true;
+  _c3dRepCamara(est,dt,c,bx,by,bz);
+  const padre=est.canvas.parentNode; if(padre&&est.repHud&&est.repHud.parentNode!==padre) padre.appendChild(est.repHud);
+}
+/* el que le pegó: el último cuadro (antes del gol) en que la pelota acelera de golpe, y el jugador más cerca de ella ahí */
+function _c3dRepTirador(est){
+  const r=est.rep, g=r.gol, F=r.fotos, B=est.grab.buf;
+  let best=-1, jT=g.j;
+  for(let j=Math.min(g.j,F.length-1);j>1;j--){
+    const a=F[j-2], b=F[j-1], c=F[j], dt1=Math.max(1e-3,B[b]-B[a]), dt2=Math.max(1e-3,B[c]-B[b]);
+    const v1=Math.hypot(B[b+1]-B[a+1],B[b+3]-B[a+3])/dt1, v2=Math.hypot(B[c+1]-B[b+1],B[c+3]-B[b+3])/dt2;
+    if(v2-v1>6&&v2>9){ jT=j-1; break; }
+    if(g.t-B[c]>3.2) break;
+  }
+  /* solo los del equipo que hizo el gol: el mío ataca hacia +z (jugadores 0–10), el rival hacia −z (11–21) */
+  const f=F[jT], i0=g.lado>0?0:11; let dm=1e9;
+  for(let i=i0;i<i0+11;i++){ const k=f+1+C3D_FB+i*C3D_FJ, d=Math.hypot(B[k]-B[f+1],B[k+1]-B[f+3]); if(d<dm){ dm=d; best=i; } }
+  const k=f+1+C3D_FB+best*C3D_FJ, dx=g.x-B[k], dz=g.lado*52.5-B[k+1], n=Math.hypot(dx,dz)||1;
+  return {i:best, dir:{x:dx/n,z:dz/n}};
+}
+/* las tres cámaras de la repetición */
+function _c3dRepCamara(est,dt,c,bx,by,bz){
+  const r=est.rep, g=r.gol, cam=est.camGL;
+  let pos, mira, fov;
+  if(c.k===0){ pos=[Math.max(bx+14,13), 6, bz*0.92]; mira=[bx,Math.max(0.5,by*0.7),bz]; fov=27; }
+  else if(c.k===1){ pos=[g.x*0.35, 4.4, g.lado*56.1]; mira=[bx*0.85,Math.max(0.4,by*0.7),bz-g.lado*2]; fov=34; }   /* sobre la red: el travesaño no tapa */
+  else {
+    /* a ras del pasto: detrás y al costado del que le pegó, a la altura del pecho, mirando al arco: se ve el remate y
+       la pelota entrando (el que le pegó = el más cerca de la pelota cuando la pelota salió disparada) */
+    if(!r.tirador) r.tirador=_c3dRepTirador(est);
+    const T=r.tirador, k0=1+C3D_FB+T.i*C3D_FJ, F=_c3dRepFoto(est,r.t), B=est.grab.buf;
+    const px=B[F.a+k0]+(B[F.b+k0]-B[F.a+k0])*F.u, pz=B[F.a+k0+1]+(B[F.b+k0+1]-B[F.a+k0+1])*F.u;
+    const d=T.dir, sx=-d.z, sz=d.x;
+    pos=[px-d.x*4.6+sx*2.4, 1.45, pz-d.z*4.6+sz*2.4];
+    const w=Math.min(1,Math.hypot(bx-px,bz-pz)/14);   /* al principio mira al jugador; cuando la pelota se va, la sigue */
+    mira=[px+(bx-px)*(0.35+0.5*w), Math.max(0.6,by*0.6+0.5), pz+(bz-pz)*(0.35+0.5*w)]; fov=33;
+  }
+  if(!r.cam){ r.cam={p:new THREE.Vector3(pos[0],pos[1],pos[2]), m:new THREE.Vector3(mira[0],mira[1],mira[2])}; }
+  const k=1-Math.exp(-dt*(c.k===1?3:5));
+  r.cam.p.x+=(pos[0]-r.cam.p.x)*k; r.cam.p.y+=(pos[1]-r.cam.p.y)*k; r.cam.p.z+=(pos[2]-r.cam.p.z)*k;
+  r.cam.m.x+=(mira[0]-r.cam.m.x)*k; r.cam.m.y+=(mira[1]-r.cam.m.y)*k; r.cam.m.z+=(mira[2]-r.cam.m.z)*k;
+  if(Math.abs(cam.fov-fov)>0.05){ cam.fov=fov; est.fov=fov; cam.updateProjectionMatrix(); }
+  cam.position.copy(r.cam.p); cam.lookAt(r.cam.m);
+  est.camPos.copy(r.cam.p); est.mira.copy(r.cam.m);
 }
 function _c3dTam(est){
   const rc=est.canvas.getBoundingClientRect();
@@ -562,9 +750,14 @@ function _c3dCuadro(est,t){
   _c3dVigilar(est,dtReal);
   _c3dAjusteAuto(est,dtReal);
   try{ _c3dTam(est);
-    if(est.bp&&est.bp.paso) est.bp.paso(dt);   /* balón parado: la jugada mueve a todos, la simulación espera */
-    else if(typeof _cvStep==="function"&&!(est.P&&est.P.terminado&&!(_cvSt&&_cvSt.seq))) _cvStep(est.P,dt);
-    _c3dSincronizar(est,dt); est.renderer.render(est.scene,est.camGL); }
+    if(est.repPendiente!=null&&!est.rep){ est.repPendiente-=dt; if(est.repPendiente<=0){ est.repPendiente=null; c3dRepetir(est,{}); } }
+    if(est.rep) _c3dRepPintar(est,dt);   /* 7.9129 · repetición del gol: el partido y la simulación esperan */
+    else {
+      if(est.bp&&est.bp.paso) est.bp.paso(dt);   /* balón parado: la jugada mueve a todos, la simulación espera */
+      else if(typeof _cvStep==="function"&&!(est.P&&est.P.terminado&&!(_cvSt&&_cvSt.seq))) _cvStep(est.P,dt);
+      _c3dSincronizar(est,dt);
+    }
+    est.renderer.render(est.scene,est.camGL); }
   catch(e){
     if(window.console) console.error("cancha3d:",e);
     const host=est.host; detenerCancha3D();
@@ -616,6 +809,17 @@ if(typeof document!=="undefined"&&!document.getElementById("css-cancha3d")){
       "color:#fff;font:800 13px/1.3 system-ui,sans-serif;letter-spacing:.3px;border:1px solid rgba(255,255,255,.45);"+
       "box-shadow:0 2px 10px rgba(0,0,0,.35);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"+
     ".c3d-hud.on{opacity:1}"+
-    "canvas.cancha3d.c3d-antigua{image-rendering:pixelated}";
+    "canvas.cancha3d.c3d-antigua{image-rendering:pixelated}"+
+    /* 7.9129 · repetición: franjas de cine, cartel de la cámara, botón para saltar y un corte al cambiar de cámara */
+    ".c3d-rep{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;z-index:3}.c3d-rep.on{opacity:1}"+
+    ".c3d-rep-barra{position:absolute;left:0;right:0;height:7%;background:#000}.c3d-rep-barra.a{top:0}.c3d-rep-barra.b{bottom:0}"+
+    ".c3d-rep-tag{position:absolute;left:14px;top:calc(7% + 10px);display:flex;gap:10px;align-items:center;padding:5px 12px;border-radius:999px;"+
+      "background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.06) 50%,rgba(0,0,0,.2) 51%),rgba(150,20,30,.85);color:#fff;"+
+      "font:800 12px/1.2 system-ui,sans-serif;letter-spacing:.4px;border:1px solid rgba(255,255,255,.5);box-shadow:0 2px 10px rgba(0,0,0,.4)}"+
+    ".c3d-rep-tag span{font-weight:600;opacity:.9}"+
+    ".c3d-rep-saltar{position:absolute;right:14px;bottom:calc(7% + 10px);pointer-events:auto;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.55);"+
+      "background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.06) 50%,rgba(0,0,0,.25) 51%),rgba(10,40,80,.85);color:#fff;font:700 13px system-ui,sans-serif;cursor:pointer}"+
+    ".c3d-rep.corte::after{content:'';position:absolute;inset:0;background:#fff;animation:c3dCorte .35s ease-out forwards}"+
+    "@keyframes c3dCorte{from{opacity:.55}to{opacity:0}}";
   document.head.appendChild(st);
 }

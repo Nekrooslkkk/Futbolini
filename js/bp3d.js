@@ -57,7 +57,7 @@ function bp3dDesdeLegado(lx,ly){
   return {x:-(lx-cx)*BP3D.ARCO.ancho/mitad, y:(A.y1-ly)*BP3D.ARCO.alto/(A.y1-A.y0)};
 }
 const _bpSX=z=>z/105+0.5, _bpSY=x=>x/68+0.5, _bpWX=y=>(y-0.5)*68, _bpWZ=x=>(x-0.5)*105;
-function _bpPoner(p,x,z){ p.x=_bpSX(z); p.y=_bpSY(x); p._vel=0; p._dive=0; }   /* quieto y parado (el arquero venía tirado de la jugada anterior) */
+function _bpPoner(p,x,z){ p.x=_bpSX(z); p.y=_bpSY(x); p._vel=0; p._dive=0; p.vx=p.vy=0; }   /* quieto y parado (el arquero venía tirado de la jugada anterior) */
 function _bpMirar(p,x,z){ const dx=(_bpSX(z)-p.x)*105, dy=(_bpSY(x)-p.y)*68; p._ang=Math.atan2(dy,dx); }
 
 /* acomoda a los 22 para la jugada; devuelve índices útiles */
@@ -101,15 +101,18 @@ function bp3dJugar(tipo,P,opts){
   const idx=_bpAcomodar(S,tipo,bola);
   const gk=idx.gkR>=0?S.jug[idx.gkR]:null, pj=idx.pat>=0?S.jug[idx.pat]:null;
   /* el que patea: 1,8 m detrás de la pelota, mirando el arco */
-  /* el que patea toma carrera en diagonal (como un diestro de verdad): no tapa la pelota ni el arco */
-  const atrasX=tipo==="corner"?bola.lado*1.6:1.1, atrasZ=tipo==="corner"?0.8:-1.7;
-  if(pj){ _bpPoner(pj,bola.x+atrasX,bola.z+atrasZ); _bpMirar(pj,bola.x,bola.z); }
+  /* el que patea toma carrera en diagonal (como un diestro de verdad): no tapa la pelota ni el arco.
+     7.9129 · parte 3–3,6 m atrás (antes 1,8 m) para que la carrera dure lo que dura en la cancha */
+  const haciaArco=tipo==="corner"?{x:-bola.x,z:(Z-8)-bola.z}:{x:-bola.x,z:Z-bola.z};
+  const car=_bpCarrera(bola,haciaArco,tipo==="corner"?2.6:(tipo==="tl"?3.6:3.0),tipo==="corner"?1.2:(tipo==="tl"?1.8:1.5));
+  if(pj){ _bpPoner(pj,car.ini.x,car.ini.z); _bpMirar(pj,bola.x,bola.z); }
   S.ball.x=_bpSX(bola.z); S.ball.y=_bpSY(bola.x); S.ball.z=0; S.ball.vx=S.ball.vy=S.ball.vz=0;
   S.own=-1; S.pase=null; S.saque=null; S.atajada=null; S.persigue=null;
   /* cámara: detrás de la pelota (en el córner, detrás del banderín y alto) */
   const cam=new THREE.Vector3(), mira=new THREE.Vector3(0,1.2,Z);
   /* (adentro del estadio: detrás del banderín pero antes de la tribuna) */
-  if(tipo==="corner"){ cam.set(bola.lado*36.5,7.5,Z+2.5); mira.set(bola.lado*7,0,Z-8); }
+  /* 7.9129 · más cerca y un poco más baja: el área llena la pantalla (antes los jugadores se veían chicos arriba a la derecha) */
+  if(tipo==="corner"){ cam.set(bola.lado*32,7,Z+3.4); mira.set(bola.lado*2,0.2,Z-9.5); }
   else { const dx=bola.x, dz=bola.z-Z, d=Math.hypot(dx,dz)||1, lejos=tipo==="tl"?9.5:9; cam.set(bola.x+dx/d*lejos-0.6,tipo==="tl"?3.1:2.3,bola.z+dz/d*lejos); }
   /* la escena se agranda: capa sobre la página con el mismo canvas del partido */
   const capa=document.createElement("div"); capa.className="bp3d-capa"; capa.setAttribute("role","dialog");
@@ -125,7 +128,7 @@ function bp3dJugar(tipo,P,opts){
   /* textos de siempre */
   const tit=document.createElement("div"); tit.className="bp3d-tit";
   const etq=(typeof introBalonParado==="function")?introBalonParado(tipo,P,tipo==="corner"?cabeceador:pat,ARQ):"";
-  tit.innerHTML=(opts.tanda?"Tanda · patea <b>"+escHtml(pat.n)+"</b>":etq)+"<span class='bp3d-instr'>"+(("ontouchstart" in window)?"Arrastra el dedo para apuntar · toca ¡Patear! cuando la línea esté en verde":"Mouse o flechas apuntan · Espacio (o click en ¡Patear!) para la línea: verde bien, roja muy fuerte")+"</span>";
+  tit.innerHTML=(opts.tanda?"Tanda · patea <b>"+escHtml(pat.n)+"</b>":etq)+"<span class='bp3d-instr'>"+(("ontouchstart" in window)?"Arrastra el dedo para apuntar · toca ¡Patear! cuando la línea esté en verde":"Click donde quieres la pelota (o flechas) · Espacio o ¡Patear! para la línea: verde bien, roja muy fuerte")+"</span>";
   hud.appendChild(tit);
   const presion=!!opts.tanda||((P.min||0)>=85&&Math.abs((P.gl||0)-(P.gv||0))<=1);
   const med=medidorPotencia((tipo==="corner"?(pat&&pat.nivel):(pat&&pat.nivel))||70,presion);
@@ -144,38 +147,58 @@ function bp3dJugar(tipo,P,opts){
   const aro=new THREE.Mesh(new THREE.RingGeometry(0.22,0.32,24),mat); aro.renderOrder=10;
   const punto=new THREE.Mesh(new THREE.CircleGeometry(0.06,12),mat); punto.renderOrder=10;
   est.scene.add(aro); est.scene.add(punto);
+  const matG=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.35,depthTest:false});
+  const aroG=new THREE.Mesh(new THREE.RingGeometry(0.2,0.27,24),matG); aroG.renderOrder=9; aroG.visible=false; est.scene.add(aroG);
   const mira3={x:tipo==="corner"?0:0, y:tipo==="corner"?1.8:1.2, z:tipo==="corner"?Z-8:Z};
-  const ponerMira=()=>{ aro.position.set(mira3.x,mira3.y,mira3.z-0.02); punto.position.copy(aro.position); aro.lookAt(est.camPos); punto.lookAt(est.camPos); };
+  const ponerMira=()=>{ aro.position.set(mira3.x,mira3.y,mira3.z-0.02); punto.position.copy(aro.position); aro.lookAt(est.camPos); punto.lookAt(est.camPos);
+    const g=jug&&jug.guia; aroG.visible=!!(g&&jug.guiaVisible&&!jug.tirado&&Math.hypot(g.x-mira3.x,g.y-mira3.y,g.z-mira3.z)>0.25);
+    if(aroG.visible){ aroG.position.set(g.x,g.y,g.z-0.02); aroG.lookAt(est.camPos); } };
   BP3D.TECLA.x=0; BP3D.TECLA.y=mira3.y;
   const jug={tipo:tipo, P:P, opts:opts, est:est, S:S, capa:capa, bola:bola, idx:idx, pat:pat, ARQ:ARQ, cabeceador:cabeceador, mira:mira3,
-    tirado:false, fin:false, anim:null, t:0, aro:aro, punto:punto, carga:null};
+    tirado:false, fin:false, anim:null, t:0, aro:aro, punto:punto, aroG:aroG, carga:null};
   BP3D.activo=jug;
-  est.bp={cam:{pos:cam, mira:mira, fov:tipo==="corner"?46:40, suave:3.5}, paso:function(dt){ _bpPaso(jug,dt); ponerMira(); }};
+  /* ⏩ Adelantar: la misma jugada, 5 veces más rápido (pasos chicos: la física no cambia) */
+  est.bp={cam:{pos:cam, mira:mira, fov:tipo==="corner"?31:40, suave:3.5}, paso:function(dt){ const n=jug.rapido?5:1; for(let i=0;i<n&&!jug.fin;i++) _bpPaso(jug,dt); ponerMira(); }};
   ponerMira();
   /* apuntar con el dedo / mouse: rayo desde la cámara hasta el plano del arco (o de la altura de cabeza en el córner) */
   const ray=new THREE.Raycaster(), v2=new THREE.Vector2();
   const plano=tipo==="corner"?new THREE.Plane(new THREE.Vector3(0,1,0),-1.8):new THREE.Plane(new THREE.Vector3(0,0,1),-Z);
-  const apuntar=(ev)=>{
+  /* del puntero a un punto del arco (o del área en el córner), dentro de los límites de siempre */
+  const _bpRayo=(ev)=>{
     const r=est.canvas.getBoundingClientRect(); v2.set(((ev.clientX-r.left)/r.width)*2-1,-((ev.clientY-r.top)/r.height)*2+1);
-    ray.setFromCamera(v2,est.camGL); const q=new THREE.Vector3(); if(!ray.ray.intersectPlane(plano,q)) return;
-    if(tipo==="corner"){ mira3.x=Math.max(-12,Math.min(12,q.x)); mira3.z=Math.max(Z-17,Math.min(Z-1,q.z)); }
-    else { mira3.x=Math.max(-6,Math.min(6,q.x)); mira3.y=Math.max(0.1,Math.min(3.6,q.y)); }
+    ray.setFromCamera(v2,est.camGL); const q=new THREE.Vector3(); if(!ray.ray.intersectPlane(plano,q)) return null;
+    if(tipo==="corner") return {x:Math.max(-12,Math.min(12,q.x)), y:1.8, z:Math.max(Z-17,Math.min(Z-1,q.z))};
+    return {x:Math.max(-6,Math.min(6,q.x)), y:Math.max(0.1,Math.min(3.6,q.y)), z:Z};
   };
-  /* apuntar: el mouse apunta solo con moverse; el dedo, arrastrando. Patear es parar la línea (botón, Espacio o click) */
+  const apuntar=(ev)=>{ const q=_bpRayo(ev); if(!q) return; mira3.x=q.x; mira3.y=q.y; mira3.z=q.z; };
+  /* apuntar · 7.9129 · EL BUG DEL CÓRNER QUE SIEMPRE SE IBA AFUERA: la mira seguía al mouse, y al ir hacia "¡Cobrar!" se
+     cruzaba la parte de abajo de la cancha: la mira se iba con él hasta el banderín. Ahora:
+     - pasar el mouse solo mueve una mira FANTASMA (transparente): muestra dónde quedaría;
+     - CLICK en la cancha fija la mira ahí (el dedo: arrastrar); las flechas la mueven;
+     - Espacio, Enter o "¡Patear!" paran la línea y le pegan hacia la mira fija. Nada de lo que pase en el camino la mueve. */
   let apretado=false;
+  const guia={x:mira3.x,y:mira3.y,z:mira3.z};
+  const fantasma=(ev)=>{ const g=_bpRayo(ev); if(g){ guia.x=g.x; guia.y=g.y; guia.z=g.z; jug.guiaVisible=true; } };
+  escena.addEventListener("pointerleave",()=>{ jug.guiaVisible=false; });
   escena.addEventListener("pointerdown",ev=>{ if(jug.tirado) return; ev.preventDefault(); apretado=true; apuntar(ev); });
-  escena.addEventListener("pointermove",ev=>{ if(jug.tirado) return; if(apretado||ev.pointerType==="mouse") apuntar(ev); });
-  escena.addEventListener("pointerup",ev=>{ if(!apretado) return; apretado=false; if(ev.pointerType==="mouse"&&!jug.tirado) bPat.click(); });
+  escena.addEventListener("pointermove",ev=>{ if(jug.tirado) return;
+    if(apretado) apuntar(ev); else if(ev.pointerType==="mouse") fantasma(ev); });
+  escena.addEventListener("pointerup",()=>{ apretado=false; });
   escena.addEventListener("pointercancel",()=>{ apretado=false; });
+  jug.guia=guia; jug.bPat=bPat; jug.bSolo=bSolo;
   bPat.onclick=()=>_bpPatear(jug,med.parar(),efecto);
   bSolo.onclick=()=>_bpCerrar(jug,"solo");
   /* teclado (PC) */
   jug.tecla=function(e){
+    if(BP3D.activo===jug&&jug.tirado&&(e.key==="Escape"||e.key==="Enter")){ e.preventDefault(); e.stopPropagation(); jug.rapido=true; return; }   /* ya pateaste: adelantar */
     if(BP3D.activo!==jug||jug.tirado) return;
     const k=e.key, T=BP3D.TECLA;
     const mov={ArrowLeft:[1,0],ArrowRight:[-1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[k];
     if(mov){ e.preventDefault(); e.stopPropagation();
-      if(tipo==="corner"){ mira3.x=Math.max(-12,Math.min(12,mira3.x+mov[0]*bola.lado*-0.9)); mira3.z=Math.max(Z-17,Math.min(Z-1,mira3.z+mov[1]*0.9)); }
+      if(tipo==="corner"){
+        /* 7.9129 · las flechas mueven la mira como se ve en la pantalla (antes "arriba" la movía hacia la izquierda) */
+        const d=_bpFlechaSuelo(est.camGL,-mov[0],mov[1]);
+        mira3.x=Math.max(-12,Math.min(12,mira3.x+d.x*0.9)); mira3.z=Math.max(Z-17,Math.min(Z-1,mira3.z+d.z*0.9)); }
       else { mira3.x=Math.max(-6,Math.min(6,mira3.x+mov[0]*T.paso)); mira3.y=Math.max(0.1,Math.min(3.6,mira3.y+mov[1]*T.paso*0.7)); }
       return; }
     if(k===" "){ e.preventDefault(); e.stopPropagation(); if(!e.repeat) bPat.click(); return; }
@@ -190,6 +213,13 @@ function bp3dJugar(tipo,P,opts){
   return true;
 }
 function _bpRnd(a,b){ return a+Math.random()*(b-a); }
+/* una flecha en la pantalla → una dirección sobre el pasto (derecha/arriba de la cámara, aplanadas al suelo) */
+function _bpFlechaSuelo(cam,dx,dy){
+  const f=new THREE.Vector3(); cam.getWorldDirection(f); f.y=0; f.normalize();
+  const r=new THREE.Vector3(-f.z,0,f.x);   /* derecha de la pantalla (mirando f, con y arriba) */
+  const x=r.x*dx+f.x*dy, z=r.z*dx+f.z*dy, n=Math.hypot(x,z)||1;
+  return {x:x/n, z:z/n};
+}
 /* la física del remate: velocidad según el golpe y la parábola que llega a (D metros, y de alto) */
 /* m/s de verdad: centro ~20, tiro libre colocado ~21 (sube y cae sobre la barrera), penal colocado ~23, a lo bestia ~29 */
 /* con la línea en gris (flojo) la pelota sale a tres cuartos de velocidad */
@@ -205,9 +235,12 @@ function _bpPatear(jug,pot,efectoBoton){
   const ef=(typeof efectoConPotencia==="function")?efectoConPotencia({curl:0,picada:false},pot):{efecto:pot>=0.6?"potente":"colocado",pasado:pot>0.92};
   if(efectoBoton==="picadita"&&pot<A3_POT.potente) ef.efecto="picadita";
   jug.pot=pot; jug.zona=medidorZona(pot).k;
+  /* el HUD cambia: ya no se cobra; "Que se juegue solo" (que resolvería otra vez lo que ya pateaste) pasa a ⏩ Adelantar */
+  if(jug.bPat){ jug.bPat.disabled=true; jug.bPat.textContent=jug.tipo==="corner"?"Va el centro…":"Va el remate…"; }
+  if(jug.bSolo){ jug.bSolo.textContent="⏩ Adelantar"; jug.bSolo.onclick=function(){ jug.rapido=true; jug.bSolo.disabled=true; }; }
   const m=jug.mira, Z=BP3D.ARCO.z;
   if(ef.pasado&&jug.tipo!=="corner") m.y+=0.6+(pot-A3_POT.pasado)*8;   /* a lo bestia, se eleva */
-  jug.aro.visible=false; jug.punto.visible=false;
+  jug.aro.visible=false; jug.punto.visible=false; if(jug.aroG) jug.aroG.visible=false;
   const out=_bpResolver(jug,ef.efecto);
   jug.out=out;
   _bpAnimar(jug,out,ef.efecto);
@@ -218,10 +251,13 @@ function _bpResolver(jug,efecto){
   const m=jug.mira, P=jug.P, ARQ=jug.ARQ;
   if(jug.tipo==="corner"){
     /* el centro: muy alto se va, muy pegado al arquero o muy bajo lo despejan; en el área decide cornerResolver */
-    const Z=BP3D.ARCO.z, lejos=Z-m.z, lado=jug.bola.lado;
-    const zona=lejos<6?((m.x*lado)>1.5?"primer":((m.x*lado)<-1.5?"segundo":"penal")):((m.x*lado)>3?"primer":((m.x*lado)<-3?"segundo":"penal"));
-    if(lejos<1.5||Math.abs(m.x)>10.5) return {res:"afuera",motivo:"El centro se fue largo",zona:zona};
-    if(efecto==="potente"&&lejos<3) return {res:"defensa",motivo:"Muy pegado: el arquero la saca",zona:zona};
+    /* 7.9129 · el área mide 40 m de ancho: un centro al segundo palo (x hasta ±12) es un centro, no "se fue largo".
+       Afuera solo si le pegas a lo bestia (línea roja) o si la mandas fuera del área; pegado al arco lo descuelga el arquero */
+    const Z=BP3D.ARCO.z, lejos=Z-m.z, lado=jug.bola.lado, xl=m.x*lado;
+    const zona=xl>(lejos<6?1.5:3)?"primer":(xl<-(lejos<6?1.5:3)?"segundo":"penal");
+    if(Math.abs(m.x)>20.16||lejos>16.5) return {res:"afuera",motivo:"El centro se fue fuera del área",zona:zona};
+    if(lejos<1.2) return {res:"defensa",motivo:"Al arco: el arquero sale y la descuelga",zona:zona,arquero:true};
+    if(efecto==="potente"&&lejos<3) return {res:"defensa",motivo:"Muy pegado: el arquero la saca",zona:zona,arquero:true};
     /* la línea manda: flojo no pasa el primer palo, a lo bestia se va largo */
     if(jug.pot!=null&&jug.pot<0.3) return {res:"defensa",motivo:"Centro flojo: lo saca el primero",zona:zona};
     if(jug.pot!=null&&jug.pot>0.92) return {res:"afuera",motivo:"Le pegaste a lo bestia: se fue largo",zona:zona};
@@ -250,93 +286,219 @@ function _bpResolver(jug,efecto){
   const o=penResolver(aim,kdir,efecto,(jug.pat.nivel||70)-_bpFlojo(jug),ARQ.nivel||70);
   return {res:o.res,kdir:kdir};
 }
-/* la animación: la pelota con gravedad hasta su destino, el arquero que se tira, y el desenlace */
+/* ---------- 7.9129 · CARRERA, VUELO, DESENLACE Y LA JUGADA QUE SIGUE ----------
+   Pedidos del autor: "la jugada termina cuando la sacan de ahí, porque puede haber un gol si es que la agarran (muy poco
+   probable, pero pasa en el fútbol de verdad)"; "tiros libres: que se tire para donde va el balón y se encargue de
+   sacarla, palo, etc."; "darle tiempo, que no sea tan rápido todo".
+   1) CARRERA: el pateador parte 3–4 m atrás y llega a la pelota en ~1 s (antes 0,55 s desde 1,8 m: se veía apurado);
+      la patada empieza 0,23 s antes del contacto.
+   2) VUELO: la pelota con gravedad hasta su destino. En el tiro libre y el córner el arquero reacciona A LA PELOTA
+      (0,16 s de reflejo); en el penal adivina un lado, como en la realidad.
+   3) DESENLACE con física: el arquero retiene o da rebote (o la manda al córner), el palo devuelve, la barrera desvía,
+      el primero despeja, el arquero sale a descolgar.
+   4) LA JUGADA SIGUE con los 22 (la misma simulación del partido) hasta que la despejan, el arquero la retiene, sale,
+      se rearma o hay GOL DE REBOTE (st.bpVivo: solo ahí un remate puede entrar). En la tanda no hay rebote (reglamento).
+   El resultado del remate lo siguen decidiendo las funciones de siempre (doctor bp3d_misma_ley); el rebote, el doctor
+   bp3d_jugada_sigue. */
+const BP3D_VIVO={pGol:0.3, tope:9, despeje:24};   /* pGol: chance de un remate de rebote a 6 m (baja con la distancia) */
+/* dónde parte la carrera y dónde pisa al pegarle (a la izquierda de la pelota: es diestro) */
+function _bpCarrera(bola,dir,lejos,costado){
+  const n=Math.hypot(dir.x,dir.z)||1, ux=dir.x/n, uz=dir.z/n, lx=uz, lz=-ux;   /* izquierda del que mira hacia u */
+  return {ini:{x:bola.x-ux*lejos+lx*costado, z:bola.z-uz*lejos+lz*costado}, pie:{x:bola.x-ux*0.42+lx*0.28, z:bola.z-uz*0.42+lz*0.28}};
+}
 function _bpAnimar(jug,out,efecto){
   const S=jug.S, b=jug.bola, m=jug.mira, Z=BP3D.ARCO.z, gk=jug.idx.gkR>=0?S.jug[jug.idx.gkR]:null;
   let dest;
   if(jug.tipo==="corner") dest={x:m.x, y:1.9, z:m.z};
-  else if(out.res==="palo"){ const lado=m.x>=0?1:-1; dest=Math.abs(m.x)>2.6?{x:lado*BP3D.ARCO.ancho,y:Math.min(m.y,2.2),z:Z}:{x:m.x,y:BP3D.ARCO.alto,z:Z}; }
+  else if(out.res==="palo"){ const lado=m.x>=0?1:-1; dest=Math.abs(m.x)>2.6?{x:lado*BP3D.ARCO.ancho,y:Math.min(Math.max(m.y,0.3),2.2),z:Z}:{x:m.x,y:BP3D.ARCO.alto,z:Z}; }
   else if(out.res==="barrera"){ const k=9.15/Math.max(9.2,Math.hypot(b.x,Z-b.z)); dest={x:b.x+(m.x-b.x)*k,y:1.7,z:b.z+(Z-b.z)*k}; }
   else dest={x:m.x,y:Math.max(0.12,m.y),z:Z};
   const D=Math.hypot(dest.x-b.x,dest.z-b.z), V=_bpVuelo(D,dest.y,_bpVel(jug.tipo,efecto,jug.pot)), T=V.T, vy=V.vy;
-  /* el arquero: hacia dónde se tira (izq/der en pantalla = +x/−x del mundo) */
-  const kx=out.kdir==="izq"?2.4:(out.kdir==="der"?-2.4:0);
-  const ataja=out.res==="atajado"&&gk;
-  jug.anim={t:0, T:T, x0:b.x, z0:b.z, dest:dest, vy:vy, kx:ataja?dest.x:kx, gk:gk, fase:"carrera", tCarrera:0.55, post:0};
-  if(jug.tipo==="corner"){ let best=-1, bd=1e9; S.jug.forEach((p,i)=>{ if(!p.mio||p.rol==="gk"||i===jug.idx.pat) return; const dd=Math.hypot(_bpWX(p.y)-dest.x,_bpWZ(p.x)-dest.z); if(dd<bd){ bd=dd; best=i; } }); jug.cab=best>=0?best:null; }
-  if(gk) S.pase={tiro:true, to:jug.idx.gkR, y1:_bpSY(ataja?dest.x:kx), x1:_bpSX(Z), afuera:out.res==="afuera"};
+  /* el arquero: en el penal adivina (penArqueroTira); en el tiro libre y el córner va a la pelota. Si ataja, llega justo;
+     si es gol o palo, se estira y no llega; a la barrera apenas se mueve */
+  const reacciona=jug.tipo!=="penal";
+  const ataja=!!gk&&(out.res==="atajado"||(jug.tipo==="corner"&&!!out.arquero));
+  let kx;
+  if(ataja) kx=dest.x;
+  else if(reacciona) kx=(out.res==="gol"||out.res==="palo")?dest.x*0.62:(out.res==="barrera"?dest.x*0.25:dest.x*0.4);
+  else kx=out.kdir==="izq"?2.4:(out.kdir==="der"?-2.4:0);
+  const A=jug.anim={t:0, T:T, x0:b.x, z0:b.z, dest:dest, vy:vy, kx:kx, gk:gk, ataja:ataja, fase:"carrera", reaccion:reacciona?0.16:0, post:0, tc:0};
+  /* la carrera: desde donde está parado hasta pisar al lado de la pelota, a ritmo de 3–4 pasos (≈1 s) */
+  const pj=jug.idx.pat>=0?S.jug[jug.idx.pat]:null;
+  if(pj){ const c=_bpCarrera(b,{x:dest.x-b.x,z:dest.z-b.z},0.42,0.28);
+    A.c0={x:_bpWX(pj.y), z:_bpWZ(pj.x)}; A.c1=c.pie; A.tRun=Math.max(0.6,Math.min(1.35,Math.hypot(A.c1.x-A.c0.x,A.c1.z-A.c0.z)/3.3)); }
+  else A.tRun=0.4;
+  /* córner: va a cabecear el compañero más cerca del punto; el rival que lo marca salta con él; el arquero sale si va a él */
+  if(jug.tipo==="corner"){ const cerca=(mio)=>{ let best=-1, bd=1e9; S.jug.forEach((p,i)=>{ if(p.mio!==mio||p.rol==="gk"||i===jug.idx.pat) return; const dd=Math.hypot(_bpWX(p.y)-dest.x,_bpWZ(p.x)-dest.z); if(dd<bd){ bd=dd; best=i; } }); return best; };
+    jug.cab=cerca(true); jug.marca=cerca(false); if(jug.cab<0) jug.cab=null; if(jug.marca<0) jug.marca=null; }
+  if(gk) S.pase={tiro:true, to:jug.idx.gkR, y1:_bpSY(kx), x1:_bpSX(Z), afuera:out.res==="afuera"};
 }
 function _bpPaso(jug,dt){
-  const S=jug.S;
+  const S=jug.S, A=jug.anim;
   if(jug.med) jug.med.pintar();
-  /* 7.9128 · los gestos (patada, cabezazo) avanzan aunque la simulación del partido esté quieta */
-  S.jug.forEach(p=>{ if(p._acc){ p._acc.t+=dt; if(p._acc.t>=p._acc.dur) p._acc=null; } });
-  const A=jug.anim; if(!A) return;
+  /* los gestos (patada, cabezazo) avanzan aunque la simulación del partido esté quieta (en la jugada viva los avanza ella) */
+  if(!A||(A.fase!=="vivo"&&A.fase!=="fin")) S.jug.forEach(p=>{ if(p._acc){ p._acc.t+=dt; if(p._acc.t>=p._acc.dur) p._acc=null; } });
+  if(!A) return;
   const b=S.ball, pj=jug.idx.pat>=0?S.jug[jug.idx.pat]:null;
   if(A.fase==="carrera"){
-    /* el pateador toma carrera y le pega */
-    A.tCarrera-=dt;
-    if(pj){ const tx=jug.bola.x+(jug.tipo==="corner"?jug.bola.lado*0.4:0), tz=jug.bola.z-(jug.tipo==="corner"?-0.3:0.5);
-      const cx=_bpWX(pj.y), cz=_bpWZ(pj.x), k=Math.min(1,dt*3.2); pj.x=_bpSX(cz+(tz-cz)*k); pj.y=_bpSY(cx+(tx-cx)*k); pj._vel=0.6; pj._paso=(pj._paso||0)+dt*12; }
+    A.tc+=dt; const u=Math.min(1,A.tc/A.tRun), f=u*u*(3-2*u);
+    if(pj&&A.c0){ const x0=_bpWX(pj.y), z0=_bpWZ(pj.x), x=A.c0.x+(A.c1.x-A.c0.x)*f, z=A.c0.z+(A.c1.z-A.c0.z)*f;
+      pj.x=_bpSX(z); pj.y=_bpSY(x); const v=Math.hypot(x-x0,z-z0)/Math.max(dt,1e-3);
+      pj._vel=Math.min(9,v)*0.14; pj._paso=(pj._paso||0)+Math.hypot(x-x0,z-z0)*2.4; _bpMirar(pj,jug.bola.x,jug.bola.z); }
     /* la patada empieza un poco antes del contacto (el gesto tiene su vuelta atrás) */
-    if(pj&&!A.pateo&&A.tCarrera<=0.22){ A.pateo=true; pj._acc={tipo:jug.tipo==="corner"?"centro":(jug.pot>=0.6?"remate":"patada"),t:0.1,dur:0.6}; }
-    if(A.tCarrera<=0) A.fase="vuelo";
+    if(pj&&!A.pateo&&A.tRun-A.tc<=0.23){ A.pateo=true; pj._acc={tipo:jug.tipo==="corner"?"centro":(jug.pot>=0.6?"remate":"patada"),t:0.1,dur:0.6}; }
+    if(u>=1) A.fase="vuelo";
     return;
   }
   if(A.fase==="vuelo"){
     A.t+=dt; const u=Math.min(1,A.t/A.T), d=A.dest;
     const x=A.x0+(d.x-A.x0)*u, z=A.z0+(d.z-A.z0)*u, y=Math.max(0.11,0.11+A.vy*A.t-0.5*9.81*A.t*A.t);
     b.x=_bpSX(z); b.y=_bpSY(x); b.z=(y-0.11)/11;
-    if(A.gk){ A.gk._dive=Math.min(1,(A.gk._dive||0)+dt*(jug.tipo==="corner"?1.5:3.2));
-      const gx=_bpWX(A.gk.y), k=Math.min(1,dt*(jug.tipo==="corner"?1.5:3)); A.gk.y=_bpSY(gx+(A.kx*0.55-gx)*k); }
-    if(pj) pj._vel=Math.max(0,(pj._vel||0)-dt*2);
-    /* córner: el que va a cabecear corre al punto y salta cuando la pelota llega */
-    if(jug.tipo==="corner"&&jug.cab!=null){ const c=S.jug[jug.cab], cx=_bpWX(c.y), cz=_bpWZ(c.x), k=Math.min(1,dt*2.2);
-      c.x=_bpSX(cz+(d.z-cz)*k); c.y=_bpSY(cx+(d.x-cx)*k); c._vel=0.7; c._paso=(c._paso||0)+dt*11; c._ang=Math.atan2(d.x-cx,d.z-cz);
-      if(!c._acc&&A.T-A.t<0.32) c._acc={tipo:"cabeza",t:0,dur:0.7,salto:0.35}; }
-    if(u>=1){ A.fase="desenlace"; _bpDesenlace(jug); }
+    if(A.gk&&A.t>=A.reaccion){ A.gk._dive=Math.min(1,(A.gk._dive||0)+dt*(jug.tipo==="corner"?1.5:3.2));
+      const gx=_bpWX(A.gk.y), k=Math.min(1,dt*(jug.tipo==="corner"?1.5:3)); A.gk.y=_bpSY(gx+(A.kx*0.55-gx)*k);
+      if(jug.tipo==="corner"&&A.ataja){ const gz=_bpWZ(A.gk.x); A.gk.x=_bpSX(gz+((d.z+0.3)-gz)*k); } }
+    if(pj) pj._vel=Math.max(0,(pj._vel||0)-dt*1.2);
+    /* córner: el que va a cabecear corre al punto y salta cuando la pelota llega; el que lo marca salta con él */
+    if(jug.tipo==="corner"){
+      [[jug.cab,0],[jug.marca,0.9]].forEach(([ci,off])=>{ if(ci==null) return; const c=S.jug[ci], cx=_bpWX(c.y), cz=_bpWZ(c.x), k=Math.min(1,dt*2.2);
+        c.x=_bpSX(cz+((d.z-off)-cz)*k); c.y=_bpSY(cx+((d.x+off*0.4)-cx)*k); c._vel=0.7; c._paso=(c._paso||0)+dt*11; c._ang=Math.atan2(d.x-cx,d.z-cz);
+        if(!c._acc&&A.T-A.t<0.32) c._acc={tipo:off?"salto":"cabeza",t:0,dur:0.7,salto:off?0.25:0.35}; }); }
+    if(u>=1) _bpDesenlace(jug);
     return;
   }
   if(A.fase==="sigue"){
-    /* la pelota sigue con física (gol a la red, rebote, se va afuera) */
+    /* la pelota sigue con física (gol a la red, o en la tanda, el rebote que ya no vale) */
     A.post+=dt;
     if(typeof _cvFisicaPelota==="function") _cvFisicaPelota(S,dt);
     if(A.red&&_bpWZ(b.x)>BP3D.ARCO.z+1.6){ b.x=_bpSX(BP3D.ARCO.z+1.6); b.vx=0; b.vy*=0.3; }
-    if(A.post>1.6&&!jug.fin) _bpCerrar(jug,"listo");
+    if(A.post>(A.red?2.2:1.6)&&!jug.fin) _bpTerminar(jug);
+    return;
+  }
+  if(A.fase==="vivo"){
+    const r=_bpVivoPaso(jug.vivo,S,dt); _bpVivoCamara(jug,dt);
+    if(r){ jug.vivo.fin=r; A.fase="fin"; A.post=0; _bpCartel(jug,BP3D_FINES[r]||""); }
+    return;
+  }
+  if(A.fase==="fin"){
+    /* un respiro para ver cómo terminó (el gol de rebote, más) */
+    A.post+=dt; _bpVivoCamara(jug,dt);
+    if(jug.vivo&&jug.vivo.fin==="gol"&&typeof _cvFisicaPelota==="function"){ _cvFisicaPelota(S,dt); if(_bpWZ(b.x)>BP3D.ARCO.z+1.6){ b.x=_bpSX(BP3D.ARCO.z+1.6); b.vx=0; } }
+    if(A.post>(jug.vivo&&jug.vivo.fin==="gol"?2.2:1.2)&&!jug.fin) _bpTerminar(jug);
   }
 }
+const BP3D_FINES={gol:"¡GOL DE REBOTE!", atrapa:"La retiene el arquero", despeje:"La saca la defensa", corner:"Al córner",
+  lateral:"Lateral", arco:"Saque de arco", rearma:"Se rearma desde atrás", tiempo:"Se enfría la jugada"};
+function _bpCartel(jug,txt,cls){
+  if(!txt||!jug.capa) return;
+  jug.capa.querySelectorAll(".bp3d-res").forEach(n=>n.remove());
+  const ban=document.createElement("div"); ban.className="bp3d-res arco-res "+(cls||(txt.indexOf("GOL")>=0?"gol":"")); ban.textContent=txt; jug.capa.appendChild(ban);
+}
 function _bpDesenlace(jug){
-  const S=jug.S, A=jug.anim, out=jug.out, b=S.ball, d=A.dest;
+  const S=jug.S, A=jug.anim, out=jug.out, b=S.ball, d=A.dest, gkI=jug.idx.gkR;
   const pat=(v)=>{ if(typeof _cvPatear==="function") _cvPatear(S,v[0],v[1],v[2]); else { b.vx=v[0]; b.vy=v[1]; b.vz=v[2]; } };
   let res=out.res;
   if(res==="palo"&&typeof paloEntra==="function"&&paloEntra(jug.aim||{},"colocado")){ res="palo_in"; }
   out.final=res;
-  const gol=res==="gol"||res==="palo_in";
-  /* velocidades en el plano de la sim: vx a lo largo (z del mundo), vy a lo ancho (x del mundo) */
+  const gol=res==="gol"||res==="palo_in", sx=d.x>=0?1:-1;
+  S.pase=null; S.own=-1; S.persigue=null; S.atajada=null;
+  /* velocidades en el plano de la sim: vx a lo largo (+ = hacia el arco), vy a lo ancho (+ = x del mundo) */
+  let det="";
   if(gol){ A.red=true; pat([16,(d.x-A.x0)*0.3,-1]); }
-  else if(res==="atajado"){ S.own=jug.idx.gkR; S.atajada={gk:jug.idx.gkR,t:3,z:0.1}; b.vx=b.vy=b.vz=0; }
-  else if(res==="palo"){ pat([-9,(d.x>=0?1:-1)*4,2.5]); }
-  else if(res==="barrera"){ pat([-6,_bpRnd(-3,3),3]); }
-  else if(res==="defensa"){ pat([-14,_bpRnd(-6,6),6]); }
-  else { pat([14,(d.x-A.x0)*0.2,1]); }   /* afuera: sigue de largo */
-  A.fase="sigue"; A.post=0;
+  else if(res==="atajado"){
+    /* la retiene, la da al medio o la manda al córner (en el penal casi siempre da rebote: viene muy fuerte) */
+    const r=Math.random(), retiene=r<(jug.tipo==="penal"?0.3:(jug.tipo==="tl"?0.5:0.65));
+    if(retiene&&gkI>=0){ S.own=gkI; S.atajada={gk:gkI,t:3,z:0.12}; b.vx=b.vy=b.vz=0; det="retiene"; }
+    else if(Math.random()<0.3){ pat([_bpRnd(1.5,3),sx*_bpRnd(5,8),_bpRnd(2.5,4)]); det="al córner"; }
+    else { pat([-_bpRnd(4,9),sx*_bpRnd(2,7)*(Math.random()<0.75?1:-1),_bpRnd(0.5,3)]); det="rebote"; }
+    S.ultToque=false;
+  }
+  else if(res==="palo"){
+    /* el palo la devuelve a la cancha o la manda afuera; en el penal, el que pateó no puede tocarla primero */
+    if(Math.random()<0.65){ pat([-_bpRnd(6,11),-sx*_bpRnd(1,5),_bpRnd(0.5,3)]); det="rebote"; } else { pat([_bpRnd(3,6),sx*_bpRnd(2,5),_bpRnd(1,3)]); det="afuera"; }
+    S.ultToque=true; if(jug.tipo==="penal") S.noToca=jug.idx.pat;
+  }
+  else if(res==="barrera"){
+    const r=Math.random(); S.ultToque=false;
+    if(r<0.5){ pat([-_bpRnd(5,10),_bpRnd(-5,5),_bpRnd(1,4)]); det="rebote"; }
+    else if(r<0.75){ pat([_bpRnd(4,8),(Math.random()<0.5?-1:1)*_bpRnd(3,6),_bpRnd(2,4)]); det="desvío"; }
+    else { pat([-_bpRnd(10,16),_bpRnd(-4,4),_bpRnd(4,8)]); det="despeje"; }
+  }
+  else if(res==="defensa"){
+    S.ultToque=false;
+    if(out.arquero&&gkI>=0&&Math.random()<0.6){ S.own=gkI; S.atajada={gk:gkI,t:3,z:0.15}; b.vx=b.vy=b.vz=0; det="retiene"; }
+    else { pat([-_bpRnd(11,17),_bpRnd(-6,6),_bpRnd(5,9)]); det="despeje"; }
+  }
+  else { pat([14,(d.x-A.x0)*0.2,1]); S.ultToque=true; det="afuera"; }   /* afuera: sigue de largo */
+  out.det=det;
   /* cartel del resultado (el mismo texto de siempre) */
   const lab=(typeof _etiquetaArco==="function")?_etiquetaArco(res==="defensa"?"defensa":res):{t:res,cls:""};
-  const ban=document.createElement("div"); ban.className="bp3d-res arco-res "+(lab.cls||""); ban.textContent=lab.t; jug.capa.appendChild(ban);
-  if(gol&&jug.est.st){ const mk=(typeof _cvMarcador==="function")?_cvMarcador(jug.P):null; jug.golPendiente=true; }
+  _bpCartel(jug,lab.t,lab.cls||"");
+  if(gol||jug.opts.tanda){ A.fase="sigue"; A.post=0; return; }
+  _bpVivoIniciar(jug); A.fase="vivo";
+}
+/* ---------- la jugada viva (pura: sin DOM ni WebGL, la usa también el doctor) ---------- */
+function _bpVivoIniciar(jug){
+  const S=jug.S;
+  S.bpVivo={equipo:true, pGol:BP3D_VIVO.pGol*(jug.tipo==="penal"?0.85:0.55)}; S.golDentro=false; S.golDe=null; S.saque=null; S.seq=null;
+  if(S.own>=0) S.prox=Math.max(S.prox||0,0.8);
+  else S.persigue=[_cvMasCercano(S,true,S.ball.x,S.ball.y,true),_cvMasCercano(S,false,S.ball.x,S.ball.y,true)];
+  S.jug.forEach(p=>{ if(p.rol!=="gk") p._dive=0; p.vx=p.vy=0; });
+  jug.vivo={t:0, equipo:true};
+}
+function _bpVivoPaso(V,S,dt){
+  V.t+=dt;
+  _cvStep(null,dt,S);
+  const b=S.ball, dGol=(1-b.x)*CV_FIS.L;   /* los del balón parado atacan hacia x=1 */
+  if(S.golDentro){ if(V.golDe==null) V.golDe=S.golDe; V.tGol=(V.tGol||0)+dt; return V.tGol>0.35?"gol":null; }
+  if(S.saque){ const q=S.saque; return q.tipo==="corner"?(q.equipo===V.equipo?"corner":"despeje"):(q.tipo==="lateral"?"lateral":"arco"); }
+  const o=S.own>=0?S.jug[S.own]:null;
+  if(o&&o.rol==="gk"&&o.mio!==V.equipo){ V.tArq=(V.tArq||0)+dt; if(V.tArq>0.7) return "atrapa"; } else V.tArq=0;
+  if(dGol>BP3D_VIVO.despeje) return o&&o.mio===V.equipo?"rearma":"despeje";
+  if(o&&o.mio!==V.equipo){ V.tDef=(V.tDef||0)+dt; if(V.tDef>1.8) return "despeje"; } else V.tDef=0;
+  if(o&&o.mio===V.equipo&&dGol>18){ V.tAtq=(V.tAtq||0)+dt; if(V.tAtq>2.2) return "rearma"; } else V.tAtq=0;
+  if(V.t>BP3D_VIVO.tope) return "tiempo";
+  return null;
+}
+/* la cámara de la jugada viva: detrás de la pelota, mirando al arco, como la toma abierta de la tele */
+function _bpVivoCamara(jug,dt){
+  const c=jug.est&&jug.est.bp&&jug.est.bp.cam; if(!c) return;
+  const b=jug.S.ball, bx=_bpWX(b.y), bz=_bpWZ(b.x), by=(b.z||0)*11, k=Math.min(1,dt*2.2);
+  c.mira.x+=(bx-c.mira.x)*k; c.mira.y+=(Math.max(0.6,by*0.6)-c.mira.y)*k; c.mira.z+=(bz-c.mira.z)*k;
+  const tx=bx*0.85, tz=Math.min(BP3D.ARCO.z-6,bz-14), ty=6.5;
+  c.pos.x+=(tx-c.pos.x)*k*0.6; c.pos.y+=(ty-c.pos.y)*k*0.6; c.pos.z+=(tz-c.pos.z)*k*0.6; c.fov=42;
+}
+/* el jugador de verdad que hizo el gol de rebote: el pateador o el cabeceador si fue él; si no, uno del once según su puesto */
+function _bpJugadorReal(jug,i){
+  if(i===jug.idx.pat) return jug.pat;
+  if(jug.tipo==="corner"&&i===jug.cab) return jug.cabeceador;
+  const p=i!=null&&i>=0?jug.S.jug[i]:null, pos={fwd:"DEL",mid:"MED",def:"DEF"}[p&&p.rol]||"DEL";
+  const once=(jug.P.once||[]).filter(j=>j&&j.pos!=="ARQ"&&!j.expulsado);
+  const del=once.filter(j=>j.pos===pos);
+  const l=del.length?del:once;
+  return l.length?l[(Math.random()*l.length)|0]:{n:"un compañero",goles:0};
+}
+/* termina: si hubo gol, primero la repetición (cancha3d.js c3dRepetir); después se anota y la cancha vuelve */
+function _bpTerminar(jug){
+  if(jug.terminando||jug.fin) return; jug.terminando=true;
+  const gol=!!(jug.out&&(jug.out.final==="gol"||jug.out.final==="palo_in"))||!!(jug.vivo&&jug.vivo.fin==="gol");
+  if(gol&&!jug.opts.tanda&&typeof c3dRepetir==="function"&&c3dRepetir(jug.est,{alTerminar:function(){ _bpCerrar(jug,"listo"); }})) return;
+  _bpCerrar(jug,"listo");
 }
 /* ---------- cerrar: anota el resultado igual que el balón parado de siempre y devuelve la cancha ---------- */
 function _bpCerrar(jug,modo){
   if(jug.fin) return; jug.fin=true; clearTimeout(jug.vigila);
   document.removeEventListener("keydown",jug.tecla,true); document.removeEventListener("keyup",jug.teclaArriba,true);
   const est=jug.est, P=jug.P, S=jug.S;
-  try{ est.scene.remove(jug.aro); est.scene.remove(jug.punto); jug.aro.geometry.dispose(); jug.punto.geometry.dispose(); jug.aro.material.dispose(); }catch(e){}
+  try{ est.scene.remove(jug.aro); est.scene.remove(jug.punto); jug.aro.geometry.dispose(); jug.punto.geometry.dispose(); jug.aro.material.dispose();
+    if(jug.aroG){ est.scene.remove(jug.aroG); jug.aroG.geometry.dispose(); jug.aroG.material.dispose(); } }catch(e){}
   est.bp=null; BP3D.activo=null;
   /* la cancha vuelve a su lugar en la pantalla del partido */
   if(est.host&&est.host.isConnected){ est.host.appendChild(est.canvas); est.W0=0; }
   if(jug.capa.parentNode) jug.capa.remove();
-  S.pase=null;
+  S.pase=null; S.bpVivo=null; S.golDentro=false; S.noToca=null;
   const res=jug.out?(jug.out.final||jug.out.res):null, esGol=res==="gol"||res==="palo_in";
+  const V=jug.vivo, fin=modo==="solo"?null:(V&&V.fin), rebote=fin==="gol";
+  let cadena=false;
   try{
     if(modo==="solo"||!res){
       /* "que se juegue solo": lo resuelve el partido como si no dirigieras */
@@ -355,20 +517,39 @@ function _bpCerrar(jug,modo){
         if(P.part.local)P.gl++; else P.gv++;
         if(typeof linea==="function") linea(P,P.min,(res==="palo_in"?"¡PALO ADENTRO de ":(tl?"¡GOLAZO de tiro libre de ":"¡GOL de cabeza de córner de "))+j.n+"! "+((typeof marcadorTxt==="function")?marcadorTxt(P):""),"gol");
       } else if(typeof linea==="function"){
-        const txt=tl?(res==="barrera"?("Tiro libre de "+j.n+": la barrera la desvía."):(res==="palo"?("Tiro libre de "+j.n+" al travesaño."):(res==="afuera"?("Tiro libre de "+j.n+" por arriba del arco."):("Tiro libre de "+j.n+": el arquero la saca."))))
-          :(res==="defensa"?("Córner: el primero despeja el centro de "+jug.pat.n+"."):(res==="afuera"?("Córner de "+jug.pat.n+": el centro se fue largo."):(res==="palo"?("Córner: el cabezazo de "+j.n+" se estrella en el palo."):("Córner: el arquero se queda con el cabezazo de "+j.n+"."))));
+        const txt=tl?(res==="barrera"?("Tiro libre de "+j.n+": la barrera la desvía."):(res==="palo"?("Tiro libre de "+j.n+" al palo."):(res==="afuera"?("Tiro libre de "+j.n+" por arriba del arco."):("Tiro libre de "+j.n+": el arquero la saca."))))
+          :(res==="defensa"?(jug.out.arquero?("Córner de "+jug.pat.n+": sale el arquero y la descuelga."):("Córner: el primero despeja el centro de "+jug.pat.n+".")):(res==="afuera"?("Córner de "+jug.pat.n+": el centro se fue largo."):(res==="palo"?("Córner: el cabezazo de "+j.n+" se estrella en el palo."):("Córner: el arquero ataja el cabezazo de "+j.n+"."))));
         linea(P,P.min,txt);
       }
     }
+    /* la jugada que siguió: gol de rebote (raro) o cómo terminó */
+    if(modo!=="solo"&&!esGol&&fin){
+      if(rebote){
+        const g=_bpJugadorReal(jug,V.golDe);
+        g.goles=(g.goles||0)+1; P.goleadores.push(g.n);
+        if(typeof regGol==="function") regGol(P,P.min,g.n,true,"rebote");
+        if(P.part.local)P.gl++; else P.gv++;
+        if(typeof linea==="function") linea(P,P.min,"¡GOL de rebote de "+g.n+"! Nadie la sacaba y la empujó. "+((typeof marcadorTxt==="function")?marcadorTxt(P):""),"gol");
+      } else if(typeof linea==="function"){
+        const t={atrapa:"El arquero se queda con la segunda pelota.", despeje:"La defensa saca la segunda pelota.", corner:"La desvían: córner.",
+          lateral:"La segunda pelota se va al lateral.", arco:"Se va por el fondo: saque de arco.", rearma:"Se rearma la jugada desde atrás.", tiempo:"La jugada se enfría."}[fin];
+        if(t) linea(P,P.min,t);
+        cadena=fin==="corner"&&(P._bpCadena||0)<2;
+      }
+    }
   } finally {
+    const golFinal=esGol||rebote;
     /* el gol ya se vio en la cancha: que la simulación no lo repita como jugada, y saque del medio */
     if(S){ const mk=(typeof _cvMarcador==="function")?_cvMarcador(P):null; if(mk){ S.lastYo=mk.yo; S.lastOtro=mk.otro; }
-      if(esGol&&typeof _cvSaqueDelMedio==="function") _cvSaqueDelMedio(S,false);
+      if(golFinal&&typeof _cvSaqueDelMedio==="function") _cvSaqueDelMedio(S,false);
       S.jug.forEach(p=>{ p._dive=0; }); }
+    P._bpCadena=cadena?(P._bpCadena||0)+1:0;
     /* en la tanda manda onRes (él llama al próximo penal): reanudar acá patearía dos veces seguidas */
     if(typeof jug.opts.onRes!=="function"){
       if(typeof pintarPartido==="function") pintarPartido();
-      if(typeof reanudarPronto==="function") reanudarPronto();
+      /* la desviaron al córner: se cobra el córner (como en la cancha), si no se reanuda el partido */
+      if(cadena&&typeof mostrarAccion==="function") setTimeout(function(){ if(P_ACTUAL===P&&!P.terminado) mostrarAccion({tipo:"corner",aFavor:true}); else if(typeof reanudarPronto==="function") reanudarPronto(); },700);
+      else if(typeof reanudarPronto==="function") reanudarPronto();
     }
   }
 }

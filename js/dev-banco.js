@@ -1323,7 +1323,9 @@ if(typeof devDoctorRegistrar==="function"){
       ["minijuegoPenal","minijuegoTiroLibre","minijuegoCorner"].forEach(n=>{ const w=_docBp3dEnvuelto(n);
         if(!w) f.push(n+" no pasa por la cancha 3D (falta el envoltorio de bp3d.js)");
         else if(String(w).indexOf("BP3D.activo.P===P")<0) f.push(n+": un repintado durante la jugada abre otra encima (el gol contaba doble)"); });
-      if(typeof _bpCerrar==="function"&&!/onRes!=="function"\)\{[^}]*reanudarPronto/.test(String(_bpCerrar))) f.push("_bpCerrar reanuda el partido también en la tanda: se patean dos penales seguidos");
+      /* 7.9129 · todo reanudarPronto de _bpCerrar tiene que estar DESPUÉS del "si no es la tanda" (onRes) */
+      if(typeof _bpCerrar==="function"){ const sc=String(_bpCerrar), iT=sc.indexOf('onRes!=="function"){'), iR=sc.indexOf("reanudarPronto");
+        if(iT<0||iR<0||iR<iT) f.push("_bpCerrar reanuda el partido también en la tanda: se patean dos penales seguidos"); }
       if(typeof pasoEnVivo==="function"&&String(pasoEnVivo).indexOf("BP3D.activo")<0) f.push("pasoEnVivo no espera al balón parado 3D: el reloj corre mientras pateas");
       /* la mira: lo que ves a la izquierda es la izquierda del arco de siempre */
       const zi=penZona(bp3dALegado(2.8,0.6).x,bp3dALegado(2.8,0.6).y), zd=penZona(bp3dALegado(-2.8,0.6).x,bp3dALegado(-2.8,0.6).y), zc=penZona(bp3dALegado(0,1.9).x,bp3dALegado(0,1.9).y);
@@ -1391,5 +1393,152 @@ if(typeof devDoctorRegistrar==="function"){
       if(typeof bp3dJugar==="function"){ const s=String(bp3dJugar); if(s.indexOf("medidorPotencia")<0) f.push("el balón parado 3D no usa la línea de potencia"); if(/A3_CARGA_MS/.test(s)) f.push("el balón parado 3D sigue con la barra que se carga apretando"); }
       if(typeof _bpResolver==="function"&&String(_bpResolver).indexOf("jug.pot")<0) f.push("la potencia no cambia el resultado del córner (flojo/a lo bestia)");
       return f.length?_dmal(f.length+" problema(s)",f):_dok("línea de ida y vuelta en "+T.toFixed(1)+" s (nivel 70) · zonas "+z);
+    }});
+}
+/* 7.9129 · "cuidar el bug de que siempre salga afuera" (córner) y "la jugada termina cuando la sacan de ahí" */
+function devBp3dJugadaSigue(N){
+  N=N||60;
+  const Z=BP3D.ARCO.z, out={n:0,gol:0,colgada:0,nan:0,tiempos:[],fines:{}};
+  const pat=(S,v)=>_cvPatear(S,v[0],v[1],v[2]);
+  const enArco=(S,x,y)=>{ S.ball.x=_bpSX(Z); S.ball.y=_bpSY(x); S.ball.z=y/11; };
+  const casos=[
+    ["penal",(S)=>{ enArco(S,2,0.8); pat(S,[-_bpRnd(4,9),_bpRnd(2,7),_bpRnd(0.5,3)]); S.ultToque=false; }],
+    ["penal",(S,idx)=>{ enArco(S,3.66,1); pat(S,[-_bpRnd(6,11),-_bpRnd(1,5),_bpRnd(0.5,3)]); S.ultToque=true; S.noToca=idx.pat; }],
+    ["tl",(S)=>{ S.ball.x=_bpSX(Z-11); S.ball.y=_bpSY(2); S.ball.z=0.15; pat(S,[-_bpRnd(5,10),_bpRnd(-5,5),_bpRnd(1,4)]); S.ultToque=false; }],
+    ["corner",(S)=>{ S.ball.x=_bpSX(Z-8); S.ball.y=_bpSY(0); S.ball.z=0.17; pat(S,[-_bpRnd(11,17),_bpRnd(-6,6),_bpRnd(5,9)]); S.ultToque=false; }]];
+  casos.forEach(([tipo,armar])=>{
+    for(let r=0;r<N;r++){
+      const S=_cvNuevoEstado(null);
+      const bola=tipo==="corner"?{x:33.6,z:Z-0.6,lado:1,gkX:0}:(tipo==="tl"?{x:4,z:Z-20,lado:1,gkX:-1.8}:{x:0,z:Z-11,lado:1,gkX:0});
+      const idx=_bpAcomodar(S,tipo,bola), jug={S:S,idx:idx,tipo:tipo};
+      armar(S,idx); _bpVivoIniciar(jug);
+      let res=null, t=0;
+      for(let k=0;k<30*14&&!res;k++){ res=_bpVivoPaso(jug.vivo,S,1/30); t+=1/30; if(![S.ball.x,S.ball.y,S.ball.z].every(isFinite)){ out.nan++; break; } }
+      out.n++; if(!res) out.colgada++; else { out.fines[res]=(out.fines[res]||0)+1; if(res==="gol") out.gol++; }
+      out.tiempos.push(t);
+    }
+  });
+  out.tiempos.sort((a,b)=>a-b);
+  return out;
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"bp3d_corner_no_afuera", area:"interfaz", n:"Córner 3D: el centro va donde apuntas (no se va afuera solo) y la mira no se mueve camino al botón",
+    arreglo:"js/bp3d.js _bpResolver (córner: afuera solo a lo bestia o fuera del área) · bp3dJugar (click fija la mira; pasar el mouse mueve solo la mira fantasma)",
+    fn:function(){
+      if(typeof _bpResolver!=="function") return _dmal("falta js/bp3d.js");
+      const f=[], Z=BP3D.ARCO.z, P={iner:{}}, ARQ={n:"arq",nivel:72}, pat={n:"pat",nivel:72,rasgos:[]};
+      let afueraAzar=0, afueraBien=0; const N=600;
+      for(let i=0;i<N;i++){
+        const mira={x:(Math.random()*2-1)*12, y:1.8, z:Z-2-Math.random()*14};
+        const j1={tipo:"corner",P:P,ARQ:ARQ,pat:pat,cabeceador:pat,bola:{x:33.6,z:Z-0.6,lado:1},mira:mira,pot:Math.random()};
+        if(_bpResolver(j1,j1.pot>=0.6?"potente":"colocado").res==="afuera") afueraAzar++;
+        const j2=Object.assign({},j1,{pot:0.3+Math.random()*0.3});
+        if(_bpResolver(j2,"colocado").res==="afuera") afueraBien++;
+      }
+      if(afueraBien>0) f.push("con la línea en verde y apuntando al área, "+afueraBien+"/"+N+" centros se van afuera (el bug: siempre afuera)");
+      if(afueraAzar>N*0.12) f.push("apuntando al área con cualquier potencia, "+afueraAzar+"/"+N+" se van afuera (solo debería pasar en rojo, ~8 %)");
+      if(typeof bp3dJugar==="function"){ const s=String(bp3dJugar);
+        if(!/pointermove[\s\S]{0,160}if\(apretado\)\s*apuntar\(ev\);\s*else[^;]*fantasma\(ev\)/.test(s)) f.push("pasar el mouse vuelve a mover la mira de verdad: al ir al botón ¡Cobrar! el centro se va al banderín");
+        if(/Math\.abs\(m\.x\)>10\.5/.test(String(_bpResolver))) f.push("vuelve la regla vieja: un centro al segundo palo (|x|>10,5 m) cuenta como afuera"); }
+      const txt="apuntando al área: "+afueraBien+"/"+N+" afuera en verde · "+afueraAzar+"/"+N+" con potencia al azar (solo el rojo)";
+      return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
+    }});
+  devDoctorRegistrar({id:"bp3d_jugada_sigue", area:"motor", n:"Balón parado 3D: la jugada sigue hasta que la sacan (rebote, palo, barrera) y el gol de rebote es raro pero posible",
+    arreglo:"js/bp3d.js _bpDesenlace, _bpVivoIniciar, _bpVivoPaso, BP3D_VIVO · js/cancha.js st.bpVivo, _cvBpGol, _cvSalida (golDentro), noToca",
+    fn:function(){
+      if(typeof _bpVivoPaso!=="function"||typeof _cvBpGol!=="function") return _dmal("falta la jugada viva (bp3d.js _bpVivoPaso / cancha.js _cvBpGol)");
+      const f=[], m=devBp3dJugadaSigue(50), med=m.tiempos[m.n>>1], tasa=m.gol/m.n;
+      if(m.nan) f.push("la simulación se rompe (NaN) en "+m.nan+" jugadas");
+      if(m.colgada) f.push(m.colgada+" jugadas no terminan nunca (quedan colgadas)");
+      if(med>4.5) f.push("la segunda pelota tarda "+med.toFixed(1)+" s en resolverse (en la cancha, 2–4 s)");
+      if(tasa>0.08) f.push("gol de rebote en "+Math.round(tasa*100)+" % de las segundas pelotas (tiene que ser raro: ~2–4 %)");
+      if(m.gol===0) f.push("en "+m.n+" segundas pelotas nunca hubo gol de rebote: el autor pidió que sea posible");
+      if(typeof _bpDesenlace==="function"&&!/gol\|\|jug\.opts\.tanda/.test(String(_bpDesenlace))) f.push("en la tanda habría rebote (reglamento: en la tanda no hay segunda pelota)");
+      if(typeof _bpCerrar==="function"&&!/S\.bpVivo=null/.test(String(_bpCerrar))) f.push("_bpCerrar no apaga st.bpVivo: el partido podría hacer goles por la física");
+      if(typeof _bpPatear==="function"&&String(_bpPatear).indexOf("Adelantar")<0) f.push("después de patear sigue «Que se juegue solo»: resolvería de nuevo lo que ya pateaste");
+      const txt=m.n+" segundas pelotas: "+Object.keys(m.fines).map(k=>k+" "+m.fines[k]).join(" · ")+" · mediana "+med.toFixed(1)+" s · rebote-gol "+(tasa*100).toFixed(1)+" %";
+      return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
+    }});
+}
+/* 7.9129 · "repeticiones buenas, darle tiempo; si es gol, nomás repetición; tener 3 cámaras" */
+function devRepeticionSintetica(conGol){
+  /* graba 6 s de una jugada inventada (la pelota corre hacia el arco y, si conGol, entra) con la grabadora de verdad */
+  const est={}, o=_c3dGestoVacio(), bola={position:{x:0,y:0.15,z:0}, quaternion:{x:0,y:0,z:0,w:1}};
+  for(let k=0;k<6*60;k++){
+    const t=k/60, off=_c3dFotoNueva(est,1/60); if(off<0) continue;
+    bola.position.x=Math.sin(t)*2; bola.position.z=10+t*(conGol?8.5:6.5); bola.position.y=0.3;
+    for(let i=0;i<22;i++){ o.x=i; o.z=i*2+t; o.yaw=t; _c3dGrabarJug(est.grab.buf,off,i,o); }
+    _c3dGrabarBola(est.grab.buf,off,bola);
+  }
+  return est.grab;
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"repeticion_gol", area:"interfaz", n:"Repetición del gol: solo goles, 3 cámaras en cámara lenta, con tiempo, el reloj espera y se puede saltar",
+    arreglo:"js/cancha3d.js C3D_REP, _c3dFotoNueva/_c3dGrabarJug/_c3dGrabarBola (grabadora), _c3dGolEnGrabacion, _c3dRepPlan, c3dRepetir, _c3dRepPintar (reloj), _c3dRepFin (Saltar) · bp3d.js _bpTerminar",
+    fn:function(){
+      if(typeof _c3dRepPlan!=="function"||typeof _c3dFotoNueva!=="function") return _dmal("falta la repetición en js/cancha3d.js");
+      const f=[], conGol=_c3dRepPlan(devRepeticionSintetica(true)), sinGol=_c3dRepPlan(devRepeticionSintetica(false));
+      if(sinGol) f.push("hay repetición de una jugada sin gol (el autor: «si es gol, nomás repetición»)");
+      if(!conGol) f.push("no encuentra el gol en la grabación: no habría repetición");
+      else {
+        if(conGol.plan.length<3) f.push("la repetición tiene "+conGol.plan.length+" cámara(s) (pedidas: 3)");
+        if(conGol.plan.some(c=>!(c.vel<1))) f.push("alguna cámara no va en cámara lenta");
+        if(conGol.total<7) f.push("la repetición dura "+conGol.total.toFixed(1)+" s: muy rápida («darle tiempo»)");
+        if(conGol.total>26) f.push("la repetición dura "+conGol.total.toFixed(1)+" s: se hace eterna");
+        if(Math.abs(conGol.gol.t-((52.5-10)/8.5))>0.1) f.push("el gol queda mal ubicado en la grabación ("+conGol.gol.t.toFixed(2)+" s)");
+      }
+      const sp=String(_c3dRepPintar||""), sf=String(_c3dRepFin||""), ss=String(_c3dSincronizar||"");
+      if(!/_celHasta/.test(sp)) f.push("el reloj del partido no espera durante la repetición");
+      if(!/_celHasta=Date\.now\(\)\+/.test(sf)) f.push("al terminar o saltar la repetición el reloj no se libera");
+      if(!/_c3dFotoNueva/.test(ss)||!/S\.seq\.tipo==="gol"/.test(ss)) f.push("la cancha 3D no graba o no lanza la repetición después del gol del partido");
+      if(typeof _bpTerminar==="function"&&String(_bpTerminar).indexOf("c3dRepetir")<0) f.push("el gol de un balón parado 3D no tiene repetición");
+      const txt=conGol?(conGol.plan.map(c=>c.n+" ×"+c.vel).join(" · ")+" · "+conGol.total.toFixed(1)+" s"):"";
+      return f.length?_dmal(f.length+" problema(s)",f.concat(txt?[txt]:[])):_dok(txt);
+    }});
+}
+/* 7.9129 · "que los esqueletos sean más smooth, todavía hay robotismo" */
+function devSuavidadCarrera(){
+  const o=_c3dGestoVacio(), prev=_c3dGestoVacio(), campos=g=>[g.lift,g.pitch,g.twist,g.pelvis||0].concat(g.legs.map(l=>[l.t,l.k,l.a,l.p]).flat(),g.arms.map(a=>[a.s,a.a,a.e]).flat());
+  let salto=0, dondeV=0, contra=0, n=0;
+  for(const fase of [0,0.7,1.6,2.5,3.3,4.4,5.5]){
+    let primero=true;
+    for(let v=0;v<=9.0001;v+=0.05){ _c3dCarrera(_c3dCopia(o,C3D_QUIETO),v,fase,0,0);
+      if(!primero){ const a=campos(o), b=campos(prev); for(let k=0;k<a.length;k++){ const d=Math.abs(a[k]-b[k]); if(d>salto){ salto=d; dondeV=v; } } }
+      _c3dCopia(prev,o); primero=false; }
+  }
+  /* brazos contra piernas: con la pierna derecha adelante (t<0) el brazo derecho va atrás (s>0) */
+  for(let f=0;f<Math.PI*2;f+=0.05){ _c3dCarrera(_c3dCopia(o,C3D_QUIETO),6,f,0,0); const L=o.legs[0].t, A=o.arms[0].s-0.05;
+    if(Math.abs(L)>0.15&&Math.abs(A)>0.15){ n++; if(L*A<0) contra++; } }
+  return {salto:salto, dondeV:dondeV, contra:n?contra/n:0};
+}
+function devInercia(){
+  /* un jugador quieto sale a buscar un punto a 30 m; después, lanzado a 7 m/s, le piden darse vuelta */
+  const p={x:0.3,y:0.5,rol:"mid",mio:true}, dt=1/60; let t=0, t8=null;
+  for(let i=0;i<600;i++){ _cvMover(p,0.6,0.5,0.3,dt); t+=dt; const v=Math.hypot(p.vx||0,p.vy||0); if(t8==null&&v>=7.9){ t8=t; break; } }
+  const q={x:0.5,y:0.5,rol:"mid",mio:true,vx:7,vy:0}; let vmin=9, tVuelta=null; t=0;
+  for(let i=0;i<600;i++){ _cvMover(q,0.2,0.5,0.3,dt); t+=dt; const v=Math.hypot(q.vx,q.vy); vmin=Math.min(vmin,v); if(tVuelta==null&&q.vx<-5){ tVuelta=t; break; } }
+  return {t8:t8, vmin:vmin, tVuelta:tVuelta};
+}
+function devPatadaPreparada(seg){
+  const st=_cvNuevoEstado(null), dt=1/30, o=_cvPasar; let n=0, prep=0;
+  _cvPasar=function(st2,to){ const de=st2.own>=0?st2.jug[st2.own]:null; if(de&&!st2.saque){ n++; if(de._acc&&de._acc.previa&&de._acc.t>=0.15) prep++; } return o.apply(this,arguments); };
+  try{ for(let i=0;i<Math.round((seg||120)/dt);i++) _cvStep(null,dt,st); } finally { _cvPasar=o; }
+  return {n:n, prep:prep};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"movimiento_suave", area:"interfaz", n:"Movimiento sin robotismo: brazos contra piernas, sin saltos de pose, inercia al correr y patada con preparación",
+    arreglo:"js/cancha3d.js _c3dCarrera (brazos contra piernas, mezcla continua), fase por ritmo de pasos e inclinación en _c3dSincronizar · js/cancha.js _cvMover (inercia), patada previa en _cvJuego/_cvPasar",
+    fn:function(){
+      if(typeof _c3dCarrera!=="function"||typeof _cvMover!=="function") return _dmal("faltan _c3dCarrera / _cvMover");
+      const f=[], c=devSuavidadCarrera(), m=devInercia(), k=devPatadaPreparada(120);
+      if(c.contra<0.95) f.push("los brazos van del mismo lado que las piernas ("+Math.round(c.contra*100)+" % contra): camina como robot");
+      if(c.salto>0.1) f.push("la pose salta "+c.salto.toFixed(2)+" rad al cambiar 0,05 m/s de velocidad (cerca de "+c.dondeV.toFixed(2)+" m/s): se ve un corte");
+      if(m.t8==null||m.t8<1.1) f.push("de quieto a 8 m/s en "+(m.t8==null?"nunca":m.t8.toFixed(2)+" s")+" (un jugador tarda 1,5–2 s: arranque instantáneo = robot)");
+      if(m.vmin>3.5) f.push("se da vuelta corriendo a 7 m/s sin frenar (velocidad mínima "+m.vmin.toFixed(1)+" m/s): giro en seco");
+      if(m.tVuelta!=null&&m.tVuelta<0.9) f.push("se da vuelta en "+m.tVuelta.toFixed(2)+" s: demasiado rápido para una persona");
+      if(k.n<20) f.push("en 2 minutos hay solo "+k.n+" pases desde el pie");
+      else if(k.prep/k.n<0.6) f.push("solo "+k.prep+"/"+k.n+" pases salen con la pierna ya preparada: la pelota sale antes que el gesto");
+      const txt="brazos contra piernas "+Math.round(c.contra*100)+" % · salto máx "+c.salto.toFixed(3)+" rad · 0→8 m/s en "+(m.t8||0).toFixed(2)+" s · giro: baja a "+m.vmin.toFixed(1)+" m/s, vuelta en "+(m.tVuelta||0).toFixed(2)+" s · patadas preparadas "+k.prep+"/"+k.n;
+      return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
     }});
 }

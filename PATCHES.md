@@ -5323,3 +5323,42 @@ los toca haya movimiento"; "sigue apareciendo en todos los equipos 0 lo sintiero
   penal). Al revés: sin gesto para "entrada", quites ×17 ("parece rugby"), bp3d sin medidor, ui.js viejo → todos cazados.
 - **Estado:** doctor sano 143/143 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
   · core 1185/1185 · saves ok · banco 255 sano (14 % despidos).
+
+### 7.9129 — Córner que ya no se va afuera solo · la jugada sigue hasta que la sacan (rebote, palo, barrera) · repetición del gol con 3 cámaras · movimiento con inercia
+Pedidos del autor: "córner, cuidar el bug de que siempre salga afuera"; "tiros libres: que se tire para donde va el balón
+y se encargue de sacarla, palo, etc."; "la jugada termina cuando la sacan de ahí, porque puede haber un gol si es que la
+agarran (muy poco probable, pero pasa)"; "repeticiones buenas, darle tiempo, que no sea tan rápido todo; si es gol nomás
+repetición (tener 3 cámaras)"; "que los esqueletos sean más smooth, todavía hay robotismo".
+- **El bug del córner (js/bp3d.js):** la mira seguía al mouse; al ir hacia "¡Cobrar!" se cruzaba la parte de abajo de
+  la cancha y la mira terminaba en el banderín (x=±12), y la regla vieja decía "|x|>10,5 = se fue largo" (4/4 afuera,
+  reproducido con mouse de verdad). Ahora: pasar el mouse mueve solo una mira FANTASMA; CLICK fija la mira (el dedo,
+  arrastrando; las flechas la mueven según se ve en la pantalla); Espacio/Enter/¡Patear! paran la línea. Regla nueva del
+  área (40 m de ancho): afuera solo a lo bestia (línea roja) o fuera del área; pegado al arco sale el arquero. Cámara del
+  córner más cerca (el área llena la pantalla).
+- **La jugada sigue (bp3d.js `_bpDesenlace`, `_bpVivoIniciar`, `_bpVivoPaso`):** carrera de ~1 s desde 3–3,6 m (antes
+  0,55 s desde 1,8 m), la patada arranca 0,23 s antes del golpe. En tiro libre y córner el arquero reacciona A LA PELOTA
+  (0,16 s de reflejo; en el penal adivina). Desenlace con física: retiene o da rebote o la manda al córner, el palo
+  devuelve, la barrera desvía, el primero despeja. Después juegan los 22 con la simulación del partido hasta que la
+  despejan, el arquero la retiene, sale (si es córner a favor, se cobra: hasta 2 seguidos), se rearma o hay GOL DE
+  REBOTE (solo ahí un remate puede entrar: `st.bpVivo`, chance según distancia ~30 % a 6 m, ~6 % a 16 m). Doble toque:
+  el que pateó el penal no puede tocar primero el rebote del palo. En la tanda no hay rebote. Medido: rebote-gol 1–5 %,
+  la segunda pelota se define en ~2–3 s. Tras patear, "Que se juegue solo" pasa a "⏩ Adelantar" (×5, misma física).
+- **Repetición del gol (js/cancha3d.js):** la cancha 3D graba lo que dibuja (12 s). En cada gol —del partido o de un
+  balón parado 3D— se pasa otra vez con 3 cámaras en cámara lenta: Transmisión ×0,8 · Detrás del arco ×0,55 · A ras del
+  pasto detrás del que le pegó ×0,42 (~15 s). Franjas de cine, cartel de la cámara, "⏭ Saltar". El reloj espera (se
+  renueva cada cuadro: en un equipo lento no se suelta antes). Solo goles.
+- **Movimiento (cancha.js / cancha3d.js):** inercia humana (arranque 4,5 m/s², frenada 7; 0→8 m/s en ~1,8 s; los giros
+  frenan), la pelota sale después de la preparación de la patada, ritmo de pasos según la velocidad (1,6–4,6 pasos/s),
+  mezcla continua quieto/caminar/correr (sin el corte de antes), inclinación en las curvas, cadera que gira con el paso,
+  cabeza estable. Divididas/quites recalibrados con la inercia (~14 cada 6 min).
+- **Dev:** `bp3d_corner_no_afuera`, `bp3d_jugada_sigue` (`devBp3dJugadaSigue`), `repeticion_gol`
+  (`devRepeticionSintetica`), `movimiento_suave` (`devSuavidadCarrera`, `devInercia`, `devPatadaPreparada`);
+  `bp3d_misma_ley` lee la tanda de forma robusta. `test/cancha3d.mjs`: repetición (3 cámaras, cartel, reloj, Saltar) y
+  balón parado con jugada viva. Al revés: regla vieja del córner + mouse que mueve la mira, rebote-gol ×30 y rebote en la
+  tanda, repetición sin gol / sin cámara lenta / sin reloj, sim y gestos de 7.9128 (sin inercia, sin preparación, corte
+  de pose), brazos del mismo lado → todos cazados.
+- **Encontrado, para la próxima:** el paquete CC0 "Universal Animation Library" de Quaternius (maniquí de cuerpo
+  continuo, esqueleto de 65 huesos, 43 animaciones de captura de movimiento: quieto, caminar, trotar, piquear, saltar,
+  golpe en el pecho…) se puede bajar y tiene licencia de dominio público: es el camino para cuerpos "smooth" de verdad.
+- **Estado:** doctor sano 147/147 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
+  · core 1185/1185 · saves ok · banco 255 sano (16 % despidos).

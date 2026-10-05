@@ -2578,3 +2578,11 @@ corre `bash test/doctor.sh` y `node test/servidores.js`, mira el doctor `csp_est
 - `_c3dGesto` arma la pose de cada cuadro SIN crear objetos (`_c3dCopia`, `est.gestos`). No usen JSON ni `new` ahí.
 - Balón parado 3D: la potencia es `medidorPotencia` (aguja de ida y vuelta). `jug.pot` cambia el resultado (flojo/bestia).
 - Charla al grupo: "lejos" = fuera de los 18 citados en pretemporada; con minutos jugados, <15 % del que más jugó.
+
+**7.9129 (Claude Opus) · jugada viva del balón parado, repetición, inercia. LEER si tocan cancha.js, cancha3d.js o bp3d.js:**
+- `st.bpVivo` (cancha.js) es el ÚNICO lugar donde un remate puede entrar por la física (`_cvBpGol`, `pase.gol`,
+  `st.golDentro`). Lo prende `_bpVivoIniciar` y lo apaga `_bpCerrar`. Fuera de eso, los goles los decide el motor.
+- Jugadores con inercia: `p.vx/p.vy` en m/s. Si teletransportan a alguien (saque del medio, jugada armada, balón parado)
+  llamen `_cvQuieto(p)` o pongan `p.vx=p.vy=0`, o arrastra la velocidad vieja.
+- La cancha 3D graba 12 s (`est.grab`) y repite los goles (`c3dRepetir`). El reloj espera con `P._celHasta`.
+- Paquete CC0 de Quaternius ya probado: se baja desde itch.io (POST /download_url → /file/<id>); va a ser 7.9130.

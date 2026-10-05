@@ -54,7 +54,8 @@ try{
       /* 7.9127 · penal y córner DENTRO de la cancha 3D: se juegan, se anotan una sola vez y la cancha vuelve */
       for(const tipo of ["penal","corner"]){
         /* el reloj en pausa mientras se mide: si no, un gol del partido que sigue se contaba como del penal */
-        const a=await p.evaluate((tipo)=>{ clearInterval(TIMER); PAUSADO=true; P_ACTUAL.modo="dirigir"; E.config.cornerMinijuego=true; window._g0=P_ACTUAL.gl+P_ACTUAL.gv;
+        /* _bpCadena=2: si la desvían al córner no se encadena otro (en el juego sí: la prueba mide una sola jugada) */
+        const a=await p.evaluate((tipo)=>{ clearInterval(TIMER); PAUSADO=true; P_ACTUAL.modo="dirigir"; P_ACTUAL._bpCadena=2; E.config.cornerMinijuego=true; window._g0=P_ACTUAL.gl+P_ACTUAL.gv;
           window._lineas0=document.querySelectorAll(".relato *").length;
           mostrarAccion(tipo==="corner"?{tipo:"corner",aFavor:true}:{tipo:"penal"});
           const enCapa=!!document.querySelector(".bp3d-capa canvas.cancha3d");
@@ -63,17 +64,33 @@ try{
         },tipo);
         ok(a.enCapa&&a.sigue&&a.capas===1&&!a.modal,tipo+" 3D: se abre en la misma cancha y aguanta repintados (capas "+a.capas+(a.modal?", ¡y abrió el minijuego viejo encima!":"")+")");
         await esperar(600); await p.keyboard.press("Enter");
-        let cerro=false; for(let i=0;i<40&&!cerro;i++){ await esperar(400); cerro=await p.evaluate(()=>!BP3D.activo&&!document.querySelector(".bp3d-capa")); }
+        /* 7.9129 · después del remate la jugada sigue (rebote) y el gol tiene repetición: Enter adelanta y "Saltar" corta */
+        await esperar(500); await p.keyboard.press("Enter");
+        let cerro=false; for(let i=0;i<60&&!cerro;i++){ await esperar(400);
+          cerro=await p.evaluate(()=>{ const b=document.querySelector(".c3d-rep.on .c3d-rep-saltar"); if(b) b.click(); return !BP3D.activo&&!document.querySelector(".bp3d-capa"); }); }
         const z=await p.evaluate(()=>({vuelve:C3D.est&&C3D.est.canvas.parentNode===C3D.est.host&&C3D.est.canvas.isConnected, goles:P_ACTUAL.gl+P_ACTUAL.gv-window._g0}));
         ok(cerro&&z.vuelve,tipo+" 3D: se patea, se cierra y la cancha vuelve a su lugar");
         ok(z.goles<=1,tipo+" 3D: el resultado se anota una sola vez ("+z.goles+" gol/es)");
         await p.evaluate(()=>{ PAUSADO=false; });
       }
     }
+    if(!caso.papa){
+      /* 7.9129 · repetición del gol: aparece después del gol (3 cámaras, cartel), el reloj espera y "Saltar" la corta */
+      await p.evaluate(()=>{ clearInterval(TIMER); PAUSADO=false; if(typeof _cvArmarGol==="function") _cvArmarGol(_cvSt,1,"Prueba",10,{}); });
+      let rep=null; for(let i=0;i<60&&!rep;i++){ await esperar(250); rep=await p.evaluate(()=>{ const e=C3D.est, r=e&&e.rep, h=document.querySelector(".c3d-rep.on");
+        return r?{camaras:r.plan.length, total:r.total, cartel:h?h.textContent:"", visible:!!(h&&h.getBoundingClientRect().width>0), reloj:(e.P._celHasta||0)-Date.now()}:null; }); }
+      ok(rep&&rep.camaras===3&&/Cámara 1/.test(rep.cartel)&&rep.visible,"gol: arranca la repetición con 3 cámaras y su cartel ("+(rep?rep.cartel.replace(/\s+/g," ").trim():"no arrancó")+")");
+      ok(rep&&rep.reloj>800,"durante la repetición el reloj del partido espera ("+(rep?Math.round(rep.reloj):"–")+" ms)");
+      await p.evaluate(()=>{ const b=document.querySelector(".c3d-rep .c3d-rep-saltar"); if(b) b.click(); });
+      await esperar(400);
+      const fin=await p.evaluate(()=>({rep:!!(C3D.est&&C3D.est.rep), reloj:((C3D.est&&C3D.est.P&&C3D.est.P._celHasta)||0)-Date.now()}));
+      ok(!fin.rep&&fin.reloj<600,"⏭ Saltar corta la repetición y el partido sigue");
+      await p.evaluate(()=>{ PAUSADO=false; });
+    }
     ok(err.length===0,"sin errores en la página"+(err.length?": "+err.slice(0,3).join(" | "):""));
     await ctx.close();
   }
 }catch(e){ ok(false,"error: "+(e&&e.stack||e)); }
 finally{ try{ await b.close(); }catch(e){} srv.kill(); }
-console.log(malos?"❌ CANCHA 3D: "+malos+" falla(s)":"✅ CANCHA 3D: se reusa, se ve, dibuja barato, el arquero ataja y el balón parado se juega adentro");
+console.log(malos?"❌ CANCHA 3D: "+malos+" falla(s)":"✅ CANCHA 3D: se reusa, se ve, dibuja barato, el arquero ataja y el balón parado se juega adentro y el gol tiene repetición");
 process.exit(malos?1:0);
