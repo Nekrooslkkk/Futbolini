@@ -261,6 +261,14 @@ function _c3dPintar(est){
     est.pelados[i]=!!look.pelado;
   }
   for(let k=0;k<4;k++) P.guante.setColorAt(k,c3dCol("#f3f6fa",C));
+  /* 7.9130 · los mismos colores en el maniquí (por zona: piel, camiseta con franja, short, medias, botines, pelo, guantes) */
+  if(est.m3d) for(let i=0;i<22;i++){ const p=st&&st.jug[i], I=est.m3d[i]; if(!p||!I) continue;
+    const mio=i<11, gk=p.rol==="gk", cam=gk?(mio?arqMio:arqRiv):(mio?col.mio:col.riv);
+    const look=(typeof _cvLook==="function")?_cvLook(p,i):{piel:"#e0ac7e",pelo:"#1b1410",pelado:false};
+    const fr=gk?null:(mio?col.franjaMio:col.franjaRiv), frc=gk?null:(mio?col.franjaColorMio:col.franjaColorRiv);
+    modelo3dPintar(I.malla.material,{piel:look.piel, camiseta:cam, short:gk?"#1b1d22":((mio?col.shortMio:col.shortRiv)||"#20242c"),
+      medias:gk?cam:((mio?col.mediasMio:col.mediasRiv)||cam), botines:gk?"#f2f2f2":"#15161a", pelo:look.pelado?look.piel:look.pelo,
+      manos:gk?"#f3f6fa":look.piel, franja:fr&&frc?fr:null, franjaCol:frc}); }
   Object.keys(P).forEach(n=>{ if(P[n].instanceColor) P[n].instanceColor.needsUpdate=true; });
 }
 /* matrices de trabajo (sin crear objetos por cuadro) */
@@ -362,11 +370,13 @@ C3D_ACCIONES.centro=C3D_ACCIONES.remate; C3D_ACCIONES.despeje=C3D_ACCIONES.remat
 function _c3dGesto(o,p,v,t,i,fase){
   _c3dCarrera(o,v,fase!=null?fase:(p._paso||0),t,i);
   const ac=p._acc, cl=ac&&C3D_ACCIONES[ac.tipo];
+  o.wAcc=0; o.gAcc=null;
   if(cl){
     const u=Math.min(1,ac.t/Math.max(0.05,ac.dur)), w=Math.min(1,u/0.15,(1-u)/0.18+0.15);
     const g=_c3dClave(cl,u);
     if(ac.salto){ g.lift+=ac.salto*Math.sin(Math.PI*Math.min(1,u/0.8)); }
     _c3dMezcla(o,g,Math.max(0,w));
+    o.wAcc=Math.max(0,Math.min(1,w)); o.gAcc=g;   /* 7.9130 · para el maniquí: la pose de la acción sola (la carrera la pone la animación) */
   }
   return o;
 }
@@ -409,6 +419,70 @@ function _c3dPose(est,i,o){
     _c3dMiembro(P,"manga","antebrazo",esArq?"guante":"mano",i*2+k,TR,s*c.ancho_hom,hy,0,hom,abd,codo,c.brazo,c.antebrazo,esArq?est.gk[i]*2+k:null);
     if(esArq) P.mano.setMatrixAt(i*2+k,K.cero);
   }
+}
+
+/* ---------- 7.9130 · JUGADORES CON EL MANIQUÍ (modelo3d.js) ----------
+   En calidad Alta y Auto los 22 usan el maniquí CC0 animado (cuerpo continuo, animaciones capturadas); en Antigua y en
+   Modo papa, el cuerpo clásico. Ajustes ▸ Jugadores 3D lo cambia. Si el modelo no llega o algo falla, quedan los
+   clásicos; si el equipo no aguanta, el vigilante vuelve a los clásicos antes de ofrecer el 2D. */
+function c3dModeloQuerido(est){
+  if(typeof modelo3dCargar!=="function"||typeof THREE==="undefined"||(est&&est.m3dLento)) return false;
+  if(est&&est.perfil&&est.perfil.plano) return false;
+  try{ if(document.documentElement.classList.contains("papa")) return false; }catch(e){}
+  return !(typeof E!=="undefined"&&E&&E.config&&E.config.c3dJugadores==="clasicos");
+}
+function _c3dIntentarModelo(est){
+  if(!est||est.m3d||!c3dModeloQuerido(est)) return;
+  modelo3dCargar().then(ok=>{ if(ok&&C3D.est===est&&!est.m3d&&c3dModeloQuerido(est)){ try{ _c3dUsarModelo(est); }catch(e){ if(window.console) console.error("maniquí:",e); _c3dSacarModelo(est); } } });
+}
+function _c3dUsarModelo(est){
+  if(est.rep) _c3dRepFin(est,false);   /* cambiar de cuerpo borra la grabación: primero termina la repetición */
+  est.m3d=[];
+  for(let i=0;i<22;i++){ const I=modelo3dInstancia(modelo3dMaterial()); I.malla.castShadow=!!est.perfil.sombras; est.scene.add(I.raiz); est.m3d.push(I); }
+  Object.keys(est.piezas).forEach(k=>{ est.piezas[k].visible=false; });
+  _c3dPintar(est);
+  est.grab=null;   /* lo grabado era con el otro cuerpo: la repetición empieza de nuevo */
+  C3D.modelos=(C3D.modelos||0)+1;
+}
+function _c3dSacarModelo(est){
+  if(!est||!est.m3d) return;
+  /* 7.9130 · el vigilante podía sacar el maniquí EN MEDIO de la repetición: borraba la grabación y la cancha 3D se caía
+     al 2D (justo en los goles, en un equipo lento). Ahora primero se termina la repetición */
+  if(est.rep) _c3dRepFin(est,false);
+  est.m3d.forEach(I=>{ try{ I.mezcla.stopAllAction(); est.scene.remove(I.raiz); I.malla.material.dispose(); }catch(e){} });
+  est.m3d=null; Object.keys(est.piezas).forEach(k=>{ est.piezas[k].visible=true; }); est.grab=null;
+}
+/* la pose del arquero que se tira o tiene la pelota (brazos arriba / abrazados), como gesto para el maniquí */
+const _C3B=_c3dGestoVacio();
+function _c3dPoseBrazos(o){
+  const g=_c3dCopia(_C3B,C3D_QUIETO);
+  for(let k=0;k<2;k++){ const s=k?1:-1, A=g.arms[k];
+    if(o.brazos==="arriba"){ A.s=-2.75; A.a=s*0.25; A.e=-0.15; g.legs[k].t=o.legs[k].t; g.legs[k].k=o.legs[k].k; }
+    else { A.s=-1.25; A.a=-s*0.35; A.e=-0.9; g.pitch=0.1; g.legs[k].k=0.2; } }
+  return g;
+}
+function _c3dPoseModelo(est,i,o,v,dt,fase){
+  const I=est.m3d[i], R=I.raiz, K=_c3dM();
+  /* el cuerpo entero: dónde está, hacia dónde mira y cuánto se inclina en la curva */
+  R.position.set(o.x,Math.max(0,o.lift||0),o.z);
+  K.e.set(0,o.yaw,o.lean||0,"YXZ"); R.quaternion.setFromEuler(K.e);
+  if(o.roll){   /* el arquero que se tira rueda desde la cadera */
+    const qr=K.qr||(K.qr=new THREE.Quaternion()), ax=K.ax||(K.ax=new THREE.Vector3()), h1=K.h1||(K.h1=new THREE.Vector3());
+    ax.set(0,0,1).applyQuaternion(R.quaternion); qr.setFromAxisAngle(ax,o.roll);
+    h1.set(0,0.93,0).applyQuaternion(R.quaternion); R.position.add(h1); h1.applyQuaternion(qr); R.position.sub(h1); R.quaternion.premultiply(qr);
+  }
+  /* piernas y brazos: la animación capturada según la velocidad; durante un gesto se va hacia "quieto" y manda el gesto */
+  I.pesoLoco=1-(o.brazos?1:(o.wAcc||0));
+  const f=modelo3dAndar(I,v,dt,fase);
+  if(o.brazos) modelo3dGesto(I,_c3dPoseBrazos(o),1);
+  else if(o.wAcc>0&&o.gAcc) modelo3dGesto(I,o.gAcc,o.wAcc);
+  return f;
+}
+function _c3dManosModelo(I){
+  const K=_c3dM(), a=K.ma||(K.ma=new THREE.Vector3()), b=K.mb||(K.mb=new THREE.Vector3());
+  I.raiz.updateMatrixWorld(true);
+  modelo3dMano(I,"l",a); modelo3dMano(I,"r",b);
+  return a.add(b).multiplyScalar(0.5).clone();
 }
 
 /* ---------- montaje (se arma UNA vez y se reusa entre repintados del partido) ---------- */
@@ -468,6 +542,7 @@ function montarCancha3D(host, P){
   if(est){ C3D.reusos++; clearTimeout(est.liberar); }
   else { est=_c3dConstruir(host,P); if(!est) return null; C3D.est=est; }
   if(est.P!==P||est.st!==_cvSt) _c3dPartido(est,P);
+  if(!est.m3d) _c3dIntentarModelo(est); else if(!c3dModeloQuerido(est)) _c3dSacarModelo(est);
   est.host=host;
   if(getComputedStyle(host).position==="static") host.style.position="relative";
   /* 7.9127 · con un balón parado 3D en juego el canvas vive en la capa grande: no se lo robamos (vuelve al cerrar) */
@@ -508,10 +583,10 @@ function _c3dSincronizar(est,dt){
         o.legs[0].k=o.legs[1].k=0.2; o.legs[0].t=-0.1; o.legs[1].t=0.25; o.pitch=0; o.lean=0; o.pelvis=0;
       } else if(S.atajada&&S.atajada.gk===i&&S.own===i){ o.brazos="abrazo"; }
     }
-    _c3dPose(est,i,o);
-    if(fr>=0) _c3dGrabarJug(est.grab.buf,fr,i,o);
+    if(est.m3d){ const fz=_c3dPoseModelo(est,i,o,v,dt,null); if(fr>=0) _c3dGrabarJugM(est.grab.buf,fr,i,o,v,fz); }
+    else { _c3dPose(est,i,o); if(fr>=0) _c3dGrabarJug(est.grab.buf,fr,i,o); }
     const sl=Math.max(0,o.lift); M.makeTranslation(o.x,0.02,o.z); _c3dS(M,(1.1+sl)*(est.perfil.sombras?0.75:1),1,(1.1+sl)*(est.perfil.sombras?0.75:1)); sombras.setMatrixAt(i,M);
-    if(o.brazos==="abrazo"){ K.v.set(0,1.15,0.32).applyMatrix4(K.B); manos=K.v.clone(); }
+    if(o.brazos==="abrazo"){ if(est.m3d) manos=_c3dManosModelo(est.m3d[i]); else { K.v.set(0,1.15,0.32).applyMatrix4(K.B); manos=K.v.clone(); } }
     p._yaw3d=giro;
   });
   const b=S.ball, bx=wx(b.y), bz=wz(b.x), by=Math.max(0.15,(b.z||0)*11+0.15);
@@ -567,10 +642,10 @@ const C3D_REP={hz:40, seg:12, camaras:[
   {n:"Transmisión", desde:-3.6, hasta:0.9, vel:0.8},
   {n:"Detrás del arco", desde:-2.0, hasta:0.7, vel:0.55},
   {n:"A ras del pasto", desde:-1.5, hasta:0.6, vel:0.42}]};
-const C3D_FJ=26, C3D_FB=8, C3D_FT=1+C3D_FB+22*C3D_FJ;   /* datos por jugador · por pelota · por foto */
+const C3D_FJ=29, C3D_FB=8, C3D_FT=1+C3D_FB+22*C3D_FJ;   /* datos por jugador · por pelota · por foto */
 function _c3dFotoNueva(est,dt){
   let g=est.grab;
-  if(!g){ const cap=C3D_REP.hz*C3D_REP.seg; g=est.grab={buf:new Float32Array(cap*C3D_FT), cap:cap, n:0, cab:0, t:0, ult:-1}; }
+  if(!g){ const cap=C3D_REP.hz*C3D_REP.seg; g=est.grab={buf:new Float32Array(cap*C3D_FT), cap:cap, n:0, cab:0, t:0, ult:-1, modelo:!!est.m3d}; }
   g.t+=dt;
   if(g.ult>=0&&g.t-g.ult<1/C3D_REP.hz*0.95) return -1;
   g.ult=g.t; const i=g.cab; g.cab=(g.cab+1)%g.cap; g.n=Math.min(g.cap,g.n+1);
@@ -582,6 +657,16 @@ function _c3dGrabarJug(B,off,i,o){
   for(let q=0;q<2;q++){ const L=o.legs[q]; B[k++]=L.t; B[k++]=L.k; B[k++]=L.a; B[k++]=L.p||0; }
   for(let q=0;q<2;q++){ const A=o.arms[q]; B[k++]=A.s; B[k++]=A.a; B[k++]=A.e; }
   B[k++]=o.brazos==="arriba"?1:(o.brazos==="abrazo"?2:0); B[k++]=1; B[k++]=o.lean||0; B[k++]=o.pelvis||0;
+}
+/* con el maniquí se graba la pose de la acción (no la de la carrera: esa la pone la animación con velocidad y fase) */
+function _c3dGrabarJugM(B,off,i,o,v,fase){
+  const g=o.brazos?o:(o.gAcc&&o.wAcc>0?o.gAcc:C3D_QUIETO);
+  let k=off+1+C3D_FB+i*C3D_FJ;
+  B[k++]=o.x; B[k++]=o.z; B[k++]=o.yaw; B[k++]=o.lift||0; B[k++]=o.roll||0; B[k++]=g.pitch||0; B[k++]=g.twist||0; B[k++]=g.nod||0;
+  for(let q=0;q<2;q++){ const L=g.legs[q]; B[k++]=L.t; B[k++]=L.k; B[k++]=L.a; B[k++]=L.p||0; }
+  for(let q=0;q<2;q++){ const A=g.arms[q]; B[k++]=A.s; B[k++]=A.a; B[k++]=A.e; }
+  B[k++]=o.brazos==="arriba"?1:(o.brazos==="abrazo"?2:0); B[k++]=1; B[k++]=o.lean||0; B[k++]=0;
+  B[k++]=v; B[k++]=fase||0; B[k++]=o.brazos?1:(o.wAcc||0);
 }
 function _c3dGrabarBola(B,off,bola){
   let k=off+1; const p=bola.position, q=bola.quaternion;
@@ -648,6 +733,7 @@ function _c3dRepFoto(est,t){
   return {a:a, b:b, u:u};
 }
 function _c3dRepPintar(est,dt){
+  if(!est.grab||!est.grab.buf){ _c3dRepFin(est,false); return; }   /* sin grabación (cambió el cuerpo): se corta, no se cae */
   const r=est.rep, c=r.plan[r.c], B=est.grab.buf, K=_c3dM(), M=K.W;
   /* el reloj espera MIENTRAS dure (se renueva cada cuadro: en un equipo lento la repetición tarda más de lo calculado) */
   if(est.P) est.P._celHasta=Math.max(est.P._celHasta||0,Date.now()+1200);
@@ -662,7 +748,12 @@ function _c3dRepPintar(est,dt){
     for(let q=0;q<2;q++){ const g=o.legs[q], kk=k+8+q*4; g.t=L(kk); g.k=L(kk+1); g.a=L(kk+2); g.p=L(kk+3); }
     for(let q=0;q<2;q++){ const g=o.arms[q], kk=k+16+q*3; g.s=L(kk); g.a=L(kk+1); g.e=L(kk+2); }
     const br=B[(f.u<0.5?f.a:f.b)+k+22]; o.brazos=br===1?"arriba":(br===2?"abrazo":null); o.lean=L(k+24); o.pelvis=L(k+25);
-    _c3dPose(est,i,o);
+    if(est.m3d&&est.grab.modelo){
+      /* el maniquí: velocidad y fase de la animación grabadas (la fase se mezcla por el lado corto del círculo) */
+      const fa=B[f.a+k+27], fb=B[f.b+k+27], df=fb-fa-Math.round(fb-fa);
+      o.wAcc=o.brazos?0:L(k+28); o.gAcc=o;
+      _c3dPoseModelo(est,i,o,L(k+26),dt,((fa+df*f.u)%1+1)%1);
+    } else _c3dPose(est,i,o);
     const sl=Math.max(0,o.lift); M.makeTranslation(o.x,0.02,o.z); _c3dS(M,(1.1+sl)*(est.perfil.sombras?0.75:1),1,(1.1+sl)*(est.perfil.sombras?0.75:1)); est.sombras.setMatrixAt(i,M);
   }
   /* la pelota: posición y giro grabados (el giro mezclado suave) */
@@ -774,6 +865,10 @@ function _c3dVigilar(est,ms){
   est.vigilado=true;
   const med=est.tiempos.slice().sort((a,b)=>a-b)[22]; est.msMediana=Math.round(med);
   const tope=est.perfil.fps<=30?75:50;
+  /* 7.9130 · si van lentos los jugadores realistas, primero se vuelve a los clásicos (y se vuelve a medir) */
+  if(med>tope&&est.m3d){ _c3dSacarModelo(est); est.m3dLento=true; est.vigilado=false; est.tiempos=[]; est.t0v=performance.now();
+    if(typeof aviso==="function") aviso("🐢 Los jugadores realistas van lentos en este equipo: volví a los clásicos (lo cambias en Ajustes ▸ Jugadores 3D).",5500);
+    return; }
   if(med>tope&&typeof ofrecerAliviar3D==="function") est.ofrecido=!!ofrecerAliviar3D(est.host,"🐢 La cancha 3D va lenta en este equipo ("+est.msMediana+" ms por cuadro).",function(){
     const host=est.host, P=est.P;
     if(E){ if(!E.config) E.config={}; E.config.cancha3d=false; if(typeof guardar==="function") guardar(); }

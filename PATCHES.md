@@ -5362,3 +5362,45 @@ repetición (tener 3 cámaras)"; "que los esqueletos sean más smooth, todavía 
   golpe en el pecho…) se puede bajar y tiene licencia de dominio público: es el camino para cuerpos "smooth" de verdad.
 - **Estado:** doctor sano 147/147 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
   · core 1185/1185 · saves ok · banco 255 sano (16 % despidos).
+
+### 7.9130 — Jugadores realistas: maniquí CC0 animado con movimientos capturados (cuerpo continuo, sin cortes) · la repetición ya no se cae si el equipo va lento
+Pedidos del autor: "que los esqueletos sean más smooth, más suaves, realistas: todavía hay robotismo"; "si descargas
+modelos, sería genial (PES 2006)".
+- **El cuerpo (js/modelo3d.js, nuevo · img/modelos/):** los 22 son un maniquí de UNA malla con esqueleto de 65 huesos
+  (se dobla en codos, rodillas y cintura sin cortes), del paquete "Universal Animation Library [Standard]" de
+  Quaternius, licencia **CC0 (dominio público)**. `scripts/modelo_jugador.py` lo prepara: junta las dos mallas, saca lo
+  que no se usa (texturas, escalas, dedos animados) y marca cada vértice con su zona del uniforme →
+  `img/modelos/jugador.glb` (0,69 MB · 8.546 vértices · 13.744 triángulos · 6 animaciones) + `jugador.js` (lo mismo en
+  base64: carga con file:// y sin servidor). Lector glTF propio de 190 líneas: cero librerías nuevas.
+- **Movimiento capturado de personas:** quieto, caminar, trotar y piquear se mezclan según la velocidad (sin cortes:
+  la mezcla suma siempre 1). El paso avanza con la zancada REAL de cada animación (medida en el paquete) y las tres
+  arrancan con el mismo pie (`_m3dFasesPie`): los pies no patinan ni cambian de paso al acelerar. Encima van los gestos
+  del fútbol de siempre (`C3D_ACCIONES`: patada, remate, pecho, muslo, cabezazo, salto, dividida, entrada, atrapa) como
+  giros de los huesos que entran y salen suave (`modelo3dGesto`); mientras dura el gesto, la carrera cede. El arquero se
+  tira rodando desde la cadera y abraza la pelota con las manos del maniquí.
+- **El uniforme:** se pinta en el sombreador por zona (piel, camiseta con franja horizontal/vertical/banda, short,
+  medias, botines, pelo, guantes del arquero) con los colores del club; pelado = sin pelo. Mismos colores que los
+  clásicos (`_c3dPintar`).
+- **Cuándo va:** Auto y Alta → realistas; Antigua y Modo papa → clásicos. Ajustes ▸ **Jugadores 3D**: 🧍 Realistas /
+  🧱 Clásicos (livianos), se cambia al tiro. Si el modelo no llega (sin internet la primera vez, un error) quedan los
+  clásicos: nunca se rompe. El service worker lo guarda al primer uso (después juega sin internet). Si el equipo no
+  aguanta, el vigilante PRIMERO vuelve a los clásicos (aviso 🐢) y mide de nuevo; recién después ofrece aliviar el 3D.
+- **Repetición con el maniquí:** la grabación guarda velocidad, fase del paso y gesto de cada jugador: en cámara lenta
+  el maniquí se mueve igual que en vivo (pasos interpolados, no a saltos).
+- **Pase al espacio (js/cancha.js `_cvDecidir`):** el pase va adonde el compañero VA A ESTAR (su velocidad × lo que
+  tarda la pelota, tope 7 m). Con la inercia de 7.9129, apuntarle a donde estaba lo hacía llegar tarde a todo y casi
+  no había cabezazos. Medido en 18 min: 488 pases · 20 cabezazos · 29 pecho/muslo · 28 divididas/quites · 18 remates.
+- **Choque encontrado y arreglado (real):** en un equipo lento, el vigilante sacaba el maniquí EN MEDIO de la
+  repetición del gol; eso borraba la grabación y la repetición leía `null` → la cancha 3D se caía al 2D justo en los
+  goles. Ahora cambiar de cuerpo termina primero la repetición y `_c3dRepPintar` se protege si falta la grabación.
+- **Dev:** doctor `modelo_jugador` (asíncrono: el modelo carga —también con file://—, el sombreador de colores se
+  engancha al de three.js, hay vértices de las 7 zonas, 65 huesos y las 4 animaciones de carrera, la mezcla suma 1 a
+  toda velocidad, la patada lleva el pie derecho ADELANTE y no mueve el izquierdo, abrir los brazos abre las manos, en
+  Antigua van los clásicos, el vigilante vuelve a los clásicos antes de ofrecer el 2D). `repeticion_gol` vigila el
+  choque de arriba. `test/cancha3d.mjs`: en PC los 22 con maniquí y colores del club; en Modo papa, clásicos; ≤ 90
+  llamadas de dibujo por cuadro. Al revés: gestos dados vuelta, mezcla que no suma 1, vigilante sin volver a clásicos,
+  sacar el maniquí en plena repetición, repetición sin protección → todos cazados. `acciones_cancha` mide 18 minutos
+  (con 6, el azar daba 2 cabezazos de vez en cuando y fallaba sin bug).
+- **Créditos:** `img/FUENTES.md` ▸ Modelos 3D y `js/vendor/LICENCIAS.md` (Quaternius, CC0).
+- **Estado:** doctor sano 148/148 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D
+  con los 22 maniquíes, 55 llamadas de dibujo por cuadro) · core 1185/1185 · saves ok · banco 255 sano (17 % despidos).

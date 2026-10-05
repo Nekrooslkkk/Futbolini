@@ -2586,3 +2586,19 @@ corre `bash test/doctor.sh` y `node test/servidores.js`, mira el doctor `csp_est
   llamen `_cvQuieto(p)` o pongan `p.vx=p.vy=0`, o arrastra la velocidad vieja.
 - La cancha 3D graba 12 s (`est.grab`) y repite los goles (`c3dRepetir`). El reloj espera con `P._celHasta`.
 - Paquete CC0 de Quaternius ya probado: se baja desde itch.io (POST /download_url → /file/<id>); va a ser 7.9130.
+
+**7.9130 (Claude Opus) · jugadores realistas (maniquí CC0 animado). LEER si tocan cancha3d.js, modelo3d.js o img/modelos/:**
+- `js/modelo3d.js` (va DESPUÉS de cancha3d.js en index.html): `modelo3dCargar()` (promesa; .glb con servidor, `img/modelos/jugador.js`
+  en base64 con file:// o si falla el fetch), `modelo3dInstancia(mat)` → `{raiz, malla, H (nodos por nombre), mezcla, acciones}`,
+  `modelo3dMaterial(colores)` / `modelo3dPintar(m,c)`, `modelo3dAndar(I,v,dt,fase)` (devuelve la fase del paso),
+  `modelo3dGesto(I,gesto,peso)` (los mismos gestos de `C3D_ACCIONES`), `modelo3dMano(I,"l"|"r",v)`.
+- En la cancha: `est.m3d` = los 22 maniquíes (o `null` = clásicos). `_c3dUsarModelo` / `_c3dSacarModelo` cambian de cuerpo y BORRAN la
+  grabación: llámenlos solo por ahí (terminan la repetición primero; si no, la cancha se cae al 2D — pasó, ver PATCHES 7.9130).
+  `c3dModeloQuerido(est)` decide (no en Antigua, no en Modo papa, no si `E.config.c3dJugadores==="clasicos"`, no si `est.m3dLento`).
+- Si agregan un gesto nuevo en `C3D_ACCIONES`, el maniquí lo hereda solo (muslo/rodilla/pie, hombro/abrir/codo, tronco, cabeza).
+  Signos: `legs[0]`/`arms[0]` = DERECHA; muslo negativo = adelante; `arms[k].a` ya viene con signo por lado. El doctor
+  `modelo_jugador` falla si se dan vuelta.
+- El modelo se regenera con `python3 scripts/modelo_jugador.py UAL1_Standard.glb img/modelos/jugador.glb` (escribe también el .js).
+  El paquete original (CC0) se baja de quaternius.com / itch.io. No commiteen el paquete entero: solo el .glb/.js preparados.
+- Pendiente con el ojo del autor: números y nombre en la espalda, caras/pelo con forma, animación de patada capturada (hoy la
+  patada es el gesto sumado encima), festejos.

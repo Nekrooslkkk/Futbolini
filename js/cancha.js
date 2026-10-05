@@ -157,7 +157,13 @@ function _cvDecidir(st,P){
   if(Math.random()<pInt){
     const mx=(o.x+elegido.p.x)/2, my=(o.y+elegido.p.y)/2;
     _cvPasar(st,_cvMasCercano(st,!o.mio,mx,my,true),mx,my);
-  } else _cvPasar(st,elegido.i,elegido.p.x+(o.mio?0.02:-0.02),elegido.p.y);
+  } else {
+    /* 7.9130 · el pase va adonde el compañero VA A ESTAR (al espacio): con la inercia, apuntarle a donde estaba lo hacía
+       llegar tarde a todo (y casi no había cabezazos) */
+    const q=elegido.p, D=Math.hypot((q.x-o.x)*CV_FIS.L,(q.y-o.y)*CV_FIS.A), T=_cvCl(D/16,0.4,2.2);
+    const lx=_cvCl((q.vx||0)*T,-7,7)/CV_FIS.L, ly=_cvCl((q.vy||0)*T,-7,7)/CV_FIS.A;
+    _cvPasar(st,elegido.i,_cvCl(q.x+lx+(o.mio?0.02:-0.02),0.02,0.98),_cvCl(q.y+ly,0.03,0.97));
+  }
 }
 /* velocidad tope: nadie se teletransporta ni tirita. 7.9127 · en METROS por segundo (antes en fracción de cancha: a lo
    largo corrían a 13–35 m/s). vmax viejo ×42 → trote ~5,5 m/s, presión ~7, pique tope 9 (un velocista de fútbol). */

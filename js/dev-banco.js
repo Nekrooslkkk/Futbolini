@@ -1361,20 +1361,21 @@ if(typeof devDoctorRegistrar==="function"){
     arreglo:"js/cancha.js _cvAccion, _cvControlar (pie/muslo/pecho), _cvCabezazo, _cvDividida, _cvQuite · js/cancha3d.js C3D_ACCIONES, _c3dGesto",
     fn:function(){
       if(typeof _cvAccion!=="function"||typeof _cvCabezazo!=="function") return _dmal("faltan las acciones en cancha.js (_cvAccion/_cvCabezazo)");
-      const n=devAccionesCancha(360), f=[], g=k=>n[k]||0;
+      /* 7.9130 · 18 minutos de muestra (con 6 el azar daba 2 cabezazos de vez en cuando: falla sin bug) */
+      const n=devAccionesCancha(1080), f=[], g=k=>n[k]||0;
       const aire=g("cabeza"), pecho=g("pecho")+g("muslo"), suelo=g("dividida")+g("entrada"), rem=g("remate"), pases=g("patada")+g("centro");
-      if(aire<3) f.push("en 6 minutos hay "+aire+" cabezazos (en la realidad ~8): los balones largos no llegan a la cabeza");
-      if(pecho<2) f.push("en 6 minutos casi nadie la para con el pecho o el muslo ("+pecho+")");
-      if(suelo<3) f.push("en 6 minutos hay "+suelo+" divididas/quites: nadie disputa la pelota");
-      if(suelo>45) f.push("en 6 minutos hay "+suelo+" divididas/quites: parece rugby");
-      if(rem>14) f.push("en 6 minutos hay "+rem+" remates (en la realidad 1–2): ritmo de futbolito");
-      if(pases<40) f.push("en 6 minutos hay solo "+pases+" pases");
+      if(aire<9) f.push("en 18 minutos hay "+aire+" cabezazos (en la realidad ~20): los balones largos no llegan a la cabeza");
+      if(pecho<6) f.push("en 18 minutos casi nadie la para con el pecho o el muslo ("+pecho+")");
+      if(suelo<9) f.push("en 18 minutos hay "+suelo+" divididas/quites: nadie disputa la pelota");
+      if(suelo>135) f.push("en 18 minutos hay "+suelo+" divididas/quites: parece rugby");
+      if(rem>42) f.push("en 18 minutos hay "+rem+" remates (en la realidad 3–6): ritmo de futbolito");
+      if(pases<120) f.push("en 18 minutos hay solo "+pases+" pases");
       if(typeof C3D_ACCIONES!=="undefined"){
         const sin=_docTiposAccion().filter(k=>!C3D_ACCIONES[k]);
         if(sin.length) f.push("acciones sin gesto en la cancha 3D (se verían como si nada): "+sin.join(", "));
       }
       if(typeof _c3dClave==="function"&&/JSON\.parse|JSON\.stringify/.test(String(_c3dClave))) f.push("_c3dClave copia con JSON en cada cuadro: en el compu papa traba");
-      const txt="6 min: "+pases+" pases · "+aire+" cabezazos · "+pecho+" pecho/muslo · "+suelo+" divididas/quites · "+rem+" remates";
+      const txt="18 min: "+pases+" pases · "+aire+" cabezazos · "+pecho+" pecho/muslo · "+suelo+" divididas/quites · "+rem+" remates";
       return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
     }});
   /* 7.9128 · la potencia es una línea que va y viene: verde bien, roja muy fuerte; el buen pateador la tiene más lenta */
@@ -1492,6 +1493,9 @@ if(typeof devDoctorRegistrar==="function"){
       if(!/_celHasta=Date\.now\(\)\+/.test(sf)) f.push("al terminar o saltar la repetición el reloj no se libera");
       if(!/_c3dFotoNueva/.test(ss)||!/S\.seq\.tipo==="gol"/.test(ss)) f.push("la cancha 3D no graba o no lanza la repetición después del gol del partido");
       if(typeof _bpTerminar==="function"&&String(_bpTerminar).indexOf("c3dRepetir")<0) f.push("el gol de un balón parado 3D no tiene repetición");
+      /* 7.9130 · cambiar de cuerpo (maniquí ↔ clásicos) borra la grabación: si pasa durante la repetición, la cancha se caía */
+      if(typeof _c3dSacarModelo==="function"&&!/est\.rep\)\s*_c3dRepFin/.test(String(_c3dSacarModelo))) f.push("sacar el maniquí en medio de la repetición borra la grabación y la cancha 3D se cae al 2D");
+      if(!/if\(!est\.grab\|\|!est\.grab\.buf\)/.test(sp)) f.push("la repetición no se protege si le falta la grabación (se cae la cancha 3D)");
       const txt=conGol?(conGol.plan.map(c=>c.n+" ×"+c.vel).join(" · ")+" · "+conGol.total.toFixed(1)+" s"):"";
       return f.length?_dmal(f.length+" problema(s)",f.concat(txt?[txt]:[])):_dok(txt);
     }});
@@ -1539,6 +1543,50 @@ if(typeof devDoctorRegistrar==="function"){
       if(k.n<20) f.push("en 2 minutos hay solo "+k.n+" pases desde el pie");
       else if(k.prep/k.n<0.6) f.push("solo "+k.prep+"/"+k.n+" pases salen con la pierna ya preparada: la pelota sale antes que el gesto");
       const txt="brazos contra piernas "+Math.round(c.contra*100)+" % · salto máx "+c.salto.toFixed(3)+" rad · 0→8 m/s en "+(m.t8||0).toFixed(2)+" s · giro: baja a "+m.vmin.toFixed(1)+" m/s, vuelta en "+(m.tVuelta||0).toFixed(2)+" s · patadas preparadas "+k.prep+"/"+k.n;
+      return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
+    }});
+}
+/* 7.9130 · "que los esqueletos sean más smooth, más suaves, realistas" + "si descargas modelos, sería genial (PES 2006)" */
+function devManiquiSuma(){ let peor=0, donde=0;
+  for(let v=0;v<=9.5;v+=0.1){ const s=Object.keys(MODELO3D.pesos).reduce((a,k)=>a+_m3dPeso(k,v),0); if(Math.abs(s-1)>peor){ peor=Math.abs(s-1); donde=v; } }
+  return {peor:peor, donde:donde}; }
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"modelo_jugador", area:"interfaz", asinc:true,
+    n:"Jugadores 3D realistas: el maniquí CC0 carga (también sin servidor), viste los colores del club y los gestos mueven bien los huesos",
+    arreglo:"js/modelo3d.js (modelo3dCargar: .glb o el .js en base64 con file://; _m3dLeerGLB; modelo3dMaterial; modelo3dAndar; modelo3dGesto) · img/modelos/jugador.glb/.js (scripts/modelo_jugador.py) · js/cancha3d.js _c3dUsarModelo/_c3dPoseModelo/vigilante",
+    fn:async function(){
+      if(typeof modelo3dCargar!=="function") return _dmal("falta js/modelo3d.js en index.html");
+      const f=[], s=devManiquiSuma();
+      if(s.peor>0.01) f.push("la mezcla quieto/caminar/trotar/piquear no suma 1 a "+s.donde.toFixed(1)+" m/s (el cuerpo se achica o se deforma)");
+      if(typeof _c3dVigilar==="function"&&String(_c3dVigilar).indexOf("_c3dSacarModelo")<0) f.push("si el maniquí va lento, el vigilante no vuelve a los jugadores clásicos antes de ofrecer el 2D");
+      if(typeof c3dModeloQuerido==="function"&&c3dModeloQuerido({perfil:{plano:true}})) f.push("en calidad Antigua se usaría el maniquí (tiene que ir el cuerpo clásico)");
+      if(typeof cargarThree==="function"&&typeof THREE==="undefined"){ try{ await cargarThree(); }catch(e){} }
+      if(typeof THREE==="undefined") return f.length?_dmal(f.length+" problema(s)",f):_dok("sin three.js en este navegador: se prueba en test/cancha3d");
+      /* el sombreador de colores tiene que engancharse al de three (si three cambia, los colores se pierden sin avisar) */
+      const m=modelo3dMaterial(), sh={uniforms:{}, vertexShader:THREE.ShaderLib.lambert.vertexShader, fragmentShader:THREE.ShaderLib.lambert.fragmentShader};
+      m.onBeforeCompile(sh); m.dispose();
+      if(sh.vertexShader.indexOf("vKitA=kitA")<0||sh.fragmentShader.indexOf("uKit[")<0||sh.fragmentShader.indexOf("diffuse*kc")<0) f.push("los colores del club no se enganchan al sombreador de three.js (los jugadores saldrían sin camiseta)");
+      const ok=await modelo3dCargar();
+      if(!ok) return _dmal("el maniquí no carga: "+(MODELO3D.error||"?"),f);
+      const D=MODELO3D.datos, kA=D.geo.attributes.kitA, kB=D.geo.attributes.kitB, cuenta=[0,0,0,0,0,0,0,0];
+      if(!kA||!kB) f.push("el modelo no trae las zonas del uniforme");
+      else for(let k=0;k<kA.count;k++){ const w=[kA.getX(k),kA.getY(k),kA.getZ(k),kA.getW(k),kB.getX(k),kB.getY(k),kB.getZ(k),kB.getW(k)]; cuenta[w.indexOf(Math.max(...w))]++; }
+      ["piel","camiseta","short","medias","botines","pelo","manos"].forEach((n,k)=>{ if(!cuenta[k]) f.push("ninguna parte del cuerpo es «"+n+"»"); });
+      if(D.juntas.length<60) f.push("el esqueleto tiene "+D.juntas.length+" huesos (esperados 65)");
+      ["Idle_Loop","Walk_Loop","Jog_Fwd_Loop","Sprint_Loop"].forEach(k=>{ if(!D.clips[k]) f.push("falta la animación "+k); });
+      /* los gestos mueven bien: muslo derecho adelante → el pie derecho va adelante; pecho → las manos se abren */
+      const I=modelo3dInstancia(modelo3dMaterial()), v=new THREE.Vector3(), pos=n=>I.H[n].getWorldPosition(new THREE.Vector3());
+      I.pesoLoco=0; modelo3dAndar(I,0,0); I.raiz.updateMatrixWorld(true);
+      const pd0=pos("foot_r"), pi0=pos("foot_l"), md0=pos("hand_r"), mi0=pos("hand_l");
+      const g=_c3dGestoVacio(); g.legs[0].t=-0.95; modelo3dGesto(I,g,1); I.raiz.updateMatrixWorld(true);
+      const pd1=pos("foot_r"), pi1=pos("foot_l");
+      if(!(pd1.z-pd0.z>0.25)) f.push("la patada no lleva el pie derecho adelante ("+(pd1.z-pd0.z).toFixed(2)+" m): los gestos están dados vuelta");
+      if(pi1.distanceTo(pi0)>0.05) f.push("mover la pierna derecha mueve también la izquierda");
+      modelo3dAndar(I,0,0); const h=_c3dGestoVacio(); h.arms[0].a=-1.0; h.arms[1].a=1.0; modelo3dGesto(I,h,1); I.raiz.updateMatrixWorld(true);
+      const md1=pos("hand_r"), mi1=pos("hand_l");
+      if(!(md1.x<md0.x-0.15&&mi1.x>mi0.x+0.15)) f.push("abrir los brazos (pecho) no abre las manos hacia afuera");
+      I.malla.material.dispose(); I.mezcla.stopAllAction();
+      const txt="maniquí "+D.geo.attributes.position.count+" vértices · "+D.juntas.length+" huesos · "+Object.keys(D.clips).length+" animaciones · vía "+(MODELO3D.via||"?")+" · zonas "+cuenta.slice(0,7).join("/")+" · patada: pie +"+(pd1.z-pd0.z).toFixed(2)+" m";
       return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
     }});
 }

@@ -1,4 +1,4 @@
-/* FUTBOLINI · test/cancha3d.mjs (7.9126 · 7.9127 penal/córner en 3D) · la cancha 3D en un navegador de verdad (Playwright + WebGL por software).
+/* FUTBOLINI · test/cancha3d.mjs (7.9126 · 7.9127 penal/córner en 3D · 7.9130 jugadores realistas) · la cancha 3D en un navegador de verdad (Playwright + WebGL por software).
    Un partido entero de 3D: se arma UNA vez y se reusa en cada repintado, dibuja barato, no tira errores, el arquero se
    tira y ataja, y en Modo papa (si el jugador lo pide) usa la calidad Antigua. */
 import { spawn } from "child_process";
@@ -28,6 +28,12 @@ try{
     },caso.papa);
     if(ini.sin){ ok(true,"(sin WebGL en este navegador: no se prueba el 3D)"); await ctx.close(); continue; }
     await esperar(2500);
+    /* 7.9130 · jugadores realistas: en PC los 22 con el maniquí (colores del club); en Modo papa, los clásicos */
+    if(!caso.papa) await p.waitForFunction(()=>C3D.est&&C3D.est.m3d&&C3D.est.m3d.length===22,null,{timeout:30000}).catch(()=>{});
+    const mq=await p.evaluate(()=>{ const e=C3D.est, m=e&&e.m3d; if(!m) return {n:0}; const u=m[1].malla.material.userData.u, c=u.uKit.value[1];
+      return {n:m.length, via:MODELO3D.via, colorCamiseta:c.r+c.g+c.b, clasicosOcultos:!e.piezas.torso.visible}; });
+    if(caso.papa) ok(mq.n===0,"Modo papa: jugadores clásicos (el maniquí es para equipos que aguantan)");
+    else ok(mq.n===22&&mq.clasicosOcultos&&mq.colorCamiseta>0,"los 22 jugadores con el maniquí realista y los colores del club (vía "+mq.via+")");
     const r=await p.evaluate(async()=>{
       const n0=C3D.montajes, e0=C3D.est;
       for(let i=0;i<4;i++){ pintarPartido(); await new Promise(r=>setTimeout(r,120)); }   /* gol, entretiempo, eventos: repintados */
@@ -44,7 +50,7 @@ try{
     ok(r.mismos,"4 repintados del partido reusan la misma escena 3D (se armó una sola vez)");
     ok(r.conectado&&r.colores>12,"la cancha 3D se ve (canvas en pantalla con "+r.colores+" tonos)");
     ok(r.sigue,"correr el doctor en medio del partido no rompe la cancha 3D en vivo");
-    ok(r.calls<=70,"dibuja barato: "+r.calls+" llamadas de dibujo por cuadro");
+    ok(r.calls<=90,"dibuja barato: "+r.calls+" llamadas de dibujo por cuadro");
     ok(caso.papa?r.calidad==="antigua":r.calidad!=="antigua","calidad "+r.calidad+(caso.papa?" (Modo papa → Antigua)":""));
     ok(r.doc,"doctor cancha3d_fisica_rinde: "+r.docTxt);
     await esperar(1500);
@@ -92,5 +98,5 @@ try{
   }
 }catch(e){ ok(false,"error: "+(e&&e.stack||e)); }
 finally{ try{ await b.close(); }catch(e){} srv.kill(); }
-console.log(malos?"❌ CANCHA 3D: "+malos+" falla(s)":"✅ CANCHA 3D: se reusa, se ve, dibuja barato, el arquero ataja y el balón parado se juega adentro y el gol tiene repetición");
+console.log(malos?"❌ CANCHA 3D: "+malos+" falla(s)":"✅ CANCHA 3D: se reusa, se ve, dibuja barato, el arquero ataja y el balón parado se juega adentro y el gol tiene repetición; jugadores realistas");
 process.exit(malos?1:0);

@@ -305,3 +305,12 @@ muestra está en Commons con licencia libre) y se verificó la licencia en Commo
 | TUC | commons | [Atletico tucuman nuevo2.svg](https://commons.wikimedia.org/wiki/File:Atletico_tucuman_nuevo2.svg) | Club Atlético Tucumán | Public domain |
 | VEL | commons | [Escudo del Club Atlético Vélez Sarsfield.svg](https://commons.wikimedia.org/wiki/File:Escudo_del_Club_Atl%C3%A9tico_V%C3%A9lez_Sarsfield.svg) | Trandos | Public domain |
 
+
+## Modelos 3D
+
+| Archivo | Qué es | Autor | Licencia | Fuente |
+|---|---|---|---|---|
+| `img/modelos/jugador.glb` (y `jugador.js`, el mismo en base64) | Maniquí de los jugadores 3D: cuerpo, esqueleto de 65 huesos y animaciones (quieto, caminar, trotar, piquear, golpe en el pecho, agachado) | Quaternius (Universal Animation Library [Standard]) | CC0 1.0 (dominio público) | https://quaternius.com/packs/universalanimationlibrary.html · https://quaternius.itch.io/universal-animation-library |
+
+Se preparó con `scripts/modelo_jugador.py` (una sola malla, solo las animaciones útiles, zonas del uniforme marcadas).
+CC0 no pide crédito; igual se lo damos: gracias, Quaternius.

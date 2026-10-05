@@ -45,6 +45,12 @@ temporadas. (Pedir el harness a Claude Code si hace falta; no está en el repo d
 - `ia.js` — redes del club + roleo OFFLINE (hook de API apagado, `IA_CONFIG`).
 - `ui-partido.js` — previa, partido en vivo (timer fluido + auto-pausa), pizarra, resumen.
 - `ui.js` — interfaz general, menú, todas las vistas, arranque.
+- `cancha.js` — la simulación visible del partido (22 jugadores y pelota en METROS, `CV_FIS`, inercia, gestos `p._acc`).
+  Los goles los decide el motor; la física solo en el rebote del balón parado (`st.bpVivo`).
+- `cancha3d.js` — la cámara 3D de esa simulación (three.js): cuerpos, gestos `C3D_ACCIONES`, repetición del gol, vigilante.
+- `bp3d.js` — penal/tiro libre/córner dentro de la cancha 3D (línea de potencia, mira, jugada viva hasta que la sacan).
+- `modelo3d.js` — los jugadores realistas (maniquí CC0 de Quaternius en `img/modelos/`, animaciones capturadas).
+- `dev-doctor.js` / `dev-banco.js` — el doctor (`devDoctor()`): cada arreglo deja su chequeo acá.
 - `css/` — `base.css`, `aero.css`, `temas.css` (estética Frutiger Aero).
 
 ## 5. Modelo de estado `E` (campos clave)
