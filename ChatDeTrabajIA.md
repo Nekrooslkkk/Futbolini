@@ -2822,3 +2822,13 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
   `historia_clubes` cuenta cuántos clubes tienen historia real (hoy 1 de 46: REN) y frena opciones gratis o el dilema de precios.
 - Siguiente: el resto de la Segunda y la B (los de menos épica). Si alguien junta hechos con fuente para un club, déjenlos en
   `scripts/historia/<ID>.json` con el formato de REN.json y Claude los pasa por DeepSeek y los revisa.
+
+**7.9134 (Claude Opus) · UAL2 en el maniquí: barrida y arquero que sale con la mano. LEER si tocan acciones o animaciones 3D:**
+- Las animaciones nuevas entran por `scripts/modelo_jugador.py <UAL1.glb> <salida> <UAL2.glb>` (el 3.er argumento pega
+  `ANIMS2` por nombre de hueso; el esqueleto es el mismo). Si se agrega otra, va en `ANIMS2` y en `M3D_CLIPS` (js/modelo3d.js).
+- Una acción de la simulación que quiere animación propia se declara en `C3D_CLIP_ACC` (js/cancha3d.js): tramos
+  `[desde, hasta, clip, t0, t1]` de la acción (0..1) → segundos del clip. `_c3dGesto` pone `o.clipN/clipT/clipW` y
+  `modelo3dAndar(..., clip)` le quita peso a la locomoción. Los clásicos siguen con los gestos de siempre.
+- El lanzamiento del arquero es `_cvLanzar` (cancha.js): sale de 1,9 m, `pase.lanza=true`. No lo disparen tirado en
+  el suelo (fase de estirada ≠ null): el doctor `ual2_acciones` lo caza.
+- La repetición guarda 32 números por jugador (`C3D_FJ`); si agregan datos al cuadro, súbanlo ahí y en `_c3dRepPintar`.

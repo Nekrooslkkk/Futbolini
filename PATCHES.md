@@ -5490,3 +5490,26 @@ porque te dice cosas del club; el de Rengo es 'subir precio' y pura obviedad".
   precios → cazados.
 - **Estado:** doctor sano 152/152 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
   · core 1185/1185 · saves ok · banco 255 sano (12 % despidos).
+
+### 7.9134 — Barridas de verdad y el arquero que se para y sale con la mano (Universal Animation Library 2, CC0)
+Pedido del autor: "¿meto lo de la UAL2? Sí por favor, hazlo con la barrida y el arquero".
+- **El modelo (scripts/modelo_jugador.py con un 3.er argumento):** al maniquí se le suman 5 animaciones del paquete
+  «Universal Animation Library 2 [Standard]» de Quaternius (CC0 según su License.txt; mismo esqueleto de 65 huesos, se
+  pegan por nombre de hueso): Slide_Start/Loop/Exit (barrida), LayToIdle (pararse del suelo) y OverhandThrow (lanzar con
+  la mano). `img/modelos/jugador.glb` pasa de 690 a 842 KB (11 animaciones). Créditos en FUENTES.md y LICENCIAS.md.
+- **Barrida (js/cancha.js `_cvQuite`):** 4 de cada 10 entradas son barridas de 1,4 s: con el maniquí se tira al pasto (la
+  cadera baja a 0,06 m), desliza y se para (`C3D_CLIP_ACC`, `_c3dClipAccion`: cada tramo de la acción va a un tramo de la
+  animación). El resto, entrada de pie. Los clásicos usan el gesto de siempre.
+- **El arquero (js/cancha.js `_cvLanzar`):** después de atajar y ya de pie, si tiene un compañero entre 8 y 30 m sale CON
+  LA MANO: prepara 0,55 s (brazo atrás, la pelota en la mano derecha del maniquí) y la pelota sale de 1,9 m en el
+  latigazo, por arriba y medida. Al levantarse de una estirada usa la animación LayToIdle (de costado a espaldas,
+  sentado, rodilla, de pie; la fase dura ahora 1,3 s) mientras el giro de la estirada se apaga.
+- **Repetición:** el maniquí guarda 3 datos más por jugador (qué animación, en qué segundo y con qué peso; `C3D_FJ` 29 →
+  32): la barrida y el arquero también salen en cámara lenta.
+- **Dev:** doctor `ual2_acciones` (18 min de simulación: hay barridas y no son casi todas; el arquero con la pelota y un
+  compañero a 20 m sale con la mano desde 1,9 m en el latigazo; la barrida va tirarse → deslizar → pararse; el arquero se
+  para con LayToIdle; la repetición lo graba; y con el maniquí cargado: la cadera llega al pasto en la barrida, pararse va
+  del pasto a de pie y la mano sube al preparar el lanzamiento). La muestra es de 18 min porque con 6 min "cero barridas
+  en 5 entradas" pasaba 1 de cada 13 veces. Al revés: sin barrida, sin lanzamiento y sin LayToIdle → 3 fallas cazadas.
+- **Estado:** doctor sano 153/153 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D
+  32/32) · core 1185/1185 · saves ok · banco 255 sano (14 % despidos).

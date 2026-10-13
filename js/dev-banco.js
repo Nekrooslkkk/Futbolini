@@ -1548,6 +1548,67 @@ if(typeof devDoctorRegistrar==="function"){
       return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
     }});
 }
+/* 7.9134 · "¿meto lo de la UAL2? Sí por favor, hazlo con la barrida y el arquero": barridas de verdad en las entradas y el
+   arquero que se para con la animación y sale CON LA MANO */
+function devBarridas(seg){
+  const st=_cvNuevoEstado(null), dt=1/30, o=_cvAccion; let entradas=0, barridas=0, lanzas=0;
+  _cvAccion=function(p,tipo,dur,extra){ if(tipo==="entrada"){ entradas++; if(extra&&extra.barrida) barridas++; } if(tipo==="lanza") lanzas++; return o.apply(this,arguments); };
+  try{ for(let i=0;i<Math.round((seg||360)/dt);i++) _cvStep(null,dt,st); } finally { _cvAccion=o; }
+  return {entradas:entradas, barridas:barridas, lanzas:lanzas};
+}
+function devLanzamiento(){
+  /* el arquero propio con la pelota en las manos y un compañero a 20 m: tiene que salir con la mano, en el latigazo */
+  const st=_cvNuevoEstado(null), dt=1/60, gi=st.jug.findIndex(p=>p.rol==="gk"&&p.mio); if(gi<0) return {err:"sin arquero"};
+  const g=st.jug[gi]; g._acc=null; g._diveT=null; g.vx=g.vy=0;
+  st.jug.forEach((p,i)=>{ if(i!==gi){ p.x=_cvX(!p.mio,0.3); p.y=0.9; } });
+  const ci=st.jug.findIndex((p,i)=>i!==gi&&p.mio&&p.rol!=="gk"), c=st.jug[ci]; c.x=g.x+_cvX(true,0)*0+20/CV_FIS.L*(g.mio?1:-1); c.y=g.y; c.vx=c.vy=0;
+  st.ball.x=g.x; st.ball.y=g.y; st.own=gi; st.atajada={gk:gi,t:5,z:0}; st.prox=0.9; st.pase=null; st.saque=null; st.seq=null;
+  for(let k=0;k<240&&!st.pase;k++) _cvStep(null,dt,st);
+  const q=st.pase; return {lanza:!!(q&&q.lanza), z0:q?(st.ball.z||0)*CV_FIS.alto:0, accTipo:g._acc&&g._acc.tipo, accT:g._acc?g._acc.t:0, a:q?q.to:-1, comp:ci};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"ual2_acciones", area:"interfaz", asinc:true,
+    n:"Barridas de verdad y el arquero que se para con la animación y saca con la mano (UAL2, CC0)",
+    arreglo:"js/cancha.js _cvQuite (barrida), _cvCompaneroLanzar/_cvLanzar/_cvDecidir (con la mano), CV_ESTIRADA.levanta · js/cancha3d.js C3D_CLIP_ACC/_c3dClipAccion, _c3dEstirada (LayToIdle), _c3dPoseModelo, C3D_FJ=32 · js/modelo3d.js M3D_CLIPS/modelo3dAndar(clip) · img/modelos/jugador.glb (scripts/modelo_jugador.py con el 2.º paquete)",
+    fn:async function(){
+      if(typeof _c3dClipAccion!=="function"||typeof _cvLanzar!=="function") return _dmal("faltan la barrida/el lanzamiento (cancha.js _cvLanzar, cancha3d.js _c3dClipAccion)");
+      const f=[], s=devBarridas(1080), L=devLanzamiento();   /* 18 min: ~15 entradas (con 6 min, 0 barridas en 5 pasaba 1 de cada 13 veces) */
+      if(s.barridas<1) f.push("en 18 minutos no hubo ninguna barrida ("+s.entradas+" entradas de pie)");
+      if(s.entradas&&s.barridas/s.entradas>0.7) f.push("casi todas las entradas son barridas ("+s.barridas+"/"+s.entradas+"): parece rugby");
+      if(!L.lanza) f.push("el arquero con la pelota en las manos y un compañero a 20 m no sale con la mano");
+      else { if(L.z0<1.5) f.push("el lanzamiento no sale de la mano (sale a "+L.z0.toFixed(2)+" m)");
+        if(L.accTipo!=="lanza"||L.accT<0.4) f.push("la pelota sale antes del latigazo (el gesto va en "+(L.accT||0).toFixed(2)+" s)"); }
+      /* la barrida y el pararse, en tramos que siguen (sin saltos de animación) */
+      const b1=_c3dClipAccion({tipo:"entrada",barrida:true},0.3), b2=_c3dClipAccion({tipo:"entrada",barrida:true},0.6), b3=_c3dClipAccion({tipo:"entrada",barrida:true},0.8);
+      if(!(b1&&b1.n==="Slide_Start"&&b2.n==="Slide_Loop"&&b3.n==="Slide_Exit")) f.push("la barrida no va tirarse → deslizar → pararse");
+      if(_c3dClipAccion({tipo:"entrada"},0.5)) f.push("la entrada de pie usa la animación de barrida");
+      const gk={rol:"gk",_ang:0}; cvEstiradaIniciar(gk,1,0.6); gk._diveT=CV_ESTIRADA.carga+CV_ESTIRADA.vuelo+CV_ESTIRADA.suelo+0.4*CV_ESTIRADA.levanta;
+      const og=_c3dEstirada(_c3dCopia(_c3dGestoVacio(),C3D_QUIETO),gk,cvEstiradaFase(gk),0,false);
+      if(og.clipN!=="LayToIdle"||!(og.clipW>0.9)) f.push("el arquero no se para con la animación LayToIdle");
+      if(!(C3D_FJ>=32)||!/clipN/.test(String(_c3dGrabarJugM))||!/M3D_CLIPS\[/.test(String(_c3dRepPintar))) f.push("la repetición no graba la barrida ni el arquero (C3D_FJ, _c3dGrabarJugM, _c3dRepPintar)");
+      /* con el maniquí: las animaciones están y mueven la cadera de verdad */
+      let txtM="";
+      if(typeof modelo3dCargar==="function"){
+        if(typeof cargarThree==="function"&&typeof THREE==="undefined"){ try{ await cargarThree(); }catch(e){} }
+        if(typeof THREE!=="undefined"&&await modelo3dCargar()){
+          const D=MODELO3D.datos, falta=M3D_CLIPS.filter(n=>!D.clips[n]);
+          if(falta.length) f.push("el modelo no trae: "+falta.join(", ")+" (regenerar con scripts/modelo_jugador.py y el paquete UAL2)");
+          else {
+            const I=modelo3dInstancia(modelo3dMaterial()), cad=(clip)=>{ I.pesoLoco=1; modelo3dAndar(I,0,0,0,clip); I.raiz.updateMatrixWorld(true); return I.H.pelvis.getWorldPosition(new THREE.Vector3()).y; };
+            const pie=cad(null), suelo=cad(b2), sube=cad({n:"LayToIdle",t:1.5,w:1}), tirado=cad({n:"LayToIdle",t:0,w:1});
+            I.pesoLoco=1; modelo3dAndar(I,0,0,0,_c3dClipAccion({tipo:"lanza"},0.3)); I.raiz.updateMatrixWorld(true); const mano=I.H.hand_r.getWorldPosition(new THREE.Vector3()).y;
+            if(!(suelo<0.35)) f.push("en plena barrida la cadera queda a "+suelo.toFixed(2)+" m (no se tira al pasto)");
+            if(!(tirado<0.3&&sube>0.75)) f.push("pararse del suelo no va del pasto ("+tirado.toFixed(2)+" m) a de pie ("+sube.toFixed(2)+" m)");
+            if(!(mano>1.15)) f.push("al preparar el lanzamiento la mano no va arriba ("+mano.toFixed(2)+" m)");
+            I.malla.material.dispose(); I.mezcla.stopAllAction();
+            txtM=" · cadera de pie "+pie.toFixed(2)+" → barrida "+suelo.toFixed(2)+" m · mano al lanzar "+mano.toFixed(2)+" m";
+          }
+        }
+      }
+      const txt="18 min: "+s.entradas+" entradas, "+s.barridas+" barridas, "+s.lanzas+" salidas con la mano · lanzamiento de prueba: "+(L.lanza?"sale de "+L.z0.toFixed(2)+" m en el latigazo ("+L.accT.toFixed(2)+" s)":"no")+txtM;
+      return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
+    }});
+}
 /* 7.9133 · "armar la historia de los clubes: de Deportes Rengo ni idea, la idea es al menos aprender; que sus capítulos no
    sean siempre los mismos" → la historia real (js/data-historia-clubes.js) llega a la pantalla y sus arcos están bien hechos */
 const DEV_GRUPOS_ARCO=["directorio","socios","hinchada","camarin","tecnico","prensa","anfp","sponsors","comunidad"];
@@ -1649,7 +1710,7 @@ if(typeof devDoctorRegistrar==="function"){
       const tiros=devArqueroTiros(240), malos=tiros.filter(x=>x.ini<0.15||x.ini<x.dur-0.75);
       if(malos.length) f.push(malos.length+"/"+tiros.length+" estiradas en la simulación salen antes de tiempo (ej. a los "+malos[0].ini.toFixed(2)+" s de un tiro de "+malos[0].dur.toFixed(2)+" s)");
       if(typeof _bpPaso==="function"&&!/cvEstiradaInicio\(/.test(String(_bpPaso))) f.push("en el balón parado 3D el arquero se tira sin mirar cuándo llega la pelota");
-      if(typeof _c3dPoseModelo==="function"&&!/o\.roll\?\(o\.lift/.test(String(_c3dPoseModelo))) f.push("el maniquí no baja la cadera al estirarse (queda acostado en el aire)");
+      if(typeof _c3dPoseModelo==="function"&&!/o\.roll\?\(o\.lift|roll\?lift:/.test(String(_c3dPoseModelo))) f.push("el maniquí no baja la cadera al estirarse (queda acostado en el aire)");
       if(typeof _c3dSincronizar==="function"&&!/_c3dEstirada\(/.test(String(_c3dSincronizar))) f.push("la cancha 3D no dibuja la estirada por fases");
       const t2=txt.join(" · ")+" · en 4 min de simulación: "+tiros.length+" estiradas";
       return f.length?_dmal(f.length+" problema(s)",f.concat([t2])):_dok(t2);

@@ -21,9 +21,12 @@ const MODELO3D={ url:"img/modelos/jugador.glb", estado:"nada", datos:null, error
   anclas:[0, 0.4, 1.5, 2.8, 5.4, 7.4, 9.5],
   pesos:{Idle_Loop:[1,0,0,0,0,0,0], Walk_Loop:[0,1,1,0,0,0,0], Jog_Fwd_Loop:[0,0,0,1,1,0,0], Sprint_Loop:[0,0,0,0,0,1,1]} };
 const M3D_LOCO=["Walk_Loop","Jog_Fwd_Loop","Sprint_Loop"];
+/* 7.9134 · animaciones "de una vez" (del paquete Universal Animation Library 2 de Quaternius, CC0, mismo esqueleto): la
+   barrida, pararse del suelo y el lanzamiento con la mano del arquero. El orden es el número que guarda la repetición. */
+const M3D_CLIPS=["Slide_Start","Slide_Loop","Slide_Exit","LayToIdle","OverhandThrow"];
 /* 7.9131 · el crédito que ve el jugador (Ajustes ▸ Jugadores 3D). Integridad: solo lo que dice la fuente (quaternius.com:
    CC0, hecho en Blender). Antes decía "movimientos capturados de personas" y eso no está en ninguna parte: el doctor lo vigila */
-const MODELO3D_CREDITO="las animaciones del paquete «Universal Animation Library» de Quaternius (licencia libre CC0)";
+const MODELO3D_CREDITO="las animaciones de los paquetes «Universal Animation Library» 1 y 2 de Quaternius (licencia libre CC0)";
 
 /* ---------- lectura del GLB ---------- */
 function _m3dLeerGLB(ab){
@@ -161,8 +164,9 @@ function _m3dFasesPie(D){
       a.stop(); D.fasePie[k]=mejor; });
   }catch(e){ D.fasePie={}; }
 }
-/* v en m/s; dt en segundos. Devuelve la fase (0..1) para grabarla en la repetición */
-function modelo3dAndar(I,v,dt,fase){
+/* v en m/s; dt en segundos. clip (opcional) = {n, t, w}: una animación de una vez en el segundo t con peso w, que le quita
+   ese peso a la carrera. Devuelve la fase (0..1) para grabarla en la repetición */
+function modelo3dAndar(I,v,dt,fase,clip){
   const D=MODELO3D.datos, A=I.acciones;
   let largo=0, suma=0;
   M3D_LOCO.forEach(k=>{ const w=_m3dPeso(k,v); if(w>0&&MODELO3D.vel[k]&&D.clips[k]){ largo+=w*MODELO3D.vel[k]*D.clips[k].duration; suma+=w; } });
@@ -170,10 +174,12 @@ function modelo3dAndar(I,v,dt,fase){
   else if(suma>0.001){ largo/=suma; I.fase=(I.fase+dt*v/Math.max(0.3,largo))%1; }
   I.tIdle=(I.tIdle+dt)%1000;
   const pl=I.pesoLoco!=null?I.pesoLoco:1;
+  const cw=(clip&&A[clip.n])?Math.max(0,Math.min(1,clip.w)):0, base=1-cw;
   Object.keys(A).forEach(k=>{
     const a=A[k], c=a.getClip(); let w=0;
-    if(k==="Idle_Loop"){ w=_m3dPeso(k,v)*pl+(1-pl); a.time=I.tIdle%c.duration; }
-    else if(M3D_LOCO.indexOf(k)>=0){ w=_m3dPeso(k,v)*pl; a.time=((I.fase+((D.fasePie&&D.fasePie[k])||0))%1)*c.duration; }
+    if(cw>0&&k===clip.n){ w=cw; a.time=Math.max(0,Math.min(c.duration-1e-4,clip.t)); }
+    else if(k==="Idle_Loop"){ w=(_m3dPeso(k,v)*pl+(1-pl))*base; a.time=I.tIdle%c.duration; }
+    else if(M3D_LOCO.indexOf(k)>=0){ w=_m3dPeso(k,v)*pl*base; a.time=((I.fase+((D.fasePie&&D.fasePie[k])||0))%1)*c.duration; }
     a.enabled=w>0.001; a.setEffectiveWeight(w);   /* la que no pesa ni se calcula */
   });
   I.mezcla.update(0);

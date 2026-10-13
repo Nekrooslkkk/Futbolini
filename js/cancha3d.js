@@ -362,21 +362,41 @@ const C3D_ACCIONES={
   salto:[[0,_c3dG({L0:{k:0.6},L1:{k:0.6}})],[0.3,_c3dG({pitch:-0.1,L0:{t:-0.1,k:0.9},L1:{t:0.05,k:1.1},A0:{s:-1.8,a:-0.4,e:-0.5},A1:{s:-1.6,a:0.4,e:-0.5}})],[1,_c3dG({L0:{k:0.3},L1:{k:0.3}})]],
   dividida:[[0,_c3dG({pitch:0.15})],[0.4,_c3dG({pitch:0.25,roll:0.12,L0:{t:-0.85,k:0.3,a:-0.15},L1:{t:0.2,k:0.7},A0:{s:0.2,a:-0.9,e:-0.4},A1:{s:-0.4,a:0.5,e:-0.8}})],[1,_c3dG({pitch:0.12,L0:{k:0.3},L1:{k:0.3}})]],
   entrada:[[0,_c3dG({pitch:0.2})],[0.35,_c3dG({pitch:0.35,lift:-0.18,L0:{t:-1.15,k:0.1,a:-0.2},L1:{t:0.35,k:1.35},A0:{s:0.1,a:-1.0,e:-0.3},A1:{s:-0.5,a:0.8,e:-0.5}})],[1,_c3dG({pitch:0.15,L0:{k:0.3},L1:{k:0.4}})]],
-  atrapa:[[0,_c3dG({pitch:0.05})],[0.35,_c3dG({pitch:-0.05,A0:{s:-1.6,a:-0.15,e:-0.5},A1:{s:-1.6,a:0.15,e:-0.5},L0:{k:0.3},L1:{k:0.3}})],[1,_c3dG({pitch:0.1,A0:{s:-1.2,a:0.35,e:-1.0},A1:{s:-1.2,a:-0.35,e:-1.0}})]]
+  atrapa:[[0,_c3dG({pitch:0.05})],[0.35,_c3dG({pitch:-0.05,A0:{s:-1.6,a:-0.15,e:-0.5},A1:{s:-1.6,a:0.15,e:-0.5},L0:{k:0.3},L1:{k:0.3}})],[1,_c3dG({pitch:0.1,A0:{s:-1.2,a:0.35,e:-1.0},A1:{s:-1.2,a:-0.35,e:-1.0}})]],
+  /* 7.9134 · el arquero sale con la mano: brazo atrás por arriba, latigazo (la pelota sale en 0,46) y acompaña */
+  lanza:[[0,_c3dG({pitch:0.05})],[0.3,_c3dG({pitch:-0.12,twist:0.25,L0:{t:0.2,k:0.3},L1:{t:-0.35,k:0.25},A0:{s:-2.7,a:-0.2,e:-1.5},A1:{s:-0.9,a:0.4,e:-0.4}})],
+         [0.46,_c3dG({pitch:0.12,twist:-0.2,L0:{t:-0.2,k:0.25},L1:{t:0.25,k:0.35},A0:{s:-1.7,a:-0.15,e:-0.15},A1:{s:-0.2,a:0.5,e:-0.5}})],
+         [0.75,_c3dG({pitch:0.3,L0:{t:-0.35,k:0.4},A0:{s:-0.3,a:-0.2,e:-0.2}})],[1,_c3dG({pitch:0.05})]]
 };
+/* 7.9134 · con el maniquí, la barrida y el lanzamiento del arquero son animaciones de verdad (UAL2, CC0): cada tramo de la
+   acción (u de 0 a 1) se corresponde con un tramo de una animación [u0, u1, animación, desde, hasta (s)] */
+const C3D_CLIP_ACC={
+  barrida:[[0,0.55,"Slide_Start",0,0.83],[0.55,0.66,"Slide_Loop",0,0.25],[0.66,1,"Slide_Exit",0,0.5]],
+  lanza:[[0,0.458,"OverhandThrow",0,0.36],[0.458,1,"OverhandThrow",0.36,1.33]]
+};
+function _c3dClipAccion(ac,u){
+  const k=ac.tipo==="entrada"&&ac.barrida?"barrida":(ac.tipo==="lanza"?"lanza":null); if(!k) return null;
+  const T=C3D_CLIP_ACC[k]; let tr=T[T.length-1];
+  for(let j=0;j<T.length;j++){ if(u>=T[j][0]&&u<T[j][1]){ tr=T[j]; break; } }
+  const f=Math.max(0,Math.min(1,(u-tr[0])/Math.max(1e-4,tr[1]-tr[0])));
+  return {n:tr[2], t:tr[3]+(tr[4]-tr[3])*f, w:Math.max(0,Math.min(1,u/0.06,(1-u)/0.08))};
+}
 const C3D_QUIETO=_c3dGestoVacio();
 C3D_ACCIONES.centro=C3D_ACCIONES.remate; C3D_ACCIONES.despeje=C3D_ACCIONES.remate;
 /* el gesto de un jugador en este cuadro: carrera mezclada con la acción (entra y sale suave, nada de saltos de pose) */
 function _c3dGesto(o,p,v,t,i,fase){
   _c3dCarrera(o,v,fase!=null?fase:(p._paso||0),t,i);
   const ac=p._acc, cl=ac&&C3D_ACCIONES[ac.tipo];
-  o.wAcc=0; o.gAcc=null;
+  o.wAcc=0; o.gAcc=null; o.clipN=null; o.clipT=0; o.clipW=0; o.mano=null;
   if(cl){
     const u=Math.min(1,ac.t/Math.max(0.05,ac.dur)), w=Math.min(1,u/0.15,(1-u)/0.18+0.15);
     const g=_c3dClave(cl,u);
     if(ac.salto){ g.lift+=ac.salto*Math.sin(Math.PI*Math.min(1,u/0.8)); }
     _c3dMezcla(o,g,Math.max(0,w));
     o.wAcc=Math.max(0,Math.min(1,w)); o.gAcc=g;   /* 7.9130 · para el maniquí: la pose de la acción sola (la carrera la pone la animación) */
+    /* 7.9134 · barrida y lanzamiento: el maniquí usa la animación (y el gesto sumado se va) */
+    const ce=_c3dClipAccion(ac,u);
+    if(ce){ o.clipN=ce.n; o.clipT=ce.t; o.clipW=ce.w; o.wAcc*=1-ce.w; }
   }
   return o;
 }
@@ -444,7 +464,9 @@ function _c3dEstirada(o,p,F,ang,conPelota){
     /* primero se apoya y recoge las piernas (de costado a agachado), después se para */
     giro=(E.giro-(E.giro-0.25)*a)*(1-b)+0.001; cad=E.piso+(0.5-E.piso)*a+(E.cadera-0.5)*b;
     const k=2.0*a*(1-b), t=-1.25*a*(1-b); L[0].k=L[1].k=k; L[0].t=L[1].t=t; o.pitch=0.35*a*(1-b);
-    A[0].s=A[1].s=0.25*a*(1-b); A[0].e=A[1].e=-0.3; if(conPelota) o.brazos="abrazo"; }
+    A[0].s=A[1].s=0.25*a*(1-b); A[0].e=A[1].e=-0.3; if(conPelota) o.brazos="abrazo";
+    /* 7.9134 · el maniquí se para con la animación de verdad (LayToIdle, UAL2): entra en 0,2 s mientras el giro se apaga */
+    o.clipN="LayToIdle"; o.clipT=Math.min(1,u)*1.53; o.clipW=S(Math.min(1,u/0.15)); }
   o.roll=sg*giro; o.lift=cad-E.cadera;
   return o;
 }
@@ -490,18 +512,23 @@ function _c3dPoseBrazos(o){
 }
 function _c3dPoseModelo(est,i,o,v,dt,fase){
   const I=est.m3d[i], R=I.raiz, K=_c3dM();
+  /* 7.9134 · una animación de una vez (barrida, pararse, lanzar) manda sobre la carrera; la de pararse ya trae la cadera en
+     el suelo, así que el giro y la altura de la estirada se apagan mientras entra */
+  const cw=o.clipN?Math.max(0,Math.min(1,o.clipW||0)):0;
+  let roll=o.roll||0, lift=o.lift||0;
+  if(cw>0&&o.clipN==="LayToIdle"){ roll*=1-cw; lift*=1-cw; }
   /* el cuerpo entero: dónde está, hacia dónde mira y cuánto se inclina en la curva */
-  R.position.set(o.x,o.roll?(o.lift||0):Math.max(0,o.lift||0),o.z);   /* 7.9132 · con giro (estirada) la cadera baja de verdad */
+  R.position.set(o.x,roll?lift:Math.max(0,lift),o.z);   /* 7.9132 · con giro (estirada) la cadera baja de verdad */
   K.e.set(0,o.yaw,o.lean||0,"YXZ"); R.quaternion.setFromEuler(K.e);
-  if(o.roll){   /* el arquero que se tira rueda desde la cadera */
+  if(roll){   /* el arquero que se tira rueda desde la cadera */
     const qr=K.qr||(K.qr=new THREE.Quaternion()), ax=K.ax||(K.ax=new THREE.Vector3()), h1=K.h1||(K.h1=new THREE.Vector3());
-    ax.set(0,0,1).applyQuaternion(R.quaternion); qr.setFromAxisAngle(ax,o.roll);
+    ax.set(0,0,1).applyQuaternion(R.quaternion); qr.setFromAxisAngle(ax,roll);
     h1.set(0,0.93,0).applyQuaternion(R.quaternion); R.position.add(h1); h1.applyQuaternion(qr); R.position.sub(h1); R.quaternion.premultiply(qr);
   }
   /* piernas y brazos: la animación del paquete según la velocidad; durante un gesto se va hacia "quieto" y manda el gesto */
   I.pesoLoco=1-(o.brazos?1:(o.wAcc||0));
-  const f=modelo3dAndar(I,v,dt,fase);
-  if(o.brazos) modelo3dGesto(I,_c3dPoseBrazos(o),1);
+  const f=modelo3dAndar(I,v,dt,fase,cw>0?{n:o.clipN,t:o.clipT,w:cw}:null);
+  if(o.brazos) modelo3dGesto(I,_c3dPoseBrazos(o),1-cw);
   else if(o.wAcc>0&&o.gAcc) modelo3dGesto(I,o.gAcc,o.wAcc);
   return f;
 }
@@ -610,12 +637,15 @@ function _c3dSincronizar(est,dt){
         const d=Math.min(1,p._dive), lat=Math.cos(ang)*lado;   /* hacia qué lado queda en SU marco */
         o.roll=-Math.sign(lat||1)*d*1.25; o.lift=Math.sin(d*Math.PI)*0.35; o.x=x+lado*d*0.7; o.brazos="arriba";
         o.legs[0].k=o.legs[1].k=0.2; o.legs[0].t=-0.1; o.legs[1].t=0.25; o.pitch=0; o.lean=0; o.pelvis=0;
-      } else if(S.atajada&&S.atajada.gk===i&&S.own===i){ o.brazos="abrazo"; }
+      } else if(S.atajada&&S.atajada.gk===i&&S.own===i){
+        /* 7.9134 · preparando el lanzamiento, el maniquí la lleva en la mano derecha (el clásico la sigue abrazando) */
+        if(est.m3d&&p._acc&&p._acc.tipo==="lanza") o.mano="r"; else o.brazos="abrazo"; }
     }
     if(est.m3d){ const fz=_c3dPoseModelo(est,i,o,v,dt,null); if(fr>=0) _c3dGrabarJugM(est.grab.buf,fr,i,o,v,fz); }
     else { _c3dPose(est,i,o); if(fr>=0) _c3dGrabarJug(est.grab.buf,fr,i,o); }
     const sl=Math.max(0,o.lift); M.makeTranslation(o.x,0.02,o.z); _c3dS(M,(1.1+sl)*(est.perfil.sombras?0.75:1),1,(1.1+sl)*(est.perfil.sombras?0.75:1)); sombras.setMatrixAt(i,M);
     if(o.brazos==="abrazo"){ if(est.m3d) manos=_c3dManosModelo(est.m3d[i]); else { K.v.set(0,1.15,0.32).applyMatrix4(K.B); manos=K.v.clone(); } }
+    else if(o.mano==="r"&&est.m3d){ est.m3d[i].raiz.updateMatrixWorld(true); manos=modelo3dMano(est.m3d[i],"r",new THREE.Vector3()); }
     p._yaw3d=giro;
   });
   const b=S.ball, bx=wx(b.y), bz=wz(b.x), by=Math.max(0.15,(b.z||0)*11+0.15);
@@ -671,7 +701,7 @@ const C3D_REP={hz:40, seg:12, camaras:[
   {n:"Transmisión", desde:-3.6, hasta:0.9, vel:0.8},
   {n:"Detrás del arco", desde:-2.0, hasta:0.7, vel:0.55},
   {n:"A ras del pasto", desde:-1.5, hasta:0.6, vel:0.42}]};
-const C3D_FJ=29, C3D_FB=8, C3D_FT=1+C3D_FB+22*C3D_FJ;   /* datos por jugador · por pelota · por foto */
+const C3D_FJ=32, C3D_FB=8, C3D_FT=1+C3D_FB+22*C3D_FJ;   /* datos por jugador · por pelota · por foto (7.9134: +3 de la animación de una vez) */
 function _c3dFotoNueva(est,dt){
   let g=est.grab;
   if(!g){ const cap=C3D_REP.hz*C3D_REP.seg; g=est.grab={buf:new Float32Array(cap*C3D_FT), cap:cap, n:0, cab:0, t:0, ult:-1, modelo:!!est.m3d}; }
@@ -696,6 +726,8 @@ function _c3dGrabarJugM(B,off,i,o,v,fase){
   for(let q=0;q<2;q++){ const A=g.arms[q]; B[k++]=A.s; B[k++]=A.a; B[k++]=A.e; }
   B[k++]=o.brazos==="arriba"?1:(o.brazos==="abrazo"?2:0); B[k++]=1; B[k++]=o.lean||0; B[k++]=0;
   B[k++]=v; B[k++]=fase||0; B[k++]=o.brazos?1:(o.wAcc||0);
+  /* 7.9134 · la animación de una vez (barrida, pararse, lanzar): cuál (1..), en qué segundo y con qué peso */
+  B[k++]=o.clipN&&typeof M3D_CLIPS!=="undefined"?M3D_CLIPS.indexOf(o.clipN)+1:0; B[k++]=o.clipT||0; B[k++]=o.clipW||0;
 }
 function _c3dGrabarBola(B,off,bola){
   let k=off+1; const p=bola.position, q=bola.quaternion;
@@ -781,6 +813,9 @@ function _c3dRepPintar(est,dt){
       /* el maniquí: velocidad y fase de la animación grabadas (la fase se mezcla por el lado corto del círculo) */
       const fa=B[f.a+k+27], fb=B[f.b+k+27], df=fb-fa-Math.round(fb-fa);
       o.wAcc=o.brazos?0:L(k+28); o.gAcc=o;
+      /* 7.9134 · la animación de una vez: si cambia entre las dos fotos, va la más cercana (no se mezclan dos animaciones) */
+      const cA=B[f.a+k+29], cB=B[f.b+k+29], fc=f.u<0.5?f.a:f.b, ci=B[fc+k+29];
+      o.clipN=ci>0&&typeof M3D_CLIPS!=="undefined"?M3D_CLIPS[ci-1]:null; o.clipT=cA===cB?L(k+30):B[fc+k+30]; o.clipW=cA===cB?L(k+31):B[fc+k+31];
       _c3dPoseModelo(est,i,o,L(k+26),dt,((fa+df*f.u)%1+1)%1);
     } else _c3dPose(est,i,o);
     const sl=Math.max(0,o.lift); M.makeTranslation(o.x,0.02,o.z); _c3dS(M,(1.1+sl)*(est.perfil.sombras?0.75:1),1,(1.1+sl)*(est.perfil.sombras?0.75:1)); est.sombras.setMatrixAt(i,M);

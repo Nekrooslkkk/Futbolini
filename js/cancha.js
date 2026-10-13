@@ -74,7 +74,7 @@ const CV_FIS={g:9.81, aire:0.006, roce:1.5, rebote:0.52, alto:11, L:105, A:68, l
    Cada jugador puede tener p._acc = {tipo, t, dur, ...}: "patada" (pase), "remate", "centro", "control" (pie),
    "muslo", "pecho", "cabeza" (cabezazo/duelo aéreo, con salto), "salto" (perdió el duelo), "dividida", "entrada"
    (quite), "despeje". La simulación las dispara; la cámara 3D (y el cenital) las dibujan. */
-function _cvAccion(p,tipo,dur,extra){ if(!p) return; p._acc=Object.assign({tipo:tipo,t:0,dur:dur||0.45},extra||{}); }
+function _cvAccion(p,tipo,dur,extra){ if(!p) return; p._acc=Object.assign({tipo:tipo,t:0,dur:dur||0.45},extra||{}); if(tipo!=="lanza") p._lanzaA=null; }
 function _cvEquipoDueno(st){ const o=st.own>=0?st.jug[st.own]:null; return o?o.mio:(st.ultToque!=null?st.ultToque:null); }
 function _cvPatear(st,vx,vy,vz){ const b=st.ball; b.vx=vx; b.vy=vy; b.vz=vz; }
 function _cvPasar(st,to,x1,y1,vel){
@@ -97,6 +97,24 @@ function _cvPasar(st,to,x1,y1,vel){
   st.pase={x0:b.x,y0:b.y,x1:x1,y1:y1,t:0,dur:_cvCl(T,0.22,3),to:to,elevado:elevado,sinAire:elevado,h:h,de:st.own};
   st.own=-1; st.persigue=null;
 }
+/* 7.9134 · SALIDA DEL ARQUERO CON LA MANO (pedido del autor: "el arquero que se levanta y saca con la mano").
+   El compañero más cerca entre 8 y 30 m; el lanzamiento sale de la mano (1,9 m), por arriba y medido. */
+function _cvCompaneroLanzar(st,o){
+  let best=-1, bd=1e9;
+  st.jug.forEach((p,i)=>{ if(p===o||p.mio!==o.mio||p.rol==="gk") return;
+    const d=Math.hypot((p.x-o.x)*CV_FIS.L,(p.y-o.y)*CV_FIS.A); if(d>=8&&d<=30&&d<bd){ bd=d; best=i; } });
+  return best;
+}
+function _cvLanzar(st,to){
+  const b=st.ball, o=st.own>=0?st.jug[st.own]:null, q=st.jug[to]; if(!o||!q) return false;
+  const dx=(q.x-b.x)*CV_FIS.L, dy=(q.y-b.y)*CV_FIS.A, D=Math.max(0.5,Math.hypot(dx,dy));
+  o._ang=Math.atan2(dy,dx); st.ultToque=o.mio;
+  const T=_cvCl(D/14,0.6,2.0), h=_cvRnd(0.6,1.2), z0=1.9;
+  b.z=z0/CV_FIS.alto; _cvPatear(st,dx/T,dy/T,(h-z0+0.5*CV_FIS.g*T*T)/T);
+  st.pase={x0:b.x,y0:b.y,x1:q.x,y1:q.y,t:0,dur:T,to:to,elevado:true,sinAire:true,h:h,de:st.own,lanza:true};
+  st.own=-1; st.persigue=null; st.atajada=null;
+  return true;
+}
 function _cvMasCercano(st,mio,x,y,sinArq){
   let best=-1, bd=9;
   st.jug.forEach((p,i)=>{ if(p.mio!==mio||(sinArq&&p.rol==="gk")) return; const d=Math.hypot(p.x-x,(p.y-y)*0.65); if(d<bd){ bd=d; best=i; } });
@@ -114,6 +132,8 @@ function _cvBpApuntaGol(st,gk){ const gy=gk>=0?st.jug[gk].y:0.5, lado=gy>0.5?-1:
 /* el dueño decide: pase (con chance de intercepción) o remate si está cerca del arco */
 function _cvDecidir(st,P){
   const o=st.jug[st.own]; if(!o) return;
+  /* 7.9134 · el arquero ya preparó el lanzamiento: sale con la mano */
+  if(o.rol==="gk"&&o._acc&&o._acc.tipo==="lanza"&&o._lanzaA!=null){ const c=o._lanzaA; o._lanzaA=null; if(_cvLanzar(st,c)) return; }
   const dom=_cvDominio(P)*(o.mio?1:-1);
   const a=_cvA(o,o.x);
   /* 7.9129 · en la jugada viva del balón parado (st.bpVivo) el que la agarra en el área le pega al tiro, y el que defiende
@@ -285,7 +305,10 @@ function _cvQuite(st,dt,pres){
   const d=Math.hypot((o.x-q.x)*CV_FIS.L,(o.y-q.y)*CV_FIS.A); if(d>1.1) return false;
   if(Math.random()>dt*0.08) return false;   /* ~1 quite cada 12 s de presión encima (7.9129: con inercia el que marca se queda más rato pegado) */
   st.divT=0.6; const b=st.ball;
-  _cvAccion(q,"entrada",0.6); _cvAccion(o,"dividida",0.45);
+  /* 7.9134 · 4 de cada 10 son barridas de verdad (se tira al pasto, desliza y se para: 1,4 s; el maniquí usa la animación
+     Slide de la UAL2); el resto, entrada de pie */
+  const barr=Math.random()<0.4;
+  _cvAccion(q,"entrada",barr?1.4:0.6,barr?{barrida:true}:null); _cvAccion(o,"dividida",0.45);
   const ang=Math.atan2((b.y-q.y)*CV_FIS.A,(b.x-q.x)*CV_FIS.L)+_cvRnd(-0.9,0.9), v=_cvRnd(3,8);
   st.own=-1; st.pase=null; st.ultToque=q.mio; _cvPatear(st,Math.cos(ang)*v,Math.sin(ang)*v,_cvRnd(0,1.5));
   st.persigue=[_cvMasCercano(st,true,b.x,b.y,true),_cvMasCercano(st,false,b.x,b.y,true)];
@@ -355,6 +378,10 @@ function _cvJuego(st,P,dt){
     /* 7.9129 · la patada se prepara: el gesto arranca 0,22 s antes y la pelota sale justo en el golpe (antes la pelota
        salía y recién ahí la pierna iba para atrás: se veía robótico) */
     if(st.prox<=0.22&&st.prox>0&&!o._acc&&!atajada&&o.rol!=="gk") _cvAccion(o,"patada",0.45,{previa:true});
+    /* 7.9134 · el arquero que la atajó, ya de pie, sale CON LA MANO si tiene un compañero cerca: el lanzamiento se prepara
+       0,55 s antes (brazo atrás) y la pelota sale en el latigazo */
+    if(atajada&&o.rol==="gk"&&st.prox<=0.55&&st.prox>0&&!o._acc&&!cvEstiradaFase(o)){
+      const c=_cvCompaneroLanzar(st,o); if(c>=0){ o._lanzaA=c; _cvAccion(o,"lanza",1.2,{previa:true}); } }
     if(st.prox<=0) _cvDecidir(st,P);
   } else {
     _cvFisicaPelota(st,dt);
@@ -517,7 +544,7 @@ function _cvPasoPenal(st,dt){
    cadera a la altura de estar parado: quedaba acostado en el aire. Ahora la estirada es una línea de tiempo: se agacha
    (carga), vuela en arco y CAE al pasto justo después de que llega la pelota, queda tirado y se levanta con las piernas
    (cancha3d.js _c3dEstirada dibuja cada fase). _dive (0..1) sigue diciendo cuánto está estirado (dibujo 2D y física). */
-const CV_ESTIRADA={carga:0.12, vuelo:0.5, suelo:0.7, levanta:0.9};
+const CV_ESTIRADA={carga:0.12, vuelo:0.5, suelo:0.7, levanta:1.3};   /* 7.9134 · levantarse 1,3 s (la animación LayToIdle dura 1,53 s) */
 function cvEstiradaIniciar(p,lado,alto){ p._diveT=0; p._diveLado=lado||1; p._diveAlto=(alto==null?0.6:alto); p._dive=0; }
 function cvEstiradaFase(p){
   const t=p&&p._diveT; if(t==null) return null;

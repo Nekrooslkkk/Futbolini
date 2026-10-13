@@ -12,13 +12,19 @@ Qué hace (para que el juego lo cargue rápido y sin depender de nada):
     6 manos (guantes del arquero), según el hueso que más lo mueve y su altura en la pose de reposo. El juego pinta cada
     zona con los colores del club.
 
-Uso:  python3 scripts/modelo_jugador.py "ruta/UAL1_Standard.glb" img/modelos/jugador.glb
+Uso:  python3 scripts/modelo_jugador.py "ruta/UAL1_Standard.glb" img/modelos/jugador.glb ["ruta/UAL2_Standard.glb"]
 Escribe también img/modelos/jugador.js (el mismo archivo en base64 dentro de un .js): así el juego lo carga aunque se
 abra con file:// (sin servidor) o sin internet, donde el navegador no deja leer el .glb con fetch.
+
+7.9134 · el tercer argumento (opcional) es el paquete "Universal Animation Library 2 [Standard]" de Quaternius (CC0,
+opengameart.org/content/universal-animation-library-2): usa el MISMO esqueleto de 65 huesos, así que sus animaciones se
+pegan por nombre de hueso. Se toman la barrida (Slide_Start/Loop/Exit), pararse del suelo (LayToIdle) y el lanzamiento con
+la mano del arquero (OverhandThrow).
 """
 import base64, json, struct, sys
 
 ANIMS = ["Idle_Loop", "Walk_Loop", "Jog_Fwd_Loop", "Sprint_Loop", "Hit_Chest", "Crouch_Idle_Loop"]
+ANIMS2 = ["Slide_Start", "Slide_Loop", "Slide_Exit", "LayToIdle", "OverhandThrow"]
 DEDOS = ("index_", "middle_", "pinky_", "ring_", "thumb_")
 PIEL, CAMISETA, SHORT, MEDIAS, BOTINES, PELO, MANOS = 0, 1, 2, 3, 4, 5, 6
 
@@ -86,7 +92,7 @@ def zona(nombre, x, y, z):
     return CAMISETA if y > 0.95 else SHORT
 
 
-def main(origen, destino):
+def main(origen, destino, extra=None):
     j, b = leer_glb(origen)
     nodos = j["nodes"]
     nombres = [n.get("name", "") for n in nodos]
@@ -119,24 +125,36 @@ def main(origen, destino):
 
     # ---- animaciones: solo las útiles; sin dedos ni escalas; posición solo en la cadera ----
     anims = []
-    for an in j["animations"]:
-        if an["name"] not in ANIMS: continue
+    por_nombre = {n: i for i, n in enumerate(nombres)}
+
+    def copiar(jj, bb, an, nombres_src):
+        """copia una animación (de este paquete o de otro con el mismo esqueleto: se apunta al hueso por su NOMBRE)"""
         muestras, canales = [], []
         for ch in an["channels"]:
-            nn = nombres[ch["target"]["node"]]; camino = ch["target"]["path"]
-            if nn.startswith(DEDOS) or camino == "scale": continue
+            nn = nombres_src[ch["target"]["node"]]; camino = ch["target"]["path"]
+            if nn.startswith(DEDOS) or camino == "scale" or nn not in por_nombre: continue
             if camino == "translation" and nn not in ("pelvis", "root"): continue
             sm = an["samplers"][ch["sampler"]]
-            t = datos(j, b, sm["input"]); v = datos(j, b, sm["output"])
+            t = datos(jj, bb, sm["input"]); v = datos(jj, bb, sm["output"])
             ai = E.agregar(t, 5126, "SCALAR", minmax=True)
             ao = E.agregar(v, 5126, "VEC4" if camino == "rotation" else "VEC3")
             muestras.append({"input": ai, "output": ao, "interpolation": sm.get("interpolation", "LINEAR")})
-            canales.append({"sampler": len(muestras) - 1, "target": {"node": ch["target"]["node"], "path": camino}})
+            canales.append({"sampler": len(muestras) - 1, "target": {"node": por_nombre[nn], "path": camino}})
         anims.append({"name": an["name"], "samplers": muestras, "channels": canales})
+
+    for an in j["animations"]:
+        if an["name"] in ANIMS: copiar(j, b, an, nombres)
+    if extra:
+        j2, b2 = leer_glb(extra)
+        nombres2 = [n.get("name", "") for n in j2["nodes"]]
+        faltan = set(ANIMS2)
+        for an in j2["animations"]:
+            if an["name"] in ANIMS2: copiar(j2, b2, an, nombres2); faltan.discard(an["name"])
+        assert not faltan, "el segundo paquete no trae: %s" % ", ".join(sorted(faltan))
 
     salida = {
         "asset": {"version": "2.0", "generator": "Futbolini scripts/modelo_jugador.py",
-                  "copyright": "Universal Animation Library by Quaternius - CC0 1.0 (dominio público)"},
+                  "copyright": "Universal Animation Library 1 y 2 by Quaternius - CC0 1.0 (dominio público)"},
         "scene": 0, "scenes": j["scenes"], "nodes": nodos,
         "meshes": [{"name": "Jugador", "primitives": [{"attributes": {"POSITION": aPos, "NORMAL": aNor, "JOINTS_0": aJts,
                      "WEIGHTS_0": aPes, "_KIT": aZon}, "indices": aIdx}]}],
@@ -157,7 +175,7 @@ def main(origen, destino):
     js_dest = destino[:-4] + ".js"
     with open(js_dest, "w", encoding="utf-8") as f:
         f.write('"use strict";\n/* FUTBOLINI · %s — generado por scripts/modelo_jugador.py: el maniquí de img/modelos/jugador.glb en base64\n'
-                '   (para cargar con file:// o sin internet). Universal Animation Library by Quaternius · CC0 1.0 (dominio público). */\n'
+                '   (para cargar con file:// o sin internet). Universal Animation Library 1 y 2 by Quaternius · CC0 1.0 (dominio público). */\n'
                 'window.MODELO3D_GLB="%s";\n' % (js_dest, base64.b64encode(gl).decode()))
     cuenta = [0] * 7
     for z in zon: cuenta[z[0]] += 1
@@ -166,4 +184,4 @@ def main(origen, destino):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)
