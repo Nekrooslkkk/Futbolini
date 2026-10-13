@@ -1548,6 +1548,60 @@ if(typeof devDoctorRegistrar==="function"){
       return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
     }});
 }
+/* 7.9133 · "armar la historia de los clubes: de Deportes Rengo ni idea, la idea es al menos aprender; que sus capítulos no
+   sean siempre los mismos" → la historia real (js/data-historia-clubes.js) llega a la pantalla y sus arcos están bien hechos */
+const DEV_GRUPOS_ARCO=["directorio","socios","hinchada","camarin","tecnico","prensa","anfp","sponsors","comunidad"];
+function devHistoriaClubes(){
+  const r={clubes:[],hitos:0,arcos:0,caps:0,f:[]};
+  if(typeof HISTORIA_CLUBES!=="object") return r;
+  Object.keys(HISTORIA_CLUBES).forEach(id=>{
+    const H=HISTORIA_CLUBES[id]; r.clubes.push(id);
+    if(!/^https:\/\//.test(H.fuente||"")) r.f.push(id+": sin fuente (https)");
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(H.consultado||"")) r.f.push(id+": sin fecha de consulta de la fuente");
+    const hs=H.hitos||[], anios={}; r.hitos+=hs.length;
+    if(hs.length<6) r.f.push(id+": "+hs.length+" hitos (se piden 6 o más)");
+    hs.forEach(h=>{
+      if(!(h.anio>=1850&&h.anio<=2026)) r.f.push(id+": hito sin año válido ("+h.hito+")");
+      if(anios[h.anio]) r.f.push(id+": dos hitos en "+h.anio); anios[h.anio]=1;
+      if((h.txt||"").length>230) r.f.push(id+": el hito "+h.anio+" es muy largo");
+      if(/[«"“][^»"”]{3,}[»"”]\s*,?\s*(dijo|afirmó|declaró|aseguró)/i.test(h.txt||"")) r.f.push(id+": el hito "+h.anio+" atribuye una frase");
+    });
+    /* que llegue a la pantalla de Historia (la línea pasa por un filtro de textos ajenos) */
+    const L=(typeof _lineaHistoriaPropia==="function")?_lineaHistoriaPropia(id):[];
+    hs.forEach(h=>{ if(!L.some(x=>x.anio===h.anio&&x.txt===h.txt)) r.f.push(id+": el hito "+h.anio+" no llega a la línea de Historia"); });
+    const propios=(typeof ARCOS_EQUIPO==="object"&&ARCOS_EQUIPO[id])||[];
+    (H.arcos||[]).forEach((a,ia)=>{ r.arcos++;
+      const caps=a.capitulos||[], ids={}; caps.forEach(c=>{ ids[c.id]=1; }); r.caps+=caps.length;
+      if(caps.length<3) r.f.push(a.id+": "+caps.length+" capítulos (se piden 3)");
+      if(propios.indexOf(a)!==ia) r.f.push(a.id+": no quedó PRIMERO en los arcos del club (sale antes el genérico)");
+      caps.forEach((c,i)=>{ const ult=i===caps.length-1;
+        if((c.ops||[]).length<2) r.f.push(c.id+": menos de 2 opciones");
+        if(!/\b(19|20)\d\d\b/.test(c.ctx||"")&&!/selecciones|tricampeon/i.test(c.ctx||"")) r.f.push(c.id+": el contexto no se ancla en un hecho con año");
+        if(/subir (el |los )?precio|bajar (las )?entradas|precio de las entradas/i.test((c.ctx||"")+" "+(c.ops||[]).map(o=>o.t).join(" "))) r.f.push(c.id+": vuelve el dilema genérico de los precios");
+        (c.ops||[]).forEach(o=>{
+          if(ult&&!o.cierra) r.f.push(c.id+": «"+o.t+"» no cierra el arco");
+          if(!ult&&!ids[o.va]) r.f.push(c.id+": «"+o.t+"» va a un capítulo que no existe");
+          if(!o.mem) r.f.push(c.id+": «"+o.t+"» sin recuerdo (mem)");
+          const g=o.grupos||{}, e=o.ef||{}; Object.keys(g).forEach(k=>{ if(DEV_GRUPOS_ARCO.indexOf(k)<0||Math.abs(g[k])>20) r.f.push(c.id+": grupo raro "+k+"="+g[k]); });
+          if(Math.abs(e.plata||0)>120) r.f.push(c.id+": plata fuera de escala");
+          const v=Object.keys(g).map(k=>g[k]).concat(Object.keys(e).map(k=>e[k]));
+          if(!v.some(x=>x<0)||!v.some(x=>x>0)) r.f.push(c.id+": «"+o.t+"» no tiene costo y beneficio (opción gratis)");
+        });
+      });
+    });
+  });
+  return r;
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"historia_clubes", area:"contenido", n:"Historia real de los clubes: hechos con fuente que llegan a Historia y arcos propios bien hechos",
+    arreglo:"js/data-historia-clubes.js (HISTORIA_CLUBES: fuente, hitos, arcos) · scripts/historia_clubes.py (DeepSeek desde scripts/historia/<ID>.json, revisión a mano) · js/ui.js _lineaHistoriaPropia · js/storylines.js arcoElegible",
+    fn:function(){
+      if(typeof HISTORIA_CLUBES!=="object") return _dmal("falta js/data-historia-clubes.js en index.html");
+      const r=devHistoriaClubes(), total=(typeof devEscudos==="function")?devEscudos().total:0;
+      const txt=r.clubes.length+" club(es) con historia real ("+r.clubes.join(", ")+") · "+r.hitos+" hitos · "+r.arcos+" arcos / "+r.caps+" capítulos"+(total?" · faltan "+Math.max(0,46-r.clubes.length)+" de los 46 de Chile":"");
+      return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat([txt])):_dok(txt);
+    }});
+}
 /* 7.9132 · "el arquero que se tira antes y queda flotando, no sirve": la estirada con la pose de verdad, cuadro a cuadro */
 function devEstiradaArquero(durTiro){
   const p={rol:"gk",_ang:0}, o=_c3dGestoVacio(), dt=1/120, ini=cvEstiradaInicio(durTiro,0.16);

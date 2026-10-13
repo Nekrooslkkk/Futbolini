@@ -1,0 +1,424 @@
+{
+ "hitos": [
+  {
+   "anio": 1984,
+   "hito": "Fundación comunal",
+   "txt": "Naces bajo ASOFUR para unir a los clubes de Rengo y competir en Tercera División."
+  },
+  {
+   "anio": 1986,
+   "hito": "Campeón Apertura Tercera",
+   "txt": "Ganas el Apertura de Tercera: final ante Comercio de Llay-Llay (1-1 local y 2-0 visita)."
+  },
+  {
+   "anio": 1997,
+   "hito": "Caída a asociación",
+   "txt": "Sin las fábricas que te apoyaban, terminas último de tu grupo y desciendes a tu asociación."
+  },
+  {
+   "anio": 2010,
+   "hito": "Regreso y cantera",
+   "txt": "Vuelves al amateur nacional: tercero en Tercera B y campeón del Torneo de Novatos sub-18."
+  },
+  {
+   "anio": 2013,
+   "hito": "Ascenso en Cuarta",
+   "txt": "Logras el ascenso en el Clausura de Cuarta División junto a Limache, Estrella del Huasco, Estación Central y Marga Marga."
+  },
+  {
+   "anio": 2015,
+   "hito": "Copa Absoluta",
+   "txt": "Campeón de la Copa Absoluta de ANFA: 5-1 global a Real San Joaquín."
+  },
+  {
+   "anio": 2017,
+   "hito": "Ascenso por diferencia",
+   "txt": "En Tercera A 2017, el cupo al profesionalismo se lo queda Fernández Vial por diferencia de goles."
+  },
+  {
+   "anio": 2022,
+   "hito": "Ascenso profesional",
+   "txt": "Asciendes a Segunda División Profesional: 7-6 en penales ante Deportes Colina; Lecaros ataja el penal decisivo."
+  },
+  {
+   "anio": 2023,
+   "hito": "Goleada histórica",
+   "txt": "Mayor goleada en Segunda División: 5-0 a Deportes Concepción."
+  },
+  {
+   "anio": 2024,
+   "hito": "Cuarto en Segunda",
+   "txt": "Terminas cuarto en la Segunda División Profesional."
+  }
+ ],
+ "arcos": [
+  {
+   "id": "ren_h_a1",
+   "t": "La casa del Bravo",
+   "desc": "Manejar el estadio municipal sin que te coma la presión.",
+   "capitulos": [
+    {
+     "id": "ren_h_a1_1",
+     "t": "El patio prestado",
+     "ctx": "El Guillermo Guzmán Díaz, inaugurado en los 60, quedó chico tras el ascenso de 2022. En 2023, mientras lo remodelaban, fuiste local en San Fernando. Hoy la Municipalidad te pide cederlo para eventos comunales dos días a la semana.",
+     "ops": [
+      {
+       "t": "Cedes los días que piden",
+       "d": "Mantienes la relación con el municipio, pero el pasto sufre.",
+       "ef": {
+        "plata": -5,
+        "moral": -2,
+        "prestigio": -1
+       },
+       "grupos": {
+        "comunidad": 8,
+        "directorio": -4,
+        "hinchada": -3
+       },
+       "mem": "le abriste la puerta del estadio a la comunidad",
+       "va": "ren_h_a1_2"
+      },
+      {
+       "t": "Te niegas y exiges calendario propio",
+       "d": "Proteges el pasto, pero te peleas con el alcalde.",
+       "ef": {
+        "plata": 2,
+        "moral": 1,
+        "prestigio": 1
+       },
+       "grupos": {
+        "directorio": 3,
+        "hinchada": 2,
+        "comunidad": -8,
+        "anfp": -2
+       },
+       "mem": "cerraste el estadio a la comunidad",
+       "va": "ren_h_a1_2"
+      },
+      {
+       "t": "Negocias un convenio con pagos",
+       "d": "La Municipalidad acepta, pero te cobra arriendo.",
+       "ef": {
+        "plata": -15,
+        "moral": -1,
+        "prestigio": 2
+       },
+       "grupos": {
+        "directorio": 2,
+        "comunidad": 3,
+        "sponsors": 2
+       },
+       "mem": "firmaste un convenio caro con el municipio",
+       "va": "ren_h_a1_2"
+      }
+     ]
+    },
+    {
+     "id": "ren_h_a1_2",
+     "t": "La cancha se cae",
+     "ctx": "En 2023 fuiste local en San Fernando mientras el estadio se remodelaba. Hoy las obras terminaron, pero la cancha no drena bien y el pasto se sale. El torneo exige estándares mínimos. ¿Cómo arreglas la cancha sin fundirte?",
+     "ops": [
+      {
+       "t": "Inviertes en drenaje nuevo",
+       "d": "Gastas fuerte, pero la cancha queda profesional.",
+       "ef": {
+        "plata": -30,
+        "moral": 1,
+        "prestigio": 3,
+        "capital": 2
+       },
+       "grupos": {
+        "directorio": 3,
+        "hinchada": 4,
+        "anfp": 3,
+        "sponsors": 2
+       },
+       "mem": "pagaste el drenaje de tu bolsillo",
+       "va": "ren_h_a1_3"
+      },
+      {
+       "t": "Parcheas con arena y sigues",
+       "d": "Ahorras plata, pero el tribunal te multa.",
+       "ef": {
+        "plata": 5,
+        "moral": -2,
+        "prestigio": -3,
+        "capital": -1
+       },
+       "grupos": {
+        "anfp": -5,
+        "hinchada": -3,
+        "directorio": -2
+       },
+       "mem": "parcheaste la cancha y te pillaron",
+       "va": "ren_h_a1_3"
+      },
+      {
+       "t": "Presionas a la Municipalidad",
+       "d": "Consigues que paguen ellos, pero te cobran con intereses.",
+       "ef": {
+        "plata": 5,
+        "moral": -1,
+        "prestigio": 1
+       },
+       "grupos": {
+        "directorio": -3,
+        "comunidad": -4,
+        "hinchada": 1,
+        "anfp": -1
+       },
+       "mem": "le pasaste la cuenta al municipio",
+       "va": "ren_h_a1_3"
+      }
+     ]
+    },
+    {
+     "id": "ren_h_a1_3",
+     "t": "Localía en venta",
+     "ctx": "El Municipal de Rosario fue tu alternativa en Tercera; el Jorge Silva Valenzuela te recibió en 2023. Hoy la Segunda exige estadio con capacidad y luces. La Municipalidad de Rengo no firma la concesión larga. ¿Dónde aseguras tu localía?",
+     "ops": [
+      {
+       "t": "Firmas con San Fernando por dos años",
+       "d": "Estabilidad, pero pierdes identidad local.",
+       "ef": {
+        "plata": -10,
+        "moral": -2,
+        "prestigio": -1
+       },
+       "grupos": {
+        "hinchada": -6,
+        "comunidad": -5,
+        "sponsors": -2,
+        "anfp": 3
+       },
+       "mem": "vendiste la localía a San Fernando",
+       "cierra": true
+      },
+      {
+       "t": "Te quedas en Rosario pese al costo",
+       "d": "Ahorras, pero la hinchada viaja poco.",
+       "ef": {
+        "plata": 6,
+        "moral": -3,
+        "prestigio": -2
+       },
+       "grupos": {
+        "hinchada": -8,
+        "comunidad": -3,
+        "sponsors": -2
+       },
+       "mem": "mandaste al equipo a Rosario",
+       "cierra": true
+      },
+      {
+       "t": "Presionas por concesión en Rengo",
+       "d": "Arriesgas romper con el municipio, pero mantienes casa.",
+       "ef": {
+        "plata": -8,
+        "moral": 2,
+        "prestigio": 3,
+        "capital": 1
+       },
+       "grupos": {
+        "directorio": -5,
+        "comunidad": 5,
+        "hinchada": 6,
+        "sponsors": 3
+       },
+       "mem": "te plantaste por el estadio de Rengo",
+       "cierra": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ren_h_a2",
+   "t": "La cantera brava",
+   "desc": "El semillero que te dio gloria hoy exige plata y paciencia.",
+   "capitulos": [
+    {
+     "id": "ren_h_a2_1",
+     "t": "Los pibes del oro",
+     "ctx": "En 1986, 1989 y 1996 fuiste base de las selecciones comunales campeonas de Chile. En 2010, O'Higgins te facilitó jugadores y fuiste campeón sub-18. Hoy tu cantera tiene tres juveniles que piden contrato profesional. ¿Los blindas o los vendes?",
+     "ops": [
+      {
+       "t": "Les haces contrato profesional",
+       "d": "Retienes talento, pero sube el costo de planilla.",
+       "ef": {
+        "plata": -20,
+        "moral": 3,
+        "prestigio": 2,
+        "capital": 1
+       },
+       "grupos": {
+        "camarin": 5,
+        "hinchada": 4,
+        "directorio": 2,
+        "sponsors": 2
+       },
+       "mem": "blindaste a los pibes de Rengo",
+       "va": "ren_h_a2_2"
+      },
+      {
+       "t": "Los declaras transferibles",
+       "d": "Haces caja, pero la hinchada te trata de vendido.",
+       "ef": {
+        "plata": 25,
+        "moral": -3,
+        "prestigio": -2,
+        "capital": -1
+       },
+       "grupos": {
+        "hinchada": -7,
+        "camarin": -5,
+        "directorio": 4,
+        "sponsors": 1
+       },
+       "mem": "vendiste a los cabros de la cantera",
+       "va": "ren_h_a2_2"
+      },
+      {
+       "t": "Los prestas a Tercera para que maduren",
+       "d": "No gastas, pero se te pueden ir libres.",
+       "ef": {
+        "plata": -2,
+        "moral": -1,
+        "prestigio": 1
+       },
+       "grupos": {
+        "camarin": 1,
+        "hinchada": -2,
+        "directorio": -1
+       },
+       "mem": "mandaste a los juveniles a foguearse",
+       "va": "ren_h_a2_2"
+      }
+     ]
+    },
+    {
+     "id": "ren_h_a2_2",
+     "t": "El convenio con O'Higgins",
+     "ctx": "En 2010 O'Higgins te facilitó jugadores para volver al amateur. Ahora te ofrecen un convenio: te envían tres sub-21 a préstamo gratis, pero exigen que jueguen sí o sí. Tu técnico quiere libertad. ¿Aceptas?",
+     "ops": [
+      {
+       "t": "Aceptas el convenio con O'Higgins",
+       "d": "Refuerzas plantel barato, pero el camarín se divide.",
+       "ef": {
+        "plata": 10,
+        "moral": -2,
+        "prestigio": 2,
+        "capital": 1
+       },
+       "grupos": {
+        "camarin": -5,
+        "tecnico": -4,
+        "directorio": 3,
+        "sponsors": 3,
+        "anfp": 2
+       },
+       "mem": "le abriste la puerta a O'Higgins de nuevo",
+       "va": "ren_h_a2_3"
+      },
+      {
+       "t": "Rechazas y confías en tu cantera",
+       "d": "Mantienes identidad, pero te faltan refuerzos.",
+       "ef": {
+        "plata": -5,
+        "moral": 3,
+        "prestigio": 1,
+        "capital": -2
+       },
+       "grupos": {
+        "camarin": 4,
+        "tecnico": 3,
+        "hinchada": 5,
+        "directorio": -2,
+        "sponsors": -1
+       },
+       "mem": "cerraste el convenio con O'Higgins",
+       "va": "ren_h_a2_3"
+      },
+      {
+       "t": "Negocias jugadores, no exigencias",
+       "d": "Consigues uno solo, sin cláusula de titular, pero pagas.",
+       "ef": {
+        "plata": -8,
+        "moral": 1,
+        "prestigio": 1
+       },
+       "grupos": {
+        "tecnico": 2,
+        "camarin": 1,
+        "directorio": -1,
+        "anfp": 1
+       },
+       "mem": "negociaste a medias con O'Higgins",
+       "va": "ren_h_a2_3"
+      }
+     ]
+    },
+    {
+     "id": "ren_h_a2_3",
+     "t": "Las raíces del Bravo",
+     "ctx": "Tus selecciones comunales tricampeonas (1986, 1989, 1996) salieron de Rengo. Hoy un grupo de apoderados te exige priorizar la sub-15 y te amenaza con irse a otro club. ¿Cómo armas el proyecto formativo?",
+     "ops": [
+      {
+       "t": "Inviertes en la sub-15",
+       "d": "Fidelizas a la comunidad, pero descuidas el primer equipo.",
+       "ef": {
+        "plata": -15,
+        "moral": 2,
+        "prestigio": 2,
+        "capital": 2
+       },
+       "grupos": {
+        "comunidad": 8,
+        "hinchada": 4,
+        "directorio": -2,
+        "sponsors": 2
+       },
+       "mem": "apostaste por la sub-15 de Rengo",
+       "cierra": true
+      },
+      {
+       "t": "Cierras la sub-15 por costos",
+       "d": "Ahorras, pero te ganas el odio del pueblo.",
+       "ef": {
+        "plata": 8,
+        "moral": -3,
+        "prestigio": -4,
+        "capital": -2
+       },
+       "grupos": {
+        "comunidad": -10,
+        "hinchada": -6,
+        "directorio": 3,
+        "sponsors": -2
+       },
+       "mem": "cerraste la sub-15 y te fuiste a los tumbos",
+       "cierra": true
+      },
+      {
+       "t": "Cobras cuotas a los apoderados",
+       "d": "Mantienes el equipo, pero pierdes talento pobre.",
+       "ef": {
+        "plata": 5,
+        "moral": -1,
+        "prestigio": -1
+       },
+       "grupos": {
+        "comunidad": -5,
+        "hinchada": -2,
+        "directorio": 2,
+        "sponsors": -1
+       },
+       "mem": "les cobraste a los apoderados de la sub-15",
+       "cierra": true
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

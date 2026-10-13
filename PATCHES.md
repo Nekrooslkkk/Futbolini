@@ -5461,3 +5461,32 @@ arquero que se tira antes y queda flotando, no sirve".
   trivia, textos en pasado con `{RIVAL}`) con archivo:línea, criterio de listo y reparto de archivos: en ChatDeTrabajIA.md.
 - **Estado:** doctor sano 151/151 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D
   32/32) · core 1185/1185 · saves ok · banco 255 sano (15 % despidos).
+
+### 7.9133 — La historia REAL de los clubes, empezando por Deportes Rengo (hechos con fuente + DeepSeek en el equipo)
+Pedido del autor: "se une DeepSeek al área de trabajo, sácale jugo… armar la historia de los clubes, porque de Deportes Rengo
+ni puta idea y la idea es al menos aprender; que sus capítulos no sean siempre los mismos. El de Colo-Colo tiene épica
+porque te dice cosas del club; el de Rengo es 'subir precio' y pura obviedad".
+- **El flujo (scripts/historia_clubes.py):** 1) los HECHOS con su fuente en `scripts/historia/<ID>.json` (para Rengo, 17
+  hechos leídos en es.wikipedia.org/wiki/Club_de_Deportes_Rengo y en.wikipedia.org/wiki/Deportes_Rengo, consultados el
+  13 oct 2026); 2) DeepSeek (deepseek-v4-pro) redacta hitos y arcos usando SOLO esos hechos (`<ID>.borrador.json`); 3) se
+  revisa a mano y lo revisado va a `js/data-historia-clubes.js`. La clave de la API NUNCA va al repo: se lee de
+  `DEEPSEEK_API_KEY`. Costo de Rengo: ~13 mil tokens.
+- **Rengo, de verdad (js/data-historia-clubes.js):** la línea de Historia pasa de 3 a 12 hitos: la fundación de 1984 para
+  juntar a los clubes de la comuna; el Apertura de Tercera 1986 con las fábricas (Viamaxi, Temsa, Bticino) bancándolo; el
+  semillero de las selecciones campeonas nacionales amateur de 1986, 1989 y 1996; la caída de 1997 cuando cerraron las
+  fábricas; el regreso de 2010 con jugadores de O'Higgins; el ascenso de Cuarta 2013; la Copa Absoluta 2015 (5-1 a Real San
+  Joaquín); el ascenso perdido por diferencia de gol en 2017; la noche de Puente Alto 2022 (7-6 en penales a Deportes
+  Colina, Lecaros ataja el último: primer ascenso al profesionalismo); 2023 de local en San Fernando y el 5-0 a Deportes
+  Concepción; cuarto en 2024. Y 2 arcos nuevos de 3 capítulos (**La casa del Bravo**: el estadio municipal, la cancha que no
+  drena, la localía en venta; **La cantera brava**: los cabros que piden contrato, el convenio con O'Higgins, la sub-15),
+  dilemas de HOY anclados en esos hechos. Van PRIMERO: lo primero que vives con Rengo te enseña algo verdadero.
+- **Revisión a mano del borrador de DeepSeek:** hitos reescritos en 3.ª persona (venían "Naces bajo ASOFUR"), se sacaron
+  contradicciones ("te multan" con +5 de plata), "pibes" → "cabros", "la primera Copa Absoluta" → "la nueva" (así dice
+  la fuente). Las personas reales (Lecaros, Gayoso) aparecen solo como hechos.
+- **Dev:** doctor `historia_clubes` (fuente https + fecha; ≥6 hitos con año y sin repetir; que lleguen a la línea de
+  Historia; arcos de 3 capítulos bien encadenados, PRIMEROS en el club, anclados en un año, sin el dilema de precios y
+  sin opciones gratis; ninguna frase atribuida; y la cobertura: 1 de 46 clubes). Cazó 2 fallas en mi propio texto antes de
+  subir (un capítulo sin año y una opción sin beneficio). Al revés: arcos al final, dos hitos el mismo año, dilema de
+  precios → cazados.
+- **Estado:** doctor sano 152/152 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
+  · core 1185/1185 · saves ok · banco 255 sano (12 % despidos).

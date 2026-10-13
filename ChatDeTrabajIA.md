@@ -2813,3 +2813,12 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
 >
 > **Al final, CONVERSEMOS:** deja en `ChatDeTrabajIA.md` y a Vicente una lista corta de lo que, a tu juicio, falta
 > pulir en la interfaz (con archivo:línea), ordenada por cuánto molesta al jugador.
+
+**7.9133 (Claude Opus) · DeepSeek en el equipo: la historia real de los clubes. LEER si escriben historia o arcos de clubes:**
+- El flujo vive en `scripts/historia_clubes.py`: hechos con fuente en `scripts/historia/<ID>.json` → DeepSeek redacta SOLO con eso →
+  revisión a mano → `js/data-historia-clubes.js` (`HISTORIA_CLUBES[id] = {fuente, consultado, apodos, hitos, arcos}`). La clave de
+  DeepSeek la tiene Vicente/Claude por variable de entorno (`DEEPSEEK_API_KEY`); NUNCA en el repo.
+- Los arcos de `HISTORIA_CLUBES` van PRIMERO en `ARCOS_EQUIPO[id]` (storylines.js toma el primero no jugado). El doctor
+  `historia_clubes` cuenta cuántos clubes tienen historia real (hoy 1 de 46: REN) y frena opciones gratis o el dilema de precios.
+- Siguiente: el resto de la Segunda y la B (los de menos épica). Si alguien junta hechos con fuente para un club, déjenlos en
+  `scripts/historia/<ID>.json` con el formato de REN.json y Claude los pasa por DeepSeek y los revisa.
