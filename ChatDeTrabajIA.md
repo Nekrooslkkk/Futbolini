@@ -2606,3 +2606,210 @@ corre `bash test/doctor.sh` y `node test/servidores.js`, mira el doctor `csp_est
 **7.9131 (Claude Opus) · corrección de integridad (mía):** dije "movimientos capturados de personas" sobre las animaciones de
 Quaternius sin haberlo leído en ninguna fuente. La fuente solo dice CC0 y hecho en Blender. Si escriben créditos o textos sobre
 assets: **solo lo que diga la fuente**, y el crédito del maniquí se cambia en `MODELO3D_CREDITO` (el doctor `modelo_jugador` lo vigila).
+
+**7.9132 (Claude Opus) · escudos oficiales, pausa de la cancha, estirada del arquero. LEER si tocan escudos, cancha.js o el partido en vivo:**
+- Escudos: `ESCUDOS_OFICIALES` (js/data-escudos.js) pisa `ESCUDOS_FOTOS` para los 32 de Primera/B con `img/clubes/oficial/{ID}.webp`
+  (marca de cada club, excepción del autor en CLAUDE.md). Para sacar uno: quitar su sigla de la lista (vuelve el `respaldo`).
+- La cancha (2D y 3D) avanza SOLO por `cvPasoVisible(P,dt)`: no avanza con `PAUSADO`, con `MOMENTO_OPS` (preguntas) ni con
+  `P._varHold`. Si agregan otra espera del jugador, súmenla en `cvCongelada` (cancha.js). No llamen `_cvStep` directo desde la UI.
+- Arquero: `cvEstiradaIniciar(p,lado,alto)` + `cvEstiradaPaso(p,dt)`; la pose la arma `_c3dEstirada`. No pongan `p._dive` a mano.
+
+**ENCARGO (13 oct 2026) · GROK 4.7 MODO BUILD · LA INTERFAZ DEL CLUB.** Vicente se lo pasa a Grok tal cual; queda acá para que viva en
+el repo. Reparto: Grok = interfaz (ui.js Escritorio/Ajustes, util.js avisos, ayudante.js, partidas.js indicador, partido.js trivia,
+aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y la historia de los clubes (con DeepSeek). El texto completo:
+
+> Eres un ingeniero senior de front-end que trabaja en **Futbolini**, el repo `Nekrooslkkk/Futbolini` (rama `main`).
+> Tu jefe es Vicente (el autor). Trabajas en equipo con Claude (Opus), que hoy está con el 3D, los escudos y la
+> historia de los clubes. Este encargo es la **interfaz del club**: el Escritorio, los avisos, Syntergia, el correo y las
+> preguntas del partido. **Construye de verdad**: código, pruebas, doctor, commit y push. Nada de "propuestas" sin código,
+> salvo donde abajo dice **[CONVERSAR]**.
+>
+> ---
+>
+> ## 0 · ANTES DE TOCAR NADA (obligatorio, 10 minutos)
+>
+> 1. Lee `CLAUDE.md` (reglas), las últimas 3 entradas de `PATCHES.md`, el final de `ChatDeTrabajIA.md` (canal único entre
+>    las IA) y `BRIEFING.md`. No pidas que te expliquen el proyecto: está todo ahí.
+> 2. `git log --oneline | head -15` y mira la `VERSION` en `js/util.js`.
+> 3. Corre una vez `bash test/correr.sh` para ver la base verde.
+>
+> **Qué es Futbolini (no lo olvides):** simulador de conducción de clubes del fútbol chileno, *realista y crudo* (NO
+> satírico). Vanilla JS (ES6), sin frameworks, sin build, sin npm. Todo el estado en el global `E`. Estética Frutiger
+> Aero / Windows Vista–7 (`css/aero.css`, `css/aero7.css`, `js/aero7.js`). Dos registros de idioma en `js/idiomas.js`
+> (neutro y chileno): todo texto nuevo de interfaz va con su clave `T("clave","texto")` en los dos.
+>
+> ## 1 · REGLAS QUE NO SE NEGOCIAN
+>
+> - `"use strict"` en todo `.js`, identificadores y comentarios en español, funciones cortas, `const` de primer nivel sin
+>   sangría. No rompas el orden de `<script>` de `index.html` ni los globales.
+> - **El modo desarrollador crece en cada parche** (orden permanente del autor): cada bug que arregles deja SU chequeo en el
+>   doctor (`devDoctorRegistrar({id, area, n, arreglo, fn})` en `js/dev-doctor.js` o `js/dev-banco.js`) y **pruébalo al
+>   revés**: con el código viejo el chequeo tiene que FALLAR, con el nuevo pasar. Cuéntalo en la entrada de PATCHES.
+> - **Suites verdes antes de subir:** `node --check js/*.js` · `bash test/correr.sh` · `bash test/correr_dev.sh` ·
+>   `bash test/doctor.sh` · `bash test/saves.sh` · `HILOS=6 bash test/banco.sh`. Si una falla, se arregla; nunca se apaga,
+>   se salta ni se "afloja" un chequeo para que pase.
+> - **Versión:** al subir, `VERSION` en `js/util.js` = la de `main` + 0.0001 (si main está en 7.9133, tú 7.9134) y TODOS los
+>   `?v=` de `index.html` iguales (`sed -i 's/?v=VIEJA/?v=NUEVA/g' index.html`). El doctor `offline_listo` falla si no calzan.
+> - **Antes de cada push:** `git fetch origin main && git merge origin/main` (merge, NUNCA rebase ni force-push), vuelve a
+>   correr las suites, y sube a `main`. Claude también sube a main: si chocan, tú mezclas y re-pruebas.
+> - Una línea en `PATCHES.md` por parche (qué pidió el autor, qué cambió, archivos, doctor, estado de las suites) y una
+>   **nota al final de `ChatDeTrabajIA.md`** (qué tocaste, qué no tocar, cómo probar). No crees archivos de coordinación nuevos.
+> - **Territorio (para no pisarnos):**
+>   - **Tuyo en este encargo:** `js/ui.js` (Escritorio y Ajustes), `js/util.js` (`aviso`, `modal`), `js/ayudante.js`,
+>     `js/partidas.js` (solo el indicador de guardado), `js/partido.js` (solo la trivia), `js/aero7.js`, `css/*`,
+>     `js/idiomas.js`, archivos nuevos que necesites (`js/correo.js`, `css/correo.css`…), y los datos de decisiones
+>     (`js/data-decisiones*.js`, `js/data-32.js`, `js/data-voz.js`, `js/data-grok-plus.js`, `js/data-plop-equipo.js`).
+>   - **De Claude (NO tocar):** `js/cancha.js`, `js/cancha3d.js`, `js/bp3d.js`, `js/modelo3d.js`, `img/` (escudos
+>     oficiales recién sumados, modelos 3D), `js/data-escudos.js`, y la **historia de los clubes** (`js/data-storylines.js`,
+>     `js/data-alma-*.js`): Claude la está armando con DeepSeek y datos con fuente. "En breve volvemos con el 3D": no lo
+>     toques; si ves algo roto ahí, avisa en ChatDeTrabajIA con archivo:línea.
+>   - **Compartidos (solo agregar al final, nunca reescribir):** `js/dev-doctor.js`, `js/dev-banco.js`, `index.html`
+>     (nuevos `<script>` al final de su bloque), `PATCHES.md`, `ChatDeTrabajIA.md`.
+> - **Seguridad:** nunca pegues claves de API ni tokens en el repo (si ves una, avisa y no la copies). Nada de `on*=` en el
+>   HTML que generas (la CSP lo bloquea: usa `addEventListener`). Escapa todo texto que venga de datos (`escHtml`).
+> - **Integridad:** nada inventado como real. Datos reales (clubes, jugadores, estadios) solo con fuente; si no hay, se
+>   escribe como ficción del juego. Assets solo con licencia libre (CC0/MIT/OFL/Apache/dominio público) con su crédito en
+>   `img/FUENTES.md`. Pixel-art propio (dibujado por ti en SVG/CSS) vale.
+> - Mira cada cambio en **390 px (celu)** y **1366 px (PC)** con capturas (Playwright está en el entorno). Ojo: el
+>   navegador cachea los .js por origen: usa un puerto nuevo para verificar.
+>
+> ---
+>
+> ## 2 · LAS TAREAS (en este orden; cada una con su "listo cuando")
+>
+> ### T1 · Quitar "dramatización · Frutiger Aero · Apoyar" del pie
+> - Dónde: `js/ui.js:5170` (`#pieTxt`).
+> - Listo cuando: el pie muestra solo lo útil (p. ej. "Futbolini 7.91xx"), en las dos lenguas, sin hueco raro.
+>
+> ### T2 · "guardado 11:27" → reloj de sesión bien puesto
+> - Hoy: `js/partidas.js:223-228` (`avisoGuardado`, nodo `#guardadoTxt`).
+> - Pedido: que viva en la **esquina derecha**, discreto, con la **hora del último guardado** y **cuánto llevas jugando**
+>   (sesión de hoy y total de la partida, p. ej. "💾 11:27 · ⏱ 1 h 12 min"). También en Ajustes. No puede tapar nada en
+>   ninguna pantalla ni molestar.
+> - Tiempo jugado: acumúlalo en la partida (`E.tiempoJugado`, en segundos) solo mientras la pestaña está visible
+>   (`visibilitychange`), y guárdalo con la partida.
+> - **No rompas** los chequeos que leen `#guardadoTxt` (`js/dev-banco.js:845-935`: `guardado_honesto` y vecinos): mantén
+>   el id, o actualiza esos chequeos en el mismo commit. El texto de error ("⚠️ SIN GUARDAR") tiene que seguir viéndose.
+> - Doctor nuevo: `tiempo_jugado` (sube con la pestaña visible, no sube oculta, sobrevive a guardar y cargar).
+>
+> ### T3 · EL ESCRITORIO COMO WINDOWS VISTA (lo más importante)
+> - Hoy: `vistaEscritorio()` en `js/ui.js:834` apila paneles en dos columnas: Próximo compromiso (842), Atiende antes de
+>   avanzar (906), historia del club (919), Ayudante (923-974), Decisiones sobre la mesa (977-1020), Lo que pasó esta
+>   semana (1023-1044). Genera MUCHO scroll. Ojo, hay envoltorios que le meten cosas: `js/ayudante.js:181`,
+>   `js/epoca-intro.js:15`, `js/mundo-vivo.js:253`, `js/pulido.js:718` (y `pulido.js:569` trata el panel "Lo que pasó"),
+>   `js/ui-jornada.js:443`, y el doctor lee su fuente (`js/dev-doctor.js:2253`). Revísalos TODOS antes de mover nada.
+> - Pedido del autor: los menús (decisiones, lo que pasó, ayudante/correo…) pasan a ser **íconos de escritorio, tal cual
+>   Windows Vista**, con **logos pixelados**, ocupando el espacio que hoy está vacío. Al hacer doble clic (un toque en el
+>   celu) se abren como **ventanas aparte**, encima, con el marco de vidrio de Vista; se pueden tener **2 abiertas a la
+>   vez**, apiladas, y lo de atrás se **opaca** un poco. Nada feo: misma estética Aero del juego.
+> - Reutiliza lo que ya existe: el marco y la barra de comandos de `js/aero7.js` (`ventanaDeSeccion` :23,
+>   `barraComandosVista` :66) y `css/aero7.css:410`. Íconos: SVG pixel-art propio (o los de `js/data-ranuras.js` si están
+>   listos). Sin librerías nuevas.
+> - Mantén en el escritorio, a la vista, lo que no puede esperar: el **Próximo compromiso** y el aviso **Atiende antes de
+>   avanzar** (si hay algo urgente, su ícono parpadea suave o lleva un globito con el número).
+> - En el celu: íconos en grilla (4 por fila), la ventana ocupa la pantalla con su botón cerrar grande; atrás del
+>   teléfono (botón "volver") cierra la ventana de arriba.
+> - Accesible: las ventanas se cierran con Esc, el foco va a la ventana al abrir y vuelve al ícono al cerrar.
+> - Doctor nuevo: `escritorio_iconos` (cada panel tiene su ícono, abrir/cerrar funciona, máximo 2 ventanas, el alto del
+>   escritorio a 1366 px cabe en ~1 pantalla, nada se pierde respecto de los paneles de antes).
+>
+> ### T4 · Avisos (barras de notificación) estilo Vista
+> - Hoy: `aviso(txt,ms)` en `js/util.js:179` (dura 2,6 s, sin tope).
+> - Pedido: que se vean **más Windows Vista** (globito de la bandeja, vidrio, ícono), **mejor puestos**, que **duren un
+>   poco más** (~4,5 s; más si el texto es largo), que **se apilen máximo 3** (el 4.º saca al más viejo), y que se vayan con
+>   un **fade-out característico**, nada invasivo (no tapan botones; en el celu, arriba del dock).
+> - Ojo: muchas pruebas y el doctor llaman `aviso()`: no cambies su firma.
+> - Doctor nuevo: `avisos_vista` (nunca más de 3 a la vista, duración ≥ 4 s, se van solos, no tapan el botón Avanzar).
+>
+> ### T5 · Syntergia: que haga TODO y sin trabarse
+> - Código: `js/ayudante.js:197-244` (`syntergiaOn`, `syntergiaTurno` con su tope de 8 vueltas, envuelve
+>   `procesarSemanaPostPartido`/`procesarSemanaRapido`, `bloqueSyntergia`).
+> - Pedido: "revisa si está realmente haciendo todo Syntergia y sin trabarse".
+> - Haz: un doctor `syntergia_completa` que juegue **N semanas reales** con Syntergia encendida en 3 clubes/épocas y
+>   compruebe: no quedan decisiones urgentes sin resolver, no hay excepciones, ninguna semana tarda más de X ms, no repite
+>   la misma acción dos veces seguidas sin motivo, y el informe cuenta lo que de verdad hizo. Arregla lo que encuentre.
+>
+> ### T6 · El botón de resoluciones, dentro de la barra de Syntergia
+> - Hoy: "✅ Haz todo lo seguro (n)" y los "Hazlo" del bloque "Lo hago yo" (`js/ayudante.js:154-180`); la acción
+>   "Resolver las N decisiones pendientes" está en `ayudante.js:47-49`. **Si no estás seguro de cuál es "el botón de
+>   resoluciones" que le gusta al autor, pregúntale en una línea antes de moverlo.**
+> - Pedido: ese botón va **dentro de la misma barra de Syntergia**, con una casilla ✔ **"No entregar el resumen de lo
+>   hecho"** (si está marcada, se hace igual pero no llega el resumen). Que se guarde la preferencia en la partida.
+>
+> ### T7 · BUG · "Bajar las entradas" se repite
+> - Causa probable: `js/ayudante.js:61-64` y `99-104`: la marca `_ayClave("precios")` es **por semana**, así que puede
+>   volver a bajar cada semana mientras la hinchada siga baja. Además hay decisiones casi iguales en `js/data-32.js:549`,
+>   `js/data-grok-plus.js:232` y `js/data-voz.js:233` ("Bajar entradas y llenar").
+> - Arreglo: un enfriamiento real (p. ej. no vuelve a ofrecer bajar en 6 semanas, o hasta que la hinchada se recupere), y
+>   que la misma decisión de entradas no salga dos veces en la misma temporada.
+> - Doctor nuevo: `entradas_sin_repetir` (simula 20 semanas con la hinchada baja: cuántas veces bajó; ≤ lo que diga la regla).
+>
+> ### T8 · BUG GRANDE · textos que hablan de partidos que no se han jugado (lesiones y otros)
+> - Causa encontrada: en `js/data-plantel.js:608` el token `{RIVAL}` SIEMPRE es el **próximo** rival
+>   (`proximoPartido().rivalNombre`). Así, un texto en pasado ("se lesionó ante {RIVAL}", "{RIVAL} nos ganó en casa",
+>   `js/data-plop-equipo.js:68-98`) nombra un partido que todavía no pasó.
+> - Arreglo: un token para el **último partido jugado** (p. ej. `{RIVAL_ANT}`, desde el último del calendario con
+>   `jugado`), y revisar TODOS los textos en pasado que usan `{RIVAL}` (grep en `js/data-*.js`, PLOP, eventos de lesión,
+>   decisiones). Si no hubo partido todavía (pretemporada), el texto no puede salir.
+> - Doctor nuevo: `textos_pasado_rival` (arma una semana con el último y el próximo rival distintos y verifica que cada
+>   plantilla en pasado nombre al último, y que ninguna salga en la fecha 1).
+>
+> ### T9 · Las preguntas (trivia) del partido
+> - Código: `js/partido.js:1418-1446` (`TRIVIA_FUTBOL`) y `1464-1495` (`triviaProc`); aparecen en `momentoActual` (1512,
+>   28 % de las veces). Hay preguntas parecidas en `js/data-voz.js:181` y `js/prensa-real.js:78-79,143`: revísalas también.
+> - Pedido del autor:
+>   1. **Fuera** las de **edad** (1470, 1493) y **nivel** (1484): "se las tiene que aprender el jugador, muy latero".
+>   2. "¿Cuántos puntos llevas?" (1471) y "¿cuántos partidos…?" (1488-1490): **no en el primer partido** (la respuesta
+>      es obvia: 0).
+>   3. Las de partidos tienen que contar **TODOS los partidos jugados** (liga + copas), no solo el campeonato; hoy usan
+>      `E.temporada` (solo torneo). Las de goles confunden: **reemplázalas** por preguntas claras.
+>   4. **Añade más variedad**: con respuesta que el juego conoce de verdad (el último resultado, el rival del próximo
+>      partido, el goleador del equipo, el estadio, el DT rival si está en los datos…). Nada de datos reales sin fuente.
+> - Doctor nuevo: `trivia_sana` (en la fecha 1 no hay preguntas de conteo; nunca hay de edad/nivel; las de partidos
+>   cuadran con el calendario completo; 3 opciones distintas y una sola correcta).
+>
+> ### T10 · Fuera "Pregúntale al ayudante" (la caja de texto)
+> - Hoy: `js/ui.js:940-973` (input `#ay-input`, botón `#ay-btn`, fichas).
+> - Pedido: "si es solo achuntarle a palabras, no sirve preguntar a una caja de texto ni los botones; además ya te lo
+>   dice el ayudante". Sácalo del Escritorio. Antes de borrar `ayudanteResponde`/`preguntarAyudante`, busca quién más los
+>   usa (`grep -rn`): pruebas y doctor incluidos.
+>
+> ### T11 · EL CORREO (tipo Hotmail 2007 / Outlook) con los informes
+> - Pedido: los **informes** que hace Syntergia/el ayudante llegan como **correos** a un cliente de correo **tal cual el
+>   Hotmail de 2007**: internet antiguo, nostálgico, pero **con color** (la estética Aero del juego). Ahí se leen los
+>   **informes pasados** y todo lo que se ha hecho. "**Lo último que hice**" (`js/ayudante.js:172-178`, hoy un desplegable
+>   con `E.ayudante.log`, que guarda solo 10) llega como **mensaje nuevo** (negrita, sin leer).
+> - "**Decisiones sobre la mesa**" pasa a vivir **dentro del correo**: es el **resumen de la semana**, escrito **como si lo
+>   hubiera hecho el jugador**: "Este es tu resumen de la semana: resolviste…", no "el ayudante hizo…". (El menú aparte se
+>   vuelve inútil.) Las decisiones todavía pendientes llegan como correos con sus botones de opción.
+> - **La dirección del correo**, fija por partida (aleatoria al crear la partida, para que cada partida nueva tenga otra):
+>   `nombre_ABREVn@NombreDelClub.tld`, con `nombre` = nombre de pila chileno generado (minúsculas, sin tildes), `ABREV` =
+>   abreviatura del club, `n` = 1-9, dominio = nombre del club sin espacios ni tildes, `tld` = dominio del país del club
+>   (Chile `.cl`, Argentina `.ar`, …). Ejemplos del autor: **fabian_DepRengo3@DeportesRengo.cl**,
+>   **sebastian_CC2@colocolo.cl**. Guárdala en la partida (`E.correo.direccion`) y que las partidas viejas la reciban al
+>   cargarse (prueba con `bash test/saves.sh`).
+> - Guarda el historial de correos en la partida con tope (p. ej. 200, los más viejos se archivan), y que pese poco.
+> - Doctor nuevo: `correo_bandeja` (la dirección tiene el formato, es la misma al guardar y cargar, cambia entre partidas
+>   nuevas; cada informe/resumen llega una vez; los no leídos se cuentan bien; el resumen está escrito en 2.ª persona).
+>
+> ### T12 · "Lo que pasó esta semana" que sirva **[CONVERSAR]**
+> - Hoy: `js/ui.js:1023-1044` (3 noticias de `E.bandeja` + titulares de la liga). El autor: "se ve bastante inservible".
+> - Haz 2 o 3 **maquetas** (capturas) y pregúntale cuál quiere. Ideas: los cambios reales de la semana con números (puesto
+>   en la tabla ↑↓, caja +/–, moral, lesionados nuevos, resultados de los rivales directos, lo que viene en 3 fechas), cada
+>   línea clickeable a su sección. Implementa la que elija.
+>
+> ---
+>
+> ## 3 · CÓMO ENTREGAS
+>
+> Por cada parche: 1) el commit en `main` (mensaje "7.91xx: …" + qué pidió el autor), 2) la línea en `PATCHES.md` y la
+> nota en `ChatDeTrabajIA.md`, 3) capturas 390/1366 de lo que cambió, 4) el estado de las 6 suites, 5) **preguntas
+> concretas a Vicente**. El autor pidió: **"PREGUNTA SIEMPRE Y NO PARES DE PREGUNTAR"**. Cada entrega termina con 2–4
+> preguntas específicas (con opciones si puedes), por ejemplo: cuál maqueta de T12, qué íconos quiere primero, si el
+> correo abre solo cuando llega algo urgente.
+>
+> Agrupa en parches chicos: (T1+T2+T4) → (T7+T8+T9+T10) → T3 → (T5+T6) → T11 → T12. Si algo de este encargo choca
+> con el código (un envoltorio, un chequeo del doctor), no lo apagues: entiéndelo, arréglalo y cuéntalo.
+>
+> **Al final, CONVERSEMOS:** deja en `ChatDeTrabajIA.md` y a Vicente una lista corta de lo que, a tu juicio, falta
+> pulir en la interfaz (con archivo:línea), ordenada por cuánto molesta al jugador.

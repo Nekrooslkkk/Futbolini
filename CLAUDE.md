@@ -24,6 +24,10 @@ cuelga del objeto global `E` (localStorage vía `Store`). Épocas: 1991, 2026, e
   usar internet para dar el salto de calidad: CDN de fuentes, iconos, assets, y a futuro servidores
   propios del autor. **Condición: todo asset sin copyright** (MIT/OFL/Apache/CC0 o dominio público);
   hay de sobra. El juego **no lucra**: se mantiene con propinas y cariño.
+  **Excepción del autor (13 oct 2026): escudos oficiales de los clubes.** Los que el autor entrega (hoy los 32 de
+  Primera y B 2026, de football-logos.cc) van al juego aunque son marca de cada club: uso de fans, sin fines de lucro,
+  rotulados en `img/FUENTES.md ▸ Escudos oficiales`, aparte en `img/clubes/oficial/` y fáciles de sacar
+  (`ESCUDOS_OFICIALES`). Para todo lo demás sigue la regla de assets libres.
 - **Pero tiene que poder vivir sin internet.** El "offline" no es una restricción de desarrollo:
   es una **funcionalidad para el jugador**. Tiene que poder **descargarse el estado del juego tal
   cual** y jugarlo tranquilo, sin depender de nadie. Un retiro, un viaje, un domingo sin señal.

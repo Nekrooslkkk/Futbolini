@@ -314,3 +314,52 @@ muestra está en Commons con licencia libre) y se verificó la licencia en Commo
 
 Se preparó con `scripts/modelo_jugador.py` (una sola malla, solo las animaciones útiles, zonas del uniforme marcadas).
 CC0 no pide crédito; igual se lo damos: gracias, Quaternius.
+
+## Escudos oficiales
+
+**7.9132 · Decisión del autor (Vicente, 13 oct 2026):** "las agregas tal cual, que se vean bien siempre, añádelas pa todo"
+y, ante la duda de si correspondía en un repo público: "hazlo igual". Son los escudos **oficiales** de los 32 clubes de
+Primera y Primera B 2026, que el autor bajó de [football-logos.cc](https://football-logos.cc/) (PNG 1500 px) y entregó
+en dos carpetas. **No son licencia libre**: football-logos.cc dice que los logos son propiedad intelectual de cada club,
+protegidos como marca, y que los muestra con fines informativos, editoriales y de fans (no para productos comerciales,
+publicidad ni para sugerir que el club respalda algo). Futbolini es un juego de fans sin fines de lucro y **no está
+afiliado a ningún club**. Si un club pide sacar su escudo, se saca: basta quitar su sigla de `ESCUDOS_OFICIALES`
+(js/data-escudos.js) y el juego vuelve solo al escudo libre o estilizado de antes (queda guardado en `respaldo`).
+
+Archivos: `img/clubes/oficial/{ID}.webp`, 256 × 256 px (reducidos con ImageMagick, sin metadatos). Doctor:
+`escudos_oficiales` (cargan, se usan, y si uno falta cae al estilizado).
+
+| ID | Archivo que entregó el autor | Fuente | Licencia |
+|---|---|---|---|
+| AUD | Audax Italiano.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| COB | Cobresal.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| CC | Colo-Colo.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| COQ | Coquimbo Unido.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| DCO | Deportes Concepcion.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| LSE | Deportes La Serena.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| LIM | Deportes Limache.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| EVE | Everton de Viña del Mar.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| HUA | Huachipato.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| NUB | Nublense.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| OHI | O'Higgins.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| PAL | Palestino.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| CAL | Union La Calera.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| UC | Universidad Catolica de Chile.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| UCH | Universidad de Chile.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| UDC | Universidad de Concepción.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| CBL | Cobreloa.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| CUR | Curico Unido.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| ANT | Deportes Antofagasta.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| COP | Deportes Copiapo.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| IQQ | Deportes Iquique.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| PMO | Deportes Puerto Montt.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| REC | Deportes Recoleta.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| SCR | Deportes Santa Cruz.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| TEM | Deportes Temuco.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| MAG | Magallanes.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| RAN | Rangers de Talca.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| SLQ | San Luis de Quillota.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| SMA | San Marcos de Arica.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| SW | Santiago Wanderers.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| UES | Union Española.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |
+| USF | Union San Felipe.png | football-logos.cc | marca del club · uso de fans, sin fines de lucro |

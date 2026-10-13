@@ -791,7 +791,9 @@ if(typeof devDoctorRegistrar==="function"){
       /* el 3D tiene que leer el estado de la simulación, no uno propio: montarCancha3D usa _cvSeed/_cvStep/_cvSt */
       /* 7.9126 · el 3D se partió en funciones (construir / cuadro / sincronizar): se lee todo el módulo */
       const s3=["montarCancha3D","_c3dCuadro","_c3dSincronizar","_c3dPartido"].map(n=>{ const fn=window[n]; return typeof fn==="function"?(typeof _docFuente==="function"?_docFuente(fn):String(fn)):""; }).join("\n");
-      if(s3){ if(!/_cvStep/.test(s3)) f.push("la cancha 3D no avanza con _cvStep: estaría desconectada de la simulación");
+      /* 7.9132 · avanza por cvPasoVisible (que llama a _cvStep si no está en pausa): las dos cuentan como conectada */
+      if(s3){ if(!/_cvStep|cvPasoVisible\(/.test(s3)) f.push("la cancha 3D no avanza con _cvStep/cvPasoVisible: estaría desconectada de la simulación");
+        if(/cvPasoVisible\(/.test(s3)&&typeof cvPasoVisible==="function"&&!/_cvStep\(/.test(String(cvPasoVisible))) f.push("cvPasoVisible no llama a _cvStep: la cancha 3D quedaría quieta para siempre");
         if(!/_cvSt|est\.st/.test(s3)) f.push("la cancha 3D no lee _cvSt: no reflejaría la simulación"); }
       /* Modo papa: cancha3dActivo() tiene que dar false con html.papa (salvo que se fuerce) */
       if(typeof cancha3dActivo==="function"){
@@ -1544,6 +1546,88 @@ if(typeof devDoctorRegistrar==="function"){
       else if(k.prep/k.n<0.6) f.push("solo "+k.prep+"/"+k.n+" pases salen con la pierna ya preparada: la pelota sale antes que el gesto");
       const txt="brazos contra piernas "+Math.round(c.contra*100)+" % · salto máx "+c.salto.toFixed(3)+" rad · 0→8 m/s en "+(m.t8||0).toFixed(2)+" s · giro: baja a "+m.vmin.toFixed(1)+" m/s, vuelta en "+(m.tVuelta||0).toFixed(2)+" s · patadas preparadas "+k.prep+"/"+k.n;
       return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
+    }});
+}
+/* 7.9132 · "el arquero que se tira antes y queda flotando, no sirve": la estirada con la pose de verdad, cuadro a cuadro */
+function devEstiradaArquero(durTiro){
+  const p={rol:"gk",_ang:0}, o=_c3dGestoVacio(), dt=1/120, ini=cvEstiradaInicio(durTiro,0.16);
+  let t=0, tirado=false, flota=0, alLlegar=null, minSuelo=9, baja=0, ult=null, maxCad=0, fin=null;
+  for(let k=0;k<1500;k++){
+    if(!tirado&&t>=ini){ cvEstiradaIniciar(p,1,0.6); tirado=true; } else if(tirado) cvEstiradaPaso(p,dt);
+    const F=cvEstiradaFase(p);
+    if(tirado&&!F){ fin=t; break; }
+    if(F){ _c3dEstirada(_c3dCopia(o,C3D_QUIETO),p,F,0,false); const cad=o.lift+C3D_ESTIRADA.cadera, giro=Math.abs(o.roll);
+      if(giro>1.0&&cad>0.6) flota+=dt;                              /* acostado y con la cadera alta = flotando */
+      if(alLlegar==null&&t>=durTiro) alLlegar={f:F.f,u:F.u};
+      if(F.f==="suelo") minSuelo=Math.min(minSuelo,cad);
+      if(F.f==="levanta"){ if(ult!=null&&cad<ult-1e-6) baja++; ult=cad; maxCad=Math.max(maxCad,cad); } }
+    t+=dt;
+  }
+  return {ini:ini, flota:flota, alLlegar:alLlegar, minSuelo:minSuelo, baja:baja, maxCad:maxCad, fin:fin, dive:p._dive, diveT:p._diveT};
+}
+/* en la simulación de verdad: cuándo se tira el arquero en cada remate que le va al arco */
+function devArqueroTiros(seg){
+  const st=_cvNuevoEstado(null), dt=1/30, r=[]; let q=null, ini=null;
+  for(let k=0;k<Math.round((seg||240)/dt);k++){
+    _cvStep(null,dt,st);
+    const pa=st.pase;
+    if(q&&pa!==q){ if(ini!=null) r.push({ini:ini,dur:q.dur}); q=null; ini=null; }
+    if(pa&&pa.tiro&&!q){ q=pa; ini=null; }
+    if(q){ const g=st.jug[q.to]; if(g&&g.rol==="gk"&&ini==null&&g._diveT!=null) ini=q.t; }
+  }
+  return r;
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"arquero_estirada", area:"interfaz", n:"El arquero se tira a tiempo, cae al pasto (no flota) y se levanta con las piernas",
+    arreglo:"js/cancha.js CV_ESTIRADA/cvEstiradaIniciar/cvEstiradaPaso/cvEstiradaInicio (en _cvJuego) · js/cancha3d.js _c3dEstirada y _c3dPoseModelo (la cadera baja con giro) · js/bp3d.js _bpPaso (balón parado)",
+    fn:function(){
+      if(typeof cvEstiradaFase!=="function"||typeof _c3dEstirada!=="function") return _dmal("falta la estirada con tiempos (cancha.js cvEstiradaFase / cancha3d.js _c3dEstirada)");
+      const f=[], txt=[];
+      [0.45,0.8,1.1].forEach(d=>{ const e=devEstiradaArquero(d), s="tiro de "+d+" s";
+        if(e.ini<0.15) f.push(s+": se tira a los "+e.ini.toFixed(2)+" s, antes de poder reaccionar");
+        if(!e.alLlegar||(e.alLlegar.f!=="vuelo"&&e.alLlegar.f!=="carga")) f.push(s+": cuando llega la pelota ya está "+(e.alLlegar?(e.alLlegar.f==="suelo"?"en el suelo (se tiró antes)":e.alLlegar.f):"–"));
+        else if(d>=0.7&&!(e.alLlegar.f==="vuelo"&&e.alLlegar.u>=0.6)) f.push(s+": llega a la pelota estirado solo al "+Math.round((e.alLlegar.f==="vuelo"?e.alLlegar.u:0)*100)+" % (tarde)");
+        if(e.flota>0.08) f.push(s+": queda acostado en el aire "+e.flota.toFixed(2)+" s (flotando)");
+        if(e.minSuelo>0.32) f.push(s+": tirado, la cadera queda a "+e.minSuelo.toFixed(2)+" m (no toca el pasto)");
+        if(e.baja>0||e.maxCad>0.96) f.push(s+": al levantarse sube y baja / vuela (cadera hasta "+e.maxCad.toFixed(2)+" m)");
+        if(e.fin==null||e.dive!==0||e.diveT!=null) f.push(s+": nunca termina de levantarse");
+        txt.push(d+" s → se tira a los "+e.ini.toFixed(2)+" s"); });
+      const tiros=devArqueroTiros(240), malos=tiros.filter(x=>x.ini<0.15||x.ini<x.dur-0.75);
+      if(malos.length) f.push(malos.length+"/"+tiros.length+" estiradas en la simulación salen antes de tiempo (ej. a los "+malos[0].ini.toFixed(2)+" s de un tiro de "+malos[0].dur.toFixed(2)+" s)");
+      if(typeof _bpPaso==="function"&&!/cvEstiradaInicio\(/.test(String(_bpPaso))) f.push("en el balón parado 3D el arquero se tira sin mirar cuándo llega la pelota");
+      if(typeof _c3dPoseModelo==="function"&&!/o\.roll\?\(o\.lift/.test(String(_c3dPoseModelo))) f.push("el maniquí no baja la cadera al estirarse (queda acostado en el aire)");
+      if(typeof _c3dSincronizar==="function"&&!/_c3dEstirada\(/.test(String(_c3dSincronizar))) f.push("la cancha 3D no dibuja la estirada por fases");
+      const t2=txt.join(" · ")+" · en 4 min de simulación: "+tiros.length+" estiradas";
+      return f.length?_dmal(f.length+" problema(s)",f.concat([t2])):_dok(t2);
+    }});
+}
+/* 7.9132 · "cuando pausas, que obvio la cancha también esté pausada, porque siguen jugando xd" + "si no eliges, que no pase
+   nada": se juega la simulación de verdad con pausa, con una pregunta abierta y sin nada, y se mira si se mueve */
+function devCanchaPausa(){
+  const f=[], st0=(typeof _cvSt!=="undefined")?_cvSt:null, pa0=PAUSADO, mo0=MOMENTO_OPS, st=_cvNuevoEstado(null);
+  const foto=()=>[st.ball.x,st.ball.y,st.ball.z||0].concat(st.jug.map(p=>p.x+p.y*7)).map(v=>v.toFixed(5)).join(",");
+  const pasos=(n)=>{ for(let i=0;i<n;i++) cvPasoVisible(null,1/30); };
+  try{ _cvSt=st; PAUSADO=false; MOMENTO_OPS=[]; pasos(90);   /* que arranque el juego */
+    PAUSADO=true; let a=foto(); pasos(45); if(foto()!==a) f.push("en pausa la cancha se sigue moviendo (siguen jugando)");
+    PAUSADO=false; MOMENTO_OPS=[{}]; a=foto(); pasos(45); if(foto()!==a) f.push("con una pregunta abierta la cancha sigue jugando (si no eliges, no tiene que pasar nada)");
+    MOMENTO_OPS=[]; a=foto(); pasos(45); if(foto()===a) f.push("sin pausa la cancha no se mueve");
+  } finally { _cvSt=st0; PAUSADO=pa0; MOMENTO_OPS=mo0; }
+  return f;
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"cancha_pausa", area:"interfaz", n:"En pausa (o con una pregunta abierta) la cancha 2D y 3D queda quieta; sin pausa, juega",
+    arreglo:"js/cancha.js cvCongelada/cvPasoVisible (y _cvFrame) · js/cancha3d.js _c3dCuadro (dtv: pasos, cámara y repetición quietos) · js/bp3d.js y ui-partido.js partidoTeclas (Espacio en el balón parado)",
+    fn:function(){
+      if(typeof cvPasoVisible!=="function"||typeof cvCongelada!=="function") return _dmal("falta cvPasoVisible/cvCongelada en js/cancha.js");
+      if(typeof PAUSADO==="undefined"||typeof MOMENTO_OPS==="undefined") return _dok("sin la pantalla del partido cargada: se prueba en el juego completo");
+      const f=devCanchaPausa();
+      if(typeof _cvFrame==="function"&&!/cvPasoVisible\(/.test(String(_cvFrame))) f.push("la cancha 2D mueve la simulación sin mirar la pausa");
+      if(typeof _c3dCuadro==="function"){ const s=String(_c3dCuadro);
+        if(!/cvPasoVisible\(/.test(s)) f.push("la cancha 3D mueve la simulación sin mirar la pausa");
+        if(!/_c3dSincronizar\(est,dtv\)/.test(s)||!/_c3dRepPintar\(est,dtv\)/.test(s)) f.push("en pausa la 3D sigue animando (pasos, cámara o repetición)"); }
+      if(typeof partidoTeclas==="function"&&!/BP3D/.test(String(partidoTeclas))) f.push("Espacio en el balón parado 3D también pausa el partido (el reloj queda parado sin aviso)");
+      const pd=PAUSADO, P=(typeof P_ACTUAL!=="undefined")?P_ACTUAL:null;
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("pausa, pregunta abierta y VAR congelan la cancha; sin pausa juega"+(P?" · partido en curso "+(pd?"(en pausa)":"(corriendo)"):""));
     }});
 }
 /* 7.9130 · "que los esqueletos sean más smooth, más suaves, realistas" + "si descargas modelos, sería genial (PES 2006)" */

@@ -56,12 +56,36 @@ try{
     await esperar(1500);
     const min2=await p.evaluate(()=>P_ACTUAL&&P_ACTUAL.min);
     ok(min2>r.min,"el partido sigue corriendo con el 3D ("+r.min+"' → "+min2+"')");
+    /* 7.9132 · "cuando pausas, que la cancha también esté pausada": Espacio congela el reloj Y la cancha; al seguir, juegan */
+    const pz=await p.evaluate(async()=>{
+      const foto=()=>[_cvSt.ball.x,_cvSt.ball.y].concat(_cvSt.jug.map(j=>j.x+j.y*3)).map(v=>v.toFixed(4)).join(",");
+      const tecla=()=>document.dispatchEvent(new KeyboardEvent("keydown",{key:" ",code:"Space",bubbles:true}));
+      /* el reloj de la prueba corre ~10 min por segundo: se parte sin ventanas abiertas (entretiempo, pregunta) */
+      clearInterval(TIMER); if(document.body.classList.contains("con-modal")&&typeof cerrarModal==="function") cerrarModal();
+      document.querySelectorAll(".momento-vivo").forEach(x=>x.remove()); MOMENTO_OPS=[]; PAUSADO=false;
+      /* si justo hay una revisión del VAR (~6 s, el juego detenido a propósito), se espera a que termine */
+      for(let i=0;i<40&&P_ACTUAL._varHold;i++) await new Promise(r=>setTimeout(r,250));
+      tecla(); correrEnVivo(); const pausado=PAUSADO, a=foto(), m=P_ACTUAL.min;
+      await new Promise(r=>setTimeout(r,1500)); const b=foto(), m2=P_ACTUAL.min;
+      /* al seguir se para el reloj de la prueba (corre ~10 min por segundo): si no, llega el entretiempo y su ventana
+         congela la cancha (bien hecho) y queda abierta para lo que viene. La cancha se mueve igual: no depende del reloj */
+      tecla(); clearInterval(TIMER);
+      /* hasta 4 s para ver movimiento (si justo hay saque del medio, esperan quietos un momento) */
+      let c=b; for(let i=0;i<10&&c===b;i++){ await new Promise(r=>setTimeout(r,400)); c=foto(); }
+      const e=C3D.est, diag="congelada "+cvCongelada(P_ACTUAL)+" · PAUSADO "+PAUSADO+" · preguntas "+MOMENTO_OPS.length+" · VAR "+!!P_ACTUAL._varHold+
+        " · min "+P_ACTUAL.min+" · terminado "+!!P_ACTUAL.terminado+" · canvas "+!!(e&&e.canvas.isConnected)+" · bp "+!!(e&&e.bp)+" · rep "+!!(e&&e.rep)+" · seq "+!!(_cvSt&&_cvSt.seq);
+      return {pausado:pausado, quieta:a===b, reloj:m===m2, sigue:!PAUSADO&&c!==b, diag:diag};
+    });
+    ok(pz.pausado&&pz.quieta&&pz.reloj,"⏸ pausa (Espacio): el reloj y la cancha 3D se quedan quietos"+(pz.quieta?"":" (¡los jugadores siguen jugando!)"));
+    ok(pz.sigue,"▶ al seguir, la cancha vuelve a jugar"+(pz.sigue?"":" (no se movió: "+pz.diag+")"));
     if(!caso.papa){
       /* 7.9127 · penal y córner DENTRO de la cancha 3D: se juegan, se anotan una sola vez y la cancha vuelve */
       for(const tipo of ["penal","corner"]){
         /* el reloj en pausa mientras se mide: si no, un gol del partido que sigue se contaba como del penal */
         /* _bpCadena=2: si la desvían al córner no se encadena otro (en el juego sí: la prueba mide una sola jugada) */
-        const a=await p.evaluate((tipo)=>{ clearInterval(TIMER); PAUSADO=true; P_ACTUAL.modo="dirigir"; P_ACTUAL._bpCadena=2; E.config.cornerMinijuego=true; window._g0=P_ACTUAL.gl+P_ACTUAL.gv;
+        /* 7.9132 · sin preguntas abiertas (en el juego no hay balón parado con una pregunta pendiente: el reloj espera) */
+        const a=await p.evaluate((tipo)=>{ clearInterval(TIMER); document.querySelectorAll(".momento-vivo").forEach(x=>x.remove()); MOMENTO_OPS=[];
+          PAUSADO=true; P_ACTUAL.modo="dirigir"; P_ACTUAL._bpCadena=2; E.config.cornerMinijuego=true; window._g0=P_ACTUAL.gl+P_ACTUAL.gv;
           window._lineas0=document.querySelectorAll(".relato *").length;
           mostrarAccion(tipo==="corner"?{tipo:"corner",aFavor:true}:{tipo:"penal"});
           const enCapa=!!document.querySelector(".bp3d-capa canvas.cancha3d");
@@ -82,10 +106,20 @@ try{
     }
     if(!caso.papa){
       /* 7.9129 · repetición del gol: aparece después del gol (3 cámaras, cartel), el reloj espera y "Saltar" la corta */
-      await p.evaluate(()=>{ clearInterval(TIMER); PAUSADO=false; if(typeof _cvArmarGol==="function") _cvArmarGol(_cvSt,1,"Prueba",10,{}); });
+      /* 7.9132 · una pregunta abierta (momento táctico) congela la cancha a propósito: se cierra antes de armar el gol. El
+         balón parado deja el modo "dirigir" y su reanudarPronto prende el reloj 650 ms después: se vuelve a "seguir" y se espera */
+      await p.evaluate(()=>{ P_ACTUAL.modo="seguir"; clearInterval(TIMER); });
+      await esperar(900);
+      await p.evaluate(()=>{ clearInterval(TIMER); if(document.body.classList.contains("con-modal")&&typeof cerrarModal==="function") cerrarModal();
+        document.querySelectorAll(".momento-vivo").forEach(x=>x.remove()); MOMENTO_OPS=[]; PAUSADO=false;
+        if(typeof _cvArmarGol==="function") _cvArmarGol(_cvSt,1,"Prueba",10,{}); });
       let rep=null; for(let i=0;i<60&&!rep;i++){ await esperar(250); rep=await p.evaluate(()=>{ const e=C3D.est, r=e&&e.rep, h=document.querySelector(".c3d-rep.on");
         return r?{camaras:r.plan.length, total:r.total, cartel:h?h.textContent:"", visible:!!(h&&h.getBoundingClientRect().width>0), reloj:(e.P._celHasta||0)-Date.now()}:null; }); }
-      ok(rep&&rep.camaras===3&&/Cámara 1/.test(rep.cartel)&&rep.visible,"gol: arranca la repetición con 3 cámaras y su cartel ("+(rep?rep.cartel.replace(/\s+/g," ").trim():"no arrancó")+")");
+      /* si no arrancó, que la prueba diga por qué (jugada del gol, pausa, preguntas, minuto, balón parado pegado) */
+      const diag=rep?null:await p.evaluate(()=>{ const e=C3D.est, S=_cvSt; return "seq "+(S&&S.seq?S.seq.tipo+" t="+(S.seq.t||0).toFixed(2)+" red="+!!S.seq.red:"ninguna")+
+        " · congelada "+(typeof cvCongelada==="function"?cvCongelada(P_ACTUAL):"?")+" · PAUSADO "+PAUSADO+" · preguntas "+MOMENTO_OPS.length+" · min "+(P_ACTUAL&&P_ACTUAL.min)+
+        " · terminado "+!!(P_ACTUAL&&P_ACTUAL.terminado)+" · canvas "+!!(e&&e.canvas.isConnected)+" · bp "+!!(e&&e.bp)+" · pendiente "+(e&&e.repPendiente); });
+      ok(rep&&rep.camaras===3&&/Cámara 1/.test(rep.cartel)&&rep.visible,"gol: arranca la repetición con 3 cámaras y su cartel ("+(rep?rep.cartel.replace(/\s+/g," ").trim():"no arrancó: "+diag)+")");
       ok(rep&&rep.reloj>800,"durante la repetición el reloj del partido espera ("+(rep?Math.round(rep.reloj):"–")+" ms)");
       await p.evaluate(()=>{ const b=document.querySelector(".c3d-rep .c3d-rep-saltar"); if(b) b.click(); });
       await esperar(400);

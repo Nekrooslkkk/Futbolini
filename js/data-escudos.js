@@ -231,4 +231,16 @@ const ESCUDOS_FOTOS={
   "n:São Paulo":{src:"img/clubes/CM_SAOPAULO.png",tipo:"commons"},
   "n:Vélez Sarsfield":{src:"img/clubes/VEL.png",tipo:"commons"}
 };
+/* 7.9132 · ESCUDOS OFICIALES de los 32 clubes de Primera y Primera B 2026 (los trajo el autor desde football-logos.cc,
+   13 oct 2026: "las agregas tal cual, que se vean bien siempre, añádelas pa todo"). NO son licencia libre: son la marca
+   de cada club, usada en un juego de fans sin fines de lucro (excepción del autor a la regla de assets libres; ver
+   CLAUDE.md e img/FUENTES.md ▸ Escudos oficiales). Viven aparte en img/clubes/oficial/ (WEBP 256 px) para poder
+   sacarlos de una: si se vacía esta lista, cada club vuelve a su escudo libre o estilizado (queda en `respaldo`).
+   Si un archivo no carga, el <img> cae solo al estilizado (_escFall). */
+const ESCUDOS_OFICIALES=["AUD","COB","CC","COQ","DCO","LSE","LIM","EVE","HUA","NUB","OHI","PAL","CAL","UC","UCH","UDC",
+  "CBL","CUR","ANT","COP","IQQ","PMO","REC","SCR","TEM","MAG","RAN","SLQ","SMA","SW","UES","USF"];
+ESCUDOS_OFICIALES.forEach(function(id){
+  var antes=ESCUDOS_FOTOS[id]||null;
+  ESCUDOS_FOTOS[id]={src:"img/clubes/oficial/"+id+".webp",tipo:"oficial",respaldo:antes};
+});
 function escudoArchivo(id){return (typeof ESCUDOS_FOTOS!=='undefined'&&ESCUDOS_FOTOS[id])||null;}

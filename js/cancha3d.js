@@ -421,6 +421,33 @@ function _c3dPose(est,i,o){
   }
 }
 
+/* ---------- 7.9132 · LA ESTIRADA DEL ARQUERO (fases de cancha.js cvEstiradaFase) ----------
+   "El arquero se tira antes y queda flotando": el giro es desde la cadera, así que la cadera tiene que BAJAR a medida que el
+   cuerpo se acuesta (lift = altura de la cadera − 0,93). Se agacha, vuela en arco (más alto si la pelota va alta), cae de
+   costado al pasto (cadera a 0,24 m), queda tirado y se levanta recogiendo las piernas. El giro nunca es 0 mientras la cadera
+   está baja (el maniquí solo baja la cadera si hay giro: así una entrada no le entierra los pies). */
+const C3D_ESTIRADA={cadera:0.93, piso:0.24, giro:1.42};
+function _c3dEstirada(o,p,F,ang,conPelota){
+  const E=C3D_ESTIRADA, S=_c3dSuave, lado=p._diveLado||1, sg=-Math.sign(Math.cos(ang)*lado||1);
+  const hi=Math.max(0,Math.min(1,((p._diveAlto==null?0.6:p._diveAlto)-0.4)/1.8)), h0=E.cadera-0.12;
+  let cad=E.cadera, giro=0;
+  o.pitch=0; o.lean=0; o.pelvis=0; o.twist=0; o.nod=0;
+  const L=o.legs, A=o.arms;
+  if(F.f==="carga"){ const u=S(F.u); cad=E.cadera-0.12*u; giro=0.04*u;
+    L[0].k=L[1].k=0.7*u; L[0].t=L[1].t=-0.35*u; A[0].s=A[1].s=-0.6*u; A[0].e=A[1].e=-0.4; o.pitch=0.2*u; }
+  else if(F.f==="vuelo"){ const u=F.u, hc=0.72+0.9*hi;
+    cad=(1-u)*(1-u)*h0+2*u*(1-u)*hc+u*u*E.piso; giro=0.04+(E.giro-0.04)*S(Math.min(1,u*1.25)); o.brazos=conPelota?"abrazo":"arriba";
+    L[0].k=0.25; L[1].k=0.45; L[0].t=-0.15; L[1].t=0.2; }
+  else if(F.f==="suelo"){ const u=F.u; cad=E.piso+0.05*Math.max(0,1-u*5); giro=E.giro; o.brazos=conPelota?"abrazo":"arriba";
+    L[0].k=0.5; L[1].k=0.8; L[1].t=-0.3; }
+  else { const u=F.u, a=S(Math.min(1,u/0.5)), b=S(Math.max(0,(u-0.45)/0.55));
+    /* primero se apoya y recoge las piernas (de costado a agachado), después se para */
+    giro=(E.giro-(E.giro-0.25)*a)*(1-b)+0.001; cad=E.piso+(0.5-E.piso)*a+(E.cadera-0.5)*b;
+    const k=2.0*a*(1-b), t=-1.25*a*(1-b); L[0].k=L[1].k=k; L[0].t=L[1].t=t; o.pitch=0.35*a*(1-b);
+    A[0].s=A[1].s=0.25*a*(1-b); A[0].e=A[1].e=-0.3; if(conPelota) o.brazos="abrazo"; }
+  o.roll=sg*giro; o.lift=cad-E.cadera;
+  return o;
+}
 /* ---------- 7.9130 · JUGADORES CON EL MANIQUÍ (modelo3d.js) ----------
    En calidad Alta y Auto los 22 usan el maniquí CC0 animado (cuerpo continuo, animaciones del paquete); en Antigua y en
    Modo papa, el cuerpo clásico. Ajustes ▸ Jugadores 3D lo cambia. Si el modelo no llega o algo falla, quedan los
@@ -464,7 +491,7 @@ function _c3dPoseBrazos(o){
 function _c3dPoseModelo(est,i,o,v,dt,fase){
   const I=est.m3d[i], R=I.raiz, K=_c3dM();
   /* el cuerpo entero: dónde está, hacia dónde mira y cuánto se inclina en la curva */
-  R.position.set(o.x,Math.max(0,o.lift||0),o.z);
+  R.position.set(o.x,o.roll?(o.lift||0):Math.max(0,o.lift||0),o.z);   /* 7.9132 · con giro (estirada) la cadera baja de verdad */
   K.e.set(0,o.yaw,o.lean||0,"YXZ"); R.quaternion.setFromEuler(K.e);
   if(o.roll){   /* el arquero que se tira rueda desde la cadera */
     const qr=K.qr||(K.qr=new THREE.Quaternion()), ax=K.ax||(K.ax=new THREE.Vector3()), h1=K.h1||(K.h1=new THREE.Vector3());
@@ -558,7 +585,8 @@ function _c3dSincronizar(est,dt){
   const wx=y=>(y-0.5)*68, wz=x=>(x-0.5)*105;   /* sim → metros: 105 de largo, 68 de ancho */
   const K=_c3dM(), M=K.W, sombras=est.sombras;
   let manos=null;
-  const tAhora=performance.now()/1000;
+  /* 7.9132 · reloj de la animación que avanza con dt (no con la hora): en pausa ni la respiración se mueve */
+  const tAhora=est.tAnim=(est.tAnim==null?performance.now()/1000:est.tAnim+dt);
   est.giro=est.giro||[];
   const fr=_c3dFotoNueva(est,dt);   /* 7.9129 · la grabadora de la repetición (-1 si este cuadro no se guarda) */
   S.jug.forEach((p,i)=>{
@@ -575,8 +603,9 @@ function _c3dSincronizar(est,dt){
     est.gestos=est.gestos||[]; const o=_c3dGesto(_c3dCopia(est.gestos[i]||(est.gestos[i]=_c3dGestoVacio()),C3D_QUIETO),p,v,tAhora,i,est.fase[i]);
     o.x=x; o.z=z; o.yaw=giro; o.brazos=null; o.lean=Math.max(-0.3,Math.min(0.3,-gv*v*0.035));
     if(p.rol==="gk"){
-      const pase=S.pase;
-      if((p._dive||0)>0.05){
+      const pase=S.pase, Fe=(typeof cvEstiradaFase==="function")?cvEstiradaFase(p):null;
+      if(Fe) _c3dEstirada(o,p,Fe,ang,S.own===i);   /* 7.9132 · estirada con tiempos: carga, vuelo, cae, se levanta */
+      else if((p._dive||0)>0.05){   /* (si alguien pone _dive a mano, sin línea de tiempo) */
         const destX=pase&&pase.tiro?wx(pase.y1):wx(S.ball.y), lado=Math.sign(destX-x)||1;
         const d=Math.min(1,p._dive), lat=Math.cos(ang)*lado;   /* hacia qué lado queda en SU marco */
         o.roll=-Math.sign(lat||1)*d*1.25; o.lift=Math.sin(d*Math.PI)*0.35; o.x=x+lado*d*0.7; o.brazos="arriba";
@@ -841,12 +870,14 @@ function _c3dCuadro(est,t){
   _c3dVigilar(est,dtReal);
   _c3dAjusteAuto(est,dtReal);
   try{ _c3dTam(est);
-    if(est.repPendiente!=null&&!est.rep){ est.repPendiente-=dt; if(est.repPendiente<=0){ est.repPendiente=null; c3dRepetir(est,{}); } }
-    if(est.rep) _c3dRepPintar(est,dt);   /* 7.9129 · repetición del gol: el partido y la simulación esperan */
+    /* 7.9132 · en pausa (o con una pregunta abierta) todo queda quieto: jugadores, pelota, cámara y hasta la repetición */
+    const quieto=!(est.bp&&est.bp.paso)&&typeof cvCongelada==="function"&&cvCongelada(est.P), dtv=quieto?0:dt;
+    if(est.repPendiente!=null&&!est.rep){ est.repPendiente-=dtv; if(est.repPendiente<=0){ est.repPendiente=null; c3dRepetir(est,{}); } }
+    if(est.rep) _c3dRepPintar(est,dtv);   /* 7.9129 · repetición del gol: el partido y la simulación esperan */
     else {
       if(est.bp&&est.bp.paso) est.bp.paso(dt);   /* balón parado: la jugada mueve a todos, la simulación espera */
-      else if(typeof _cvStep==="function"&&!(est.P&&est.P.terminado&&!(_cvSt&&_cvSt.seq))) _cvStep(est.P,dt);
-      _c3dSincronizar(est,dt);
+      else if(typeof cvPasoVisible==="function"&&!(est.P&&est.P.terminado&&!(_cvSt&&_cvSt.seq))) cvPasoVisible(est.P,dt);
+      _c3dSincronizar(est,dtv);
     }
     est.renderer.render(est.scene,est.camGL); }
   catch(e){

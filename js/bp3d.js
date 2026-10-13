@@ -57,7 +57,7 @@ function bp3dDesdeLegado(lx,ly){
   return {x:-(lx-cx)*BP3D.ARCO.ancho/mitad, y:(A.y1-ly)*BP3D.ARCO.alto/(A.y1-A.y0)};
 }
 const _bpSX=z=>z/105+0.5, _bpSY=x=>x/68+0.5, _bpWX=y=>(y-0.5)*68, _bpWZ=x=>(x-0.5)*105;
-function _bpPoner(p,x,z){ p.x=_bpSX(z); p.y=_bpSY(x); p._vel=0; p._dive=0; p.vx=p.vy=0; }   /* quieto y parado (el arquero venía tirado de la jugada anterior) */
+function _bpPoner(p,x,z){ p.x=_bpSX(z); p.y=_bpSY(x); p._vel=0; p._dive=0; p._diveT=null; p.vx=p.vy=0; }   /* quieto y parado (el arquero venía tirado de la jugada anterior) */
 function _bpMirar(p,x,z){ const dx=(_bpSX(z)-p.x)*105, dy=(_bpSY(x)-p.y)*68; p._ang=Math.atan2(dy,dx); }
 
 /* acomoda a los 22 para la jugada; devuelve índices útiles */
@@ -191,6 +191,8 @@ function bp3dJugar(tipo,P,opts){
   /* teclado (PC) */
   jug.tecla=function(e){
     if(BP3D.activo===jug&&jug.tirado&&(e.key==="Escape"||e.key==="Enter")){ e.preventDefault(); e.stopPropagation(); jug.rapido=true; return; }   /* ya pateaste: adelantar */
+    /* 7.9132 · Espacio después de patear ya no se cuela como "pausa del partido" (el reloj quedaba parado sin aviso) */
+    if(BP3D.activo===jug&&jug.tirado&&e.key===" "){ e.preventDefault(); e.stopPropagation(); return; }
     if(BP3D.activo!==jug||jug.tirado) return;
     const k=e.key, T=BP3D.TECLA;
     const mov={ArrowLeft:[1,0],ArrowRight:[-1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[k];
@@ -339,6 +341,8 @@ function _bpPaso(jug,dt){
   /* los gestos (patada, cabezazo) avanzan aunque la simulación del partido esté quieta (en la jugada viva los avanza ella) */
   if(!A||(A.fase!=="vivo"&&A.fase!=="fin")) S.jug.forEach(p=>{ if(p._acc){ p._acc.t+=dt; if(p._acc.t>=p._acc.dur) p._acc=null; } });
   if(!A) return;
+  /* 7.9132 · la estirada del arquero avanza su línea de tiempo (vuela, cae, se levanta); en la jugada viva la avanza la simulación */
+  if(A.gk&&A.fase!=="vivo"&&typeof cvEstiradaPaso==="function") cvEstiradaPaso(A.gk,dt);
   const b=S.ball, pj=jug.idx.pat>=0?S.jug[jug.idx.pat]:null;
   if(A.fase==="carrera"){
     A.tc+=dt; const u=Math.min(1,A.tc/A.tRun), f=u*u*(3-2*u);
@@ -354,9 +358,19 @@ function _bpPaso(jug,dt){
     A.t+=dt; const u=Math.min(1,A.t/A.T), d=A.dest;
     const x=A.x0+(d.x-A.x0)*u, z=A.z0+(d.z-A.z0)*u, y=Math.max(0.11,0.11+A.vy*A.t-0.5*9.81*A.t*A.t);
     b.x=_bpSX(z); b.y=_bpSY(x); b.z=(y-0.11)/11;
-    if(A.gk&&A.t>=A.reaccion){ A.gk._dive=Math.min(1,(A.gk._dive||0)+dt*(jug.tipo==="corner"?1.5:3.2));
-      const gx=_bpWX(A.gk.y), k=Math.min(1,dt*(jug.tipo==="corner"?1.5:3)); A.gk.y=_bpSY(gx+(A.kx*0.55-gx)*k);
-      if(jug.tipo==="corner"&&A.ataja){ const gz=_bpWZ(A.gk.x); A.gk.x=_bpSX(gz+((d.z+0.3)-gz)*k); } }
+    if(A.gk&&A.t>=A.reaccion){ const gk=A.gk, gx=_bpWX(gk.y);
+      if(jug.tipo==="corner"){
+        /* 7.9132 · en el córner no se tira de costado: sale a buscarla y salta con los brazos arriba si va a él */
+        const k=Math.min(1,dt*1.5); gk.y=_bpSY(gx+(A.kx*0.55-gx)*k);
+        if(A.ataja){ const gz=_bpWZ(gk.x); gk.x=_bpSX(gz+((d.z+0.3)-gz)*k); if(!gk._acc&&A.T-A.t<0.4) gk._acc={tipo:"atrapa",t:0,dur:0.8,salto:0.45}; }
+      } else {
+        /* 7.9132 · se tira A TIEMPO (cancha.js cvEstiradaInicio): llega estirado cuando llega la pelota; en el penal adivina
+           y se tira al patear. Si viene al cuerpo no se tira: la para de frente. Antes de tirarse casi no se mueve */
+        const lejos=A.kx-gx;
+        if(gk._diveT==null&&!A.gkTirado&&Math.abs(lejos)>0.8&&A.t>=cvEstiradaInicio(A.T,A.reaccion)){ A.gkTirado=true; cvEstiradaIniciar(gk,Math.sign(lejos),d.y); }
+        if(!A.gkTirado&&Math.abs(lejos)<=0.8&&!gk._acc&&A.T-A.t<0.35) gk._acc={tipo:"atrapa",t:0,dur:0.6};
+        const k=Math.min(1,dt*(gk._diveT!=null?3:0.6)); gk.y=_bpSY(gx+(A.kx*0.55-gx)*k);
+      } }
     if(pj) pj._vel=Math.max(0,(pj._vel||0)-dt*1.2);
     /* córner: el que va a cabecear corre al punto y salta cuando la pelota llega; el que lo marca salta con él */
     if(jug.tipo==="corner"){
@@ -542,7 +556,7 @@ function _bpCerrar(jug,modo){
     /* el gol ya se vio en la cancha: que la simulación no lo repita como jugada, y saque del medio */
     if(S){ const mk=(typeof _cvMarcador==="function")?_cvMarcador(P):null; if(mk){ S.lastYo=mk.yo; S.lastOtro=mk.otro; }
       if(golFinal&&typeof _cvSaqueDelMedio==="function") _cvSaqueDelMedio(S,false);
-      S.jug.forEach(p=>{ p._dive=0; }); }
+      S.jug.forEach(p=>{ p._dive=0; p._diveT=null; }); }
     P._bpCadena=cadena?(P._bpCadena||0)+1:0;
     /* en la tanda manda onRes (él llama al próximo penal): reanudar acá patearía dos veces seguidas */
     if(typeof jug.opts.onRes!=="function"){

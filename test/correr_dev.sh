@@ -53,8 +53,17 @@ for m in re.finditer(r'(?:"([^"]+)"|([A-Za-z_0-9]+)):\{src:"(img/clubes/[^"]+)",
     elif tipo=="commons":
         base=os.path.basename(src).split(".")[0]; nom=id_[2:] if id_.startswith("n:") else id_
         if ("| "+nom+" |") not in f and ("| "+base+" |") not in f: mal.append(f"{id_}: sin crédito en img/FUENTES.md")
+# 7.9132 · los escudos oficiales (marca de cada club): el archivo existe y figuran en img/FUENTES.md ▸ Escudos oficiales
+mo=re.search(r'const ESCUDOS_OFICIALES=\[([^\]]*)\]',s)
+ofi=re.findall(r'"([A-Z]+)"',mo.group(1)) if mo else []
+if not ofi: mal.append("no está la lista ESCUDOS_OFICIALES")
+sec=f.split("## Escudos oficiales",1)[1] if "## Escudos oficiales" in f else ""
+if ofi and not sec: mal.append("img/FUENTES.md no tiene la sección «## Escudos oficiales» (de dónde salen y que son marca del club)")
+for i in ofi:
+    if not os.path.exists(f"img/clubes/oficial/{i}.webp"): mal.append(f"{i}: falta img/clubes/oficial/{i}.webp")
+    elif sec and ("| "+i+" |") not in sec: mal.append(f"{i}: el escudo oficial no figura en img/FUENTES.md")
 for x in mal: print("  ❌ "+x)
-print("  ok: todos los escudos existen y los de Commons tienen crédito" if not mal else "")
+print("  ok: todos los escudos existen, los de Commons tienen crédito y los "+str(len(ofi))+" oficiales están rotulados" if not mal else "")
 sys.exit(1 if mal else 0)
 PY
 # 7.9119 · ninguna animación infinita puede animar algo que no sea transform/opacity (repinta sin parar: CPU y batería)

@@ -34,6 +34,7 @@ function aplicarHotSwap(id, Popt){
 /* Atajos durante el partido: Espacio = pausa/reanuda · 1/2/3 = decidir */
 function partidoTeclas(e){
   if(!P_ACTUAL||P_ACTUAL.terminado) return;
+  if(typeof BP3D!=="undefined"&&BP3D.activo) return;   /* 7.9132 · en el balón parado 3D, Espacio es la línea de potencia */
   if(e.code==="Space"||e.key===" "){
     if(P_ACTUAL.modo!=="simular"){ e.preventDefault(); PAUSADO=!PAUSADO; if(!MOMENTO_OPS.length) pintarPartido(); aviso(PAUSADO?"⏸ Pausa":"▶ Sigue"); }
     return;

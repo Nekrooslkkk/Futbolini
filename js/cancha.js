@@ -408,11 +408,23 @@ function _cvJuego(st,P,dt){
     else if(i===st.own && p.rol==="gk"){ tx=p.x; ty=p.y; v=0; if(st.prox>0.7&&!(st.atajada&&st.atajada.t>0)) st.prox=0.7; }
     else if(i===st.own && st.conduce>0){ tx=_cvX(p.mio,_cvCl(_cvA(p,p.x)+0.16,0,0.9)); ty=_cvCl(p.y+Math.sin(st.t*3+(st._zig||0))*0.05+(0.5-p.y)*0.1,0.06,0.94); v=0.15; }
     else if(i===st.own){ tx=_cvX(p.mio,_cvCl(_cvA(p,p.x)+0.08,0,0.86)); ty=p.y+(0.5-p.y)*0.15; v=0.08; }
-    else if(st.pase && st.pase.tiro && i===st.pase.to && p.rol==="gk"){ tx=p.x; ty=_cvCl(st.pase.gol?p.y+(st.pase.y1-p.y)*0.55:st.pase.y1,0.42,0.58); v=0.34; p._dive=Math.min(1,(p._dive||0)+dt*5); }
+    else if(st.pase && st.pase.tiro && i===st.pase.to && p.rol==="gk"){
+      /* 7.9132 · se tira A TIEMPO (llega estirado cuando llega la pelota) y su cadera va a quedar ~0,9 m antes de la
+         pelota: las manos la alcanzan. Si viene al cuerpo no se tira: la para de frente. Antes de tirarse, se acomoda corto */
+      const q=st.pase, dl=(q.y1-p.y)*CV_FIS.A, lado=Math.sign(dl)||1;
+      const laMira=q.afuera&&(Math.abs(dl)>3.2||(q.zFin||0)>0.23);   /* clarito afuera o por arriba: la mira pasar */
+      tx=p.x; ty=_cvCl(q.gol?p.y+(q.y1-p.y)*0.55:(laMira?p.y:q.y1-lado*0.9/CV_FIS.A),0.42,0.58);
+      if(p._diveT==null&&!q._gkTirado&&!laMira&&Math.abs(dl)>0.8&&q.t>=cvEstiradaInicio(q.dur,0.16)){ q._gkTirado=true; cvEstiradaIniciar(p,lado,(q.zFin||0.05)*CV_FIS.alto); }
+      if(p._diveT==null&&Math.abs(dl)<=0.8&&!p._acc&&q.dur-q.t<0.35) _cvAccion(p,"atrapa",0.6);
+      v=p._diveT!=null?0.34:0.09; }
     else if(st.persigue && st.persigue.indexOf(i)>=0){ tx=b.x; ty=b.y; v=0.2; }
     else if(i===pres && st.own>=0){ tx=b.x; ty=b.y; v=0.17; }
     else if(st.pase && i===st.pase.to){ tx=st.pase.x1; ty=st.pase.y1; v=0.2; }
-    if(p._dive>0&&!(st.pase&&st.pase.tiro&&i===st.pase.to)) p._dive=Math.max(0,p._dive-dt*1.6);
+    if(p.rol==="gk"){ cvEstiradaPaso(p,dt);
+      /* tirado en el pasto o levantándose: no corre (y si tiene la pelota, no la suelta hasta estar de pie) */
+      const Fe=cvEstiradaFase(p);
+      if(Fe&&(Fe.f==="suelo"||Fe.f==="levanta")){ tx=p.x; ty=p.y; v=0; if(i===st.own) st.prox=Math.max(st.prox,cvEstiradaResta(p)+0.2); } }
+    else if(p._dive>0) p._dive=Math.max(0,p._dive-dt*2);
     _cvMover(p,tx,ty,v,dt);
   });
   if(st.atajada){ st.atajada.t-=dt; if(st.atajada.t<=0||st.own!==st.atajada.gk) st.atajada=null; }
@@ -500,6 +512,43 @@ function _cvPasoPenal(st,dt){
   if(gk>=0){ const g=st.jug[gk]; g.x=_cvX(!lado,0.03); _cvQuieto(g); if(k>0.45) g.y+=((0.5-(st._penY||0.06)*1.4)-g.y)*Math.min(1,dt*8); }
   if(st.penalDive<=0){ st.own=gk; st.pase=null; st.saque=null; b.vx=b.vy=b.vz=0; }
 }
+/* 7.9132 · LA ESTIRADA DEL ARQUERO con tiempos de verdad. El autor: "el arquero que se tira antes y queda flotando, no
+   sirve". Antes _dive llegaba a 1 a los 0,2 s del remate (la pelota tarda 0,45–1,1 s en llegar) y el cuerpo giraba con la
+   cadera a la altura de estar parado: quedaba acostado en el aire. Ahora la estirada es una línea de tiempo: se agacha
+   (carga), vuela en arco y CAE al pasto justo después de que llega la pelota, queda tirado y se levanta con las piernas
+   (cancha3d.js _c3dEstirada dibuja cada fase). _dive (0..1) sigue diciendo cuánto está estirado (dibujo 2D y física). */
+const CV_ESTIRADA={carga:0.12, vuelo:0.5, suelo:0.7, levanta:0.9};
+function cvEstiradaIniciar(p,lado,alto){ p._diveT=0; p._diveLado=lado||1; p._diveAlto=(alto==null?0.6:alto); p._dive=0; }
+function cvEstiradaFase(p){
+  const t=p&&p._diveT; if(t==null) return null;
+  const E=CV_ESTIRADA, a=E.carga, b=a+E.vuelo, c=b+E.suelo;
+  if(t<a) return {f:"carga",u:t/a};
+  if(t<b) return {f:"vuelo",u:(t-a)/E.vuelo};
+  if(t<c) return {f:"suelo",u:(t-b)/E.suelo};
+  return {f:"levanta",u:Math.min(1,(t-c)/E.levanta)};
+}
+function cvEstiradaPaso(p,dt){
+  if(p._diveT==null){ if(p._dive>0) p._dive=Math.max(0,p._dive-dt*2); return; }
+  p._diveT+=dt; const F=cvEstiradaFase(p);
+  if(F.f==="levanta"&&F.u>=1){ p._diveT=null; p._dive=0; return; }
+  p._dive=F.f==="carga"?0.08*F.u:(F.f==="vuelo"?0.08+0.92*F.u:(F.f==="suelo"?1:1-F.u));
+}
+/* cuánto le falta para estar de pie otra vez (para no soltar la pelota tirado en el suelo) */
+function cvEstiradaResta(p){ const E=CV_ESTIRADA; return p._diveT==null?0:Math.max(0,E.carga+E.vuelo+E.suelo+E.levanta-p._diveT); }
+/* cuándo se tira: la pelota llega cuando ya voló el 85 % (la toca en el aire y cae), nunca antes de reaccionar */
+function cvEstiradaInicio(durTiro,reaccion){ return Math.max(reaccion==null?0.16:reaccion, durTiro-(CV_ESTIRADA.carga+CV_ESTIRADA.vuelo*0.85)); }
+/* 7.9132 · "cuando pausas, que obvio la cancha también esté pausada, porque siguen jugando xd" y "si no eliges, que no
+   pase nada". La cancha (2D y 3D) se congela mientras el reloj espera al jugador: pausa (también entretiempo y ventanas
+   que ponen PAUSADO), una pregunta con opciones (momento táctico; penal, tiro libre o lesión por decidir) y la revisión
+   del VAR. El festejo y la repetición del gol SÍ se ven (no esperan al jugador) y el balón parado 3D lo mueve su jugada. */
+function cvCongelada(P){
+  if(typeof PAUSADO!=="undefined"&&PAUSADO) return true;
+  if(typeof MOMENTO_OPS!=="undefined"&&MOMENTO_OPS&&MOMENTO_OPS.length) return true;
+  P=P||(typeof P_ACTUAL!=="undefined"?P_ACTUAL:null);
+  return !!(P&&P._varHold);
+}
+/* un paso de la cancha visible: el ÚNICO lugar por donde la 2D y la 3D mueven la simulación del partido */
+function cvPasoVisible(P,dt){ if(cvCongelada(P)) return false; _cvStep(P,dt); return true; }
 function _cvStep(P,dt,stOpc){
   const st=stOpc||_cvSt; if(!st) return;
   st.t+=dt; st._dtCam=dt;
@@ -905,7 +954,7 @@ function _cvFrame(ts){
   if(document.hidden || dtCrudo<minDt){ _cvRAF=requestAnimationFrame(_cvFrame); return; }
   const dt=Math.min(0.05,dtCrudo); _cvLast=ts;
   const P=P_ACTUAL;
-  _cvStep(P,dt);
+  cvPasoVisible(P,dt);   /* 7.9132 · en pausa o con una pregunta abierta, la cancha queda quieta (se sigue dibujando) */
   const s=_cvSize(canvas);
   _cvDraw(canvas.getContext("2d"), s.w, s.h, null, P);
   if(!P.terminado || (_cvSt&&_cvSt.seq)) _cvRAF=requestAnimationFrame(_cvFrame);

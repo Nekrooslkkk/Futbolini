@@ -5427,3 +5427,37 @@ modelos, sería genial (PES 2006)".
   (OverhandThrow), "no" con la cabeza (Idle_No_Loop), brazos cruzados, salto, y un maniquí femenino. No trae patada.
 - **Estado:** doctor sano 148/148 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
   · core 1185/1185 · saves ok · banco 255 sano (11 % despidos).
+
+### 7.9132 — Escudos oficiales de los 32 clubes · la cancha se congela en pausa (y con una pregunta abierta) · el arquero ya no se tira antes ni queda flotando
+Pedidos del autor (13 oct 2026): "te subí las carpetas de fotos para que las subas tú realmente… que se vean bien siempre,
+añádelas pa todo" (y ante la duda por el repo público: "hazlo igual"); "cuando pausas, que obvio la cancha también esté
+pausada porque siguen jugando xd"; "que el ritmo tenga que ver con las preguntas: si no eliges, que no pase nada"; "el
+arquero que se tira antes y queda flotando, no sirve".
+- **Escudos oficiales (js/data-escudos.js `ESCUDOS_OFICIALES`, img/clubes/oficial/):** los 32 de Primera y Primera B 2026
+  que trajo el autor (football-logos.cc, PNG 1500 px) reducidos a WEBP 256 px (400 KB los 32) y usados en TODO el juego
+  (todo pasa por `escudoHTML`). **No son licencia libre**: son marca de cada club, en un juego de fans sin fines de lucro;
+  rotulados en `img/FUENTES.md ▸ Escudos oficiales`, excepción escrita en `CLAUDE.md`. Fáciles de sacar: el escudo anterior
+  queda en `respaldo` y si un archivo no carga cae solo al estilizado.
+- **Pausa de verdad (js/cancha.js `cvCongelada`/`cvPasoVisible`):** la 2D y la 3D mueven la simulación por un solo paso
+  que no avanza si el partido está en pausa, si hay una pregunta abierta (momento táctico, penal/tiro libre/lesión por
+  decidir) o durante el VAR. En la 3D quedan quietos los pasos, la cámara, la respiración (reloj de animación por dt) y
+  hasta la repetición. El festejo y el balón parado 3D sí se ven. Espacio en el balón parado ya no se cuela como pausa
+  (el reloj quedaba parado sin aviso).
+- **La estirada del arquero (cancha.js `CV_ESTIRADA`, cancha3d.js `_c3dEstirada`, bp3d.js):** antes llegaba estirado a los
+  0,2 s del remate (la pelota tarda 0,45–1,1 s) y giraba con la cadera a la altura de estar parado: acostado en el aire.
+  Ahora es una línea de tiempo: se agacha (0,12 s), vuela en arco (0,5 s, más alto si la pelota va alta) y CAE al pasto
+  justo después de que llega la pelota (cadera a 0,24 m), queda tirado y se levanta recogiendo las piernas. Se tira cuando
+  hay que tirarse (`cvEstiradaInicio`), no se tira a pelotas que van clarito afuera, ni a las que le vienen al cuerpo (la
+  para de frente), su cadera queda ~0,9 m antes de la pelota (la alcanzan las manos) y no suelta la pelota tirado. En el
+  penal adivina y se tira al patear; en el córner sale y salta con los brazos arriba (no se tira de costado).
+- **Dev:** `escudos_oficiales` (asíncrono: los 32 cargan, ≥128 px, se pintan los oficiales, si uno falta cae al
+  estilizado) y `correr_dev.sh` revisa archivo + rótulo; `cancha_pausa` (juega la simulación con pausa, con pregunta y sin
+  nada); `arquero_estirada` (cuadro a cuadro: no se tira antes de reaccionar, llega estirado, no flota, toca el pasto, se
+  levanta sin volar; y 4 min de simulación real); `test/cancha3d.mjs` prueba la pausa con Espacio en el navegador (y espera
+  al VAR, cierra preguntas y vuelve a "seguir" para no confundir sus propias mediciones). El chequeo viejo "la 3D avanza
+  con _cvStep" acepta `cvPasoVisible` y caza si un día deja de llamar a la simulación. Al revés: sin congelar → 5 fallas;
+  estirada vieja → 16; escudo borrado / respaldo roto → cazados.
+- **Encargo para Grok 4.7 (modo build):** la interfaz (Escritorio tipo Vista, avisos, Syntergia, correo tipo Hotmail 2007,
+  trivia, textos en pasado con `{RIVAL}`) con archivo:línea, criterio de listo y reparto de archivos: en ChatDeTrabajIA.md.
+- **Estado:** doctor sano 151/151 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D
+  32/32) · core 1185/1185 · saves ok · banco 255 sano (15 % despidos).

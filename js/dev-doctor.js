@@ -2114,23 +2114,54 @@ function devEscudos(){
   var ids={}, add=function(id,n){ if(id&&!ids[id]) ids[id]=n||id; };
   ["LIGA_2026","LIGA_B_2026","LIGA_C_2026","LIGA_2006","LIGA_1925","LIGA_ARG_2026"].forEach(function(k){ var L=globalPorNombre(k); if(!L) return; (Array.isArray(L)?L:Object.keys(L).map(function(x){ return L[x]; })).forEach(function(c){ if(c&&c.id) add(c.id,c.n||c.c); }); });
   try{ (POOL_CONMEBOL||[]).forEach(function(c){ if(c&&c.n) add(c.n,c.n); }); }catch(e){}
-  var r={total:0,archivo:0,estilizado:0,generado:0,sin:[]};
+  var r={total:0,archivo:0,oficial:0,estilizado:0,generado:0,sin:[]};
   Object.keys(ids).forEach(function(id){ r.total++;
     var f=(typeof ESCUDOS_FOTOS!=="undefined")&&(ESCUDOS_FOTOS[id]||ESCUDOS_FOTOS["n:"+ids[id]]);
-    if(f&&f.tipo==="commons") r.archivo++; else if(f||ESCUDOS_CLUB[id]||ESCUDOS_NOMBRE[ids[id]]) r.estilizado++;
+    if(f&&f.tipo==="oficial") r.oficial++;   /* 7.9132 · escudo oficial (marca del club, lo trajo el autor) */
+    else if(f&&f.tipo==="commons") r.archivo++; else if(f||ESCUDOS_CLUB[id]||ESCUDOS_NOMBRE[ids[id]]) r.estilizado++;
     else if(typeof escudoHTML==="function"&&escudoHTML(id,18,"")) r.generado++; else r.sin.push(id); });
   return r;
 }
 devDoctorRegistrar({id:"escudos_todos", area:"contenido", n:"Todos los clubes tienen escudo (libre, estilizado o generado)",
   arreglo:"js/data-escudos.js: ESCUDOS_FOTOS (archivos libres en img/clubes, créditos en img/FUENTES.md), ESCUDOS_CLUB/ESCUDOS_NOMBRE y _escDatos (generado).", fn:function(){
   if(typeof escudoHTML!=="function") return _dmal("no cargó data-escudos.js");
-  var r=devEscudos(), txt=r.total+" clubes: "+r.archivo+" con escudo libre de Commons · "+r.estilizado+" estilizados · "+r.generado+" generados";
+  var r=devEscudos(), txt=r.total+" clubes: "+r.oficial+" oficiales · "+r.archivo+" con escudo libre de Commons · "+r.estilizado+" estilizados · "+r.generado+" generados";
   var falta=[];
   if(r.sin.length) falta.push(r.sin.length+" club(es) sin escudo: "+r.sin.slice(0,8).join(", "));
   if(typeof escudoHTML==="function"&&!escudoHTML("__club_que_no_existe__",18,"")) falta.push("un club desconocido se queda sin escudo (falta el generado)");
   var mv=(typeof _pintarPartidoCuerpo==="function")?_docFuente(_pintarPartidoCuerpo):""; if(!/eq-esc/.test(mv)) falta.push("el marcador del partido no muestra los escudos");
   return falta.length?_dmal(falta.length+" problema(s) · "+txt,falta):_dok(txt);
 }});
+/* 7.9132 · los 32 escudos oficiales que trajo el autor ("que se vean bien siempre"): cada archivo carga de verdad y nítido
+   (≥128 px), el club los usa en vez del libre/estilizado, y si un archivo falta el club NO se queda sin escudo */
+function devEscudoCarga(src){ return new Promise(function(ok){ var im=new Image(), t=setTimeout(function(){ ok({src:src,ok:false,w:0,por:"tarda"}); },8000);
+  im.onload=function(){ clearTimeout(t); ok({src:src,ok:im.naturalWidth>0,w:im.naturalWidth}); };
+  im.onerror=function(){ clearTimeout(t); ok({src:src,ok:false,w:0,por:"no carga"}); }; im.src=src; }); }
+devDoctorRegistrar({id:"escudos_oficiales", area:"contenido", asinc:true,
+  n:"Escudos oficiales: los 32 cargan nítidos, se usan en todo el juego y si uno falta cae al estilizado",
+  arreglo:"js/data-escudos.js ESCUDOS_OFICIALES (img/clubes/oficial/{ID}.webp, 256 px) · _escFall (respaldo) · img/FUENTES.md ▸ Escudos oficiales",
+  fn:async function(){
+    if(typeof ESCUDOS_OFICIALES==="undefined"||typeof escudoHTML!=="function") return _dmal("falta ESCUDOS_OFICIALES en js/data-escudos.js");
+    var f=[], L=ESCUDOS_OFICIALES;
+    if(L.length<32) f.push("hay "+L.length+" escudos oficiales (el autor trajo 32)");
+    L.forEach(function(id){ var e=ESCUDOS_FOTOS[id];
+      if(!e||e.tipo!=="oficial") f.push(id+": no usa su escudo oficial");
+      else if(escudoHTML(id,30,"").indexOf(e.src)<0) f.push(id+": el escudo que se pinta no es el oficial"); });
+    var rs=await Promise.all(L.map(function(id){ return devEscudoCarga("img/clubes/oficial/"+id+".webp"); }));
+    var malos=rs.filter(function(r){ return !r.ok; }), chicos=rs.filter(function(r){ return r.ok&&r.w<128; });
+    if(malos.length) f.push(malos.length+" no cargan: "+malos.slice(0,6).map(function(r){ return r.src.split("/").pop()+" ("+r.por+")"; }).join(", "));
+    if(chicos.length) f.push(chicos.length+" se ven borrosos (menos de 128 px): "+chicos.slice(0,6).map(function(r){ return r.src.split("/").pop(); }).join(", "));
+    /* el respaldo: un <img> que falla se cambia por el estilizado, no queda un hueco */
+    var caja=document.createElement("div"); caja.style.cssText="position:absolute;left:-9999px"; document.body.appendChild(caja);
+    try{ var id0=L[0], viejo=_ESC_FALLO[id0];
+      caja.innerHTML=escudoHTML(id0,30,""); var img=caja.querySelector("img");
+      if(!img) f.push("el escudo oficial no sale como imagen");
+      else { _escFall(img,id0,30,""); if(!caja.querySelector("svg")&&!caja.textContent) f.push("si el escudo oficial no carga, el club se queda sin escudo"); }
+      if(viejo) _ESC_FALLO[id0]=viejo; else delete _ESC_FALLO[id0];
+    } finally { caja.remove(); }
+    var txt=L.length+" oficiales · "+(rs.length-malos.length)+" cargan · "+Math.min.apply(null,rs.map(function(r){ return r.w||9999; }))+" px el más chico";
+    return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
+  }});
 /* 7.9108 · un envoltorio escrito en un archivo que carga ANTES que la función que envuelve no se instala nunca (el typeof
    da "undefined" y se salta en silencio). Así la liga argentina se jugaba sin Clausura. Se revisa que estén todos. */
 /* se juega de verdad la última fecha de la primera fase y se mira si el torneo pasa a la siguiente */
