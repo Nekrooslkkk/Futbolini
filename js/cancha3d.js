@@ -556,13 +556,13 @@ function _c3dConstruir(host,P){
   const scene=new THREE.Scene();
   _c3dCielo(scene,perfil);
   if(!perfil.plano) scene.fog=new THREE.Fog(0x24406e,140,260);
-  scene.add(new THREE.HemisphereLight(0xe4efff,0x2b3a22,0.85));
+  const hemi=new THREE.HemisphereLight(0xe4efff,0x2b3a22,0.85); scene.add(hemi);
   const sol=new THREE.DirectionalLight(0xfff4e0,0.9); sol.position.set(30,60,25); scene.add(sol);
   if(perfil.sombras){ sol.castShadow=true; sol.shadow.mapSize.set(2048,2048); const sc=sol.shadow.camera; sc.left=-62; sc.right=62; sc.top=45; sc.bottom=-45; sc.near=10; sc.far=160;
     sol.shadow.bias=-0.0006; sol.shadow.normalBias=0.02; sc.updateProjectionMatrix(); }
   const col=(typeof _cvColores==="function")?_cvColores(P):{mio:"#eef3ff",riv:"#e5484d"};
   _c3dCancha(scene,perfil);
-  _c3dEstadio(scene,[P&&P.part&&P.part.local===false?col.riv:col.mio],perfil);
+  /* 7.9135 · el estadio ya no se arma acá: sale del partido (estadio3d.js, en _c3dPartido) */
   const piezas=_c3dPiezas(scene,perfil);
   /* sombras de mancha: 22 jugadores + pelota */
   const sTex=(function(){ const c=document.createElement("canvas"); c.width=c.height=64; const x=c.getContext("2d");
@@ -578,7 +578,8 @@ function _c3dConstruir(host,P){
   const hud=document.createElement("div"); hud.className="c3d-hud"; hud.setAttribute("aria-live","polite");
   const est={ host:null, canvas:canvas, hud:hud, renderer:renderer, scene:scene, camGL:camGL, piezas:piezas, sombras:sombras, bola:bola,
     P:null, st:null, camPos:new THREE.Vector3(CAM3D.lado,CAM3D.alto,0), mira:new THREE.Vector3(0,CAM3D.mira_alto,0), fov:CAM3D.fov,
-    calidad:calidad, perfil:perfil, pr:pr0, raf:0, W0:0, H0:0, franjas:[], pelados:[], gk:[], ultT:0, dtProm:16, prAjuste:0, carteles:"" };
+    calidad:calidad, perfil:perfil, pr:pr0, raf:0, W0:0, H0:0, franjas:[], pelados:[], gk:[], ultT:0, dtProm:16, prAjuste:0, carteles:"",
+    hemi:hemi, sol:sol, colEstadio:[P&&P.part&&P.part.local===false?col.riv:col.mio] };
   C3D.montajes++;
   return est;
 }
@@ -588,6 +589,10 @@ function _c3dPartido(est,P){
   est.P=P; est.st=_cvSt;
   est.gk=[]; let n=0; for(let i=0;i<22;i++){ const p=est.st&&est.st.jug[i]; est.gk[i]=(p&&p.rol==="gk"&&n<2)?n++:-1; }
   _c3dPintar(est);
+  /* 7.9135 · el estadio del partido (aforo real, taquilla, hora, ciudad: estadio3d.js). Si falla, el de antes */
+  let ok=false;
+  try{ ok=typeof c3dEstadioMontar==="function"&&c3dEstadioMontar(est,P); }catch(e){ if(window.console) console.error("estadio3d:",e); }
+  if(!ok&&!est.estadioViejo&&!est.estadio) est.estadioViejo=_c3dEstadio(est.scene,est.colEstadio,est.perfil);
 }
 function montarCancha3D(host, P){
   let est=C3D.est;
@@ -878,7 +883,7 @@ function _c3dTam(est){
     est.camGL.aspect=rc.width/Math.max(1,rc.height); est.camGL.updateProjectionMatrix();
   }
 }
-function _c3dCuadroUno(est){ try{ _c3dTam(est); _c3dSincronizar(est,0.016); est.renderer.render(est.scene,est.camGL); }catch(e){} }
+function _c3dCuadroUno(est){ try{ _c3dTam(est); _c3dSincronizar(est,0.016); if(typeof c3dEstadioCuadro==="function") c3dEstadioCuadro(est,0); est.renderer.render(est.scene,est.camGL); }catch(e){} }
 /* calidad Auto: si el equipo no llega, baja la resolución (no se cambia a 2D); si sobra, la sube */
 function _c3dAjusteAuto(est,dtReal){
   est.dtProm=est.dtProm*0.92+dtReal*0.08;
@@ -907,13 +912,15 @@ function _c3dCuadro(est,t){
   try{ _c3dTam(est);
     /* 7.9132 · en pausa (o con una pregunta abierta) todo queda quieto: jugadores, pelota, cámara y hasta la repetición */
     const quieto=!(est.bp&&est.bp.paso)&&typeof cvCongelada==="function"&&cvCongelada(est.P), dtv=quieto?0:dt;
-    if(est.repPendiente!=null&&!est.rep){ est.repPendiente-=dtv; if(est.repPendiente<=0){ est.repPendiente=null; c3dRepetir(est,{}); } }
+    /* 7.9135 · la repetición nunca arranca dentro de la capa del balón parado (se agrandaba): espera a que se cierre */
+    if(est.repPendiente!=null&&!est.rep&&!est.bp){ est.repPendiente-=dtv; if(est.repPendiente<=0){ est.repPendiente=null; c3dRepetir(est,{}); } }
     if(est.rep) _c3dRepPintar(est,dtv);   /* 7.9129 · repetición del gol: el partido y la simulación esperan */
     else {
       if(est.bp&&est.bp.paso) est.bp.paso(dt);   /* balón parado: la jugada mueve a todos, la simulación espera */
       else if(typeof cvPasoVisible==="function"&&!(est.P&&est.P.terminado&&!(_cvSt&&_cvSt.seq))) cvPasoVisible(est.P,dt);
       _c3dSincronizar(est,dtv);
     }
+    if(typeof c3dEstadioCuadro==="function") c3dEstadioCuadro(est,dtv);   /* 7.9135 · cielo, marcador y la hinchada que salta */
     est.renderer.render(est.scene,est.camGL); }
   catch(e){
     if(window.console) console.error("cancha3d:",e);

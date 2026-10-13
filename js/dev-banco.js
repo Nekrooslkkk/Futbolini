@@ -1807,3 +1807,98 @@ if(typeof devDoctorRegistrar==="function"){
       return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
     }});
 }
+/* 7.9135 · el estadio 3D sale del partido: tamaño por aforo, gente de la taquilla, hora, sin techos flotando */
+function devEstadio3D(){
+  const f=[], det=[];
+  if(typeof c3dPlanEstadio!=="function") return {f:["falta estadio3d.js (c3dPlanEstadio)"],det:det};
+  const visita=id=>c3dPlanEstadio({part:{local:false,rivalId:id,tipo:"liga"}});
+  const con=p=>E3D_LADOS.filter(id=>p.lados[id].tipo>0).length;
+  /* 1) tamaño real: el grande es una olla con techo, el chico no tiene cuatro tribunas techadas */
+  const grandes=Object.keys(CLUB_POR_ID||{}).filter(id=>(CLUB_POR_ID[id].aforo||0)>=30000);
+  const chicos=Object.keys(CLUB_POR_ID||{}).filter(id=>id!==E.club&&(CLUB_POR_ID[id].aforo||99999)<4500);
+  grandes.slice(0,3).forEach(id=>{ if(id===E.club) return; const p=visita(id);
+    if(!p.olla||con(p)<4||!E3D_LADOS.some(l=>p.lados[l].techo)) f.push(id+" ("+p.aforo+") no sale como olla con techo: "+p.tamano); });
+  chicos.slice(0,3).forEach(id=>{ const p=visita(id);
+    if(con(p)>=4&&E3D_LADOS.every(l=>p.lados[l].techo)) f.push(id+" ("+p.aforo+") sale con cuatro tribunas techadas: un estadio chico no es así"); });
+  /* 2) de local, la gente es la de la taquilla (el mismo "Fueron X personas") y los precios se ven en la galería */
+  const prox=(E.calendario||[]).find(x=>x&&x.local&&!x.jugado);
+  if(prox&&typeof ingresoPartidoLocal==="function"){
+    const part=Object.assign({},prox,{hora:null}), p=c3dPlanEstadio({part:part}), real=ingresoPartidoLocal(part).gente;
+    if(p.fuente!=="taquilla") f.push("de local el público no sale de la taquilla (fuente: "+p.fuente+")");
+    else if(Math.abs(p.gente-real)>Math.max(2,real*0.01)) f.push("el estadio muestra "+p.gente+" personas y la taquilla dice "+real);
+    const pop=(typeof sectoresActuales==="function"?sectoresActuales():[]).filter(s=>_e3TipoSector(s)==="popular");
+    const lado=p.lados.oes.tipo?"oes":"and", antes=p.lados[lado].ocup, guard=E.precios;
+    if(pop.length){ const nuevo=Object.assign({},E.precios||preciosDefault()); pop.forEach(s=>nuevo[s.id]=(nuevo[s.id]||s.ref)*4);
+      E.precios=nuevo; let despues=antes; try{ despues=c3dPlanEstadio({part:part}).lados[lado].ocup; }finally{ E.precios=guard; }
+      if(!(despues<antes-0.02)) f.push("con la galería al cuádruple de precio la galería se ve igual de llena ("+antes.toFixed(2)+" → "+despues.toFixed(2)+")");
+      det.push("galería "+Math.round(antes*100)+"% → "+Math.round(despues*100)+"% al subir el precio"); }
+    const fl=E.flags||(E.flags={}), tc=fl.tribunaCerrada; fl.tribunaCerrada=true;
+    try{ const pc=c3dPlanEstadio({part:part}); if(!E3D_LADOS.some(l=>pc.lados[l].cerrada&&pc.lados[l].ocup===0)) f.push("con la tribuna clausurada el estadio se ve igual"); }
+    finally{ if(tc===undefined) delete fl.tribunaCerrada; else fl.tribunaCerrada=tc; }
+    det.push(p.gente+" personas en el "+(p.nombre||"estadio")+" ("+p.tamano+", "+con(p)+" lados)");
+  }
+  /* 3) la hora del partido */
+  [["15:00","dia"],["18:00","tarde"],["21:00","noche"],[null,"noche"]].forEach(h=>{ const a=_e3Ambiente({hora:h[0]}); if(a!==h[1]) f.push("a las "+(h[0]||"(sin hora)")+" el estadio sale de "+a+" (debería ser "+h[1]+")"); });
+  /* 4) lo que se armó en la escena (si hay 3D): techos con pilares hasta el suelo y pocas llamadas de dibujo */
+  const inf=(typeof C3D!=="undefined"&&C3D.est&&typeof c3dEstadioInforme==="function")?c3dEstadioInforme(C3D.est):null;
+  if(inf){ if(inf.techos&&inf.pilares<inf.techos*2) f.push("hay "+inf.techos+" techo(s) con solo "+inf.pilares+" pilar(es): techos flotando");
+    if(inf.llamadas>18) f.push("el estadio hace "+inf.llamadas+" llamadas de dibujo (tope 18): algo dejó de ir junto");
+    det.push(inf.gradas+" tribunas · "+inf.techos+" techos · "+inf.pilares+" pilares · "+inf.torres+" torres · "+inf.llamadas+" llamadas"); }
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"estadio_3d", area:"interfaz", n:"Estadio 3D: tamaño real por aforo, la gente de la taquilla, la hora del partido y techos que no flotan",
+    arreglo:"js/estadio3d.js c3dPlanEstadio/_e3Ocupacion/_e3Ambiente/_e3Techo · cancha3d.js _c3dPartido (lo monta)",
+    fn:function(){ const r=devEstadio3D(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
+/* 7.9135 · bug de Vicente: gol y enseguida un córner/penal/tiro libre → la jugada pisaba la repetición (y la agrandaba) */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"repeticion_primero", area:"interfaz", asinc:true,
+    n:"Después de un gol, el balón parado espera a que termine (o salten) la repetición",
+    arreglo:"js/bp3d.js envolver (P._bpEspera) + bp3dRepeticionEnCurso · js/cancha3d.js _c3dCuadro (la repetición arranca solo con !est.bp)",
+    fn:async function(){
+      const f=[];
+      if(typeof bp3dRepeticionEnCurso!=="function") return _dmal("falta bp3dRepeticionEnCurso (bp3d.js): la jugada se abre encima de la repetición");
+      if(typeof _c3dCuadro==="function"&&String(_c3dCuadro).indexOf("!est.bp")<0) f.push("la repetición puede arrancar dentro de la capa del balón parado (se agranda)");
+      const w=window.minijuegoCorner;
+      if(!w||!w._bp3d) return f.length?_dmal(f.length+" problema(s)",f):_dok("sin el enganche 3D acá: se revisó el código");
+      const W=window, e0=C3D.est, bj=W.bp3dJugar, bd=W.bp3dDisponible, pa=(typeof P_ACTUAL!=="undefined")?P_ACTUAL:null;   /* reemplazos temporales (no envoltorios) */
+      const fake={rep:{}}, P={min:30,gl:1,gv:0}; let abiertas=0;
+      try{
+        C3D.est=fake; W.bp3dJugar=function(){ abiertas++; return true; }; W.bp3dDisponible=function(){ return true; }; P_ACTUAL=P;
+        w(P);
+        if(abiertas) f.push("con la repetición andando, el córner se abrió encima");
+        if(!(P._celHasta>Date.now())) f.push("mientras la jugada espera, el reloj del partido sigue corriendo");
+        fake.rep=null; await new Promise(ok=>setTimeout(ok,750));
+        if(abiertas!==1) f.push("terminada la repetición, el córner no se abrió (se abrió "+abiertas+" veces)");
+      } catch(e){ f.push("explotó: "+e.message); }
+      finally {
+        C3D.est=e0; W.bp3dJugar=bj; W.bp3dDisponible=bd; P_ACTUAL=pa;
+        if(e0&&e0.canvas&&e0.canvas.isConnected&&!e0.raf&&typeof _c3dCuadro==="function"){ e0.ultT=performance.now(); e0.raf=requestAnimationFrame(t=>_c3dCuadro(e0,t)); }
+      }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("la jugada esperó la repetición (reloj quieto) y se abrió al terminar");
+    }});
+}
+/* 7.9135 · bug de Vicente: Syntergia "deja de funcionar y te pide atender algo" (una crisis la frenaba hasta fin de temporada) */
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"syntergia_no_frena", area:"interfaz",
+    n:"Con Syntergia encendida, avanzar no se frena por una crisis, una decisión que bloquea ni el cartel de pendientes",
+    arreglo:"js/ayudante.js syntergiaDespeja (y la envoltura de avanzar) · js/ui.js delegarCrisis/delegarDecisionesPendientes",
+    fn:function(){
+      if(typeof syntergiaDespeja!=="function") return _dmal("falta syntergiaDespeja (ayudante.js): una crisis traba a Syntergia");
+      if(typeof avanzar!=="function"||!avanzar._syn) return _dmal("avanzar no pasa por Syntergia: con el piloto encendido igual se frena");
+      const snap=(typeof clonarPartida==="function")?clonarPartida(E):null, ca=window.crisisActiva, f=[];
+      if(!snap) return _dok("sin clonarPartida acá: se revisó que exista el despeje");
+      try{
+        E.piloto={on:true};
+        window.crisisActiva=function(){ return (E.flags&&E.flags.crisis_doctor)?null:{id:"doctor",t:"Crisis de prueba",op:[{t:"Aguantar",ef:{}}]}; };
+        const h=syntergiaDespeja();
+        if(window.crisisActiva()) f.push("con Syntergia encendida la crisis sigue ahí: avanzar se frena");
+        if(typeof decisionesBloqueantes==="function"&&decisionesBloqueantes().length) f.push("quedan decisiones que bloquean el avance");
+        if(!(E.flags&&E.flags["pendAviso_"+E.anio+"_"+E.idx])) f.push("el cartel «Atiende antes de avanzar» igual saltaría");
+        if(!h.some(x=>/Crisis/.test(x))) f.push("el informe de Syntergia no cuenta la crisis que resolvió");
+      } catch(e){ f.push("explotó: "+e.message); }
+      finally{ window.crisisActiva=ca; E=snap; }
+      return f.length?_dmal(f.length+" problema(s)",f):_dok("Syntergia despeja la crisis, lo que bloquea y el cartel, y lo deja en su informe");
+    }});
+}

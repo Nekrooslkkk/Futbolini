@@ -568,6 +568,8 @@ function _bpCerrar(jug,modo){
   }
 }
 
+/* ¿hay una repetición del gol andando o por empezar en la cancha 3D? (la jugada siguiente la espera) */
+function bp3dRepeticionEnCurso(){ const e=(typeof C3D!=="undefined")&&C3D.est; return !!(e&&(e.rep||e.repPendiente!=null||e.golSeq)); }
 /* ---------- enganche: con la cancha 3D, el balón parado dirigido se juega adentro ---------- */
 (function(){
   const envolver=(nombre,tipo,args)=>{
@@ -575,6 +577,17 @@ function _bpCerrar(jug,modo){
     const w=function(P,a,b){
       /* un repintado vuelve a pedir la misma jugada: si ya se está jugando en 3D, no se abre otra (contaba doble) */
       if(BP3D.activo&&P&&BP3D.activo.P===P) return true;
+      /* 7.9135 · primero la repetición del gol: si hay una andando (o por empezar), la jugada espera con el reloj quieto a que
+         termine o la salten. Antes se abría encima: el canvas se iba a la capa grande y la repetición se agrandaba y se peleaban */
+      if(P&&bp3dDisponible()&&bp3dRepeticionEnCurso()){
+        if(!P._bpEspera){ P._bpEspera=true; const yo=this, args=arguments;
+          const esperar=function(){
+            if(typeof P_ACTUAL!=="undefined"&&P_ACTUAL!==P||P.terminado){ P._bpEspera=false; return; }
+            if(bp3dRepeticionEnCurso()){ P._celHasta=Math.max(P._celHasta||0,Date.now()+600); setTimeout(esperar,200); return; }
+            P._bpEspera=false; w.apply(yo,args); };
+          P._celHasta=Math.max(P._celHasta||0,Date.now()+600); setTimeout(esperar,200); }
+        return true;
+      }
       if(bp3dDisponible()&&P){
         try{ return bp3dJugar(tipo,P,tipo==="penal"?Object.assign({},b||{},{pateador:a}):{}); }
         catch(e){ console.error("bp3d:",e); try{ if(BP3D.activo) _bpCerrar(BP3D.activo,"solo"); }catch(_){ } return true; }

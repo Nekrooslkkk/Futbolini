@@ -2832,3 +2832,17 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
 - El lanzamiento del arquero es `_cvLanzar` (cancha.js): sale de 1,9 m, `pase.lanza=true`. No lo disparen tirado en
   el suelo (fase de estirada ≠ null): el doctor `ual2_acciones` lo caza.
 - La repetición guarda 32 números por jugador (`C3D_FJ`); si agregan datos al cuadro, súbanlo ahí y en `_c3dRepPintar`.
+
+**7.9135 (Claude Opus) · El estadio 3D sale del partido (js/estadio3d.js). LEER si tocan el 3D:**
+- `c3dPlanEstadio(P)` arma el plan sin three.js (aforo → tribunas/filas/techos; taquilla → gente por tribuna; `part.hora` →
+  día/tarde/noche; ciudad → horizonte). `c3dEstadioMontar(est,P)` lo construye en `_c3dPartido` y `c3dEstadioCuadro` corre antes
+  de cada render (cielo que sigue a la cámara, marcador, la hinchada que salta). No agreguen mallas sueltas al estadio: todo
+  el concreto va por `_e3Quad/_e3Caja` a `M.cem` (una llamada). El doctor `estadio_3d` frena techos sin pilares y >18 llamadas.
+- HECHO en este mismo parche: la repetición del gol ya no la pisa el balón parado (doctor `repeticion_primero`) y Syntergia
+  ya no se traba con una crisis (`syntergiaDespeja` envuelve `avanzar`; doctor `syntergia_no_frena`).
+- PENDIENTE (pedido de Vicente, 13 oct, en orden): 1) ~~repetición pisada~~ (hecho); 2) ~~Syntergia trabada~~ (hecho);
+  3) simular hasta el partido que elija el jugador + botones 5 temporadas / final + aviso de crisis para saltarla o no;
+  4) copas que cambian con los años (como la Copa Chile con equipos de Tercera; formatos épicos; el futuro del fútbol) —
+  CONVERSAR con Vicente antes; 5) balance de temporada con estrellas: 3 grandes (metas) + 5 chicas (puntos del juego),
+  "juego maestro" si ganas todo; 6) Plop: botones viejos que se traspasan al publicar, respuestas que no entienden lo
+  publicado, estilo Twitter 2007 con hilos que viven dentro de cada post.

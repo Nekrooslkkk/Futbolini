@@ -242,3 +242,29 @@ function bloqueSyntergia(){
   bloqueAyudanteHace=function(){ const b=orig.apply(this,arguments); try{ b.insertBefore(bloqueSyntergia(), b.children[1]||null); }catch(e){} return b; };
   bloqueAyudanteHace._syn=true;
 })();
+/* 7.9135 · BUG de Vicente: "hay un punto en el que Syntergia deja de funcionar y te pide atender algo (simulé con Rengo y
+   no me dejó hasta fin de temporada)". Avanzar se frenaba con una CRISIS, una decisión que bloquea o el cartel "Atiende
+   antes de avanzar", y Syntergia no resolvía ninguna de las tres. Con el piloto encendido ("le entrego todo"), antes de
+   avanzar: resuelve lo que bloquea como el ayudante, delega la crisis igual que la simulación larga (primera opción que
+   se pueda pagar) y lo deja ESCRITO en el informe; el cartel de pendientes no frena (lo que queda va al informe). */
+function syntergiaDespeja(){
+  if(!syntergiaOn()||!E) return [];
+  const hechas=[];
+  try{ syntergiaTurno().forEach(t=>hechas.push(t)); }catch(e){}
+  try{ if(typeof decisionesBloqueantes==="function"&&decisionesBloqueantes().length&&typeof delegarDecisionesPendientes==="function"){
+    const n=delegarDecisionesPendientes(); if(n) hechas.push("Decisiones que bloqueaban: "+n); } }catch(e){}
+  for(let k=0;k<3;k++){ const cr=(typeof crisisActiva==="function")?crisisActiva():null; if(!cr||typeof delegarCrisis!=="function") break;
+    const r=delegarCrisis(); if(!r) break; hechas.push("Crisis «"+r.t+"»: elegí lo que se podía pagar"); }
+  E.flags=E.flags||{}; E.flags["pendAviso_"+E.anio+"_"+E.idx]=true;
+  if(hechas.length){ _ayLog("Syntergia despejó el camino: "+hechas.join(" · "));
+    const quedan=(typeof pendientesAtender==="function")?pendientesAtender().filter(x=>x.fuerte).map(x=>x.t):[];
+    if(typeof notificar==="function") notificar({t:"🤖 Syntergia · antes de avanzar",tipo:"neutro",bandeja:true,
+      d:hechas.join(". ")+"."+(quedan.length?" Queda para ti: "+quedan.join(" · ")+".":"")}); }
+  return hechas;
+}
+(function wrapAvanzarSyn(){
+  if(typeof avanzar!=="function"||avanzar._syn) return;
+  const orig=avanzar;
+  avanzar=function(){ try{ syntergiaDespeja(); }catch(e){} return orig.apply(this,arguments); };
+  Object.keys(orig).forEach(k=>{ avanzar[k]=orig[k]; }); avanzar._syn=true;
+})();

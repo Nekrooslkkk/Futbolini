@@ -5513,3 +5513,40 @@ Pedido del autor: "¿meto lo de la UAL2? Sí por favor, hazlo con la barrida y e
   en 5 entradas" pasaba 1 de cada 13 veces. Al revés: sin barrida, sin lanzamiento y sin LayToIdle → 3 fallas cazadas.
 - **Estado:** doctor sano 153/153 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D
   32/32) · core 1185/1185 · saves ok · banco 255 sano (14 % despidos).
+
+### 7.9135 — El estadio sale del partido: tamaño real, la gente de la taquilla, la hora y un estadio que se ve de verdad
+Pedido del autor: "corrige bien el tema de los estadios, que se vea más pulido". Antes: el mismo estadio para todos, techos
+negros flotando sin pilares, torres con un rectángulo blanco y un público de 0,22 m por persona (de lejos, estática de tele).
+- **Nuevo js/estadio3d.js** (`c3dPlanEstadio`, puro y revisable): el aforo del club local decide las tribunas (0,8 m de fondo
+  y 0,42 m de alto por fila, 0,5 m por asiento) y los techos: un estadio de 3.000 (Rengo) tiene tribuna con marquesina,
+  galería enfrente y taludes con álamos detrás de los arcos; uno de 45.000 (Monumental) es una olla cerrada con esquinas.
+  De local, tus obras (la maqueta de estadio-dibujo.js, `_edTrib`) se ven en el 3D: las obras solo agregan.
+- **La gente es la de la taquilla:** de local, cada tribuna se llena con `taquillaPorSector` y el total de
+  `ingresoPartidoLocal` (el mismo "Fueron X personas" del final): si subes la galería se ve vacía; el estadio venido a menos
+  se nota; la tribuna clausurada se ve cerrada. La visita va en su sector con butacas vacías y reja a los lados. De visita es
+  una estimación del juego.
+- **La hora (`part.hora`):** 15:00 de día, 18:00 al atardecer, 21:00 o sin hora de noche con estrellas. Cielo en cúpula,
+  horizonte de la ciudad: cordillera nevada en el valle central (y Mendoza), llano con luces en Buenos Aires, cerros en el resto.
+- **Detalles:** techos en voladizo con plancha, frontis blanco, vigas, pilares hasta el suelo, mástil y tensor (y focos bajo el
+  frontis en los grandes); torres de reticulado con grilla de focos que encandilan (postes en los chicos); vomitorios;
+  reja y lienzos con los colores del club en la galería; bancas; marcador en la tribuna del frente con el resultado y el
+  minuto; la hinchada salta con el gol (y se queda quieta en pausa).
+- **Barato:** el concreto y el acero van en UNA malla con color por vértice; el estadio entero son ~12 llamadas de dibujo (el
+  de antes ~36; la cancha completa bajó de 55 a ~40). Si estadio3d.js falla, cancha3d.js vuelve al estadio de antes.
+- **BUG de la repetición (pedido de Vicente: "si hay un gol y después un córner, penal o tiro libre, se pisa la repetición,
+  se bugea y se vuelve grande; que primero le dé espacio a la repetición"):** el balón parado 3D se abría aunque la repetición
+  del gol estuviera andando o por empezar, se llevaba el canvas a su capa grande y las dos se peleaban la cámara. Ahora
+  (bp3d.js `bp3dRepeticionEnCurso` en el enganche) la jugada ESPERA con el reloj quieto a que la repetición termine o la
+  salten, y recién ahí se abre; y la repetición nunca arranca dentro de la capa del balón parado (cancha3d.js `_c3dCuadro`).
+  Doctor `repeticion_primero` (asíncrono: con la repetición andando el córner no se abre, el reloj espera, al terminar se
+  abre una sola vez). Al revés con el código anterior: 3 fallas cazadas.
+- **BUG de Syntergia (Vicente: "hay un punto en el que Syntergia deja de funcionar y te pide atender algo; simulé con Rengo
+  y no me dejó hasta fin de temporada"):** avanzar se frena con una crisis, una decisión que bloquea o el cartel "Atiende
+  antes de avanzar", y Syntergia no resolvía ninguna. Ahora, con el piloto encendido, antes de avanzar (ayudante.js
+  `syntergiaDespeja`, envuelve `avanzar`): hace su turno, resuelve lo que bloquea, delega la crisis igual que la simulación
+  larga (primera opción que se pueda pagar) y lo deja en su informe con lo que queda para ti. Doctor `syntergia_no_frena`.
+- **Dev:** doctor `estadio_3d` (los estadios de ≥30.000 salen olla con techo y los chicos no tienen cuatro tribunas techadas;
+  de local la gente calza con la taquilla y subir la galería la vacía; la clausura se ve; la hora da día/tarde/noche; ningún
+  techo sin pilares; ≤18 llamadas). Al revés: público +5.000 sobre la taquilla → cazado.
+- **Estado:** doctor sano 156/156 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
+  · core 1185/1185 · saves ok · banco 255 sano (15 % despidos).
