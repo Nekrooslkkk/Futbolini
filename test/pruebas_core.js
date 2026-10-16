@@ -1753,8 +1753,12 @@
     safe(function(){
       nuevaPartida("CC",2026,"historico");
       var t={autor:"@hincha_de_ley",texto:"dt contestame",hilo:[],replies:0,tipo:"hincha"};
+      E.timeline=[t].concat(E.timeline||[]);
       var r=responderHilo(t,"vamos a ganar el título");
       ok(r && r.length>=4 && r.length<=6, "4–6 respuestas en el hilo");
+      /* 7.9137 · las respuestas llegan de a poco (Twitter 2007): primero quedan escribiéndose, después entran */
+      ok((t.hiloPend||[]).length>=4, "las respuestas quedan escribiéndose (llegan de a poco)");
+      if(typeof plopLlegaRespuestas==="function") plopLlegaRespuestas(Date.now()+120000);
       ok(t.hilo.length>=2, "el post acumula hilo");
       ok(t.replies>=4, "replies cuenta");
     }, "Plop discute");

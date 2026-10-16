@@ -5576,3 +5576,42 @@ puntuaciones altas (revisado cada temporada)".
   Al revés: 5 fallas (simulación) y 2 (estrellas) cazadas.
 - **Estado:** doctor sano 158/158 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
   · core 1185/1185 · saves ok · banco 255 sano (13 % despidos).
+
+### 7.9137 — PLOP! que entiende y que vive (banco hecho con DeepSeek) · la Copa Chile cambia con los años (historia real + La Copa de Todos)
+Pedidos del autor: "Plop está bugeado: si haces una publicación salen los botones antiguos, se traspasan; sigue sin entender lo
+que publicas (puse algo serio y respuestas nada que ver); déjalo como el Twitter real pero 2007, versión PLOP: se refresca con
+tweets nuevos y las respuestas se generan dentro del tweet (si te metes ahí ves otro tiempo real)" + "usa DeepSeek para generar
+el banco"; y "mejorar el sistema de copas: ve cómo se hizo la Copa Chile que tenía equipos de Tercera… que varíe con el tiempo,
+modelos más épicos" ("me gusta la idea": formatos reales con fuente + futuros marcados como ficción).
+- **PLOP! · los botones:** el estilo 2009 se aplicaba solo al abrir PLOP!; los posts que llegaban en vivo o se repintaban (la gente
+  respondiendo lo tuyo) salían con los 4 botones grandes viejos encima de los demás. Ahora cada post pintado adentro de PLOP! toma
+  el estilo (`plopCardAntiguo`, interfaz-aero.js).
+- **PLOP! · entiende el tema (js/plop-vivo.js):** `plopTema()` reconoce 19 temas (luto, violencia, causa social, lesión, disculpas,
+  árbitro, despedida, refuerzo, clásico, triunfo, derrota, promesa, hinchada, entradas, directiva, cantera, trabajo, humor,
+  pregunta) y la gente contesta desde ESE cajón. En lo serio no hay trolls ni hinchas rivales, y el análisis lo recibe en serio
+  (un pésame suma, no se lee como promesa).
+- **El banco (js/data-plop-banco.js, 645 respuestas):** redactado con DeepSeek por tema y tipo de cuenta (scripts/plop_banco.py,
+  ~40 mil tokens; la clave solo por variable de entorno, nunca en el repo; borrador en scripts/plop/) y REVISADO A MANO: fuera los
+  datos inventados con números que contradirían la partida ("3 semanas de baja", "120 partidos"), los argentinismos y 7 frases de
+  mal gusto; humor y social reescritos genéricos. Cuentas ficticias, sin nombres reales.
+- **Como Twitter 2007:** las respuestas llegan DE A POCO (`t.hiloPend`, una cada 2–7 s); en la línea de tiempo el post muestra
+  "💬 N respuestas · ver conversación" y al entrar ves la conversación en vivo ("✍️ alguien está escribiendo…") y respondes ahí.
+  Los plops nuevos ya no te empujan el feed: aparece "🔄 N plops nuevos" arriba y los cargas cuando quieras.
+- **La Copa Chile cambia con los años (js/copas-epocas.js):** «📜 La Copa Chile en la historia»: cada edición 1958–2025 con su
+  campeón y cómo se jugó (es.wikipedia.org/wiki/Copa_Chile, consultado 16 oct 2026). 2026 es el formato real; desde 2027 el
+  Consejo de Presidentes puede reformarla (cada 2 años como mínimo, estable por partida, con noticia): **Primera y B** ·
+  **Las tres categorías** (entra la Segunda; como 2021) · **🔥 La Copa de Todos** (Segunda y campeones amateur regionales
+  invitados, genéricos; como 2008-09 a 2010 y 2022) · **Final de ida y vuelta** (como 2018). Cambia el sorteo de verdad y tu
+  calendario: con Rengo en "La Copa de Todos" juegas la Copa Chile (y en la prueba, la ganaste).
+- **BUG viejo de las copas (desde 2027):** el sorteo de Copa Chile se calculaba dos veces (tu calendario y el país) y salía
+  distinto: tu grupo no era el del país, tu llave de octavos nunca se armaba y la copa quedaba SIN CAMPEÓN. Ahora el sorteo de
+  cada año se guarda la primera vez y todos lo leen igual.
+- **Dev:** doctor `plop_entiende` (10/10 temas; el banco completo y sin trolls en lo serio; un pésame recibe respuestas del cajón
+  de luto, de a poco; un post en vivo sale con el estilo y sin el hilo adentro) y `copa_chile_epocas` (historia con fuente; 2026
+  real; formatos estables y de ≥2 años; cada sorteo cumple su composición; el sorteo de un año es el mismo lo pida quien lo pida).
+  Al revés: el sorteo sin guardar → cazado.
+- **Prueba actualizada:** "Plop discute" (test/pruebas_core.js) esperaba las respuestas al tiro; ahora pide que queden escribiéndose
+  y que entren después (mismo mínimo de 4).
+- **Estado:** doctor sano 160/160 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D) · core
+  1186/1186 · saves ok · banco 255 sano (12 % despidos). Banco largo (TEMPS=3): 2 fallas de sueldos en 1925, que también salen al
+  azar en la versión anterior (ahí fue Cobreloa 2003): no son de este parche, quedan anotadas.

@@ -1981,8 +1981,117 @@ function devEstrellas(){
   return {f:f,det:det};
 }
 if(typeof devDoctorRegistrar==="function"){
-  devDoctorRegistrar({id:"estrellas_temporada", area:"carrera",
+  devDoctorRegistrar({id:"estrellas_temporada", area:"motor",
     n:"Estrellas de la temporada: 3 grandes (metas) + 5 chicas (puntos), ganarlo todo las prende, juego maestro y puntaje",
     arreglo:"js/estrellas.js estrellasTemporada/estrellasAnotar/bloqueEstrellas y sus enganches (finDeTemporada, nuevoAnio, cerrarTemporada, vistaEscritorio)",
     fn:function(){ const r=devEstrellas(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
+/* 7.9137 · PLOP! que entiende el tema, respuestas que llegan de a poco y posts sin los botones viejos (pedido del autor) */
+function devPlopEntiende(){
+  const f=[], det=[];
+  if(typeof plopTema!=="function") return {f:["falta plop-vivo.js (plopTema)"],det:det};
+  /* 1) reconoce el tema de lo que publicas */
+  const casos=[["Hoy murió un ex jugador del club. Mis condolencias a su familia","luto"],["No a la violencia en los estadios. Vengan en familia","violencia"],
+    ["El árbitro nos robó el partido, penal no cobrado","arbitro"],["Bienvenido a nuestro nuevo refuerzo","refuerzo"],["Ganamos y la gente lo disfrutó","triunfo"],
+    ["Perdimos, duele, pero nos vamos a levantar","derrota"],["Pido perdón por lo que dije ayer","disculpas"],["Fuerza crack, pronta recuperación de tu lesión","lesion"],
+    ["Los cabros de la cantera están listos","cantera"],["¿Qué once ponen ustedes?","pregunta"]];
+  let bien=0; casos.forEach(c=>{ const t=plopTema(c[0]); if(t===c[1]) bien++; else f.push("«"+c[0].slice(0,40)+"…» lo lee como "+(t||"nada")+" (es "+c[1]+")"); });
+  det.push(bien+"/"+casos.length+" temas reconocidos");
+  /* 2) el banco: cada tema con respuestas suficientes y sin trolls en lo serio */
+  if(typeof PLOP_BANCO==="undefined") f.push("falta el banco de respuestas (js/data-plop-banco.js)");
+  else { let n=0; PLOP_TEMAS.forEach(x=>{ const B=PLOP_BANCO[x[0]]; if(!B){ f.push("el banco no tiene el tema "+x[0]); return; }
+      if((B.hincha||[]).length<6) f.push("tema "+x[0]+": solo "+(B.hincha||[]).length+" respuestas de hinchas");
+      if(PLOP_SERIOS.indexOf(x[0])>=0&&((B.troll||[]).length||(B.rival||[]).length)) f.push("tema serio "+x[0]+" con trolls o rivales en el banco");
+      Object.keys(B).forEach(k=>{ (B[k]||[]).forEach(s=>{ n++; if(String(s).length>130) f.push("respuesta larga en "+x[0]+"/"+k); }); }); });
+    det.push(n+" respuestas en el banco"); }
+  /* 3) un post de luto: la gente responde en serio, de a poco */
+  const snap=(typeof clonarPartida==="function")?clonarPartida(E):null;
+  if(snap&&typeof responderHilo==="function"&&typeof PLOP_BANCO!=="undefined"){
+    try{
+      const t={id:"doctor_luto",autor:"@club",texto:"Hoy murió un ex jugador del club. Mis condolencias.",hilo:[],replies:0,tipo:"club"};
+      E.timeline=[t].concat(E.timeline||[]);
+      responderHilo(t,t.texto);
+      if((t.hilo||[]).length) f.push("las respuestas llegan todas de golpe ("+t.hilo.length+" al tiro): tienen que ir llegando");
+      if(!(t.hiloPend||[]).length) f.push("después de publicar no queda nadie escribiendo (t.hiloPend vacío)");
+      plopLlegaRespuestas(Date.now()+120000);
+      const banco=[].concat(...Object.values(PLOP_BANCO.luto||{}));
+      const club=(E&&E.clubNombre)||"el club";
+      const part=(typeof proximoPartido==="function")&&proximoPartido(), riv=(part&&part.rivalNombre)||"el rival";
+      const okSet=new Set(banco.map(b=>b.replace(/\{CLUB\}/g,club).replace(/\{RIVAL\}/g,riv)));
+      const fuera=(t.hilo||[]).filter(h=>!okSet.has(h.texto));
+      if(!(t.hilo||[]).length) f.push("pasado el rato no llegó ninguna respuesta");
+      if(fuera.length) f.push(fuera.length+" respuesta(s) a un post de luto no son del cajón de luto: «"+fuera[0].texto.slice(0,50)+"»");
+      if((t.hilo||[]).some(h=>/troll|rival|del_otro_lado|humo/.test(h.autor))) f.push("a un post de luto le contestan trolls o rivales");
+      det.push("luto: "+(t.hilo||[]).length+" respuestas en serio");
+    } catch(e){ f.push("explotó: "+e.message); }
+    finally{ E=snap; }
+  }
+  /* 4) un post pintado en vivo dentro de PLOP! sale con el estilo 2009 (sin los 4 botones viejos encima) */
+  if(typeof renderPostEl==="function"&&typeof document!=="undefined"){
+    const s0=(typeof SEC!=="undefined")?SEC:null;
+    try{ SEC="redes"; const d=renderPostEl({id:"x",autor:"@prueba",texto:"hola",likes:1,hilo:[{autor:"@a",texto:"b"}],replies:1,tipo:"hincha"});
+      if(!d.classList.contains("plopt-tw")) f.push("un post que llega en vivo no toma el estilo de PLOP! (salen los botones viejos encima)");
+      if(d.querySelector(".hilo-linea")) f.push("en la línea de tiempo el post trae el hilo adentro (tiene que ser «💬 N respuestas»)");
+      if(!d.querySelector(".plop-conv-link")) f.push("el post no ofrece «ver conversación»");
+    } catch(e){ f.push("renderPostEl explotó: "+e.message); }
+    finally{ if(s0!==null) SEC=s0; }
+  }
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"plop_entiende", area:"interfaz",
+    n:"PLOP! entiende lo que publicas (tema), contesta en serio a lo serio, las respuestas llegan de a poco y los posts en vivo no traen los botones viejos",
+    arreglo:"js/plop-vivo.js plopTema/plopRespuestasTema/plopProgramar/plopLlegaRespuestas y los enganches · js/data-plop-banco.js · interfaz-aero.js plopCardAntiguo",
+    fn:function(){ const r=devPlopEntiende(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
+/* 7.9138 · la Copa Chile cambia con los años: historia real con fuente + modelos que cambian el sorteo y tu calendario */
+function devCopaEpocas(){
+  const f=[], det=[];
+  if(typeof copaChileModelo!=="function") return {f:["falta copas-epocas.js"],det:det};
+  /* 1) la historia real, con fuente */
+  if(!/^https:\/\//.test(COPA_CHILE_FUENTE.url)||!COPA_CHILE_FUENTE.consultado) f.push("la historia de la Copa Chile no dice de dónde salió");
+  if(COPA_CHILE_HISTORIA.length<40) f.push("la historia tiene solo "+COPA_CHILE_HISTORIA.length+" ediciones");
+  if(COPA_CHILE_HISTORIA.some(h=>!h.formato)) f.push("hay ediciones sin formato");
+  const snap=(typeof clonarPartida==="function")?clonarPartida(E):null; if(!snap) return {f:f,det:["sin clonarPartida acá"]};
+  try{
+    E.copaChile=null;
+    /* 2) 2026 es el formato real; después cambia, pero nunca antes de 2 años y siempre igual para la misma partida */
+    if(copaChileModeloId(2026)!=="clasica") f.push("2026 no es el formato real (Primera y B)");
+    const seq=[]; for(let y=2027;y<=2066;y++) seq.push(copaChileModeloId(y));
+    const otra=seq.slice(); E.copaChile=null; const seq2=[]; for(let y=2027;y<=2066;y++) seq2.push(copaChileModeloId(y));
+    if(seq.join()!==seq2.join()) f.push("el modelo de cada año cambia si se vuelve a calcular (no es estable para la partida)");
+    const distintos=new Set(seq).size; if(distintos<2) f.push("en 40 años la Copa Chile nunca cambió de formato");
+    let run=1; for(let i=1;i<seq.length;i++){ if(seq[i]===seq[i-1]) run++; else { if(run<2&&i-run>0) f.push("un formato duró solo 1 año ("+(2026+i)+")"); run=1; } }
+    det.push(distintos+" formatos en 40 años: "+[...new Set(seq)].map(id=>COPA_CHILE_MODELOS[id].n).join(" · "));
+    /* 3) cada modelo arma el sorteo que dice (8 grupos de 4, sin repetidos, con el jugador adentro si su categoría juega) */
+    const P=new Set(_cchIds("2026")), B=new Set(_cchIds("2026b")), C=new Set(_cchIds("2026cN").concat(_cchIds("2026cS")));
+    const cat=id=>P.has(id)?"P":(B.has(id)?"B":(C.has(id)?"C":(/^AMA/.test(id)?"A":"?")));
+    Object.keys(COPA_CHILE_MODELOS).forEach((id,k)=>{
+      const anio=2040+k; E.anio=anio; E.copaChile={mod:{2026:"clasica"}}; E.copaChile.mod[anio]=id;
+      const s=mundoSorteoCopaChile(anio), L=Object.keys(s||{}), todos=[].concat(...L.map(x=>s[x]));
+      if(L.length!==8||todos.length!==32) { f.push(COPA_CHILE_MODELOS[id].n+": el sorteo no da 8 grupos de 4 ("+L.length+" grupos)"); return; }
+      if(new Set(todos).size!==32) f.push(COPA_CHILE_MODELOS[id].n+": hay clubes repetidos en el sorteo");
+      const g=COPA_CHILE_MODELOS[id].grupo;
+      L.forEach(x=>{ const cs=s[x].map(cat).sort().join(""), esp=g.map(c=>c==="X"?"?":c).slice().sort().join("");
+        if(g[3]==="X"){ if(!(s[x].filter(i=>cat(i)==="P").length===2&&s[x].filter(i=>cat(i)==="B").length===1&&/[CA]/.test(cat(s[x][3])))) f.push(COPA_CHILE_MODELOS[id].n+": el grupo "+x+" no es 2 de Primera + 1 de la B + 1 chico ("+cs+")"); }
+        else if(cs!==esp) f.push(COPA_CHILE_MODELOS[id].n+": el grupo "+x+" es "+cs+" (debería ser "+esp+")"); });
+      if(g[3]==="X"&&!todos.some(i=>/^AMA/.test(i))) f.push("«La Copa de Todos» sin campeones amateur invitados");
+      const mio=E.club, div=(typeof divisionVigenteDe==="function")?divisionVigenteDe(mio):null;
+      if((div==="P"||div==="B")&&todos.indexOf(mio)<0) f.push(COPA_CHILE_MODELOS[id].n+": tu club ("+div+") quedó fuera del sorteo");
+      if(typeof copaFinalUnica==="function"&&copaFinalUnica("chile")!==(COPA_CHILE_MODELOS[id].finalUnica!==false)) f.push(COPA_CHILE_MODELOS[id].n+": la final no respeta el formato (única/ida y vuelta)");
+    });
+    /* 4) BUG viejo: el sorteo de un año sale IGUAL lo pida tu calendario (antes de cambiar de año) o el país (después) */
+    E.copaChile={mod:{2026:"clasica"}}; E.anio=2049; const s1=JSON.stringify(mundoSorteoCopaChile(2050)); E.anio=2050; const s2=JSON.stringify(mundoSorteoCopaChile(2050));
+    if(s1!==s2) f.push("el sorteo de la Copa Chile sale distinto según cuándo se pide: tu grupo no es el del país y tu llave nunca se arma");
+    /* 5) los invitados existen para el resto del juego */
+    const am=(typeof clubLookup==="function")?clubLookup("AMA1"):null; if(!am||!am.n) f.push("los campeones amateur invitados no existen para el juego (clubLookup)");
+  } catch(e){ f.push("explotó: "+e.message); }
+  finally{ E=snap; }
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"copa_chile_epocas", area:"motor",
+    n:"La Copa Chile cambia con los años: historia real con fuente, formatos estables por partida y sorteos que cumplen lo que dicen",
+    arreglo:"js/copas-epocas.js COPA_CHILE_HISTORIA/COPA_CHILE_MODELOS, copaChileModeloId, copaChileSorteoModelo y los enganches · mundo.js _mAvanzarKO (copaFinalUnica)",
+    fn:function(){ const r=devCopaEpocas(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }

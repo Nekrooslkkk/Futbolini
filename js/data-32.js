@@ -378,7 +378,7 @@ function resolverCopaChile32(part, yo, otro){
     d:"Superas "+ronda+" ante "+_nomClub(R.riv)+" ("+marc+")."+penalTxt+" Entran "+(typeof plata==="function"?plata(60):"$60")+"."+
       (riv2?" "+(sig==="FINAL"?"Final":sig)+" contra "+_nomClub(riv2)+", que ganó su llave.":"")});
   if(t2) mundoInsertarLlaveJugador("chile", t2, "Copa Chile", sig==="FINAL"
-    ?"Final a partido único. Sede típica de Copa Chile (Nacional); no es un dato confirmado del 2026 real."
+    ?((typeof copaFinalUnica==="function"&&!copaFinalUnica("chile"))?"Final de ida y vuelta (formato de la ANFP para este año: como en 2018).":"Final a partido único. Sede típica de Copa Chile (Nacional); no es un dato confirmado del 2026 real.")
     :("Llave de "+sig+" ida y vuelta: la ida en casa del peor sembrado."));
 }
 function _resolverCopaChile32Viejo(part, yo, otro){

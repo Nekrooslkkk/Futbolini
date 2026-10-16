@@ -2855,3 +2855,13 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
 - Pendiente de Vicente (en orden): Plop (botones que se traspasan, respuestas que entiendan con un banco hecho con DeepSeek,
   estilo Twitter 2007 con hilos), copas que cambian con las épocas (idea aprobada: formatos reales con fuente + futuros marcados
   como ficción), caras realistas, el 3D que cuente lo mismo que el motor.
+
+**7.9137 (Claude Opus) · PLOP! con temas y conversación en vivo; Copa Chile por épocas. LEER si tocan PLOP! o las copas:**
+- PLOP!: `responderHilo` ya NO pone las respuestas al tiro: van a `t.hiloPend` con hora (`plopProgramar`) y entran con
+  `plopLlegaRespuestas` (un tic cada 1,5 s). Si agregan un tema: regex en `PLOP_TEMAS` (plop-vivo.js) + cajón en el banco (re-generar
+  con `scripts/plop_banco.py` y REVISAR A MANO antes de pasar a js/data-plop-banco.js). El doctor `plop_entiende` exige ≥6 hinchas por tema.
+- Copas: `copaChileModeloId(anio)` (2026 real; desde 2027 reformas sorteadas, guardadas en `E.copaChile.mod`) y el sorteo de cada año
+  se guarda en `E.copaChile.sorteos[anio]`: NO lo recalculen por otro lado (era el bug de la llave que nunca se armaba). Idea para
+  después: que el jugador, si es presidente de la ANFP (`E.fed.presidente`), elija el modelo; y modelos regionales (como 2023-24).
+- OJO (economía, para quien la toque): el banco largo `TEMPS=3` marca al azar "el DT cobra X M/semana con planilla Y M/año" en
+  épocas viejas (CC 1925 → 1928, CBL 2003). Sale también en 7.9136: es el umbral de sueldo/planilla, no las copas ni PLOP!.

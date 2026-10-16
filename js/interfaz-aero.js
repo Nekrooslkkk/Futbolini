@@ -117,15 +117,20 @@ function plopAntiguo(){
   }
   cu.innerHTML=""; cu.appendChild(root);
   /* cada post: avatar cuadrado y "hace x · desde web" */
-  root.querySelectorAll(".plop-card").forEach(card=>{
-    if(card.querySelector(".plopt-av")) return;
-    const aut=(card.querySelector(".plop-cab b")||{}).textContent||"";
-    card.insertAdjacentHTML("afterbegin",_plopAvatar(aut.replace(/^\S+\s/,"")));
-    card.classList.add("plopt-tw");
-    /* las acciones (me gusta, RT, responder) a la derecha, como en 2009 */
-    [].slice.call(card.children).forEach(ch=>{ if(ch.tagName==="DIV"&&ch.querySelector(":scope > .btn-aqua")&&!ch.classList.contains("plop-cab")) ch.classList.add("plopt-acc"); });
-  });
+  root.querySelectorAll(".plop-card").forEach(plopCardAntiguo);
   return true;
+}
+/* 7.9137 · el estilo 2009 de UN post. Antes solo se aplicaba al abrir PLOP!: los posts que llegaban en vivo o se repintaban
+   (la gente respondiendo lo que publicaste) salían con los 4 botones grandes viejos encima de los demás ("se traspasan").
+   Ahora renderPostEl lo llama para cada post que se pinta adentro de PLOP! (plop-vivo.js). */
+function plopCardAntiguo(card){
+  if(!card||card.querySelector(".plopt-av")) return card;
+  const aut=(card.querySelector(".plop-cab b")||{}).textContent||"";
+  card.insertAdjacentHTML("afterbegin",_plopAvatar(aut.replace(/^\S+\s/,"")));
+  card.classList.add("plopt-tw");
+  /* las acciones (me gusta, RT, responder) a la derecha, como en 2009 */
+  [].slice.call(card.children).forEach(ch=>{ if(ch.tagName==="DIV"&&ch.querySelector(":scope > .btn-aqua")&&!ch.classList.contains("plop-cab")) ch.classList.add("plopt-acc"); });
+  return card;
 }
 (function(){
   const o=window.vistaRedes; if(typeof o!=="function"||o._plopt) return;

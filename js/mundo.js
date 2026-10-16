@@ -516,7 +516,7 @@ function _mAvanzarKO(tor){
     const sig=_mRondaSiguiente(ko, ronda);
     if(sig && !ko.rondas[sig] && lista.every(t=>t.gana)){
       const w=lista.map(t=>t.gana), nueva=[];
-      for(let k=0;k<w.length;k+=2) nueva.push(_mLlave(tor, sig, w[k], w[k+1], sig==="FINAL"));
+      for(let k=0;k<w.length;k+=2) nueva.push(_mLlave(tor, sig, w[k], w[k+1], sig==="FINAL"&&(typeof copaFinalUnica!=="function"||copaFinalUnica(tor))));   /* 7.9138 · la final puede ser de ida y vuelta (copas-epocas.js) */
       ko.rondas[sig]=nueva; cambio=true;
     }
     if(ronda==="FINAL" && lista[0] && lista[0].gana && !pack.campeon){
