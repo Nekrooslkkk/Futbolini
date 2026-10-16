@@ -5615,3 +5615,36 @@ modelos más épicos" ("me gusta la idea": formatos reales con fuente + futuros 
 - **Estado:** doctor sano 160/160 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D) · core
   1186/1186 · saves ok · banco 255 sano (12 % despidos). Banco largo (TEMPS=3): 2 fallas de sueldos en 1925, que también salen al
   azar en la versión anterior (ahí fue Cobreloa 2003): no son de este parche, quedan anotadas.
+
+### 7.9138 — El gol del motor es el gol que se ve: lo remata el goleador, arranca donde está la pelota y cada tipo se ve como fue
+Pedido del autor (13 oct): "que el ritmo tenga que ver con las preguntas, si no eliges que no pase nada (hecho en 7.9132), pero
+claro, si marcas gol, que el juego lo defina y haga que metan el gol, que tenga que ver lo que pasa dentro del 3D".
+- **Antes:** cuando el motor anotaba un gol, la pelota se teletransportaba a mitad de cancha y SIEMPRE era la misma jugada (pase,
+  centro, remate) de un delantero cualquiera, aunque el gol fuera de penal, de cabeza o de tu central.
+- **Ahora (js/cancha.js `_cvGuionGol`, `_cvArmarGol`, `_cvPasoGol`):** un guion de puntos con tiempo que la 2D, el 3D y la
+  repetición leen igual (`st.seq.guion`):
+  - **Lo remata el goleador:** el que patea es el jugador que anotó el motor (por su nombre en tu once, `_cvNombres`); del rival,
+    uno de sus delanteros.
+  - **Arranca donde está la pelota:** sin teletransporte. Si el goleador está lejos, la jugada se estira lo que tarda en llegar
+    (~6 m/s); en el balón parado la espera va con la pelota quieta, mientras se arma, como en la cancha.
+  - **Cada gol como fue** (`P.golesDetalle[].tipo`): jugada (pase al costado, centro, remate al palo) · **cabeza** (sale al
+    córner, se arma y el centro llega a 2 m) · **tiro libre** (falta en la puerta del área, barrera de 4 y por arriba al ángulo) ·
+    **penal** (al punto, el arquero se tira al otro lado) · **autogol** (el centro lo desvía un defensor del que lo recibe) ·
+    **rebote** (el arquero da rebote y el goleador la empuja).
+  - El arquero sigue la pelota entre los palos y se tira con la estirada de verdad (tarde, o al otro lado en el penal). Después,
+    el goleador corre al banderín y los suyos detrás.
+  - El reloj del partido espera mientras la cancha cuenta el gol.
+- **Dev:** doctor `gol_del_motor` (los 6 tipos, de los dos equipos: el que remata es el goleador; sin teletransporte al empezar;
+  la pelota termina adentro entre los palos; el goleador está encima de la pelota al rematar; el cabezazo sube más de 1,6 m; el tiro
+  libre tiene barrera; el autogol lo mete un rival; y con el once de verdad el gol lo remata el que lo hizo). Lo cazó en mi propio
+  código: el tiro libre iba a 4 m del centro (afuera del palo) y el goleador llegaba 13 m tarde. Ahora también exige que la jugada
+  no pase de 9 s (el reloj del partido la espera).
+- Límites: la espera para que el goleador llegue suma como mucho 4 s; si igual no alcanza, remata de media distancia desde donde
+  llega (nunca se teletransporta). El chequeo viejo `cancha_cenital` mira 12 s (400 pasos) para que la repetición entre entera.
+- **Prueba del 3D (test/cancha3d.mjs):** "el partido sigue corriendo" fallaba 1 de cada 3 veces porque el reloj ESPERA a propósito
+  mientras se cuenta un gol. Ahora dice por qué está parado (gol, repetición, pausa, pregunta, VAR, balón parado) y le da 12 s
+  para soltarse.
+- **PLOP! (de 7.9137):** a un post de luto a veces contestaba `@cuenta_troll` con un pésame: `data-voz.js` mezcla esa cuenta en
+  `HANDLES_HINCHA`. Ahora los hinchas que contestan salen de `_plopHinchas()` (sin trolls ni rivales). El doctor `plop_entiende`
+  lo cazó en una partida de Trasandino; ahora prueba 40 posts de luto seguidos (con el código viejo falla 3 de 3).
+- **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular · dev 593/593 · banco 255 partidas.

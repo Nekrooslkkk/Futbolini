@@ -51,6 +51,13 @@ function plopTema(txt){
   return null;
 }
 function _plopElige(a){ return a[Math.floor(Math.random()*a.length)]; }
+/* 7.9138 · los hinchas que contestan: HANDLES_HINCHA trae mezcladas cuentas de barrio (data-voz.js) y entre ellas
+   @cuenta_troll; en un post de luto "el troll" daba el pésame (el doctor plop_entiende lo cazó). Los trolls y los rivales
+   solo hablan cuando les toca ser trolls o rivales */
+function _plopHinchas(){
+  const L=(typeof HANDLES_HINCHA!=="undefined"?HANDLES_HINCHA:["@hincha_de_ley"]).filter(h=>PLOP_TROLLS.indexOf(h)<0&&PLOP_RIVALES.indexOf(h)<0&&!/troll|rival|otro_lado|humo/i.test(h));
+  return L.length?L:["@hincha_de_ley"];
+}
 /* las respuestas de un tema, por tipo de cuenta (sin repetir dentro del mismo post) */
 function plopRespuestasTema(tema,n,t){
   const B=(typeof PLOP_BANCO!=="undefined")&&PLOP_BANCO[tema]; if(!B) return null;
@@ -65,7 +72,7 @@ function plopRespuestasTema(tema,n,t){
     const texto=_plopElige(lista).replace(/\{CLUB\}/g,club).replace(/\{RIVAL\}/g,riv); usadas[texto]=1;
     const autor=tipo==="prensa"?_plopElige(typeof HANDLES_PRENSA!=="undefined"?HANDLES_PRENSA:["@RadioGolAM"])
       :(tipo==="critico"?_plopElige(PLOP_CRITICOS):(tipo==="troll"?_plopElige(PLOP_TROLLS):(tipo==="rival"?_plopElige(PLOP_RIVALES)
-      :(tipo==="jugador"?((typeof handleJugador==="function")?handleJugador():"@jugador_oficial"):_plopElige(typeof HANDLES_HINCHA!=="undefined"?HANDLES_HINCHA:["@hincha_de_ley"])))));
+      :(tipo==="jugador"?((typeof handleJugador==="function")?handleJugador():"@jugador_oficial"):_plopElige(_plopHinchas())))));
     out.push({autor:autor, texto:texto, fecha:"ahora", tipo:tipo==="critico"||tipo==="troll"?"hincha":tipo, tema:tema});
   }
   return out;

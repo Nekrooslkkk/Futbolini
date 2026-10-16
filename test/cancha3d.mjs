@@ -54,8 +54,17 @@ try{
     ok(caso.papa?r.calidad==="antigua":r.calidad!=="antigua","calidad "+r.calidad+(caso.papa?" (Modo papa → Antigua)":""));
     ok(r.doc,"doctor cancha3d_fisica_rinde: "+r.docTxt);
     await esperar(1500);
-    const min2=await p.evaluate(()=>P_ACTUAL&&P_ACTUAL.min);
-    ok(min2>r.min,"el partido sigue corriendo con el 3D ("+r.min+"' → "+min2+"')");
+    /* 7.9138 · si el reloj no corre, se dice POR QUÉ (antes solo "12' → 12'": no se sabía qué lo tenía parado) */
+    const m2=await p.evaluate(()=>{ const P=P_ACTUAL||{}, st=typeof _cvSt!=="undefined"?_cvSt:null;
+      return {min:P.min, por:[P._celHasta&&Date.now()<P._celHasta?"espera "+Math.round(P._celHasta-Date.now())+" ms"+(P._repGol?" (repetición)":"")+(P._bpEspera?" (balón parado en cola)":""):"",
+        (typeof PAUSADO!=="undefined"&&PAUSADO)?"pausado":"", (typeof MOMENTO_OPS!=="undefined"&&MOMENTO_OPS&&MOMENTO_OPS.length)?"pregunta abierta":"",
+        P._varHold?"VAR":"", st&&st.seq?"gol en la cancha ("+st.seq.tipo+")":"", (typeof BP3D!=="undefined"&&BP3D.activo)?"balón parado 3D":"",
+        (P.golesDetalle||[]).length?"goles "+(P.golesDetalle||[]).map(g=>g.min+"'").join(","):""].filter(Boolean).join(" · ")}; });
+    /* el reloj ESPERA a propósito mientras la cancha cuenta un gol (7.9138) o pasa la repetición: eso no es estar trabado.
+       Se le da hasta 12 s para soltarse; lo que se exige es que vuelva a correr */
+    let min2=m2.min, porQue=m2.por;
+    for(let k=0;k<12&&!(min2>r.min);k++){ await esperar(1000); const m3=await p.evaluate(()=>P_ACTUAL&&P_ACTUAL.min); if(m3>min2||m3>r.min){ min2=m3; break; } }
+    ok(min2>r.min,"el partido sigue corriendo con el 3D ("+r.min+"' → "+min2+"')"+(min2>r.min?(m2.min>r.min?"":" · esperó a propósito: "+porQue):" · parado por: "+(porQue||"¿?")));
     /* 7.9132 · "cuando pausas, que la cancha también esté pausada": Espacio congela el reloj Y la cancha; al seguir, juegan */
     const pz=await p.evaluate(async()=>{
       const foto=()=>[_cvSt.ball.x,_cvSt.ball.y].concat(_cvSt.jug.map(j=>j.x+j.y*3)).map(v=>v.toFixed(4)).join(",");

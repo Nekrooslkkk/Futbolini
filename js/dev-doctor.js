@@ -956,7 +956,7 @@ devDoctorRegistrar({id:"cancha_cenital", area:"interfaz", n:"La cancha del parti
     var ms=(performance.now()-t0)/30;
     if(ms>4) falta.push("cada cuadro cuesta "+ms.toFixed(1)+" ms (con 4+ ms se traba en celulares)");
     var st2=_cvNuevoEstado(null); _cvArmarGol(st2,1,"x",10); var dentro=false;
-    for(var k=0;k<200&&st2.seq;k++){ _cvPasoGol(st2,0.03); if(st2.seq&&st2.ball.x>1.0) dentro=true; }
+    for(var k=0;k<400&&st2.seq;k++){ _cvPasoGol(st2,0.03); if(st2.seq&&st2.ball.x>1.0) dentro=true; }   /* 7.9138 · el gol con guion puede durar hasta ~10 s (balón parado) */
     if(!dentro) falta.push("la repetición del gol no termina con la pelota en la red");
     if(typeof cvRepeticionGol!=="function") falta.push("no se pueden volver a ver los goles en la repetición");
     var enc=0; st.jug.forEach(function(a,i){ st.jug.forEach(function(b,j){ if(j>i&&Math.hypot(a.x-b.x,a.y-b.y)<0.01) enc++; }); });

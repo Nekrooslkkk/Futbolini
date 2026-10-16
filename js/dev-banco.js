@@ -2021,7 +2021,13 @@ function devPlopEntiende(){
       const fuera=(t.hilo||[]).filter(h=>!okSet.has(h.texto));
       if(!(t.hilo||[]).length) f.push("pasado el rato no llegó ninguna respuesta");
       if(fuera.length) f.push(fuera.length+" respuesta(s) a un post de luto no son del cajón de luto: «"+fuera[0].texto.slice(0,50)+"»");
-      if((t.hilo||[]).some(h=>/troll|rival|del_otro_lado|humo/.test(h.autor))) f.push("a un post de luto le contestan trolls o rivales");
+      /* 7.9138 · antes se probaba UN post y el troll colado (HANDLES_HINCHA trae @cuenta_troll) salía 1 de cada ~5 corridas:
+         ahora se prueban 40 posts de luto seguidos (con 10 todavía se escapaba 1 de cada 4) */
+      const esTroll=a=>/troll|rival|del_otro_lado|humo/.test(a)||(typeof PLOP_TROLLS!=="undefined"&&PLOP_TROLLS.indexOf(a)>=0);
+      let colado=(t.hilo||[]).find(h=>esTroll(h.autor));
+      for(let k=0;k<40&&!colado;k++){ const u={id:"doctor_luto"+k,autor:"@club",texto:"Falleció un histórico del club. Nuestras condolencias a su familia.",hilo:[],replies:0,tipo:"club"};
+        E.timeline.unshift(u); responderHilo(u,u.texto); plopLlegaRespuestas(Date.now()+120000); colado=(u.hilo||[]).find(h=>esTroll(h.autor)); }
+      if(colado) f.push("a un post de luto le contestan trolls o rivales ("+colado.autor+": «"+String(colado.texto).slice(0,40)+"»)");
       det.push("luto: "+(t.hilo||[]).length+" respuestas en serio");
     } catch(e){ f.push("explotó: "+e.message); }
     finally{ E=snap; }
@@ -2094,4 +2100,63 @@ if(typeof devDoctorRegistrar==="function"){
     n:"La Copa Chile cambia con los años: historia real con fuente, formatos estables por partida y sorteos que cumplen lo que dicen",
     arreglo:"js/copas-epocas.js COPA_CHILE_HISTORIA/COPA_CHILE_MODELOS, copaChileModeloId, copaChileSorteoModelo y los enganches · mundo.js _mAvanzarKO (copaFinalUnica)",
     fn:function(){ const r=devCopaEpocas(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
+/* 7.9138 · el gol que decide el motor es el que se ve: lo hace el goleador, arranca donde está la pelota y cada tipo se ve como fue */
+function devGolDelMotor(){
+  const f=[], det=[];
+  if(typeof _cvGuionGol!=="function"||typeof _cvNuevoEstado!=="function") return {f:["falta el gol con guion (cancha.js _cvGuionGol)"],det:det};
+  const tipos=["jugada","cabeza","tiro libre","penal","autogol","rebote"], resumen=[];
+  tipos.forEach(tipo=>{
+    for(const lado of [1,-1]){
+      const st=_cvNuevoEstado(null), J=st.jug;
+      /* la pelota en un lugar cualquiera (no en el medio) */
+      st.ball.x=0.35+Math.random()*0.3; st.ball.y=0.2+Math.random()*0.6; const b0={x:st.ball.x,y:st.ball.y};
+      const noms=J.map((p,i)=>p.mio?("Jugador"+i):null), k=J.findIndex((p,i)=>p.mio&&p.rol==="mid");
+      _cvArmarGol(st,lado,lado>0?"Jugador"+k:"Rival",30,{tipo:tipo,noms:noms});
+      const s=st.seq, mio=lado>0;
+      if(!s){ f.push(tipo+": no arma la jugada del gol"); continue; }
+      /* 7.9138 · el reloj del partido espera mientras se cuenta el gol (_cvStep, tope 9 s): un gol eterno lo deja parado */
+      if(s.dur>9.5) f.push(tipo+": la jugada del gol dura "+s.dur.toFixed(1)+" s (el reloj del partido espera; tope 9 s)");
+      if(lado>0&&tipo!=="autogol"&&s.goleador!==k) f.push(tipo+": el que remata no es el goleador del motor ("+s.goleador+" en vez de "+k+")");
+      if(tipo==="autogol"&&J[s.goleador]&&J[s.goleador].mio===mio) f.push("autogol: lo mete uno del equipo que festeja (debería desviarla un rival)");
+      let salto=0, alturaMax=0, barrera=0, cercaRemate=null, prev={x:st.ball.x,y:st.ball.y}, minDist=9;
+      const tRem=s.guion.K[s.guion.K.length-2].t;
+      salto=Math.hypot((st.ball.x-b0.x)*105,(st.ball.y-b0.y)*68);
+      for(let n=0;n<600&&st.seq;n++){
+        _cvPasoGol(st,0.02);
+        if(!st.seq) break;
+        alturaMax=Math.max(alturaMax,(st.ball.z||0)*11);
+        if(st.barrera) barrera=Math.max(barrera,J.filter(p=>p._barrera).length);
+        if(Math.abs(st.seq.t-tRem)<0.03&&cercaRemate==null){ const g=J[s.goleador]; cercaRemate=g?Math.hypot((g.x-st.ball.x)*105,(g.y-st.ball.y)*68):99; }
+        if(st.seq.t>tRem&&st.seq.t<st.seq.tGol){ const g=J[s.goleador]; if(g) minDist=Math.min(minDist,Math.hypot((g.x-st.ball.x)*105,(g.y-st.ball.y)*68)); }
+        prev={x:st.ball.x,y:st.ball.y};
+      }
+      const gx=mio?1:0, dentro=(mio?prev.x>=0.999:prev.x<=0.001)&&Math.abs(prev.y-0.5)*68<3.66;
+      if(salto>0.5) f.push(tipo+": la pelota se teletransporta al empezar ("+salto.toFixed(1)+" m)");
+      if(!dentro) f.push(tipo+(lado>0?" (tuyo)":" (rival)")+": la pelota no termina adentro del arco");
+      if(cercaRemate!=null&&cercaRemate>3.5&&tipo!=="penal"&&tipo!=="tiro libre") f.push(tipo+": el goleador está a "+cercaRemate.toFixed(1)+" m de la pelota cuando la remata");
+      if(tipo==="cabeza"&&alturaMax<1.6) f.push("cabeza: el centro no sube (máx "+alturaMax.toFixed(1)+" m)");
+      if(tipo==="tiro libre"&&barrera<3) f.push("tiro libre: no hay barrera ("+barrera+")");
+      if(lado>0) resumen.push(tipo+" ok");
+    }
+  });
+  det.push(resumen.join(" · "));
+  /* desde el motor: el gol del partido arma la jugada con el nombre del goleador de tu once */
+  if(typeof _cvStep==="function"&&typeof _cvNombres==="function"){
+    const P={once:(E&&E.plantel||[]).slice(0,11),part:{local:true},gl:0,gv:0,golesDetalle:[],dom:[{v:0}]};
+    const st=_cvNuevoEstado(P), noms=_cvNombres(P)||[], k=st.jug.findIndex((p,i)=>p.mio&&p.rol==="fwd");
+    if(k>=0&&noms[k]){ P.golesDetalle.push({min:20,quien:noms[k],propio:true,tipo:"jugada"}); P.gl=1;
+      _cvStep(P,0.02,st);
+      /* _cvStep con estado propio no mira el marcador: se arma como lo haría el partido en vivo */
+      if(!st.seq){ const mk={yo:1}; _cvArmarGol(st,1,noms[k],20,{tipo:"jugada",noms:noms}); }
+      if(!st.seq||st.seq.goleador!==k) f.push("con el once de verdad, el gol no lo remata el goleador del motor");
+      else det.push("gol de "+noms[k]+" rematado por "+noms[k]); }
+  }
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"gol_del_motor", area:"interfaz",
+    n:"El gol que decide el motor es el que se ve: lo remata el goleador, arranca donde está la pelota y cada tipo (cabeza, tiro libre, penal, autogol, rebote) se ve como fue",
+    arreglo:"js/cancha.js _cvGuionGol/_cvArmarGol/_cvPasoGol (st.seq.guion) · _cvStep pasa los nombres (_cvNombres)",
+    fn:function(){ const r=devGolDelMotor(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }

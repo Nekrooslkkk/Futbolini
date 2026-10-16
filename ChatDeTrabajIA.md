@@ -2865,3 +2865,11 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
   después: que el jugador, si es presidente de la ANFP (`E.fed.presidente`), elija el modelo; y modelos regionales (como 2023-24).
 - OJO (economía, para quien la toque): el banco largo `TEMPS=3` marca al azar "el DT cobra X M/semana con planilla Y M/año" en
   épocas viejas (CC 1925 → 1928, CBL 2003). Sale también en 7.9136: es el umbral de sueldo/planilla, no las copas ni PLOP!.
+
+**7.9138 (Claude Opus) · Gol con guion. LEER si tocan los goles de la cancha 2D/3D:**
+- `_cvArmarGol(st,lado,quien,min,ctx)` arma `st.seq` con `guion:{K (puntos con tiempo), R (quién va a dónde), fin (goleador)}`.
+  `ctx.noms` = `_cvNombres(P)` (mismo orden que `st.jug`). Si agregan un tipo de gol en el motor (`regGol`), súmenlo a `_cvGolTipo`
+  y a `_cvGuionGol`; el doctor `gol_del_motor` revisa todos. `st.seq` conserva tipo/mio/red/cartel/sinSaque (los lee el 3D).
+- Ojo con el reloj: mientras `st.seq` cuenta un gol, `P._celHasta` lo deja parado (tope 9 s). Si una prueba mide "el reloj
+  corre", que espere a que se suelte (ver test/cancha3d.mjs). En PLOP!, quien contesta como hincha sale de `_plopHinchas()`:
+  `HANDLES_HINCHA` trae `@cuenta_troll` mezclado desde data-voz.js.
