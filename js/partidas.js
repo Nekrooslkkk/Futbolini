@@ -360,15 +360,11 @@ function _tjHoySeg(){
   if(typeof E!=="undefined"&&E&&E.tiempoHoy&&E.tiempoHoy.dia===_tjHoyClave()) return +E.tiempoHoy.seg||0;
   return _tjSesion;
 }
-function _tjAngosto(){
-  try{ return typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(max-width:720px)").matches; }catch(e){ return false; }
-}
 function _tjRelojTxt(hora){
-  const hoyS=_tjTxt(_tjHoySeg());
-  const totS=_tjTxt(typeof E!=="undefined"&&E?(+E.tiempoJugado||0):0);
-  if(_tjAngosto()) return "💾 "+(hora||"—")+" · ⏱ "+hoyS;
   const hoy=(typeof T==="function")?T("reloj_hoy","hoy"):"hoy";
   const tot=(typeof T==="function")?T("reloj_total","total"):"total";
+  const hoyS=_tjTxt(_tjHoySeg());
+  const totS=_tjTxt(typeof E!=="undefined"&&E?(+E.tiempoJugado||0):0);
   return "💾 "+(hora||"—")+" · ⏱ "+hoy+" "+hoyS+" · "+tot+" "+totS;
 }
 function relojAjustesTxt(){

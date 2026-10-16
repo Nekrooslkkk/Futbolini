@@ -5734,5 +5734,11 @@ Pedido del autor, vía el encargo de interfaz que dejó Claude para Grok. Se sub
 - **Avisos:** `aviso(txt, ms)` mantiene la firma. Sin tiempo pedido, 4,5 s (7 s si el texto pasa de 90 letras). Máximo 3; el cuarto echa al más viejo. Se van con fade (`aviso-sale`). En el celu van a la derecha, arriba del dock, y no tapan Jugar. El tope viejo de `js/ui-jornada.js` sigue (envuelve `aviso`); ahora guarda `_orig` para que el doctor vea el original.
 - **Doctor:** `pie_limpio`, `tiempo_jugado`, `avisos_vista`. Con el código viejo fallan.
 - **No se tocó:** cancha, 3D, escudos, historia de clubes, motor de goles, penales.
-- **Estado:** core 1186/1186 · dev 593/593 · partidas viejas cargan · doctor 165/165 en 4 partidas + celular · banco 255 partidas × 1 temporada. Una corrida de dev marcó `acciones_cancha` (cabezazos al azar, cancha 3D, no este parche); al repetir, 593/593.
+- **Estado:** core 1186/1186 · dev 593/593 · partidas viejas cargan · doctor 165/165 en 4 partidas + celular · banco 255 partidas × 1 temporada.
+
+### 7.9143 — El reloj del celu también dice hoy y total
+El autor eligió: en la esquina van los dos tiempos, también en el celular. Los avisos se quedan en 4,5 s. El botón de resoluciones que va a la barra de Syntergia es «Resolver las N decisiones» (no «Haz todo lo seguro»). «Lo que pasó esta semana» va a ser una tarjeta tipo Windows (T12, todavía no).
+- **Reloj:** `💾 20:55 · ⏱ hoy 12 min · total 1 h` en PC y en celu. En el celu se parte en dos líneas a la izquierda, arriba de Jugar, y los globos siguen a la derecha.
+- **Doctor:** `tiempo_jugado` ahora falla si el texto no trae hoy y total.
+- **Estado:** core 1186/1186 · dev 593/593 · partidas viejas cargan · doctor 165/165 en 4 partidas + celular · banco 255.
 

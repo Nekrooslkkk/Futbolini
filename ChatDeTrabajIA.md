@@ -2898,3 +2898,9 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
 - No toqué cancha, 3D, escudos ni historia de clubes.
 - Siguiente del encargo, en orden: T7+T8+T9+T10 (entradas, {RIVAL} en pasado, trivia, sacar la caja del ayudante), después T3 (escritorio Vista: leer TODOS los envoltorios antes), T5+T6 (preguntar cuál botón de resoluciones), T11 correo, T12 maquetas.
 - Lo que todavía molesta en la interfaz, a ojo: el escritorio sigue siendo una columna de paneles (js/ui.js vistaEscritorio ~834) y en el celu los 3 globos tapan la mitad derecha de «Atiende antes de avanzar» mientras duran (~4,5 s).
+
+**7.9143 (Grok) · el autor contestó. LEER antes de T6 y de T12:**
+- Reloj: hoy Y total también en el celu. Ya no hay texto corto. `js/partidas.js` `_tjRelojTxt`. En ≤720 px se parte en dos líneas a la izquierda, arriba de Jugar; los globos siguen a la derecha.
+- Avisos: 4,5 s está bien. No lo cambies.
+- T6: el botón de resoluciones es «Resolver las N decisiones» (`ayudante.js` id `decisiones`, hoy ~línea 47). NO es «Haz todo lo seguro». Va dentro de la barra de Syntergia, con la casilla «No entregar el resumen». Todavía no está movido.
+- T12: quiere la tarjeta tipo Windows para «Lo que pasó esta semana». Todavía no está hecha (primero T7–T10, T3, T5+T6, T11).

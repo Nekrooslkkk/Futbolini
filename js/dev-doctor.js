@@ -2667,6 +2667,11 @@ devDoctorRegistrar({id:"tiempo_jugado", area:"interfaz",
       if(!(copia.tiempoJugado>=(antes||0)+3.9)) f.push("al guardar se pierde tiempoJugado");
       if(!copia.tiempoHoy || copia.tiempoHoy.seg<3.9) f.push("al guardar se pierde el tiempo de hoy");
       var n=document.getElementById("guardadoTxt");
+      var re=_tjRelojTxt("11:27");
+      var labH=(typeof T==="function")?T("reloj_hoy","hoy"):"hoy";
+      var labT=(typeof T==="function")?T("reloj_total","total"):"total";
+      if(re.indexOf(labH)<0||re.indexOf(labT)<0) f.push("el reloj no muestra hoy y total («"+re+"»)");
+      if(/^guardado/i.test(re)) f.push("el reloj de éxito empieza como un guardado");
       if(n && n.classList.contains("guardado-mal")){
         var prev=n.textContent;
         relojPintar();

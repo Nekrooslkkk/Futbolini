@@ -70,9 +70,14 @@ body.en-partido #guardadoTxt{
     right:auto;
     text-align:left;
     bottom:calc(118px + env(safe-area-inset-bottom, 0px));
+    max-width:min(42vw, 168px);
+    white-space:normal;
+    font-size:10px;
+    line-height:1.25;
   }
   #guardadoTxt{display:block !important}
-  /* Globos a la derecha, arriba del dock: el reloj queda a la izquierda. */
+  body.en-partido #guardadoTxt{max-width:min(46vw, 180px); white-space:normal; font-size:10px}
+  /* Globos a la derecha, arriba del dock: el reloj (hoy y total) queda a la izquierda. */
   body.con-dock #avisos,
   body[data-tema="aero"] #avisos,
   html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) #avisos{
@@ -80,13 +85,13 @@ body.en-partido #guardadoTxt{
     right:8px !important;
     transform:none !important;
     align-items:flex-end !important;
-    width:min(58vw, 230px) !important;
+    width:min(50vw, 200px) !important;
     bottom:calc(124px + env(safe-area-inset-bottom, 0px)) !important;
   }
   body.con-dock .aviso,
   body[data-tema="aero"] .aviso{
     min-width:0 !important;
-    max-width:min(58vw, 230px) !important;
+    max-width:min(50vw, 200px) !important;
   }
   body.en-partido #avisos{bottom:calc(16px + env(safe-area-inset-bottom, 0px)) !important}
 }
