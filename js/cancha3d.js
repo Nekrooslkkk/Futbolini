@@ -266,9 +266,11 @@ function _c3dPintar(est){
     const mio=i<11, gk=p.rol==="gk", cam=gk?(mio?arqMio:arqRiv):(mio?col.mio:col.riv);
     const look=(typeof _cvLook==="function")?_cvLook(p,i):{piel:"#e0ac7e",pelo:"#1b1410",pelado:false};
     const fr=gk?null:(mio?col.franjaMio:col.franjaRiv), frc=gk?null:(mio?col.franjaColorMio:col.franjaColorRiv);
+    const real=!!(I.D&&I.D.tex);   /* 7.9139 · el realista: el pelado igual tiene cejas (color de pelo) y cada uno su peinado */
     modelo3dPintar(I.malla.material,{piel:look.piel, camiseta:cam, short:gk?"#1b1d22":((mio?col.shortMio:col.shortRiv)||"#20242c"),
-      medias:gk?cam:((mio?col.mediasMio:col.mediasRiv)||cam), botines:gk?"#f2f2f2":"#15161a", pelo:look.pelado?look.piel:look.pelo,
-      manos:gk?"#f3f6fa":look.piel, franja:fr&&frc?fr:null, franjaCol:frc}); }
+      medias:gk?cam:((mio?col.mediasMio:col.mediasRiv)||cam), botines:gk?"#f2f2f2":"#15161a", pelo:(look.pelado&&!real)?look.piel:look.pelo,
+      manos:gk?"#f3f6fa":look.piel, franja:fr&&frc?fr:null, franjaCol:frc,
+      peinado:look.pelado?0:(look.peinado||1), barba:!!look.barba}); }
   Object.keys(P).forEach(n=>{ if(P[n].instanceColor) P[n].instanceColor.needsUpdate=true; });
 }
 /* matrices de trabajo (sin crear objetos por cuadro) */
@@ -480,14 +482,19 @@ function c3dModeloQuerido(est){
   try{ if(document.documentElement.classList.contains("papa")) return false; }catch(e){}
   return !(typeof E!=="undefined"&&E&&E.config&&E.config.c3dJugadores==="clasicos");
 }
+/* 7.9139 · Ajustes ▸ Jugadores 3D ▸ "Realistas (beta)": cara, pelo y piel (modelo3d.js MODELO3D_REAL) */
+function c3dQuiereReal(){ return typeof modelo3dCargarReal==="function"&&typeof E!=="undefined"&&!!E&&!!E.config&&E.config.c3dJugadores==="realistas"; }
 function _c3dIntentarModelo(est){
   if(!est||est.m3d||!c3dModeloQuerido(est)) return;
-  modelo3dCargar().then(ok=>{ if(ok&&C3D.est===est&&!est.m3d&&c3dModeloQuerido(est)){ try{ _c3dUsarModelo(est); }catch(e){ if(window.console) console.error("maniquí:",e); _c3dSacarModelo(est); } } });
+  /* 7.9139 · si eligió los realistas se baja ese modelo; si no llega (sin internet la primera vez, archivo roto), el maniquí */
+  const maniqui=()=>modelo3dCargar().then(ok=>ok?MODELO3D.datos:null);
+  const carga=c3dQuiereReal()?modelo3dCargarReal().then(ok=>ok?MODELO3D_REAL.datos:maniqui()):maniqui();
+  carga.then(D=>{ if(D&&C3D.est===est&&!est.m3d&&c3dModeloQuerido(est)){ try{ _c3dUsarModelo(est,D); }catch(e){ if(window.console) console.error("maniquí:",e); _c3dSacarModelo(est); } } });
 }
-function _c3dUsarModelo(est){
+function _c3dUsarModelo(est,D){
   if(est.rep) _c3dRepFin(est,false);   /* cambiar de cuerpo borra la grabación: primero termina la repetición */
-  est.m3d=[];
-  for(let i=0;i<22;i++){ const I=modelo3dInstancia(modelo3dMaterial()); I.malla.castShadow=!!est.perfil.sombras; est.scene.add(I.raiz); est.m3d.push(I); }
+  D=D||MODELO3D.datos; est.m3d=[]; est.m3dReal=!!(D&&D.tex);
+  for(let i=0;i<22;i++){ const I=modelo3dInstancia(modelo3dMaterial(null,D),D); I.malla.castShadow=!!est.perfil.sombras; est.scene.add(I.raiz); est.m3d.push(I); }
   Object.keys(est.piezas).forEach(k=>{ est.piezas[k].visible=false; });
   _c3dPintar(est);
   est.grab=null;   /* lo grabado era con el otro cuerpo: la repetición empieza de nuevo */
@@ -523,7 +530,7 @@ function _c3dPoseModelo(est,i,o,v,dt,fase){
   if(roll){   /* el arquero que se tira rueda desde la cadera */
     const qr=K.qr||(K.qr=new THREE.Quaternion()), ax=K.ax||(K.ax=new THREE.Vector3()), h1=K.h1||(K.h1=new THREE.Vector3());
     ax.set(0,0,1).applyQuaternion(R.quaternion); qr.setFromAxisAngle(ax,roll);
-    h1.set(0,0.93,0).applyQuaternion(R.quaternion); R.position.add(h1); h1.applyQuaternion(qr); R.position.sub(h1); R.quaternion.premultiply(qr);
+    h1.set(0,0.93*(I.escala||1),0).applyQuaternion(R.quaternion); R.position.add(h1); h1.applyQuaternion(qr); R.position.sub(h1); R.quaternion.premultiply(qr);
   }
   /* piernas y brazos: la animación del paquete según la velocidad; durante un gesto se va hacia "quieto" y manda el gesto */
   I.pesoLoco=1-(o.brazos?1:(o.wAcc||0));

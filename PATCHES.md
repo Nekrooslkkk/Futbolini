@@ -5648,3 +5648,46 @@ claro, si marcas gol, que el juego lo defina y haga que metan el gol, que tenga 
   `HANDLES_HINCHA`. Ahora los hinchas que contestan salen de `_plopHinchas()` (sin trolls ni rivales). El doctor `plop_entiende`
   lo cazó en una partida de Trasandino; ahora prueba 40 posts de luto seguidos (con el código viejo falla 3 de 3).
 - **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular · dev 593/593 · banco 255 partidas.
+
+### 7.9139 — Jugadores REALISTAS (beta): cara, pelo, ojos y piel, con el uniforme del club
+Pedido del autor: "las caras TIENEN QUE SER MODELOS realistas libres tipo PES 2006".
+- **El modelo:** el paquete GRATIS «Universal Base Characters [Standard]» de Quaternius (CC0 1.0, dominio público; quaternius.itch.io/universal-base-characters).
+  Cuerpo «Superhero_Male» con su textura pintada a mano (cara y piel), ojos, cejas y tres peinados (rapado, partido al lado,
+  barba). Son personajes genéricos: no son caras de jugadores reales y el juego no lo dice.
+- **`scripts/modelo_realista.py`** arma `img/modelos/jugador_real.glb` (+ `.js` en base64 para file:// y sin internet), ~1 MB:
+  - todo en UNA malla y UNA textura (atlas JPEG 2048×1024 dentro del .glb: piel y cara, detalle del pelo, ojos): sigue siendo
+    un dibujo por jugador (40 llamadas de dibujo por cuadro, igual que el maniquí);
+  - los peinados viven en la malla (`_PEINADO`) y el sombreador esconde los que no son del jugador;
+  - zonas del uniforme (`_KIT`) por hueso y por dónde cae el vértice a lo largo del hueso (manga corta, short a medio muslo,
+    medias bajo la rodilla, botines, manos/guantes);
+  - las 11 animaciones del maniquí **redirigidas** a este esqueleto (mismos 65 huesos, otra pose de reposo y otras medidas):
+    se copia cuánto gira cada hueso desde su reposo, en el mundo, y la cadera se escala por el largo de la pierna (×1,035).
+- **En el juego (js/modelo3d.js):**
+  - `MODELO3D_REAL` y `modelo3dCargarReal()` (cargador común `_m3dCargarDe`); la textura se lee del .glb (`_m3dTextura`);
+  - `_m3dMaterialReal`: la piel se tiñe al tono de cada jugador con la luz y sombra de la textura (por luminancia: canal por
+    canal blanqueaba las pieles claras); el pelo usa el color del jugador sobre el detalle de mechones; camiseta y short un
+    poco sueltos (1,2 y 2,6 cm); el arquero con guantes;
+  - `modelo3dAndar` usa el modelo de cada jugador (`I.D`) y alarga la zancada por la escala;
+  - los bordes del uniforme van en línea recta (cuello redondo alrededor del cogote, manga corta, cintura, short a medio
+    muslo, medias bajo la rodilla): el script guarda los cortes (`extras.futbolini.cortes`, sacados de las articulaciones) y
+    el sombreador corta por la posición de reposo. Antes el borde seguía los triángulos y salía en serrucho.
+- **js/cancha.js `_cvLook`:** cada jugador además tiene peinado (rapado o partido; el pelado no lleva) y barba (1 de cada 4).
+- **js/cancha3d.js:** `c3dQuiereReal()`; si el realista no llega (sin internet la primera vez), entra el maniquí.
+- **Ajustes ▸ Jugadores 3D:** «🧑 Realistas (beta)», «🧍 Maniquí» (el de siempre) y «🧱 Clásicos». El realista se baja la
+  primera vez y queda guardado (img/ es caché primero en el service worker). En Antigua y en Modo papa siguen los clásicos.
+- **Dev:**
+  - doctor `jugador_realista`: crédito sin promesas falsas, carga con textura, sombreador enganchado, las 8 zonas y los 3
+    peinados, mismas animaciones que el maniquí, de pie con los pies en el suelo, la patada lleva el pie adelante, piel,
+    peinado y guantes llegan al sombreador, los bordes rectos del uniforme están, y **cada hueso gira desde su reposo igual
+    que en el maniquí** (0,0°).
+    Al revés: sin textura → 4 fallas; con las rotaciones crudas sin redirigir → «spine_03 gira 11,1° distinto».
+  - test/cancha3d.mjs: tercer caso «PC con jugadores realistas» (partido, penal, córner, repetición, sin errores).
+  - doctor `ual2_acciones` (de 7.9134) daba falsas alarmas: con ~19 entradas y 4 de cada 10 barridas, pasar del 70 % sale
+    por azar ~1 de cada 300 veces (pasó en Trasandino: 14/19; medido: 38,5 % en 60 corridas). Además, con 8 de cada 10
+    barridas medía 67 %: el umbral de 70 % ni lo cazaba. Ahora, si ve más de 55 %, mide 36 minutos más y acusa sobre 60 %.
+    Al revés (barridas al 80 %): falla 3 de 3; normal: pasa.
+- Créditos: img/FUENTES.md ▸ Modelos 3D y js/vendor/LICENCIAS.md.
+- Límites honestos de esta beta: es UN solo cuerpo (atlético, de superhéroe) y UNA cara para todos; cambian la piel, el
+  pelo, el peinado y la barba. La versión pagada del paquete trae más modelos (no se compró: lo decide el autor).
+- **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular (162 chequeos) · dev 593/593
+  (cancha 3D con los 3 casos) · banco 255 partidas.

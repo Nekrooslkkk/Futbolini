@@ -3887,15 +3887,21 @@ function vistaAjustes(host){
          7.9131 · el texto decía "movimientos capturados de personas": la fuente no lo dice (solo CC0 y hecho en Blender) */
       p.cuerpo.appendChild(el("label","lb","Jugadores 3D"));
       const fj=el("div","fichas"), jug3=(E.config&&E.config.c3dJugadores)||"modelo";
-      [["modelo","🧍 Realistas"],["clasicos","🧱 Clásicos (livianos)"]].forEach(([k,n])=>{
+      /* 7.9139 · tres cuerpos: el maniquí (liviano, el de siempre), los REALISTAS con cara, pelo y piel (beta, ~1 MB que se baja
+         la primera vez) y los clásicos. Cambiar en medio del partido saca el cuerpo actual y monta el nuevo */
+      [["realistas","🧑 Realistas (beta)"],["modelo","🧍 Maniquí"],["clasicos","🧱 Clásicos (livianos)"]].forEach(([k,n])=>{
         const b=el("button","ficha",n); b.setAttribute("aria-pressed",jug3===k?"true":"false");
-        b.onclick=()=>{ E.config.c3dJugadores=k; guardar();
-          if(typeof C3D!=="undefined"&&C3D.est){ if(k==="clasicos") _c3dSacarModelo(C3D.est); else { C3D.est.m3dLento=false; _c3dIntentarModelo(C3D.est); } }
-          render(); aviso(k==="modelo"?"🧍 Jugadores realistas: cuerpo entero que se dobla sin cortes y anda con animaciones de verdad.":"🧱 Jugadores clásicos: más livianos para equipos lentos.",3500); };
+        b.onclick=()=>{ const antes=E.config.c3dJugadores||"modelo"; E.config.c3dJugadores=k; guardar();
+          if(typeof C3D!=="undefined"&&C3D.est){ if(k==="clasicos") _c3dSacarModelo(C3D.est);
+            else { if(antes!==k) _c3dSacarModelo(C3D.est); C3D.est.m3dLento=false; _c3dIntentarModelo(C3D.est); } }
+          render(); aviso(k==="realistas"?"🧑 Jugadores realistas: cara, pelo y piel de verdad, con el uniforme de tu club. Es la primera versión: contame qué ves.":
+            (k==="modelo"?"🧍 Maniquí: cuerpo entero que se dobla sin cortes y anda con animaciones de verdad.":"🧱 Jugadores clásicos: más livianos para equipos lentos."),3500); };
         fj.appendChild(b);
       });
       p.cuerpo.appendChild(fj);
-      p.cuerpo.appendChild(el("p","mini","<b>Realistas</b>: maniquí con el uniforme del club, que camina, trota y pica con "+(typeof MODELO3D_CREDITO==="string"?MODELO3D_CREDITO:"las animaciones de Quaternius (CC0)")+". Si tu equipo no da, vuelve solo a los <b>clásicos</b>. En Antigua y en Modo papa van los clásicos."));
+      p.cuerpo.appendChild(el("p","mini","<b>Realistas</b>: "+(typeof MODELO3D_REAL_CREDITO==="string"?MODELO3D_REAL_CREDITO:"el personaje de Quaternius (CC0)")+
+        "; se baja la primera vez (~1 MB) y queda guardado. <b>Maniquí</b>: el cuerpo liso con el uniforme del club. Los dos caminan, trotan y pican con "+
+        (typeof MODELO3D_CREDITO==="string"?MODELO3D_CREDITO:"las animaciones de Quaternius (CC0)")+". Si tu equipo no da, vuelve solo a los <b>clásicos</b>. En Antigua y en Modo papa van los clásicos."));
       if(document.documentElement.classList.contains("papa")){
         const bp=el("button","ficha",E.config.cancha3dPapa?"🕹️ 3D antiguo en Modo papa: SÍ":"🕹️ Usar el 3D antiguo en Modo papa");
         bp.setAttribute("aria-pressed",E.config.cancha3dPapa?"true":"false");

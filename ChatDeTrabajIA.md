@@ -2873,3 +2873,13 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
 - Ojo con el reloj: mientras `st.seq` cuenta un gol, `P._celHasta` lo deja parado (tope 9 s). Si una prueba mide "el reloj
   corre", que espere a que se suelte (ver test/cancha3d.mjs). En PLOP!, quien contesta como hincha sale de `_plopHinchas()`:
   `HANDLES_HINCHA` trae `@cuenta_troll` mezclado desde data-voz.js.
+
+**7.9139 (Claude Opus) · Jugadores realistas (beta). LEER si tocan el 3D de los jugadores:**
+- Hay DOS modelos: `MODELO3D` (maniquí, img/modelos/jugador.glb) y `MODELO3D_REAL` (img/modelos/jugador_real.glb, se baja solo
+  si el jugador elige «Realistas» en Ajustes). Cada instancia sabe el suyo: `I.D` y `I.escala`. No usen `MODELO3D.datos` directo
+  para animar: usen `I.D`. `modelo3dMaterial(colores,D)` elige el material según el modelo.
+- Si regeneran jugador.glb (animaciones nuevas), regeneren TAMBIÉN el realista: `python3 scripts/modelo_realista.py
+  "<Base Characters/Godot - UE>" "<Hairstyles/Rigged to Head Bone/glTF (Godot -Unreal)>" img/modelos/jugador.glb
+  img/modelos/jugador_real.glb` (necesita Pillow). El doctor `jugador_realista` avisa si le faltan animaciones o si no están
+  redirigidas.
+

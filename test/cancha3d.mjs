@@ -12,28 +12,31 @@ try{
   await esperar(900);
   const opts={args:["--no-sandbox","--use-angle=swiftshader","--enable-unsafe-swiftshader","--ignore-gpu-blocklist"]}; if(process.env.CHROME) opts.executablePath=process.env.CHROME;
   try{ b=await pw.chromium.launch(opts); }catch(e){ opts.executablePath="/opt/pw-browsers/chromium"; b=await pw.chromium.launch(opts); }
-  for(const caso of [{nom:"PC",w:1366,h:800,papa:false},{nom:"celu en Modo papa (3D antiguo pedido)",w:390,h:844,papa:true}]){
+  /* 7.9139 · un tercer caso: PC con los jugadores REALISTAS (cara, pelo, piel; Ajustes ▸ Jugadores 3D) — partido, penal, córner y repetición */
+  for(const caso of [{nom:"PC",w:1366,h:800,papa:false},{nom:"celu en Modo papa (3D antiguo pedido)",w:390,h:844,papa:true},{nom:"PC con jugadores realistas",w:1366,h:800,papa:false,real:true}]){
     console.log("· "+caso.nom);
     const ctx=await b.newContext({viewport:{width:caso.w,height:caso.h},serviceWorkers:"block"}), p=await ctx.newPage();
     const err=[]; p.on("pageerror",e=>err.push(e.message)); p.on("console",m=>{ if(m.type()==="error"&&!/ERR_CERT|501|favicon|Failed to load resource/.test(m.text())) err.push(m.text()); });
     if(caso.papa) await ctx.addInitScript(()=>{ try{ localStorage.setItem("futbolini_papa","1"); }catch(e){} });
     await p.goto("http://127.0.0.1:"+port+"/index.html",{waitUntil:"load"});
     await p.waitForFunction(()=>typeof nuevaPartida==="function"&&document.getElementById("arranque"),null,{timeout:60000});
-    const ini=await p.evaluate(async(papa)=>{
+    const ini=await p.evaluate(async([papa,real])=>{
       document.getElementById("arranque").remove(); window.guardar=function(){};
-      nuevaPartida("CC",2026,"historico"); E.config.cancha3d=true; if(papa) E.config.cancha3dPapa=true;
+      nuevaPartida("CC",2026,"historico"); E.config.cancha3d=true; if(papa) E.config.cancha3dPapa=true; if(real) E.config.c3dJugadores="realistas";
       const ok3=await cargarThree(); if(!ok3||!cancha3dSoportado()) return {sin:true};
       arrancarPartido(proximoPartido(),"seguir");
       return {sin:false};
-    },caso.papa);
+    },[caso.papa,!!caso.real]);
     if(ini.sin){ ok(true,"(sin WebGL en este navegador: no se prueba el 3D)"); await ctx.close(); continue; }
     await esperar(2500);
     /* 7.9130 · jugadores realistas: en PC los 22 con el maniquí (colores del club); en Modo papa, los clásicos */
     if(!caso.papa) await p.waitForFunction(()=>C3D.est&&C3D.est.m3d&&C3D.est.m3d.length===22,null,{timeout:30000}).catch(()=>{});
     const mq=await p.evaluate(()=>{ const e=C3D.est, m=e&&e.m3d; if(!m) return {n:0}; const u=m[1].malla.material.userData.u, c=u.uKit.value[1];
-      return {n:m.length, via:MODELO3D.via, colorCamiseta:c.r+c.g+c.b, clasicosOcultos:!e.piezas.torso.visible}; });
+      return {n:m.length, via:(e.m3dReal?MODELO3D_REAL:MODELO3D).via, colorCamiseta:c.r+c.g+c.b, clasicosOcultos:!e.piezas.torso.visible, real:!!e.m3dReal,
+        conTextura:!!(m[1].D&&m[1].D.tex), peinados:new Set(m.map(I=>I.malla.material.userData.u.uPeinado?I.malla.material.userData.u.uPeinado.value:-1)).size}; });
     if(caso.papa) ok(mq.n===0,"Modo papa: jugadores clásicos (el maniquí es para equipos que aguantan)");
-    else ok(mq.n===22&&mq.clasicosOcultos&&mq.colorCamiseta>0,"los 22 jugadores con el maniquí realista y los colores del club (vía "+mq.via+")");
+    else if(caso.real) ok(mq.n===22&&mq.real&&mq.conTextura&&mq.clasicosOcultos&&mq.colorCamiseta>0&&mq.peinados>=2,"los 22 jugadores REALISTAS con cara y piel, los colores del club y "+mq.peinados+" peinados distintos (vía "+mq.via+")");
+    else ok(mq.n===22&&mq.clasicosOcultos&&mq.colorCamiseta>0&&!mq.real,"los 22 jugadores con el maniquí y los colores del club (vía "+mq.via+")");
     const r=await p.evaluate(async()=>{
       const n0=C3D.montajes, e0=C3D.est;
       for(let i=0;i<4;i++){ pintarPartido(); await new Promise(r=>setTimeout(r,120)); }   /* gol, entretiempo, eventos: repintados */

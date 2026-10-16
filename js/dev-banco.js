@@ -1573,8 +1573,13 @@ if(typeof devDoctorRegistrar==="function"){
     fn:async function(){
       if(typeof _c3dClipAccion!=="function"||typeof _cvLanzar!=="function") return _dmal("faltan la barrida/el lanzamiento (cancha.js _cvLanzar, cancha3d.js _c3dClipAccion)");
       const f=[], s=devBarridas(1080), L=devLanzamiento();   /* 18 min: ~15 entradas (con 6 min, 0 barridas en 5 pasaba 1 de cada 13 veces) */
+      /* 7.9139 · con ~19 entradas y 4 de cada 10 barridas, pasar del 70 % sale por puro azar ~1 de cada 300 veces (pasó en una
+         partida de Trasandino: 14/19; medido: 38,5 % en 60 corridas, ninguna sobre 70 %). Si se ve alto, se mide 36 min más
+         antes de acusar (con ~55 entradas, pasar del 60 % por azar es ~1 en 2.000) */
+      if(s.entradas&&s.barridas/s.entradas>0.55) for(let k=0;k<2;k++){ const t=devBarridas(1080); s.entradas+=t.entradas; s.barridas+=t.barridas; s.lanzas+=t.lanzas; s.min=(s.min||18)+18; }
       if(s.barridas<1) f.push("en 18 minutos no hubo ninguna barrida ("+s.entradas+" entradas de pie)");
-      if(s.entradas&&s.barridas/s.entradas>0.7) f.push("casi todas las entradas son barridas ("+s.barridas+"/"+s.entradas+"): parece rugby");
+      /* el umbral: con 4 de cada 10 se miden 38 %; con 8 de cada 10, 67 % (el que se barre queda en el suelo y entra menos) */
+      if(s.entradas&&s.barridas/s.entradas>0.6) f.push("casi todas las entradas son barridas ("+s.barridas+"/"+s.entradas+"): parece rugby");
       if(!L.lanza) f.push("el arquero con la pelota en las manos y un compañero a 20 m no sale con la mano");
       else { if(L.z0<1.5) f.push("el lanzamiento no sale de la mano (sale a "+L.z0.toFixed(2)+" m)");
         if(L.accTipo!=="lanza"||L.accT<0.4) f.push("la pelota sale antes del latigazo (el gesto va en "+(L.accT||0).toFixed(2)+" s)"); }
@@ -1605,7 +1610,7 @@ if(typeof devDoctorRegistrar==="function"){
           }
         }
       }
-      const txt="18 min: "+s.entradas+" entradas, "+s.barridas+" barridas, "+s.lanzas+" salidas con la mano · lanzamiento de prueba: "+(L.lanza?"sale de "+L.z0.toFixed(2)+" m en el latigazo ("+L.accT.toFixed(2)+" s)":"no")+txtM;
+      const txt=(s.min||18)+" min: "+s.entradas+" entradas, "+s.barridas+" barridas, "+s.lanzas+" salidas con la mano · lanzamiento de prueba: "+(L.lanza?"sale de "+L.z0.toFixed(2)+" m en el latigazo ("+L.accT.toFixed(2)+" s)":"no")+txtM;
       return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
     }});
 }
@@ -1806,6 +1811,82 @@ if(typeof devDoctorRegistrar==="function"){
       const txt="maniquí "+D.geo.attributes.position.count+" vértices · "+D.juntas.length+" huesos · "+Object.keys(D.clips).length+" animaciones · vía "+(MODELO3D.via||"?")+" · zonas "+cuenta.slice(0,7).join("/")+" · patada: pie +"+(pd1.z-pd0.z).toFixed(2)+" m";
       return f.length?_dmal(f.length+" problema(s)",f.concat([txt])):_dok(txt);
     }});
+}
+/* 7.9139 · "las caras TIENEN QUE SER MODELOS realistas libres tipo PES 2006": el jugador realista (Quaternius, CC0) */
+async function devJugadorRealista(){
+  const f=[], det=[];
+  if(typeof modelo3dCargarReal!=="function"||typeof MODELO3D_REAL==="undefined") return {f:["falta el jugador realista (modelo3d.js modelo3dCargarReal)"],det:det};
+  const C=(typeof MODELO3D_REAL_CREDITO==="string")?MODELO3D_REAL_CREDITO:"";
+  if(!/Quaternius/.test(C)||!/CC0/.test(C)) f.push("el crédito del realista no nombra a Quaternius y la licencia CC0");
+  if(/captur|mocap|escane|personas reales|jugadores reales/i.test(C)) f.push("el crédito del realista promete algo que la fuente no dice (captura, escaneo o caras de jugadores reales)");
+  if(typeof c3dQuiereReal!=="function") f.push("la cancha 3D no sabe pedir el realista (cancha3d.js c3dQuiereReal)");
+  if(typeof cargarThree==="function"&&typeof THREE==="undefined"){ try{ await cargarThree(); }catch(e){} }
+  if(typeof THREE==="undefined") return {f:f,det:["sin three.js en este navegador: se prueba en test/cancha3d"]};
+  /* el sombreador: piel con textura, uniforme encima, peinados que se esconden (si three cambia, se pierde sin avisar) */
+  const ok=await modelo3dCargarReal();
+  if(!ok) return {f:f.concat(["el realista no carga: "+(MODELO3D_REAL.error||"?")]),det:det};
+  const D=MODELO3D_REAL.datos;
+  if(!D.tex) f.push("el realista llegó sin su textura (piel y cara): saldría pintado liso");
+  const m=modelo3dMaterial(null,D), sh={uniforms:{}, vertexShader:THREE.ShaderLib.lambert.vertexShader, fragmentShader:THREE.ShaderLib.lambert.fragmentShader};
+  m.onBeforeCompile(sh); m.dispose();
+  if(sh.vertexShader.indexOf("m3dOcu")<0||sh.vertexShader.indexOf("gl_Position=vec4(2.0")<0) f.push("los peinados que no son del jugador no se esconden (saldrían los tres encima)");
+  if(sh.fragmentShader.indexOf("m3dPiel")<0||sh.fragmentShader.indexOf("uAtlas")<0||sh.fragmentShader.indexOf("diffuse*kc")<0) f.push("la piel y el uniforme del realista no se enganchan al sombreador de three.js");
+  if(!(D.extra&&D.extra.cortes&&D.extra.cortes.manga>0&&D.extra.cortes.cuello>1)) f.push("el realista no trae los bordes del uniforme (cuello, manga, short, medias): saldrían en serrucho");
+  else if(sh.fragmentShader.indexOf("uCuelloZ")<0) f.push("los bordes rectos del uniforme no se enganchan al sombreador");
+  const g=D.geo.attributes;
+  if(!g.uvR) f.push("el realista no trae coordenadas de textura");
+  if(!g.peinado) f.push("el realista no trae los peinados");
+  const cuenta=[0,0,0,0,0,0,0,0], pein=[0,0,0,0];
+  if(g.kitA&&g.kitB) for(let k=0;k<g.kitA.count;k++){ const w=[g.kitA.getX(k),g.kitA.getY(k),g.kitA.getZ(k),g.kitA.getW(k),g.kitB.getX(k),g.kitB.getY(k),g.kitB.getZ(k),g.kitB.getW(k)]; cuenta[w.indexOf(Math.max(...w))]++; }
+  if(g.peinado) for(let k=0;k<g.peinado.count;k++) pein[Math.min(3,g.peinado.getX(k))]++;
+  ["piel","camiseta","short","medias","botines","pelo","manos","ojos"].forEach((n,k)=>{ if(!cuenta[k]) f.push("ninguna parte del realista es «"+n+"»"); });
+  ["rapado","partido","barba"].forEach((n,k)=>{ if(!pein[k+1]) f.push("falta el peinado «"+n+"»"); });
+  if(typeof MODELO3D!=="undefined"&&MODELO3D.datos){ const falta=Object.keys(MODELO3D.datos.clips).filter(n=>!D.clips[n]); if(falta.length) f.push("al realista le faltan animaciones del maniquí: "+falta.join(", ")); }
+  else ["Idle_Loop","Walk_Loop","Jog_Fwd_Loop","Sprint_Loop"].concat(typeof M3D_CLIPS!=="undefined"?M3D_CLIPS:[]).forEach(k=>{ if(!D.clips[k]) f.push("falta la animación "+k); });
+  const esc=(D.extra&&D.extra.escala)||0;
+  if(!(esc>0.9&&esc<1.2)) f.push("la escala de la pierna del realista es rara ("+esc+"): la zancada no calzaría");
+  /* las animaciones redirigidas al esqueleto: quieto, de pie (pies en el suelo, cabeza arriba) y la patada lleva el pie adelante */
+  const I=modelo3dInstancia(modelo3dMaterial(null,D),D), pos=n=>I.H[n].getWorldPosition(new THREE.Vector3());
+  I.pesoLoco=1; modelo3dAndar(I,0,0); I.raiz.updateMatrixWorld(true);
+  const cab=pos("Head"), pi=pos("foot_l"), pd=pos("foot_r");
+  if(!(cab.y>1.45&&cab.y<1.95)) f.push("quieto, la cabeza del realista queda a "+cab.y.toFixed(2)+" m (las animaciones no calzan con su esqueleto)");
+  if(!(Math.max(pi.y,pd.y)<0.25&&Math.min(pi.y,pd.y)>-0.08)) f.push("quieto, los pies del realista no pisan el suelo ("+pi.y.toFixed(2)+" / "+pd.y.toFixed(2)+" m)");
+  if(Math.abs(cab.x-(pi.x+pd.x)/2)>0.25||Math.abs(cab.z-(pi.z+pd.z)/2)>0.3) f.push("quieto, el realista queda inclinado (la cabeza no está sobre los pies)");
+  /* la misma pose que el maniquí: cada hueso gira DESDE SU REPOSO lo mismo que en el maniquí. Copiar las rotaciones crudas
+     del maniquí (otra pose de reposo) deja el cuerpo torcido respecto de cómo está esculpido */
+  let peorAng=0, peorClip="";
+  if(typeof modelo3dCargar==="function"&&await modelo3dCargar()){
+    const HU=["spine_03","Head","upperarm_r","lowerarm_l","thigh_l","calf_r","foot_l"];
+    const reposo=DD=>{ const J=modelo3dInstancia(new THREE.MeshBasicMaterial(),DD); J.raiz.updateMatrixWorld(true); const q={};
+      HU.forEach(n=>{ q[n]=J.H[n].getWorldQuaternion(new THREE.Quaternion()).invert(); }); J.mezcla.stopAllAction(); return q; };
+    const rM=reposo(MODELO3D.datos), rR=reposo(D), M=modelo3dInstancia(new THREE.MeshBasicMaterial(),MODELO3D.datos);
+    ["Idle_Loop","Walk_Loop","Jog_Fwd_Loop","Sprint_Loop","Slide_Loop"].forEach(c=>{ [0,0.37,0.71].forEach(u=>{
+      [I,M].forEach(J=>{ Object.keys(J.acciones).forEach(k=>{ const ac=J.acciones[k]; ac.enabled=k===c; ac.setEffectiveWeight(k===c?1:0); if(k===c) ac.time=u*ac.getClip().duration; }); J.mezcla.update(0); J.raiz.updateMatrixWorld(true); });
+      HU.forEach(n=>{ const dR=I.H[n].getWorldQuaternion(new THREE.Quaternion()).multiply(rR[n]), dM=M.H[n].getWorldQuaternion(new THREE.Quaternion()).multiply(rM[n]);
+        const ang=2*Math.acos(Math.min(1,Math.abs(dR.dot(dM))))*180/Math.PI; if(ang>peorAng){ peorAng=ang; peorClip=c+" "+n; } }); }); });
+    M.mezcla.stopAllAction();
+    if(peorAng>4) f.push("las animaciones no están redirigidas al esqueleto del realista: en "+peorClip+" gira "+peorAng.toFixed(1)+"° distinto que el maniquí");
+  }
+  I.pesoLoco=0; modelo3dAndar(I,0,0); I.raiz.updateMatrixWorld(true);
+  const p0=pos("foot_r"), gg=_c3dGestoVacio(); gg.legs[0].t=-0.95; modelo3dGesto(I,gg,1); I.raiz.updateMatrixWorld(true);
+  const p1=pos("foot_r");
+  if(!(p1.z-p0.z>0.25)) f.push("en el realista la patada no lleva el pie derecho adelante ("+(p1.z-p0.z).toFixed(2)+" m)");
+  /* pintar: el tono de piel llega al sombreador, el pelado no muestra peinado y el arquero lleva guantes */
+  const mt=I.malla.material, U=mt.userData.u;
+  modelo3dPintar(mt,{piel:"#5e3a22",camiseta:"#fff",short:"#000",medias:"#fff",botines:"#111",pelo:"#111",manos:"#f3f6fa",peinado:0,barba:true});
+  if(!U||!U.uTinte) f.push("el realista se pinta con el material del maniquí (sin piel, sin peinados)");
+  else { if(!(U.uTinte.value.r<0.3)) f.push("el tono de piel del jugador no llega al realista");
+    if(U.uPeinado.value!==0||U.uBarba.value!==1) f.push("el peinado/barba del jugador no llega al realista");
+    if(U.uGuante.value!==1) f.push("el arquero realista no lleva guantes"); }
+  mt.dispose(); I.mezcla.stopAllAction();
+  det.push("realista "+g.position.count+" vértices · "+Object.keys(D.clips).length+" animaciones · vía "+(MODELO3D_REAL.via||"?")+" · zonas "+cuenta.join("/")+" · peinados "+pein.slice(1).join("/")+" · quieto: cabeza "+cab.y.toFixed(2)+" m · pose igual al maniquí (máx "+peorAng.toFixed(1)+"°) · patada +"+(p1.z-p0.z).toFixed(2)+" m");
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"jugador_realista", area:"interfaz", asinc:true,
+    n:"Jugadores realistas (beta): el personaje CC0 de Quaternius carga con su textura, las animaciones del maniquí le calzan, cada uno con su piel, peinado y barba, y el crédito no promete caras de jugadores reales",
+    arreglo:"js/modelo3d.js (MODELO3D_REAL, modelo3dCargarReal, _m3dTextura, _m3dMaterialReal, modelo3dPintar) · img/modelos/jugador_real.glb/.js (scripts/modelo_realista.py) · js/cancha3d.js c3dQuiereReal/_c3dIntentarModelo/_c3dPintar · js/cancha.js _cvLook (peinado, barba) · js/ui.js Ajustes ▸ Jugadores 3D",
+    fn:async function(){ const r=await devJugadorRealista(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }
 /* 7.9135 · el estadio 3D sale del partido: tamaño por aforo, gente de la taquilla, hora, sin techos flotando */
 function devEstadio3D(){

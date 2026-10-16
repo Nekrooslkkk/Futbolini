@@ -856,7 +856,9 @@ function _cvArcoTop(ctx,C,lado,vib,t){
 }
 /* piel y pelo: fijos por jugador (no cambian de un cuadro a otro) */
 const CV_PIEL=["#f1c9a5","#e0ac7e","#c68b5c","#a86e42","#8a5634","#5e3a22"], CV_PELO=["#1b1410","#2e2016","#4a3020","#6b4a2a","#c9a15a","#101010","#3a2a20"];
-function _cvLook(p,i){ if(!p._look){ const h=(i*2654435761)>>>0; p._look={piel:CV_PIEL[h%CV_PIEL.length],pelo:CV_PELO[(h>>5)%CV_PELO.length],pelado:((h>>9)%11)===0}; } return p._look; }
+/* 7.9139 · también el peinado (1 rapado, 2 partido) y la barba, que usa el jugador realista del 3D */
+function _cvLook(p,i){ if(!p._look){ const h=(i*2654435761)>>>0; p._look={piel:CV_PIEL[h%CV_PIEL.length],pelo:CV_PELO[(h>>5)%CV_PELO.length],pelado:((h>>9)%11)===0,
+  peinado:1+((h>>13)&1), barba:((h>>15)&3)===0}; } return p._look; }
 /* jugador visto desde arriba: sombras de focos, piernas, brazos, hombros con camiseta, número, cabeza */
 function _cvJugadorTop(ctx,C,p,i,camiseta,short,medias,conNum,dueno,franja,franjaColor){
   const S=Math.max(C.S*2.1,C.modo==="completa"?13:7);                     /* GTA: los monos más grandes que la escala real, para leerlos (y visibles en la vista completa) */

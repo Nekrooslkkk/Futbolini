@@ -312,8 +312,11 @@ muestra está en Commons con licencia libre) y se verificó la licencia en Commo
 |---|---|---|---|---|
 | `img/modelos/jugador.glb` (y `jugador.js`, el mismo en base64) | Maniquí de los jugadores 3D: cuerpo, esqueleto de 65 huesos y animaciones (quieto, caminar, trotar, piquear, golpe en el pecho, agachado) | Quaternius (Universal Animation Library [Standard]) | CC0 1.0 (dominio público) | https://quaternius.com/packs/universalanimationlibrary.html · https://quaternius.itch.io/universal-animation-library |
 | (7.9134) las mismas `jugador.glb`/`.js` | Animaciones sumadas: barrida (Slide_Start/Loop/Exit), pararse del suelo (LayToIdle) y lanzamiento con la mano (OverhandThrow), mismo esqueleto | Quaternius (Universal Animation Library 2 [Standard]) | CC0 1.0 (dominio público, según el License.txt del paquete) | https://opengameart.org/content/universal-animation-library-2 |
+| (7.9139) `img/modelos/jugador_real.glb` (y `jugador_real.js`, en base64) | Jugador REALISTA (beta): cuerpo «Superhero_Male» con su textura pintada a mano (cara, piel), ojos, cejas y tres peinados (Hair_Buzzed, Hair_SimpleParted, Hair_Beard); mismo esqueleto de 65 huesos, con las animaciones del maniquí redirigidas | Quaternius (Universal Base Characters [Standard], la versión gratis) | CC0 1.0 (dominio público, según el License_Standard.txt del paquete) | https://quaternius.itch.io/universal-base-characters · https://quaternius.com |
 
 Se preparó con `scripts/modelo_jugador.py` (una sola malla, solo las animaciones útiles, zonas del uniforme marcadas).
+El realista se preparó con `scripts/modelo_realista.py` (una malla, una textura atlas JPEG de 2048×1024 dentro del .glb, zonas
+del uniforme y peinados marcados). Son personajes genéricos: **no son caras de jugadores reales** y el juego no lo dice.
 CC0 no pide crédito; igual se lo damos: gracias, Quaternius.
 
 ## Escudos oficiales

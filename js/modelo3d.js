@@ -21,6 +21,13 @@ const MODELO3D={ url:"img/modelos/jugador.glb", estado:"nada", datos:null, error
   anclas:[0, 0.4, 1.5, 2.8, 5.4, 7.4, 9.5],
   pesos:{Idle_Loop:[1,0,0,0,0,0,0], Walk_Loop:[0,1,1,0,0,0,0], Jog_Fwd_Loop:[0,0,0,1,1,0,0], Sprint_Loop:[0,0,0,0,0,1,1]} };
 const M3D_LOCO=["Walk_Loop","Jog_Fwd_Loop","Sprint_Loop"];
+MODELO3D.global="MODELO3D_GLB";
+/* 7.9139 · JUGADORES REALISTAS (beta): cara, pelo, ojos y piel pintada a mano, del paquete gratis «Universal Base
+   Characters [Standard]» de Quaternius (CC0 1.0, dominio público), armado por scripts/modelo_realista.py con las MISMAS
+   animaciones del maniquí redirigidas a su esqueleto. Una sola malla y una textura (atlas JPEG dentro del .glb): sigue
+   siendo un dibujo por jugador. Tres peinados (rapado, partido, barba) viven en la malla y cada jugador muestra el suyo. */
+const MODELO3D_REAL={ url:"img/modelos/jugador_real.glb", global:"MODELO3D_REAL_GLB", estado:"nada", datos:null, error:null, promesa:null };
+const MODELO3D_REAL_CREDITO="el personaje «Universal Base Characters» de Quaternius (licencia libre CC0), con cara, pelo y ojos";
 /* 7.9134 · animaciones "de una vez" (del paquete Universal Animation Library 2 de Quaternius, CC0, mismo esqueleto): la
    barrida, pararse del suelo y el lanzamiento con la mano del arquero. El orden es el número que guarda la repetición. */
 const M3D_CLIPS=["Slide_Start","Slide_Loop","Slide_Exit","LayToIdle","OverhandThrow"];
@@ -52,8 +59,15 @@ function _m3dLeerGLB(ab){
   const z=at._KIT!=null?acc(at._KIT):new Uint8Array(geo.attributes.position.count), kA=new Float32Array(z.length*4), kB=new Float32Array(z.length*4);
   for(let k=0;k<z.length;k++){ const r=Math.min(7,z[k]); if(r<4) kA[k*4+r]=1; else kB[k*4+(r-4)]=1; }
   geo.setAttribute("kitA",new THREE.BufferAttribute(kA,4)); geo.setAttribute("kitB",new THREE.BufferAttribute(kB,4));
+  /* 7.9139 · el realista trae además coordenadas de textura (atlas) y el peinado de cada vértice (0 = siempre) */
+  if(at.TEXCOORD_0!=null) geo.setAttribute("uvR",new THREE.BufferAttribute(acc(at.TEXCOORD_0),2));
+  if(at._PEINADO!=null){ const pz=acc(at._PEINADO); geo.setAttribute("peinado",new THREE.BufferAttribute(Float32Array.from(pz),1)); }
   geo.setIndex(new THREE.BufferAttribute(acc(pr.indices),1));
   geo.computeBoundingSphere();
+  let imagen=null;
+  if(j.images&&j.images[0]&&j.images[0].bufferView!=null){ const v=j.bufferViews[j.images[0].bufferView];
+    imagen={bytes:new Uint8Array(bin,v.byteOffset||0,v.byteLength), mime:j.images[0].mimeType||"image/jpeg"}; }
+  const extra=(j.asset&&j.asset.extras&&j.asset.extras.futbolini)||null;
   const skin=j.skins[0], ibm=acc(skin.inverseBindMatrices), inversas=skin.joints.map((_,k)=>new THREE.Matrix4().fromArray(ibm,k*16));
   /* las animaciones como clips de three (pista "<hueso>.quaternion" / ".position") */
   const clips={};
@@ -64,27 +78,44 @@ function _m3dLeerGLB(ab){
       else if(ch.target.path==="translation") pistas.push(new THREE.VectorKeyframeTrack(nodo+".position",t,v)); });
     clips[an.name]=new THREE.AnimationClip(an.name,-1,pistas);
   });
-  return {j:j, geo:geo, juntas:skin.joints, inversas:inversas, clips:clips, malla:j.nodes.findIndex(n=>n.mesh!=null)};
+  return {j:j, geo:geo, juntas:skin.joints, inversas:inversas, clips:clips, malla:j.nodes.findIndex(n=>n.mesh!=null), imagen:imagen, extra:extra};
+}
+/* 7.9139 · la textura del realista: va DENTRO del .glb (sirve igual con file:// y sin internet). Se lee como data: URL
+   (un blob: con file:// puede quedar "de otro origen" y WebGL no lo deja usar) */
+function _m3dTextura(D){
+  if(!D.imagen) return Promise.resolve(D);
+  return new Promise((ok,mal)=>{
+    let b=""; const u=D.imagen.bytes; for(let i=0;i<u.length;i+=0x8000) b+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));
+    const img=new Image();
+    img.onload=function(){ const t=new THREE.Texture(img); t.flipY=false; t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;
+      t.anisotropy=4; t.needsUpdate=true; D.tex=t; D.imagen=null; ok(D); };
+    img.onerror=function(){ mal(new Error("la textura del jugador no se pudo leer")); };
+    img.src="data:"+D.imagen.mime+";base64,"+btoa(b);
+  });
 }
 /* baja el modelo una vez (queda guardado por el service worker: img/ es caché primero) */
-function modelo3dCargar(){
-  if(MODELO3D.promesa) return MODELO3D.promesa;
-  if(typeof THREE==="undefined"||typeof fetch!=="function"){ MODELO3D.estado="error"; MODELO3D.error="sin THREE"; return Promise.resolve(false); }
-  MODELO3D.estado="cargando";
+function modelo3dCargar(){ return _m3dCargarDe(MODELO3D); }
+/* 7.9139 · el realista se baja SOLO si el jugador lo elige (Ajustes ▸ Jugadores 3D): ~1 MB, queda guardado para jugar sin internet */
+function modelo3dCargarReal(){ return _m3dCargarDe(MODELO3D_REAL); }
+function _m3dCargarDe(M){
+  if(M.promesa) return M.promesa;
+  if(typeof THREE==="undefined"||typeof fetch!=="function"){ M.estado="error"; M.error="sin THREE"; return Promise.resolve(false); }
+  M.estado="cargando";
   const v=(typeof VERSION!=="undefined")?"?v="+VERSION:"";
   /* con servidor: el .glb; con file:// (o si el fetch falla) la misma cosa en base64 dentro de un .js, que sí carga */
   const desdeScript=()=>new Promise((ok,mal)=>{
-    if(window.MODELO3D_GLB) return ok(window.MODELO3D_GLB);
-    const sc=document.createElement("script"); sc.src=MODELO3D.url.replace(/\.glb$/,".js")+v;
-    sc.onload=function(){ if(window.MODELO3D_GLB) ok(window.MODELO3D_GLB); else mal(new Error("el .js del modelo vino vacío")); };
+    if(window[M.global]) return ok(window[M.global]);
+    const sc=document.createElement("script"); sc.src=M.url.replace(/\.glb$/,".js")+v;
+    sc.onload=function(){ if(window[M.global]) ok(window[M.global]); else mal(new Error("el .js del modelo vino vacío")); };
     sc.onerror=function(){ mal(new Error("no se pudo cargar el modelo")); };
     document.head.appendChild(sc);
-  }).then(b64=>{ const bin=atob(b64), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); MODELO3D.via="js"; return u.buffer; });
-  const porFetch=()=>fetch(MODELO3D.url+v).then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); MODELO3D.via="glb"; return r.arrayBuffer(); });
-  MODELO3D.promesa=(location.protocol==="file:"?desdeScript():porFetch().catch(desdeScript))
-    .then(ab=>{ const D=_m3dLeerGLB(ab); _m3dFasesPie(D); MODELO3D.datos=D; MODELO3D.estado="listo"; return true; })
-    .catch(e=>{ MODELO3D.estado="error"; MODELO3D.error=String(e&&e.message||e); MODELO3D.promesa=null; return false; });
-  return MODELO3D.promesa;
+  }).then(b64=>{ const bin=atob(b64), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); M.via="js"; return u.buffer; });
+  const porFetch=()=>fetch(M.url+v).then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); M.via="glb"; return r.arrayBuffer(); });
+  M.promesa=(location.protocol==="file:"?desdeScript():porFetch().catch(desdeScript))
+    .then(ab=>_m3dTextura(_m3dLeerGLB(ab)))
+    .then(D=>{ _m3dFasesPie(D); M.datos=D; M.estado="listo"; return true; })
+    .catch(e=>{ M.estado="error"; M.error=String(e&&e.message||e); M.promesa=null; return false; });
+  return M.promesa;
 }
 
 /* ---------- un jugador: su esqueleto, su malla (geometría compartida) y su mezclador de animaciones ---------- */
@@ -108,10 +139,12 @@ function modelo3dInstancia(mat,D){
   const mezcla=new THREE.AnimationMixer(raiz), acciones={};
   Object.keys(D.clips).forEach(k=>{ const a=mezcla.clipAction(D.clips[k]); a.play(); a.setEffectiveWeight(0); acciones[k]=a; });
   /* el reposo de cada hueso que tocan los gestos (para sumarles rotaciones encima de la animación) */
-  return {raiz:raiz, malla:malla, H:H, mezcla:mezcla, acciones:acciones, fase:Math.random(), tIdle:Math.random()*2.5};
+  return {raiz:raiz, malla:malla, H:H, mezcla:mezcla, acciones:acciones, fase:Math.random(), tIdle:Math.random()*2.5, D:D,
+    escala:(D.extra&&D.extra.escala)||1};
 }
 /* ---------- material con los colores del club por zona (camiseta con franjas) ---------- */
-function modelo3dMaterial(colores){
+function modelo3dMaterial(colores,D){
+  if(D&&D.tex) return _m3dMaterialReal(colores,D);
   const m=new THREE.MeshLambertMaterial({color:0xffffff});
   const U={uKit:{value:[0,1,2,3,4,5,6,7].map(()=>new THREE.Color())}, uFranja:{value:0}, uFranjaCol:{value:new THREE.Color()}};
   m.userData.u=U;
@@ -137,12 +170,70 @@ function modelo3dMaterial(colores){
   if(colores) modelo3dPintar(m,colores);
   return m;
 }
-/* colores: {piel, camiseta, short, medias, botines, pelo, manos, franja:"horizontal"|"vertical"|"banda"|null, franjaCol} */
+/* 7.9139 · material del realista: la piel, la cara y los ojos con su textura (la piel teñida al tono de cada jugador), el
+   pelo con el color del jugador sobre el detalle de mechones, y el uniforme del club encima (camiseta y short un poco
+   sueltos: se inflan 1,2 y 2,6 cm sobre el cuerpo). Los peinados que no son del jugador se esconden en el mismo dibujo. */
+function _m3dMaterialReal(colores,D){
+  const m=new THREE.MeshLambertMaterial({color:0xffffff});
+  const ref=new THREE.Color().set((D.extra&&D.extra.pielRef)||"#a16e4d").convertSRGBToLinear();
+  const U={uKit:{value:[0,1,2,3,4,5,6,7].map(()=>new THREE.Color())}, uFranja:{value:0}, uFranjaCol:{value:new THREE.Color()},
+    uAtlas:{value:D.tex}, uTinte:{value:new THREE.Color(1,1,1)}, uRef:{value:ref}, uRefLum:{value:0.2126*ref.r+0.7152*ref.g+0.0722*ref.b},
+    uPeinado:{value:1}, uBarba:{value:0}, uGuante:{value:0},
+    uCortar:{value:(D.extra&&D.extra.cortes)?1:0}, uCorteA:{value:new THREE.Vector3()}, uCorteB:{value:new THREE.Vector3()}, uCuelloZ:{value:0},
+    uLumPelo:{value:(D.extra&&D.extra.lumPelo)||0.6}};
+  const K=(D.extra&&D.extra.cortes)||{}; U.uCorteA.value.set(K.hombro||0,K.manga||0,K.cuello||0); U.uCorteB.value.set(K.cintura||0,K.short||0,K.media||0); U.uCuelloZ.value=K.cuelloZ||0;
+  m.userData.u=U; m.userData.ref=ref; m.userData.real=true;
+  m.onBeforeCompile=function(sh){
+    Object.assign(sh.uniforms,U);
+    sh.vertexShader=sh.vertexShader.replace("#include <common>","#include <common>\nattribute vec4 kitA;\nattribute vec4 kitB;\nattribute vec2 uvR;\nattribute float peinado;\nuniform float uPeinado;\nuniform float uBarba;\nvarying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;\nvarying vec2 vUvR;")
+      .replace("#include <begin_vertex>","#include <begin_vertex>\nvKitA=kitA; vKitB=kitB; vReposo=position; vUvR=uvR;\n"+
+        "transformed+=normal*(kitA.y*0.010+kitA.z*0.016);\n"+
+        "float m3dOcu=0.0; if(peinado>0.5){ if(peinado<2.5){ if(abs(peinado-uPeinado)>0.5) m3dOcu=1.0; } else if(uBarba<0.5) m3dOcu=1.0; }")
+      .replace("#include <project_vertex>","#include <project_vertex>\nif(m3dOcu>0.5) gl_Position=vec4(2.0,2.0,2.0,1.0);");
+    sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 uKit[8];\nuniform float uFranja;\nuniform vec3 uFranjaCol;\nuniform sampler2D uAtlas;\nuniform vec3 uTinte;\nuniform vec3 uRef;\nuniform float uRefLum;\nuniform float uCortar;\nuniform vec3 uCorteA;\nuniform vec3 uCorteB;\nuniform float uCuelloZ;\nuniform float uGuante;\nuniform float uLumPelo;\nvarying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;\nvarying vec2 vUvR;")
+      .replace("vec4 diffuseColor = vec4( diffuse, opacity );",
+        "float kz=0.0; float km=vKitA.x;\n"+
+        "if(vKitA.y>km){km=vKitA.y;kz=1.0;} if(vKitA.z>km){km=vKitA.z;kz=2.0;} if(vKitA.w>km){km=vKitA.w;kz=3.0;}\n"+
+        "if(vKitB.x>km){km=vKitB.x;kz=4.0;} if(vKitB.y>km){km=vKitB.y;kz=5.0;} if(vKitB.z>km){km=vKitB.z;kz=6.0;} if(vKitB.w>km){km=vKitB.w;kz=7.0;}\n"+
+        /* los bordes del uniforme en línea recta, por la posición de reposo: cuello redondo alrededor del cogote (más abierto y más bajo adelante), manga corta,
+           cintura, short a medio muslo y medias bajo la rodilla. Sin esto el borde sigue los triángulos (serrucho) */
+        "if(uCortar>0.5){ vec3 rp=vReposo; float ax=abs(rp.x);\n"+
+        "  if(kz<1.5&&rp.y>uCorteB.x+0.2){ if(ax>uCorteA.x) kz=ax<uCorteA.y?1.0:0.0;\n"+
+        "    else if(rp.y>uCorteA.z+0.06) kz=0.0;\n"+
+        "    else { float fr=clamp((rp.z-uCuelloZ)/0.1,0.0,1.0); kz=(length(vec2(rp.x,rp.z-uCuelloZ))<0.078+0.03*fr&&rp.y>uCorteA.z-0.05-0.03*fr)?0.0:1.0; } }\n"+
+        "  else if(kz>0.5&&kz<2.5&&rp.y>uCorteB.x-0.15&&rp.y<uCorteB.x+0.15&&ax<0.3) kz=rp.y>uCorteB.x?1.0:2.0;\n"+
+        "  if((kz<0.5||(kz>1.5&&kz<2.5))&&rp.y<uCorteB.x&&rp.y>uCorteB.z+0.1) kz=rp.y>uCorteB.y?2.0:0.0;\n"+
+        "  if((kz<0.5||(kz>2.5&&kz<3.5))&&rp.y<uCorteB.y-0.1) kz=rp.y<uCorteB.z?3.0:0.0; }\n"+
+        "vec4 m3dTx=texture2D(uAtlas,vUvR); vec3 m3dLin=pow(m3dTx.rgb,vec3(2.2)); vec3 kc;\n"+
+        /* la piel: el tono del jugador por la luz y sombra de la textura (luminancia), con un poco del matiz original (labios,
+           mejillas). Multiplicar canal por canal blanqueaba las pieles claras: el azul de la textura es muy bajo */
+        "vec3 m3dPiel=0.85*uTinte*mix(vec3(dot(m3dLin,vec3(0.2126,0.7152,0.0722))/uRefLum),clamp(m3dLin/max(uRef,vec3(0.02)),0.5,1.5),0.15);\n"+
+        "if(kz<0.5) kc=m3dPiel;\n"+
+        "else if(kz>6.5) kc=m3dLin;\n"+
+        "else if(kz>5.5) kc=uGuante>0.5?uKit[6]:m3dPiel;\n"+
+        "else if(kz>4.5) kc=uKit[5]*clamp(dot(m3dTx.rgb,vec3(0.3333))/uLumPelo,0.45,1.5);\n"+
+        "else { kc=kz<1.5?uKit[1]:(kz<2.5?uKit[2]:(kz<3.5?uKit[3]:uKit[4]));\n"+
+        "  if(kz<1.5&&uFranja>0.5){ float f=0.0;\n"+
+        "    if(uFranja<1.5) f=step(0.5,fract(vReposo.y*5.5));\n"+
+        "    else if(uFranja<2.5) f=step(0.5,fract(vReposo.x*7.0+0.25));\n"+
+        "    else f=1.0-step(0.075,abs(vReposo.x+(vReposo.y-1.35)*0.85));\n"+
+        "    kc=mix(kc,uFranjaCol,f); } }\n"+
+        "vec4 diffuseColor = vec4( diffuse*kc, opacity );");
+  };
+  m.customProgramCacheKey=function(){ return "m3dreal"; };
+  if(colores) modelo3dPintar(m,colores);
+  return m;
+}
+/* colores: {piel, camiseta, short, medias, botines, pelo, manos, franja:"horizontal"|"vertical"|"banda"|null, franjaCol}
+   7.9139 · en el realista además: peinado (0 pelado, 1 rapado, 2 partido) y barba (sí/no) */
 function modelo3dPintar(m,c){
   const U=m.userData.u, col=(typeof c3dCol==="function")?c3dCol:((h,C)=>C.set(h));
   [c.piel,c.camiseta,c.short,c.medias,c.botines,c.pelo,c.manos||c.piel,c.piel].forEach((h,k)=>col(h||"#888888",U.uKit.value[k]));
   U.uFranja.value=c.franja==="horizontal"?1:(c.franja==="vertical"?2:(c.franja==="banda"?3:0));
   col(c.franjaCol||c.camiseta||"#ffffff",U.uFranjaCol.value);
+  if(U.uTinte){ col(c.piel||"#e0ac7e",U.uTinte.value);   /* el tono del jugador (el shader le pone la luz y sombra de la textura) */
+    U.uPeinado.value=c.peinado!=null?c.peinado:1; U.uBarba.value=c.barba?1:0;
+    U.uGuante.value=(c.manos&&c.manos!==c.piel)?1:0; }
 }
 
 /* ---------- caminar/trotar/piquear: pesos por velocidad y pasos sincronizados ---------- */
@@ -167,9 +258,9 @@ function _m3dFasesPie(D){
 /* v en m/s; dt en segundos. clip (opcional) = {n, t, w}: una animación de una vez en el segundo t con peso w, que le quita
    ese peso a la carrera. Devuelve la fase (0..1) para grabarla en la repetición */
 function modelo3dAndar(I,v,dt,fase,clip){
-  const D=MODELO3D.datos, A=I.acciones;
+  const D=I.D||MODELO3D.datos, A=I.acciones, esc=I.escala||1;   /* 7.9139 · el realista tiene la pierna más larga: zancada más larga */
   let largo=0, suma=0;
-  M3D_LOCO.forEach(k=>{ const w=_m3dPeso(k,v); if(w>0&&MODELO3D.vel[k]&&D.clips[k]){ largo+=w*MODELO3D.vel[k]*D.clips[k].duration; suma+=w; } });
+  M3D_LOCO.forEach(k=>{ const w=_m3dPeso(k,v); if(w>0&&MODELO3D.vel[k]&&D.clips[k]){ largo+=w*MODELO3D.vel[k]*esc*D.clips[k].duration; suma+=w; } });
   if(fase!=null) I.fase=fase;
   else if(suma>0.001){ largo/=suma; I.fase=(I.fase+dt*v/Math.max(0.3,largo))%1; }
   I.tIdle=(I.tIdle+dt)%1000;
