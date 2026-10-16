@@ -5550,3 +5550,29 @@ negros flotando sin pilares, torres con un rectángulo blanco y un público de 0
   techo sin pilares; ≤18 llamadas). Al revés: público +5.000 sobre la taquilla → cazado.
 - **Estado:** doctor sano 156/156 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
   · core 1185/1185 · saves ok · banco 255 sano (15 % despidos).
+
+### 7.9136 — Simular hasta el partido que elijas (con la casilla de las crisis) y las ESTRELLAS de cada temporada
+Pedidos del autor: "poder elegir hasta qué partido simular… que al menos te avise si hay una crisis, para saltarla o no" →
+"que se delegue dentro de una casilla del mismo menú de simulación"; y "el balance final, mejorarlo añadiendo puntos al juego:
+3 estrellas (metas simples) y 5 chicas que son puntos; si ganas todo de todo obtienes el juego maestro… que la gente busque
+puntuaciones altas (revisado cada temporada)".
+- **⏩ Avance rápido (js/ui.js):** casilla **🛡️ Delegar las crisis** (queda guardada en `E.config.simDelegarCrisis`): marcada,
+  la simulación elige la crisis (primera opción que se pueda pagar), la anota y sigue; sin marcar, se para y el resumen te
+  ofrece ahí mismo **«La resuelvo yo»** o **«Que la delegue y siga»** (retoma donde iba). Nuevo **🎯 Simular hasta…**: eliges
+  el partido de la lista y se simula todo lo anterior; ese lo juegas tú. Vale para la próxima fecha, la temporada y "hasta"
+  (`avanzarRapido`/`avanzarRapidoLote` con `opts.hasta`/`opts.delegarCrisis`, `simCrisisFreno`, `simLote`). Los botones de 5
+  temporadas y hasta el final siguen ahí (esos siempre delegan las crisis).
+- **Las estrellas (js/estrellas.js, nuevo):** 3 GRANDES = 🎯 la meta del directorio · 🏆 un título o el ascenso · 💚 el club
+  sano (caja en positivo y la deuda no creció). 5 CHICAS = ⚽ 60 % de los puntos · 🥅 diferencia de gol a favor · 📣 la
+  hinchada terminó más arriba · 🌱 un sub-21 jugó 3 partidos completos · 🧱 el camarín en pie (moral ≥ 60). Ganarlo TODO (la
+  liga y cada copa que jugaste) prende las 3 grandes sí o sí. **Temporada perfecta** = las 3 grandes; **👑 JUEGO MAESTRO** =
+  ganarlo todo + las 8 (logro nuevo). **Puntaje**: 300 por grande, 100 por chica, 150 por título, 500 el maestro; se suma en
+  la carrera (`E.estrellas`, también en la crónica) y los 10 mejores quedan como **récords del navegador** (lo simulado al por
+  mayor y el Modo Dios no cuentan). Se ve en el **Balance** de la temporada y en vivo en el **Escritorio** ("van así", con
+  la próxima estrella que te falta).
+- **Dev:** doctor `sim_hasta_y_crisis` (se para justo antes del partido elegido y no lo juega; sin la casilla la crisis frena
+  y se ofrece; con la casilla se delega y queda anotada) y `estrellas_temporada` (ganarlo todo prende las 3; una temporada
+  mala no prende ninguna; las 8 sin ganar la liga NO son juego maestro; el puntaje es la fórmula; los enganches están).
+  Al revés: 5 fallas (simulación) y 2 (estrellas) cazadas.
+- **Estado:** doctor sano 158/158 (4 partidas + celular) · dev 593/593 (+ servidores, duelos, papa, partidas, cancha 3D)
+  · core 1185/1185 · saves ok · banco 255 sano (13 % despidos).

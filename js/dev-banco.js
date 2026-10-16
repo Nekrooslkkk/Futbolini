@@ -1902,3 +1902,87 @@ if(typeof devDoctorRegistrar==="function"){
       return f.length?_dmal(f.length+" problema(s)",f):_dok("Syntergia despeja la crisis, lo que bloquea y el cartel, y lo deja en su informe");
     }});
 }
+/* 7.9136 · simular hasta el partido que elijas + la casilla de las crisis (pedido del autor) */
+function devSimHasta(){
+  const f=[], det=[];
+  if(typeof avanzarRapido!=="function"||typeof simCrisisFreno!=="function") return {f:["falta la simulación con opciones (ui.js simCrisisFreno)"],det:det};
+  const W=window, snap=(typeof clonarPartida==="function")?clonarPartida(E):null, ca=W.crisisActiva, gu=W.guardar;
+  if(!snap) return {f:[],det:["sin clonarPartida acá"]};
+  try{
+    W.guardar=function(){}; E._bulkSim=true;
+    /* 1) hasta un partido: se para justo antes y ese queda sin jugar */
+    const pend=(E.calendario||[]).slice(E.idx||0).filter(x=>x&&!x.jugado);
+    if(pend.length>3){
+      const meta=pend[3], r=avanzarRapido(false,{hasta:meta,delegarCrisis:true});
+      if(proximoPartido()!==meta) f.push("«simular hasta» no se paró en el partido elegido (quedó en "+(proximoPartido()?simEtiquetaPartido(proximoPartido()):"ninguno")+")");
+      if(meta.jugado) f.push("«simular hasta» jugó el partido que elegiste: ese lo juegas tú");
+      if(!/elegiste/.test(r.freno||"")) f.push("al llegar al partido elegido no dice por qué se paró");
+      det.push("hasta el 4.º partido: "+r.partidos+" simulados");
+    }
+    /* 2) con una crisis: sin la casilla se para y la ofrece; con la casilla la delega y sigue */
+    W.crisisActiva=function(){ return (E.flags&&E.flags.crisis_doctorSim)?null:{id:"doctorSim",t:"Crisis de prueba",op:[{t:"Aguantar",ef:{}}]}; };
+    const n0=(E.calendario||[]).filter(x=>x.jugado).length;
+    const r1=avanzarRapido(false,{delegarCrisis:false});
+    if(!r1.crisis) f.push("sin la casilla, una crisis no frena la simulación ni la ofrece para resolver");
+    if((E.calendario||[]).filter(x=>x.jugado).length!==n0) f.push("sin la casilla, con la crisis encima igual se jugó un partido");
+    const r2=avanzarRapido(false,{delegarCrisis:true});
+    if(r2.crisis) f.push("con la casilla marcada la crisis igual frena la simulación");
+    if(!(r2.delegadas||[]).length) f.push("con la casilla marcada la crisis no queda anotada como delegada");
+    det.push("crisis: se para sin casilla, se delega con casilla");
+  } catch(e){ f.push("explotó: "+e.message); }
+  finally{ W.crisisActiva=ca; W.guardar=gu; E=snap; }
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"sim_hasta_y_crisis", area:"interfaz",
+    n:"Simular hasta el partido que elijas y la casilla de las crisis (se para y pregunta, o la delega y sigue)",
+    arreglo:"js/ui.js avanzarRapido/avanzarRapidoLote (opts.hasta, opts.delegarCrisis), simCrisisFreno, simLote, modalAvanceRapido, modalResumenSim (extra.crisis)",
+    fn:function(){ const r=devSimHasta(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
+/* 7.9136 · las estrellas de la temporada (3 grandes + 5 chicas, juego maestro, puntaje) */
+function devEstrellas(){
+  const f=[], det=[];
+  if(typeof estrellasTemporada!=="function") return {f:["falta estrellas.js"],det:det};
+  const snap=(typeof clonarPartida==="function")?clonarPartida(E):null; if(!snap) return {f:[],det:["sin clonarPartida acá"]};
+  try{
+    /* 1) ganarlo todo enciende las 3 grandes sí o sí (aunque la caja esté en rojo) */
+    const copas={}; (E.calendario||[]).forEach(p=>{ if(p&&p.tipo==="copa"&&p.torneo) copas[p.torneo]=true; });
+    E.titulos=(E.titulos||[]).filter(t=>String(t).indexOf(E.anio+" · ")!==0).concat([E.anio+" · Campeón de la Primera División"],Object.keys(copas).map(c=>E.anio+" · "+c));
+    E.plata=-500;
+    const todo=estrellasTemporada({campeon:true,copa:true,ev:{nivel:"excelente"}});
+    if(!todo.ganoTodo) f.push("ganando la liga y todas las copas ("+Object.keys(copas).length+") no cuenta como «ganó todo»");
+    if(todo.nGrandes!==3) f.push("ganándolo todo no se prenden las 3 estrellas grandes ("+todo.nGrandes+")");
+    /* 2) sin título, sin meta y con la caja en rojo: ninguna grande */
+    E.titulos=(E.titulos||[]).filter(t=>String(t).indexOf(E.anio+" · ")!==0);
+    const malo=estrellasTemporada({campeon:false,copa:false,ev:{nivel:"fallido"}});
+    if(malo.nGrandes!==0) f.push("una temporada sin título, sin meta y con la caja en rojo saca "+malo.nGrandes+" estrella(s) grande(s)");
+    /* 3) el juego maestro pide ganarlo todo Y las 8 estrellas; el puntaje es la fórmula a la vista */
+    if(malo.maestro) f.push("hay juego maestro sin ganar nada");
+    const P=ESTRELLAS_PUNTAJE;
+    [todo,malo].forEach(r=>{ const esp=r.nGrandes*P.grande+r.nChicas*P.chica+r.titulos*P.titulo+(r.maestro?P.maestro:0); if(r.puntaje!==esp) f.push("el puntaje ("+r.puntaje+") no calza con la fórmula ("+esp+")"); });
+    if(todo.maestro&&todo.nChicas<5) f.push("juego maestro con "+todo.nChicas+" estrellas chicas");
+    /* 4) las 8 estrellas sin ganarlo todo: temporada perfecta, pero NO juego maestro */
+    E.titulos=(E.titulos||[]).concat([E.anio+" · Copa de prueba"]); E.plata=100; E.deuda=0;
+    E.temporada=Object.assign({},E.temporada,{pj:10,pts:30,gf:20,gc:5}); E.ind.moral=80; E.ind.hinchada=(E.estrellasIni?E.estrellasIni.hinchada:50)+5;
+    E.estrellasIni=Object.assign({},E.estrellasIni||{},{anio:E.anio,deuda:0,hinchada:E.ind.hinchada-5});
+    const j=(E.plantel||[])[0]; if(j){ j.edad=19; j.minutosTemporada=900; }
+    const ocho=estrellasTemporada({campeon:false,copa:true,ev:{nivel:"cumplido"}});
+    if(ocho.nGrandes+ocho.nChicas!==8) f.push("forzando las 8 estrellas salen "+(ocho.nGrandes+ocho.nChicas)+" (revisa la medición)");
+    else if(ocho.maestro) f.push("las 8 estrellas sin ganar la liga ya dan juego maestro: tiene que ser ganarlo TODO");
+    else if(!ocho.perfecta) f.push("las 3 grandes no marcan «temporada perfecta»");
+    det.push("ganarlo todo: "+todo.nGrandes+"+"+todo.nChicas+" ("+todo.puntaje+" pts"+(todo.maestro?", maestro":"")+") · temporada mala: "+malo.nGrandes+"+"+malo.nChicas);
+  } catch(e){ f.push("explotó: "+e.message); }
+  finally{ E=snap; }
+  /* 4) que se anoten solas: la foto del inicio y el paso de año */
+  if(!(E&&E.estrellasIni)) f.push("la partida no tiene la foto del inicio de temporada (estrellasFotoInicio): hinchada y deuda no se pueden medir");
+  if(typeof nuevoAnio!=="function"||!nuevoAnio._est) f.push("nuevoAnio no anota las estrellas de la temporada");
+  if(typeof cerrarTemporada!=="function"||!cerrarTemporada._est) f.push("el Balance de la temporada no muestra las estrellas");
+  const k=(typeof estrellasCarrera==="function")?estrellasCarrera():null; if(k) det.push("carrera: "+k.puntaje+" pts en "+k.temporadas+" temporada(s)");
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"estrellas_temporada", area:"carrera",
+    n:"Estrellas de la temporada: 3 grandes (metas) + 5 chicas (puntos), ganarlo todo las prende, juego maestro y puntaje",
+    arreglo:"js/estrellas.js estrellasTemporada/estrellasAnotar/bloqueEstrellas y sus enganches (finDeTemporada, nuevoAnio, cerrarTemporada, vistaEscritorio)",
+    fn:function(){ const r=devEstrellas(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}

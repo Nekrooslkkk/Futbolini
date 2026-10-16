@@ -4436,6 +4436,15 @@ function modalResumenSim(reg, extra){
       cu.appendChild(lista);
     }
     if(extra.freno) cu.appendChild(el("p","mini","⏸ "+escHtml(extra.freno)));
+    if(extra.delegadas&&extra.delegadas.length) cu.appendChild(el("div","resul mitad","🛡️ Crisis delegadas: "+extra.delegadas.map(escHtml).join(" · ")+" (el detalle está en Avisos)."));
+    /* 7.9136 · se paró por una crisis: la eliges tú o la delegas y la simulación sigue donde iba */
+    if(extra.crisis){
+      const cx=el("div","sim-crisis"); cx.appendChild(el("b","","🚨 "+escHtml(extra.crisis.t)));
+      const yo=el("button","btn-aqua ancho rojo","La resuelvo yo"); yo.onclick=function(){ cerrarModal(); if(typeof abrirCrisis==="function") abrirCrisis(extra.crisis); };
+      const dl=el("button","btn-aqua ancho","🛡️ Que la delegue y siga"); dl.style.marginTop="4px";
+      dl.onclick=function(){ cerrarModal(); if(typeof delegarCrisis==="function") delegarCrisis(); if(typeof extra.seguir==="function") extra.seguir(); };
+      cx.appendChild(yo); cx.appendChild(dl); cu.appendChild(cx);
+    }
     const b=el("button","btn-aqua ancho verde","Al escritorio"); b.onclick=function(){ cerrarModal(); if(typeof irA==="function") irA("escritorio"); };
     cu.appendChild(b);
   },{clase:"ventana-so"});
@@ -4469,18 +4478,31 @@ function procesarSemanaRapido(){
   if(typeof sembrarDecisionProc==="function") sembrarDecisionProc();
   return neto;   /* en rápido NO se disparan eventos/vida/negociación con modal */
 }
-function avanzarRapido(hastaFin){
+/* 7.9136 · pedido del autor: "poder elegir hasta qué partido simular" y que la crisis "se delegue dentro de una casilla del
+   mismo menú de simulación". opts.hasta = el partido donde se para (ese lo juegas tú); opts.delegarCrisis = la simulación
+   elige la crisis (primera opción que se pueda pagar) y sigue; sin la casilla se para y te pregunta (simCrisisFreno). */
+function simCrisisFreno(opts,salida){
+  const cr=(typeof crisisActiva==="function")?crisisActiva():null; if(!cr) return false;
+  if(opts&&opts.delegarCrisis&&typeof delegarCrisis==="function"){
+    const r=delegarCrisis(); if(r){ salida.delegadas.push(r.t); return (typeof crisisActiva==="function")&&crisisActiva()===cr; } }
+  salida.crisis=cr; salida.freno="🚨 Crisis: «"+cr.t+"». Resuélvela tú o deja que la simulación la delegue y siga.";
+  return true;
+}
+function simLlegoAlPartido(opts,part){ return !!(opts&&opts.hasta&&part&&part===opts.hasta); }
+function avanzarRapido(hastaFin,opts){
+  opts=opts||{};
   if(!E||E.carrera.fin||E.carrera.enParo) return {fechas:0,partidos:0,ganados:0,freno:"sin partida activa"};
   let fechas=0,partidos=0,ganados=0,freno=null;
-  const reg=[];
-  const tope=hastaFin?400:1;
+  const reg=[], sal={delegadas:[],crisis:null,freno:null};
+  const tope=(hastaFin||opts.hasta)?400:1;
   while(fechas<tope){
     if(E.carrera.fin){ freno="fin de la carrera"; break; }
     if(E.carrera.enParo){ freno="quedaste sin club"; break; }
     if(E.dinastia&&E.dinastia.sucesionPendiente){ freno="hay una sucesión que resolver"; break; }
-    if(typeof crisisActiva==="function" && crisisActiva()){ freno="hay una crisis que atender — resuélvela y sigue"; break; }
+    if(simCrisisFreno(opts,sal)){ freno=sal.freno||"hay una crisis que atender — resuélvela y sigue"; break; }
     delegarDecisionesPendientes();
     const part=proximoPartido();
+    if(simLlegoAlPartido(opts,part)){ freno="Llegaste al partido que elegiste: ese lo juegas tú."; break; }
     if(!part){ freno="fin de la temporada — aprieta Avanzar para el cierre"; break; }
     if(!part.jugado){
       const r=jugarRapidoConRegistro(part);   /* state-puro: idx++, tabla, plata, notifs · 7.9121 con registro */
@@ -4489,13 +4511,13 @@ function avanzarRapido(hastaFin){
     }
     procesarSemanaRapido();
     fechas++;
-    if(!hastaFin) break;
+    if(!hastaFin&&!opts.hasta) break;
   }
   if(!E._bulkSim){
     if(typeof render==="function"){ SEC="escritorio"; render(); }
     if(typeof guardar==="function") guardar();
   }
-  return {fechas:fechas,partidos:partidos,ganados:ganados,freno:freno,reg:reg};
+  return {fechas:fechas,partidos:partidos,ganados:ganados,freno:freno,reg:reg,crisis:sal.crisis,delegadas:sal.delegadas};
 }
 /* 7.9022 · avanzarRapido(true) juega una temporada ENTERA de un tirón (hasta
    400 fechas), bloqueando el hilo: el overlay de "Simular N temporadas" solo
@@ -4505,21 +4527,24 @@ function avanzarRapido(hastaFin){
    setTimeout: el navegador puede repintar entre lotes sin frenar la corrida
    real (mismo E._bulkSim, mismas condiciones de freno). avanzarRapido() queda
    intacto: lo siguen usando los botones de una sola fecha / una temporada. */
-function avanzarRapidoLote(onProgreso, onListo){
+function avanzarRapidoLote(onProgreso, onListo, opts){
+  opts=opts||{};
   if(!E||E.carrera.fin||E.carrera.enParo){ onListo({fechas:0,partidos:0,ganados:0}); return; }
   let fechas=0, partidos=0, ganados=0;
-  const reg=[];
+  const reg=[], sal={delegadas:[],crisis:null,freno:null};
   const LOTE=4;
+  const listo=fr=>onListo({fechas:fechas,partidos:partidos,ganados:ganados,reg:reg,crisis:sal.crisis,delegadas:sal.delegadas,freno:fr||sal.freno||null});
   function paso(){
-    if(!E||E._bulkCancel){ onListo({fechas:fechas,partidos:partidos,ganados:ganados,reg:reg}); return; }
+    if(!E||E._bulkCancel){ listo(); return; }
     let enLote=0;
     while(enLote<LOTE){
-      if(E.carrera.fin||E.carrera.enParo) return onListo({fechas:fechas,partidos:partidos,ganados:ganados,reg:reg});
-      if(E.dinastia&&E.dinastia.sucesionPendiente) return onListo({fechas:fechas,partidos:partidos,ganados:ganados,reg:reg});
-      if(typeof crisisActiva==="function" && crisisActiva()) return onListo({fechas:fechas,partidos:partidos,ganados:ganados,reg:reg});
+      if(E.carrera.fin||E.carrera.enParo) return listo();
+      if(E.dinastia&&E.dinastia.sucesionPendiente) return listo("hay una sucesión que resolver");
+      if(simCrisisFreno(opts,sal)) return listo();
       delegarDecisionesPendientes();
       const part=proximoPartido();
-      if(!part) return onListo({fechas:fechas,partidos:partidos,ganados:ganados,reg:reg});   /* temporada completa */
+      if(simLlegoAlPartido(opts,part)) return listo("Llegaste al partido que elegiste: ese lo juegas tú.");
+      if(!part) return listo();   /* temporada completa */
       if(!part.jugado){
         const r=jugarRapidoConRegistro(part);   /* 7.9121 · con registro para el resumen */
         reg.push(r); partidos++;
@@ -4717,30 +4742,29 @@ function modalAvanceRapido(){
     cc.appendChild(el("p","mini","Delego todo por ti: resuelvo las decisiones con criterio, simulo los partidos al toque y avanzo. Ideal para ir rápido o hacer videos. Puedes volver a dirigir cuando quieras."));
     /* 7.9121 · con Modo Dios o modo dev, los resultados forzados están acá mismo */
     if((E.flags&&E.flags.modoDios)||(typeof devOn==="function"&&devOn())){ const tr=el("div","sim-trucos"); bloqueResultadosForzados(tr); cc.appendChild(tr); }
-    const correr=(hastaFin)=>{ cerrarModal(); const r=avanzarRapido(hastaFin);
+    /* 7.9136 · la casilla de las crisis vive acá mismo (pedido del autor) y vale para todo lo que se simula desde este menú */
+    const ck=el("label","sim-check"); ck.innerHTML='<input type="checkbox" id="sim-delegar"'+(simDelegaCrisis()?" checked":"")+'> <span>🛡️ <b>Delegar las crisis</b>: la simulación elige lo que se pueda pagar, te lo anota y sigue. Sin marcar, se para y te pregunta.</span>';
+    ck.querySelector("input").onchange=function(){ E.config=E.config||{}; E.config.simDelegarCrisis=!!this.checked; if(typeof guardar==="function") guardar(); };
+    cc.appendChild(ck);
+    const correr=(hastaFin)=>{ cerrarModal(); const r=avanzarRapido(hastaFin,{delegarCrisis:simDelegaCrisis()});
       /* 7.9121 · un resumen que se puede leer (cada partido, tabla y copas), no un aviso de 4 segundos */
-      if(r.reg&&r.reg.length) modalResumenSim(r.reg,{freno:r.freno}); else aviso("⏩ "+(r.freno||"nada que simular"),4500); };
+      simMostrar(r,()=>correr(hastaFin)); };
     const b1=el("button","btn-aqua ancho verde","⏩ Simular la próxima fecha"); b1.onclick=()=>correr(false);
     const b2=el("button","btn-aqua ancho","⏭️ Simular hasta fin de temporada"); b2.style.marginTop="6px";
     b2.onclick=function(){
       if(!confirm("Voy a simular todos los partidos que quedan de la temporada, delegando las decisiones. ¿Seguir?")) return;
-      cerrarModal();
-      if(typeof pintarSimOverlay!=="function"||typeof avanzarRapidoLote!=="function"){ correr(true); return; }
-      pintarSimOverlay("Simulando la temporada","El club sigue. No se trabó.",false);
-      E._bulkSim=true;
-      avanzarRapidoLote(function(p){
-        const d=document.querySelector("#simOverlay .sim-d");
-        const u=p.ultimo;
-        if(d) d.textContent="Fecha "+p.fechas+" · "+p.partidos+" partidos · "+p.ganados+" ganados"+(u?" · último: "+u.yo+"-"+u.otro+" "+(u.local?"vs ":"en ")+u.rival:"");
-      }, function(r){
-        if(E) E._bulkSim=false;
-        if(typeof cerrarSimOverlay==="function") cerrarSimOverlay();
-        if(typeof render==="function"){ SEC="escritorio"; render(); }
-        if(typeof guardar==="function") guardar();
-        if(r&&r.reg&&r.reg.length) modalResumenSim(r.reg,{freno:proximoPartido()?null:"Temporada completa: aprieta Avanzar para el cierre."});
-        else aviso("⏩ nada que simular",4500);
-      });
+      cerrarModal(); simLote("Simulando la temporada",{});
     };
+    /* 7.9136 · simular HASTA el partido que elijas (ese lo juegas tú) */
+    const pend=(E.calendario||[]).slice(E.idx||0).filter(x=>x&&!x.jugado);
+    const hasta=el("div","sim-hasta");
+    if(pend.length>1){
+      const sel=document.createElement("select"); sel.className="sim-sel"; sel.setAttribute("aria-label","Simular hasta este partido");
+      pend.slice(1).forEach((x,i)=>{ const o=document.createElement("option"); o.value=String(i+1); o.textContent=simEtiquetaPartido(x); sel.appendChild(o); });
+      const bh=el("button","btn-aqua ancho","🎯 Simular hasta ese partido (ese lo juegas tú)"); bh.style.marginTop="4px";
+      bh.onclick=()=>{ const x=pend[+sel.value]; if(!x) return; cerrarModal(); simLote("Simulando hasta "+(x.rivalNombre||"el partido elegido"),{hasta:x}); };
+      hasta.appendChild(el("label","lb","Simular hasta…")); hasta.appendChild(sel); hasta.appendChild(bh);
+    }
     /* 7.9007 · 40 temporadas ya no traban: overlay + cancelar. */
     cc.appendChild(el("p","mini",(typeof T==="function"?T("sim_ayuda","Para probar el juego a fondo: simulo temporadas enteras. Ves el año en pantalla; no se traba. Si cancelas, volvemos al año de origen — la próxima corrida sale distinta."):"Para probar el juego a fondo: simulo temporadas enteras. Ves el año en pantalla; no se traba. Si cancelas, volvemos al año de origen — la próxima corrida sale distinta.")));
     const correrN=(n,txt)=>{ if(!confirm(txt)) return; cerrarModal(); if(typeof simularTemporadasAsync==="function") simularTemporadasAsync(n); else simularTemporadas(n); };
@@ -4749,8 +4773,38 @@ function modalAvanceRapido(){
     const b4=el("button","btn-aqua ancho","🏁 Simular hasta el final (máx 40)"); b4.style.marginTop="6px";
     b4.onclick=()=>correrN(40,(typeof T==="function"?T("sim_conf40","Voy a simular hasta 40 temporadas. No se traba. Cancelar te devuelve al año de origen; la próxima corrida no sale igual. ¿Seguir?"):"Voy a simular hasta 40 temporadas. No se traba. Cancelar te devuelve al año de origen; la próxima corrida no sale igual. ¿Seguir?"));
     const b5=el("button","btn-aqua ancho gris","Cancelar"); b5.style.marginTop="6px"; b5.onclick=cerrarModal;
-    cc.appendChild(b1); cc.appendChild(b2); cc.appendChild(b3); cc.appendChild(b4); cc.appendChild(b5);
+    cc.appendChild(b1); cc.appendChild(b2); cc.appendChild(hasta); cc.appendChild(b3); cc.appendChild(b4); cc.appendChild(b5);
   });
+}
+function simDelegaCrisis(){ return !!(E&&E.config&&E.config.simDelegarCrisis); }
+function simEtiquetaPartido(x){
+  return (x.f&&typeof fechaTxt==="function"?fechaTxt(x.f)+" · ":"")+(x.torneo||(x.tipo==="liga"?"Liga":"Copa"))+(x.ronda&&x.tipo!=="liga"?" "+x.ronda:"")+
+    " · "+(x.local?"vs ":"en ")+(x.rivalNombre||x.rival||x.rivalId||"?");
+}
+/* el resumen de lo simulado; si se paró por una crisis, ahí mismo eliges: la resuelvo yo o que la delegue y siga */
+function simMostrar(r,seguir){
+  r=r||{};
+  if((r.reg&&r.reg.length)||r.crisis) modalResumenSim(r.reg||[],{freno:r.freno||(proximoPartido()?null:"Temporada completa: aprieta Avanzar para el cierre."),crisis:r.crisis,delegadas:r.delegadas,seguir:seguir});
+  else aviso("⏩ "+(r.freno||"nada que simular"),4500);
+}
+/* simulación en lotes con el overlay (temporada entera o hasta un partido) */
+function simLote(titulo,opts){
+  opts=Object.assign({delegarCrisis:simDelegaCrisis()},opts||{});
+  const otraVez=()=>simLote(titulo,opts);
+  if(typeof pintarSimOverlay!=="function"||typeof avanzarRapidoLote!=="function"){ simMostrar(avanzarRapido(true,opts),otraVez); return; }
+  pintarSimOverlay(titulo,"El club sigue. No se trabó.",false);
+  E._bulkSim=true;
+  avanzarRapidoLote(function(p){
+    const d=document.querySelector("#simOverlay .sim-d");
+    const u=p.ultimo;
+    if(d) d.textContent="Fecha "+p.fechas+" · "+p.partidos+" partidos · "+p.ganados+" ganados"+(u?" · último: "+u.yo+"-"+u.otro+" "+(u.local?"vs ":"en ")+u.rival:"");
+  }, function(r){
+    if(E) E._bulkSim=false;
+    if(typeof cerrarSimOverlay==="function") cerrarSimOverlay();
+    if(typeof render==="function"){ SEC="escritorio"; render(); }
+    if(typeof guardar==="function") guardar();
+    simMostrar(r,otraVez);
+  }, opts);
 }
 function avanzar(){
   if(!E||E.carrera.fin||E.carrera.enParo) return;

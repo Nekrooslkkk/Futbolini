@@ -2846,3 +2846,12 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
   CONVERSAR con Vicente antes; 5) balance de temporada con estrellas: 3 grandes (metas) + 5 chicas (puntos del juego),
   "juego maestro" si ganas todo; 6) Plop: botones viejos que se traspasan al publicar, respuestas que no entienden lo
   publicado, estilo Twitter 2007 con hilos que viven dentro de cada post.
+
+**7.9136 (Claude Opus) · Simular hasta un partido + casilla de crisis; estrellas de temporada (js/estrellas.js). LEER si tocan el cierre de temporada o la simulación:**
+- `avanzarRapido(hastaFin, {hasta, delegarCrisis})` y `avanzarRapidoLote(..., opts)`: no agreguen otra forma de frenar sin pasar por
+  `simCrisisFreno` (el doctor `sim_hasta_y_crisis` lo vigila). El resumen (`modalResumenSim`) recibe `extra.crisis/seguir`.
+- Las estrellas se calculan con `estrellasTemporada(res)` (res = lo que dejó `finDeTemporada`, guardado en `E._estRes`) y se
+  anotan en `nuevoAnio` (una vez por año). Si cambian una medición, cambien también `ESTRELLAS_GRANDES/CHICAS` (textos) y el doctor.
+- Pendiente de Vicente (en orden): Plop (botones que se traspasan, respuestas que entiendan con un banco hecho con DeepSeek,
+  estilo Twitter 2007 con hilos), copas que cambian con las épocas (idea aprobada: formatos reales con fuente + futuros marcados
+  como ficción), caras realistas, el 3D que cuente lo mismo que el motor.

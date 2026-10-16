@@ -496,3 +496,12 @@ html body:is([data-tema="negro"],[data-tema="insano"]) .sim-fila-desen{ backgrou
 .jor-full{ margin:6px 0; } .jor-tabla{ width:100%; font-size:12.5px; }
 /* 7.9125 · "Ir a" de Vida (y cualquier salto a un panel): la cabecera no queda escondida bajo la barra fija de arriba */
 #vista section.panel{scroll-margin-top:72px}
+/* 7.9136 · menú de simulación: casilla de crisis, simular hasta un partido, crisis en el resumen */
+.sim-check{ display:flex; gap:8px; align-items:flex-start; margin:6px 0 8px; padding:8px 10px; border-radius:10px;
+  background:rgba(255,255,255,.55); border:1px solid rgba(40,90,150,.25); font-size:13px; line-height:1.35; cursor:pointer; }
+.sim-check input{ margin-top:3px; width:16px; height:16px; flex:none; }
+.sim-hasta{ margin:8px 0 2px; }
+.sim-hasta .lb{ display:block; font-weight:700; font-size:13px; margin-bottom:3px; }
+.sim-sel{ width:100%; max-width:100%; padding:7px 8px; border-radius:8px; border:1px solid rgba(40,90,150,.35); font-size:13px; background:#fff; }
+.sim-crisis{ margin:10px 0; padding:10px; border-radius:10px; background:rgba(200,30,40,.08); border:1px solid rgba(200,30,40,.35); }
+.sim-crisis b{ display:block; margin-bottom:6px; }
