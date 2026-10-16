@@ -2882,4 +2882,5 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
   "<Base Characters/Godot - UE>" "<Hairstyles/Rigged to Head Bone/glTF (Godot -Unreal)>" img/modelos/jugador.glb
   img/modelos/jugador_real.glb` (necesita Pillow). El doctor `jugador_realista` avisa si le faltan animaciones o si no están
   redirigidas.
-
+- 7.9140: el realista de cada jugador tiene estatura, cabeza, piernas y ojos (`_cvLook` → `modelo3dCuerpo`). Si alguien
+  escala `I.raiz` por otra razón, que multiplique por `I.talla`, no lo pise.

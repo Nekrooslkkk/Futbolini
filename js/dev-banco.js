@@ -1871,13 +1871,25 @@ async function devJugadorRealista(){
   const p0=pos("foot_r"), gg=_c3dGestoVacio(); gg.legs[0].t=-0.95; modelo3dGesto(I,gg,1); I.raiz.updateMatrixWorld(true);
   const p1=pos("foot_r");
   if(!(p1.z-p0.z>0.25)) f.push("en el realista la patada no lleva el pie derecho adelante ("+(p1.z-p0.z).toFixed(2)+" m)");
+  /* 7.9140 · cada uno con su cuerpo: la estatura escala la figura entera (la cabeza sube) y vuelve; los ojos de color llegan */
+  if(typeof modelo3dCuerpo!=="function") f.push("todos los realistas miden lo mismo (falta modelo3dCuerpo)");
+  else { I.pesoLoco=1; modelo3dAndar(I,0,0); modelo3dCuerpo(I,{talla:1.06,cabeza:1.04,grosor:1.06}); I.raiz.updateMatrixWorld(true); const alta=pos("Head").y;
+    modelo3dCuerpo(I,{talla:0.94}); I.raiz.updateMatrixWorld(true); const baja=pos("Head").y; modelo3dCuerpo(I,{}); I.raiz.updateMatrixWorld(true);
+    if(!(alta-baja>0.12)) f.push("la estatura no cambia la figura ("+(alta-baja).toFixed(2)+" m entre el más alto y el más bajo)");
+    if(Math.abs(pos("Head").y-cab.y)>0.01) f.push("después de cambiar la estatura no vuelve a la normal");
+    det.push("estaturas: cabeza "+baja.toFixed(2)+"–"+alta.toFixed(2)+" m"); }
+  if(typeof _cvLook==="function"){ const tal=[], ojo=[0,0,0]; for(let i=0;i<22;i++){ const L=_cvLook({},i); tal.push(L.talla||1); ojo[L.ojos||0]++; }
+    if(Math.max(...tal)-Math.min(...tal)<0.05) f.push("los 22 de la cancha tienen casi la misma estatura");
+    if(!ojo[0]||ojo[0]<ojo[1]+ojo[2]) f.push("los ojos café no son la mayoría ("+ojo.join("/")+")"); }
   /* pintar: el tono de piel llega al sombreador, el pelado no muestra peinado y el arquero lleva guantes */
   const mt=I.malla.material, U=mt.userData.u;
   modelo3dPintar(mt,{piel:"#5e3a22",camiseta:"#fff",short:"#000",medias:"#fff",botines:"#111",pelo:"#111",manos:"#f3f6fa",peinado:0,barba:true});
   if(!U||!U.uTinte) f.push("el realista se pinta con el material del maniquí (sin piel, sin peinados)");
   else { if(!(U.uTinte.value.r<0.3)) f.push("el tono de piel del jugador no llega al realista");
     if(U.uPeinado.value!==0||U.uBarba.value!==1) f.push("el peinado/barba del jugador no llega al realista");
-    if(U.uGuante.value!==1) f.push("el arquero realista no lleva guantes"); }
+    if(U.uGuante.value!==1) f.push("el arquero realista no lleva guantes");
+    if(!U.uOjoW) f.push("el realista no tiene color de ojos");
+    else { modelo3dPintar(mt,{piel:"#e0ac7e",ojos:2}); if(U.uOjoW.value!==1||!(U.uOjo.value.b>U.uOjo.value.r)) f.push("los ojos azules no llegan al sombreador"); } }
   mt.dispose(); I.mezcla.stopAllAction();
   det.push("realista "+g.position.count+" vértices · "+Object.keys(D.clips).length+" animaciones · vía "+(MODELO3D_REAL.via||"?")+" · zonas "+cuenta.join("/")+" · peinados "+pein.slice(1).join("/")+" · quieto: cabeza "+cab.y.toFixed(2)+" m · pose igual al maniquí (máx "+peorAng.toFixed(1)+"°) · patada +"+(p1.z-p0.z).toFixed(2)+" m");
   return {f:f,det:det};

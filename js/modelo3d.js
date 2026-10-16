@@ -178,7 +178,7 @@ function _m3dMaterialReal(colores,D){
   const ref=new THREE.Color().set((D.extra&&D.extra.pielRef)||"#a16e4d").convertSRGBToLinear();
   const U={uKit:{value:[0,1,2,3,4,5,6,7].map(()=>new THREE.Color())}, uFranja:{value:0}, uFranjaCol:{value:new THREE.Color()},
     uAtlas:{value:D.tex}, uTinte:{value:new THREE.Color(1,1,1)}, uRef:{value:ref}, uRefLum:{value:0.2126*ref.r+0.7152*ref.g+0.0722*ref.b},
-    uPeinado:{value:1}, uBarba:{value:0}, uGuante:{value:0},
+    uPeinado:{value:1}, uBarba:{value:0}, uGuante:{value:0}, uOjo:{value:new THREE.Color(1,1,1)}, uOjoW:{value:0},
     uCortar:{value:(D.extra&&D.extra.cortes)?1:0}, uCorteA:{value:new THREE.Vector3()}, uCorteB:{value:new THREE.Vector3()}, uCuelloZ:{value:0},
     uLumPelo:{value:(D.extra&&D.extra.lumPelo)||0.6}};
   const K=(D.extra&&D.extra.cortes)||{}; U.uCorteA.value.set(K.hombro||0,K.manga||0,K.cuello||0); U.uCorteB.value.set(K.cintura||0,K.short||0,K.media||0); U.uCuelloZ.value=K.cuelloZ||0;
@@ -190,7 +190,7 @@ function _m3dMaterialReal(colores,D){
         "transformed+=normal*(kitA.y*0.010+kitA.z*0.016);\n"+
         "float m3dOcu=0.0; if(peinado>0.5){ if(peinado<2.5){ if(abs(peinado-uPeinado)>0.5) m3dOcu=1.0; } else if(uBarba<0.5) m3dOcu=1.0; }")
       .replace("#include <project_vertex>","#include <project_vertex>\nif(m3dOcu>0.5) gl_Position=vec4(2.0,2.0,2.0,1.0);");
-    sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 uKit[8];\nuniform float uFranja;\nuniform vec3 uFranjaCol;\nuniform sampler2D uAtlas;\nuniform vec3 uTinte;\nuniform vec3 uRef;\nuniform float uRefLum;\nuniform float uCortar;\nuniform vec3 uCorteA;\nuniform vec3 uCorteB;\nuniform float uCuelloZ;\nuniform float uGuante;\nuniform float uLumPelo;\nvarying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;\nvarying vec2 vUvR;")
+    sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 uKit[8];\nuniform float uFranja;\nuniform vec3 uFranjaCol;\nuniform sampler2D uAtlas;\nuniform vec3 uTinte;\nuniform vec3 uRef;\nuniform float uRefLum;\nuniform float uCortar;\nuniform vec3 uCorteA;\nuniform vec3 uCorteB;\nuniform float uCuelloZ;\nuniform float uGuante;\nuniform float uLumPelo;\nuniform vec3 uOjo;\nuniform float uOjoW;\nvarying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;\nvarying vec2 vUvR;")
       .replace("vec4 diffuseColor = vec4( diffuse, opacity );",
         "float kz=0.0; float km=vKitA.x;\n"+
         "if(vKitA.y>km){km=vKitA.y;kz=1.0;} if(vKitA.z>km){km=vKitA.z;kz=2.0;} if(vKitA.w>km){km=vKitA.w;kz=3.0;}\n"+
@@ -209,7 +209,9 @@ function _m3dMaterialReal(colores,D){
            mejillas). Multiplicar canal por canal blanqueaba las pieles claras: el azul de la textura es muy bajo */
         "vec3 m3dPiel=0.85*uTinte*mix(vec3(dot(m3dLin,vec3(0.2126,0.7152,0.0722))/uRefLum),clamp(m3dLin/max(uRef,vec3(0.02)),0.5,1.5),0.15);\n"+
         "if(kz<0.5) kc=m3dPiel;\n"+
-        "else if(kz>6.5) kc=m3dLin;\n"+
+        /* 7.9140 · los ojos: el iris (lo oscuro de la textura) se cambia por el color de cada jugador con su mismo dibujo;
+           lo blanco queda blanco. Café = la textura tal cual */
+        "else if(kz>6.5){ float lo=dot(m3dTx.rgb,vec3(0.3333)); kc=mix(m3dLin,uOjo*clamp(lo/0.28,0.35,1.25),uOjoW*clamp((0.7-lo)*3.0,0.0,1.0)); }\n"+
         "else if(kz>5.5) kc=uGuante>0.5?uKit[6]:m3dPiel;\n"+
         "else if(kz>4.5) kc=uKit[5]*clamp(dot(m3dTx.rgb,vec3(0.3333))/uLumPelo,0.45,1.5);\n"+
         "else { kc=kz<1.5?uKit[1]:(kz<2.5?uKit[2]:(kz<3.5?uKit[3]:uKit[4]));\n"+
@@ -224,6 +226,17 @@ function _m3dMaterialReal(colores,D){
   if(colores) modelo3dPintar(m,colores);
   return m;
 }
+/* 7.9140 · color del iris: café (el de la textura), verde avellana, azul */
+const M3D_OJOS=["#5a3a22","#6e8a3c","#4f86c6"];
+/* 7.9140 · "que no todos tengan la misma cara": cada realista con su cuerpo, sin modelos nuevos. Estatura (toda la
+   figura), tamaño de cabeza y grosor de piernas (escala de huesos: las animaciones no tocan escalas, así que se queda) */
+function modelo3dCuerpo(I,c){
+  if(!I||!I.H||!I.raiz) return;
+  const t=c&&c.talla||1, k=c&&c.cabeza||1, g=c&&c.grosor||1;
+  I.raiz.scale.setScalar(t); I.talla=t;
+  if(I.H.Head) I.H.Head.scale.setScalar(k);
+  ["thigh_l","thigh_r"].forEach(n=>{ const b=I.H[n]; if(b) b.scale.set(g,1,g); });
+}
 /* colores: {piel, camiseta, short, medias, botines, pelo, manos, franja:"horizontal"|"vertical"|"banda"|null, franjaCol}
    7.9139 · en el realista además: peinado (0 pelado, 1 rapado, 2 partido) y barba (sí/no) */
 function modelo3dPintar(m,c){
@@ -233,7 +246,8 @@ function modelo3dPintar(m,c){
   col(c.franjaCol||c.camiseta||"#ffffff",U.uFranjaCol.value);
   if(U.uTinte){ col(c.piel||"#e0ac7e",U.uTinte.value);   /* el tono del jugador (el shader le pone la luz y sombra de la textura) */
     U.uPeinado.value=c.peinado!=null?c.peinado:1; U.uBarba.value=c.barba?1:0;
-    U.uGuante.value=(c.manos&&c.manos!==c.piel)?1:0; }
+    U.uGuante.value=(c.manos&&c.manos!==c.piel)?1:0;
+    col(M3D_OJOS[c.ojos||0]||M3D_OJOS[0],U.uOjo.value); U.uOjoW.value=c.ojos?1:0; }
 }
 
 /* ---------- caminar/trotar/piquear: pesos por velocidad y pasos sincronizados ---------- */

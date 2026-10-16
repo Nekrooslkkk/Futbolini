@@ -5691,3 +5691,16 @@ Pedido del autor: "las caras TIENEN QUE SER MODELOS realistas libres tipo PES 20
   pelo, el peinado y la barba. La versión pagada del paquete trae más modelos (no se compró: lo decide el autor).
 - **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular (162 chequeos) · dev 593/593
   (cancha 3D con los 3 casos) · banco 255 partidas.
+
+### 7.9140 — Los realistas ya no son todos iguales: estatura, cabeza, piernas y ojos
+Lo prometido en 7.9139 ("es UNA cara para todos"), sin modelos nuevos ni más megas:
+- **js/cancha.js `_cvLook`:** cada jugador además trae `talla` (0,94–1,06: de ~1,72 a ~1,94 m), `cabeza` (0,96–1,04),
+  `grosor` de piernas (0,94–1,08) y `ojos` (7 de cada 10 café, 2 verde avellana, 1 azul). El arquero, 3 % más alto.
+- **js/modelo3d.js `modelo3dCuerpo(I,c)`:** escala la figura entera, la cabeza y los muslos (las animaciones no tocan
+  escalas, así que se queda). El iris de la textura se cambia por el color del jugador con su mismo dibujo (`uOjo`,
+  `M3D_OJOS`); lo blanco queda blanco. Solo en los realistas: el maniquí sigue igual para todos.
+- **js/cancha3d.js:** se aplica al pintar; el giro de la estirada del arquero usa la altura de su cadera (talla).
+- **Dev:** doctor `jugador_realista` suma: la estatura cambia la figura (cabeza de 1,46 a 1,65 m) y vuelve; los 22 de la
+  cancha no miden lo mismo; los ojos café son mayoría; los ojos azules llegan al sombreador. Al revés (sin escala, sin
+  ojos, todos de talla 1): 3 fallas.
+- **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular · dev 593/593 · banco 255.

@@ -270,7 +270,9 @@ function _c3dPintar(est){
     modelo3dPintar(I.malla.material,{piel:look.piel, camiseta:cam, short:gk?"#1b1d22":((mio?col.shortMio:col.shortRiv)||"#20242c"),
       medias:gk?cam:((mio?col.mediasMio:col.mediasRiv)||cam), botines:gk?"#f2f2f2":"#15161a", pelo:(look.pelado&&!real)?look.piel:look.pelo,
       manos:gk?"#f3f6fa":look.piel, franja:fr&&frc?fr:null, franjaCol:frc,
-      peinado:look.pelado?0:(look.peinado||1), barba:!!look.barba}); }
+      peinado:look.pelado?0:(look.peinado||1), barba:!!look.barba, ojos:look.ojos||0});
+    /* 7.9140 · el realista además con su estatura, cabeza y piernas (el maniquí queda igual para todos) */
+    if(real&&typeof modelo3dCuerpo==="function") modelo3dCuerpo(I,{talla:(look.talla||1)+(gk?0.03:0),cabeza:look.cabeza,grosor:look.grosor}); }
   Object.keys(P).forEach(n=>{ if(P[n].instanceColor) P[n].instanceColor.needsUpdate=true; });
 }
 /* matrices de trabajo (sin crear objetos por cuadro) */
@@ -530,7 +532,7 @@ function _c3dPoseModelo(est,i,o,v,dt,fase){
   if(roll){   /* el arquero que se tira rueda desde la cadera */
     const qr=K.qr||(K.qr=new THREE.Quaternion()), ax=K.ax||(K.ax=new THREE.Vector3()), h1=K.h1||(K.h1=new THREE.Vector3());
     ax.set(0,0,1).applyQuaternion(R.quaternion); qr.setFromAxisAngle(ax,roll);
-    h1.set(0,0.93*(I.escala||1),0).applyQuaternion(R.quaternion); R.position.add(h1); h1.applyQuaternion(qr); R.position.sub(h1); R.quaternion.premultiply(qr);
+    h1.set(0,0.93*(I.escala||1)*(I.talla||1),0).applyQuaternion(R.quaternion); R.position.add(h1); h1.applyQuaternion(qr); R.position.sub(h1); R.quaternion.premultiply(qr);
   }
   /* piernas y brazos: la animación del paquete según la velocidad; durante un gesto se va hacia "quieto" y manda el gesto */
   I.pesoLoco=1-(o.brazos?1:(o.wAcc||0));
