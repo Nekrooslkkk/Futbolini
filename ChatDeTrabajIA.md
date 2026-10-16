@@ -2884,3 +2884,5 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
   redirigidas.
 - 7.9140: el realista de cada jugador tiene estatura, cabeza, piernas y ojos (`_cvLook` → `modelo3dCuerpo`). Si alguien
   escala `I.raiz` por otra razón, que multiplique por `I.talla`, no lo pise.
+- 7.9141: historia real de LSC y LIN (scripts/historia/*.json → DeepSeek → revisión → js/data-historia-clubes.js). Regla
+  nueva vigilada por el doctor: una acusación (denuncia, desvío, venta del cupo) va con el CARGO, nunca con nombre y apellido.

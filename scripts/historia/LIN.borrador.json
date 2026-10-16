@@ -1,0 +1,346 @@
+{
+ "hitos": [
+  {
+   "anio": 1955,
+   "hito": "Fundación como Lister Rossel",
+   "txt": "El 19 de noviembre de 1955 se funda como Club Deportivo Lister Rossel, fusión de tres clubes amateurs de Linares."
+  },
+  {
+   "anio": 1957,
+   "hito": "Debut y descenso",
+   "txt": "Debuta en Segunda División en 1957 y desciende ese mismo año."
+  },
+  {
+   "anio": 1964,
+   "hito": "Subcampeón de Segunda",
+   "txt": "Termina segundo en Segunda, a 4 puntos de O'Higgins, que asciende."
+  },
+  {
+   "anio": 1974,
+   "hito": "Cambio de nombre",
+   "txt": "El club cambia su nombre a Club de Deportes Linares."
+  },
+  {
+   "anio": 1991,
+   "hito": "Descenso a Tercera",
+   "txt": "Tras una muy mala campaña desciende a Tercera División en 1991."
+  },
+  {
+   "anio": 2001,
+   "hito": "Último en Primera B",
+   "txt": "Termina último en la Primera B 2001."
+  },
+  {
+   "anio": 2011,
+   "hito": "Campeón de Tercera B",
+   "txt": "En 2011 es campeón de Tercera B tras vencer 4-1 a Jugendland."
+  },
+  {
+   "anio": 2019,
+   "hito": "Campeón y ascenso",
+   "txt": "En 2019 es campeón de Tercera A y asciende al profesionalismo."
+  },
+  {
+   "anio": 2020,
+   "hito": "Escándalo y covid",
+   "txt": "En 2020 se denuncia que el gerente usó para fines personales dineros de la Conmebol, y el plantel sufre un gran brote de coronavirus."
+  },
+  {
+   "anio": 2022,
+   "hito": "Campeón anticipado",
+   "txt": "En 2022 es campeón de Tercera A antes de la última fecha."
+  }
+ ],
+ "arcos": [
+  {
+   "id": "lin_h_a1",
+   "t": "La herencia del 2020",
+   "desc": "El peso de la denuncia por desvío de fondos y el brote de covid no se borra.",
+   "capitulos": [
+    {
+     "id": "lin_h_a1_1",
+     "t": "El comprobante",
+     "ctx": "En 2020 se denunció que el gerente usó para fines personales dineros de la Conmebol. Hoy, ordenando cajas viejas, encuentras un comprobante sin rendir de esa época. ¿Qué haces con él?",
+     "ops": [
+      {
+       "t": "Denunciar a la fiscalía",
+       "d": "Expones el comprobante. Ganas transparencia, pero arriesgas sanciones económicas.",
+       "ef": {
+        "plata": -20,
+        "moral": 4,
+        "prestigio": 3,
+        "capital": -2
+       },
+       "grupos": {
+        "hinchada": 8,
+        "prensa": 6,
+        "directorio": -8,
+        "sponsors": -5,
+        "comunidad": 4,
+        "socios": 5
+       },
+       "mem": "guardaste el comprobante y fuiste a la fiscalía",
+       "va": "lin_h_a1_2"
+      },
+      {
+       "t": "Quemar el comprobante",
+       "d": "Destruyes el papel para evitar el escándalo. Proteges al club, pero la culpa te corroe.",
+       "ef": {
+        "plata": 10,
+        "moral": -6,
+        "prestigio": -4,
+        "capital": 2
+       },
+       "grupos": {
+        "directorio": 10,
+        "socios": -5,
+        "hinchada": -6,
+        "prensa": -8,
+        "comunidad": -5,
+        "sponsors": 5
+       },
+       "mem": "quemaste el comprobante en el patio del estadio",
+       "va": "lin_h_a1_2"
+      }
+     ]
+    },
+    {
+     "id": "lin_h_a1_2",
+     "t": "El parte médico",
+     "ctx": "El brote de covid de 2020 dejó secuelas en el plantel. Hoy un volante clave pide dos semanas más de recuperación; el cuerpo médico dice que puede jugar el domingo.",
+     "ops": [
+      {
+       "t": "Respetar la licencia",
+       "d": "Das descanso al jugador. El camarín lo agradece, pero el equipo pierde presencia en la cancha.",
+       "ef": {
+        "plata": -5,
+        "moral": 5,
+        "prestigio": -2,
+        "capital": 1
+       },
+       "grupos": {
+        "camarin": 12,
+        "tecnico": -8,
+        "hinchada": -4,
+        "prensa": -2
+       },
+       "mem": "priorizaste la salud del volante",
+       "va": "lin_h_a1_3"
+      },
+      {
+       "t": "Exigir que juegue",
+       "d": "Lo pones en la citación. El técnico respira, pero el plantel te mira con desconfianza.",
+       "ef": {
+        "plata": 5,
+        "moral": -5,
+        "prestigio": -2,
+        "capital": -1
+       },
+       "grupos": {
+        "tecnico": 12,
+        "camarin": -10,
+        "hinchada": -2,
+        "prensa": 2
+       },
+       "mem": "obligaste al volante a jugar con dolor",
+       "va": "lin_h_a1_3"
+      }
+     ]
+    },
+    {
+     "id": "lin_h_a1_3",
+     "t": "El reparto del premio",
+     "ctx": "En 2022 fuiste campeón de Tercera A antes de la última fecha. Hoy la dirigencia discute cómo usar el premio: pagar deudas o invertir en el plantel.",
+     "ops": [
+      {
+       "t": "Pagar deudas antiguas",
+       "d": "Saldas compromisos pendientes. Ganas estabilidad, pero el plantel se queda sin refuerzos.",
+       "ef": {
+        "plata": 10,
+        "moral": 3,
+        "prestigio": 4,
+        "capital": 4
+       },
+       "grupos": {
+        "directorio": 12,
+        "socios": 6,
+        "hinchada": -4,
+        "camarin": -8,
+        "sponsors": 4,
+        "comunidad": 2
+       },
+       "mem": "destinaste el premio a sanear las cuentas",
+       "cierra": true
+      },
+      {
+       "t": "Invertir en refuerzos",
+       "d": "Contratas dos jugadores de jerarquía. La hinchada sueña, pero las arcas quedan al límite.",
+       "ef": {
+        "plata": -15,
+        "moral": 4,
+        "prestigio": 6,
+        "capital": -3
+       },
+       "grupos": {
+        "hinchada": 12,
+        "camarin": 8,
+        "directorio": -6,
+        "socios": -4,
+        "sponsors": -2,
+        "tecnico": 6
+       },
+       "mem": "gastaste el premio en refuerzos",
+       "cierra": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lin_h_a2",
+   "t": "La exigencia de la tribuna",
+   "desc": "Después de dos títulos, la hinchada no acepta otra cosa que pelear arriba.",
+   "capitulos": [
+    {
+     "id": "lin_h_a2_1",
+     "t": "Armar el plantel",
+     "ctx": "En 2019 fuiste campeón de Tercera A y ascendiste al profesionalismo. Hoy la dirigencia te exige armar un plantel competitivo, pero el presupuesto es el de un club de barrio.",
+     "ops": [
+      {
+       "t": "Apostar por juveniles",
+       "d": "Das minutos a los cadetes. Ahorras plata, pero la experiencia brilla por su ausencia.",
+       "ef": {
+        "plata": 15,
+        "moral": 2,
+        "prestigio": -2,
+        "capital": 3
+       },
+       "grupos": {
+        "camarin": 4,
+        "hinchada": -6,
+        "directorio": 6,
+        "socios": 2,
+        "tecnico": -4,
+        "comunidad": 6
+       },
+       "mem": "apostaste por los cadetes del club",
+       "va": "lin_h_a2_2"
+      },
+      {
+       "t": "Traer veteranos libres",
+       "d": "Firmas a dos jugadores de 33 años sin contrato. Sumas oficio, pero el camarín se llena de egos.",
+       "ef": {
+        "plata": -10,
+        "moral": -2,
+        "prestigio": 2,
+        "capital": -2
+       },
+       "grupos": {
+        "camarin": -6,
+        "hinchada": 6,
+        "directorio": -4,
+        "socios": 2,
+        "tecnico": 8,
+        "prensa": 3
+       },
+       "mem": "trajiste veteranos a préstamo",
+       "va": "lin_h_a2_2"
+      }
+     ]
+    },
+    {
+     "id": "lin_h_a2_2",
+     "t": "La tentación de vender",
+     "ctx": "En 2022 fuiste campeón de Tercera A antes de la última fecha. Hoy la barra te exige pelear el ascenso a Primera B, pero tres titulares quieren irse a clubes más grandes.",
+     "ops": [
+      {
+       "t": "Vender al mejor postor",
+       "d": "Aceptas la oferta por el goleador. Entra plata, pero la hinchada te tilda de vendehumo.",
+       "ef": {
+        "plata": 40,
+        "moral": -3,
+        "prestigio": -3,
+        "capital": 2
+       },
+       "grupos": {
+        "hinchada": -12,
+        "directorio": 10,
+        "socios": 4,
+        "camarin": -8,
+        "sponsors": 5,
+        "tecnico": -6
+       },
+       "mem": "vendiste al goleador en plena pretemporada",
+       "va": "lin_h_a2_3"
+      },
+      {
+       "t": "Retener a los titulares",
+       "d": "Renegocias contratos al alza. Mantienes la base, pero el presupuesto queda en rojo.",
+       "ef": {
+        "plata": -30,
+        "moral": 5,
+        "prestigio": 4,
+        "capital": -2
+       },
+       "grupos": {
+        "hinchada": 12,
+        "camarin": 10,
+        "directorio": -8,
+        "socios": -4,
+        "sponsors": -2,
+        "tecnico": 6
+       },
+       "mem": "retuviste a los titulares a costo de deuda",
+       "va": "lin_h_a2_3"
+      }
+     ]
+    },
+    {
+     "id": "lin_h_a2_3",
+     "t": "El partido clave",
+     "ctx": "En 2010 tuviste que jugar un partido de definición con Deportes Quilicura. Hoy el fixture te regala una fecha clave contra el puntero: si ganas, quedas a un paso del título.",
+     "ops": [
+      {
+       "t": "Salir a atacar",
+       "d": "Planteas un 4-3-3 ofensivo. Ganas respeto, pero te expones a la contra.",
+       "ef": {
+        "plata": -5,
+        "moral": 3,
+        "prestigio": 3,
+        "capital": -1
+       },
+       "grupos": {
+        "hinchada": 8,
+        "tecnico": 6,
+        "camarin": 2,
+        "prensa": 4,
+        "directorio": -4
+       },
+       "mem": "saliste a atacar al puntero",
+       "cierra": true
+      },
+      {
+       "t": "Cerrar el arco",
+       "d": "Paras el bus. Sumas un punto, pero la tribuna silba y el camarín se divide.",
+       "ef": {
+        "plata": 5,
+        "moral": -3,
+        "prestigio": -2,
+        "capital": 1
+       },
+       "grupos": {
+        "hinchada": -8,
+        "tecnico": 8,
+        "camarin": -4,
+        "prensa": -4,
+        "directorio": 6
+       },
+       "mem": "cerraste el arco ante el puntero",
+       "cierra": true
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

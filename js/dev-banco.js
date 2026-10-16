@@ -1631,6 +1631,9 @@ function devHistoriaClubes(){
       if(anios[h.anio]) r.f.push(id+": dos hitos en "+h.anio); anios[h.anio]=1;
       if((h.txt||"").length>230) r.f.push(id+": el hito "+h.anio+" es muy largo");
       if(/[«"“][^»"”]{3,}[»"”]\s*,?\s*(dijo|afirmó|declaró|aseguró)/i.test(h.txt||"")) r.f.push(id+": el hito "+h.anio+" atribuye una frase");
+      /* 7.9141 · una acusación (denuncia, desvío de plata, venta del cupo) no lleva el nombre de una persona real: basta con el
+         cargo ("el gerente de entonces"). Integridad: el juego no señala a nadie con nombre y apellido */
+      if(/denunci|malvers|fraude|desv[ií]o|vendi[óo] el cupo|fines personales/i.test(h.txt||"")&&/\b(?!Deportes|Club|Tercera|Segunda|Primera|Universidad|San|Santa)[A-ZÁÉÍÓÚ][a-záéíóúñ]+ [A-ZÁÉÍÓÚ][a-záéíóúñ]{2,}\b/.test(h.txt||"")) r.f.push(id+": el hito "+h.anio+" acusa a alguien con nombre y apellido");
     });
     /* que llegue a la pantalla de Historia (la línea pasa por un filtro de textos ajenos) */
     const L=(typeof _lineaHistoriaPropia==="function")?_lineaHistoriaPropia(id):[];
@@ -1642,6 +1645,7 @@ function devHistoriaClubes(){
       if(propios.indexOf(a)!==ia) r.f.push(a.id+": no quedó PRIMERO en los arcos del club (sale antes el genérico)");
       caps.forEach((c,i)=>{ const ult=i===caps.length-1;
         if((c.ops||[]).length<2) r.f.push(c.id+": menos de 2 opciones");
+        if(/denunci|malvers|fraude|desv[ií]o|vendi[óo] el cupo|fines personales/i.test(c.ctx||"")&&/\b(?!Deportes|Club|Tercera|Segunda|Primera|Universidad|San|Santa|Hoy|En)[A-ZÁÉÍÓÚ][a-záéíóúñ]+ [A-ZÁÉÍÓÚ][a-záéíóúñ]{2,}\b/.test(c.ctx||"")) r.f.push(c.id+": el contexto acusa a alguien con nombre y apellido");
         if(!/\b(19|20)\d\d\b/.test(c.ctx||"")&&!/selecciones|tricampeon/i.test(c.ctx||"")) r.f.push(c.id+": el contexto no se ancla en un hecho con año");
         if(/subir (el |los )?precio|bajar (las )?entradas|precio de las entradas/i.test((c.ctx||"")+" "+(c.ops||[]).map(o=>o.t).join(" "))) r.f.push(c.id+": vuelve el dilema genérico de los precios");
         (c.ops||[]).forEach(o=>{

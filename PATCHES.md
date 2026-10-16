@@ -5704,3 +5704,24 @@ Lo prometido en 7.9139 ("es UNA cara para todos"), sin modelos nuevos ni más me
   cancha no miden lo mismo; los ojos café son mayoría; los ojos azules llegan al sombreador. Al revés (sin escala, sin
   ojos, todos de talla 1): 3 fallas.
 - **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular · dev 593/593 · banco 255.
+
+### 7.9141 — Historia real de Lota Schwager y Deportes Linares (DeepSeek, hechos verificados)
+Sigue lo de 7.9133 ("de Deportes Rengo ni idea, la idea es al menos aprender"). Ahora son 3 clubes: REN, **LSC** y **LIN**.
+- **Hechos con fuente:** `scripts/historia/LSC.json` y `LIN.json` (es.wikipedia.org, consultado el 16 oct 2026). Cada hecho
+  se verificó con una cita textual del artículo; lo que la cita no decía (en qué ciudad está el estadio, el año del sexto
+  lugar) se sacó.
+  - **Lota Schwager:** la fusión de los equipos de las dos empresas del carbón (1966), «Lamparita», el ascenso de 1969,
+    la final de Copa Chile 1975, la venta del cupo en 1995 y el receso, el renacer en 2001, la resta de puntos por
+    sueldos impagos (2017) y los dos clubes paralelos de 2019.
+  - **Deportes Linares:** nació como Lister Rossel (1955); su historia sigue por 1964, 1974, la caída a Tercera de 1991,
+    Linares Unido (2006), el ascenso de 2019, la denuncia y el brote de 2020, y el título de 2022.
+- **DeepSeek** (`scripts/historia_clubes.py`, ~27 mil tokens) redactó hitos y 2 arcos de 3 capítulos por club; **revisión a
+  mano**:
+  - el jugador no "fue campeón en 2022": fue el club;
+  - fuera las incoherencias ("veteranos libres" que después eran "a préstamo") y la opción que daba plata sin sentido;
+  - fuera el "vendehumo" mal usado.
+- **Integridad:** el presidente que vendió el cupo (1995) y el gerente denunciado (2020) son personas reales: van por su
+  cargo, sin nombre.
+- **Dev:** el doctor `historia_clubes` ahora acusa si un hito o un contexto habla de una denuncia, un desvío o la venta del
+  cupo con un nombre y apellido. Al revés (poniendo un nombre en el hito 2020 de Linares): falla.
+- **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular · dev 593/593 · banco 255.
