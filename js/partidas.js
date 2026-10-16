@@ -223,11 +223,18 @@ async function partidaBorrarDatos(id){
 function avisoGuardado(res){
   if(typeof document==="undefined"||!res) return;
   const n=document.getElementById("guardadoTxt");
-  let hora=""; try{ hora=new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"}); }catch(e){}
+  let hora=""; try{ hora=new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit",hour12:false}); }catch(e){}
   if(n){
-    n.textContent=res.ok?"guardado "+hora:(res.parcial?"⚠️ guardado a medias":"⚠️ SIN GUARDAR");
-    n.classList.toggle("guardado-mal",!res.ok);
+    if(res.ok){
+      _relojHora=hora;
+      n.classList.remove("guardado-mal");
+      n.textContent=_tjRelojTxt(hora);
+    }else{
+      n.textContent=res.parcial?"⚠️ guardado a medias":"⚠️ SIN GUARDAR";
+      n.classList.add("guardado-mal");
+    }
   }
+  relojPintar();
   let b=document.getElementById("guardadoFallo");
   if(res.ok){ if(b) b.remove(); return; }
   if(!b){ b=document.createElement("div"); b.id="guardadoFallo"; b.className="guardado-fallo"; b.setAttribute("role","alert"); document.body.appendChild(b); }
@@ -315,4 +322,85 @@ async function descargarPartidaDe(id){
   const a=el("a"); a.href=url; a.download=nombre; document.body.appendChild(a); a.click();
   setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); },200);
   return true;
+}
+
+/* 7.9140 · reloj de la esquina: hora del último guardado que sí quedó, y tiempo jugado.
+   El error no se toca: "⚠️ SIN GUARDAR" y "⚠️ guardado a medias" siguen igual (guardado_honesto).
+   El tiempo solo corre con la pestaña visible. Cada tick suma como máximo 2 s para que el reloj
+   virtual de las pruebas no meta horas de un saque. */
+let _tjUlt=0, _tjSesion=0, _tjForzar=null, _relojHora="";
+function tiempoJugadoVisible(){
+  if(_tjForzar===true) return true;
+  if(_tjForzar===false) return false;
+  try{ return typeof document==="undefined" || document.visibilityState!=="hidden"; }catch(e){ return true; }
+}
+function _tjHoyClave(){
+  const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function _tjTxt(seg){
+  seg=Math.max(0, Math.floor(+seg||0));
+  const h=Math.floor(seg/3600), m=Math.floor((seg%3600)/60);
+  if(h>0) return h+" h "+m+" min";
+  if(m>0) return m+" min";
+  return seg+" s";
+}
+function tiempoJugadoSumar(seg){
+  if(!tiempoJugadoVisible()) return 0;
+  if(typeof E==="undefined"||!E||E._bulkSim) return 0;
+  seg=+seg; if(!(seg>0)) return 0;
+  _tjSesion+=seg;
+  E.tiempoJugado=(+E.tiempoJugado||0)+seg;
+  const k=_tjHoyClave();
+  if(!E.tiempoHoy||E.tiempoHoy.dia!==k) E.tiempoHoy={dia:k, seg:0};
+  E.tiempoHoy.seg=(+E.tiempoHoy.seg||0)+seg;
+  return seg;
+}
+function _tjHoySeg(){
+  if(typeof E!=="undefined"&&E&&E.tiempoHoy&&E.tiempoHoy.dia===_tjHoyClave()) return +E.tiempoHoy.seg||0;
+  return _tjSesion;
+}
+function _tjAngosto(){
+  try{ return typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(max-width:720px)").matches; }catch(e){ return false; }
+}
+function _tjRelojTxt(hora){
+  const hoyS=_tjTxt(_tjHoySeg());
+  const totS=_tjTxt(typeof E!=="undefined"&&E?(+E.tiempoJugado||0):0);
+  if(_tjAngosto()) return "💾 "+(hora||"—")+" · ⏱ "+hoyS;
+  const hoy=(typeof T==="function")?T("reloj_hoy","hoy"):"hoy";
+  const tot=(typeof T==="function")?T("reloj_total","total"):"total";
+  return "💾 "+(hora||"—")+" · ⏱ "+hoy+" "+hoyS+" · "+tot+" "+totS;
+}
+function relojAjustesTxt(){
+  const et=(typeof T==="function")?T("aj_reloj","Tiempo jugado"):"Tiempo jugado";
+  const hoy=(typeof T==="function")?T("reloj_hoy","hoy"):"hoy";
+  const tot=(typeof T==="function")?T("reloj_total","total"):"total";
+  return et+": "+hoy+" "+_tjTxt(_tjHoySeg())+" · "+tot+" "+_tjTxt(typeof E!=="undefined"&&E?(+E.tiempoJugado||0):0)+" · 💾 "+(_relojHora||"—");
+}
+function relojPintar(){
+  const n=typeof document!=="undefined"?document.getElementById("guardadoTxt"):null;
+  if(n){
+    const malo=n.classList.contains("guardado-mal");
+    const fallo=typeof PARTIDAS!=="undefined"&&PARTIDAS.ultimo&&PARTIDAS.ultimo.ok===false;
+    const txt=n.textContent||"";
+    if(!malo && !fallo && txt.indexOf("SIN GUARDAR")<0 && txt.indexOf("guardado a medias")<0){
+      n.textContent=_tjRelojTxt(_relojHora);
+    }
+  }
+  const aj=typeof document!=="undefined"?document.getElementById("relojAjustes"):null;
+  if(aj) aj.textContent=relojAjustesTxt();
+}
+function _tjTick(){
+  const ahora=Date.now();
+  if(!_tjUlt){ _tjUlt=ahora; relojPintar(); return; }
+  let dt=(ahora-_tjUlt)/1000;
+  _tjUlt=ahora;
+  if(dt<0) dt=0;
+  if(dt>2) dt=2;
+  if(tiempoJugadoVisible()&&dt>0) tiempoJugadoSumar(dt);
+  relojPintar();
+}
+if(typeof document!=="undefined"&&typeof setInterval==="function"){
+  setInterval(_tjTick, 1000);
+  document.addEventListener("visibilitychange", function(){ _tjUlt=Date.now(); });
 }

@@ -2628,3 +2628,106 @@ function devPintarDoctor(cont){
   });
   correr({soloRapidos:true},"chequeos rápidos");
 }
+
+/* 7.9140 · pie, reloj de sesión y avisos Vista. Fallan con el comportamiento viejo. */
+devDoctorRegistrar({id:"pie_limpio", area:"interfaz",
+  n:"El pie solo dice Futbolini y la versión (sin dramatización, Frutiger ni Apoyar)",
+  arreglo:"js/ui.js piePintar() · index.html #pieTxt",
+  fn:function(){
+    if(typeof piePintar==="function") piePintar();
+    var pt=document.getElementById("pieTxt");
+    if(!pt) return _dmal("no hay #pieTxt");
+    var t=pt.textContent||"", f=[];
+    if(/dramatizaci[oó]n/i.test(t)) f.push("sigue diciendo dramatización");
+    if(/frutiger/i.test(t)) f.push("sigue diciendo Frutiger");
+    if(/apoyar/i.test(t)) f.push("sigue diciendo Apoyar");
+    if(t.indexOf("Futbolini")<0) f.push("no dice Futbolini");
+    if(typeof VERSION!=="undefined" && t.indexOf(VERSION)<0) f.push("no muestra la versión "+VERSION);
+    if(/\s{2,}/.test(t)||/·/.test(t)) f.push("hueco o separador de más: «"+t+"»");
+    return f.length?_dmal(f.join(" · "),f):_dok("«"+t+"»");
+  }});
+devDoctorRegistrar({id:"tiempo_jugado", area:"interfaz",
+  n:"El tiempo jugado sube con la pestaña visible, no oculto, y queda en la partida",
+  arreglo:"js/partidas.js tiempoJugadoSumar() / E.tiempoJugado · E.tiempoHoy",
+  fn:function(){
+    if(typeof tiempoJugadoSumar!=="function") return _dmal("falta tiempoJugadoSumar");
+    if(!E) return _dok("sin partida abierta");
+    var antes=E.tiempoJugado, hoy=E.tiempoHoy, ses=_tjSesion, forz=_tjForzar, f=[];
+    try{
+      _tjForzar=false;
+      if(tiempoJugadoSumar(5)!==0) f.push("con la pestaña oculta igual sumó tiempo");
+      if((E.tiempoJugado||0)!==(antes||0) && antes!=null) f.push("oculto escribió E.tiempoJugado");
+      if(antes==null && E.tiempoJugado!=null) f.push("oculto creó E.tiempoJugado");
+      _tjForzar=true;
+      var sum=tiempoJugadoSumar(4);
+      if(!(sum>=3.9)) f.push("visible no sumó (devolvió "+sum+")");
+      if(!((+E.tiempoJugado||0) >= (antes||0)+3.9)) f.push("E.tiempoJugado no subió");
+      if(!E.tiempoHoy || !(E.tiempoHoy.seg>=3.9)) f.push("el tiempo de hoy no quedó en la partida");
+      var copia=JSON.parse(JSON.stringify(E));
+      if(!(copia.tiempoJugado>=(antes||0)+3.9)) f.push("al guardar se pierde tiempoJugado");
+      if(!copia.tiempoHoy || copia.tiempoHoy.seg<3.9) f.push("al guardar se pierde el tiempo de hoy");
+      var n=document.getElementById("guardadoTxt");
+      if(n && n.classList.contains("guardado-mal")){
+        var prev=n.textContent;
+        relojPintar();
+        if(n.textContent!==prev) f.push("el reloj tapó el aviso de que NO se guardó");
+      }
+    }catch(e){ f.push("explotó: "+(e&&e.message||e)); }
+    finally{
+      if(antes==null) delete E.tiempoJugado; else E.tiempoJugado=antes;
+      if(hoy==null) delete E.tiempoHoy; else E.tiempoHoy=hoy;
+      _tjSesion=ses; _tjForzar=forz;
+      if(typeof relojPintar==="function") relojPintar();
+    }
+    return f.length?_dmal(f.join(" · "),f):_dok("oculto 0 · visible +4 s · sobrevive al JSON de la partida");
+  }});
+devDoctorRegistrar({id:"avisos_vista", area:"interfaz",
+  n:"Los avisos duran ≥ 4,5 s, se apilan de a 3 y no tapan Avanzar",
+  arreglo:"js/util.js aviso() · css/interfaz-club.css",
+  fn:function(){
+    var cont=document.getElementById("avisos");
+    if(!cont||typeof aviso!=="function") return _dmal("no hay aviso() o #avisos");
+    var f=[];
+    try{
+      [].slice.call(cont.children).forEach(function(n){ if(n._avisoT) clearTimeout(n._avisoT); n.remove(); });
+      aviso("uno"); aviso("dos"); aviso("tres largo ".repeat(10)); aviso("cuatro");
+      var ns=[].slice.call(cont.querySelectorAll(":scope > .aviso"));
+      if(ns.length!==3) f.push("quedaron "+ns.length+" avisos (máximo 3)");
+      if(ns.some(function(n){ return n.textContent==="uno"; })) f.push("el 4.º no echó al más viejo");
+      ns.forEach(function(n){
+        var d=+n.getAttribute("data-dura");
+        if(!(d>=4500)) f.push("«"+n.textContent.slice(0,24)+"» dura "+d+" ms (mínimo 4500 si no le pasas tiempo)");
+      });
+      var largo=ns.filter(function(n){ return n.textContent.indexOf("tres largo")>=0; })[0];
+      if(largo && +largo.getAttribute("data-dura")<7000) f.push("el texto largo dura "+largo.getAttribute("data-dura")+" (7000)");
+      var src=(typeof _docFuente==="function")?_docFuente(aviso):String(aviso);
+      if(src.indexOf("aviso-sale")<0) f.push("no se van con fade (aviso-sale)");
+      var hoja=false;
+      try{
+        for(var i=0;i<document.styleSheets.length;i++){
+          if((document.styleSheets[i].href||"").indexOf("interfaz-club.css")>=0) hoja=true;
+        }
+      }catch(e){}
+      if(!hoja) f.push("falta css/interfaz-club.css");
+      aviso("corto", 1200);
+      var corto=cont.lastElementChild;
+      if(!corto || +corto.getAttribute("data-dura")!==1200) f.push("no respeta los milisegundos que le pasas");
+      if(cont.children.length>3) f.push("hay "+cont.children.length+" avisos a la vista");
+      function pisa(a,b){
+        if(!a||!b||a.width<2||a.height<2||b.width<2||b.height<2) return false;
+        return !(a.right<=b.left||a.left>=b.right||a.bottom<=b.top||a.top>=b.bottom);
+      }
+      var av=document.getElementById("btnAvanzar");
+      var dock=document.querySelector(".dock-avanza");
+      [].slice.call(cont.children).forEach(function(n){
+        var r=n.getBoundingClientRect();
+        if(av && pisa(r, av.getBoundingClientRect())) f.push("un aviso tapa el botón Avanzar");
+        if(dock && pisa(r, dock.getBoundingClientRect())) f.push("un aviso tapa Avanzar del dock");
+      });
+    }catch(e){ f.push("explotó: "+(e&&e.message||e)); }
+    finally{
+      [].slice.call(cont.children).forEach(function(n){ if(n._avisoT) clearTimeout(n._avisoT); n.remove(); });
+    }
+    return f.length?_dmal(f.join(" · "),f):_dok("3 a la vista · ≥ 4,5 s (7 s si es largo) · no tapa Avanzar");
+  }});
+

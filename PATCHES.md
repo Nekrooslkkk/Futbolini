@@ -5691,3 +5691,14 @@ Pedido del autor: "las caras TIENEN QUE SER MODELOS realistas libres tipo PES 20
   pelo, el peinado y la barba. La versión pagada del paquete trae más modelos (no se compró: lo decide el autor).
 - **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular (162 chequeos) · dev 593/593
   (cancha 3D con los 3 casos) · banco 255 partidas.
+
+### 7.9140 — Pie limpio, reloj de sesión y avisos Vista (T1+T2+T4)
+Pedido del autor, vía el encargo de interfaz que dejó Claude para Grok: sacar «dramatización · Frutiger Aero · Apoyar» del pie, que el «guardado 11:27» sea un reloj de verdad, y que los avisos se parezcan a la bandeja de Vista.
+- **Pie:** solo «Futbolini 7.9140», en neutro, chilensis, portugués e inglés. Sin hueco. `piePintar()` en `js/ui.js`.
+- **Reloj** (`#guardadoTxt`, esquina, no recibe clics): hora del último guardado que sí quedó (`💾 20:53`) y tiempo jugado. En el computador, hoy y total (`⏱ hoy 12 min · total 3 h`). En el celu, solo el de hoy para que no tape el globo; el total sigue en Ajustes ▸ Pantalla. `E.tiempoJugado` (segundos de la partida) y `E.tiempoHoy` (se reinicia al cambiar el día). Solo corre con la pestaña visible. Cada tick suma como máximo 2 s, para que el reloj virtual del doctor no meta horas.
+- **Si no se guardó, el reloj no miente:** siguen «⚠️ SIN GUARDAR» y «⚠️ guardado a medias». El doctor `guardado_honesto` no se tocó.
+- **Avisos:** `aviso(txt, ms)` mantiene la firma. Sin tiempo pedido, 4,5 s (7 s si el texto pasa de 90 letras). Máximo 3; el cuarto echa al más viejo. Se van con fade (`aviso-sale`). En el celu van a la derecha, arriba del dock, y no tapan Jugar. El tope viejo de `js/ui-jornada.js` sigue (envuelve `aviso`); ahora guarda `_orig` para que el doctor vea el original.
+- **Doctor:** `pie_limpio`, `tiempo_jugado`, `avisos_vista`. Con el código viejo fallan.
+- **No se tocó:** cancha, 3D, escudos, historia de clubes, motor de goles, penales.
+- **Estado:** core 1186/1186 · dev 593/593 · partidas viejas cargan · doctor 165/165 en 4 partidas + celular · banco 255 partidas × 1 temporada.
+

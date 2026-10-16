@@ -208,6 +208,7 @@ function pintarMenu(){
    es la misma, se sostiene el alto mientras se repinta y se vuelve a donde estabas. Cambiar de
    sección sí empieza arriba (irA). */
 function render(){
+  if(typeof piePintar==="function") piePintar();
   /* 7.9093 · el alto se mide solo si hace falta (misma sección): medirlo siempre forzaba un layout extra */
   /* 7.9103 · el alto sale de un ResizeObserver (llega después de cada layout, sin forzar uno): leer offsetHeight en
      cada clic dentro de la misma sección era un layout entero extra (52 % del repintado de Mercado) */
@@ -3805,6 +3806,9 @@ function vistaAjustes(host){
   v.appendChild(don);
   panelMisPartidas(v);
   const p=panel("Ajustes","⚙️");
+  const relojAj=el("p","mini"); relojAj.id="relojAjustes";
+  p.cuerpo.appendChild(relojAj);
+  if(typeof relojPintar==="function") relojPintar();
   p.cuerpo.appendChild(el("label","lb","Tema visual"));
   const f=el("div","fichas");
   [["aero","Frutiger Aero"],["negro","Negro"],["claro","Claro"],["insano","Insano"]].forEach(([k,n])=>{
@@ -5222,12 +5226,20 @@ document.addEventListener("keydown",function(e){
   items[(idx+(fwd?1:-1)+items.length)%items.length].focus();
 });
 
+/* 7.9140 · el pie solo dice la marca y la versión (sin dramatización ni Apoyar). */
+function piePintar(){
+  const pt=document.getElementById("pieTxt"); if(!pt) return;
+  const marca=(typeof T==="function")?T("pie_marca","Futbolini"):"Futbolini";
+  const ver=(typeof VERSION!=="undefined")?VERSION:"";
+  pt.textContent=ver?(marca+" "+ver):marca;
+}
+
 (async function init(){
   burbujas();
   /* versión única en badge y footer */
   if(typeof VERSION!=="undefined"){
     const vb=$("#verBadge"); if(vb) vb.textContent=VERSION;
-    const pt=$("#pieTxt"); if(pt) pt.textContent="Futbolini "+VERSION+" · dramatización · Frutiger Aero · Apoyar";
+    const pt=$("#pieTxt"); if(pt && typeof piePintar==="function") piePintar();
     try{ document.title="Futbolini "+VERSION+" — Conducción de clubes chilenos"; }catch(e){}
   }
   const t=await Store.get("futbolini3_tema");

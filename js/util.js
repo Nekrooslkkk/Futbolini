@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-const VERSION="7.9139";
+const VERSION="7.9140";
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
 function el(tag,cls,html){const n=document.createElement(tag);if(cls)n.className=cls;if(html!=null)n.innerHTML=html;return n;}
@@ -175,12 +175,26 @@ const Store={
   }
 };
 
-/* ---------- avisos ---------- */
+/* ---------- avisos (7.9140 · globo Vista: ~4,5 s, máximo 3, fade) ---------- */
 function aviso(txt,ms){
   const cont=$("#avisos"); if(!cont) return;
-  const n=el("div","aviso"); n.textContent=String(txt==null?"":txt);
+  const s=String(txt==null?"":txt);
+  const explicito=arguments.length>=2 && ms!=null && ms!=="";
+  const dura=explicito?Math.max(0, Math.round(+ms)||0):(s.length>90?7000:4500);
+  while(cont.children.length>=3){
+    const viejo=cont.firstElementChild;
+    if(!viejo) break;
+    if(viejo._avisoT) clearTimeout(viejo._avisoT);
+    viejo.remove();
+  }
+  const n=el("div","aviso");
+  n.textContent=s;
+  n.setAttribute("data-dura", String(dura));
   cont.appendChild(n);
-  setTimeout(()=>{ n.style.transition="opacity .3s"; n.style.opacity="0"; setTimeout(()=>n.remove(),320); }, ms||2600);
+  n._avisoT=setTimeout(function(){
+    n.classList.add("aviso-sale");
+    n._avisoT=setTimeout(function(){ if(n.parentNode) n.remove(); }, 420);
+  }, dura);
 }
 /* ---------- modal ---------- */
 function modal(fn,opts){

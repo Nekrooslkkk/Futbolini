@@ -802,6 +802,24 @@ var FRASES={
   }
 };
 
+/* 7.9140 · pie y reloj. Afuera del literal para no partir el objeto. */
+FRASES.neutro.pie_marca="Futbolini";
+FRASES.neutro.reloj_hoy="hoy";
+FRASES.neutro.reloj_total="total";
+FRASES.neutro.aj_reloj="Tiempo jugado";
+FRASES.cl.pie_marca="Futbolini";
+FRASES.cl.reloj_hoy="hoy";
+FRASES.cl.reloj_total="en total";
+FRASES.cl.aj_reloj="Tiempo jugado";
+FRASES.pt.pie_marca="Futbolini";
+FRASES.pt.reloj_hoy="hoje";
+FRASES.pt.reloj_total="no total";
+FRASES.pt.aj_reloj="Tempo jogado";
+FRASES.en.pie_marca="Futbolini";
+FRASES.en.reloj_hoy="today";
+FRASES.en.reloj_total="career";
+FRASES.en.aj_reloj="Time played";
+
 /* ---- Pools de tuits POR IDIOMA (se suman a los del pool base según contexto).
    Chilensis crudo de cancha (aparece SOLO en modo Chilensis; neutro/pt quedan limpios).
    Escrito con la voz del usuario. Placeholder {GOLEADOR}. --- */

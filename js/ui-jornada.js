@@ -422,6 +422,7 @@ function panelParte(){
     return r;
   };
   try{ Object.keys(orig).forEach(function(k){ aviso[k]=orig[k]; }); }catch(e){}
+  aviso._orig=orig;
   aviso._tope=true;
 })();
 /* ---------- enganche con el escritorio ---------- */

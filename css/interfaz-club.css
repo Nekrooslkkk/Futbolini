@@ -1,0 +1,104 @@
+/* ============================================================
+   FUTBOLINI · interfaz-club.css  (7.9140)
+   Pie, reloj de guardado y fade de los avisos.
+   Va DESPUÉS de aero7/movil/temas7: no reescribe esos archivos.
+   ============================================================ */
+
+/* El pie deja de apagar al reloj (opacity del padre afecta al hijo fixed). */
+#pie{opacity:1}
+#pieTxt{opacity:.72}
+
+/* Reloj discreto, esquina derecha. No recibe clics. */
+#guardadoTxt{
+  position:fixed;
+  right:12px;
+  bottom:10px;
+  z-index:45;
+  pointer-events:none;
+  max-width:min(92vw, 280px);
+  padding:3px 8px;
+  border-radius:4px;
+  border:1px solid rgba(0,0,0,.14);
+  background:rgba(255,255,255,.82);
+  color:#16324a;
+  font:600 11px/1.25 var(--f-dato, "Segoe UI", sans-serif);
+  text-align:right;
+  white-space:nowrap;
+  box-shadow:0 1px 4px rgba(0,0,0,.12);
+}
+body[data-tema="negro"] #guardadoTxt,
+body[data-tema="insano"] #guardadoTxt{
+  background:rgba(12,18,28,.78);
+  color:#e8eef6;
+  border-color:rgba(255,255,255,.16);
+}
+body.con-dock #guardadoTxt{
+  bottom:calc(124px + env(safe-area-inset-bottom, 0px));
+}
+/* En el partido, debajo de la barra (Avanzar vive arriba a la derecha). */
+body.en-partido #guardadoTxt{
+  top:70px;
+  bottom:auto;
+  right:12px;
+  left:auto;
+}
+#guardadoTxt.guardado-mal{
+  color:#c0392b;
+  background:rgba(255,244,242,.94);
+  border-color:rgba(192,57,43,.45);
+  font-weight:700;
+  top:70px;
+  bottom:auto;
+  right:12px;
+  left:auto;
+}
+
+/* En el celu #pie estaba display:none y se llevaba el reloj. */
+@media (max-width:720px){
+  #pie{
+    display:block !important;
+    height:0;
+    min-height:0;
+    margin:0;
+    padding:0;
+    overflow:visible;
+    border:0;
+  }
+  #pieTxt{display:none !important}
+  body.con-dock #guardadoTxt{
+    left:8px;
+    right:auto;
+    text-align:left;
+    bottom:calc(118px + env(safe-area-inset-bottom, 0px));
+  }
+  #guardadoTxt{display:block !important}
+  /* Globos a la derecha, arriba del dock: el reloj queda a la izquierda. */
+  body.con-dock #avisos,
+  body[data-tema="aero"] #avisos,
+  html body:is([data-tema="negro"],[data-tema="claro"],[data-tema="insano"]) #avisos{
+    left:auto !important;
+    right:8px !important;
+    transform:none !important;
+    align-items:flex-end !important;
+    width:min(58vw, 230px) !important;
+    bottom:calc(124px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body.con-dock .aviso,
+  body[data-tema="aero"] .aviso{
+    min-width:0 !important;
+    max-width:min(58vw, 230px) !important;
+  }
+  body.en-partido #avisos{bottom:calc(16px + env(safe-area-inset-bottom, 0px)) !important}
+}
+
+/* Fade del globo. Finito: solo opacity y transform. */
+.aviso.aviso-sale{
+  animation:avisoSale .42s ease forwards;
+}
+@keyframes avisoSale{
+  from{opacity:1}
+  to{opacity:0; transform:translateY(-6px)}
+}
+@media (prefers-reduced-motion:reduce){
+  .aviso.aviso-sale{animation:none; opacity:0}
+}

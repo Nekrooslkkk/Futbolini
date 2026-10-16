@@ -2883,3 +2883,16 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
   img/modelos/jugador_real.glb` (necesita Pillow). El doctor `jugador_realista` avisa si le faltan animaciones o si no están
   redirigidas.
 
+**7.9140 (Grok) · T1+T2+T4 del encargo de interfaz. LEER si tocan el pie, el reloj o los avisos:**
+- Pedido: pie sin «dramatización · Frutiger Aero · Apoyar», reloj de sesión en la esquina, avisos tipo bandeja de Vista.
+- Pie: `piePintar()` en js/ui.js. Texto «Futbolini »+VERSION. Claves `pie_marca` en neutro/cl/pt/en.
+- Reloj: js/partidas.js `avisoGuardado` / `relojPintar` / `tiempoJugadoSumar`. El éxito NO empieza con «guardado» (el doctor `guardado_honesto` en js/dev-banco.js sigue exigiendo que un fallo no diga eso). Los fallos quedaron literales: «⚠️ SIN GUARDAR» y «⚠️ guardado a medias». `relojPintar` no pisa el nodo si tiene `guardado-mal` o `PARTIDAS.ultimo.ok===false`.
+- Tiempo: `E.tiempoJugado` (toda la partida) y `E.tiempoHoy:{dia,seg}` (se pone en 0 si cambió el día). No corre con la pestaña oculta (`visibilitychange`; el doctor usa `_tjForzar`). Tope de 2 s por tick: `--virtual-time-budget` no debe sumar minutos de un saque. En ≤720 px la esquina muestra solo el de hoy (`💾 20:53 · ⏱ 12 min`); hoy y total juntos están en Ajustes ▸ Pantalla (`#relojAjustes`).
+- Avisos: js/util.js `aviso(txt,ms)`. Firma igual. Sin ms: 4500, o 7000 si el texto tiene más de 90 letras. `data-dura` en el nodo. Máximo 3. Fade con clase `aviso-sale` (css/interfaz-club.css, cargada última: no reescribe aero7.css). En el celu, a la derecha y arriba del dock.
+- js/ui-jornada.js sigue envolviendo `aviso` con tope 3 (comentario 7.9020: no querían editar util.js). Ahora `aviso._orig` apunta al original. Si envuelves `aviso` de nuevo, guarda `_orig` o el doctor `avisos_vista` no ve el fade.
+- Doctor nuevo: `pie_limpio`, `tiempo_jugado`, `avisos_vista` (al final de js/dev-doctor.js).
+- No toqué cancha, 3D, escudos ni historia de clubes.
+- Siguiente del encargo, en orden: T7+T8+T9+T10 (entradas, {RIVAL} en pasado, trivia, sacar la caja del ayudante), después T3 (escritorio Vista: leer TODOS los envoltorios antes), T5+T6 (preguntar cuál botón de resoluciones), T11 correo, T12 maquetas.
+- Lo que todavía molesta en la interfaz, a ojo: el escritorio sigue siendo una columna de paneles (js/ui.js vistaEscritorio ~834) y en el celu los 3 globos tapan la mitad derecha de «Atiende antes de avanzar» mientras duran (~4,5 s).
+
+
