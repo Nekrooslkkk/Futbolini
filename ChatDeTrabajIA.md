@@ -2882,8 +2882,12 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
   "<Base Characters/Godot - UE>" "<Hairstyles/Rigged to Head Bone/glTF (Godot -Unreal)>" img/modelos/jugador.glb
   img/modelos/jugador_real.glb` (necesita Pillow). El doctor `jugador_realista` avisa si le faltan animaciones o si no están
   redirigidas.
+- 7.9140 (Claude): el realista de cada jugador tiene estatura, cabeza, piernas y ojos (`_cvLook` → `modelo3dCuerpo`). Si alguien
+  escala `I.raiz` por otra razón, que multiplique por `I.talla`, no lo pise.
+- 7.9141 (Claude): historia real de LSC y LIN (scripts/historia/*.json → DeepSeek → revisión → js/data-historia-clubes.js). Regla
+  nueva vigilada por el doctor: una acusación (denuncia, desvío, venta del cupo) va con el CARGO, nunca con nombre y apellido.
 
-**7.9140 (Grok) · T1+T2+T4 del encargo de interfaz. LEER si tocan el pie, el reloj o los avisos:**
+**7.9142 (Grok) · T1+T2+T4 del encargo de interfaz. Llegó después de 7.9140/7.9141 de Claude (no se pisó la historia ni el 3D). LEER si tocan el pie, el reloj o los avisos:**
 - Pedido: pie sin «dramatización · Frutiger Aero · Apoyar», reloj de sesión en la esquina, avisos tipo bandeja de Vista.
 - Pie: `piePintar()` en js/ui.js. Texto «Futbolini »+VERSION. Claves `pie_marca` en neutro/cl/pt/en.
 - Reloj: js/partidas.js `avisoGuardado` / `relojPintar` / `tiempoJugadoSumar`. El éxito NO empieza con «guardado» (el doctor `guardado_honesto` en js/dev-banco.js sigue exigiendo que un fallo no diga eso). Los fallos quedaron literales: «⚠️ SIN GUARDAR» y «⚠️ guardado a medias». `relojPintar` no pisa el nodo si tiene `guardado-mal` o `PARTIDAS.ultimo.ok===false`.
@@ -2894,5 +2898,3 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
 - No toqué cancha, 3D, escudos ni historia de clubes.
 - Siguiente del encargo, en orden: T7+T8+T9+T10 (entradas, {RIVAL} en pasado, trivia, sacar la caja del ayudante), después T3 (escritorio Vista: leer TODOS los envoltorios antes), T5+T6 (preguntar cuál botón de resoluciones), T11 correo, T12 maquetas.
 - Lo que todavía molesta en la interfaz, a ojo: el escritorio sigue siendo una columna de paneles (js/ui.js vistaEscritorio ~834) y en el celu los 3 globos tapan la mitad derecha de «Atiende antes de avanzar» mientras duran (~4,5 s).
-
-

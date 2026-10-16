@@ -5692,13 +5692,47 @@ Pedido del autor: "las caras TIENEN QUE SER MODELOS realistas libres tipo PES 20
 - **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular (162 chequeos) · dev 593/593
   (cancha 3D con los 3 casos) · banco 255 partidas.
 
-### 7.9140 — Pie limpio, reloj de sesión y avisos Vista (T1+T2+T4)
-Pedido del autor, vía el encargo de interfaz que dejó Claude para Grok: sacar «dramatización · Frutiger Aero · Apoyar» del pie, que el «guardado 11:27» sea un reloj de verdad, y que los avisos se parezcan a la bandeja de Vista.
-- **Pie:** solo «Futbolini 7.9140», en neutro, chilensis, portugués e inglés. Sin hueco. `piePintar()` en `js/ui.js`.
+### 7.9140 — Los realistas ya no son todos iguales: estatura, cabeza, piernas y ojos
+Lo prometido en 7.9139 ("es UNA cara para todos"), sin modelos nuevos ni más megas:
+- **js/cancha.js `_cvLook`:** cada jugador además trae `talla` (0,94–1,06: de ~1,72 a ~1,94 m), `cabeza` (0,96–1,04),
+  `grosor` de piernas (0,94–1,08) y `ojos` (7 de cada 10 café, 2 verde avellana, 1 azul). El arquero, 3 % más alto.
+- **js/modelo3d.js `modelo3dCuerpo(I,c)`:** escala la figura entera, la cabeza y los muslos (las animaciones no tocan
+  escalas, así que se queda). El iris de la textura se cambia por el color del jugador con su mismo dibujo (`uOjo`,
+  `M3D_OJOS`); lo blanco queda blanco. Solo en los realistas: el maniquí sigue igual para todos.
+- **js/cancha3d.js:** se aplica al pintar; el giro de la estirada del arquero usa la altura de su cadera (talla).
+- **Dev:** doctor `jugador_realista` suma: la estatura cambia la figura (cabeza de 1,46 a 1,65 m) y vuelve; los 22 de la
+  cancha no miden lo mismo; los ojos café son mayoría; los ojos azules llegan al sombreador. Al revés (sin escala, sin
+  ojos, todos de talla 1): 3 fallas.
+- **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular · dev 593/593 · banco 255.
+
+### 7.9141 — Historia real de Lota Schwager y Deportes Linares (DeepSeek, hechos verificados)
+Sigue lo de 7.9133 ("de Deportes Rengo ni idea, la idea es al menos aprender"). Ahora son 3 clubes: REN, **LSC** y **LIN**.
+- **Hechos con fuente:** `scripts/historia/LSC.json` y `LIN.json` (es.wikipedia.org, consultado el 16 oct 2026). Cada hecho
+  se verificó con una cita textual del artículo; lo que la cita no decía (en qué ciudad está el estadio, el año del sexto
+  lugar) se sacó.
+  - **Lota Schwager:** la fusión de los equipos de las dos empresas del carbón (1966), «Lamparita», el ascenso de 1969,
+    la final de Copa Chile 1975, la venta del cupo en 1995 y el receso, el renacer en 2001, la resta de puntos por
+    sueldos impagos (2017) y los dos clubes paralelos de 2019.
+  - **Deportes Linares:** nació como Lister Rossel (1955); su historia sigue por 1964, 1974, la caída a Tercera de 1991,
+    Linares Unido (2006), el ascenso de 2019, la denuncia y el brote de 2020, y el título de 2022.
+- **DeepSeek** (`scripts/historia_clubes.py`, ~27 mil tokens) redactó hitos y 2 arcos de 3 capítulos por club; **revisión a
+  mano**:
+  - el jugador no "fue campeón en 2022": fue el club;
+  - fuera las incoherencias ("veteranos libres" que después eran "a préstamo") y la opción que daba plata sin sentido;
+  - fuera el "vendehumo" mal usado.
+- **Integridad:** el presidente que vendió el cupo (1995) y el gerente denunciado (2020) son personas reales: van por su
+  cargo, sin nombre.
+- **Dev:** el doctor `historia_clubes` ahora acusa si un hito o un contexto habla de una denuncia, un desvío o la venta del
+  cupo con un nombre y apellido. Al revés (poniendo un nombre en el hito 2020 de Linares): falla.
+- **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular · dev 593/593 · banco 255.
+
+### 7.9142 — Pie limpio, reloj de sesión y avisos Vista (T1+T2+T4)
+Pedido del autor, vía el encargo de interfaz que dejó Claude para Grok. Se sube como 7.9142 porque 7.9140 y 7.9141 ya eran de Claude (estatura de los realistas, historia de Lota y Linares): no se pisó nada de eso.
+- **Pie:** solo «Futbolini 7.9142», en neutro, chilensis, portugués e inglés. Sin hueco. `piePintar()` en `js/ui.js`.
 - **Reloj** (`#guardadoTxt`, esquina, no recibe clics): hora del último guardado que sí quedó (`💾 20:53`) y tiempo jugado. En el computador, hoy y total (`⏱ hoy 12 min · total 3 h`). En el celu, solo el de hoy para que no tape el globo; el total sigue en Ajustes ▸ Pantalla. `E.tiempoJugado` (segundos de la partida) y `E.tiempoHoy` (se reinicia al cambiar el día). Solo corre con la pestaña visible. Cada tick suma como máximo 2 s, para que el reloj virtual del doctor no meta horas.
 - **Si no se guardó, el reloj no miente:** siguen «⚠️ SIN GUARDAR» y «⚠️ guardado a medias». El doctor `guardado_honesto` no se tocó.
 - **Avisos:** `aviso(txt, ms)` mantiene la firma. Sin tiempo pedido, 4,5 s (7 s si el texto pasa de 90 letras). Máximo 3; el cuarto echa al más viejo. Se van con fade (`aviso-sale`). En el celu van a la derecha, arriba del dock, y no tapan Jugar. El tope viejo de `js/ui-jornada.js` sigue (envuelve `aviso`); ahora guarda `_orig` para que el doctor vea el original.
 - **Doctor:** `pie_limpio`, `tiempo_jugado`, `avisos_vista`. Con el código viejo fallan.
 - **No se tocó:** cancha, 3D, escudos, historia de clubes, motor de goles, penales.
-- **Estado:** core 1186/1186 · dev 593/593 · partidas viejas cargan · doctor 165/165 en 4 partidas + celular · banco 255 partidas × 1 temporada.
+- **Estado:** core 1186/1186 · dev 593/593 · partidas viejas cargan · doctor 165/165 en 4 partidas + celular · banco 255 partidas × 1 temporada. Una corrida de dev marcó `acciones_cancha` (cabezazos al azar, cancha 3D, no este parche); al repetir, 593/593.
 

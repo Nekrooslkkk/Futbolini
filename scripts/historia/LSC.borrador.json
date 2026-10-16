@@ -1,0 +1,446 @@
+{
+ "hitos": [
+  {
+   "anio": 1966,
+   "hito": "Fusión carbonífera",
+   "txt": "Se fundó el 10 de mayo de 1966 con la fusión de Minas Lota y Federico Schwager, los equipos de las dos empresas del carbón."
+  },
+  {
+   "anio": 1969,
+   "hito": "Ascenso y debut",
+   "txt": "Ascendió a Primera División en 1969 y debutó en Primera en 1970."
+  },
+  {
+   "anio": 1975,
+   "hito": "Final Copa Chile",
+   "txt": "Llegó a la final de la Copa Chile de 1975 y cayó ante Palestino."
+  },
+  {
+   "anio": 1980,
+   "hito": "Descenso a Segunda",
+   "txt": "Descendió a Segunda en 1980."
+  },
+  {
+   "anio": 1986,
+   "hito": "Campeón Segunda",
+   "txt": "Fue campeón de Segunda en 1986."
+  },
+  {
+   "anio": 1987,
+   "hito": "Descenso otra vez",
+   "txt": "Volvió a bajar al terminar 1987."
+  },
+  {
+   "anio": 1994,
+   "hito": "Caída y receso",
+   "txt": "En 1994 descendió por primera vez en su historia a Tercera División. En 1995 la dirigencia vendió el cupo y el club quedó en receso."
+  },
+  {
+   "anio": 2001,
+   "hito": "Resurrección amateur",
+   "txt": "El 14 de febrero de 2001, después de 7 años de desaparición, renació como club amateur; ese mismo año ganó la Tercera División."
+  },
+  {
+   "anio": 2017,
+   "hito": "Sanción y descenso",
+   "txt": "En 2017, por sueldos impagos, fue sancionado con la resta de 3 puntos y descendió a Tercera División A."
+  },
+  {
+   "anio": 2019,
+   "hito": "Doble personalidad",
+   "txt": "Para 2019 dos equipos paralelos presentaron sus cuadernos de cargos ante la ANFA con el nombre del club."
+  }
+ ],
+ "arcos": [
+  {
+   "id": "lsc_h_a1",
+   "t": "Doble camiseta",
+   "desc": "El club sigue partido en dos y hoy debes decidir quién firma.",
+   "capitulos": [
+    {
+     "id": "lsc_h_a1_1",
+     "t": "La firma ausente",
+     "ctx": "En 2019 dos equipos paralelos presentaron cuadernos de cargos ante la ANFA. Hoy los dos directorios siguen peleando el control y la ANFA exige una sola firma para inscribir al plantel.",
+     "ops": [
+      {
+       "t": "Respaldar al directorio histórico",
+       "d": "Ganas apoyo de socios, pero espantas a los nuevos inversores.",
+       "ef": {
+        "plata": -10,
+        "moral": 2,
+        "prestigio": 1,
+        "capital": 0
+       },
+       "grupos": {
+        "socios": 8,
+        "directorio": 4,
+        "sponsors": -6,
+        "anfp": 0
+       },
+       "mem": "respaldaste al directorio histórico y los socios te lo reconocieron.",
+       "va": "lsc_h_a1_2"
+      },
+      {
+       "t": "Darle el mando a los nuevos",
+       "d": "Entra plata fresca, pero los socios se sienten traicionados.",
+       "ef": {
+        "plata": 20,
+        "moral": -2,
+        "prestigio": -1,
+        "capital": 0
+       },
+       "grupos": {
+        "socios": -8,
+        "sponsors": 10,
+        "directorio": -4,
+        "hinchada": -2
+       },
+       "mem": "le abriste la puerta a los nuevos gestores y la hinchada te miró feo.",
+       "va": "lsc_h_a1_2"
+      },
+      {
+       "t": "Exigir mediación de la ANFA",
+       "d": "Te pones neutral, pero todos desconfían.",
+       "ef": {
+        "plata": -5,
+        "moral": 0,
+        "prestigio": 2,
+        "capital": 0
+       },
+       "grupos": {
+        "anfp": 6,
+        "prensa": 4,
+        "socios": -2,
+        "sponsors": -2
+       },
+       "mem": "pediste que la ANFA mediara y quedaste marcado como tibio.",
+       "va": "lsc_h_a1_2"
+      }
+     ]
+    },
+    {
+     "id": "lsc_h_a1_2",
+     "t": "El estadio en disputa",
+     "ctx": "El club fue fundado en 1966 y juega en el Estadio Municipal Federico Schwager. Hoy el municipio exige un contrato firmado por el directorio legal, pero los dos bandos se pelean por quién firma y el arriendo vence esta semana.",
+     "ops": [
+      {
+       "t": "Firmar con el directorio histórico",
+       "d": "El municipio acepta, pero los nuevos cortan el financiamiento.",
+       "ef": {
+        "plata": -15,
+        "moral": 1,
+        "prestigio": 0,
+        "capital": 0
+       },
+       "grupos": {
+        "socios": 6,
+        "directorio": 5,
+        "sponsors": -8,
+        "comunidad": 2
+       },
+       "mem": "firmaste con el directorio histórico y los nuevos congelaron sus aportes.",
+       "va": "lsc_h_a1_3"
+      },
+      {
+       "t": "Firmar con los nuevos gestores",
+       "d": "Llega el dinero, pero los socios amenazan con tomas y marchas.",
+       "ef": {
+        "plata": 25,
+        "moral": -3,
+        "prestigio": -2,
+        "capital": 0
+       },
+       "grupos": {
+        "sponsors": 10,
+        "directorio": -6,
+        "socios": -7,
+        "hinchada": -4,
+        "comunidad": -3
+       },
+       "mem": "firmaste con los nuevos y los socios salieron a la calle.",
+       "va": "lsc_h_a1_3"
+      },
+      {
+       "t": "Pedir prórroga al municipio",
+       "d": "Ganas tiempo, pero la ANFA aprieta con el plazo.",
+       "ef": {
+        "plata": -5,
+        "moral": 0,
+        "prestigio": -1,
+        "capital": 0
+       },
+       "grupos": {
+        "comunidad": 3,
+        "anfp": -5,
+        "socios": 2
+       },
+       "mem": "pediste una prórroga y la ANFA te marcó la fecha límite.",
+       "va": "lsc_h_a1_3"
+      }
+     ]
+    },
+    {
+     "id": "lsc_h_a1_3",
+     "t": "Un solo escudo",
+     "ctx": "En 2019 dos equipos paralelos presentaron cuadernos de cargos ante la ANFA. La ANFA exige una directiva legal antes del cierre de inscripciones; los dos bandos aceptan sentarse solo si tú cedes algo.",
+     "ops": [
+      {
+       "t": "Impulsar una fusión de directorios",
+       "d": "Logras la unidad, pero cedes poder y quedas en deuda con ambos.",
+       "ef": {
+        "plata": 10,
+        "moral": 4,
+        "prestigio": 3,
+        "capital": -2
+       },
+       "grupos": {
+        "socios": 5,
+        "sponsors": 5,
+        "directorio": 4,
+        "hinchada": 3,
+        "anfp": 4
+       },
+       "mem": "impulsaste la fusión y el club volvió a tener un solo escudo.",
+       "cierra": true
+      },
+      {
+       "t": "Elegir un interventor externo",
+       "d": "La ANFA aprueba, pero tu autoridad queda reducida.",
+       "ef": {
+        "plata": -20,
+        "moral": 2,
+        "prestigio": 4,
+        "capital": 0
+       },
+       "grupos": {
+        "anfp": 8,
+        "prensa": 5,
+        "socios": -4,
+        "sponsors": -4,
+        "directorio": -6
+       },
+       "mem": "entregaste el club a un interventor y perdiste el control.",
+       "cierra": true
+      },
+      {
+       "t": "Convocar una asamblea popular",
+       "d": "La comunidad decide, pero el proceso es lento y caótico.",
+       "ef": {
+        "plata": 0,
+        "moral": 5,
+        "prestigio": -2,
+        "capital": -4
+       },
+       "grupos": {
+        "hinchada": 10,
+        "comunidad": 8,
+        "socios": 4,
+        "sponsors": -6,
+        "directorio": -4
+       },
+       "mem": "convocaste a la asamblea popular y el ruido se comió la cancha.",
+       "cierra": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lsc_h_a2",
+   "t": "Sueldos al día",
+   "desc": "Evita otra resta de puntos por sueldos impagos.",
+   "capitulos": [
+    {
+     "id": "lsc_h_a2_1",
+     "t": "La planilla roja",
+     "ctx": "En 2017, por sueldos impagos, el club perdió 3 puntos y bajó a Tercera A. Hoy las cuentas otra vez están en rojo y el plantel no cobra hace dos meses.",
+     "ops": [
+      {
+       "t": "Vender al juvenil estrella",
+       "d": "Entra plata, pero el camarín se resiente.",
+       "ef": {
+        "plata": 40,
+        "moral": -3,
+        "prestigio": -2,
+        "capital": 2
+       },
+       "grupos": {
+        "camarin": -8,
+        "tecnico": -4,
+        "hinchada": -3,
+        "sponsors": 5,
+        "directorio": 4
+       },
+       "mem": "vendiste al juvenil estrella y el camarín quedó partido.",
+       "va": "lsc_h_a2_2"
+      },
+      {
+       "t": "Pedir un adelanto a los sponsors",
+       "d": "Llega algo de plata, pero quedas hipotecado.",
+       "ef": {
+        "plata": 15,
+        "moral": 0,
+        "prestigio": 1,
+        "capital": -3
+       },
+       "grupos": {
+        "sponsors": -5,
+        "directorio": 3,
+        "hinchada": 1,
+        "prensa": 2
+       },
+       "mem": "pediste un adelanto a los sponsors y quedaste hipotecado.",
+       "va": "lsc_h_a2_2"
+      },
+      {
+       "t": "Negociar una quita con el plantel",
+       "d": "Los jugadores aceptan cobrar menos, pero la confianza se quiebra.",
+       "ef": {
+        "plata": 5,
+        "moral": -2,
+        "prestigio": 0,
+        "capital": 1
+       },
+       "grupos": {
+        "camarin": -6,
+        "tecnico": 2,
+        "directorio": -2,
+        "prensa": -3
+       },
+       "mem": "negociaste una quita con el plantel y el vestuario quedó helado.",
+       "va": "lsc_h_a2_2"
+      }
+     ]
+    },
+    {
+     "id": "lsc_h_a2_2",
+     "t": "El fantasma de 2017",
+     "ctx": "En 2017, por sueldos impagos, el club perdió 3 puntos. Hoy la ANFP revisa los contratos y exige finiquitos al día. La hinchada está dividida entre exigir pagos y salvar la temporada.",
+     "ops": [
+      {
+       "t": "Organizar una colecta minera",
+       "d": "La comunidad aporta, pero los grandes ausentes se notan.",
+       "ef": {
+        "plata": 12,
+        "moral": 4,
+        "prestigio": 2,
+        "capital": 0
+       },
+       "grupos": {
+        "comunidad": 10,
+        "hinchada": 6,
+        "socios": 3,
+        "sponsors": -2,
+        "directorio": 1
+       },
+       "mem": "organizaste la colecta minera y la comunidad respondió.",
+       "va": "lsc_h_a2_3"
+      },
+      {
+       "t": "Aceptar el apoyo municipal",
+       "d": "Llega plata a cambio de ceder el estadio por eventos.",
+       "ef": {
+        "plata": 20,
+        "moral": 0,
+        "prestigio": -1,
+        "capital": 2
+       },
+       "grupos": {
+        "comunidad": 5,
+        "hinchada": -2,
+        "socios": -1,
+        "sponsors": 3,
+        "directorio": 4
+       },
+       "mem": "aceptaste el apoyo municipal y cediste el estadio por eventos.",
+       "va": "lsc_h_a2_3"
+      },
+      {
+       "t": "Tomar un préstamo de un directivo",
+       "d": "Pagas al día, pero el control se va de tus manos.",
+       "ef": {
+        "plata": 30,
+        "moral": -2,
+        "prestigio": -3,
+        "capital": -5
+       },
+       "grupos": {
+        "directorio": -6,
+        "camarin": 4,
+        "hinchada": 1,
+        "prensa": -2,
+        "anfp": 3
+       },
+       "mem": "tomaste el préstamo del directivo y ahora te cobra con cargos.",
+       "va": "lsc_h_a2_3"
+      }
+     ]
+    },
+    {
+     "id": "lsc_h_a2_3",
+     "t": "La última cuota",
+     "ctx": "En 2017, la resta de 3 puntos por sueldos impagos lo mandó a Tercera A. El plazo para pagar sueldos vence hoy; si no pagas, la ANFP restará puntos y volverás a caer.",
+     "ops": [
+      {
+       "t": "Pagar todo y quedar en cero",
+       "d": "Salvas la temporada, pero no queda plata para refuerzos.",
+       "ef": {
+        "plata": -50,
+        "moral": 6,
+        "prestigio": 4,
+        "capital": -2
+       },
+       "grupos": {
+        "camarin": 8,
+        "hinchada": 7,
+        "anfp": 6,
+        "sponsors": 3,
+        "directorio": 2
+       },
+       "mem": "pagaste todo y quedaste en cero, pero el equipo sigue en pie.",
+       "cierra": true
+      },
+      {
+       "t": "Pagar solo lo mínimo y arriesgar",
+       "d": "Queda plata, pero la ANFP abre investigación.",
+       "ef": {
+        "plata": -20,
+        "moral": -2,
+        "prestigio": -3,
+        "capital": 1
+       },
+       "grupos": {
+        "anfp": -7,
+        "camarin": -5,
+        "hinchada": -3,
+        "directorio": 2,
+        "sponsors": 1
+       },
+       "mem": "pagaste lo mínimo y la ANFP abrió carpeta.",
+       "cierra": true
+      },
+      {
+       "t": "No pagar y asumir la resta",
+       "d": "Pierdes puntos y el descenso, pero mantienes plata para refundar.",
+       "ef": {
+        "plata": 10,
+        "moral": -6,
+        "prestigio": -5,
+        "capital": 4
+       },
+       "grupos": {
+        "hinchada": -10,
+        "camarin": -8,
+        "anfp": -5,
+        "comunidad": -4,
+        "tecnico": -6
+       },
+       "mem": "no pagaste y asumiste la resta, el club descendió pero con caja.",
+       "cierra": true
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
