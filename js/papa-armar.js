@@ -29,7 +29,13 @@ function papaScriptsDe(html){
   return out;
 }
 /* la versión que trae index.html (la de util.js): el paquete solo sirve para esa versión exacta */
-function papaVersionDe(html){ const m=/<script src="js\/util\.js\?v=([^"]+)"/.exec(String(html)); return m?m[1]:null; }
+function papaVersionDe(html){
+  const s=String(html);
+  const m=/<script src="js\/util\.js\?v=([^"]+)"/.exec(s)
+    || /<script src="js\/juego\.js\?v=([^"]+)"/.exec(s)
+    || /name="futbolini-version" content="([^"]+)"/.exec(s);
+  return m?m[1]:null;
+}
 /* const/let de primer nivel (columna 0) → var. Lo de adentro de funciones va con sangría y no se toca. */
 function papaTransformar(src){
   return String(src).replace(/^(const|let)(\s+)([\p{L}_$][\p{L}\p{N}_$]*)/gmu,function(t,k,sp,n){ return PAPA_NO_TOCAR.has(n)?t:"var"+sp+n; });

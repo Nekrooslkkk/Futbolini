@@ -2914,3 +2914,11 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
 - Doctor nuevo al final de js/dev-doctor.js: `entradas_sin_repetir`, `textos_pasado_rival`, `trivia_sana`, `ayudante_sin_caja`. 169 chequeos.
 - Siguiente, en orden: T3 escritorio Vista (leer TODOS los envoltorios de `vistaEscritorio` antes de mover nada: ayudante.js, epoca-intro.js, mundo-vivo.js, pulido.js, ui-jornada.js), después T5+T6 (el botón es «Resolver las N decisiones», no «Haz todo lo seguro», adentro de la barra de Syntergia, con la casilla), T11 correo Hotmail 2007, T12 tarjeta Windows de «Lo que pasó esta semana» solo cuando se abre.
 - No toqué cancha, 3D, escudos ni historia.
+
+## 7.9145 · carga de una + íconos pedidos + correo + precio justo
+- La pestaña decía 7.9101 porque el título del HTML no se había vuelto a tocar. Ahora título, splash y VERSION son 7.9145 desde el primer cuadro.
+- El juego ya no pide 144 archivos al abrir: va en js/juego.js. El splash está pintado en el propio HTML (no queda en blanco) y rota más frases, entre ellas «Cargando los equipos…».
+- El aviso que culpaba al PC («tardó 20 s») medía la red. Se sacó.
+- Escritorio: íconos solo de Ayudante, Decisiones, Esta semana, Historia y Correo. Calendario no. El próximo partido y Atiende se quedan a la vista.
+- El correo se abre desde su ícono. Syntergia: «Resolver las decisiones» dentro de su barra, con la casilla de no entregar el resumen.
+- Bajar entradas lleva al precio justo (lo que falta), una vez por temporada. Si el estadio sigue vacío, no baja de nuevo.

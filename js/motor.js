@@ -1028,9 +1028,19 @@ function entradasMedicion(){
     const menos=Math.round((1-rel)*100);
     const pais=infl>=1.2?(" El precio justo ya trae lo cara que está la época ("+String(Math.round(infl*100)/100).replace(".",",")+"×)."):(infl<=0.8?" En este año el precio justo ya está ajustado a lo que vale la plata.":"");
     const eco=((typeof clausuraFactor==="function")&&clausuraFactor()<0.95)?" La deuda ya tiene sectores cerrados.":(sem<6?(" La caja da para unas "+sem+" semanas de gastos."):" La caja aguanta, pero la gente no entra.");
-    porque="Las entradas están un "+sobre+"% sobre el precio de la época y el estadio se vacía: con el precio justo entrarían unos "+gJ.toLocaleString("es-CL")+" y hoy proyectas "+gA.toLocaleString("es-CL")+" (−"+menos+"%)."+pais+eco+" Bajar un 10% llena más y se pierde plata por cabeza.";
+    porque="Las entradas están un "+sobre+"% sobre el precio de la época y el estadio se vacía: con el precio justo entrarían unos "+gJ.toLocaleString("es-CL")+" y hoy proyectas "+gA.toLocaleString("es-CL")+" (−"+menos+"%)."+pais+eco+" El recorte es lo que falta para llegar al justo, no un 10% fijo. Si después el estadio sigue vacío, no se bajan otra vez: el precio ya no es el problema.";
   }
-  return {ofrecer:ofrecer,ratio:ratio,gente:gA,genteJusta:enJusto.gente||0,ocup:ocup,porque:porque,caro:caro,vacio:vacio};
+  return {ofrecer:ofrecer,ratio:ratio,gente:gA,genteJusta:enJusto.gente||0,ocup:ocup,porque:porque,caro:caro,vacio:vacio,sobre:Math.round((ratio-1)*100)};
+}
+/* 7.9145 · deja cada sector en el precio de la época. Una sola vez: si el estadio
+   sigue vacío, el problema ya no es la entrada. */
+function entradasAlJusto(){
+  if(!E) return null;
+  const antes=(typeof proyeccionTaquilla==="function")?proyeccionTaquilla():null;
+  const ratio=(typeof precioPromedioRatio==="function")?precioPromedioRatio():1;
+  E.precios=(typeof preciosDefault==="function")?preciosDefault():(E.precios||{});
+  const desp=(typeof proyeccionTaquilla==="function")?proyeccionTaquilla():null;
+  return {antes:antes,desp:desp,sobre:Math.max(0,Math.round((ratio-1)*100))};
 }
 function ingresosAnuales(){
   /* 7.9029 · la TV se reparte parejo dentro de la división (como el CDF):

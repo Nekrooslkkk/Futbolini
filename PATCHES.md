@@ -5752,3 +5752,6 @@ El autor preguntó si la interfaz estaba hecha. No: el pie y el reloj ya estaban
 - **Doctor:** `entradas_sin_repetir`, `textos_pasado_rival`, `trivia_sana`, `ayudante_sin_caja`. Con el comportamiento viejo fallan.
 - **No se tocó:** cancha, 3D, escudos, historia de clubes, penales, `FACTOR_TAQUILLA`.
 - **Estado:** core 1186/1186 · dev 594/594 · partidas viejas 12/12 · doctor 169/169 en 4 partidas + celular · banco 255 partidas × 1 temporada (44 despidos, 17%).
+
+## 7.9145 · abrir sin pantalla blanca
+Título único 7.9145. Un solo archivo de juego. Splash con frases desde el HTML. Íconos de escritorio pedidos (sin Calendario). Correo en ícono. Recorte de entradas hasta el precio justo, una vez.

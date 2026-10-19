@@ -2775,7 +2775,9 @@ devDoctorRegistrar({id:"entradas_sin_repetir", area:"motor",
       }
       if(!ofrecio) f.push("con las entradas al doble y el estadio vacío no ofreció bajar");
       if(despues) f.push("después del recorte volvió a bajar "+despues+" veces en la misma temporada");
-      if(d&&d.cuando&&!d.cuando(E)&&ofrecio) f.push("la queja de la galería no aparece cuando el precio sí vacía");
+      var ratioFin=(typeof precioPromedioRatio==="function")?precioPromedioRatio():9;
+      if(ofrecio && ratioFin>1.08) f.push("el recorte no llegó al precio justo (quedó en "+ratioFin.toFixed(2)+"×)");
+      if(d&&d.cuando&&d.cuando(E)&&ofrecio) f.push("la queja de la galería sigue con el precio ya justo");
     }catch(e){ f.push("explotó: "+(e&&e.message||e)); }
     finally{ restaurarPartida(snap); }
     return f.length?_dmal(f.join(" · "),f):_dok("precio justo: no baja · precio que vacía: una vez en la temporada");

@@ -60,9 +60,12 @@ function ayudanteAcciones(){
     porque:"Tu once manual incluye lesionados o jugadores que ya no están. Lo rearmo con los mejores disponibles por puesto."});
   const med=(typeof entradasMedicion==="function")?entradasMedicion():null;
   const yaPrecio=!!(E.flags&&E.flags["ay_precios_temp_"+E.anio]);
-  if(med&&med.ofrecer&&!yaPrecio)
-    out.push({id:"precios", ic:"🎫", seguro:false, t:"Bajar las entradas un 10%",
-      porque:med.porque||"El precio está sobre el de la época y el estadio no se llena."});
+  if(med&&med.ofrecer&&!yaPrecio){
+    var falta=Math.max(0, med.sobre||Math.round((med.ratio-1)*100));
+    out.push({id:"precios", ic:"🎫", seguro:false,
+      t:falta?("Bajar las entradas al precio justo (−"+falta+"%)"):"Bajar las entradas al precio justo",
+      porque:med.porque||"El precio está sobre el de la época y el estadio no se llena. Se baja solo lo que falta, una vez en la temporada."});
+  }
   if(E.finanzas && !E.finanzas.delegado && ((E.plata||0)<(typeof costoSemanal==="function"?costoSemanal()*3:80) || (E.deuda||0)>(E.plata||0)*3))
     out.push({id:"tesorero", ic:"🏦", seguro:false, t:"Pasarle la caja al Tesorero en modo prudente",
       porque:"Con la caja justa, un Tesorero prudente guarda un colchón de 6 semanas de gastos y usa lo que sobra para bajar deuda. Cobra una comisión chica."});
@@ -98,12 +101,11 @@ function ayudanteHacer(id){
     const once=(typeof onceIdeal==="function")?onceIdeal():[];
     txt="Saqué del once a "+roto.join(", ")+" y lo rearmé con los mejores disponibles: "+once.map(j=>j.n.split(" ").slice(-1)[0]).join(", ")+".";
   } else if(id==="precios"){
-    const antes=(typeof proyeccionTaquilla==="function")?proyeccionTaquilla():null;
-    Object.keys(E.precios||{}).forEach(k=>{ E.precios[k]=Math.max(1,Math.round(E.precios[k]*0.9)); });
-    const desp=(typeof proyeccionTaquilla==="function")?proyeccionTaquilla():null;
+    const r=(typeof entradasAlJusto==="function")?entradasAlJusto():null;
+    const antes=r&&r.antes, desp=r&&r.desp;
     E.flags[_ayClave("precios")]=true;
     E.flags["ay_precios_temp_"+E.anio]=true;
-    txt="Bajé las entradas un 10%."+(antes&&desp?" Taquilla estimada de local: "+plata(antes.ingreso)+" → "+plata(desp.ingreso)+", público "+(antes.gente||0).toLocaleString("es-CL")+" → "+(desp.gente||0).toLocaleString("es-CL")+".":"")+" Esta temporada no te lo vuelvo a proponer.";
+    txt="Dejé las entradas en el precio justo"+(r&&r.sobre?(" (estaban un "+r.sobre+"% arriba)"):"")+"."+(antes&&desp?" Taquilla de local: "+plata(antes.ingreso)+" → "+plata(desp.ingreso)+", público "+(antes.gente||0).toLocaleString("es-CL")+" → "+(desp.gente||0).toLocaleString("es-CL")+".":"")+" Si el estadio sigue vacío, esta temporada no las bajo de nuevo.";
   } else if(id==="tesorero"){
     E.finanzas.delegado=true; E.finanzas.riesgo="prudente";
     txt="Le pasé la caja al Tesorero en modo prudente: guarda "+plata(colchonTesorero())+" de colchón (6 semanas de gastos) y lo que sobre va a la deuda. Lo puedes cambiar en Finanzas.";
@@ -159,6 +161,7 @@ function bloqueAyudanteHace(){
   box.appendChild(el("h3","sub","🧑‍🏫 Lo hago yo"));
   if(!acc.length) box.appendChild(el("p","mini","Por ahora no hay nada que arreglar. Si aparece algo, lo vas a ver acá con su botón."));
   acc.forEach(a=>{
+    if(a.id==="decisiones") return; /* 7.9145 · vive en la barra de Syntergia */
     const fila=el("div","ay-accion"+(a.seguro?"":" ay-riesgo"));
     fila.innerHTML='<div class="ay-t">'+a.ic+" "+escHtml(a.t)+'</div><div class="ay-pq mini">Por qué: '+escHtml(a.porque)+'</div>';
     const b=el("button","btn-aqua chico"+(a.seguro?" verde":""),a.seguro?"Hazlo":"Hazlo (tiene costo)");
@@ -214,9 +217,9 @@ function syntergiaTurno(){
     if(!alguna) break;
   }
   E.piloto.semanas=(E.piloto.semanas||0)+1;
-  if(hechas.length && typeof notificar==="function")
+  if(hechas.length && typeof notificar==="function" && !(E.piloto&&E.piloto.sinResumen))
     notificar({t:"🤖 Syntergia · semana "+(E.idx+1),tipo:"neutro",bandeja:true,
-      d:"Hice "+hechas.length+" cosa"+(hechas.length>1?"s":"")+": "+hechas.map(h=>h.split(":")[0]).join(" · ")+". El detalle está en el registro del Ayudante."});
+      d:"Hice "+hechas.length+" cosa"+(hechas.length>1?"s":"")+": "+hechas.map(h=>h.split(":")[0]).join(" · ")+". El detalle está en el Correo."});
   return hechas;
 }
 ["procesarSemanaPostPartido","procesarSemanaRapido"].forEach(function(nom){
@@ -236,6 +239,21 @@ function bloqueSyntergia(){
   b.onclick=()=>{ E.piloto=E.piloto||{}; E.piloto.on=!on; if(E.piloto.on) syntergiaTurno(); guardar(); render();
     if(typeof aviso==="function") aviso(E.piloto.on?"🤖 Syntergia al mando":"Retomaste el control"); };
   box.appendChild(b);
+  /* 7.9145 · el botón de resoluciones vive acá, no suelto. La casilla se guarda en la partida. */
+  const nDec=(E.decPend||[]).length;
+  if(nDec){
+    const br=el("button","btn-aqua chico verde","Resolver "+(nDec===1?"la decisión pendiente":"las "+nDec+" decisiones"));
+    br.onclick=()=>{ const t=ayudanteHacer("decisiones"); guardar(); render(); if(t&&typeof aviso==="function"&&!(E.piloto&&E.piloto.sinResumen)) aviso("📥 "+t.slice(0,90)); };
+    box.appendChild(br);
+  }
+  const lab=el("label","syn-callar");
+  const ck=document.createElement("input"); ck.type="checkbox";
+  E.piloto=E.piloto||{};
+  ck.checked=!!E.piloto.sinResumen;
+  ck.onchange=function(){ E.piloto.sinResumen=ck.checked; guardar(); };
+  lab.appendChild(ck);
+  lab.appendChild(document.createTextNode(" No entregar el resumen de lo hecho"));
+  box.appendChild(lab);
   return box;
 }
 (function wrapBloqueSyn(){
@@ -260,7 +278,7 @@ function syntergiaDespeja(){
   E.flags=E.flags||{}; E.flags["pendAviso_"+E.anio+"_"+E.idx]=true;
   if(hechas.length){ _ayLog("Syntergia despejó el camino: "+hechas.join(" · "));
     const quedan=(typeof pendientesAtender==="function")?pendientesAtender().filter(x=>x.fuerte).map(x=>x.t):[];
-    if(typeof notificar==="function") notificar({t:"🤖 Syntergia · antes de avanzar",tipo:"neutro",bandeja:true,
+    if(typeof notificar==="function" && !(E.piloto&&E.piloto.sinResumen)) notificar({t:"🤖 Syntergia · antes de avanzar",tipo:"neutro",bandeja:true,
       d:hechas.join(". ")+"."+(quedan.length?" Queda para ti: "+quedan.join(" · ")+".":"")}); }
   return hechas;
 }

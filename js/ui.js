@@ -5141,11 +5141,13 @@ function pantallaArranque(haySave,slots){
   const revelar=()=>{ if(ov.dataset.listo) return; ov.dataset.listo="1";
     ov.classList.add("listo"); const first=btns.querySelector(".arranque-btn"); if(first) first.focus(); };
   /* frases de carga con onda (rotan mientras aparece el botón; se auto-detiene al revelar) */
-  const cargas=["Inflando la pelota…","Regando la cancha…","Pintando las rayas…","Ordenando el camarín…",
+  const cargas=["Cargando los equipos…","Revisando los planteles…","Pintando los escudos…","Armando la lista de concentrados…",
+    "Inflando la pelota…","Regando la cancha…","Pintando las rayas…","Ordenando el camarín…",
     "Contando la caja…","Colgando los lienzos…","Avisándole a la barra…","Afinando la pizarra…",
     "Calentando el asado de la previa…","Buscando el micro de la visita…","Sacando el pasto de las tacas…",
-    "Prendiendo la tele del partido…","Mojando la esponja…","Revisando la pizarra del ayudante…",
-    "Contando las lucas de la taquilla…","Avisándole al relator…"];
+    "Prendiendo los focos…","Acomodando la tribuna…","Doblando las banderas…","Contando los abonos…",
+    "Revisando los carnets…","Llamando al relator…","Mojando la esponja…","Ordenando el fixture…",
+    "Sacando el hielo del camarín…","Probando el micrófono de la conferencia…"];
   const elCarga=inner.querySelector(".arr-cargando");
   let _ci=0, _cargaTimer=null;
   const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;

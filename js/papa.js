@@ -75,16 +75,22 @@ function papaBotonInicio(){
   if(document.addEventListener) document.addEventListener("DOMContentLoaded",function(){ setTimeout(papaBotonInicio,0); });
 })();
 
-/* si el paquete falló y la guardia volvió al modo normal, se avisa una vez; si abrir tardó mucho, se sugiere */
+/* 7.9145 · el aviso viejo usaba performance.now() al terminar de bajar TODOS los
+   archivos, y en cualquier PC decía «tardó 20 s». Eso medía la red y la caché,
+   no el equipo. Ahora solo cuenta el tiempo de armar la página, y no culpa al PC. */
 if(typeof document!=="undefined"&&document.addEventListener) document.addEventListener("DOMContentLoaded",function(){
-  const t0=(typeof performance!=="undefined"&&performance.now)?performance.now():0;
   setTimeout(function(){
     let fallo=null; try{ fallo=localStorage.getItem("futbolini_papa_fallo"); if(fallo) localStorage.removeItem("futbolini_papa_fallo"); }catch(e){}
     if(fallo&&typeof aviso==="function"){ aviso("🥔 El Modo papa no pudo cargar y volvimos al normal. Tu partida está intacta. Si te pasa de nuevo, cuéntale al autor.",8000); return; }
     let dicho=false; try{ dicho=localStorage.getItem("futbolini_papa_sugerido")==="1"; }catch(e){}
-    if(!modoPapa()&&!dicho&&t0>7000&&typeof aviso==="function"){
+    let seg=0;
+    try{
+      const nav=performance.getEntriesByType&&performance.getEntriesByType("navigation")[0];
+      if(nav&&nav.domContentLoadedEventEnd&&nav.responseEnd) seg=(nav.domContentLoadedEventEnd-nav.responseEnd)/1000;
+    }catch(e){}
+    if(!modoPapa()&&!dicho&&seg>12&&typeof aviso==="function"){
       try{ localStorage.setItem("futbolini_papa_sugerido","1"); }catch(e){}
-      aviso("Tu equipo tardó "+Math.round(t0/1000)+" s en abrir el juego. Prueba 🥔 Modo papa (Ajustes ▸ Pantalla): carga hasta 5× más rápido.",9000);
+      aviso("Abrir se demoró. En Ajustes ▸ Pantalla está 🥔 Modo papa: la próxima vez carga de una.",9000);
     }
   },2500);
 });

@@ -107,3 +107,36 @@ body.en-partido #guardadoTxt{
 @media (prefers-reduced-motion:reduce){
   .aviso.aviso-sale{animation:none; opacity:0}
 }
+
+/* 7.9145 · escritorio con íconos (solo los pedidos) + correo */
+.esc-mesa{display:flex;flex-wrap:wrap;gap:14px 18px;padding:8px 4px 16px;align-items:flex-start}
+.esc-ico{width:84px;min-height:78px;border:0;background:transparent;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;position:relative;text-shadow:0 1px 2px rgba(0,30,60,.8);padding:4px;border-radius:6px}
+.esc-ico.sel,.esc-ico:focus-visible{outline:1px dotted #fff;background:rgba(255,255,255,.18)}
+.esc-px{font-size:32px;line-height:1;filter:drop-shadow(1px 2px 0 rgba(0,40,80,.45));image-rendering:pixelated}
+.esc-nom{font-size:11px;font-weight:700;text-align:center;line-height:1.15;max-width:84px}
+.esc-glob{position:absolute;top:0;right:8px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#c0392b;color:#fff;font-size:10px;font-weight:800;line-height:16px;text-shadow:none}
+.esc-late{animation:escLate 1.4s ease-in-out infinite}
+@keyframes escLate{50%{transform:translateY(-2px)}}
+.esc-win{position:fixed;left:50%;top:54px;transform:translateX(-50%);width:min(640px,calc(100vw - 24px));max-height:min(78vh,720px);z-index:40;display:flex;flex-direction:column}
+.esc-win .so-cuerpo,.esc-win .window-body{overflow:auto;max-height:min(68vh,640px)}
+.esc-win.esc-detras{filter:saturate(.7) brightness(.92);pointer-events:none}
+.syn-callar{display:flex;align-items:center;gap:6px;font-size:12px;margin-top:4px}
+.correo-cuerpo{display:flex;flex-direction:column;gap:8px}
+.correo-bar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;padding:6px 8px;background:linear-gradient(180deg,#fff,#d6e9ff);border:1px solid rgba(40,90,160,.35);border-radius:8px}
+.correo-dir{font-family:var(--f-dato,Consolas,monospace);font-size:12px}
+.correo-lay{display:grid;grid-template-columns:minmax(140px,34%) 1fr;gap:8px;min-height:240px}
+.correo-lista{overflow:auto;max-height:46vh;border:1px solid rgba(40,90,160,.25);border-radius:8px;background:rgba(255,255,255,.72)}
+.correo-sec{font-size:11px;font-weight:800;padding:6px 8px;background:linear-gradient(180deg,#e7f2ff,#c5ddf8)}
+.correo-item{display:flex;flex-direction:column;align-items:flex-start;width:100%;text-align:left;border:0;border-bottom:1px solid rgba(0,0,0,.06);background:transparent;padding:7px 8px;cursor:pointer}
+.correo-item.nuevo b{font-weight:800}
+.correo-item span{font-size:11px;opacity:.75}
+.correo-leer{padding:8px;overflow:auto;max-height:46vh}
+.correo-as{font-weight:800;margin-bottom:4px}
+.correo-vacio{padding:8px}
+@media (max-width:720px){
+  .esc-mesa{gap:8px 6px}
+  .esc-ico{width:72px}
+  .correo-lay{grid-template-columns:1fr}
+  .esc-win{top:8px;width:calc(100vw - 12px);max-height:calc(100vh - 16px)}
+}
+@media (prefers-reduced-motion:reduce){ .esc-late{animation:none} }

@@ -136,10 +136,27 @@ async function redPrimero(req){
   const cache = await caches.open(CACHE_JUEGO);
   const clave = req.mode === "navigate" ? "index.html" : req.url.replace(/\?.*$/, "");
   try{
-    /* red lenta: a los 3,5 s se sirve lo guardado (si hay) y la red sigue actualizando la copia por detrás */
     const red = fetch(req).then(r => { if(r && r.ok) cache.put(clave, r.clone()); return r; });
-    red.catch(() => null);   /* si ya se sirvió lo guardado, un fallo de red posterior no es un error */
+    red.catch(() => null);
     const guardado = await cache.match(clave);
+    if(req.mode === "navigate" && guardado){
+      /* 7.9145 · no esperar 3,5 s en blanco. Si la red trae otra versión, se recarga una vez. */
+      const fresco = await Promise.race([red, new Promise(res => setTimeout(() => res(null), 700))]);
+      if(fresco) return fresco;
+      red.then(async r => {
+        try{
+          if(!r) return;
+          const html = await r.clone().text();
+          const mv = html.match(/name="futbolini-version" content="([^"]+)"/);
+          const gv = (await guardado.clone().text()).match(/name="futbolini-version" content="([^"]+)"/);
+          if(mv && (!gv || mv[1] !== gv[1])){
+            const clientes = await self.clients.matchAll({type:"window"});
+            clientes.forEach(c => c.postMessage({tipo:"version-nueva", version:mv[1]}));
+          }
+        }catch(e){}
+      });
+      return guardado;
+    }
     return guardado ? await Promise.race([red, new Promise(res => setTimeout(() => res(guardado), 3500))]) : await red;
   }catch(e){
     const c = await cache.match(clave) || await cache.match(req, {ignoreSearch: true});
