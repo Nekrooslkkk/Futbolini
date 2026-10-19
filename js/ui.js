@@ -922,7 +922,7 @@ function vistaEscritorio(){
   /* 7.9039 · las metas ya no van en el Escritorio (arriba avisa la que está en riesgo): viven en Institución */
 
   const cer=panel("Ayudante","🧑‍🏫","agua");
-  cer.cuerpo.appendChild(el("p","mini","Tu mano derecha, gratis y sin servidor: lee el club de verdad, arma un informe y te responde en chileno. Pregúntale lo que quieras."));
+  cer.cuerpo.appendChild(el("p","mini","Tu mano derecha, gratis y sin servidor: lee el club de verdad y te arma el informe."));
   if(typeof informeSemanal==="function"){
     cer.cuerpo.appendChild(el("p",null,informeSemanal()));
   }
@@ -937,40 +937,6 @@ function vistaEscritorio(){
     cer.cuerpo.appendChild(cl);
   } else {
     cer.cuerpo.appendChild(el("p",null,typeof consejoLocal==="function"?consejoLocal():"Todo tranquilo. Puedes mover un estatuto o mirar el mercado."));
-  }
-  /* 4.b · preguntarle al ayudante en texto libre */
-  if(typeof preguntarAyudante==="function"){
-    const qbox=el("div"); qbox.style.marginTop="8px";
-    const resp=el("div","resul mitad"); resp.hidden=true;
-    const inp=el("input"); inp.type="text"; inp.id="ay-input"; inp.placeholder=T("ay_ph","Preguntale al ayudante… (rival, once, plata, camarín, meta, mercado…)");
-    inp.style.cssText="display:block;width:100%;box-sizing:border-box;padding:9px 11px;border-radius:8px;border:1px solid rgba(0,0,0,.15)";
-    const responder=()=>{
-      const q=inp.value.trim(); if(!q){ inp.focus(); return; }
-      const r=(typeof ayudanteResponde==="function")?ayudanteResponde(q):{txt:String(preguntarAyudante(q)||""),acc:[],chips:[]};
-      resp.hidden=false; resp.innerHTML="";
-      const b=el("b"); b.textContent="🧑‍🏫 "+T("esc_ayudante","Ayudante")+":";
-      resp.appendChild(b);
-      resp.appendChild(document.createTextNode(" "+(r.txt||"")));
-      if(r.acc && r.acc.length){
-        const fa=el("div","fichas"); fa.style.marginTop="6px";
-        r.acc.forEach(a=>{ const ba=el("button","btn-aqua chico",a.t); ba.onclick=()=>{ try{ if(a.go) a.go(); }catch(e){} }; fa.appendChild(ba); });
-        resp.appendChild(fa);
-      }
-      if(r.chips && r.chips.length){
-        const fc=el("div","fichas"); fc.style.marginTop="6px";
-        r.chips.forEach(txt=>{ const c=el("button","ficha",txt); c.onclick=()=>{ inp.value=txt; responder(); }; fc.appendChild(c); });
-        resp.appendChild(fc);
-      }
-    };
-    inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); responder(); } };
-    const bq=el("button","btn-aqua chico",T("ay_preguntar","Preguntar")); bq.id="ay-btn"; bq.style.marginTop="6px"; bq.onclick=responder;
-    const chips=el("div","fichas"); chips.style.marginTop="6px";
-    [T("chip_domingo","¿El domingo?"),T("chip_rival","¿Cómo viene el rival?"),T("chip_plata","¿Cómo estamos de plata?"),T("ay_c_les","los lesionados"),T("chip_meta","¿Qué hago con la meta?")].forEach(txt=>{
-      const c=el("button","ficha",txt); c.onclick=()=>{ inp.value=txt; responder(); }; chips.appendChild(c);
-    });
-    qbox.appendChild(inp); qbox.appendChild(bq); qbox.appendChild(chips); qbox.appendChild(resp);
-    cer._responder=responder; cer._inp=inp;   /* para precargar desde una meta (punto 5C) */
-    cer.cuerpo.appendChild(qbox);
   }
   izq.appendChild(cer);
 
@@ -4283,12 +4249,8 @@ function metaNavegar(o, pr){
 function _ayudanteMeta(o){
   irA("escritorio");
   setTimeout(function(){
-    const inp=document.getElementById("ay-input"), btn=document.getElementById("ay-btn");
-    if(inp){
-      inp.value=T("meta_pregunta","¿Qué hago con la meta")+": "+((o&&o.t)||"")+"?";
-      if(btn) btn.click();
-      _resaltar(inp.closest?(inp.closest(".panel")||inp):inp);
-    }
+    _irAPanel("Ayudante");
+    if(typeof aviso==="function") aviso("Meta en riesgo: "+((o&&o.t)||""));
   },90);
 }
 /* Un solo cerebro para "Atiende": abre la decisión, lleva a la meta o a la sección y MARCA. */

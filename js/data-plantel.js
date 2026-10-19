@@ -587,6 +587,28 @@ function poolMercadoReal(){
   return out;
 }
 /* ---------- tokens: las decisiones nombran jugadores de verdad ---------- */
+/* 7.9144 · el último rival YA jugado. {RIVAL} sigue siendo el próximo. */
+function rivalAnterior(){
+  if(typeof E==="undefined"||!E||!E.calendario) return null;
+  var i,p,desde=(typeof E.idx==="number")?E.idx:E.calendario.length;
+  for(i=Math.min(desde,E.calendario.length)-1;i>=0;i--){
+    p=E.calendario[i];
+    if(p&&p.jugado&&p.rivalNombre) return p.rivalNombre;
+  }
+  return null;
+}
+/* Si el texto habla del partido pasado y todavía no hay uno, no sale.
+   En el partido en juego se pasa extra.RIVAL_ANT = el rival de esa cancha. */
+function publicarTextoRival(txt, extra){
+  if(!txt) return null;
+  if(String(txt).indexOf("{RIVAL_ANT}")>=0){
+    var tiene=(extra&&extra.RIVAL_ANT)||rivalAnterior();
+    if(!tiene) return null;
+  }
+  var r=(typeof resolverTokens==="function")?resolverTokens(txt,(typeof E!=="undefined"?E:null),extra):txt;
+  if(String(r).indexOf("{RIVAL_ANT}")>=0) return null;
+  return r;
+}
 function resolverTokens(txt,E,extra){
   if(!txt) return txt;
   const p=(E&&E.plantel||[]).filter(j=>!j.vendido);
@@ -606,6 +628,7 @@ function resolverTokens(txt,E,extra){
     DT:(E.dt||"el cuerpo técnico"),
     CLUB:(E.clubNombre||"el club"),
     RIVAL:((typeof proximoPartido==="function"&&proximoPartido()&&proximoPartido().rivalNombre)||"el rival"),
+    RIVAL_ANT:rivalAnterior(),
     ANIO:E.anio
   };
   if(extra&&typeof extra==="object") Object.keys(extra).forEach(function(k){ if(extra[k]!=null) val[k]=extra[k]; });

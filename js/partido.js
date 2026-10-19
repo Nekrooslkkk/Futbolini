@@ -1460,37 +1460,129 @@ function _opsTxt(correcto, pool){
   const mez=arr.sort(()=>Math.random()-0.5);
   return {op:mez, sol:mez.indexOf(correcto)};
 }
-/* trivia PROCEDURAL: preguntas inventadas sobre TU club con respuesta real */
-function triviaProc(P){
-  const cand=[];
-  const p=(E.plantel||[]).filter(j=>!j.vendido&&!j.cedido);
-  const gol=p.filter(j=>j.pos==="DEL").sort((a,b)=>b.goles-a.goles)[0];
-  if(gol){ const o=_opsNum(gol.goles||0,3); cand.push({q:"¿Cuántos goles lleva "+gol.n+" esta temporada?",op:o.op,sol:o.sol}); }
-  const fig=p.slice().sort((a,b)=>b.nivel-a.nivel)[0];
-  if(fig){ const o=_opsNum(fig.edad,3); cand.push({q:"Concentración: ¿qué edad tiene "+fig.n+"?",op:o.op,sol:o.sol}); }
-  if(E.temporada&&E.temporada.pts!=null){ const o=_opsNum(E.temporada.pts,4); cand.push({q:"¿Cuántos puntos llevas en el torneo?",op:o.op,sol:o.sol}); }
-  if(P.part&&P.part.rivalNombre){
-    const rivales=(typeof LIGA_ACT!=="undefined"?LIGA_ACT.map(c=>c.n):[]).filter(n=>n!==E.clubNombre);
-    const o=_opsTxt(P.part.rivalNombre, rivales.length?rivales:["el rival de turno","un equipo grande","un chico"]);
-    cand.push({q:"Rápido: ¿contra quién juegan hoy?",op:o.op,sol:o.sol});
+/* trivia PROCEDURAL: preguntas del partido que estás jugando, con respuesta real */
+function _triviaPartido(P){
+  if(P&&P.part) return P.part;
+  if(typeof proximoPartido==="function") return proximoPartido();
+  return null;
+}
+function _triviaComp(part){
+  var torneo=String((part&&part.torneo)||"");
+  var copa=!!(part&&(part.tipo==="copa"||/copa chile|libertadores|sudamericana/i.test(torneo)));
+  var liga=!!(part&&part.tipo==="liga"&&!copa);
+  return {copa:copa, liga:liga, nombre:torneo||(liga?"el campeonato":"el partido")};
+}
+function _triviaJugados(part, mismo){
+  var out=[];
+  ((typeof E!=="undefined"&&E&&E.calendario)||[]).forEach(function(p){
+    if(!p||!p.jugado||p.tipo==="amistoso"||p===part) return;
+    if(mismo&&part){
+      if(part.tipo==="liga"){ if(p.tipo!=="liga") return; }
+      else if(part.tipo==="copa"){ if(p.tipo!=="copa"||String(p.torneo||"")!==String(part.torneo||"")) return; }
+      else return;
+    }
+    out.push(p);
+  });
+  return out;
+}
+function _triviaDts(){
+  var out=[], ids=[];
+  if(typeof LIGA_ACT!=="undefined") LIGA_ACT.forEach(function(c){ if(c&&c.id) ids.push(c.id); });
+  ids.forEach(function(id){
+    var c=(typeof infoClub==="function")?infoClub(id):null;
+    var dt=c&&c.dt;
+    if(dt&&!/cuerpo técnico/i.test(dt)&&out.indexOf(dt)<0) out.push(dt);
+  });
+  return out;
+}
+function _triviaMarca(p){
+  var gf=+p.gf||0, gc=+p.gc||0;
+  if(gf>gc) return "Ganamos "+gf+"-"+gc;
+  if(gf<gc) return "Perdimos "+gf+"-"+gc;
+  return "Empatamos "+gf+"-"+gc;
+}
+function triviaCandidatos(P){
+  var cand=[];
+  if(typeof E==="undefined"||!E) return cand;
+  var part=_triviaPartido(P);
+  var comp=_triviaComp(part);
+  var deEsta=_triviaJugados(part, true);
+  var todos=_triviaJugados(part, false);
+  var primeroEsta=!deEsta.length;
+  var primero=!todos.length;
+  var plant=(E.plantel||[]).filter(function(j){ return j&&!j.vendido&&!j.cedido; });
+  var gol=plant.filter(function(j){ return (j.goles||0)>0; }).sort(function(a,b){ return b.goles-a.goles; })[0];
+  if(gol){
+    var nombres=plant.map(function(j){ return j.n; }).filter(function(n){ return n&&n!==gol.n; });
+    var og=_opsTxt(gol.n, nombres.length?nombres:["un suplente","un juvenil"]);
+    cand.push({q:"¿Quién lleva más goles en el plantel?",op:og.op,sol:og.sol});
   }
-  const est=(typeof estadioNombre==="function")&&estadioNombre(E.club);
+  if(part&&part.rivalNombre){
+    var rivales=(typeof LIGA_ACT!=="undefined"?LIGA_ACT.map(function(c){ return c.n; }):[]).filter(function(n){ return n!==E.clubNombre&&n!==part.rivalNombre; });
+    var or=_opsTxt(part.rivalNombre, rivales.length?rivales:["el rival de turno","un equipo grande"]);
+    cand.push({q:"Rápido: ¿contra quién juegan hoy?",op:or.op,sol:or.sol});
+  }
+  var est=(typeof estadioNombre==="function")&&estadioNombre(E.club);
   if(est&&typeof ESTADIOS_DATA!=="undefined"){
-    const otros=Object.keys(ESTADIOS_DATA).map(k=>ESTADIOS_DATA[k].nombre).filter(n=>n!==est);
-    const o=_opsTxt(est, otros);
-    cand.push({q:"¿Cómo se llama tu estadio de local?",op:o.op,sol:o.sol});
+    var otrosE=Object.keys(ESTADIOS_DATA).map(function(k){ return ESTADIOS_DATA[k].nombre; }).filter(function(n){ return n!==est; });
+    var oe=_opsTxt(est, otrosE);
+    cand.push({q:"¿Cómo se llama tu estadio de local?",op:oe.op,sol:oe.sol});
   }
-  const cap=p.filter(j=>j.rasgos&&j.rasgos.indexOf("capitán")>=0)[0]||fig;
-  if(cap){ const o=_opsNum(Math.round(cap.nivel/10)*10,10); cand.push({q:"Al ojo: ¿de cuánto es el nivel de "+cap.n+"?",op:o.op,sol:o.sol}); }
-  /* más variedad: estado de la temporada (respuesta calculada) */
-  if(typeof posicionEnTabla==="function"){ try{ const pos=posicionEnTabla(); if(pos>=1){ const o=_opsNum(pos,3); cand.push({q:"¿En qué puesto va "+(E.clubNombre||"tu club")+" en la tabla?",op:o.op,sol:o.sol}); } }catch(e){} }
-  if(E.temporada){
-    const o1=_opsNum(E.temporada.pg||0,3); cand.push({q:"¿Cuántos partidos ganaste este año?",op:o1.op,sol:o1.sol});
-    const o2=_opsNum(E.temporada.gf||0,4); cand.push({q:"¿Cuántos goles hizo tu equipo este año?",op:o2.op,sol:o2.sol});
-    const o3=_opsNum(E.temporada.pj||0,3); cand.push({q:"¿Cuántas fechas van jugadas del torneo?",op:o3.op,sol:o3.sol});
+  var dts=_triviaDts();
+  var dtRiv=null;
+  if(part&&part.rivalId){
+    var ic=(typeof infoClub==="function")?infoClub(part.rivalId):null;
+    dtRiv=ic&&ic.dt&&!/cuerpo técnico/i.test(ic.dt)?ic.dt:null;
   }
-  const veterano=p.slice().sort((a,b)=>b.edad-a.edad)[0];
-  if(veterano){ const o=_opsNum(veterano.edad,3); cand.push({q:"El más veterano del plantel, "+veterano.n+", ¿qué edad tiene?",op:o.op,sol:o.sol}); }
+  if(dtRiv&&dts.indexOf(dtRiv)>=0){
+    var od=_opsTxt(dtRiv, dts.filter(function(n){ return n!==dtRiv; }));
+    if(od.op.length===3) cand.push({q:"El técnico de "+part.rivalNombre+", ¿cómo se llama?",op:od.op,sol:od.sol});
+  }
+  var ult=deEsta.length?deEsta[deEsta.length-1]:(todos.length?todos[todos.length-1]:null);
+  if(ult&&ult.rivalNombre&&ult.gf!=null&&ult.gc!=null){
+    var bien=_triviaMarca(ult);
+    var malos=["Ganamos 2-0","Empatamos 1-1","Perdimos 0-1","Ganamos 1-0","Perdimos 1-2","Empatamos 0-0"].filter(function(x){ return x!==bien; });
+    var om=_opsTxt(bien, malos);
+    var donde=deEsta.length?(comp.copa?("de "+(part.torneo||"la copa")):"del campeonato"):"de la temporada";
+    cand.push({q:"El último partido "+donde+" contra "+ult.rivalNombre+", ¿cómo terminó?",op:om.op,sol:om.sol});
+  }
+  if(E.calendario&&typeof E.idx==="number"){
+    var sig=E.calendario[(E.idx||0)+1];
+    if(sig&&sig.rivalNombre&&(!part||sig.rivalNombre!==part.rivalNombre)){
+      var poolS=(typeof LIGA_ACT!=="undefined"?LIGA_ACT.map(function(c){ return c.n; }):[]).filter(function(n){ return n&&n!==sig.rivalNombre; });
+      var os=_opsTxt(sig.rivalNombre, poolS.length?poolS:["otro equipo","un clásico"]);
+      cand.push({q:"Después de este partido, ¿contra quién juegan?",op:os.op,sol:os.sol});
+    }
+  }
+  if(comp.copa&&part&&part.ronda){
+    var rondas=["Fase de grupos","Octavos de final","Cuartos de final","Semifinal","Final","Primera fase"].filter(function(r){ return r!==part.ronda; });
+    var oro=_opsTxt(part.ronda, rondas);
+    cand.push({q:"¿En qué ronda de "+(part.torneo||"la copa")+" juegan hoy?",op:oro.op,sol:oro.sol});
+  }
+  /* puntos y puesto: solo el campeonato, y no en el primer partido de ese torneo.
+     En Copa Chile o Libertadores no se preguntan: no es la tabla que estás jugando. */
+  if(comp.liga&&!primeroEsta&&E.temporada&&E.temporada.pts!=null){
+    var op=_opsNum(E.temporada.pts,4);
+    cand.push({q:"¿Cuántos puntos llevas en el campeonato?",op:op.op,sol:op.sol});
+    if(typeof posicionEnTabla==="function"){
+      try{
+        var pos=posicionEnTabla();
+        if(pos>=1){ var opp=_opsNum(pos,3); cand.push({q:"¿En qué puesto va "+(E.clubNombre||"tu club")+" en el campeonato?",op:opp.op,sol:opp.sol}); }
+      }catch(e){}
+    }
+  }
+  if(!primero){
+    var pj=todos.length;
+    var pg=todos.filter(function(x){ return (+x.gf||0)>(+x.gc||0); }).length;
+    var oPj=_opsNum(pj,3);
+    var oPg=_opsNum(pg,3);
+    cand.push({q:"¿Cuántos partidos llevas jugados, contando campeonato y copas?",op:oPj.op,sol:oPj.sol});
+    cand.push({q:"¿Cuántos ganaste, contando campeonato y copas?",op:oPg.op,sol:oPg.sol});
+  }
+  return cand;
+}
+function triviaProc(P){
+  var cand=triviaCandidatos(P);
   return cand.length?elige(cand):null;
 }
 /* elige una trivia evitando las ya vistas en la carrera (no se repite semana a semana ni entre temporadas) */

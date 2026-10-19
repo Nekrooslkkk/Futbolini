@@ -482,7 +482,13 @@ function empujarTicker(P, autor, texto, tono, m){
               const aut=gd.length?gd[gd.length-1].quien:null;
               if(aut) extra={GOLEADOR:aut};
             }
-            empujarTicker(P, t.quien, (typeof resolverTokens==="function"&&typeof E!=="undefined"&&E?resolverTokens(t.txt,E,extra):t.txt), tonoDeCtx(ctx), ev.min||P.min||0); return;
+            /* el tuit del partido nombra al que está en la cancha, no al próximo ni al anterior */
+            if(P&&P.part&&P.part.rivalNombre){
+              extra=extra||{};
+              extra.RIVAL_ANT=P.part.rivalNombre;
+            }
+            var publicado=(typeof publicarTextoRival==="function")?publicarTextoRival(t.txt, extra):((typeof resolverTokens==="function"&&typeof E!=="undefined"&&E)?resolverTokens(t.txt,E,extra):t.txt);
+            if(publicado){ empujarTicker(P, t.quien, publicado, tonoDeCtx(ctx), ev.min||P.min||0); return; }
           }
         }
       }catch(e){}

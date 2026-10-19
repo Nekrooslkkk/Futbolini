@@ -1331,7 +1331,14 @@
       var once=onceIdeal(); once.slice(0,3).forEach(function(j){ j.cansancio=20; });
       E.tactica.xiManual=once.map(function(j){ return j.n; }); once[5].lesion=2;
       var ids=ayudanteAcciones().map(function(a){ return a.id; });
-      ["charla","suave","once","precios"].forEach(function(k){ t(ids.indexOf(k)>=0,"el ayudante ofrece: "+k); });
+      ["charla","suave","once"].forEach(function(k){ t(ids.indexOf(k)>=0,"el ayudante ofrece: "+k); });
+      /* 7.9144 · hinchada baja con el precio de la época NO es motivo para bajar entradas */
+      t(ids.indexOf("precios")<0,"con precio justo no ofrece bajar entradas aunque la hinchada esté baja");
+      var justo=(typeof preciosDefault==="function")?preciosDefault():{};
+      E.precios={};
+      Object.keys(justo).forEach(function(k){ E.precios[k]=Math.round(justo[k]*2.4); });
+      ids=ayudanteAcciones().map(function(a){ return a.id; });
+      t(ids.indexOf("precios")>=0,"el ayudante ofrece: precios");
       var c=DOCTOR_CHECKS.filter(function(x){ return x.id==="ayudante_hace"; })[0], r=c&&c.fn();
       t(r&&r.ok,"doctor ayudante_hace: "+(r&&r.txt)+" "+(r&&r.detalle.join(" · ")));
       var ah=ayudanteHacer; ayudanteHacer=function(){ return "listo"; };

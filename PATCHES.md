@@ -5742,3 +5742,13 @@ El autor eligió: en la esquina van los dos tiempos, también en el celular. Los
 - **Doctor:** `tiempo_jugado` ahora falla si el texto no trae hoy y total.
 - **Estado:** core 1186/1186 · dev 593/593 · partidas viejas cargan · doctor 165/165 en 4 partidas + celular · banco 255.
 
+
+### 7.9144 — Entradas medidas, rival del partido pasado, trivia del partido y sin caja de texto
+El autor preguntó si la interfaz estaba hecha. No: el pie y el reloj ya estaban (7.9142 y 7.9143). Esto es T7+T8+T9+T10, con lo que contestó.
+- **Entradas (T7):** ya no se ofrece «Bajar las entradas» porque la hinchada está bajo 45. `entradasMedicion()` (js/motor.js) compara el precio con el justo de la época (la inflación del país ya va en ese precio), la gente que entraría a ese precio y la que entra hoy. Si el estadio se vacía por el precio, se ofrece una vez en la temporada. Si el precio ya es el justo, no se ofrece aunque la hinchada esté baja. La queja «La galería se queja del precio» usa la misma medición (antes salía siempre). Los capítulos de historia que dicen «bajar entradas» no se tocaron: cierran el arco.
+- **Rival en pasado (T8):** `{RIVAL}` sigue siendo el próximo (la previa). `{RIVAL_ANT}` es el último ya jugado. Los tuits del partido en juego nombran al que está en la cancha. Si no hubo partido y no hay partido en juego, ese texto no sale.
+- **Trivia (T9):** fuera la edad y el nivel. Los puntos y el puesto solo en el campeonato, y no en el primer partido de ese torneo. En Copa Chile o Libertadores no se preguntan. Los partidos jugados y ganados cuentan campeonato y copas. Los «cuántos goles» numéricos se cambiaron por preguntas claras (quién es el goleador, cómo terminó el último, contra quién juegan, el estadio, la ronda, el técnico del rival si está en los datos).
+- **Caja de texto (T10):** fuera del Escritorio el input, el botón Preguntar y las fichas. El ayudante sigue con el informe. `preguntarAyudante` no se borró: lo usan otras capas.
+- **Doctor:** `entradas_sin_repetir`, `textos_pasado_rival`, `trivia_sana`, `ayudante_sin_caja`. Con el comportamiento viejo fallan.
+- **No se tocó:** cancha, 3D, escudos, historia de clubes, penales, `FACTOR_TAQUILLA`.
+- **Estado:** core 1186/1186 · dev 594/594 · partidas viejas 12/12 · doctor 169/169 en 4 partidas + celular · banco 255 partidas × 1 temporada (44 despidos, 17%).

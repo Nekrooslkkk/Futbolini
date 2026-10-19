@@ -2904,3 +2904,13 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
 - Avisos: 4,5 s está bien. No lo cambies.
 - T6: el botón de resoluciones es «Resolver las N decisiones» (`ayudante.js` id `decisiones`, hoy ~línea 47). NO es «Haz todo lo seguro». Va dentro de la barra de Syntergia, con la casilla «No entregar el resumen». Todavía no está movido.
 - T12: quiere la tarjeta tipo Windows para «Lo que pasó esta semana». Todavía no está hecha (primero T7–T10, T3, T5+T6, T11).
+
+**7.9144 (Grok) · T7+T8+T9+T10. El autor contestó las tres. LEER si tocan entradas, tuits de partido o la trivia:**
+- No estaba hecha la interfaz entera. 7.9142/7.9143 fueron el pie, el reloj (hoy y total también en el celu) y los avisos de 4,5 s. Esto es el grupo que seguía.
+- T7: no es un enfriamiento de 6 semanas ni «hinchada < 45». `entradasMedicion()` en js/motor.js. Ofrece bajar 10% solo si el precio está sobre el justo de la época (inflación incluida) y la proyección de público cae de verdad. Una vez por temporada (`E.flags.ay_precios_temp_AÑO`). `b_hinchada_precios` ya no tiene `cuando: ()=>true`. Los arcos de data-32 / data-grok-plus / data-voz que dicen «Bajar entradas y llenar» son capítulos que cierran: no los reescribí.
+- T8: `{RIVAL}` = próximo (`proximoPartido`). `{RIVAL_ANT}` = último con `jugado` antes del idx (`rivalAnterior` en js/data-plantel.js). En el ticker del partido se pasa el rival de la cancha, si no el tuit hablaría del domingo pasado. `publicarTextoRival` devuelve null si no hay anterior y no hay partido en juego. La previa («Se viene el clásico ante {RIVAL}») no se tocó.
+- T9: `triviaCandidatos` en js/partido.js. Sin edad ni nivel. Puntos y puesto solo si `part.tipo==="liga"` y ya se jugó al menos uno de ese torneo. Copa (Chile, Libertadores, Sudamericana) no pregunta la tabla. PJ y PG salen del calendario completo, no de `E.temporada`. Las de cultura general (TRIVIA_FUTBOL, TRIVIA_VOZ) siguen.
+- T10: se sacó `#ay-input` / `#ay-btn` de js/ui.js (~925). `_ayudanteMeta` ahora resalta el panel. No borré `preguntarAyudante` ni `ayudanteResponde` (js/ia.js, data-epocas-78.js, data-copas2026.js, pulido.js).
+- Doctor nuevo al final de js/dev-doctor.js: `entradas_sin_repetir`, `textos_pasado_rival`, `trivia_sana`, `ayudante_sin_caja`. 169 chequeos.
+- Siguiente, en orden: T3 escritorio Vista (leer TODOS los envoltorios de `vistaEscritorio` antes de mover nada: ayudante.js, epoca-intro.js, mundo-vivo.js, pulido.js, ui-jornada.js), después T5+T6 (el botón es «Resolver las N decisiones», no «Haz todo lo seguro», adentro de la barra de Syntergia, con la casilla), T11 correo Hotmail 2007, T12 tarjeta Windows de «Lo que pasó esta semana» solo cuando se abre.
+- No toqué cancha, 3D, escudos ni historia.

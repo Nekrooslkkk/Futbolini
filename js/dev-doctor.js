@@ -2736,3 +2736,157 @@ devDoctorRegistrar({id:"avisos_vista", area:"interfaz",
     return f.length?_dmal(f.join(" · "),f):_dok("3 a la vista · ≥ 4,5 s (7 s si es largo) · no tapa Avanzar");
   }});
 
+/* 7.9144 · entradas, rival en pasado, trivia del partido y la caja del ayudante. */
+devDoctorRegistrar({id:"entradas_sin_repetir", area:"motor",
+  n:"Bajar las entradas solo si el precio vacía el estadio, y una vez por temporada",
+  arreglo:"js/motor.js entradasMedicion() · js/ayudante.js id precios · js/data-decisiones-plus.js b_hinchada_precios",
+  fn:function(){
+    if(!E||typeof entradasMedicion!=="function"||typeof ayudanteAcciones!=="function") return _dmal("falta entradasMedicion");
+    var snap=clonarPartida(E), f=[];
+    function oferta(){ return ayudanteAcciones().filter(function(a){ return a.id==="precios"; }); }
+    try{
+      E._bulkSim=true;
+      E.flags=E.flags||{};
+      E.ind.hinchada=20;
+      E.precios=(typeof preciosDefault==="function")?preciosDefault():E.precios;
+      delete E.flags["ay_precios_temp_"+E.anio];
+      var cortes=0;
+      for(var w=0;w<8;w++){
+        E.idx=w;
+        delete E.flags["ay_precios_"+E.anio+"_"+w];
+        if(oferta().length){ ayudanteHacer("precios"); cortes++; }
+      }
+      if(cortes) f.push("con el precio de la época y la hinchada baja igual bajó "+cortes+" veces");
+      var medJusto=entradasMedicion();
+      if(medJusto.ofrecer) f.push("la medición ofrece bajar con el precio justo");
+      var d=(typeof decisionPorId==="function")?decisionPorId("b_hinchada_precios"):null;
+      if(d&&d.cuando&&d.cuando(E)) f.push("«la galería se queja del precio» sale con el precio justo");
+      var justo=(typeof preciosDefault==="function")?preciosDefault():{};
+      E.precios={};
+      Object.keys(justo).forEach(function(k){ E.precios[k]=Math.round(justo[k]*2.4); });
+      E.ind.hinchada=22;
+      delete E.flags["ay_precios_temp_"+E.anio];
+      var ofrecio=0, despues=0;
+      for(var w2=0;w2<6;w2++){
+        E.idx=w2;
+        delete E.flags["ay_precios_"+E.anio+"_"+w2];
+        var hay=oferta().length;
+        if(hay){ if(ofrecio) despues++; ofrecio++; ayudanteHacer("precios"); }
+      }
+      if(!ofrecio) f.push("con las entradas al doble y el estadio vacío no ofreció bajar");
+      if(despues) f.push("después del recorte volvió a bajar "+despues+" veces en la misma temporada");
+      if(d&&d.cuando&&!d.cuando(E)&&ofrecio) f.push("la queja de la galería no aparece cuando el precio sí vacía");
+    }catch(e){ f.push("explotó: "+(e&&e.message||e)); }
+    finally{ restaurarPartida(snap); }
+    return f.length?_dmal(f.join(" · "),f):_dok("precio justo: no baja · precio que vacía: una vez en la temporada");
+  }});
+devDoctorRegistrar({id:"textos_pasado_rival", area:"contenido",
+  n:"Un texto en pasado nombra al último rival, no al próximo, y no sale en la fecha 1",
+  arreglo:"js/data-plantel.js rivalAnterior/publicarTextoRival · js/data-plop-equipo.js {RIVAL_ANT}",
+  fn:function(){
+    if(typeof resolverTokens!=="function"||typeof publicarTextoRival!=="function"||typeof rivalAnterior!=="function") return _dmal("falta el token del rival anterior");
+    var snap=clonarPartida(E), f=[], plantillas=[];
+    try{
+      if(typeof PLOP_TPL==="object") Object.keys(PLOP_TPL).forEach(function(k){ (PLOP_TPL[k]||[]).forEach(function(t){ if(String(t).indexOf("{RIVAL_ANT}")>=0) plantillas.push(t); if(/\{RIVAL\}/.test(t)) f.push("plantilla de partido sigue con {RIVAL}: "+String(t).slice(0,70)); }); });
+      if(typeof PLOP_MEME!=="undefined") PLOP_MEME.forEach(function(t){ if(t&&t.txt&&t.txt.indexOf("{RIVAL_ANT}")>=0) plantillas.push(t.txt); if(t&&t.txt&&/\{RIVAL\}/.test(t.txt)) f.push("meme sigue con {RIVAL}"); });
+      if(plantillas.length<8) f.push("quedaron pocas plantillas con el rival del partido ("+plantillas.length+")");
+      E.calendario=[
+        {jugado:true,tipo:"liga",rivalNombre:"Universidad de Chile",gf:1,gc:0,local:true},
+        {jugado:false,tipo:"liga",rivalNombre:"Palestino",local:true}
+      ];
+      E.idx=1;
+      if(rivalAnterior()!=="Universidad de Chile") f.push("el anterior no es Universidad de Chile ("+rivalAnterior()+")");
+      var previa=resolverTokens("Se viene el clásico ante {RIVAL}", E);
+      if(previa.indexOf("Palestino")<0) f.push("la previa no nombra al próximo");
+      if(previa.indexOf("Universidad de Chile")>=0) f.push("la previa nombró al anterior");
+      plantillas.forEach(function(t){
+        var r=resolverTokens(t, E);
+        if(r.indexOf("Universidad de Chile")<0) f.push("en pasado no nombra al último: "+String(t).slice(0,60));
+        if(r.indexOf("Palestino")>=0) f.push("en pasado nombra al próximo: "+String(t).slice(0,60));
+      });
+      var vivo=publicarTextoRival("{RIVAL_ANT} nos ganó en casa.", {RIVAL_ANT:"Palestino"});
+      if(!vivo||vivo.indexOf("Palestino")<0||vivo.indexOf("Universidad de Chile")>=0) f.push("en la cancha el tuit no nombra al que estás jugando");
+      E.calendario[0].jugado=false; E.idx=0;
+      if(rivalAnterior()) f.push("en la fecha 1 hay un rival anterior");
+      plantillas.forEach(function(t){
+        var s=publicarTextoRival(t, null);
+        if(s) f.push("en la fecha 1 igual salió: "+String(s).slice(0,60));
+      });
+      var crudo=resolverTokens(plantillas[0], E);
+      if(crudo&&/Universidad de Chile|Palestino/.test(crudo)) f.push("en la fecha 1 el token se rellenó con un rival");
+    }catch(e){ f.push("explotó: "+(e&&e.message||e)); }
+    finally{ restaurarPartida(snap); }
+    return f.length?_dmal(f.slice(0,4).join(" · "), f):_dok(plantillas.length+" plantillas de partido nombran al último, la previa al próximo, la fecha 1 calla");
+  }});
+devDoctorRegistrar({id:"trivia_sana", area:"contenido",
+  n:"La trivia no pregunta edad ni nivel, no cuenta en el primer partido y en la copa no pregunta la tabla",
+  arreglo:"js/partido.js triviaCandidatos()",
+  fn:function(){
+    if(typeof triviaCandidatos!=="function") return _dmal("falta triviaCandidatos");
+    var snap=clonarPartida(E), f=[];
+    function mala(q){
+      if(!q||!q.op||q.op.length!==3){ f.push("sin 3 opciones: "+(q&&q.q)); return; }
+      var u={}; q.op.forEach(function(o){ u[o]=1; });
+      if(Object.keys(u).length!==3) f.push("opciones repetidas: "+q.q);
+      if(!(q.sol>=0&&q.sol<3)) f.push("respuesta fuera de rango: "+q.q);
+      if(/edad|nivel|veterano|goles lleva|goles hizo/i.test(q.q)) f.push("pregunta que no va: "+q.q);
+    }
+    try{
+      E.calendario=[
+        {jugado:true,tipo:"liga",rivalNombre:"Everton",gf:2,gc:0,local:true},
+        {jugado:true,tipo:"copa",torneo:"Copa Chile",rivalNombre:"Magallanes",gf:0,gc:1,local:true,ronda:"Primera fase"},
+        {jugado:true,tipo:"liga",rivalNombre:"Audax Italiano",gf:1,gc:0,local:false},
+        {jugado:false,tipo:"liga",rivalNombre:"Palestino",local:true}
+      ];
+      E.idx=3;
+      if(E.temporada){ E.temporada.pts=6; E.temporada.pj=2; E.temporada.pg=2; E.temporada.gf=3; }
+      var liga=triviaCandidatos({part:E.calendario[3],min:20});
+      liga.forEach(mala);
+      var pts=liga.filter(function(q){ return /puntos llevas en el campeonato/.test(q.q); });
+      if(!pts.length) f.push("en el campeonato, ya jugado, no pregunta los puntos");
+      else if(pts[0].op[pts[0].sol]!=="6") f.push("los puntos no cuadran ("+pts[0].op[pts[0].sol]+")");
+      var pj=liga.filter(function(q){ return /contando campeonato y copas/.test(q.q)&&/llevas jugados/.test(q.q); });
+      if(!pj.length) f.push("no cuenta campeonato y copas");
+      else if(pj[0].op[pj[0].sol]!=="3") f.push("los partidos jugados no son 3 ("+pj[0].op[pj[0].sol]+")");
+      var pg=liga.filter(function(q){ return /Cuántos ganaste, contando/.test(q.q); });
+      if(!pg.length) f.push("no pregunta los ganados de todo");
+      else if(pg[0].op[pg[0].sol]!=="2") f.push("los ganados no son 2 ("+pg[0].op[pg[0].sol]+")");
+      ["Copa Libertadores","Copa Chile"].forEach(function(torneo){
+        var copa=triviaCandidatos({part:{tipo:"copa",torneo:torneo,rivalNombre:"Boca Juniors",rivalId:"BOC",ronda:"Fase de grupos",local:true},min:20});
+        copa.forEach(mala);
+        copa.forEach(function(q){
+          if(/puntos llevas|puesto va/i.test(q.q)) f.push("en "+torneo+" pregunta la tabla: "+q.q);
+        });
+      });
+      E.calendario.forEach(function(p){ p.jugado=false; });
+      E.idx=0;
+      if(E.temporada){ E.temporada.pts=0; E.temporada.pj=0; E.temporada.pg=0; }
+      var cero=triviaCandidatos({part:E.calendario[0],min:12});
+      cero.forEach(function(q){
+        mala(q);
+        if(/puntos|puesto|ganaste|jugados|fechas van|último partido/i.test(q.q)) f.push("en el primer partido pregunta un conteo: "+q.q);
+      });
+      if(String(triviaCandidatos).indexOf(".edad")>=0||/nivel de/.test(String(triviaCandidatos))) f.push("el generador sigue armando edad o nivel");
+    }catch(e){ f.push("explotó: "+(e&&e.message||e)); }
+    finally{ restaurarPartida(snap); }
+    return f.length?_dmal(f.slice(0,4).join(" · "), f):_dok("sin edad ni nivel · el primer partido no cuenta · la copa no pregunta la tabla · 3 opciones");
+  }});
+devDoctorRegistrar({id:"ayudante_sin_caja", area:"interfaz",
+  n:"El ayudante informa sin caja de texto",
+  arreglo:"js/ui.js vistaEscritorio (se sacó #ay-input)",
+  fn:function(){
+    if(!E||typeof render!=="function") return _dok("sin partida");
+    var sec=(typeof SEC!=="undefined")?SEC:null, f=[];
+    try{
+      if(typeof SEC!=="undefined") SEC="escritorio";
+      render();
+      if(document.getElementById("ay-input")||document.getElementById("ay-btn")) f.push("sigue la caja de texto del ayudante");
+      var vista=document.getElementById("vista");
+      var txt=vista?(vista.textContent||""):"";
+      if(/Pregúntale lo que quieras/i.test(txt)) f.push("sigue el «pregúntale lo que quieras»");
+      if(txt.indexOf("Ayudante")<0) f.push("desapareció el panel del ayudante");
+    }catch(e){ f.push("explotó: "+(e&&e.message||e)); }
+    finally{ if(sec!=null&&typeof SEC!=="undefined") SEC=sec; try{ render(); }catch(e){} }
+    return f.length?_dmal(f.join(" · "),f):_dok("informe del ayudante, sin caja ni «pregúntale»");
+  }});
+

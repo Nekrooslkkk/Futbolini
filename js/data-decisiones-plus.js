@@ -427,7 +427,11 @@
    mitad:{txt:"Quedó en una frase. Hay que cumplirla.",ef:{}},
    mal:{txt:"Prometiste corregir y no se vio nada a la semana. Peor.",rep:{credibilidad:-6},grupos:{prensa:-6}}}
  ]},
-{id:"b_hinchada_precios",tag:"barra",buzon:"hinchada",peso:"medio",cuando:E=>true,
+{id:"b_hinchada_precios",tag:"barra",buzon:"hinchada",peso:"medio",cuando:function(E){
+  if(!E||typeof entradasMedicion!=="function") return false;
+  var m=entradasMedicion();
+  return !!(m&&m.ofrecer);
+},
  t:"La galería se queja del precio",
  d:"Un lienzo pide «entradas populares». El tesorero muestra la planilla. Si bajas, entra más gente y menos plata por cabeza. Si no, el recinto se enfría.",
  posturas:{hinchada:14,directorio:-6,socios:6},

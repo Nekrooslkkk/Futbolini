@@ -1001,6 +1001,37 @@ function precioPromedioRatio(){
   let num=0,den=0; sectoresActuales().forEach(s=>{ const p=precios[s.id]||s.ref*infl; num+=(p/(s.ref*infl))*s.cuota; den+=s.cuota; });
   return den?num/den:1;
 }
+/* 7.9144 · ¿conviene bajar las entradas? No es un temporizador ni «hinchada bajo 45».
+   Compara el precio con el justo de la época (la inflación del país ya está en el ref),
+   la gente que entraría a ese precio y la que entra hoy. Si el recinto se vacía por el
+   precio, se ofrece. Si la hinchada está baja pero el precio ya es el justo, no. */
+function entradasMedicion(){
+  if(typeof E==="undefined"||!E||!E.ind) return {ofrecer:false,ratio:1,porque:""};
+  const ratio=(typeof precioPromedioRatio==="function")?precioPromedioRatio():1;
+  const justo=(typeof preciosDefault==="function")?preciosDefault():null;
+  const ahora=(typeof proyeccionTaquilla==="function")?proyeccionTaquilla():{gente:0,ingreso:0};
+  const enJusto=(justo&&typeof proyeccionTaquilla==="function")?proyeccionTaquilla(justo):ahora;
+  const aforo=Math.max(1,(typeof aforoActual==="function")?aforoActual():1);
+  const gA=ahora.gente||0, gJ=Math.max(1,enJusto.gente||0);
+  const rel=gA/gJ;
+  const ocup=gA/aforo;
+  const caro=ratio>=1.12;
+  const vacio=rel<=0.78 && gA+80<gJ;
+  const ofrecer=!!(caro&&vacio&&E.precios);
+  let porque="";
+  if(ofrecer){
+    const infl=(typeof inflacionEra==="function")?inflacionEra():1;
+    const caja=Math.round(E.plata||0);
+    const costo=Math.max(1,(typeof costoSemanal==="function")?costoSemanal():40);
+    const sem=Math.max(0,Math.round(caja/costo));
+    const sobre=Math.round((ratio-1)*100);
+    const menos=Math.round((1-rel)*100);
+    const pais=infl>=1.2?(" El precio justo ya trae lo cara que está la época ("+String(Math.round(infl*100)/100).replace(".",",")+"×)."):(infl<=0.8?" En este año el precio justo ya está ajustado a lo que vale la plata.":"");
+    const eco=((typeof clausuraFactor==="function")&&clausuraFactor()<0.95)?" La deuda ya tiene sectores cerrados.":(sem<6?(" La caja da para unas "+sem+" semanas de gastos."):" La caja aguanta, pero la gente no entra.");
+    porque="Las entradas están un "+sobre+"% sobre el precio de la época y el estadio se vacía: con el precio justo entrarían unos "+gJ.toLocaleString("es-CL")+" y hoy proyectas "+gA.toLocaleString("es-CL")+" (−"+menos+"%)."+pais+eco+" Bajar un 10% llena más y se pierde plata por cabeza.";
+  }
+  return {ofrecer:ofrecer,ratio:ratio,gente:gA,genteJusta:enJusto.gente||0,ocup:ocup,porque:porque,caro:caro,vacio:vacio};
+}
 function ingresosAnuales(){
   /* 7.9029 · la TV se reparte parejo dentro de la división (como el CDF):
      el prestigio suma, pero no decide quién vive y quién muere */

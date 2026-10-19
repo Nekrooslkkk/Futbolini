@@ -58,10 +58,11 @@ function ayudanteAcciones(){
   const roto=_ayManualRoto();
   if(roto.length) out.push({id:"once", ic:"📋", seguro:true, t:"Rearmar el once (tenías a "+roto.length+" que no pueden jugar)",
     porque:"Tu once manual incluye lesionados o jugadores que ya no están. Lo rearmo con los mejores disponibles por puesto."});
-  const ratio=(typeof precioPromedioRatio==="function")?precioPromedioRatio():1;
-  if(E.ind&&E.ind.hinchada<45 && ratio>0.95 && E.precios && !E.flags[_ayClave("precios")])
+  const med=(typeof entradasMedicion==="function")?entradasMedicion():null;
+  const yaPrecio=!!(E.flags&&E.flags["ay_precios_temp_"+E.anio]);
+  if(med&&med.ofrecer&&!yaPrecio)
     out.push({id:"precios", ic:"🎫", seguro:false, t:"Bajar las entradas un 10%",
-      porque:"La hinchada está en "+Math.round(E.ind.hinchada)+". Entradas más baratas llenan más y la gente vuelve de a poco. Se pierde algo de taquilla por entrada."});
+      porque:med.porque||"El precio está sobre el de la época y el estadio no se llena."});
   if(E.finanzas && !E.finanzas.delegado && ((E.plata||0)<(typeof costoSemanal==="function"?costoSemanal()*3:80) || (E.deuda||0)>(E.plata||0)*3))
     out.push({id:"tesorero", ic:"🏦", seguro:false, t:"Pasarle la caja al Tesorero en modo prudente",
       porque:"Con la caja justa, un Tesorero prudente guarda un colchón de 6 semanas de gastos y usa lo que sobra para bajar deuda. Cobra una comisión chica."});
@@ -101,7 +102,8 @@ function ayudanteHacer(id){
     Object.keys(E.precios||{}).forEach(k=>{ E.precios[k]=Math.max(1,Math.round(E.precios[k]*0.9)); });
     const desp=(typeof proyeccionTaquilla==="function")?proyeccionTaquilla():null;
     E.flags[_ayClave("precios")]=true;
-    txt="Bajé las entradas un 10%."+(antes&&desp?" Taquilla estimada de local: "+plata(antes.ingreso)+" → "+plata(desp.ingreso)+", público "+(antes.gente||0).toLocaleString("es-CL")+" → "+(desp.gente||0).toLocaleString("es-CL")+".":"")+" La hinchada lo nota en unas semanas.";
+    E.flags["ay_precios_temp_"+E.anio]=true;
+    txt="Bajé las entradas un 10%."+(antes&&desp?" Taquilla estimada de local: "+plata(antes.ingreso)+" → "+plata(desp.ingreso)+", público "+(antes.gente||0).toLocaleString("es-CL")+" → "+(desp.gente||0).toLocaleString("es-CL")+".":"")+" Esta temporada no te lo vuelvo a proponer.";
   } else if(id==="tesorero"){
     E.finanzas.delegado=true; E.finanzas.riesgo="prudente";
     txt="Le pasé la caja al Tesorero en modo prudente: guarda "+plata(colchonTesorero())+" de colchón (6 semanas de gastos) y lo que sobre va a la deuda. Lo puedes cambiar en Finanzas.";

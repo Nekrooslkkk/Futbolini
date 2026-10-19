@@ -4,9 +4,10 @@
    Cargar DESPUÉS de data-caza-98.js (ese archivo ya envuelve tuitDeCtx).
    No toca el motor ni el calendario. Si el club tiene voz para ese momento,
    sale de acá ~60% de las veces. Un puñado de memes de partido, de prueba.
-   {L}{G}{M}{P} se rellenan acá. {GOLEADOR}{RIVAL}{CLUB}{ARQUERO} los resuelve
-   el ticker, salvo el penal errado (partido.js no pasa por el resolver):
-   esas líneas no llevan llaves.
+   {L}{G}{M}{P} se rellenan acá. {GOLEADOR}{RIVAL_ANT}{CLUB}{ARQUERO} los resuelve
+   el ticker. {RIVAL_ANT} es el rival de ESE partido (en juego, el de la cancha;
+   si no hay partido en juego, el último ya jugado). La previa sigue con {RIVAL}.
+   Si no hubo partido todavía, la plantilla no sale. El penal errado no lleva llaves.
    COB es Cobreloa en 1991 y Cobresal desde 2026: se mira el nombre.
    Si el año es anterior al estadio, se dice "la cancha".
    ============================================================ */
@@ -65,10 +66,10 @@ const PLOP_TPL={
   gol_propio:[
     "GOL de {GOLEADOR}. En {L} no quedó nadie sentado.",
     "{GOLEADOR} la metió y {M} se acordó para qué juega.",
-    "gol {G}. {RIVAL} mirando el piso y la tribuna arriba.",
-    "el arco de {RIVAL} era un deseo. {GOLEADOR} lo cumplió.",
+    "gol {G}. {RIVAL_ANT} mirando el piso y la tribuna arriba.",
+    "el arco de {RIVAL_ANT} era un deseo. {GOLEADOR} lo cumplió.",
     "{P} despierta cuando aparece {GOLEADOR}.",
-    "{CLUB} arriba. que {RIVAL} cuente los defensas de nuevo.",
+    "{CLUB} arriba. que {RIVAL_ANT} cuente los defensas de nuevo.",
     "así se grita en {L}: entra {GOLEADOR} y se acaba la discusión.",
     "un centro y {GOLEADOR}. a veces el fútbol es simple.",
     "la pelota entró y {M} ya está inventando el canto.",
@@ -76,7 +77,7 @@ const PLOP_TPL={
   ],
   gana_agonico:[
     "en el descuento {GOLEADOR} nos salvó. el corazón no daba más.",
-    "ya puteábamos el empate y {GOLEADOR} le cerró la boca a {RIVAL}.",
+    "ya puteábamos el empate y {GOLEADOR} le cerró la boca a {RIVAL_ANT}.",
     "sobre la hora, como le gusta al hincha {G}: feo y eterno.",
     "90 y pico. gol en {L}. que no me hablen hasta mañana.",
     "{M} no se queda en el empate. {GOLEADOR} lo demostró.",
@@ -87,23 +88,23 @@ const PLOP_TPL={
     "el hincha {G} aguanta hasta el final. hoy aguantó y ganó."
   ],
   pierde_local:[
-    "perder en {L} es imperdonable. {RIVAL} se fue cantando.",
+    "perder en {L} es imperdonable. {RIVAL_ANT} se fue cantando.",
     "de local y ni un centro decente. {M} merece otra cosa.",
     "silbaron en {L} y tenían razón.",
-    "{RIVAL} nos ganó en casa. que nadie invente una excusa.",
+    "{RIVAL_ANT} nos ganó en casa. que nadie invente una excusa.",
     "la tribuna se fue callada. duele más que el gol.",
     "esto no es {P}. esto es un domingo para olvidar.",
     "localidad: vergüenza. el hincha {G} no pagó por esto.",
     "en casa se gana o se explica. hoy no hubo ninguna de las dos.",
-    "{CLUB} de local y {RIVAL} más cómodo. da rabia.",
+    "{CLUB} de local y {RIVAL_ANT} más cómodo. da rabia.",
     "apagaron la luz en {L}. merecido."
   ],
   empate:[
     "un punto que sabe a poco. {L} pedía los tres.",
     "empatar de local es perder con modales.",
-    "ni {M} ni {RIVAL} se impusieron. el empate se llevó la tarde.",
+    "ni {M} ni {RIVAL_ANT} se impusieron. el empate se llevó la tarde.",
     "empate de esos que no le cuentas a nadie en la micro.",
-    "{CLUB} y {RIVAL} se anularon. el hincha {G} se quedó con hambre.",
+    "{CLUB} y {RIVAL_ANT} se anularon. el hincha {G} se quedó con hambre.",
     "un empate. ni fiesta ni funeral. oficina.",
     "el cero a cero en {L} es una siesta cara.",
     "{P} no vino a sumar uno. vino a sumar tres.",
@@ -115,7 +116,7 @@ const PLOP_TPL={
     "{GOLEADOR} se comió el partido. {L} lo está nombrando.",
     "hat-trick. si lo venden, que sea caro.",
     "tres goles y hoy el nombre es {GOLEADOR}. {M} que lo aplauda.",
-    "{GOLEADOR} por tres. {RIVAL} que pida la hora.",
+    "{GOLEADOR} por tres. {RIVAL_ANT} que pida la hora.",
     "{P} tiene un nueve suelto. se llama {GOLEADOR}.",
     "la pelota le obedece. tres veces, por si quedó duda.",
     "hat-trick {G}. el banco aplaude y el rival cuenta.",
@@ -126,7 +127,7 @@ const PLOP_TPL={
     "el clásico se ganó en la cancha, no en la previa.",
     "mañana el hincha {G} camina distinto. clásico en el bolsillo.",
     "{GOLEADOR} decidió el clásico. {L} no lo va a olvidar.",
-    "ganarle a {RIVAL} cura hasta el lumbago.",
+    "ganarle a {RIVAL_ANT} cura hasta el lumbago.",
     "clásico para {M}. que lo escriban así, sin adorno.",
     "la pica se gana con gol. {GOLEADOR} lo entendió.",
     "el vecino del otro no sale a comprar el pan. yo sí.",
@@ -142,17 +143,17 @@ const PLOP_TPL={
     "la roja nos dejó cojos. que no se haga el leso.",
     "expulsión y el banco mirando el piso. postal del hincha {G}.",
     "con diez se sufre más. {P} igual se queda.",
-    "roja y {RIVAL} se creció. hay que ordenarse ya.",
+    "roja y {RIVAL_ANT} se creció. hay que ordenarse ya.",
     "el que se va no juega. el que se queda, que corra.",
     "tarjeta roja en {L}. el partido se partió al medio."
   ],
   remontada:[
     "íbamos abajo y {M} dio vuelta la tarde.",
     "{GOLEADOR} empujó la remontada. {L} se vino abajo.",
-    "el primer tiempo fue de {RIVAL}. el segundo, del hincha {G}.",
+    "el primer tiempo fue de {RIVAL_ANT}. el segundo, del hincha {G}.",
     "darlo vuelta duele más rico. esto es {P}.",
     "nadie avisó al marcador que íbamos perdiendo.",
-    "remontada en {L}. que {RIVAL} lo cuente como quiera.",
+    "remontada en {L}. que {RIVAL_ANT} lo cuente como quiera.",
     "de atrás y con bronca. así juega {M}.",
     "{GOLEADOR} no miró el resultado viejo. miró el arco.",
     "el banco dejó de sufrir y empezó a saltar. al fin.",
@@ -160,13 +161,13 @@ const PLOP_TPL={
   ],
   goleada_favor:[
     "esto ya no es partido. es un paseo en {L}.",
-    "{RIVAL} pide la hora y {GOLEADOR} no tiene reloj.",
+    "{RIVAL_ANT} pide la hora y {GOLEADOR} no tiene reloj.",
     "goleada {G}. fea para ellos, domingo para uno.",
     "el marcador se desordenó y {M} no pidió permiso.",
-    "a este ritmo {RIVAL} se va antes del pitazo.",
+    "a este ritmo {RIVAL_ANT} se va antes del pitazo.",
     "{CLUB} liquidó. en {L} ya cantan sin mirar el reloj.",
     "baile. que lo cuenten en la micro de vuelta.",
-    "{P} de paseo. {RIVAL} de visita, en el peor sentido.",
+    "{P} de paseo. {RIVAL_ANT} de visita, en el peor sentido.",
     "goleada y el hincha {G} igual va a pedir el quinto. hambre.",
     "se acabó temprano. {GOLEADOR} dejó la firma y el resto acompañó."
   ],
@@ -189,7 +190,7 @@ const PLOP_TPL={
     "le dijo que no al penal. el hincha {G} todavía está gritando.",
     "{P} se salvó en la línea de los doce pasos.",
     "el arquero eligió un lado y acertó. en {L} eso es himno.",
-    "atajada. {RIVAL} ya la estaba festejando.",
+    "atajada. {RIVAL_ANT} ya la estaba festejando.",
     "un penal menos y {M} sigue vivo.",
     "el uno no se tiró al centro por suerte. se tiró bien.",
     "eso no se entrena el domingo. {ARQUERO} lo tiene de nacimiento."
@@ -208,13 +209,13 @@ const PLOP_TPL={
   ],
   tiroLibre:[
     "tiro libre al borde del área. en {L} ya están de pie.",
-    "si no es gol, que al menos le saque el sueño a {RIVAL}.",
+    "si no es gol, que al menos le saque el sueño a {RIVAL_ANT}.",
     "la barrera saltó tarde. el hincha {G} no.",
     "{M} tiene un tiro libre. que no lo regalen.",
     "pelota quieta, corazón rápido. {L} lo sabe.",
     "{P} y una pelota detenida. puede ser el partido.",
     "que la ponga alguien con pierna, no con discurso.",
-    "tiro libre. {RIVAL} arma la muralla y igual tiembla."
+    "tiro libre. {RIVAL_ANT} arma la muralla y igual tiembla."
   ],
   arquero_figura:[
     "{ARQUERO} está enorme. {L} ya lo nombró figura.",
@@ -224,7 +225,7 @@ const PLOP_TPL={
     "{P} tiene arquero. hoy se notó.",
     "el arco es chico cuando está {ARQUERO}.",
     "figura bajo los tres palos. que no lo discutan.",
-    "valla que aguanta. {RIVAL} se va a acostar con rabia."
+    "valla que aguanta. {RIVAL_ANT} se va a acostar con rabia."
   ]
 };
 PLOP_TPL.empate_pobre=PLOP_TPL.empate;
@@ -237,7 +238,7 @@ const PLOP_MEME=[
   {ctx:"gana_agonico",quien:"@meme_del_90",txt:"mi vieja: ya apaga eso. yo: quedan cuatro. {GOLEADOR}: quedan cero."},
   {ctx:"gana_agonico",quien:"@plot_del_area",txt:"el empate ya estaba escrito. {GOLEADOR} rompió la hoja en el descuento."},
   {ctx:"gana_agonico",quien:"@sillon_oficial",txt:"tiré el cojín al aire. el cojín no pidió un gol al 90."},
-  {ctx:"pierde_local",quien:"@meme_del_90",txt:"de local, con la gente, y {RIVAL} se fue a la micro cantando. capítulo final."},
+  {ctx:"pierde_local",quien:"@meme_del_90",txt:"de local, con la gente, y {RIVAL_ANT} se fue a la micro cantando. capítulo final."},
   {ctx:"pierde_local",quien:"@plot_del_area",txt:"plot: íbamos a ganar. capítulo final: no."},
   {ctx:"pierde_local",quien:"@sillon_oficial",txt:"la tribuna silbó y el césped no tuvo la culpa. buen intento."},
   {ctx:"empate",quien:"@meme_del_90",txt:"empatar de local es perder con educación. nadie aplaudió el protocolo."},
@@ -251,7 +252,7 @@ const PLOP_MEME=[
   {ctx:"expulsion",quien:"@plot_del_area",txt:"roja. yo en el living: no era para tanto. el replay: era para tanto."},
   {ctx:"remontada",quien:"@meme_del_90",txt:"íbamos abajo y nadie avisó al marcador. error de ellos."},
   {ctx:"remontada",quien:"@sillon_oficial",txt:"el primer tiempo fue de ellos. el segundo fue una venganza con público."},
-  {ctx:"goleada_favor",quien:"@meme_del_90",txt:"{RIVAL} pide la hora y el reloj sigue en el primer tiempo. cruel."},
+  {ctx:"goleada_favor",quien:"@meme_del_90",txt:"{RIVAL_ANT} pide la hora y el reloj sigue en el primer tiempo. cruel."},
   {ctx:"goleada_favor",quien:"@plot_del_area",txt:"esto ya no es partido. es un paseo con público que pagó entrada."},
   {ctx:"penal_errado",quien:"@meme_del_90",txt:"la mandó a la luna. el arquero ni se tiró. cine mudo, entrada cara."},
   {ctx:"penal_errado",quien:"@plot_del_area",txt:"penal errado. temporada resumida en un tiro. no hay más plot."},
