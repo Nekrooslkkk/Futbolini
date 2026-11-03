@@ -5813,4 +5813,6 @@ BUZÓN quedó muy generado a la rápida; yo esperaba más de ese realismo Window
   - **test/escritorio.mjs** (dentro de correr_dev.sh) usa el escritorio de verdad en PC y celular, 39 comprobaciones:
     abre cada ícono y mira que se vea, arrastra, minimiza, restaura, maximiza, render(), lee un correo, el globito
     baja, Responder, Escape, cambia de sección y vuelve.
+- En el celular la ventana termina justo arriba de la barra de abajo (Jugar y el menú): antes le tapaba la barra de estado
+  al correo (`--vd-abajo`; la prueba lo exige).
 - **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular (170 chequeos) · dev 594/594 (escritorio 39/39, cancha 3D, Modo papa, duelos) · banco 255 partidas.

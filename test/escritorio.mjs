@@ -57,7 +57,7 @@ try{
       ok(await p.evaluate(()=>!document.querySelector('.vd-win[role="dialog"]')),"ninguna ventana lleva role=dialog (7.css la escondería)");
     } else {
       await abrir("decisiones");
-      ok(await seVe(p,"decisiones")&&await p.evaluate(()=>{ const r=document.querySelector('.vd-win[data-vd="decisiones"]').getBoundingClientRect(); return r.width>=innerWidth-2&&r.height>=innerHeight-2; }),"en el celular la ventana va a pantalla completa y se ve");
+      ok(await seVe(p,"decisiones")&&await p.evaluate(()=>{ const r=document.querySelector('.vd-win[data-vd="decisiones"]').getBoundingClientRect(), d=document.getElementById("dock"), piso=(d&&getComputedStyle(d).position==="fixed")?d.getBoundingClientRect().top:innerHeight; return r.width>=innerWidth-2&&r.top<=2&&Math.abs(r.bottom-piso)<3; }),"en el celular la ventana va a pantalla completa y termina justo arriba de la barra de abajo (no le tapa el pie)");
       await cerrar("decisiones");
       ok(!(await p.evaluate(()=>!!document.querySelector('.vd-win[data-vd="decisiones"]'))),"la X la cierra");
       await abrir("correo");

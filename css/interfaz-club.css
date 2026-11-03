@@ -232,7 +232,7 @@ body.en-partido #guardadoTxt{
   .vd-ico-nom{font-size:11px}
   .vd-glob{right:4px}
   .vd-lateral{padding:8px 6px}
-  .vd-win,.vd-win.window{left:0 !important;top:0 !important;right:0;bottom:0;width:auto !important;max-height:none;min-width:0;border-radius:0;z-index:60}
+  .vd-win,.vd-win.window{left:0 !important;top:0 !important;right:0;bottom:var(--vd-abajo,0px);width:auto !important;max-height:none;min-width:0;border-radius:0;z-index:60}
   .vd-win.vd-max{left:0 !important;top:0 !important}
   #vd-tareas{display:none}
   .wm{height:auto;flex:1}

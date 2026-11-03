@@ -130,7 +130,10 @@ function vdLimites(){
   return {izq:Math.max(0,r.left), arriba:arriba+6, ancho:window.innerWidth, alto:window.innerHeight};
 }
 function vdUbicar(w,id,d){
-  if(vdMovil()){ w.style.left=w.style.top=w.style.width=""; return; }
+  if(vdMovil()){ w.style.left=w.style.top=w.style.width="";
+    /* a pantalla completa, pero termina donde empieza la barra de abajo (Jugar y el menú): si no, le tapa el pie */
+    var dk=document.getElementById("dock"), r=dk&&dk.getBoundingClientRect(), abajo=(r&&r.height&&getComputedStyle(dk).position==="fixed")?Math.max(0,window.innerHeight-r.top):0;
+    document.documentElement.style.setProperty("--vd-abajo",abajo+"px"); return; }
   var L=vdLimites(), ancho=Math.min(d.w||600, L.ancho-L.izq-40);
   w.style.width=ancho+"px";
   var p=VD.pos[id];
