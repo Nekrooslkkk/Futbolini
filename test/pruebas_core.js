@@ -1817,6 +1817,8 @@
     safe(function(){
       ok(VERSION==="7.99953" || /^7\.9/.test(VERSION), "VERSION 7.99953");
       var scripts=[].map.call(document.querySelectorAll("script[src]"), function(s){ return s.getAttribute("src")||""; });
+      /* 7.9146 · desde 7.9145 todo entra en js/juego.js: la lista de lo que trae el paquete está en JUEGO_ARCHIVOS */
+      if(typeof JUEGO_ARCHIVOS!=="undefined") scripts=scripts.concat(JUEGO_ARCHIVOS);
       ok(scripts.some(function(s){ return /js\/data-planteles\.js(\?|$)/.test(s); }), "data-planteles.js cargado");
       ok(scripts.some(function(s){ return /js\/data-planteles-epoca\.js(\?|$)/.test(s); }), "data-planteles-epoca.js cargado");
       ok(!scripts.some(function(s){ return /data-planteles-8[89]|data-planteles-9[0-5]|data-planteles-99|data-planteles-80[012]/.test(s); }), "sin scripts huevo 88–802");

@@ -1,6 +1,6 @@
 "use strict";
 /* ============================================================
-   FUTBOLINI · correo.js — 7.9145
+   FUTBOLINI · correo.js — 7.9145 · 7.9146 Windows Mail
    Bandeja tipo Hotmail 2007, con color Aero. Se abre desde el ícono
    del escritorio (no desde la campana). La dirección queda fija en la
    partida. Los informes y el resumen de la semana llegan como correo,
@@ -58,7 +58,7 @@ function correoPush(m){
 }
 function correoSinLeer(){
   var c=E&&E.correo; if(!c||!c.mails) return 0;
-  return c.mails.filter(function(m){ return m&&!m.leido; }).length;
+  return c.mails.filter(function(m){ return m&&!m.leido&&!m.borrado; }).length;
 }
 function correoResumen(lineas){
   if(!E) return;
@@ -77,74 +77,153 @@ function _correoDecisiones(){
   return out;
 }
 
+/* ============================================================
+   7.9146 · WINDOWS MAIL (el correo de Vista), en vez del cuadro genérico de 7.9145.
+   Barra de herramientas (Responder, Eliminar, Enviar y recibir, Marcar como leído, Buscar), carpetas a la izquierda
+   (Bandeja de entrada, Sobre la mesa, Informes, Elementos eliminados), la lista con columnas (! · De · Asunto ·
+   Recibido) y el panel de lectura abajo con su cabecera (De, Para, Fecha, Asunto). Las decisiones pendientes llegan
+   como correo de quien las manda (el directorio, el capitán, el jefe de prensa…) y "Responder" abre la decisión de
+   verdad. Barra de estado: cuántos mensajes y cuántos sin leer. En el celu: carpetas arriba y el mensaje a pantalla.
+   ============================================================ */
+var CORREO_REMITE={institucional:"Directorio del club", refuerzos:"Secretaría técnica", finanzas:"Gerencia de finanzas",
+  camarin:"Capitán del plantel", preparacion:"Cuerpo técnico", hinchada:"Agrupación de hinchas", cantera:"Fútbol formativo",
+  prensa:"Jefe de prensa", gris:"Remitente desconocido"};
+var CORREO_CARPETAS=[["entrada","📥","Bandeja de entrada"],["mesa","📌","Sobre la mesa"],["informes","📊","Informes"],["eliminados","🗑️","Elementos eliminados"]];
+function _correoFecha(m){
+  try{ var c=E.calendario&&E.calendario[m.idx!=null?m.idx:E.idx]; if(c&&c.f&&typeof fechaTxt==="function") return fechaTxt(c.f)+" "+(m.anio||E.anio); }catch(e){}
+  return (m.anio||E.anio)+(m.idx!=null?" · sem. "+(m.idx+1):"");
+}
+/* todos los mensajes de la bandeja, en un solo formato (los correos guardados + las decisiones sobre la mesa) */
+function correoMensajes(){
+  correoAsegurar();
+  var out=[];
+  _correoDecisiones().forEach(function(dec){
+    var t=typeof resolverTokens==="function"?resolverTokens(dec.d.t,E):dec.d.t;
+    out.push({id:"dec_"+dec.x.id, dec:dec, de:CORREO_REMITE[dec.d.buzon]||"Club", asunto:t,
+      cuerpo:(typeof resolverTokens==="function"&&dec.d.d)?resolverTokens(dec.d.d,E):(dec.d.d||""), alta:dec.x.peso==="alto",
+      leido:!!(E.correo.decLeidas&&E.correo.decLeidas[dec.x.id]), fecha:_correoFecha({}), carpeta:"mesa"});
+  });
+  (E.correo.mails||[]).forEach(function(m){
+    out.push({id:m.id, m:m, de:m.de, asunto:m.asunto, cuerpo:m.cuerpo, leido:!!m.leido, fecha:_correoFecha(m),
+      carpeta:m.borrado?"eliminados":(/Syntergia|Ayudante/.test(m.de||"")?"informes":"entrada")});
+  });
+  return out;
+}
+function correoEnCarpeta(lista,k){
+  return lista.filter(function(x){
+    if(k==="eliminados") return x.carpeta==="eliminados";
+    if(x.carpeta==="eliminados") return false;
+    if(k==="entrada") return true;
+    return x.carpeta===k; });
+}
+function correoMarcar(x,leido){
+  if(!x) return;
+  if(x.dec){ E.correo.decLeidas=E.correo.decLeidas||{}; if(leido) E.correo.decLeidas[x.dec.x.id]=1; else delete E.correo.decLeidas[x.dec.x.id]; }
+  else if(x.m) x.m.leido=leido;
+  x.leido=leido;
+}
+function correoMontar(host){
+  correoAsegurar();
+  var S=(typeof VD!=="undefined"&&VD.correo)?VD.correo:{carpeta:"entrada",sel:null,q:""};
+  host.innerHTML=""; host.classList.add("wm-host");
+  var wm=el("div","wm"); host.appendChild(wm);
+  /* barra de herramientas */
+  var tb=el("div","wm-tb"); tb.setAttribute("role","toolbar");
+  var bt=function(ic,txt,fn,tit){ var b=el("button","wm-tbb"); b.type="button"; b.appendChild(el("span","wm-tbi",ic)); b.appendChild(el("span","wm-tbt",escHtml(txt))); b.title=tit||txt; b.onclick=fn; tb.appendChild(b); return b; };
+  var bResp=bt("↩️","Responder",function(){ var x=sel(); if(x&&x.dec&&typeof abrirDecision==="function") abrirDecision(x.dec.d,true); },"Responder: abre la decisión");
+  var bBorr=bt("🗑️","Eliminar",function(){ var x=sel(); if(!x||!x.m) return; x.m.borrado=!x.m.borrado; S.sel=null; guardarYpintar(); });
+  bt("🔄","Enviar y recibir",function(){ estado.textContent="Recibiendo mensajes…"; setTimeout(pintar,450); });
+  bt("✔️","Marcar como leído",function(){ correoEnCarpeta(correoMensajes(),S.carpeta).forEach(function(x){ correoMarcar(x,true); }); guardarYpintar(); },"Marca todo lo de esta carpeta como leído");
+  var busca=el("input","wm-busca"); busca.type="search"; busca.placeholder="Buscar"; busca.value=S.q||""; busca.setAttribute("aria-label","Buscar en el correo");
+  busca.oninput=function(){ S.q=busca.value; pintarLista(); };
+  tb.appendChild(busca);
+  wm.appendChild(tb);
+  var cuerpo=el("div","wm-lay"); wm.appendChild(cuerpo);
+  var nav=el("nav","wm-carpetas"); nav.setAttribute("aria-label","Carpetas");
+  var der=el("div","wm-der"), lista=el("div","wm-lista"), vista=el("div","wm-vista");
+  der.appendChild(lista); der.appendChild(vista);
+  cuerpo.appendChild(nav); cuerpo.appendChild(der);
+  var estado=el("div","wm-estado"); wm.appendChild(estado);
+  var todos=[];
+  function sel(){ return todos.filter(function(x){ return x.id===S.sel; })[0]||null; }
+  function guardarYpintar(){ if(typeof guardar==="function") guardar(); pintar(); vdIconosAlDia(); }
+  function pintarCarpetas(){
+    nav.innerHTML="";
+    nav.appendChild(el("div","wm-raiz","📁 Carpetas locales"));
+    CORREO_CARPETAS.forEach(function(c){
+      var xs=correoEnCarpeta(todos,c[0]), nl=xs.filter(function(x){ return !x.leido; }).length;
+      var b=el("button","wm-carpeta"+(S.carpeta===c[0]?" sel":"")+(nl?" con":"")); b.type="button";
+      b.innerHTML="<span>"+c[1]+"</span> "+escHtml(c[2])+(nl?" <b>("+nl+")</b>":"");
+      b.onclick=function(){ S.carpeta=c[0]; S.sel=null; wm.classList.remove("wm-leyendo"); pintar(); };
+      nav.appendChild(b);
+    });
+  }
+  function pintarLista(){
+    lista.innerHTML="";
+    var q=(S.q||"").toLowerCase().trim();
+    var xs=correoEnCarpeta(todos,S.carpeta).filter(function(x){ return !q||(x.asunto+" "+x.de+" "+x.cuerpo).toLowerCase().indexOf(q)>=0; });
+    var t=el("table","wm-tabla"); t.setAttribute("role","grid");
+    t.innerHTML="<thead><tr><th class='wm-c-imp' title='Importancia'>!</th><th class='wm-c-ic'></th><th>De</th><th>Asunto</th><th class='wm-c-fecha'>Recibido</th></tr></thead>";
+    var tb2=el("tbody");
+    xs.forEach(function(x){
+      var tr=el("tr","wm-fila"+(x.leido?"":" nuevo")+(x.id===S.sel?" sel":"")); tr.tabIndex=0; tr.dataset.id=x.id;
+      tr.innerHTML="<td class='wm-c-imp'>"+(x.alta?"<span class='wm-imp' title='Importancia alta'>!</span>":"")+"</td>"+
+        "<td class='wm-c-ic'>"+(x.dec?"📌":(x.leido?"📭":"✉️"))+"</td><td class='wm-c-de'>"+escHtml(x.de)+"</td><td class='wm-c-as'>"+escHtml(x.asunto)+"</td><td class='wm-c-fecha'>"+escHtml(x.fecha)+"</td>";
+      tr.onclick=function(){ S.sel=x.id; correoMarcar(x,true); if(typeof guardar==="function") guardar(); wm.classList.add("wm-leyendo"); pintar(); vdIconosAlDia(); };
+      tr.ondblclick=function(){ if(x.dec&&typeof abrirDecision==="function") abrirDecision(x.dec.d,true); };
+      tr.onkeydown=function(e){ if(e.key==="Enter"){ e.preventDefault(); tr.onclick(); } };
+      tb2.appendChild(tr);
+    });
+    t.appendChild(tb2); lista.appendChild(t);
+    if(!xs.length) lista.appendChild(el("p","wm-vacio",q?"No hay mensajes que coincidan con la búsqueda.":(S.carpeta==="mesa"?"No hay nada sobre la mesa. Por ahora.":"No hay mensajes en esta carpeta.")));
+  }
+  function pintarVista(){
+    vista.innerHTML=""; var x=sel();
+    bResp.disabled=!(x&&x.dec); bBorr.disabled=!(x&&x.m);
+    bBorr.querySelector(".wm-tbt").textContent=(x&&x.m&&x.m.borrado)?"Recuperar":"Eliminar";
+    if(!x){ vista.appendChild(el("p","wm-vacio","Selecciona un mensaje para leerlo.")); return; }
+    var volver=el("button","wm-volver","← Volver a "+escHtml((CORREO_CARPETAS.filter(function(c){ return c[0]===S.carpeta; })[0]||[,,"la bandeja"])[2]));
+    volver.type="button"; volver.onclick=function(){ wm.classList.remove("wm-leyendo"); };
+    vista.appendChild(volver);
+    var cab=el("div","wm-cab");
+    cab.innerHTML="<div class='wm-as'>"+escHtml(x.asunto)+(x.alta?" <span class='wm-imp-tag'>Importancia alta</span>":"")+"</div>"+
+      "<div><b>De:</b> "+escHtml(x.de)+"</div><div><b>Fecha:</b> "+escHtml(x.fecha)+"</div><div><b>Para:</b> "+escHtml(E.correo.direccion)+"</div>";
+    vista.appendChild(cab);
+    var cuerpoMsg=el("div","wm-msg"); cuerpoMsg.textContent=x.cuerpo||"(sin texto)";
+    vista.appendChild(cuerpoMsg);
+    if(x.dec){
+      vista.appendChild(el("p","wm-nota","Esto sigue sobre la mesa"+(x.alta?" y hay que resolverlo antes del próximo partido":"")+". Responder abre la decisión con sus opciones y el consejo de tu gente."));
+      var r=el("button","btn-aqua verde","↩️ Responder"); r.type="button"; r.onclick=function(){ if(typeof abrirDecision==="function") abrirDecision(x.dec.d,true); };
+      vista.appendChild(r);
+    }
+  }
+  function pintar(){
+    todos=correoMensajes();
+    if(S.sel&&!sel()) S.sel=null;
+    pintarCarpetas(); pintarLista(); pintarVista();
+    var xs=correoEnCarpeta(todos,S.carpeta), nl=xs.filter(function(x){ return !x.leido; }).length;
+    estado.innerHTML="<span>"+xs.length+" mensaje"+(xs.length===1?"":"s")+", "+nl+" sin leer</span><span>"+(navigator.onLine===false?"Sin conexión":"Trabajando en línea")+"</span><span class='wm-dir'>"+escHtml(E.correo.direccion)+"</span>";
+  }
+  pintar();
+  return wm;
+}
+/* los globitos del ícono de Correo se ponen al día sin repintar todo el escritorio */
+function vdIconosAlDia(){
+  var b=document.querySelector('.vd-ico[data-vd="correo"]'); if(!b) return;
+  var n=correoMensajes().filter(function(x){ return !x.leido&&x.carpeta!=="eliminados"; }).length, g=b.querySelector(".vd-glob");
+  if(!n){ if(g) g.remove(); return; }
+  if(!g){ g=el("span","vd-glob"); b.appendChild(g); }
+  g.textContent=String(n);
+}
 function abrirCorreo(){
   correoAsegurar();
+  if(typeof vdAbrir==="function"&&typeof SEC!=="undefined"&&SEC==="escritorio"&&document.querySelector(".vd")){ vdAbrir("correo"); return; }
   if(typeof modal!=="function") return;
+  /* fuera del Escritorio: el mismo Windows Mail en un cuadro */
   modal(function(box){
-    box.classList.add("correo-win");
-    var cab=el("div","cab"); cab.appendChild(el("span","ic","✉️")); cab.appendChild(el("span",null,"Correo"));
-    box.appendChild(cab);
-    var cuerpo=el("div","cuerpo correo-cuerpo");
-    var bar=el("div","correo-bar");
-    bar.appendChild(el("b",null,"Hotmail del club"));
-    bar.appendChild(el("span","correo-dir",E.correo.direccion));
-    cuerpo.appendChild(bar);
-    var lay=el("div","correo-lay");
-    var lista=el("div","correo-lista");
-    var leer=el("div","correo-leer");
-    function pintarLeer(m, dec){
-      leer.innerHTML="";
-      if(dec){
-        leer.appendChild(el("div","correo-as","Decisión · "+(typeof resolverTokens==="function"?resolverTokens(dec.d.t,E):dec.d.t)));
-        leer.appendChild(el("p","mini","Llegó a tu bandeja porque sigue sobre la mesa. Elige como lo harías en el club."));
-        (dec.d.op||[]).forEach(function(op,i){
-          var b=el("button","btn-aqua chico",op.t);
-          b.onclick=function(){
-            try{ resolverDecision(dec.d,i); }catch(e){}
-            if(typeof guardar==="function") guardar();
-            cerrarModal();
-            if(typeof render==="function") render();
-          };
-          leer.appendChild(b);
-        });
-        return;
-      }
-      if(!m){ leer.appendChild(el("p","mini","Elige un mensaje. Los informes del ayudante y el resumen de la semana quedan acá.")); return; }
-      m.leido=true;
-      leer.appendChild(el("div","correo-as",m.asunto));
-      leer.appendChild(el("p","mini","De "+m.de+" · "+(m.anio||"")+(m.idx!=null?" · semana "+(m.idx+1):"")));
-      leer.appendChild(el("p",null,m.cuerpo));
-      pintarLista();
-    }
-    function pintarLista(){
-      lista.innerHTML="";
-      var decs=_correoDecisiones();
-      if(decs.length){
-        lista.appendChild(el("div","correo-sec","Sobre la mesa"));
-        decs.forEach(function(dec){
-          var b=el("button","correo-item nuevo");
-          b.innerHTML="<b>"+escHtml(typeof resolverTokens==="function"?resolverTokens(dec.d.t,E):dec.d.t)+"</b><span>decisión pendiente</span>";
-          b.onclick=function(){ pintarLeer(null, dec); };
-          lista.appendChild(b);
-        });
-      }
-      lista.appendChild(el("div","correo-sec","Bandeja de entrada"));
-      var mails=(E.correo.mails||[]);
-      if(!mails.length) lista.appendChild(el("p","mini correo-vacio","Todavía no te llega nada. Cuando Syntergia o el ayudante hagan algo, el informe cae acá."));
-      mails.forEach(function(m){
-        var b=el("button","correo-item"+(m.leido?"":" nuevo"));
-        b.innerHTML="<b>"+escHtml(m.asunto)+"</b><span>"+escHtml(m.de)+"</span>";
-        b.onclick=function(){ pintarLeer(m,null); if(typeof guardar==="function") guardar(); };
-        lista.appendChild(b);
-      });
-    }
-    pintarLista();
-    pintarLeer(null,null);
-    lay.appendChild(lista); lay.appendChild(leer);
-    cuerpo.appendChild(lay);
-    var bx=el("button","btn-aqua chico gris","Cerrar"); bx.onclick=function(){ cerrarModal(); if(typeof render==="function") render(); };
-    cuerpo.appendChild(bx);
-    box.appendChild(cuerpo);
+    var cuerpo=montarBarraSO(box,"Correo","✉️",function(){ cerrarModal(); });
+    box.classList.add("vd-correo");
+    correoMontar(cuerpo);
   },{clase:"correo-modal"});
 }
 

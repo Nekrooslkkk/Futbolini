@@ -21,11 +21,16 @@ open("_saves_tmp.html","w",encoding="utf-8").write(s.replace("</body>",inject))
 PY
 DIR=$(mktemp -d)
 trap 'rm -f ./_saves_tmp.html ./_saves_datos.js; rm -rf "$DIR"' EXIT
+# 7.9146 · con Playwright (tiempo real): en el Chromium 153 el reloj virtual de --virtual-time-budget ya no se adelanta
+if command -v node >/dev/null 2>&1 && { [ -f /opt/node22/lib/node_modules/playwright/index.mjs ] || node -e "require.resolve('playwright')" >/dev/null 2>&1; }; then
+OUT=$(timeout 900 node test/saves.mjs 2>&1)
+else
 OUT=$(timeout 900 "$CHROME_BIN" --headless=new --no-sandbox --disable-gpu --user-data-dir="$DIR" --window-size=1366,800 --virtual-time-budget=600000 --dump-dom "file://$PWD/_saves_tmp.html" 2>/dev/null | python3 -c "
 import sys,re,html
 d=sys.stdin.read(); m=re.search(r'<pre id=\"out\">(.*?)</pre>', d, re.S)
 print(html.unescape(m.group(1)) if m else 'NO OUT · SAVES_DONE:FAIL')
 ")
+fi
 echo "$OUT" | grep -v "SAVES_DONE"
 echo
 if echo "$OUT" | grep -q "SAVES_DONE:PASS"; then echo "✅ PARTIDAS VIEJAS: todas cargan y siguen"; exit 0; else echo "❌ PARTIDAS VIEJAS con fallas"; exit 1; fi

@@ -5755,3 +5755,62 @@ El autor preguntó si la interfaz estaba hecha. No: el pie y el reloj ya estaban
 
 ## 7.9145 · abrir sin pantalla blanca
 Título único 7.9145. Un solo archivo de juego. Splash con frases desde el HTML. Íconos de escritorio pedidos (sin Calendario). Correo en ícono. Recorte de entradas hasta el precio justo, una vez.
+
+### 7.9146 — El escritorio Vista DE VERDAD y el correo como Windows Mail (y juego.js que no se queda viejo)
+Pedido del autor (3 nov 2026): "las UI de escritorio que le había pedido a Grok están re bugeadas y no se pueden usar; el
+BUZÓN quedó muy generado a la rápida; yo esperaba más de ese realismo Windows Vista".
+- **Lo que estaba roto en 7.9145 (medido en un navegador, no supuesto):**
+  - las ventanas de los íconos NO SE VEÍAN: llevaban `role="dialog"` con la clase `.window`, y 7.css esconde
+    `.window[role=dialog]` (opacity 0, visibility hidden);
+  - el ícono de Decisiones saltaba sin parar (un clic no lo alcanzaba);
+  - la ventana de atrás no recibía clics, y cualquier render() cerraba todas;
+  - el tema Aero anima "todo" en las ventanas, también el z-index: la ventana nueva quedaba un rato DETRÁS de la
+    anterior;
+  - el correo era un cuadro genérico que repetía las decisiones como botones sueltos.
+- **Escritorio (js/escritorio-vista.js, reescrito):**
+  - íconos en columna a la izquierda como Windows (un clic selecciona, doble clic abre; en el celu, un toque);
+  - al centro, el próximo partido y "Atiende antes de avanzar";
+  - a la derecha la **barra lateral de Vista** con gadgets: calendario con la fecha del juego y el próximo rival,
+    medidores del club, temporada, y "El club no olvida" como nota adhesiva.
+- **Ventanas de vidrio:**
+  - se arrastran por la barra de título, doble clic maximiza, minimizar las manda a una **barra de tareas** (que no se
+    mete bajo Jugar), la activa va adelante con el vidrio más fuerte, y Escape cierra la de adelante;
+  - se acuerdan de dónde estaban y **sobreviven a render()**: resuelves algo y la ventana sigue abierta y al día;
+  - si cambias de sección no quedan flotando, y al volver aparecen otra vez;
+  - en el celular van a pantalla completa.
+- **Correo = Windows Mail de Vista (js/correo.js, `correoMontar`):**
+  - barra de herramientas: Responder, Eliminar/Recuperar, Enviar y recibir, Marcar como leído y Buscar;
+  - carpetas: Bandeja de entrada, Sobre la mesa, Informes y Elementos eliminados;
+  - lista con columnas (! · De · Asunto · Recibido), en negrita lo no leído, y panel de lectura con De / Fecha / Para;
+  - las decisiones llegan del que las manda (Directorio, Capitán del plantel, Jefe de prensa…) y "Responder" abre la
+    decisión de verdad;
+  - barra de estado: "N mensajes, M sin leer · Trabajando en línea" y tu dirección;
+  - el globito del ícono baja al leer;
+  - en el celu: carpetas arriba y el mensaje a pantalla con "← Volver".
+- **js/juego.js que no se queda viejo:** desde 7.9145 el juego entra en un solo archivo, pero no había cómo rearmarlo
+  (y `main` tenía 2 pruebas rojas).
+  - `node scripts/juntar.js` lo arma desde `js/orden.txt` (el orden de carga), con el mismo código del Modo papa,
+    copia la versión de util.js a index.html y boot-pintar.js, y deja `JUEGO_ARCHIVOS`;
+  - `--revisar` (primer paso de `test/correr.sh`) falla si el paquete quedó viejo, si la versión no calza o si hay un
+    js/ que no está en la lista;
+  - CLAUDE.md lo dice.
+- **Dev:**
+  - doctor `escritorio_vista` (sobre la partida real): la ventana se ve, flota y no anima el z-index; el panel no
+    repite cabecera; Windows Mail trae sus 4 carpetas y todas las decisiones, y la lista calza con la carpeta;
+    `juego.js` trae el escritorio y el correo. Al revés: con `role=dialog` 3 fallas; con la transición de "todo",
+    falla.
+- **Las pruebas que se habían roto solas (medido):**
+  - `saves.sh` y `banco.sh` usaban Chrome con `--virtual-time-budget`. En el Chromium 153 de este contenedor el reloj
+    virtual ya no se adelanta: se colgaban hasta el timeout, también con el código de 7.9141 (bisección de 7.9141 a
+    7.9145: todas igual, o sea que no era código). Ahora usan Playwright con tiempo real (`test/saves.mjs`,
+    `test/banco.mjs`, una pestaña por tanda), con el método viejo de respaldo; saves vuelve a tardar ~5 s.
+  - `correr_dev.sh` buscaba funciones duplicadas en `js/*.js`, y `juego.js` las repite todas.
+  - Peor: el analizador de envoltorios sacaba el orden de carga de los `<script>` del index; con un solo archivo,
+    pasaba sin revisar nada.
+  - Los dos leen ahora `js/orden.txt`.
+  - El aro del globito urgente era una animación infinita: el doctor `reposo_sin_repintar` lo cazó (las PCs lentas).
+    Ahora es fijo.
+  - **test/escritorio.mjs** (dentro de correr_dev.sh) usa el escritorio de verdad en PC y celular, 39 comprobaciones:
+    abre cada ícono y mira que se vea, arrastra, minimiza, restaura, maximiza, render(), lee un correo, el globito
+    baja, Responder, Escape, cambia de sección y vuelve.
+- **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular (170 chequeos) · dev 594/594 (escritorio 39/39, cancha 3D, Modo papa, duelos) · banco 255 partidas.

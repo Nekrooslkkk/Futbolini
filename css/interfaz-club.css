@@ -108,35 +108,149 @@ body.en-partido #guardadoTxt{
   .aviso.aviso-sale{animation:none; opacity:0}
 }
 
-/* 7.9145 · escritorio con íconos (solo los pedidos) + correo */
-.esc-mesa{display:flex;flex-wrap:wrap;gap:14px 18px;padding:8px 4px 16px;align-items:flex-start}
-.esc-ico{width:84px;min-height:78px;border:0;background:transparent;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;position:relative;text-shadow:0 1px 2px rgba(0,30,60,.8);padding:4px;border-radius:6px}
-.esc-ico.sel,.esc-ico:focus-visible{outline:1px dotted #fff;background:rgba(255,255,255,.18)}
-.esc-px{font-size:32px;line-height:1;filter:drop-shadow(1px 2px 0 rgba(0,40,80,.45));image-rendering:pixelated}
-.esc-nom{font-size:11px;font-weight:700;text-align:center;line-height:1.15;max-width:84px}
-.esc-glob{position:absolute;top:0;right:8px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#c0392b;color:#fff;font-size:10px;font-weight:800;line-height:16px;text-shadow:none}
-.esc-late{animation:escLate 1.4s ease-in-out infinite}
-@keyframes escLate{50%{transform:translateY(-2px)}}
-.esc-win{position:fixed;left:50%;top:54px;transform:translateX(-50%);width:min(640px,calc(100vw - 24px));max-height:min(78vh,720px);z-index:40;display:flex;flex-direction:column}
-.esc-win .so-cuerpo,.esc-win .window-body{overflow:auto;max-height:min(68vh,640px)}
-.esc-win.esc-detras{filter:saturate(.7) brightness(.92);pointer-events:none}
-.syn-callar{display:flex;align-items:center;gap:6px;font-size:12px;margin-top:4px}
-.correo-cuerpo{display:flex;flex-direction:column;gap:8px}
-.correo-bar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;padding:6px 8px;background:linear-gradient(180deg,#fff,#d6e9ff);border:1px solid rgba(40,90,160,.35);border-radius:8px}
-.correo-dir{font-family:var(--f-dato,Consolas,monospace);font-size:12px}
-.correo-lay{display:grid;grid-template-columns:minmax(140px,34%) 1fr;gap:8px;min-height:240px}
-.correo-lista{overflow:auto;max-height:46vh;border:1px solid rgba(40,90,160,.25);border-radius:8px;background:rgba(255,255,255,.72)}
-.correo-sec{font-size:11px;font-weight:800;padding:6px 8px;background:linear-gradient(180deg,#e7f2ff,#c5ddf8)}
-.correo-item{display:flex;flex-direction:column;align-items:flex-start;width:100%;text-align:left;border:0;border-bottom:1px solid rgba(0,0,0,.06);background:transparent;padding:7px 8px;cursor:pointer}
-.correo-item.nuevo b{font-weight:800}
-.correo-item span{font-size:11px;opacity:.75}
-.correo-leer{padding:8px;overflow:auto;max-height:46vh}
-.correo-as{font-weight:800;margin-bottom:4px}
-.correo-vacio{padding:8px}
-@media (max-width:720px){
-  .esc-mesa{gap:8px 6px}
-  .esc-ico{width:72px}
-  .correo-lay{grid-template-columns:1fr}
-  .esc-win{top:8px;width:calc(100vw - 12px);max-height:calc(100vh - 16px)}
+/* ============================================================
+   7.9146 · ESCRITORIO VISTA DE VERDAD (js/escritorio-vista.js) + WINDOWS MAIL (js/correo.js)
+   ============================================================ */
+.vd{display:grid;grid-template-columns:96px minmax(0,1fr) 300px;gap:14px;align-items:start}
+/* íconos del escritorio: en columna, como Windows */
+.vd-iconos{display:flex;flex-direction:column;gap:6px;position:sticky;top:64px}
+.vd-ico{position:relative;width:88px;padding:6px 4px 5px;border:1px solid transparent;border-radius:3px;background:transparent;
+  color:#fff;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:default;font:inherit;
+  text-shadow:0 0 3px #000,0 1px 2px rgba(0,0,0,.9)}
+.vd-ico-img{font-size:38px;line-height:44px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+.vd-ico-nom{font-size:12px;line-height:1.2;text-align:center;max-width:84px}
+.vd-ico:hover{background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(190,225,255,.18));border-color:rgba(255,255,255,.55);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.vd-ico.sel,.vd-ico:focus-visible{outline:none;background:linear-gradient(180deg,rgba(120,190,255,.55),rgba(60,140,230,.42));
+  border-color:rgba(190,230,255,.9);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.vd-glob{position:absolute;top:2px;right:10px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;
+  background:linear-gradient(180deg,#ff6b5b,#c0281c);border:1px solid #fff;color:#fff;font-size:11px;font-weight:800;
+  line-height:16px;text-shadow:none;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+/* urgente: aro rojo fijo (sin animación infinita: el doctor reposo_sin_repintar cuida las PCs lentas) */
+.vd-glob-alto{box-shadow:0 0 0 3px rgba(255,90,70,.5),0 1px 3px rgba(0,0,0,.45)}
+.vd-centro{min-width:0}
+/* barra lateral de Vista: gadgets */
+.vd-lateral{display:flex;flex-direction:column;gap:10px;padding:10px 8px;border-radius:10px;
+  background:linear-gradient(90deg,rgba(0,20,40,.28),rgba(0,20,40,.12));box-shadow:inset 1px 0 0 rgba(255,255,255,.18)}
+#vista .vd-lateral .panel.vd-gadget{margin:0;border-radius:10px;background:rgba(250,252,255,.86);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.75);
+  box-shadow:0 3px 10px rgba(0,25,60,.35),inset 0 1px 0 #fff}
+#vista .vd-lateral .panel.vd-gadget > .cab{padding:6px 10px;font-size:12.5px;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(214,232,250,.9));border-bottom:1px solid rgba(80,120,170,.25)}
+#vista .vd-lateral .panel.vd-gadget > .cuerpo{padding:8px 10px;font-size:12.5px}
+#vista .vd-lateral .panel.vd-nota{background:linear-gradient(180deg,#fff9c4,#fdf08a);border-color:#e8d95c;transform:rotate(-.6deg)}
+#vista .vd-lateral .panel.vd-nota > .cab{background:linear-gradient(180deg,#fff7b0,#f6e57a);border-bottom-color:#e2cf55;color:#5a4b00}
+.vd-cal{position:relative;border-radius:10px;padding:10px 12px 12px;text-align:center;color:#20354d;
+  background:linear-gradient(180deg,#fff 0%,#f1f6fb 45%,#dbe7f3 100%);border:1px solid #fff;
+  box-shadow:0 3px 10px rgba(0,25,60,.35),inset 0 -2px 0 rgba(120,150,190,.25)}
+.vd-cal::before{content:"";position:absolute;left:0;right:0;top:0;height:10px;border-radius:10px 10px 0 0;background:linear-gradient(180deg,#d94b3d,#b42e22)}
+.vd-cal-dia{margin-top:6px;font-size:13px;text-transform:capitalize;color:#b42e22;font-weight:700}
+.vd-cal-num{font-size:52px;font-weight:300;line-height:1;margin:2px 0}
+.vd-cal-mes{font-size:13px;text-transform:capitalize}
+.vd-cal-prox{margin-top:6px;font-size:12px;padding-top:6px;border-top:1px solid rgba(80,120,170,.2)}
+
+/* ventanas de vidrio (montarBarraSO les pone .ventana-so .window .glass) */
+.vd-win,.vd-win.window{position:fixed;z-index:46;display:flex;flex-direction:column;max-height:calc(100vh - var(--vd-arriba,60px) - 84px);
+  min-width:300px;border-radius:7px;box-shadow:0 10px 32px rgba(0,0,0,.5),0 0 0 1px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.6)}
+/* el tema Aero anima "todo" en .ventana-so: también el z-index, y la ventana nueva quedaba un rato DETRÁS de la anterior */
+.vd-win,.vd-win.window{transition:box-shadow .15s ease !important}
+.vd-win > .so-barra{cursor:default;user-select:none;-webkit-user-select:none;touch-action:none;min-height:30px}
+.vd-win > .so-cuerpo,.vd-win > .window-body{flex:1;min-height:0;overflow:auto;background:#fff}
+.vd-win:not(.vd-activa){box-shadow:0 6px 18px rgba(0,0,0,.35),0 0 0 1px rgba(0,0,0,.35)}
+.vd-win:not(.vd-activa)::before{opacity:.38 !important}
+.vd-win:not(.vd-activa) > .so-barra .so-titulo{opacity:.7}
+.vd-win.vd-moviendo{opacity:.94;transition:none}
+.vd-win.vd-max{left:var(--vd-izq,0px) !important;top:var(--vd-arriba,56px) !important;width:auto !important;right:8px;bottom:8px;max-height:none}
+.vd-win.vd-min{display:none !important}
+.vd-win.vd-entra{animation:vdEntra .18s ease-out}
+.vd-win.vd-sale{animation:vdSale .14s ease-in forwards;pointer-events:none}
+@keyframes vdEntra{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+@keyframes vdSale{to{opacity:0;transform:scale(.95)}}
+/* el panel adentro de la ventana no repite su cabecera (el título va en la barra de la ventana); !important porque el
+   tema Aero pinta .panel > .cab con más especificidad */
+.vd-win .panel.vd-en-ventana{margin:0 !important;border:0 !important;border-radius:0 !important;box-shadow:none !important;background:transparent !important}
+.vd-win .panel.vd-en-ventana > .cab{display:none !important}
+/* barra de tareas: un botón por ventana */
+#vd-tareas{position:fixed;bottom:10px;z-index:47;display:flex;gap:4px;overflow:hidden;padding:4px;border-radius:6px;
+  background:linear-gradient(180deg,rgba(40,50,60,.78),rgba(10,15,20,.88));box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.25)}
+.vd-tarea{display:flex;align-items:center;gap:6px;flex:0 1 160px;min-width:44px;padding:5px 10px;border-radius:4px;
+  border:1px solid rgba(255,255,255,.18);background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.04) 50%,rgba(0,0,0,.12));
+  color:#fff;font:inherit;font-size:12px;cursor:pointer;text-shadow:0 1px 1px #000}
+.vd-tarea:hover{background:linear-gradient(180deg,rgba(150,210,255,.45),rgba(70,140,220,.3) 50%,rgba(20,80,160,.35))}
+.vd-tarea.activa{background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(60,110,170,.45));border-color:rgba(150,200,255,.6);box-shadow:inset 0 1px 3px rgba(0,0,0,.6)}
+.vd-tarea.mini{opacity:.85}
+.vd-tarea-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- Windows Mail ---------- */
+.vd-correo > .so-cuerpo,.vd-correo > .window-body{padding:0 !important;overflow:hidden;display:flex}
+.wm{display:flex;flex-direction:column;flex:1;min-height:0;height:min(560px,calc(100vh - var(--vd-arriba,60px) - 128px));font-size:12.5px;color:#1b2a3a;background:#fff}
+.wm-tb{display:flex;align-items:center;gap:2px;padding:4px 6px;background:linear-gradient(180deg,#fdfeff 0%,#e3eefb 50%,#d3e3f6 51%,#e6f0fb 100%);border-bottom:1px solid #a7bcd6}
+.wm-tbb{display:flex;align-items:center;gap:5px;padding:4px 8px;border:1px solid transparent;border-radius:3px;background:transparent;font:inherit;font-size:12px;color:#1b2a3a;cursor:pointer}
+.wm-tbb:hover:not(:disabled){border-color:#a9cbee;background:linear-gradient(180deg,#f2f9ff,#d4eafd)}
+.wm-tbb:active:not(:disabled){background:linear-gradient(180deg,#c7e0f8,#e6f2fd)}
+.wm-tbb:disabled{opacity:.45;cursor:default}
+.wm-tbi{font-size:14px}
+.wm-busca{margin-left:auto;width:170px;padding:3px 8px;border:1px solid #9ab4d2;border-radius:3px;font:inherit;font-size:12px;background:#fff}
+.wm-lay{flex:1;min-height:0;display:grid;grid-template-columns:200px minmax(0,1fr)}
+.wm-carpetas{overflow:auto;padding:6px 4px;background:linear-gradient(90deg,#f4f8fc,#e9f1fa);border-right:1px solid #b8cbe2}
+.wm-raiz{padding:4px 6px;font-weight:700;color:#2a4a72}
+.wm-carpeta{display:block;width:100%;text-align:left;padding:4px 8px 4px 20px;border:1px solid transparent;border-radius:3px;background:transparent;font:inherit;font-size:12.5px;color:#1b2a3a;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wm-carpeta:hover{border-color:#b9d7f5;background:#eef6ff}
+.wm-carpeta.sel{border-color:#7fb4e8;background:linear-gradient(180deg,#e2f1ff,#c8e3fc)}
+.wm-carpeta.con{font-weight:700}
+.wm-carpeta b{color:#1d5ea8}
+.wm-der{display:grid;grid-template-rows:minmax(110px,44%) minmax(0,1fr);min-height:0}
+.wm-lista{overflow:auto;border-bottom:4px solid #dbe6f2}
+.wm-tabla{width:100%;border-collapse:collapse;table-layout:fixed}
+.wm-tabla th{position:sticky;top:0;z-index:1;text-align:left;font-weight:400;font-size:12px;padding:3px 6px;background:linear-gradient(180deg,#fff,#f0f4f9 60%,#e5ecf4);border-bottom:1px solid #c6d4e4;border-right:1px solid #dde6f0;color:#3c5170}
+.wm-tabla td{padding:3px 6px;border-bottom:1px solid #eef2f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wm-c-imp{width:18px;text-align:center}.wm-c-ic{width:30px;text-align:center;text-overflow:clip !important}.wm-c-de{width:30%}.wm-c-fecha{width:118px}
+.wm-fila{cursor:default}
+.wm-fila:hover td{background:#f3f9ff}
+.wm-fila.nuevo td{font-weight:700}
+.wm-fila.sel td{background:linear-gradient(180deg,#dff0ff,#c4e2fd);color:#0b2a4a}
+.wm-fila:focus-visible{outline:1px dotted #2a5d9a;outline-offset:-2px}
+.wm-imp{color:#c0281c;font-weight:900}
+.wm-vista{overflow:auto;padding:0 0 10px}
+.wm-cab{padding:8px 12px;background:linear-gradient(180deg,#f7fafd,#e8eff7);border-bottom:1px solid #c9d7e6;line-height:1.55}
+.wm-as{font-size:15px;font-weight:700;margin-bottom:2px}
+.wm-imp-tag{font-size:11px;font-weight:700;color:#c0281c;border:1px solid #e3a49d;border-radius:3px;padding:0 4px;background:#fff1ef}
+.wm-msg{padding:12px;white-space:pre-wrap;line-height:1.5}
+.wm-nota{margin:0 12px 8px;font-size:12px;color:#4a5d74}
+.wm-vista > .btn-aqua{margin:0 12px}
+.wm-vacio{padding:14px;color:#5b6d82}
+.wm-volver{display:none}
+.wm-estado{display:flex;gap:0;font-size:11.5px;background:linear-gradient(180deg,#eef3f9,#dde7f2);border-top:1px solid #b8cbe2}
+.wm-estado span{padding:3px 10px;border-right:1px solid #c3d2e3}
+.wm-estado .wm-dir{margin-left:auto;border-right:0;font-family:var(--f-dato,Consolas,monospace)}
+
+/* ---------- celular ---------- */
+@media (max-width:760px){
+  .vd{grid-template-columns:1fr;gap:10px}
+  .vd-iconos{position:static;flex-direction:row;flex-wrap:wrap;justify-content:space-between;gap:2px;padding:6px;border-radius:10px;background:rgba(0,30,60,.25)}
+  .vd-ico{width:calc(20% - 2px);min-width:62px;padding:6px 2px}
+  .vd-ico-img{font-size:30px;line-height:36px}
+  .vd-ico-nom{font-size:11px}
+  .vd-glob{right:4px}
+  .vd-lateral{padding:8px 6px}
+  .vd-win,.vd-win.window{left:0 !important;top:0 !important;right:0;bottom:0;width:auto !important;max-height:none;min-width:0;border-radius:0;z-index:60}
+  .vd-win.vd-max{left:0 !important;top:0 !important}
+  #vd-tareas{display:none}
+  .wm{height:auto;flex:1}
+  .wm-lay{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+  .wm-carpetas{display:flex;gap:4px;overflow-x:auto;border-right:0;border-bottom:1px solid #b8cbe2;padding:4px}
+  .wm-raiz{display:none}
+  .wm-carpeta{padding:6px 10px;width:auto;flex:0 0 auto}
+  .wm-der{grid-template-rows:minmax(0,1fr)}
+  .wm-lista{border-bottom:0}
+  .wm-vista{display:none}
+  .wm.wm-leyendo .wm-lista{display:none}
+  .wm.wm-leyendo .wm-vista{display:block}
+  .wm-volver{display:block;margin:8px 10px;padding:6px 10px;border:1px solid #9ab4d2;border-radius:4px;background:linear-gradient(180deg,#fff,#e3eefb);font:inherit}
+  .wm-c-de{width:34%}.wm-c-fecha{display:none}
+  .wm-tbt{display:none}.wm-busca{width:110px}
+  .wm-estado .wm-dir{display:none}
 }
-@media (prefers-reduced-motion:reduce){ .esc-late{animation:none} }
+@media (prefers-reduced-motion:reduce){ .vd-win.vd-entra,.vd-win.vd-sale{animation:none} }
+
+/* 7.9145 · Syntergia: casilla para callarla */
+.syn-callar{display:flex;align-items:center;gap:6px;font-size:12px;margin-top:4px}

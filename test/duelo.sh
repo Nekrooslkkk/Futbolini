@@ -24,11 +24,16 @@ SRV=$!
 DIR=$(mktemp -d)
 trap 'kill $SRV 2>/dev/null; rm -f ./_duelo_tmp.html ./_duelo_juego.html; rm -rf "$DIR"' EXIT
 sleep 1
+# 7.9146 · con Playwright (tiempo real): en el Chromium 153 el reloj virtual ya no se adelanta
+if command -v node >/dev/null 2>&1 && { [ -f /opt/node22/lib/node_modules/playwright/index.mjs ] || node -e "require.resolve('playwright')" >/dev/null 2>&1; }; then
+OUT=$(timeout 600 node test/pagina.mjs $PORT _duelo_tmp.html DUELO_DONE 540 900,1000 2>&1)
+else
 OUT=$(timeout 600 "$CHROME_BIN" --headless=new --no-sandbox --disable-gpu --user-data-dir="$DIR" --window-size=900,1000 \
   --virtual-time-budget=400000 --dump-dom "http://127.0.0.1:$PORT/_duelo_tmp.html" 2>/dev/null | python3 -c "
 import sys,re,html
 d=sys.stdin.read(); m=re.search(r'<pre id=\"out\">(.*?)</pre>', d, re.S)
 print(html.unescape(m.group(1)) if m else 'NO OUT · DUELO_DONE:FAIL')
 ")
+fi
 echo "$OUT" | grep -v "DUELO_DONE"
 if echo "$OUT" | grep -q "DUELO_DONE:PASS"; then echo "✅ DUELOS: sala, clave, vestuario y partido entero"; exit 0; else echo "❌ DUELOS con fallas"; exit 1; fi

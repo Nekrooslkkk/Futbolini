@@ -24,11 +24,14 @@ try{
   /* paquete roto: la guardia devuelve al modo normal sin pantalla en blanco */
   await p.evaluate(async()=>{ const v=VERSION; for(const k of await caches.keys()){ if(!k.startsWith("futbolini-juego-")) continue; const c=await caches.open(k); await c.put("js/_papa.js?v="+v,new Response("throw new Error('roto');",{headers:{"Content-Type":"application/javascript"}})); } });
   await p.goto(base,{waitUntil:"load"}).catch(()=>{}); await esperar(2500);
-  ok(/normal=1/.test(p.url())&&(await scripts())>100&&await p.evaluate(()=>localStorage.getItem("futbolini_papa")==="0"),"con el paquete roto, la guardia apaga el Modo papa y recarga normal (sin pantalla en blanco)");
+  /* 7.9146 · desde 7.9145 el modo normal también es UN archivo (js/juego.js, armado por scripts/juntar.js): lo que se
+     mira es que NO venga el paquete del Modo papa */
+  const normal=async()=>p.evaluate(()=>{ const s=[...document.querySelectorAll("script[src]")].map(x=>x.getAttribute("src")); return s.some(x=>/js\/juego\.js/.test(x))&&!s.some(x=>/_papa/.test(x)); });
+  ok(/normal=1/.test(p.url())&&await normal()&&await p.evaluate(()=>localStorage.getItem("futbolini_papa")==="0"),"con el paquete roto, la guardia apaga el Modo papa y recarga normal (js/juego.js, sin pantalla en blanco)");
   await esperar(3000);
   ok(await p.evaluate(()=>/Modo papa no pudo cargar/.test(document.getElementById("avisos")?document.getElementById("avisos").textContent:"")),"y le avisa al jugador que volvió al normal");
   await p.goto(base,{waitUntil:"load"}); await esperar(800);
-  ok((await scripts())>100&&!(await p.evaluate(()=>document.documentElement.classList.contains("papa"))),"apagado, el juego vuelve a cargar completo (modo full)");
+  ok(await normal()&&!(await p.evaluate(()=>document.documentElement.classList.contains("papa"))),"apagado, el juego vuelve a cargar normal (js/juego.js, sin el paquete del Modo papa)");
 }catch(e){ ok(false,"error: "+e.message); }
 finally{ try{ await b.close(); }catch(e){} srv.kill(); }
 process.exit(malos?1:0);

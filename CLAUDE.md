@@ -35,7 +35,9 @@ cuelga del objeto global `E` (localStorage vía `Store`). Épocas: 1991, 2026, e
 - **Mantenimiento eterno.** Nada de dependencias que obliguen a migrar cada seis meses.
   Vanilla, sin build, sin npm: eso se mantiene solo por años y es por eso que se eligió.
 - Estilo del repo: identificadores/comentarios en español, funciones cortas, `"use strict"`.
-- No romper el orden de carga de `index.html` ni globals.
+- No romper el orden de carga ni globals. **Desde 7.9145 index.html carga UN archivo, `js/juego.js`, que se ARMA (no se
+  edita a mano):** se editan los `js/` de siempre y se corre `node scripts/juntar.js`. El orden de carga vive en
+  `js/orden.txt` (archivo nuevo → agrégalo ahí en su lugar). `test/correr.sh` falla si `juego.js` quedó viejo.
 - Integridad: nombres reales con stats estimadas y aviso "aproximado". Nada de frases inventadas como reales.
 - Diversidad sí, burla no (pool de citas escrito con respeto para todes).
 
@@ -76,12 +78,16 @@ No es opcional ni hay que preguntarlo. Concretamente:
    cargar y seguir). Si agregas un club, el banco es la prueba de que funciona.
    **🥔 Modo papa** (7.9120): `bash test/papa.sh` (va dentro de `correr_dev.sh`) corre el doctor dentro del juego
    juntado en un archivo. **💾 Partidas** (7.9125): `bash test/partidas.sh` (va dentro de `correr_dev.sh`) prueba con
-   Playwright y tiempo real que guardar no mienta y que "Continuar" abra la última (IndexedDB). Todo `.js` nuevo: `"use strict"`, en `index.html` con el formato de siempre, `const` de
+   Playwright y tiempo real que guardar no mienta y que "Continuar" abra la última (IndexedDB). Todo `.js` nuevo: `"use strict"`, en `js/orden.txt` en su lugar (y `node scripts/juntar.js`), `const` de
    primer nivel sin sangría.
 6. Commit con mensaje descriptivo + una línea en `PATCHES.md`. (git = el guardado permanente.)
-7. **Al subir `VERSION` (js/util.js), cambiá TODOS los `?v=` de `index.html` a la misma versión**
-   (`sed -i 's/?v=VIEJA/?v=NUEVA/g' index.html`). Si no, el navegador y el service worker sirven
-   JS viejo. El doctor `offline_listo` y la suite dev fallan si no calzan.
+7. **Al subir `VERSION` (js/util.js), corre `node scripts/juntar.js`** (desde 7.9146): rearma `js/juego.js` y copia la
+   versión a `index.html` (título, splash, todos los `?v=`) y a `js/boot-pintar.js`. Si no calzan, el navegador y el
+   service worker sirven JS viejo: `node scripts/juntar.js --revisar` (lo corre `test/correr.sh`) y el doctor
+   `offline_listo` fallan.
+8. **Escritorio y correo** (7.9146): `bash test/escritorio.sh` (va dentro de `correr_dev.sh`) los usa de verdad en un
+   navegador. Ventanas nuevas del escritorio: `vdAbrir(id)` en `js/escritorio-vista.js`, nunca con `role="dialog"`
+   (7.css esconde `.window[role=dialog]`).
 
 ## Cómo trabaja el usuario
 Delega partes a Grok (co-diseño, rinde bien) y a veces trae datos investigados. Prefiere que le dejes

@@ -15,6 +15,10 @@ echo "· node --check js/*.js"
 for f in js/*.js server/*.js; do node --check "$f"; done
 echo "  sintaxis OK ($(ls js/*.js | wc -l | tr -d ' ') archivos js)"
 
+# 1b) 7.9146 · el juego entra en UN archivo (js/juego.js): tiene que estar armado con los js/ de hoy
+echo "· node scripts/juntar.js --revisar"
+node scripts/juntar.js --revisar
+
 # 2) buscar Chromium
 CHROME_BIN="${CHROME:-}"
 if [ -z "$CHROME_BIN" ]; then

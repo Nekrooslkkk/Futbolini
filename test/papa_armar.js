@@ -9,7 +9,9 @@ const partes=papaScriptsDe(html).map(u=>({u:u, src:fs.readFileSync(u.replace(/\?
 const js=papaUnir(partes);
 fs.writeFileSync(PAPA_ARCHIVO,js); fs.writeFileSync(PAPA_GUARDIA,PAPA_GUARDIA_JS);
 /* los nombres que pasaron de const/let a var: todos tienen que quedar colgando de window (si no, estaba dentro de una función) */
-const nombres=[]; partes.forEach(p=>{ const re=/^(?:const|let)\s+([\p{L}_$][\p{L}\p{N}_$]*)/gmu; let m; while((m=re.exec(p.src))) if(!PAPA_NO_TOCAR.has(m[1])) nombres.push(m[1]); });
+/* 7.9146 · desde 7.9145 index.html carga js/juego.js (ya juntado): los nombres se sacan de los archivos de verdad (js/orden.txt) */
+const fuentes=fs.existsSync("js/orden.txt")?fs.readFileSync("js/orden.txt","utf8").split("\n").map(s=>s.trim()).filter(s=>s&&s[0]!=="#").map(u=>({u:u,src:fs.readFileSync(u,"utf8")})):partes;
+const nombres=[]; fuentes.forEach(p=>{ const re=/^(?:const|let)\s+([\p{L}_$][\p{L}\p{N}_$]*)/gmu; let m; while((m=re.exec(p.src))) if(!PAPA_NO_TOCAR.has(m[1])) nombres.push(m[1]); });
 fs.writeFileSync("_papa_nombres.js","window.__papaNombres="+JSON.stringify(nombres)+";");
 const pag=papaHTML(html,ver);
 const iny=(s)=>pag.replace("</body>",s+"\n</body>");

@@ -1352,7 +1352,9 @@
       t(onceIdeal().every(function(j){ return !(j.lesion>0); }),"sin lesionados en el once");
       t(E.ayudante&&E.ayudante.log.length>=3,"queda registro de lo que hizo");
       SEC="escritorio"; render();
-      t(!!document.querySelector("#vista .ay-hace"),"el bloque 'Lo hago yo' está en el Escritorio");
+      /* 7.9146 · el Ayudante vive en su ícono del escritorio Vista (VD.nodos): ahí tiene que estar el bloque */
+      var ayN=(typeof VD!=="undefined"&&VD.nodos&&VD.nodos.ayudante)||document.getElementById("vista");
+      t(!!(ayN&&ayN.querySelector(".ay-hace"))&&!!document.querySelector('#vista .vd-ico[data-vd="ayudante"]'),"el bloque 'Lo hago yo' está en el Ayudante del Escritorio");
       E.finanzas.delegado=true; E.finanzas.riesgo="prudente"; E.deuda=500; E.plata=colchonTesorero()+200;
       var d0=E.deuda; gestionTesorero();
       t(E.deuda<d0 && E.plata>=colchonTesorero()-5,"Tesorero prudente: abona deuda sin romper el colchón ("+plata(d0)+" → "+plata(E.deuda)+")");
@@ -1368,7 +1370,8 @@
       t((E.decPend||[]).length===0,"con Syntergia encendida no quedan decisiones pendientes ("+(E.decPend||[]).length+")");
       t((E.notifs||[]).some(function(n){ return /Syntergia/.test(n.t||""); })||(E.piloto.semanas||0)>=3,"Syntergia trabaja cada semana (semanas: "+(E.piloto.semanas||0)+")");
       SEC="escritorio"; render();
-      t(!!document.querySelector("#vista .syn-box.on"),"el interruptor se ve encendido en el Ayudante");
+      var ayN2=(typeof VD!=="undefined"&&VD.nodos&&VD.nodos.ayudante)||document.getElementById("vista");
+      t(!!(ayN2&&ayN2.querySelector(".syn-box.on")),"el interruptor se ve encendido en el Ayudante");
       E.piloto.on=false; var n0=(E.decPend||[]).length; repartirDecisiones(); var n1=(E.decPend||[]).length; syntergiaTurno();
       t((E.decPend||[]).length===n1,"apagada no toca nada");
     },"Syntergia");

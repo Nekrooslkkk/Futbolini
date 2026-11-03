@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-const VERSION="7.9145";
+const VERSION="7.9146";
 try{ if(typeof document!=="undefined") document.title="Futbolini "+VERSION+" — Conducción de clubes chilenos"; }catch(e){}
 const $=(s,c)=>(c||document).querySelector(s);
 const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));

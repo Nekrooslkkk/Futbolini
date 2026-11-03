@@ -5,7 +5,7 @@
    Acá se piden las hojas de estilo sin trabar ese primer cuadro, y si el
    service worker guardó una versión vieja, se recarga una sola vez. */
 (function(){
-  var V="7.9145";
+  var V="7.9146";
   try{ document.title="Futbolini "+V+" — Conducción de clubes chilenos"; }catch(e){}
   var hojas=["base","aero","so","temas","lateral","inicio","gol","pulido","aero7","dev","movil","temas7","interfaz-club"];
   var head=document.head||document.documentElement;

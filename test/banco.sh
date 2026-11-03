@@ -28,6 +28,10 @@ TANDAS=("$@")
 if [ ${#TANDAS[@]} -eq 0 ]; then
   H=${HILOS:-4}; for i in $(seq 0 $((H-1))); do TANDAS+=("TODOS/$H/$i"); done
 fi
+# 7.9146 · con Playwright (tiempo real, una pestaña por tanda): en el Chromium 153 el reloj virtual ya no se adelanta
+if command -v node >/dev/null 2>&1 && { [ -f /opt/node22/lib/node_modules/playwright/index.mjs ] || node -e "require.resolve('playwright')" >/dev/null 2>&1; }; then
+  timeout 1600 node test/banco.mjs "$DIR" "${TEMPS:-1}" "${TANDAS[@]}"
+else
 i=0
 for T in "${TANDAS[@]}"; do
   ( timeout 1500 "$CHROME_BIN" --headless=new --no-sandbox --disable-gpu --user-data-dir="$DIR/p$i" --window-size=1366,800 \
@@ -39,6 +43,7 @@ print(html.unescape(m.group(1)) if m else 'NO OUT (tanda $T) · BANCO_DONE:FAIL'
   i=$((i+1))
 done
 wait
+fi
 FALLA=0; TOT=0; MAL=0; DESP=0
 for f in "$DIR"/out*.txt; do
   grep -v "BANCO_DONE\|^BANCO:\|^✓" "$f"

@@ -1,5 +1,5 @@
 "use strict";
-/* Futbolini · 7.9145 · un solo archivo, 146 archivos juntados en este equipo por sw.js (js/papa-armar.js) */
+/* Futbolini · 7.9146 · 146 archivos en uno, armado por scripts/juntar.js (mismo código que js/papa-armar.js). NO SE EDITA A MANO: se editan los archivos de js/orden.txt y se corre node scripts/juntar.js */
 
 /* ==== js/util.js ==== */
 "use strict";
@@ -9,7 +9,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-var VERSION="7.9145";
+var VERSION="7.9146";
 try{ if(typeof document!=="undefined") document.title="Futbolini "+VERSION+" — Conducción de clubes chilenos"; }catch(e){}
 var $=(s,c)=>(c||document).querySelector(s);
 var $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
@@ -51932,6 +51932,48 @@ if(typeof devDoctorRegistrar==="function"){
     arreglo:"js/cancha.js _cvGuionGol/_cvArmarGol/_cvPasoGol (st.seq.guion) · _cvStep pasa los nombres (_cvNombres)",
     fn:function(){ const r=devGolDelMotor(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }
+/* 7.9146 · "las UI de escritorio están re bugeadas y no se pueden usar": las ventanas del escritorio Vista se VEN, se
+   apilan bien, y el correo (Windows Mail) muestra lo que hay. Los tres bugs de 7.9145, cada uno con su chequeo:
+   role=dialog + .window (7.css la escondía), la transición de "todo" (el z-index se animaba y la ventana nueva quedaba
+   detrás) y la cabecera repetida adentro. Corre sobre la partida real: arma una ventana fuera de la pantalla y la saca. */
+function devEscritorioVista(){
+  const f=[], det=[];
+  if(typeof vdCrear!=="function"||typeof VD==="undefined") return {f:["falta el escritorio Vista (js/escritorio-vista.js)"],det:det};
+  if(typeof document==="undefined"||typeof getComputedStyle!=="function") return {f:f,det:["sin navegador"]};
+  let w=null;
+  try{
+    w=vdCrear("correo"); if(!w) return {f:["vdCrear no arma la ventana del correo"],det:det};
+    w.style.left="-6000px"; w.style.top="0px";
+    w.classList.remove("vd-entra"); try{ w.getAnimations().forEach(a=>a.finish()); }catch(e){}   /* se mide quieta, no en plena animación de entrada */
+    const cs=getComputedStyle(w);
+    if(w.getAttribute("role")==="dialog") f.push("la ventana lleva role=dialog: con la clase .window, 7.css la deja invisible (opacity 0)");
+    if(cs.visibility!=="visible"||+cs.opacity<0.99) f.push("la ventana del escritorio queda invisible (visibility "+cs.visibility+", opacity "+cs.opacity+")");
+    if(cs.position!=="fixed") f.push("la ventana no flota (position "+cs.position+")");
+    const tp=cs.transitionProperty||"";
+    if(/(^|,\s*)(all|z-index)(\s*,|$)/.test(tp)&&parseFloat(cs.transitionDuration)>0) f.push("la ventana anima el z-index («"+tp+"»): la nueva queda un rato detrás de la anterior");
+    if(typeof panel==="function"){
+      const pn=panel("Prueba","🧪"); pn.classList.add("vd-en-ventana"); (w._cuerpo||w).appendChild(pn);
+      const cab=pn.querySelector(":scope > .cab");
+      if(cab&&getComputedStyle(cab).display!=="none") f.push("adentro de la ventana el panel repite su cabecera (el tema Aero le gana a la regla)");
+    }
+    const filas=w.querySelectorAll(".wm-fila").length, carp=w.querySelectorAll(".wm-carpeta").length;
+    if(carp<4) f.push("Windows Mail sin sus 4 carpetas ("+carp+")");
+    const ms=correoMensajes(), decs=(E&&E.decPend||[]).filter(x=>typeof decisionPorId==="function"&&decisionPorId(x.id)).length;
+    if(ms.filter(x=>x.dec).length!==decs) f.push("el correo no trae todas las decisiones sobre la mesa ("+ms.filter(x=>x.dec).length+" de "+decs+")");
+    const enEntrada=correoEnCarpeta(ms,(VD.correo&&VD.correo.carpeta)||"entrada").length;
+    if(filas!==enEntrada) f.push("la lista del correo muestra "+filas+" filas y la carpeta tiene "+enEntrada);
+    det.push("ventana visible y adelante · correo: "+ms.length+" mensajes ("+decs+" decisiones), "+ms.filter(x=>!x.leido).length+" sin leer");
+  } catch(e){ f.push("explotó: "+e.message); }
+  finally{ if(w&&w.parentNode) w.parentNode.removeChild(w); }
+  if(typeof JUEGO_ARCHIVOS!=="undefined"&&!(JUEGO_ARCHIVOS.indexOf("js/escritorio-vista.js")>=0&&JUEGO_ARCHIVOS.indexOf("js/correo.js")>=0)) f.push("js/juego.js no trae el escritorio o el correo (rearmar con node scripts/juntar.js)");
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"escritorio_vista", area:"interfaz",
+    n:"El escritorio Vista se puede usar: las ventanas se ven, la nueva queda adelante, no repiten cabecera, y el correo (Windows Mail) trae todo lo que hay",
+    arreglo:"js/escritorio-vista.js (vdArmar, vdCrear, vdOrden, vdTareas) · js/correo.js (correoMontar, correoMensajes) · css/interfaz-club.css ▸ 7.9146 · rearmar js/juego.js con node scripts/juntar.js · prueba de punta a punta: test/escritorio.mjs",
+    fn:function(){ const r=devEscritorioVista(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
 
 ;
 /* ==== js/data-afa-rigor.js ==== */
@@ -67769,7 +67811,7 @@ function montarSonidoAjuste(host){
 /* ==== js/correo.js ==== */
 "use strict";
 /* ============================================================
-   FUTBOLINI · correo.js — 7.9145
+   FUTBOLINI · correo.js — 7.9145 · 7.9146 Windows Mail
    Bandeja tipo Hotmail 2007, con color Aero. Se abre desde el ícono
    del escritorio (no desde la campana). La dirección queda fija en la
    partida. Los informes y el resumen de la semana llegan como correo,
@@ -67827,7 +67869,7 @@ function correoPush(m){
 }
 function correoSinLeer(){
   var c=E&&E.correo; if(!c||!c.mails) return 0;
-  return c.mails.filter(function(m){ return m&&!m.leido; }).length;
+  return c.mails.filter(function(m){ return m&&!m.leido&&!m.borrado; }).length;
 }
 function correoResumen(lineas){
   if(!E) return;
@@ -67846,74 +67888,153 @@ function _correoDecisiones(){
   return out;
 }
 
+/* ============================================================
+   7.9146 · WINDOWS MAIL (el correo de Vista), en vez del cuadro genérico de 7.9145.
+   Barra de herramientas (Responder, Eliminar, Enviar y recibir, Marcar como leído, Buscar), carpetas a la izquierda
+   (Bandeja de entrada, Sobre la mesa, Informes, Elementos eliminados), la lista con columnas (! · De · Asunto ·
+   Recibido) y el panel de lectura abajo con su cabecera (De, Para, Fecha, Asunto). Las decisiones pendientes llegan
+   como correo de quien las manda (el directorio, el capitán, el jefe de prensa…) y "Responder" abre la decisión de
+   verdad. Barra de estado: cuántos mensajes y cuántos sin leer. En el celu: carpetas arriba y el mensaje a pantalla.
+   ============================================================ */
+var CORREO_REMITE={institucional:"Directorio del club", refuerzos:"Secretaría técnica", finanzas:"Gerencia de finanzas",
+  camarin:"Capitán del plantel", preparacion:"Cuerpo técnico", hinchada:"Agrupación de hinchas", cantera:"Fútbol formativo",
+  prensa:"Jefe de prensa", gris:"Remitente desconocido"};
+var CORREO_CARPETAS=[["entrada","📥","Bandeja de entrada"],["mesa","📌","Sobre la mesa"],["informes","📊","Informes"],["eliminados","🗑️","Elementos eliminados"]];
+function _correoFecha(m){
+  try{ var c=E.calendario&&E.calendario[m.idx!=null?m.idx:E.idx]; if(c&&c.f&&typeof fechaTxt==="function") return fechaTxt(c.f)+" "+(m.anio||E.anio); }catch(e){}
+  return (m.anio||E.anio)+(m.idx!=null?" · sem. "+(m.idx+1):"");
+}
+/* todos los mensajes de la bandeja, en un solo formato (los correos guardados + las decisiones sobre la mesa) */
+function correoMensajes(){
+  correoAsegurar();
+  var out=[];
+  _correoDecisiones().forEach(function(dec){
+    var t=typeof resolverTokens==="function"?resolverTokens(dec.d.t,E):dec.d.t;
+    out.push({id:"dec_"+dec.x.id, dec:dec, de:CORREO_REMITE[dec.d.buzon]||"Club", asunto:t,
+      cuerpo:(typeof resolverTokens==="function"&&dec.d.d)?resolverTokens(dec.d.d,E):(dec.d.d||""), alta:dec.x.peso==="alto",
+      leido:!!(E.correo.decLeidas&&E.correo.decLeidas[dec.x.id]), fecha:_correoFecha({}), carpeta:"mesa"});
+  });
+  (E.correo.mails||[]).forEach(function(m){
+    out.push({id:m.id, m:m, de:m.de, asunto:m.asunto, cuerpo:m.cuerpo, leido:!!m.leido, fecha:_correoFecha(m),
+      carpeta:m.borrado?"eliminados":(/Syntergia|Ayudante/.test(m.de||"")?"informes":"entrada")});
+  });
+  return out;
+}
+function correoEnCarpeta(lista,k){
+  return lista.filter(function(x){
+    if(k==="eliminados") return x.carpeta==="eliminados";
+    if(x.carpeta==="eliminados") return false;
+    if(k==="entrada") return true;
+    return x.carpeta===k; });
+}
+function correoMarcar(x,leido){
+  if(!x) return;
+  if(x.dec){ E.correo.decLeidas=E.correo.decLeidas||{}; if(leido) E.correo.decLeidas[x.dec.x.id]=1; else delete E.correo.decLeidas[x.dec.x.id]; }
+  else if(x.m) x.m.leido=leido;
+  x.leido=leido;
+}
+function correoMontar(host){
+  correoAsegurar();
+  var S=(typeof VD!=="undefined"&&VD.correo)?VD.correo:{carpeta:"entrada",sel:null,q:""};
+  host.innerHTML=""; host.classList.add("wm-host");
+  var wm=el("div","wm"); host.appendChild(wm);
+  /* barra de herramientas */
+  var tb=el("div","wm-tb"); tb.setAttribute("role","toolbar");
+  var bt=function(ic,txt,fn,tit){ var b=el("button","wm-tbb"); b.type="button"; b.appendChild(el("span","wm-tbi",ic)); b.appendChild(el("span","wm-tbt",escHtml(txt))); b.title=tit||txt; b.onclick=fn; tb.appendChild(b); return b; };
+  var bResp=bt("↩️","Responder",function(){ var x=sel(); if(x&&x.dec&&typeof abrirDecision==="function") abrirDecision(x.dec.d,true); },"Responder: abre la decisión");
+  var bBorr=bt("🗑️","Eliminar",function(){ var x=sel(); if(!x||!x.m) return; x.m.borrado=!x.m.borrado; S.sel=null; guardarYpintar(); });
+  bt("🔄","Enviar y recibir",function(){ estado.textContent="Recibiendo mensajes…"; setTimeout(pintar,450); });
+  bt("✔️","Marcar como leído",function(){ correoEnCarpeta(correoMensajes(),S.carpeta).forEach(function(x){ correoMarcar(x,true); }); guardarYpintar(); },"Marca todo lo de esta carpeta como leído");
+  var busca=el("input","wm-busca"); busca.type="search"; busca.placeholder="Buscar"; busca.value=S.q||""; busca.setAttribute("aria-label","Buscar en el correo");
+  busca.oninput=function(){ S.q=busca.value; pintarLista(); };
+  tb.appendChild(busca);
+  wm.appendChild(tb);
+  var cuerpo=el("div","wm-lay"); wm.appendChild(cuerpo);
+  var nav=el("nav","wm-carpetas"); nav.setAttribute("aria-label","Carpetas");
+  var der=el("div","wm-der"), lista=el("div","wm-lista"), vista=el("div","wm-vista");
+  der.appendChild(lista); der.appendChild(vista);
+  cuerpo.appendChild(nav); cuerpo.appendChild(der);
+  var estado=el("div","wm-estado"); wm.appendChild(estado);
+  var todos=[];
+  function sel(){ return todos.filter(function(x){ return x.id===S.sel; })[0]||null; }
+  function guardarYpintar(){ if(typeof guardar==="function") guardar(); pintar(); vdIconosAlDia(); }
+  function pintarCarpetas(){
+    nav.innerHTML="";
+    nav.appendChild(el("div","wm-raiz","📁 Carpetas locales"));
+    CORREO_CARPETAS.forEach(function(c){
+      var xs=correoEnCarpeta(todos,c[0]), nl=xs.filter(function(x){ return !x.leido; }).length;
+      var b=el("button","wm-carpeta"+(S.carpeta===c[0]?" sel":"")+(nl?" con":"")); b.type="button";
+      b.innerHTML="<span>"+c[1]+"</span> "+escHtml(c[2])+(nl?" <b>("+nl+")</b>":"");
+      b.onclick=function(){ S.carpeta=c[0]; S.sel=null; wm.classList.remove("wm-leyendo"); pintar(); };
+      nav.appendChild(b);
+    });
+  }
+  function pintarLista(){
+    lista.innerHTML="";
+    var q=(S.q||"").toLowerCase().trim();
+    var xs=correoEnCarpeta(todos,S.carpeta).filter(function(x){ return !q||(x.asunto+" "+x.de+" "+x.cuerpo).toLowerCase().indexOf(q)>=0; });
+    var t=el("table","wm-tabla"); t.setAttribute("role","grid");
+    t.innerHTML="<thead><tr><th class='wm-c-imp' title='Importancia'>!</th><th class='wm-c-ic'></th><th>De</th><th>Asunto</th><th class='wm-c-fecha'>Recibido</th></tr></thead>";
+    var tb2=el("tbody");
+    xs.forEach(function(x){
+      var tr=el("tr","wm-fila"+(x.leido?"":" nuevo")+(x.id===S.sel?" sel":"")); tr.tabIndex=0; tr.dataset.id=x.id;
+      tr.innerHTML="<td class='wm-c-imp'>"+(x.alta?"<span class='wm-imp' title='Importancia alta'>!</span>":"")+"</td>"+
+        "<td class='wm-c-ic'>"+(x.dec?"📌":(x.leido?"📭":"✉️"))+"</td><td class='wm-c-de'>"+escHtml(x.de)+"</td><td class='wm-c-as'>"+escHtml(x.asunto)+"</td><td class='wm-c-fecha'>"+escHtml(x.fecha)+"</td>";
+      tr.onclick=function(){ S.sel=x.id; correoMarcar(x,true); if(typeof guardar==="function") guardar(); wm.classList.add("wm-leyendo"); pintar(); vdIconosAlDia(); };
+      tr.ondblclick=function(){ if(x.dec&&typeof abrirDecision==="function") abrirDecision(x.dec.d,true); };
+      tr.onkeydown=function(e){ if(e.key==="Enter"){ e.preventDefault(); tr.onclick(); } };
+      tb2.appendChild(tr);
+    });
+    t.appendChild(tb2); lista.appendChild(t);
+    if(!xs.length) lista.appendChild(el("p","wm-vacio",q?"No hay mensajes que coincidan con la búsqueda.":(S.carpeta==="mesa"?"No hay nada sobre la mesa. Por ahora.":"No hay mensajes en esta carpeta.")));
+  }
+  function pintarVista(){
+    vista.innerHTML=""; var x=sel();
+    bResp.disabled=!(x&&x.dec); bBorr.disabled=!(x&&x.m);
+    bBorr.querySelector(".wm-tbt").textContent=(x&&x.m&&x.m.borrado)?"Recuperar":"Eliminar";
+    if(!x){ vista.appendChild(el("p","wm-vacio","Selecciona un mensaje para leerlo.")); return; }
+    var volver=el("button","wm-volver","← Volver a "+escHtml((CORREO_CARPETAS.filter(function(c){ return c[0]===S.carpeta; })[0]||[,,"la bandeja"])[2]));
+    volver.type="button"; volver.onclick=function(){ wm.classList.remove("wm-leyendo"); };
+    vista.appendChild(volver);
+    var cab=el("div","wm-cab");
+    cab.innerHTML="<div class='wm-as'>"+escHtml(x.asunto)+(x.alta?" <span class='wm-imp-tag'>Importancia alta</span>":"")+"</div>"+
+      "<div><b>De:</b> "+escHtml(x.de)+"</div><div><b>Fecha:</b> "+escHtml(x.fecha)+"</div><div><b>Para:</b> "+escHtml(E.correo.direccion)+"</div>";
+    vista.appendChild(cab);
+    var cuerpoMsg=el("div","wm-msg"); cuerpoMsg.textContent=x.cuerpo||"(sin texto)";
+    vista.appendChild(cuerpoMsg);
+    if(x.dec){
+      vista.appendChild(el("p","wm-nota","Esto sigue sobre la mesa"+(x.alta?" y hay que resolverlo antes del próximo partido":"")+". Responder abre la decisión con sus opciones y el consejo de tu gente."));
+      var r=el("button","btn-aqua verde","↩️ Responder"); r.type="button"; r.onclick=function(){ if(typeof abrirDecision==="function") abrirDecision(x.dec.d,true); };
+      vista.appendChild(r);
+    }
+  }
+  function pintar(){
+    todos=correoMensajes();
+    if(S.sel&&!sel()) S.sel=null;
+    pintarCarpetas(); pintarLista(); pintarVista();
+    var xs=correoEnCarpeta(todos,S.carpeta), nl=xs.filter(function(x){ return !x.leido; }).length;
+    estado.innerHTML="<span>"+xs.length+" mensaje"+(xs.length===1?"":"s")+", "+nl+" sin leer</span><span>"+(navigator.onLine===false?"Sin conexión":"Trabajando en línea")+"</span><span class='wm-dir'>"+escHtml(E.correo.direccion)+"</span>";
+  }
+  pintar();
+  return wm;
+}
+/* los globitos del ícono de Correo se ponen al día sin repintar todo el escritorio */
+function vdIconosAlDia(){
+  var b=document.querySelector('.vd-ico[data-vd="correo"]'); if(!b) return;
+  var n=correoMensajes().filter(function(x){ return !x.leido&&x.carpeta!=="eliminados"; }).length, g=b.querySelector(".vd-glob");
+  if(!n){ if(g) g.remove(); return; }
+  if(!g){ g=el("span","vd-glob"); b.appendChild(g); }
+  g.textContent=String(n);
+}
 function abrirCorreo(){
   correoAsegurar();
+  if(typeof vdAbrir==="function"&&typeof SEC!=="undefined"&&SEC==="escritorio"&&document.querySelector(".vd")){ vdAbrir("correo"); return; }
   if(typeof modal!=="function") return;
+  /* fuera del Escritorio: el mismo Windows Mail en un cuadro */
   modal(function(box){
-    box.classList.add("correo-win");
-    var cab=el("div","cab"); cab.appendChild(el("span","ic","✉️")); cab.appendChild(el("span",null,"Correo"));
-    box.appendChild(cab);
-    var cuerpo=el("div","cuerpo correo-cuerpo");
-    var bar=el("div","correo-bar");
-    bar.appendChild(el("b",null,"Hotmail del club"));
-    bar.appendChild(el("span","correo-dir",E.correo.direccion));
-    cuerpo.appendChild(bar);
-    var lay=el("div","correo-lay");
-    var lista=el("div","correo-lista");
-    var leer=el("div","correo-leer");
-    function pintarLeer(m, dec){
-      leer.innerHTML="";
-      if(dec){
-        leer.appendChild(el("div","correo-as","Decisión · "+(typeof resolverTokens==="function"?resolverTokens(dec.d.t,E):dec.d.t)));
-        leer.appendChild(el("p","mini","Llegó a tu bandeja porque sigue sobre la mesa. Elige como lo harías en el club."));
-        (dec.d.op||[]).forEach(function(op,i){
-          var b=el("button","btn-aqua chico",op.t);
-          b.onclick=function(){
-            try{ resolverDecision(dec.d,i); }catch(e){}
-            if(typeof guardar==="function") guardar();
-            cerrarModal();
-            if(typeof render==="function") render();
-          };
-          leer.appendChild(b);
-        });
-        return;
-      }
-      if(!m){ leer.appendChild(el("p","mini","Elige un mensaje. Los informes del ayudante y el resumen de la semana quedan acá.")); return; }
-      m.leido=true;
-      leer.appendChild(el("div","correo-as",m.asunto));
-      leer.appendChild(el("p","mini","De "+m.de+" · "+(m.anio||"")+(m.idx!=null?" · semana "+(m.idx+1):"")));
-      leer.appendChild(el("p",null,m.cuerpo));
-      pintarLista();
-    }
-    function pintarLista(){
-      lista.innerHTML="";
-      var decs=_correoDecisiones();
-      if(decs.length){
-        lista.appendChild(el("div","correo-sec","Sobre la mesa"));
-        decs.forEach(function(dec){
-          var b=el("button","correo-item nuevo");
-          b.innerHTML="<b>"+escHtml(typeof resolverTokens==="function"?resolverTokens(dec.d.t,E):dec.d.t)+"</b><span>decisión pendiente</span>";
-          b.onclick=function(){ pintarLeer(null, dec); };
-          lista.appendChild(b);
-        });
-      }
-      lista.appendChild(el("div","correo-sec","Bandeja de entrada"));
-      var mails=(E.correo.mails||[]);
-      if(!mails.length) lista.appendChild(el("p","mini correo-vacio","Todavía no te llega nada. Cuando Syntergia o el ayudante hagan algo, el informe cae acá."));
-      mails.forEach(function(m){
-        var b=el("button","correo-item"+(m.leido?"":" nuevo"));
-        b.innerHTML="<b>"+escHtml(m.asunto)+"</b><span>"+escHtml(m.de)+"</span>";
-        b.onclick=function(){ pintarLeer(m,null); if(typeof guardar==="function") guardar(); };
-        lista.appendChild(b);
-      });
-    }
-    pintarLista();
-    pintarLeer(null,null);
-    lay.appendChild(lista); lay.appendChild(leer);
-    cuerpo.appendChild(lay);
-    var bx=el("button","btn-aqua chico gris","Cerrar"); bx.onclick=function(){ cerrarModal(); if(typeof render==="function") render(); };
-    cuerpo.appendChild(bx);
-    box.appendChild(cuerpo);
+    var cuerpo=montarBarraSO(box,"Correo","✉️",function(){ cerrarModal(); });
+    box.classList.add("vd-correo");
+    correoMontar(cuerpo);
   },{clase:"correo-modal"});
 }
 
@@ -67965,157 +68086,249 @@ function abrirCorreo(){
 /* ==== js/escritorio-vista.js ==== */
 "use strict";
 /* ============================================================
-   FUTBOLINI · escritorio-vista.js — 7.9145
-   Los menús que pediste pasan a íconos de escritorio (Vista). No se agregan
-   Jugar, Plantel, Finanzas ni Calendario: esas siguen en el menú de siempre.
-   A la vista se quedan el próximo partido y «Atiende antes de avanzar».
-   El correo se abre desde su ícono, no desde la campana.
+   FUTBOLINI · escritorio-vista.js — 7.9146 · EL ESCRITORIO DE WINDOWS VISTA, DE VERDAD
+   Pedido del autor (3 nov 2026): "las UI de escritorio están re bugeadas y no se pueden usar, el BUZÓN quedó muy
+   generado a la rápida, yo esperaba más de ese realismo Windows Vista".
+   Lo que estaba roto (7.9145):
+   - las ventanas no se veían NUNCA: llevaban role="dialog" + la clase .window de 7.css, y 7.css esconde
+     `.window[role=dialog]` (opacity 0, visibility hidden) hasta que la URL apunte a su #id;
+   - el ícono urgente saltaba sin parar (no se podía hacer clic: se movía bajo el mouse);
+   - la ventana de atrás no recibía clics (pointer-events:none) y cualquier render() las cerraba todas;
+   - los íconos quedaban abajo de todo, después de los paneles.
+   Ahora:
+   - ESCRITORIO en tres partes: los íconos en columna a la izquierda (como Windows), el centro con el próximo
+     partido y lo que hay que atender, y a la derecha la BARRA LATERAL de Vista con gadgets (calendario con la
+     fecha del juego, medidores del club, la temporada y "El club no olvida" como nota adhesiva).
+   - VENTANAS de vidrio: se arrastran por la barra de título, doble clic maximiza, minimizar las manda a la barra de
+     tareas, la de adelante es la activa (las de atrás quedan con el vidrio más claro, pero se pueden tocar), se
+     acuerdan de dónde estaban y SOBREVIVEN a render(): si resuelves una decisión, la ventana sigue abierta y al día.
+   - En el celular: los íconos en grilla arriba y cada ventana a pantalla completa.
+   El doctor `escritorio_vista` lo revisa en el navegador (ventana visible de verdad: se mira qué hay en el centro).
    ============================================================ */
-var ESC_VENTANAS=[];
-var ESC_ICONOS=[
-  {id:"ayudante", re:/Ayudante/, ic:"🧑‍🏫", n:"Ayudante"},
-  {id:"decisiones", re:/Decisiones/, ic:"📥", n:"Decisiones"},
-  {id:"semana", re:/pas[oó] esta semana/, ic:"📰", n:"Esta semana"},
-  {id:"historia", re:/Historia del club/, ic:"📖", n:"Historia"}
+var VD={abiertas:[], pos:{}, min:{}, max:{}, nodos:{}, correo:{carpeta:"entrada", sel:null, q:""}};
+var VD_ICONOS=[
+  {id:"ayudante",   re:/Ayudante\s*$/,            ic:"🧑‍🏫", n:"Ayudante",    w:560},
+  {id:"decisiones", re:/Decisiones/,           ic:"📥",  n:"Decisiones",  w:660},
+  {id:"semana",     re:/pas[oó] esta semana/,  ic:"📰",  n:"Esta semana", w:600},
+  {id:"historia",   re:/Historia del club/,    ic:"📖",  n:"Historia",    w:620},
+  {id:"correo",                                 ic:"✉️",  n:"Correo",      w:900}
 ];
+function vdDef(id){ return VD_ICONOS.filter(function(d){ return d.id===id; })[0]||null; }
+function vdMovil(){ try{ return window.matchMedia("(max-width: 760px)").matches; }catch(e){ return false; } }
+function vdCab(p){ var c=p&&p.querySelector(":scope > .cab"); return c?(c.textContent||"").trim():""; }
 
-function _escCab(p){
-  var c=p&&p.querySelector(":scope > .cab");
-  return c?c.textContent||"":"";
-}
-function _escQueda(txt){ return /Pr[oó]ximo compromiso|Atiende antes/.test(txt||""); }
-
-function escCerrar(id){
-  var i=ESC_VENTANAS.findIndex(function(w){ return w.id===id; });
-  if(i<0) return;
-  var w=ESC_VENTANAS[i];
-  if(w.win&&w.win.parentNode) w.win.parentNode.removeChild(w.win);
-  ESC_VENTANAS.splice(i,1);
-  escApilar();
-  var ic=document.querySelector('.esc-ico[data-esc="'+id+'"]');
-  if(ic) try{ ic.focus(); }catch(e){}
-}
-function escApilar(){
-  ESC_VENTANAS.forEach(function(w,i){
-    var ultima=i===ESC_VENTANAS.length-1;
-    w.win.classList.toggle("esc-detras",!ultima);
-    w.win.style.zIndex=String(40+i);
-  });
-}
-function escAbrir(id,titulo,ic,nodo){
-  if(!nodo) return;
-  var ya=ESC_VENTANAS.filter(function(w){ return w.id===id; })[0];
-  if(ya){ ESC_VENTANAS=ESC_VENTANAS.filter(function(w){ return w.id!==id; }); ESC_VENTANAS.push(ya); escApilar(); try{ ya.win.focus(); }catch(e){} return; }
-  while(ESC_VENTANAS.length>=2) escCerrar(ESC_VENTANAS[0].id);
-  var win=el("div","esc-win");
-  win.tabIndex=-1;
-  win.setAttribute("role","dialog");
-  win.setAttribute("aria-label",titulo);
-  var cuerpo;
-  if(typeof montarBarraSO==="function") cuerpo=montarBarraSO(win,titulo,ic,function(){ escCerrar(id); });
-  else {
-    win.classList.add("ventana-so");
-    var bar=el("div","so-barra"); bar.appendChild(el("span","so-titulo",titulo));
-    var x=el("button","btn-aqua chico","✕"); x.onclick=function(){ escCerrar(id); };
-    bar.appendChild(x); win.appendChild(bar); cuerpo=el("div","so-cuerpo"); win.appendChild(cuerpo);
-  }
-  nodo.classList.remove("oculto");
-  cuerpo.appendChild(nodo);
-  var host=document.getElementById("vista")||document.body;
-  host.appendChild(win);
-  ESC_VENTANAS.push({id:id,win:win});
-  escApilar();
-  try{ win.focus(); }catch(e){}
-}
-
-function escPixel(emoji){
-  var s=el("span","esc-px",emoji);
-  s.setAttribute("aria-hidden","true");
-  return s;
-}
-
-function escritorioAIconos(){
+/* ---------- el escritorio: íconos | centro | barra lateral ---------- */
+function vdArmar(){
   var vista=document.getElementById("vista"); if(!vista||!E) return;
-  ESC_VENTANAS.forEach(function(w){ if(w.win&&w.win.parentNode) w.win.parentNode.removeChild(w.win); });
-  ESC_VENTANAS=[];
-  var paneles=[].slice.call(vista.querySelectorAll(".panel"));
-  var mesa=el("div","esc-mesa");
-  var puestos={};
-  paneles.forEach(function(p){
-    var txt=_escCab(p);
-    if(!txt||_escQueda(txt)) return;
-    var def=null;
-    for(var i=0;i<ESC_ICONOS.length;i++){ if(ESC_ICONOS[i].re.test(txt)){ def=ESC_ICONOS[i]; break; } }
-    if(!def) return;
-    if(p.parentNode) p.parentNode.removeChild(p);
-    puestos[def.id]={def:def, nodo:p};
+  var rej=vista.querySelector(".rejilla.esc-aero")||vista.querySelector(".rejilla"); if(!rej) return;
+  VD.nodos={};
+  [].slice.call(rej.querySelectorAll(".panel")).forEach(function(p){
+    var t=vdCab(p);
+    for(var i=0;i<VD_ICONOS.length;i++){ var d=VD_ICONOS[i];
+      if(d.re&&d.re.test(t)){ if(p.parentNode) p.parentNode.removeChild(p); VD.nodos[d.id]=p; return; } }
   });
-  ESC_ICONOS.forEach(function(def){
-    if(def.id!=="correo"&&!puestos[def.id]) return;
-  });
-  /* orden pedido: ayudante, decisiones, semana, historia. Correo aparte, al final. */
-  ["ayudante","decisiones","semana","historia"].forEach(function(id){
-    var p=puestos[id]; if(!p) return;
-    mesa.appendChild(escBoton(p.def, p.nodo));
-  });
-  mesa.appendChild(escBoton({id:"correo", ic:"✉️", n:"Correo"}, null));
-  if(!mesa.children.length) return;
-  var ancla=vista.querySelector(".rejilla")||vista.firstChild;
-  if(ancla&&ancla.parentNode) ancla.parentNode.insertBefore(mesa, ancla.nextSibling);
-  else vista.appendChild(mesa);
+  var col=[].slice.call(rej.children);
+  var vd=el("div","vd"), iconos=el("nav","vd-iconos"), centro=el("div","vd-centro"), lateral=el("aside","vd-lateral");
+  iconos.setAttribute("aria-label","Íconos del escritorio");
+  lateral.setAttribute("aria-label","Barra lateral");
+  VD_ICONOS.forEach(function(d){ if(d.id==="correo"||VD.nodos[d.id]) iconos.appendChild(vdIcono(d)); });
+  if(col[0]) [].slice.call(col[0].children).forEach(function(n){ centro.appendChild(n); });
+  lateral.appendChild(vdCalendario());
+  if(col[1]) [].slice.call(col[1].children).forEach(function(n){
+    n.classList.add("vd-gadget"); if(/no olvida/.test(vdCab(n))) n.classList.add("vd-nota"); lateral.appendChild(n); });
+  vd.appendChild(iconos); vd.appendChild(centro); vd.appendChild(lateral);
+  rej.parentNode.replaceChild(vd,rej);
+  /* las ventanas que estaban abiertas vuelven, con el contenido de este render */
+  vdQuitarVentanas();
+  VD.abiertas=VD.abiertas.filter(function(id){ return id==="correo"||VD.nodos[id]; });
+  VD.abiertas.forEach(function(id){ vdCrear(id); });
+  vdOrden(); vdTareas();
 }
 
-function escBoton(def, nodo){
-  var b=el("button","esc-ico");
-  b.type="button";
-  b.dataset.esc=def.id;
-  b.appendChild(escPixel(def.ic));
-  var nom=el("span","esc-nom",def.n);
-  b.appendChild(nom);
-  if(def.id==="decisiones"&&E&&E.decPend&&E.decPend.length){
-    var g=el("span","esc-glob",String(E.decPend.length));
-    b.appendChild(g);
-    if(E.decPend.some(function(x){ return x.peso==="alto"; })) b.classList.add("esc-late");
-  }
-  if(def.id==="correo"&&typeof correoSinLeer==="function"){
-    var n=correoSinLeer();
-    if(n) b.appendChild(el("span","esc-glob",String(n)));
-  }
-  var abrir=function(){
-    if(def.id==="correo"){ if(typeof abrirCorreo==="function") abrirCorreo(); return; }
-    escAbrir(def.id, def.n, def.ic, nodo);
-  };
-  var fino=window.matchMedia&&window.matchMedia("(pointer:fine)").matches;
+/* el gadget de calendario de Vista, con la fecha del juego */
+function vdCalendario(){
+  var g=el("div","vd-cal"), f=null;
+  try{ var c=E.calendario&&E.calendario[E.idx]; f=c&&c.f; }catch(e){}
+  var dias=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  var mes=(typeof MESES!=="undefined"&&f)?MESES[f.m-1]:"";
+  var dd=f&&f.d?f.d:1, wd="";
+  try{ wd=dias[new Date(E.anio,(f?f.m:1)-1,dd).getDay()]; }catch(e){}
+  g.appendChild(el("div","vd-cal-dia",escHtml(wd)));
+  g.appendChild(el("div","vd-cal-num",String(dd)));
+  g.appendChild(el("div","vd-cal-mes",escHtml(mes+" "+(E.anio||""))));
+  var part=(typeof proximoPartido==="function")?proximoPartido():null;
+  if(part) g.appendChild(el("div","vd-cal-prox","⚽ "+escHtml(part.rivalNombre)+(part.local?" · de local":" · de visita")));
+  g.title="La fecha del juego";
+  return g;
+}
+
+/* ---------- íconos ---------- */
+function vdIcono(d){
+  var b=el("button","vd-ico"); b.type="button"; b.dataset.vd=d.id;
+  b.appendChild(el("span","vd-ico-img",d.ic)).setAttribute("aria-hidden","true");
+  b.appendChild(el("span","vd-ico-nom",escHtml(d.n)));
+  var n=0, alto=false;
+  if(d.id==="decisiones"&&E.decPend){ n=E.decPend.length; alto=E.decPend.some(function(x){ return x.peso==="alto"; }); }
+  if(d.id==="correo"&&typeof correoMensajes==="function") n=correoMensajes().filter(function(x){ return !x.leido&&x.carpeta!=="eliminados"; }).length;
+  if(n){ var g=el("span","vd-glob"+(alto?" vd-glob-alto":""),String(n)); b.appendChild(g); b.setAttribute("aria-label",d.n+" ("+n+")"); }
+  else b.setAttribute("aria-label",d.n);
+  var abrir=function(){ vdAbrir(d.id); };
+  var fino=false; try{ fino=window.matchMedia("(pointer:fine)").matches&&!vdMovil(); }catch(e){}
   if(fino){
-    b.onclick=function(){ [].forEach.call(document.querySelectorAll(".esc-ico"),function(x){ x.classList.remove("sel"); }); b.classList.add("sel"); };
-    b.ondblclick=abrir;
-    b.title="Doble clic";
-  } else {
-    b.onclick=abrir;
-  }
-  b.onkeydown=function(e){ if(e.key==="Enter"){ e.preventDefault(); abrir(); } };
+    /* como en Windows: un clic selecciona, doble clic abre */
+    b.onclick=function(){ [].forEach.call(document.querySelectorAll(".vd-ico.sel"),function(x){ x.classList.remove("sel"); }); b.classList.add("sel"); };
+    b.ondblclick=abrir; b.title="Doble clic para abrir";
+  } else b.onclick=abrir;
+  b.onkeydown=function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); abrir(); } };
   return b;
 }
 
+/* ---------- ventanas ---------- */
+function vdAbrir(id){
+  if(!vdDef(id)) return;
+  if(id!=="correo"&&!VD.nodos[id]) return;
+  if(VD.abiertas.indexOf(id)<0){ VD.abiertas.push(id); vdCrear(id); }
+  VD.min[id]=false;
+  vdFrente(id); vdTareas();
+}
+function vdWin(id){ return document.querySelector('.vd-win[data-vd="'+id+'"]'); }
+function vdCrear(id){
+  var d=vdDef(id); if(!d) return null;
+  var w=el("div","vd-win"); w.dataset.vd=id; w.setAttribute("aria-label",d.n);
+  /* OJO: sin role="dialog" (7.css esconde .window[role=dialog]) */
+  var cuerpo=montarBarraSO(w,d.n,d.ic,function(){ vdCerrar(id); },function(){ vdMinimizar(id); },function(){ vdMaximizar(id); });
+  if(id==="correo"){ w.classList.add("vd-correo"); if(typeof correoMontar==="function") correoMontar(cuerpo); }
+  else { var p=VD.nodos[id]; if(p){ p.classList.add("vd-en-ventana"); cuerpo.appendChild(p); } }
+  document.body.appendChild(w);
+  vdUbicar(w,id,d);
+  if(VD.max[id]) w.classList.add("vd-max");
+  if(VD.min[id]) w.classList.add("vd-min");
+  w.addEventListener("pointerdown",function(){ vdFrente(id); },true);
+  vdArrastre(w,id);
+  var barra=w.querySelector(".so-barra");
+  if(barra) barra.ondblclick=function(ev){ if(ev.target.closest&&ev.target.closest("button")) return; vdMaximizar(id); };
+  w.classList.add("vd-entra"); setTimeout(function(){ w.classList.remove("vd-entra"); },200);
+  return w;
+}
+function vdLimites(){
+  var v=document.getElementById("vista"), r=v?v.getBoundingClientRect():{left:0};
+  var b=document.getElementById("barra"), arriba=b?Math.max(0,b.getBoundingClientRect().bottom):0;
+  return {izq:Math.max(0,r.left), arriba:arriba+6, ancho:window.innerWidth, alto:window.innerHeight};
+}
+function vdUbicar(w,id,d){
+  if(vdMovil()){ w.style.left=w.style.top=w.style.width=""; return; }
+  var L=vdLimites(), ancho=Math.min(d.w||600, L.ancho-L.izq-40);
+  w.style.width=ancho+"px";
+  var p=VD.pos[id];
+  if(!p){ var k=VD.abiertas.indexOf(id);
+    p={x:Math.round(L.izq+Math.max(20,(L.ancho-L.izq-ancho)/2)+k*28), y:Math.round(L.arriba+30+k*28)}; VD.pos[id]=p; }
+  w.style.left=Math.max(0,Math.min(p.x,L.ancho-120))+"px";
+  w.style.top=Math.max(L.arriba,Math.min(p.y,L.alto-60))+"px";
+  /* que entre entera: si la cascada la deja colgando bajo el borde (o bajo Jugar), se sube */
+  var alto=w.offsetHeight||0, piso=L.alto-84;
+  if(alto&&parseFloat(w.style.top)+alto>piso){ var y=Math.max(L.arriba,piso-alto); w.style.top=y+"px"; p.y=y; }
+  document.documentElement.style.setProperty("--vd-izq",L.izq+"px");
+  document.documentElement.style.setProperty("--vd-arriba",L.arriba+"px");
+}
+/* arrastrar por la barra de título (con mouse o lápiz; en el celu las ventanas van a pantalla completa) */
+function vdArrastre(w,id){
+  var barra=w.querySelector(".so-barra"); if(!barra) return;
+  barra.addEventListener("pointerdown",function(ev){
+    if(vdMovil()||VD.max[id]||ev.button!==0||(ev.target.closest&&ev.target.closest("button"))) return;
+    var r=w.getBoundingClientRect(), dx=ev.clientX-r.left, dy=ev.clientY-r.top, L=vdLimites();
+    w.classList.add("vd-moviendo");
+    try{ barra.setPointerCapture(ev.pointerId); }catch(e){}
+    var mover=function(e){
+      var x=Math.max(-r.width+120,Math.min(e.clientX-dx,L.ancho-120)), y=Math.max(L.arriba-6,Math.min(e.clientY-dy,L.alto-40));
+      w.style.left=x+"px"; w.style.top=y+"px"; VD.pos[id]={x:x,y:y};
+    };
+    var soltar=function(){ w.classList.remove("vd-moviendo"); barra.removeEventListener("pointermove",mover); barra.removeEventListener("pointerup",soltar); barra.removeEventListener("pointercancel",soltar); };
+    barra.addEventListener("pointermove",mover); barra.addEventListener("pointerup",soltar); barra.addEventListener("pointercancel",soltar);
+    ev.preventDefault();
+  });
+}
+function vdFrente(id){
+  var i=VD.abiertas.indexOf(id); if(i<0) return;
+  VD.abiertas.splice(i,1); VD.abiertas.push(id); vdOrden();
+}
+function vdOrden(){
+  VD.abiertas.forEach(function(id,i){ var w=vdWin(id); if(!w) return;
+    w.style.zIndex=String((vdMovil()?60:46)+i);   /* en el celu van sobre la barra de arriba (pantalla completa) */
+    var activa=i===VD.abiertas.length-1&&!VD.min[id];
+    w.classList.toggle("vd-activa",activa); w.classList.toggle("active",activa); });
+  vdTareas();
+}
+function vdCerrar(id){
+  var i=VD.abiertas.indexOf(id); if(i>=0) VD.abiertas.splice(i,1);
+  VD.min[id]=false;
+  var w=vdWin(id);
+  if(w){ w.classList.add("vd-sale"); setTimeout(function(){ if(w.parentNode) w.parentNode.removeChild(w); },140); }
+  vdOrden(); vdTareas();
+  var ic=document.querySelector('.vd-ico[data-vd="'+id+'"]'); if(ic) try{ ic.focus({preventScroll:true}); }catch(e){}
+}
+function vdMinimizar(id){
+  VD.min[id]=true; var w=vdWin(id); if(w) w.classList.add("vd-min");
+  vdOrden();
+}
+function vdRestaurar(id){ VD.min[id]=false; var w=vdWin(id); if(w) w.classList.remove("vd-min"); vdFrente(id); }
+function vdMaximizar(id){
+  if(vdMovil()) return;
+  VD.max[id]=!VD.max[id]; var w=vdWin(id); if(w) w.classList.toggle("vd-max",!!VD.max[id]);
+  var b=w&&w.querySelector(".so-btn.max"); if(b){ b.title=VD.max[id]?"Restaurar":"Maximizar"; b.setAttribute("aria-label",VD.max[id]?"Restore":"Maximize"); }
+}
+function vdQuitarVentanas(){ [].forEach.call(document.querySelectorAll(".vd-win"),function(w){ if(w.parentNode) w.parentNode.removeChild(w); }); }
+
+/* la barra de tareas: un botón por ventana abierta (la activa, hundida; un clic minimiza o la trae al frente) */
+function vdTareas(){
+  var t=document.getElementById("vd-tareas");
+  if(!VD.abiertas.length||!document.querySelector(".vd")){ if(t) t.remove(); return; }
+  if(!t){ t=el("div"); t.id="vd-tareas"; t.setAttribute("role","toolbar"); t.setAttribute("aria-label","Barra de tareas"); document.body.appendChild(t); }
+  t.innerHTML="";
+  var arriba=VD.abiertas.filter(function(id){ return !VD.min[id]; }).slice(-1)[0];
+  VD_ICONOS.forEach(function(d){ if(VD.abiertas.indexOf(d.id)<0) return;
+    var b=el("button","vd-tarea"+(d.id===arriba?" activa":"")+(VD.min[d.id]?" mini":""));
+    b.type="button"; b.dataset.vd=d.id;
+    b.appendChild(el("span","vd-tarea-ic",d.ic)); b.appendChild(el("span","vd-tarea-n",escHtml(d.n)));
+    b.title=d.n;
+    b.onclick=function(){ if(d.id===arriba) vdMinimizar(d.id); else vdRestaurar(d.id); };
+    t.appendChild(b);
+  });
+  /* va abajo a la izquierda y no se mete debajo del botón Jugar */
+  var v=document.getElementById("vista"), izq=v?Math.max(8,v.getBoundingClientRect().left+8):8;
+  t.style.left=izq+"px";
+  var jug=document.getElementById("avanceGrande"), lim=jug&&jug.getBoundingClientRect().width?jug.getBoundingClientRect().left-12:window.innerWidth-16;
+  t.style.maxWidth=Math.max(120,lim-izq)+"px";
+}
+
+/* Escape cierra la ventana de adelante (si no hay un cuadro modal encima) */
 document.addEventListener("keydown",function(e){
-  if(e.key!=="Escape"||!ESC_VENTANAS.length) return;
-  var top=ESC_VENTANAS[ESC_VENTANAS.length-1];
-  if(document.getElementById("capa-modal")&&document.getElementById("capa-modal").children.length) return;
-  e.preventDefault();
-  escCerrar(top.id);
+  if(e.key!=="Escape"||!VD.abiertas.length) return;
+  var m=document.getElementById("capa-modal"); if(m&&m.children.length) return;
+  var vis=VD.abiertas.filter(function(id){ return !VD.min[id]; }); if(!vis.length) return;
+  e.preventDefault(); vdCerrar(vis[vis.length-1]);
+});
+window.addEventListener("resize",function(){
+  VD.abiertas.forEach(function(id){ var w=vdWin(id), d=vdDef(id); if(w&&d) vdUbicar(w,id,d); }); vdTareas();
 });
 
-(function wrapEscritorioIconos(){
-  if(typeof vistaEscritorio!=="function"||vistaEscritorio._esc915) return;
-  var orig=vistaEscritorio;
-  vistaEscritorio=function(){
-    var r=orig.apply(this,arguments);
-    try{ escritorioAIconos(); }catch(e){}
-    return r;
-  };
-  try{ Object.keys(orig).forEach(function(k){ vistaEscritorio[k]=orig[k]; }); }catch(e){}
-  vistaEscritorio._esc915=true;
+(function engancharEscritorioVista(){
+  if(typeof vistaEscritorio==="function"&&!vistaEscritorio._vd){
+    var orig=vistaEscritorio;
+    vistaEscritorio=function(){ var r=orig.apply(this,arguments); try{ vdArmar(); }catch(e){ if(window.console) console.error("escritorio:",e); } return r; };
+    try{ Object.keys(orig).forEach(function(k){ vistaEscritorio[k]=orig[k]; }); }catch(e){}
+    vistaEscritorio._vd=true;
+  }
+  /* fuera del Escritorio (u otra partida) las ventanas no quedan flotando: se guardan y vuelven al volver */
+  if(typeof render==="function"&&!render._vd){
+    var r0=render;
+    render=function(){ var x=r0.apply(this,arguments);
+      try{ if(!E||SEC!=="escritorio"){ vdQuitarVentanas(); var t=document.getElementById("vd-tareas"); if(t) t.remove(); if(!E) VD.abiertas=[]; } }catch(e){}
+      return x; };
+    try{ Object.keys(r0).forEach(function(k){ render[k]=r0[k]; }); }catch(e){}
+    render._vd=true;
+  }
 })();
 
 ;
 ;self.__papaOK=1;
+self.JUEGO_ARCHIVOS=["js/util.js","js/donar.js","js/idiomas.js","js/data-liga.js","js/data-escudos.js","js/data-plantel.js","js/data-grok.js","js/data-historia.js","js/data-periodistas.js","js/data-grupos.js","js/data-storylines.js","js/data-decisiones.js","js/data-decisiones-plus.js","js/data-eventos.js","js/data-proc.js","js/motor.js","js/partidas.js","js/data-estadios.js","js/data-clubes2026.js","js/data-grok-plus.js","js/data-b2026.js","js/data-segunda2026.js","js/data-clubes-meta.js","js/liga-registrar.js","js/data-argentina2026.js","js/data-2006.js","js/data-1925.js","js/data-1991-plus.js","js/partido.js","js/carrera.js","js/mercado.js","js/ia.js","js/data-copas2026.js","js/redes.js","js/reputacion.js","js/retrato.js","js/casino.js","js/bolsa.js","js/memoria.js","js/barra.js","js/logros.js","js/storylines.js","js/nube.js","js/servidor.js","js/ui-partido.js","js/data-kits.js","js/cancha.js","js/data-proximamente.js","js/ui.js","js/ventanas.js","js/multi.js","js/data-voz.js","js/data-tuits.js","js/data-tuits-76.js","js/plop-motor.js","js/data-grok-beta.js","js/data-32.js","js/data-35.js","js/data-36.js","js/data-historico.js","js/data-superprompt-83.js","js/data-formato2026.js","js/mundo.js","js/pulido.js","js/data-voz-76.js","js/data-epocas-78.js","js/federacion.js","js/federacion-poder.js","js/epoca-intro.js","js/data-tarea-e.js","js/data-huecos-87.js","js/data-planteles.js","js/data-caza-97.js","js/data-caza-98.js","js/data-plop-equipo.js","js/data-planteles-epoca.js","js/data-rigor-801.js","js/data-996.js","js/data-998.js","js/data-999.js","js/dev-esquema.js","js/dev-auditor.js","js/dev-editor.js","js/dev-clonar.js","js/dev-cobertura.js","js/dev-doctor.js","js/data-fixture2026.js","js/dev-decisiones.js","js/dev-banco.js","js/data-afa-rigor.js","js/data-alma-9012.js","js/data-alma-9013.js","js/data-alma-9014.js","js/ui-jornada.js","js/data-preguntas-92.js","js/mundo-vivo.js","js/data-alma-arg.js","js/data-epocas-alma.js","js/copas-vivas.js","js/copas-epocas.js","js/mundo-epoca.js","js/offline.js","js/papa-armar.js","js/papa.js","js/vida-ui.js","js/calendario-real.js","js/noticias-relevantes.js","js/estadio-dibujo.js","js/plop-mejoras.js","js/economia-real.js","js/vida-real.js","js/amistosos.js","js/conmebol-ko.js","js/calendario-sofa.js","js/data-respuestas.js","js/prensa-real.js","js/historia-carrera.js","js/ajustes-real.js","js/arco3d.js","js/interfaz-aero.js","js/data-alma-9077.js","js/data-historia-clubes.js","js/poder-sombra.js","js/vida-hoy.js","js/metas-real.js","js/temporadas-archivo.js","js/data-ranuras.js","js/aero7.js","js/plop-perfil.js","js/data-plop-banco.js","js/plop-vivo.js","js/pizarra-auto.js","js/arco-realismo.js","js/arco-gl.js","js/cancha3d.js","js/estadio3d.js","js/modelo3d.js","js/bp3d.js","js/arranque-justo.js","js/extranjeros.js","js/rendimiento.js","js/ayudante.js","js/estrellas.js","js/sonido.js","js/correo.js","js/escritorio-vista.js"];

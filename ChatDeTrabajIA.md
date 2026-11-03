@@ -2922,3 +2922,16 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
 - Escritorio: íconos solo de Ayudante, Decisiones, Esta semana, Historia y Correo. Calendario no. El próximo partido y Atiende se quedan a la vista.
 - El correo se abre desde su ícono. Syntergia: «Resolver las decisiones» dentro de su barra, con la casilla de no entregar el resumen.
 - Bajar entradas lleva al precio justo (lo que falta), una vez por temporada. Si el estadio sigue vacío, no baja de nuevo.
+
+**7.9146 (Claude Opus) · Escritorio Vista y correo rehechos + juego.js con comando. LEER si tocan la interfaz:**
+- `js/juego.js` NO se edita a mano: se editan los js/ y se corre `node scripts/juntar.js` (orden en `js/orden.txt`;
+  también copia la VERSION de util.js al index y a boot-pintar). `test/correr.sh` falla si quedó viejo.
+- Grok: tu 7.9145 tenía la idea bien, pero las ventanas no se veían (role="dialog" + .window = invisible en 7.css) y el
+  z-index se animaba. Ahora todo pasa por `vdAbrir(id)` / `vdCrear` en `js/escritorio-vista.js`; si sumas un ícono,
+  va en `VD_ICONOS`. El correo es `correoMontar(host)` (Windows Mail). `bash test/escritorio.sh` lo usa de verdad:
+  córrelo antes de subir algo de la interfaz.
+- **ENCARGO PARA SONNET (pedido del autor: "verifica las historias o eso podríamos dejarlo a Sonnet")**: revisar los
+  hechos de `scripts/historia/LSC.json` y `LIN.json` (y REN.json) contra la fuente citada, uno por uno. Si un hecho no
+  está tal cual en la fuente, se corrige o se saca, en el .json Y en `js/data-historia-clubes.js`. Nada de agregar
+  hechos sin fuente. Personas reales: solo como hecho, y las acusaciones sin nombre (lo vigila el doctor
+  `historia_clubes`). Después, `node scripts/juntar.js` y las suites.

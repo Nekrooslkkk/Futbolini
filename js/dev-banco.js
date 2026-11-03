@@ -2257,3 +2257,45 @@ if(typeof devDoctorRegistrar==="function"){
     arreglo:"js/cancha.js _cvGuionGol/_cvArmarGol/_cvPasoGol (st.seq.guion) · _cvStep pasa los nombres (_cvNombres)",
     fn:function(){ const r=devGolDelMotor(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }
+/* 7.9146 · "las UI de escritorio están re bugeadas y no se pueden usar": las ventanas del escritorio Vista se VEN, se
+   apilan bien, y el correo (Windows Mail) muestra lo que hay. Los tres bugs de 7.9145, cada uno con su chequeo:
+   role=dialog + .window (7.css la escondía), la transición de "todo" (el z-index se animaba y la ventana nueva quedaba
+   detrás) y la cabecera repetida adentro. Corre sobre la partida real: arma una ventana fuera de la pantalla y la saca. */
+function devEscritorioVista(){
+  const f=[], det=[];
+  if(typeof vdCrear!=="function"||typeof VD==="undefined") return {f:["falta el escritorio Vista (js/escritorio-vista.js)"],det:det};
+  if(typeof document==="undefined"||typeof getComputedStyle!=="function") return {f:f,det:["sin navegador"]};
+  let w=null;
+  try{
+    w=vdCrear("correo"); if(!w) return {f:["vdCrear no arma la ventana del correo"],det:det};
+    w.style.left="-6000px"; w.style.top="0px";
+    w.classList.remove("vd-entra"); try{ w.getAnimations().forEach(a=>a.finish()); }catch(e){}   /* se mide quieta, no en plena animación de entrada */
+    const cs=getComputedStyle(w);
+    if(w.getAttribute("role")==="dialog") f.push("la ventana lleva role=dialog: con la clase .window, 7.css la deja invisible (opacity 0)");
+    if(cs.visibility!=="visible"||+cs.opacity<0.99) f.push("la ventana del escritorio queda invisible (visibility "+cs.visibility+", opacity "+cs.opacity+")");
+    if(cs.position!=="fixed") f.push("la ventana no flota (position "+cs.position+")");
+    const tp=cs.transitionProperty||"";
+    if(/(^|,\s*)(all|z-index)(\s*,|$)/.test(tp)&&parseFloat(cs.transitionDuration)>0) f.push("la ventana anima el z-index («"+tp+"»): la nueva queda un rato detrás de la anterior");
+    if(typeof panel==="function"){
+      const pn=panel("Prueba","🧪"); pn.classList.add("vd-en-ventana"); (w._cuerpo||w).appendChild(pn);
+      const cab=pn.querySelector(":scope > .cab");
+      if(cab&&getComputedStyle(cab).display!=="none") f.push("adentro de la ventana el panel repite su cabecera (el tema Aero le gana a la regla)");
+    }
+    const filas=w.querySelectorAll(".wm-fila").length, carp=w.querySelectorAll(".wm-carpeta").length;
+    if(carp<4) f.push("Windows Mail sin sus 4 carpetas ("+carp+")");
+    const ms=correoMensajes(), decs=(E&&E.decPend||[]).filter(x=>typeof decisionPorId==="function"&&decisionPorId(x.id)).length;
+    if(ms.filter(x=>x.dec).length!==decs) f.push("el correo no trae todas las decisiones sobre la mesa ("+ms.filter(x=>x.dec).length+" de "+decs+")");
+    const enEntrada=correoEnCarpeta(ms,(VD.correo&&VD.correo.carpeta)||"entrada").length;
+    if(filas!==enEntrada) f.push("la lista del correo muestra "+filas+" filas y la carpeta tiene "+enEntrada);
+    det.push("ventana visible y adelante · correo: "+ms.length+" mensajes ("+decs+" decisiones), "+ms.filter(x=>!x.leido).length+" sin leer");
+  } catch(e){ f.push("explotó: "+e.message); }
+  finally{ if(w&&w.parentNode) w.parentNode.removeChild(w); }
+  if(typeof JUEGO_ARCHIVOS!=="undefined"&&!(JUEGO_ARCHIVOS.indexOf("js/escritorio-vista.js")>=0&&JUEGO_ARCHIVOS.indexOf("js/correo.js")>=0)) f.push("js/juego.js no trae el escritorio o el correo (rearmar con node scripts/juntar.js)");
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"escritorio_vista", area:"interfaz",
+    n:"El escritorio Vista se puede usar: las ventanas se ven, la nueva queda adelante, no repiten cabecera, y el correo (Windows Mail) trae todo lo que hay",
+    arreglo:"js/escritorio-vista.js (vdArmar, vdCrear, vdOrden, vdTareas) · js/correo.js (correoMontar, correoMensajes) · css/interfaz-club.css ▸ 7.9146 · rearmar js/juego.js con node scripts/juntar.js · prueba de punta a punta: test/escritorio.mjs",
+    fn:function(){ const r=devEscritorioVista(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
