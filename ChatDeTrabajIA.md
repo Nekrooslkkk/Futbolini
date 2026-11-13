@@ -2935,3 +2935,11 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
   está tal cual en la fuente, se corrige o se saca, en el .json Y en `js/data-historia-clubes.js`. Nada de agregar
   hechos sin fuente. Personas reales: solo como hecho, y las acusaciones sin nombre (lo vigila el doctor
   `historia_clubes`). Después, `node scripts/juntar.js` y las suites.
+
+**7.9147 (Claude) · Rendimiento del 3D. LEER si tocan los jugadores 3D:**
+- Cada modelo trae DOS mallas (completa y liviana) y cada jugador dos esqueletos; `_c3dLod(est)` elige por tamaño en
+  pantalla en cada cuadro. Si regeneran un .glb: `python3 scripts/modelo_lod.py img/modelos/<archivo>.glb` (los armadores
+  ya lo hacen solos). No lean `I.malla.skeleton.bones` suponiendo 65 huesos: con la liviana son 25; usen `I.H[nombre]`.
+- Los gestos encima de la animación pasan por `_m3dRot`, que anota qué hueso tocó para devolverlo al cuadro siguiente.
+  Si rotan un hueso a mano después de `modelo3dAndar`, háganlo con `_m3dRot` o se acumula.
+- Celular: el reloj de sesión se apoya en `--dock-alto` (lo pone `pintarDock`). Campos de texto: 16 px mínimo.

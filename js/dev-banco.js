@@ -2299,3 +2299,64 @@ if(typeof devDoctorRegistrar==="function"){
     arreglo:"js/escritorio-vista.js (vdArmar, vdCrear, vdOrden, vdTareas) · js/correo.js (correoMontar, correoMensajes) · css/interfaz-club.css ▸ 7.9146 · rearmar js/juego.js con node scripts/juntar.js · prueba de punta a punta: test/escritorio.mjs",
     fn:function(){ const r=devEscritorioVista(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }
+/* 7.9147 · rendimiento del 3D: la malla LIVIANA de los jugadores (de lejos) y los bordes rectos del uniforme del maniquí.
+   Medido en celular: 306.000 triángulos por cuadro con 22 maniquíes completos → 75.000 con la liviana. */
+async function devJugadoresLod(){
+  const f=[], det=[];
+  if(typeof modelo3dLod!=="function"||typeof _c3dLod!=="function") return {f:["falta la malla liviana de los jugadores (modelo3d.js modelo3dLod, cancha3d.js _c3dLod)"],det:det};
+  if(typeof _c3dCuadro==="function"&&String(_c3dCuadro).indexOf("_c3dLod(")<0) f.push("la cancha 3D no elige la malla por distancia en cada cuadro (_c3dLod fuera de _c3dCuadro)");
+  if(typeof cargarThree==="function"&&typeof THREE==="undefined"){ try{ await cargarThree(); }catch(e){} }
+  if(typeof THREE==="undefined") return {f:f,det:["sin three.js en este navegador: se prueba en test/cancha3d"]};
+  const modelos=[["maniquí",MODELO3D,modelo3dCargar,0.32,7]];
+  if(typeof MODELO3D_REAL!=="undefined") modelos.push(["realista",MODELO3D_REAL,modelo3dCargarReal,0.45,8]);
+  for(const [nom,M,cargar,tope,zonas] of modelos){
+    if(!(await cargar())){ f.push("el "+nom+" no carga: "+(M.error||"?")); continue; }
+    const D=M.datos;
+    if(!D.lod){ f.push("el "+nom+" no trae la malla liviana (correr python3 scripts/modelo_lod.py "+M.url+")"); continue; }
+    const t0=D.geo.index.count/3, t1=D.lod.geo.index.count/3;
+    if(t1/t0>tope) f.push("la liviana del "+nom+" no es liviana: "+t1+" de "+t0+" triángulos ("+Math.round(100*t1/t0)+" %, tope "+Math.round(tope*100)+" %)");
+    const nomL=D.lod.juntas.map(k=>D.j.nodes[k].name), dedos=nomL.filter(n=>/^(index|middle|pinky|ring|thumb)_/.test(n));
+    if(dedos.length||nomL.length>30) f.push("el esqueleto liviano del "+nom+" tiene "+nomL.length+" huesos"+(dedos.length?" y todavía mueve dedos":""));
+    const g=D.lod.geo.attributes, cu=[0,0,0,0,0,0,0,0];
+    for(let k=0;k<g.kitA.count;k++){ const w=[g.kitA.getX(k),g.kitA.getY(k),g.kitA.getZ(k),g.kitA.getW(k),g.kitB.getX(k),g.kitB.getY(k),g.kitB.getZ(k),g.kitB.getW(k)]; cu[w.indexOf(Math.max(...w))]++; }
+    if(cu.slice(0,zonas).some(x=>!x)) f.push("a la liviana del "+nom+" le falta una zona del uniforme ("+cu.join("/")+")");
+    D.geo.computeBoundingBox(); D.lod.geo.computeBoundingBox();
+    const a0=D.geo.boundingBox.max.y-D.geo.boundingBox.min.y, a1=D.lod.geo.boundingBox.max.y-D.lod.geo.boundingBox.min.y;
+    if(Math.abs(a1-a0)>0.05) f.push("la liviana del "+nom+" no mide lo mismo ("+a1.toFixed(2)+" m contra "+a0.toFixed(2)+" m)");
+    /* un jugador: cambia de malla y de esqueleto, suelta los dedos, y vuelve; la patada mueve el pie igual en las dos */
+    const I=modelo3dInstancia(modelo3dMaterial(null,D),D), pos=n=>I.H[n].getWorldPosition(new THREE.Vector3());
+    const pie=()=>{ I.pesoLoco=0; modelo3dAndar(I,0,0); const gg=_c3dGestoVacio(); gg.legs[0].t=-0.95; modelo3dGesto(I,gg,1); I.raiz.updateMatrixWorld(true); return pos("foot_r"); };
+    const p0=pie(), p0b=pie();
+    if(p0b.distanceTo(p0)>0.01) f.push("el gesto del "+nom+" se acumula: la misma patada dos cuadros seguidos mueve el pie "+p0b.distanceTo(p0).toFixed(2)+" m más (el mezclador no reescribe un hueso que no cambió)");
+    if(!modelo3dLod(I,true)||I.malla.geometry!==D.lod.geo||I.malla.skeleton!==I.esqLod) f.push("el "+nom+" no pasa a la malla liviana");
+    if(I.H.index_01_l&&I.H.index_01_l.parent) f.push("con la liviana el "+nom+" sigue moviendo los dedos (40 huesos de más por jugador)");
+    const p1=pie();
+    if(p1.distanceTo(p0)>0.01) f.push("con la liviana el "+nom+" patea distinto ("+p1.distanceTo(p0).toFixed(2)+" m de diferencia en el pie)");
+    try{ I.malla.skeleton.update(); }catch(e){ f.push("el esqueleto liviano del "+nom+" explota: "+e.message); }
+    modelo3dLod(I,false);
+    if(I.malla.geometry!==D.geo||I.malla.skeleton!==I.esq||(I.H.index_01_l&&!I.H.index_01_l.parent)) f.push("el "+nom+" no vuelve a la malla completa (o se queda sin dedos)");
+    /* la regla: lejos liviana, cerca completa, y en el borde no parpadea */
+    const est={m3d:[I], camGL:{position:new THREE.Vector3(0,1,0), fov:40}, canvas:{height:720}};
+    const a=d=>{ est.camGL.position.set(0,0.9,d); _c3dLod(est); return I.lod; };
+    I.raiz.position.set(0,0,0);
+    if(a(40)!==true) f.push("a 40 m el "+nom+" va con la malla completa");
+    if(a(3)!==false) f.push("a 3 m (penal, repetición) el "+nom+" sigue con la liviana");
+    const dBorde=1.85*(720/(2*Math.tan(20*Math.PI/180)))/C3D_LOD_PX;   /* la distancia donde mide justo el umbral */
+    a(40); const b1=a(dBorde*0.97), b2=(a(3),a(dBorde*1.03));
+    if(b1!==true||b2!==false) f.push("en el borde ("+dBorde.toFixed(1)+" m) el "+nom+" cambiaría de malla de ida y vuelta (parpadeo)");
+    /* los bordes rectos del uniforme llegan al sombreador */
+    const U=I.malla.material.userData.u, sh={uniforms:{}, vertexShader:THREE.ShaderLib.lambert.vertexShader, fragmentShader:THREE.ShaderLib.lambert.fragmentShader};
+    I.malla.material.onBeforeCompile(sh);
+    if(!U.uCortar||U.uCortar.value!==1||sh.fragmentShader.indexOf("uCorteA")<0) f.push("el "+nom+" no corta los bordes del uniforme en línea recta (saldrían en serrucho)");
+    I.malla.material.dispose(); I.mezcla.stopAllAction();
+    det.push(nom+": "+t0+" → "+t1+" triángulos ("+Math.round(100*t1/t0)+" %), "+D.juntas.length+" → "+nomL.length+" huesos");
+  }
+  if(typeof C3D!=="undefined"&&C3D.est&&C3D.est.m3d) det.push("en este partido: "+(C3D.est.lodN||0)+" de 22 con la liviana");
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"jugadores_lod", area:"interfaz", asinc:true,
+    n:"Rendimiento 3D: de lejos los jugadores van con la malla liviana (sin dedos, 25 huesos) y de cerca con la completa, sin parpadear; el uniforme se corta en línea recta",
+    arreglo:"scripts/modelo_lod.py (meshes[1]+skins[1] de img/modelos/*.glb) · js/modelo3d.js (_m3dLeerGLB lod, modelo3dInstancia esqLod/dedos, modelo3dLod, M3D_GLSL_CORTES, _m3dCortes) · js/cancha3d.js _c3dLod/C3D_LOD_PX (en _c3dCuadro y _c3dCuadroUno)",
+    fn:async function(){ const r=await devJugadoresLod(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}

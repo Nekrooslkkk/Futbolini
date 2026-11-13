@@ -54,6 +54,9 @@ try{
     ok(r.conectado&&r.colores>12,"la cancha 3D se ve (canvas en pantalla con "+r.colores+" tonos)");
     ok(r.sigue,"correr el doctor en medio del partido no rompe la cancha 3D en vivo");
     ok(r.calls<=90,"dibuja barato: "+r.calls+" llamadas de dibujo por cuadro");
+    /* 7.9147 · y liviano: desde la cámara de transmisión los 22 van con la malla liviana (eran 306.000 triángulos con el maniquí) */
+    if(!caso.papa){ const t=await p.evaluate(()=>{ const e=C3D.est; _c3dCuadroUno(e); return {tris:e.renderer.info.render.triangles, lod:e.lodN||0}; });
+      ok(t.lod>=20&&t.tris<(caso.real?200000:110000),"dibuja liviano: "+t.tris+" triángulos por cuadro, "+t.lod+" de 22 con la malla liviana"); }
     ok(caso.papa?r.calidad==="antigua":r.calidad!=="antigua","calidad "+r.calidad+(caso.papa?" (Modo papa → Antigua)":""));
     ok(r.doc,"doctor cancha3d_fisica_rinde: "+r.docTxt);
     await esperar(1500);

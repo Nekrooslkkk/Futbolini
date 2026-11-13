@@ -254,3 +254,22 @@ body.en-partido #guardadoTxt{
 
 /* 7.9145 · Syntergia: casilla para callarla */
 .syn-callar{display:flex;align-items:center;gap:6px;font-size:12px;margin-top:4px}
+
+/* ============================================================
+   7.9147 · CELULAR: lo que se toca cabe en un dedo y escribir no hace zoom
+   (medido con el barrido de 390x844: la X de las ventanas medía 19 px de alto, la ampolleta de las metas 20x17, los
+   campos de texto 17 px; y en iOS un campo con letra de menos de 16 px amplía toda la página al tocarlo)
+   ============================================================ */
+@media (max-width:760px){
+  input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea{font-size:16px !important; min-height:36px}
+  .ventana-so .so-btn{min-height:30px; min-width:44px}
+  .ventana-so .so-btn.cerrar{min-width:54px}
+  .obj-chev{min-width:34px; min-height:34px}
+  .plop-conv-link{min-height:34px; padding-top:8px; padding-bottom:8px}
+  .plop-ie-x{min-height:30px}
+  .cs-tab{min-height:36px}
+  /* el reloj de la sesión: una tira pegada al borde de arriba del dock (antes era una cajita flotando sobre el texto) */
+  body.con-dock #guardadoTxt:not(.guardado-mal){left:0; right:0; bottom:var(--dock-alto,118px); max-width:none; border-radius:0; border:0;
+    text-align:center; font-size:10px; line-height:1.3; padding:1px 8px; white-space:nowrap; box-shadow:none;
+    background:rgba(8,52,20,.78); color:#eaffea}
+}

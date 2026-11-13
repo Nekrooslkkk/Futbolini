@@ -214,7 +214,8 @@ function _c3dTorsoGeo(seg){
 }
 function _c3dPiezas(scene,perfil){
   const lam=()=>new THREE.MeshLambertMaterial({flatShading:!!perfil.plano});
-  const seg=perfil.plano?6:12, cs=perfil.plano?2:4;
+  /* 7.9147 · en calidad media (celulares) los clásicos van con 8 lados: eran 117.000 triángulos, más que 22 maniquíes livianos */
+  const seg=perfil.plano?6:(perfil.aa?12:8), cs=perfil.plano?2:(perfil.aa?4:3);
   const P={};
   const im=(nombre,geo,n)=>{ const m=new THREE.InstancedMesh(geo,lam(),n); m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.frustumCulled=false;
     m.castShadow=!perfil.plano; scene.add(m); P[nombre]=m; return m; };
@@ -892,7 +893,24 @@ function _c3dTam(est){
     est.camGL.aspect=rc.width/Math.max(1,rc.height); est.camGL.updateProjectionMatrix();
   }
 }
-function _c3dCuadroUno(est){ try{ _c3dTam(est); _c3dSincronizar(est,0.016); if(typeof c3dEstadioCuadro==="function") c3dEstadioCuadro(est,0); est.renderer.render(est.scene,est.camGL); }catch(e){} }
+/* 7.9147 · CADA JUGADOR CON LA MALLA QUE LE TOCA POR SU TAMAÑO EN PANTALLA. Medido en celular: 22 maniquíes completos =
+   306.000 triángulos por cuadro, y 7 de cada 10 vértices eran dedos de menos de un pixel. Si el jugador mide menos de
+   C3D_LOD_PX pixeles de alto va la malla liviana (scripts/modelo_lod.py: 23 % de los triángulos, 25 huesos en vez de 65);
+   de cerca (penal, córner, repetición, pantalla grande) vuelve la completa. Con margen para que no parpadee en el borde. */
+const C3D_LOD_PX=240;
+function _c3dLod(est){
+  const M=est.m3d; if(!M||!M[0]||!M[0].esqLod) return;
+  const cam=est.camGL, c=cam.position, k=(est.canvas.height||1)/(2*Math.tan((cam.fov||40)*Math.PI/360));
+  const fijo=(typeof E!=="undefined"&&E&&E.config&&E.config.c3dLod)||"";   /* "siempre" / "nunca": para probar y comparar */
+  let n=0;
+  for(let i=0;i<M.length;i++){ const I=M[i], p=I.raiz.position;
+    const px=1.85*(I.talla||1)*k/Math.max(0.5,Math.hypot(p.x-c.x,p.y+0.9-c.y,p.z-c.z));
+    const quiere=fijo==="siempre"?true:(fijo==="nunca"?false:(I.lod?px<C3D_LOD_PX*1.12:px<C3D_LOD_PX*0.9));
+    if(quiere!==I.lod) modelo3dLod(I,quiere);
+    if(I.lod) n++; }
+  est.lodN=n;
+}
+function _c3dCuadroUno(est){ try{ _c3dTam(est); _c3dSincronizar(est,0.016); if(typeof c3dEstadioCuadro==="function") c3dEstadioCuadro(est,0); _c3dLod(est); est.renderer.render(est.scene,est.camGL); }catch(e){} }
 /* calidad Auto: si el equipo no llega, baja la resolución (no se cambia a 2D); si sobra, la sube */
 function _c3dAjusteAuto(est,dtReal){
   est.dtProm=est.dtProm*0.92+dtReal*0.08;
@@ -930,6 +948,7 @@ function _c3dCuadro(est,t){
       _c3dSincronizar(est,dtv);
     }
     if(typeof c3dEstadioCuadro==="function") c3dEstadioCuadro(est,dtv);   /* 7.9135 · cielo, marcador y la hinchada que salta */
+    _c3dLod(est);
     est.renderer.render(est.scene,est.camGL); }
   catch(e){
     if(window.console) console.error("cancha3d:",e);

@@ -95,6 +95,8 @@ function pintarDock(){
     row.appendChild(mas);
   }
   d.appendChild(row);
+  /* 7.9147 · el alto del dock en una variable CSS: el reloj de la sesión se pega justo encima (antes flotaba sobre el texto) */
+  if(typeof requestAnimationFrame==="function") requestAnimationFrame(function(){ try{ if(d.isConnected&&d.offsetHeight) document.documentElement.style.setProperty("--dock-alto",d.offsetHeight+"px"); }catch(e){} });
   const onTab=row.querySelector(".dock-tab.on");
   /* 7.9093 · rendimiento: centrar con scroll-into-view obliga a recalcular toda la página (25 % del tiempo de cada repintado en un
      celu lento). Solo se centra la pestaña cuando cambió la sección, y moviendo la cinta, no la página. */

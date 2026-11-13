@@ -5816,3 +5816,41 @@ BUZÓN quedó muy generado a la rápida; yo esperaba más de ese realismo Window
 - En el celular la ventana termina justo arriba de la barra de abajo (Jugar y el menú): antes le tapaba la barra de estado
   al correo (`--vd-abajo`; la prueba lo exige).
 - **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular (170 chequeos) · dev 594/594 (escritorio 39/39, cancha 3D, Modo papa, duelos) · banco 255 partidas.
+
+### 7.9147 — El 3D pesa 4 veces menos: malla liviana de lejos, bordes rectos en el maniquí y dedos que caben en el celular
+Pedido del autor (9 nov 2026): "avanza todo, incluyendo 3D y mejoras de rendimiento, y que esté todo bien para celular".
+- **Medido primero (celular 390×844, CPU ×6):** el juego abre en ~1,5 s y cada sección pinta en 30–160 ms: ahí no estaba
+  el problema. El problema era el 3D: **22 maniquíes = 306.000 triángulos por cuadro**, y 7 de cada 10 vértices del
+  maniquí son DEDOS que desde la cámara de transmisión miden menos de un pixel.
+- **Malla liviana (`scripts/modelo_lod.py`, nuevo):** le agrega a cada modelo (`img/modelos/jugador.glb` y
+  `jugador_real.glb`) una segunda malla dentro del mismo archivo (`meshes[1]` + `skins[1]`):
+  - junta vértices por celdas de 2 a 4 cm sin mezclar zonas del uniforme, huesos, costuras de textura ni peinados;
+  - los dedos pasan a moverse con la mano: **25 huesos en vez de 65**;
+  - maniquí: 13.744 → 3.226 triángulos (23 %); realista: 17.483 → 6.490 (37 %);
+  - trabaja sobre el .glb del repo (no necesita los paquetes originales) y se puede correr de nuevo; los armadores
+    `modelo_jugador.py` y `modelo_realista.py` la dejan hecha al final.
+- **En el juego:**
+  - `js/modelo3d.js`: cada jugador tiene los dos esqueletos sobre los mismos huesos; `modelo3dLod(I,liviana)` cambia de
+    malla y suelta los dedos de la mano mientras va la liviana (40 huesos menos que mover por jugador y por cuadro);
+  - `js/cancha3d.js` `_c3dLod` (en cada cuadro): si el jugador mide menos de `C3D_LOD_PX` (240) pixeles de alto va la
+    liviana; de cerca (penal, córner, repetición, pantalla grande) vuelve la completa, con margen para no parpadear.
+    `E.config.c3dLod="siempre"|"nunca"` sirve para comparar.
+  - **Resultado por cuadro: maniquí 306.000 → 75.000 triángulos; realistas ~388.000 → 147.000.** Comparado a ojo a
+    distancia media: no se distingue.
+  - Los jugadores clásicos en calidad media van con 8 lados: 121.000 → 63.000 triángulos.
+- **Bordes rectos también en el maniquí** (antes solo el realista): cuello, mangas, cintura, short, medias y la línea del
+  pelo se cortan en el sombreador por la posición de reposo (`M3D_GLSL_CORTES`, compartido por los dos materiales;
+  los cortes del maniquí salen de sus articulaciones, `_m3dCortes`). Chao serrucho, y la liviana también se ve limpia.
+- **BUG (lo cazó el chequeo nuevo):** el mezclador de three no reescribe un hueso si su valor no cambió entre dos
+  cuadros; el gesto (patada, brazos del arquero) se sumaba otra vez encima. Ahora cada cuadro devuelve los huesos que tocó
+  el gesto a como los dejó la animación (`I.gTocados`).
+- **Celular** (barrido de las 12 secciones a 390×844: sin desbordes ni errores, pero cosas muy chicas para el dedo):
+  - la X de las ventanas (19 px de alto), la ampolleta de las metas (20×17), "ver conversación" de PLOP! y las pestañas
+    del calendario crecen a 30–36 px;
+  - los campos de texto van con letra de 16 px (con menos, iOS amplía toda la página al tocarlos);
+  - el reloj de la sesión ya no flota sobre el texto: es una tira pegada al borde del dock (`--dock-alto`).
+- **Dev:** doctor `jugadores_lod` (los dos modelos traen la liviana y es liviana; sin dedos; todas las zonas; mide lo
+  mismo; cambia de malla y vuelve; la patada mueve el pie igual; el gesto no se acumula; lejos liviana, cerca completa,
+  sin parpadeo en el borde; los cortes llegan al sombreador). Al revés (sin `_c3dLod` en el cuadro y sin devolver los
+  huesos): 5 fallas. `test/cancha3d.mjs` exige menos de 110.000 triángulos por cuadro (200.000 con realistas) y 20 de
+  22 con la liviana.

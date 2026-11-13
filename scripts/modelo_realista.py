@@ -332,3 +332,5 @@ def main(dir_base, dir_pelo, glb_maniqui, destino):
 
 if __name__ == "__main__":
     main(*sys.argv[1:5])
+    import modelo_lod   # 7.9147 · y la malla liviana (para verlo de lejos)
+    modelo_lod.agregar(sys.argv[4])
