@@ -148,11 +148,18 @@ s=s.replace("script-src 'self'","script-src 'self' 'unsafe-eval'",1).replace('<m
 open(sys.argv[1],"w",encoding="utf-8").write(s.replace("</body>",inject))
 PY
 cp "$PAGE" ./_pruebas_dev_tmp.html
+# 7.9147 · con Playwright y tiempo real (test/pagina.mjs): el reloj virtual del Chromium 153 a veces no se adelanta y este
+# paso se quedaba colgado hasta el timeout de toda la suite (igual que saves, banco y duelos en 7.9146)
+if command -v node >/dev/null 2>&1 && { [ -f /opt/node22/lib/node_modules/playwright/index.mjs ] || node -e "require.resolve('playwright')" >/dev/null 2>&1; }; then
+PORTD=$((20000 + RANDOM % 20000)); python3 -m http.server $PORTD --bind 127.0.0.1 >/dev/null 2>&1 & SRVD=$!; sleep 1
+OUT=$(timeout 300 node test/pagina.mjs $PORTD _pruebas_dev_tmp.html PRUEBAS_DEV_DONE 240 2>&1); kill $SRVD 2>/dev/null
+else
 OUT=$(timeout 120 "$CHROME_BIN" --headless --no-sandbox --disable-gpu --virtual-time-budget=15000 --dump-dom ./_pruebas_dev_tmp.html 2>/dev/null | python3 -c "
 import sys,re,html
 d=sys.stdin.read(); m=re.search(r'<pre id=\"out\">(.*?)</pre>', d, re.S)
 print(html.unescape(m.group(1)) if m else 'NO OUT')
 ")
+fi
 rm -f ./_pruebas_dev_tmp.html
 echo "$OUT"
 echo "$OUT" | grep -q "PRUEBAS_DEV_DONE:PASS"
