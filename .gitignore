@@ -4,3 +4,7 @@ _papa_nombres.js
 _papa_doctor.html
 _papa_chk.html
 __pycache__/
+# archivos temporales de las pruebas (test/*.sh los crean y los borran al terminar)
+/_*_tmp.html
+/_saves_datos.js
+/_duelo_juego.html
