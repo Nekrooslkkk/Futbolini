@@ -5860,5 +5860,5 @@ Pedido del autor (9 nov 2026): "avanza todo, incluyendo 3D y mejoras de rendimie
 - **Pruebas:** el último paso de `correr_dev.sh` (las pruebas del editor) también usaba el reloj virtual y se colgó una vez
   hasta el timeout de toda la suite: ahora va con Playwright y tiempo real (`test/pagina.mjs`). Los archivos temporales de
   las pruebas quedaron en `.gitignore`.
-- **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular (171 chequeos) · dev 594/594
+- **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular (171 chequeos) · dev 595/595
   (escritorio 39/39, cancha 3D con los 3 casos y el tope de triángulos, Modo papa, duelos) · banco 255 partidas.
