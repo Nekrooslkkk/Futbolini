@@ -13223,9 +13223,12 @@ function _opsNum(correcto, spread){
 }
 /* opciones de texto: la correcta + 2 distractores */
 function _opsTxt(correcto, pool){
-  const otros=(pool||[]).filter(x=>x&&x!==correcto);
+  /* 7.9147 · sin repetidos: dos clubes comparten estadio (el mismo nombre salía dos veces en la lista) y la pregunta
+     "¿Cómo se llama tu estadio de local?" quedaba con dos opciones iguales; lo cazó el doctor trivia_sana, 1 de cada ~10 */
+  const otros=[...new Set((pool||[]).filter(x=>x&&x!==correcto))];
   const arr=[correcto].concat(mezcla(otros).slice(0,2));
-  while(arr.length<3) arr.push("—");
+  const relleno=["—","Ninguna de las anteriores","No se sabe"];
+  while(arr.length<3) arr.push(relleno.filter(x=>arr.indexOf(x)<0)[0]);
   const mez=arr.sort(()=>Math.random()-0.5);
   return {op:mez, sol:mez.indexOf(correcto)};
 }
@@ -49027,6 +49030,10 @@ devDoctorRegistrar({id:"trivia_sana", area:"contenido",
   fn:function(){
     if(typeof triviaCandidatos!=="function") return _dmal("falta triviaCandidatos");
     var snap=clonarPartida(E), f=[];
+    /* 7.9147 · directo y sin azar: una lista con el mismo nombre repetido (dos clubes que comparten estadio) no puede dar
+       dos opciones iguales. Antes esto solo saltaba 1 de cada ~10 corridas */
+    if(typeof _opsTxt==="function"){ for(var kk=0;kk<12;kk++){ var oo=_opsTxt("A",["B","B","B","A"]).op, uu={}; oo.forEach(function(o){ uu[o]=1; });
+      if(oo.length!==3||Object.keys(uu).length!==3){ f.push("_opsTxt arma opciones repetidas cuando la lista trae nombres repetidos ("+oo.join(" / ")+")"); break; } } }
     function mala(q){
       if(!q||!q.op||q.op.length!==3){ f.push("sin 3 opciones: "+(q&&q.q)); return; }
       var u={}; q.op.forEach(function(o){ u[o]=1; });

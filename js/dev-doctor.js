@@ -2826,6 +2826,10 @@ devDoctorRegistrar({id:"trivia_sana", area:"contenido",
   fn:function(){
     if(typeof triviaCandidatos!=="function") return _dmal("falta triviaCandidatos");
     var snap=clonarPartida(E), f=[];
+    /* 7.9147 · directo y sin azar: una lista con el mismo nombre repetido (dos clubes que comparten estadio) no puede dar
+       dos opciones iguales. Antes esto solo saltaba 1 de cada ~10 corridas */
+    if(typeof _opsTxt==="function"){ for(var kk=0;kk<12;kk++){ var oo=_opsTxt("A",["B","B","B","A"]).op, uu={}; oo.forEach(function(o){ uu[o]=1; });
+      if(oo.length!==3||Object.keys(uu).length!==3){ f.push("_opsTxt arma opciones repetidas cuando la lista trae nombres repetidos ("+oo.join(" / ")+")"); break; } } }
     function mala(q){
       if(!q||!q.op||q.op.length!==3){ f.push("sin 3 opciones: "+(q&&q.q)); return; }
       var u={}; q.op.forEach(function(o){ u[o]=1; });

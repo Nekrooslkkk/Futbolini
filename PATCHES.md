@@ -5854,3 +5854,6 @@ Pedido del autor (9 nov 2026): "avanza todo, incluyendo 3D y mejoras de rendimie
   sin parpadeo en el borde; los cortes llegan al sombreador). Al revés (sin `_c3dLod` en el cuadro y sin devolver los
   huesos): 5 fallas. `test/cancha3d.mjs` exige menos de 110.000 triángulos por cuadro (200.000 con realistas) y 20 de
   22 con la liviana.
+- **BUG de la trivia (de 7.9144, lo cazó el doctor dentro del Modo papa):** "¿Cómo se llama tu estadio de local?" a veces
+  salía con dos opciones iguales, porque dos clubes comparten estadio y el nombre venía repetido. `_opsTxt` ahora saca los
+  repetidos; el doctor `trivia_sana` lo prueba directo y sin azar (antes saltaba 1 de cada ~10 corridas).

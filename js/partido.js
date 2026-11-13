@@ -1454,9 +1454,12 @@ function _opsNum(correcto, spread){
 }
 /* opciones de texto: la correcta + 2 distractores */
 function _opsTxt(correcto, pool){
-  const otros=(pool||[]).filter(x=>x&&x!==correcto);
+  /* 7.9147 · sin repetidos: dos clubes comparten estadio (el mismo nombre salía dos veces en la lista) y la pregunta
+     "¿Cómo se llama tu estadio de local?" quedaba con dos opciones iguales; lo cazó el doctor trivia_sana, 1 de cada ~10 */
+  const otros=[...new Set((pool||[]).filter(x=>x&&x!==correcto))];
   const arr=[correcto].concat(mezcla(otros).slice(0,2));
-  while(arr.length<3) arr.push("—");
+  const relleno=["—","Ninguna de las anteriores","No se sabe"];
+  while(arr.length<3) arr.push(relleno.filter(x=>arr.indexOf(x)<0)[0]);
   const mez=arr.sort(()=>Math.random()-0.5);
   return {op:mez, sol:mez.indexOf(correcto)};
 }
