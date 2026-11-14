@@ -5904,4 +5904,4 @@ Y: "me preocupa que el juego en cada equipo no sea igual (que jugar con cualquie
 - **Lo que NO se hizo (para no mentir):** los estadios siguen siendo las mismas piezas (tribunas, techos, torres); lo que
   cambió es desde dónde y con qué luz se ven, y la gente. Rehacer la geometría (codos curvos, bandejas con baranda,
   techos con cerchas) es el siguiente paso si la foto nueva todavía no convence. Los números en la espalda tampoco van aún.
-- **Estado:** doctor `c3d_tele` y `paridad_clubes` verdes y probados; suites completas corriendo al momento de este commit (el resultado va en la línea siguiente cuando terminen).
+- **Estado:** todo verde en 7.9148 — core 1186/1186, saves 12/12, doctor SANO 173/173 en 4 partidas + celular, dev 595/595, banco 255 partidas sin fallas.
