@@ -2943,3 +2943,17 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
 - Los gestos encima de la animación pasan por `_m3dRot`, que anota qué hueso tocó para devolverlo al cuadro siguiente.
   Si rotan un hueso a mano después de `modelo3dAndar`, háganlo con `_m3dRot` o se acumula.
 - Celular: el reloj de sesión se apoya en `--dock-alto` (lo pone `pintarDock`). Campos de texto: 16 px mínimo.
+
+**7.9148 (Claude) · La cancha 3D como transmisión + paridad entre clubes. LEER si tocan cámara, calidad o estadio:**
+- La cámara normal del partido ya NO sale de `CAM3D.lado/alto/fov`: sale de `c3dCamTV(est)` (`CAM3D_TV.ancha` o `.media`).
+  `CAM3D` sigue mandando en lo demás (seguimiento, cámara cercana de jugadas clave `gol_*`). No la acerquen "para que se
+  vean los jugadores": el doctor `c3d_tele` falla con lado < 40 o lente > 27°. Si algo se ve chico, es tema de la
+  intermedia o del detalle del jugador, no de volver a la cámara de 23 m.
+- Calidad: `E.config.c3dCalidad` vale `"alta"`, `"media"` (Normal), `"antigua"` (Celular papa) o nada (automático).
+  Jugadores: `E.config.c3dJugadores` sin valor = realistas. La física no depende de nada de esto.
+- Pasto y luz van juntos: si suben `E3D_AMB.dia`, el pasto vuelve a salir flúor (tope 1,7, lo mide el doctor).
+- **Paridad (pedido del autor: que todos los clubes se sientan como Colo-Colo):** `devParidadClubes()` da la cuenta.
+  Hoy: vara CC 16, mediana 7, 73 de 76 sin historia propia. **Tarea abierta para quien tome contenido:** historias con
+  hechos verificados (`scripts/historia/<ID>.json` → `scripts/historia_clubes.py`) y decisiones propias (`club:"ID"`).
+  Nada inventado como real; acusaciones por cargo, nunca por nombre.
+- Pendiente del 3D, en orden: geometría del estadio (codos, barandas, cerchas), números en la espalda, más caras.

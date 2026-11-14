@@ -1,5 +1,5 @@
 "use strict";
-/* Futbolini · 7.9147 · 146 archivos en uno, armado por scripts/juntar.js (mismo código que js/papa-armar.js). NO SE EDITA A MANO: se editan los archivos de js/orden.txt y se corre node scripts/juntar.js */
+/* Futbolini · 7.9148 · 146 archivos en uno, armado por scripts/juntar.js (mismo código que js/papa-armar.js). NO SE EDITA A MANO: se editan los archivos de js/orden.txt y se corre node scripts/juntar.js */
 
 /* ==== js/util.js ==== */
 "use strict";
@@ -9,7 +9,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-var VERSION="7.9147";
+var VERSION="7.9148";
 try{ if(typeof document!=="undefined") document.title="Futbolini "+VERSION+" — Conducción de clubes chilenos"; }catch(e){}
 var $=(s,c)=>(c||document).querySelector(s);
 var $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
@@ -27571,23 +27571,26 @@ function vistaAjustes(host){
     /* 7.9126 · calidad del 3D: Auto ajusta la resolución para que vaya fluido (nunca se cambia solo a 2D) */
     if(c3On&&E){
       p.cuerpo.appendChild(el("label","lb","Calidad del 3D"));
-      const fq=el("div","fichas"), cal=(E.config&&E.config.c3dCalidad)||"auto";
-      [["auto","⚙️ Auto"],["alta","✨ Alta"],["antigua","🕹️ Antigua (liviana)"]].forEach(([k,n])=>{
-        const b=el("button","ficha",n); b.setAttribute("aria-pressed",cal===k?"true":"false");
-        b.onclick=()=>{ E.config.c3dCalidad=k; guardar(); render(); aviso({auto:"⚙️ Auto: ajusta la resolución para ir fluido",alta:"✨ Alta: máxima resolución y público lleno",antigua:"🕹️ Antigua: 3D de consola vieja, liviano"}[k],3500); };
+      /* 7.9148 · los TRES modos que pidió el autor: Alta calidad · Normal · Celular papa. Sin elegir, el juego parte en el
+         que le toca a tu equipo (y lo marca). Los tres juegan EXACTAMENTE la misma física: cambia solo cómo se ve */
+      const elegida=(E.config&&E.config.c3dCalidad)||"auto", cal=(typeof c3dCalidad==="function")?c3dCalidad():"alta", autoQ=!(elegida==="alta"||elegida==="media"||elegida==="antigua");
+      const fq=el("div","fichas");
+      [["alta","✨ Alta calidad"],["media","⚽ Normal"],["antigua","🥔 Celular papa"]].forEach(([k,n])=>{
+        const b=el("button","ficha",n+(autoQ&&cal===k?" · automático":"")); b.setAttribute("aria-pressed",cal===k?"true":"false");
+        b.onclick=()=>{ E.config.c3dCalidad=k; guardar(); render(); aviso({alta:"✨ Alta calidad: jugadores con cara y pelo, sombras, estadio lleno y máxima resolución",media:"⚽ Normal: los mismos jugadores y el mismo estadio, más liviano (30 cuadros, menos resolución)",antigua:"🥔 Celular papa: jugadores y estadio antiguos, bien livianos. La física es la misma"}[k],4000); };
         fq.appendChild(b);
       });
       p.cuerpo.appendChild(fq);
-      p.cuerpo.appendChild(el("p","mini","<b>Auto</b> baja o sube la resolución según lo que aguante tu equipo (no se cambia a 2D: si ni así va fluido, te pregunta). <b>Antigua</b> es 3D de consola vieja: baja resolución, sin público, 30 cuadros por segundo."));
+      p.cuerpo.appendChild(el("p","mini","<b>Alta</b>: jugadores realistas, sombras y estadio completo. <b>Normal</b>: lo mismo, más liviano. <b>Celular papa</b>: los modelos antiguos (se ve feo, pero corre en cualquier cosa). En los tres la pelota, los pases y los goles son los mismos: la física no cambia. Si tu equipo no da, el juego baja la resolución solo (nunca te cambia a 2D sin preguntar)."));
       /* 7.9130 · jugadores con el maniquí animado (cuerpo continuo, animaciones del paquete) o los clásicos (livianos).
          7.9131 · el texto decía "movimientos capturados de personas": la fuente no lo dice (solo CC0 y hecho en Blender) */
       p.cuerpo.appendChild(el("label","lb","Jugadores 3D"));
-      const fj=el("div","fichas"), jug3=(E.config&&E.config.c3dJugadores)||"modelo";
+      const fj=el("div","fichas"), jug3=(E.config&&E.config.c3dJugadores)||"realistas";
       /* 7.9139 · tres cuerpos: el maniquí (liviano, el de siempre), los REALISTAS con cara, pelo y piel (beta, ~1 MB que se baja
          la primera vez) y los clásicos. Cambiar en medio del partido saca el cuerpo actual y monta el nuevo */
-      [["realistas","🧑 Realistas (beta)"],["modelo","🧍 Maniquí"],["clasicos","🧱 Clásicos (livianos)"]].forEach(([k,n])=>{
+      [["realistas","🧑 Realistas"],["modelo","🧍 Maniquí"],["clasicos","🧱 Clásicos (livianos)"]].forEach(([k,n])=>{
         const b=el("button","ficha",n); b.setAttribute("aria-pressed",jug3===k?"true":"false");
-        b.onclick=()=>{ const antes=E.config.c3dJugadores||"modelo"; E.config.c3dJugadores=k; guardar();
+        b.onclick=()=>{ const antes=E.config.c3dJugadores||"realistas"; E.config.c3dJugadores=k; guardar();
           if(typeof C3D!=="undefined"&&C3D.est){ if(k==="clasicos") _c3dSacarModelo(C3D.est);
             else { if(antes!==k) _c3dSacarModelo(C3D.est); C3D.est.m3dLento=false; _c3dIntentarModelo(C3D.est); } }
           render(); aviso(k==="realistas"?"🧑 Jugadores realistas: cara, pelo y piel de verdad, con el uniforme de tu club. Es la primera versión: contame qué ves.":
@@ -52045,6 +52048,93 @@ if(typeof devDoctorRegistrar==="function"){
     fn:async function(){ const r=await devJugadoresLod(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }
 
+/* 7.9148 · LA CANCHA 3D SE VE COMO TRANSMISIÓN, no como juego indie. El autor: "se ve muy maniquís cualquiera, no se parece
+   en nada a PES 2006, los estadios están muy mal hechos". Lo que este chequeo cuida (todo medido, nada a ojo):
+   la cámara va lejos y alta con lente largo (se ve medio equipo y la tribuna del frente); los realistas son los jugadores
+   de siempre en Alta y Normal; existen los TRES modos (Alta · Normal · Celular papa) y se pueden elegir; el pasto no es
+   verde flúor; la luz de día no quema; el cemento de la galería va en sombra (la gente no se ve como confeti). */
+function devC3dTele(){
+  const f=[], det=[];
+  if(typeof CAM3D_TV==="undefined"||typeof c3dCamTV!=="function") return {f:["no existe la cámara de la tele (CAM3D_TV / c3dCamTV en js/cancha3d.js)"],det:det};
+  const A=CAM3D_TV.ancha, M=CAM3D_TV.media, pic=Math.atan2(A.alto,A.lado)*180/Math.PI;
+  if(!(A.lado>=40&&A.alto>=14&&A.fov<=27)) f.push("la cámara de la tele quedó cerca o con lente corto (lado "+A.lado+", alto "+A.alto+", fov "+A.fov+"): se ven 5 jugadores y puro pasto");
+  if(pic<14||pic>26) f.push("la cámara de la tele mira en "+pic.toFixed(0)+"° (tiene que ir entre 14° y 26°: más picado es vista de dron, menos no se entiende la cancha)");
+  if(!(M.lado<A.lado&&M.lado>=28)) f.push("la cámara intermedia (celular / Celular papa) tiene que ir más cerca que la ancha, pero no encima (lado "+M.lado+")");
+  if(c3dCamTV({canvas:{clientWidth:1280},perfil:{}})!==A) f.push("en una pantalla ancha no sale la cámara ancha");
+  if(c3dCamTV({canvas:{clientWidth:390},perfil:{}})!==M) f.push("en el celular no sale la cámara intermedia (los jugadores quedarían de 4 pixeles)");
+  if(c3dCamTV({canvas:{clientWidth:1280},perfil:{plano:true}})!==M) f.push("el Celular papa no usa la cámara intermedia");
+  det.push("cámara a "+A.lado+" m, "+A.alto+" m de alto, lente "+A.fov+"° ("+pic.toFixed(0)+"° de picado)");
+  /* los tres modos se pueden elegir (fuera del Modo papa, que siempre va con el antiguo) y cada uno es lo que dice */
+  const P=(typeof C3D_PERFIL!=="undefined")?C3D_PERFIL:{}, cfg=(typeof E!=="undefined"&&E&&E.config)||null;
+  if(!P.alta||!P.media||!P.antigua) f.push("falta un perfil de calidad (alta / media / antigua)");
+  else { if(P.alta.plano||P.media.plano) f.push("Alta y Normal tienen que usar los jugadores con modelo, no los clásicos");
+    if(!P.antigua.plano) f.push("el Celular papa tiene que usar los jugadores antiguos (livianos)");
+    if(!(P.alta.pr>P.media.pr&&P.media.pr>P.antigua.pr)) f.push("los tres modos no bajan de resolución en orden (alta > normal > papa)"); }
+  let papa=false; try{ papa=document.documentElement.classList.contains("papa"); }catch(e){}
+  if(cfg&&typeof c3dCalidad==="function"){
+    const q0=cfg.c3dCalidad, j0=cfg.c3dJugadores;
+    try{
+      if(!papa) ["alta","media","antigua"].forEach(q=>{ cfg.c3dCalidad=q; if(c3dCalidad()!==q) f.push("eliges «"+q+"» en Ajustes y el juego usa «"+c3dCalidad()+"»"); });
+      if(typeof c3dQuiereReal==="function"&&typeof modelo3dCargarReal==="function"){
+        delete cfg.c3dJugadores; if(!c3dQuiereReal()) f.push("sin elegir nada salen los maniquíes: los jugadores REALISTAS tienen que ser los de siempre");
+        cfg.c3dJugadores="modelo"; if(c3dQuiereReal()) f.push("pides el maniquí en Ajustes y salen los realistas igual");
+      }
+    } finally { if(q0===undefined) delete cfg.c3dCalidad; else cfg.c3dCalidad=q0; if(j0===undefined) delete cfg.c3dJugadores; else cfg.c3dJugadores=j0; }
+    det.push("modo de ahora: "+({alta:"Alta",media:"Normal",antigua:"Celular papa"}[c3dCalidad()]||c3dCalidad()));
+  }
+  /* el pasto y la luz: medidos en la textura de verdad */
+  if(typeof document!=="undefined"&&typeof _c3dPastoCanvas==="function"){
+    try{ const c=_c3dPastoCanvas(256), d=c.getContext("2d").getImageData(0,0,c.width,c.height).data; let r=0,g=0,b=0,n=0;
+      for(let i=0;i<d.length;i+=16){ if(d[i]>200&&d[i+1]>200&&d[i+2]>200) continue; r+=d[i]; g+=d[i+1]; b+=d[i+2]; n++; }
+      r/=n; g/=n; b/=n;
+      if(g/r>1.9||g>125) f.push("el pasto es verde flúor (rojo "+r.toFixed(0)+", verde "+g.toFixed(0)+"): un pasto de verdad tiene el verde a menos de 1,9 veces el rojo");
+      det.push("pasto rgb("+r.toFixed(0)+","+g.toFixed(0)+","+b.toFixed(0)+")");
+    }catch(e){ f.push("no pude medir el pasto: "+e.message); }
+  }
+  if(typeof E3D_AMB!=="undefined"&&E3D_AMB.dia){ const L=E3D_AMB.dia.hemi[2]+E3D_AMB.dia.sol[1];
+    if(L>1.7) f.push("la luz de día suma "+L.toFixed(2)+" (más de 1,7 quema el pasto y las camisetas blancas)"); }
+  if(typeof document!=="undefined"&&typeof _e3TexPublico==="function"&&typeof E3D!=="undefined"){
+    try{ const c=_e3TexPublico({tipo:"galeria",ocup:0,cols:["#cc0000","#0000cc"],nA:32,aw:8,semilla:7,fase:0}), d=c.getContext("2d").getImageData(0,0,c.width,c.height).data; let l=0,n=0;
+      for(let i=0;i<d.length;i+=4){ l+=0.3*d[i]+0.59*d[i+1]+0.11*d[i+2]; n++; } l/=n;
+      if(l>90) f.push("la galería vacía es cemento claro (luz "+l.toFixed(0)+" de 255, tope 90): con gente encima se ve como confeti");
+      det.push("galería vacía: luz "+l.toFixed(0));
+    }catch(e){ f.push("no pude medir la galería: "+e.message); }
+  }
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"c3d_tele", area:"interfaz",
+    n:"Cancha 3D como transmisión: cámara lejos y alta con lente largo, jugadores realistas por defecto, tres modos (Alta · Normal · Celular papa), pasto natural, luz que no quema y galería en sombra",
+    arreglo:"js/cancha3d.js (CAM3D_TV, c3dCamTV, c3dCalidad, c3dQuiereReal, C3D_PERFIL, _c3dPastoCanvas) · js/estadio3d.js (E3D_AMB, _e3TexPublico) · js/ui.js (Ajustes ▸ Cancha 3D: los tres modos)",
+    fn:function(){ const r=devC3dTele(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
+
+/* 7.9148 · PARIDAD ENTRE CLUBES. El autor: "que jugar con cualquiera se sienta como lo que logré con Colo-Colo". La pestaña
+   Cobertura decía "100 % ricos" porque su vara era 6 cosas propias; Colo-Colo tiene 16. Acá se mide contra Colo-Colo DE
+   VERDAD: decisiones propias, arcos e historia propia de cada club dirigible. No falla por la brecha (es trabajo de
+   contenido, se cierra de a poco): la CUENTA siempre, y falla si un club baja del piso de hoy (6 cosas propias) o si
+   Colo-Colo deja de ser medible. Devuelve {vara, clubes:[{id,dec,arcos,historia,total,pct}], mediana, sinHistoria, flacos}. */
+function devParidadClubes(){
+  const inf=(typeof devInformeCobertura==="function")?devInformeCobertura():null;
+  if(!inf) return null;
+  const H=(typeof HISTORIA_CLUBES!=="undefined")?HISTORIA_CLUBES:{};
+  const todos=inf.ricos.concat(inf.medios,inf.pobres).map(c=>({id:c.id, dec:c.decisiones, arcos:c.arcos, historia:!!H[c.id], total:c.total}));
+  const cc=todos.find(c=>c.id==="CC"), vara=cc?cc.total:0;
+  todos.forEach(c=>{ c.pct=vara?Math.round(100*c.total/vara):0; });
+  const orden=todos.slice().sort((a,b)=>a.total-b.total), med=orden.length?orden[orden.length>>1].total:0;
+  return {vara:vara, clubes:todos, mediana:med, sinHistoria:todos.filter(c=>!c.historia).map(c=>c.id), flacos:orden.filter(c=>c.id!=="CC").slice(0,8), piso:orden.length?orden[0].total:0};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"paridad_clubes", area:"contenido",
+    n:"Paridad entre clubes: cuánto contenido propio tiene cada club comparado con Colo-Colo (decisiones, arcos, historia). Cuenta la brecha y no deja que ninguno baje del piso",
+    arreglo:"js/dev-banco.js devParidadClubes · contenido: DECISIONES con club:\"ID\" (js/data-*.js), ARCOS_EQUIPO, js/data-historia-clubes.js (scripts/historia_clubes.py con hechos verificados)",
+    fn:function(){ const r=devParidadClubes(); if(!r) return _dok("sin informe de cobertura en esta partida");
+      const f=[]; if(!r.vara) f.push("Colo-Colo no tiene contenido propio medible: la vara se perdió");
+      r.clubes.filter(c=>c.total<6).forEach(c=>f.push(c.id+" bajó del piso: "+c.total+" cosas propias (decisiones + arcos); el piso es 6"));
+      const txt="vara Colo-Colo: "+r.vara+" · mediana de los "+r.clubes.length+" clubes: "+r.mediana+" ("+Math.round(100*r.mediana/(r.vara||1))+" %) · sin historia propia: "+r.sinHistoria.length+" · los más flacos: "+r.flacos.map(c=>c.id+" "+c.total).join(", ");
+      return f.length?_dmal(f.length+" club(es) bajo el piso",f.concat([txt])):_dok(txt); }});
+}
+
 ;
 /* ==== js/data-afa-rigor.js ==== */
 "use strict";
@@ -64423,6 +64513,15 @@ if(typeof document!=="undefined"&&!document.getElementById("css-arco-gl")){
 /* una sola fuente de verdad para la cámara: así el autor (o el doctor) la afina sin cazar números por todo el archivo */
 var CAM3D={ lado:23, alto:9.5, mira_alto:0.6, sigue_z:0.86, sigue_x:0.4, suave:3.0, fov:38, fov_area:32, adelanta:5,
   gol_lado:16, gol_alto:6.5, gol_fov:30 };
+/* 7.9148 · LA CÁMARA DE LA TELE. Antes iba a 23 m del centro y 9,5 de alto: se veían 5 jugadores, puro pasto y la tribuna
+   cortada (cara de juego indie). La transmisión de verdad va desde lo alto de la tribuna principal, lejos y con lente
+   largo: se ve medio equipo, las dos bandas y la tribuna del frente llena el fondo. En pantallas angostas (celular) va la
+   intermedia, para que los jugadores no queden de 4 pixeles. Devuelve {lado, alto, fov, fov_area}. */
+var CAM3D_TV={ ancha:{lado:50, alto:17, fov:23, fov_area:21}, media:{lado:36, alto:13, fov:30, fov_area:27} };
+function c3dCamTV(est){
+  let w=0; try{ w=est&&est.canvas?(est.canvas.clientWidth||0):0; }catch(e){}
+  return ((w&&w<560)||(est&&est.perfil&&est.perfil.plano))?CAM3D_TV.media:CAM3D_TV.ancha;   /* celular o Celular papa: más cerca */
+}
 /* perfiles de calidad: pr = resolución (× píxeles de pantalla), publico = gente en la tribuna, tex = textura del pasto */
 var C3D_PERFIL={
   alta:   {pr:1.6,  prMin:0.7,  aa:true,  publico:1800, tex:2048, fps:60, plano:false, sombras:true},
@@ -64450,7 +64549,7 @@ function cancha3dActivo(){
 function c3dCalidad(){
   try{ if(document.documentElement.classList.contains("papa")) return "antigua"; }catch(e){}
   const c=(typeof E!=="undefined"&&E&&E.config&&E.config.c3dCalidad)||"auto";
-  if(c==="alta"||c==="antigua") return c;
+  if(c==="alta"||c==="media"||c==="antigua") return c;   /* 7.9148 · Alta · Normal (media) · Celular papa (antigua) */
   return (typeof _cvLiviano==="function"&&_cvLiviano())?"media":"alta";
 }
 function c3dAuto(){ return !((typeof E!=="undefined"&&E&&E.config&&E.config.c3dCalidad)&&E.config.c3dCalidad!=="auto"); }
@@ -64464,10 +64563,17 @@ function _c3dPastoCanvas(px){
   /* franjas de corte (a lo ancho, como en la tele) */
   const n=18;
   /* 7.9128 · verde de transmisión (más profundo; el de antes era pastel) */
-  for(let i=0;i<n;i++){ x.fillStyle=i%2?"#2e7a2a":"#378a32"; x.fillRect(Math.floor((C3D_MARGEN+i*105/n)*k),0,Math.ceil(105/n*k)+1,H); }
-  x.fillStyle="#2c7228"; x.fillRect(0,0,Math.ceil(C3D_MARGEN*k),H); x.fillRect(Math.floor((C3D_MARGEN+105)*k),0,Math.ceil(C3D_MARGEN*k)+1,H);
+  /* 7.9148 · verde de pasto de verdad (oliva, no flúor) y franjas apenas marcadas: con la luz del día el de antes salía
+     verde neón y las franjas parecían pintadas */
+  for(let i=0;i<n;i++){ x.fillStyle=i%2?"#40632e":"#496d35"; x.fillRect(Math.floor((C3D_MARGEN+i*105/n)*k),0,Math.ceil(105/n*k)+1,H); }
+  x.fillStyle="#3d5f2c"; x.fillRect(0,0,Math.ceil(C3D_MARGEN*k),H); x.fillRect(Math.floor((C3D_MARGEN+105)*k),0,Math.ceil(C3D_MARGEN*k)+1,H);
   /* grano: puntitos claros y oscuros (sin esto la franja se ve de plástico) */
-  if(px>=1024){ for(let i=0;i<W*H/180;i++){ x.fillStyle=Math.random()<0.5?"rgba(0,0,0,.06)":"rgba(255,255,255,.05)"; x.fillRect(Math.random()*W,Math.random()*H,1.5,1.5); } }
+  if(px>=1024){ for(let i=0;i<W*H/180;i++){ x.fillStyle=Math.random()<0.5?"rgba(0,0,0,.06)":"rgba(255,255,255,.05)"; x.fillRect(Math.random()*W,Math.random()*H,1.5,1.5); }
+    /* manchones: pasto más gastado o más tupido (y más pelado frente a los arcos y en el círculo central) */
+    for(let i=0;i<70;i++){ const gx=Math.random()*W, gy=Math.random()*H, r=(2+Math.random()*7)*k, g=x.createRadialGradient(gx,gy,0,gx,gy,r);
+      const os=Math.random()<0.5; g.addColorStop(0,os?"rgba(20,40,10,.10)":"rgba(190,200,120,.07)"); g.addColorStop(1,"rgba(0,0,0,0)"); x.fillStyle=g; x.fillRect(gx-r,gy-r,r*2,r*2); }
+    [[C3D_MARGEN+5,H/2,7],[C3D_MARGEN+100,H/2,7],[C3D_MARGEN+52.5,H/2,5]].forEach(([mz,gy,rm])=>{ const gx=mz*k, r=rm*k, g=x.createRadialGradient(gx,gy,0,gx,gy,r);
+      g.addColorStop(0,"rgba(150,140,80,.16)"); g.addColorStop(1,"rgba(150,140,80,0)"); x.fillStyle=g; x.fillRect(gx-r,gy-r,r*2,r*2); }); }
   /* líneas: z (largo) → x del canvas, x (ancho) → y del canvas */
   const X=m=>(m+C3D_MARGEN)*k, Y=m=>(m+C3D_MARGEN)*k;
   x.strokeStyle="rgba(245,248,242,.92)"; x.lineWidth=Math.max(1.2,0.12*k); x.lineCap="square";
@@ -64880,7 +64986,10 @@ function c3dModeloQuerido(est){
   return !(typeof E!=="undefined"&&E&&E.config&&E.config.c3dJugadores==="clasicos");
 }
 /* 7.9139 · Ajustes ▸ Jugadores 3D ▸ "Realistas (beta)": cara, pelo y piel (modelo3d.js MODELO3D_REAL) */
-function c3dQuiereReal(){ return typeof modelo3dCargarReal==="function"&&typeof E!=="undefined"&&!!E&&!!E.config&&E.config.c3dJugadores==="realistas"; }
+/* 7.9148 · los REALISTAS son los jugadores de siempre en Alta y Normal (antes había que ir a buscarlos a Ajustes y por
+   defecto salía el maniquí liso: "se ve muy maniquís cualquiera"). El maniquí queda como opción y como respaldo */
+function c3dQuiereReal(){ if(typeof modelo3dCargarReal!=="function") return false;
+  const j=(typeof E!=="undefined"&&E&&E.config&&E.config.c3dJugadores)||"realistas"; return j==="realistas"; }
 function _c3dIntentarModelo(est){
   if(!est||est.m3d||!c3dModeloQuerido(est)) return;
   /* 7.9139 · si eligió los realistas se baja ese modelo; si no llega (sin internet la primera vez, archivo roto), el maniquí */
@@ -64978,10 +65087,10 @@ function _c3dConstruir(host,P){
   const bola=new THREE.Mesh(new THREE.SphereGeometry(0.15,perfil.plano?8:16,perfil.plano?6:12), bTex?new THREE.MeshLambertMaterial({map:bTex}):new THREE.MeshLambertMaterial({color:0xf4f4f4}));
   scene.add(bola);
   const camGL=new THREE.PerspectiveCamera(CAM3D.fov,16/9,0.5,420);
-  camGL.position.set(CAM3D.lado,CAM3D.alto,0); camGL.lookAt(0,1,0);
+  camGL.position.set(CAM3D_TV.ancha.lado,CAM3D_TV.ancha.alto,0); camGL.lookAt(0,1,0);
   const hud=document.createElement("div"); hud.className="c3d-hud"; hud.setAttribute("aria-live","polite");
   const est={ host:null, canvas:canvas, hud:hud, renderer:renderer, scene:scene, camGL:camGL, piezas:piezas, sombras:sombras, bola:bola,
-    P:null, st:null, camPos:new THREE.Vector3(CAM3D.lado,CAM3D.alto,0), mira:new THREE.Vector3(0,CAM3D.mira_alto,0), fov:CAM3D.fov,
+    P:null, st:null, camPos:new THREE.Vector3(CAM3D_TV.ancha.lado,CAM3D_TV.ancha.alto,0), mira:new THREE.Vector3(0,CAM3D.mira_alto,0), fov:CAM3D.fov,
     calidad:calidad, perfil:perfil, pr:pr0, raf:0, W0:0, H0:0, franjas:[], pelados:[], gk:[], ultT:0, dtProm:16, prAjuste:0, carteles:"",
     hemi:hemi, sol:sol, colEstadio:[P&&P.part&&P.part.local===false?col.riv:col.mio] };
   C3D.montajes++;
@@ -65084,7 +65193,8 @@ function _c3dSincronizar(est,dt){
   /* cámara de transmisión: banda lateral, elevada, sigue la pelota y mira un poco hacia donde se ataca */
   const k=Math.min(1,dt*CAM3D.suave), gol=!!S.seq;
   const dueno=S.own>=0?S.jug[S.own]:null, dir=dueno?(dueno.mio?1:-1):0;
-  const lado=gol?CAM3D.gol_lado:CAM3D.lado, alto=gol?CAM3D.gol_alto:CAM3D.alto;
+  const TV=c3dCamTV(est);
+  const lado=gol?CAM3D.gol_lado:TV.lado, alto=gol?CAM3D.gol_alto:TV.alto;
   est.camPos.x+=(lado+Math.max(0,bx)*CAM3D.sigue_x-est.camPos.x)*k;
   est.camPos.y+=(alto-est.camPos.y)*k;
   est.camPos.z+=(Math.max(-38,Math.min(38,bz*CAM3D.sigue_z))-est.camPos.z)*k;
@@ -65093,7 +65203,7 @@ function _c3dSincronizar(est,dt){
   est.mira.x+=(cl(bx*0.6,20)-est.mira.x)*k;
   est.mira.z+=(cl(bz+dir*CAM3D.adelanta,45)-est.mira.z)*k*0.8;
   est.mira.y=CAM3D.mira_alto;
-  const fovObj=gol?CAM3D.gol_fov:(Math.abs(bz)>34?CAM3D.fov_area:CAM3D.fov);
+  const fovObj=gol?CAM3D.gol_fov:(Math.abs(bz)>34?TV.fov_area:TV.fov);
   if(Math.abs(fovObj-est.fov)>0.05){ est.fov+=(fovObj-est.fov)*k*0.6; est.camGL.fov=est.fov; est.camGL.updateProjectionMatrix(); }
   est.camGL.position.copy(est.camPos); est.camGL.lookAt(est.mira);
   /* cartel del gol (el mismo texto que el cenital) */
@@ -65456,9 +65566,9 @@ var E3D_CORDILLERA=/^(Santiago|San Bernardo|Colina|Puente Alto|Rancagua|Rengo|Sa
 var E3D_LLANO=/^(Buenos Aires|La Plata|Avellaneda|Lanús|Banfield|Florencio Varela|Florida Este|Rosario|Santa Fe|Junín|Mar del Plata|Río Cuarto|Santiago del Estero)$/;
 /* cielo: [cénit, media altura, horizonte, bajo el horizonte] · luz del cielo [arriba, suelo, fuerza] · foco/sol [color, fuerza, posición] */
 var E3D_AMB={
-  noche:{cielo:["#02050d","#0a1630","#22324f","#283247"], niebla:"#22324f", hemi:[0xd7e6ff,0x23301f,0.8], sol:[0xfff6e6,0.95,[30,60,25]], focos:true, estrellas:true},
-  tarde:{cielo:["#152a5c","#4a5f92","#e1a072","#7a5a4c"], niebla:"#c9957a", hemi:[0xffe6d2,0x3a3424,0.74], sol:[0xffc896,1.05,[72,30,-52]], focos:true},
-  dia:  {cielo:["#2a63b8","#5f97d6","#bcd8ee","#8fa3ad"], niebla:"#bcd8ee", hemi:[0xeaf4ff,0x3d4a2c,0.95], sol:[0xfff1dc,1.15,[45,75,-35]], focos:false}
+  noche:{cielo:["#02050d","#0a1630","#22324f","#283247"], niebla:"#22324f", hemi:[0xd7e6ff,0x23301f,0.6], sol:[0xfff6e6,0.85,[30,60,25]], focos:true, estrellas:true},
+  tarde:{cielo:["#152a5c","#4a5f92","#e1a072","#7a5a4c"], niebla:"#c9957a", hemi:[0xffe6d2,0x3a3424,0.58], sol:[0xffc896,0.95,[72,30,-52]], focos:true},
+  dia:  {cielo:["#2a63b8","#5f97d6","#bcd8ee","#8fa3ad"], niebla:"#bcd8ee", hemi:[0xeaf4ff,0x3d4a2c,0.62], sol:[0xfff1dc,0.92,[45,75,-35]], focos:false}
 };
 var E3D_COL={ cem:"#4b505a", muro:"#2f343d", tapa:"#575c66", techoArriba:"#2a2f37", techoAbajo:"#a9b1bd", techoLado:"#3a3f48",
   fascia:"#e6eaf0", acero:"#737b88", vidrio:"#1b2738", vom:"#0b0e14", suelo:"#262d27", pista:"#55585e", talud:"#2f5a28",
@@ -65614,11 +65724,14 @@ function _e3TexPublico(o){
   const nF=E3D.filasTex, nA=o.nA, aw=o.aw, fh=aw*2, W=nA*aw, H=nF*fh;
   const c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d"), rnd=_e3Rnd(o.semilla);
   const gal=o.tipo==="galeria", C=o.cols;
-  const camis=[C[0],C[0],C[0],C[0],C[1],C[1],"#f2f2f2","#1d1f24","#59606b","#8a1f1f","#2b4a7a","#c9b28f"];
+  /* 7.9148 · de lejos la gente era CONFETI (cuadritos de colores sobre cemento claro). Una hinchada de verdad es una masa
+     oscura con los colores del club: más camisetas del club, el resto ropa de calle apagada, el cemento en sombra y cada
+     persona con las piernas oscurecidas (da volumen a la fila) */
+  const camis=[C[0],C[0],C[0],C[0],C[0],C[1],C[1],C[1],"#e4e4e4","#1d1f24","#2a2d34","#3b4350","#59606b","#5a3a2c","#2b4a7a","#7d838d"];
   const pieles=["#e8b98f","#c99067","#a87250","#7a4a32","#f1cfae"], pelos=["#1b1410","#2c2018","#4a3524","#7a5a3a","#111"];
-  x.fillStyle=gal?"#585c64":"#353a44"; x.fillRect(0,0,W,H);
+  x.fillStyle=gal?"#44484f":"#30353e"; x.fillRect(0,0,W,H);
   for(let f=0;f<nF;f++){ const y0=f*fh;
-    x.fillStyle=gal?"#6d7179":"#434955"; x.fillRect(0,y0+fh*0.76,W,fh*0.24);
+    x.fillStyle=gal?"#585c64":"#3c424d"; x.fillRect(0,y0+fh*0.76,W,fh*0.24);
     x.fillStyle="rgba(0,0,0,.42)"; x.fillRect(0,y0+fh*0.74,W,Math.max(1,fh*0.05)); }
   const persona=(x0,y0)=>{
     const w=aw*(0.64+rnd()*0.2), cx=x0+aw/2+(rnd()-0.5)*aw*0.22, top=y0+fh*(gal?0.0:0.1), piel=pieles[(rnd()*pieles.length)|0];
@@ -65626,6 +65739,7 @@ function _e3TexPublico(o){
     x.beginPath(); x.moveTo(cx-w/2,y0+fh*0.97); x.lineTo(cx-w/2,top+fh*0.44);
     x.quadraticCurveTo(cx-w/2,top+fh*0.3,cx,top+fh*0.3); x.quadraticCurveTo(cx+w/2,top+fh*0.3,cx+w/2,top+fh*0.44);
     x.lineTo(cx+w/2,y0+fh*0.97); x.fill();
+    x.fillStyle="rgba(0,0,0,.26)"; x.fillRect(cx-w/2,y0+fh*0.66,w,fh*0.31);
     x.fillStyle=piel; x.beginPath(); x.arc(cx,top+fh*0.18,aw*0.23,0,Math.PI*2); x.fill();
     if(rnd()<0.82){ x.fillStyle=pelos[(rnd()*pelos.length)|0]; x.beginPath(); x.arc(cx,top+fh*0.15,aw*0.24,Math.PI,0); x.fill(); }
     if(rnd()<(gal?0.16:0.05)){ x.strokeStyle=piel; x.lineWidth=Math.max(1,aw*0.13); x.beginPath();

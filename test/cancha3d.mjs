@@ -13,7 +13,7 @@ try{
   const opts={args:["--no-sandbox","--use-angle=swiftshader","--enable-unsafe-swiftshader","--ignore-gpu-blocklist"]}; if(process.env.CHROME) opts.executablePath=process.env.CHROME;
   try{ b=await pw.chromium.launch(opts); }catch(e){ opts.executablePath="/opt/pw-browsers/chromium"; b=await pw.chromium.launch(opts); }
   /* 7.9139 · un tercer caso: PC con los jugadores REALISTAS (cara, pelo, piel; Ajustes ▸ Jugadores 3D) — partido, penal, córner y repetición */
-  for(const caso of [{nom:"PC",w:1366,h:800,papa:false},{nom:"celu en Modo papa (3D antiguo pedido)",w:390,h:844,papa:true},{nom:"PC con jugadores realistas",w:1366,h:800,papa:false,real:true}]){
+  for(const caso of [{nom:"PC (sin elegir nada: jugadores realistas, 7.9148)",w:1366,h:800,papa:false,real:true},{nom:"celu en Modo papa (3D antiguo pedido)",w:390,h:844,papa:true},{nom:"PC con el maniquí pedido en Ajustes",w:1366,h:800,papa:false,real:false}]){
     console.log("· "+caso.nom);
     const ctx=await b.newContext({viewport:{width:caso.w,height:caso.h},serviceWorkers:"block"}), p=await ctx.newPage();
     const err=[]; p.on("pageerror",e=>err.push(e.message)); p.on("console",m=>{ if(m.type()==="error"&&!/ERR_CERT|501|favicon|Failed to load resource/.test(m.text())) err.push(m.text()); });
@@ -22,7 +22,7 @@ try{
     await p.waitForFunction(()=>typeof nuevaPartida==="function"&&document.getElementById("arranque"),null,{timeout:60000});
     const ini=await p.evaluate(async([papa,real])=>{
       document.getElementById("arranque").remove(); window.guardar=function(){};
-      nuevaPartida("CC",2026,"historico"); E.config.cancha3d=true; if(papa) E.config.cancha3dPapa=true; if(real) E.config.c3dJugadores="realistas";
+      nuevaPartida("CC",2026,"historico"); E.config.cancha3d=true; if(papa) E.config.cancha3dPapa=true; if(!real&&!papa) E.config.c3dJugadores="modelo";
       const ok3=await cargarThree(); if(!ok3||!cancha3dSoportado()) return {sin:true};
       arrancarPartido(proximoPartido(),"seguir");
       return {sin:false};

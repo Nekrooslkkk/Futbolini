@@ -3847,23 +3847,26 @@ function vistaAjustes(host){
     /* 7.9126 · calidad del 3D: Auto ajusta la resolución para que vaya fluido (nunca se cambia solo a 2D) */
     if(c3On&&E){
       p.cuerpo.appendChild(el("label","lb","Calidad del 3D"));
-      const fq=el("div","fichas"), cal=(E.config&&E.config.c3dCalidad)||"auto";
-      [["auto","⚙️ Auto"],["alta","✨ Alta"],["antigua","🕹️ Antigua (liviana)"]].forEach(([k,n])=>{
-        const b=el("button","ficha",n); b.setAttribute("aria-pressed",cal===k?"true":"false");
-        b.onclick=()=>{ E.config.c3dCalidad=k; guardar(); render(); aviso({auto:"⚙️ Auto: ajusta la resolución para ir fluido",alta:"✨ Alta: máxima resolución y público lleno",antigua:"🕹️ Antigua: 3D de consola vieja, liviano"}[k],3500); };
+      /* 7.9148 · los TRES modos que pidió el autor: Alta calidad · Normal · Celular papa. Sin elegir, el juego parte en el
+         que le toca a tu equipo (y lo marca). Los tres juegan EXACTAMENTE la misma física: cambia solo cómo se ve */
+      const elegida=(E.config&&E.config.c3dCalidad)||"auto", cal=(typeof c3dCalidad==="function")?c3dCalidad():"alta", autoQ=!(elegida==="alta"||elegida==="media"||elegida==="antigua");
+      const fq=el("div","fichas");
+      [["alta","✨ Alta calidad"],["media","⚽ Normal"],["antigua","🥔 Celular papa"]].forEach(([k,n])=>{
+        const b=el("button","ficha",n+(autoQ&&cal===k?" · automático":"")); b.setAttribute("aria-pressed",cal===k?"true":"false");
+        b.onclick=()=>{ E.config.c3dCalidad=k; guardar(); render(); aviso({alta:"✨ Alta calidad: jugadores con cara y pelo, sombras, estadio lleno y máxima resolución",media:"⚽ Normal: los mismos jugadores y el mismo estadio, más liviano (30 cuadros, menos resolución)",antigua:"🥔 Celular papa: jugadores y estadio antiguos, bien livianos. La física es la misma"}[k],4000); };
         fq.appendChild(b);
       });
       p.cuerpo.appendChild(fq);
-      p.cuerpo.appendChild(el("p","mini","<b>Auto</b> baja o sube la resolución según lo que aguante tu equipo (no se cambia a 2D: si ni así va fluido, te pregunta). <b>Antigua</b> es 3D de consola vieja: baja resolución, sin público, 30 cuadros por segundo."));
+      p.cuerpo.appendChild(el("p","mini","<b>Alta</b>: jugadores realistas, sombras y estadio completo. <b>Normal</b>: lo mismo, más liviano. <b>Celular papa</b>: los modelos antiguos (se ve feo, pero corre en cualquier cosa). En los tres la pelota, los pases y los goles son los mismos: la física no cambia. Si tu equipo no da, el juego baja la resolución solo (nunca te cambia a 2D sin preguntar)."));
       /* 7.9130 · jugadores con el maniquí animado (cuerpo continuo, animaciones del paquete) o los clásicos (livianos).
          7.9131 · el texto decía "movimientos capturados de personas": la fuente no lo dice (solo CC0 y hecho en Blender) */
       p.cuerpo.appendChild(el("label","lb","Jugadores 3D"));
-      const fj=el("div","fichas"), jug3=(E.config&&E.config.c3dJugadores)||"modelo";
+      const fj=el("div","fichas"), jug3=(E.config&&E.config.c3dJugadores)||"realistas";
       /* 7.9139 · tres cuerpos: el maniquí (liviano, el de siempre), los REALISTAS con cara, pelo y piel (beta, ~1 MB que se baja
          la primera vez) y los clásicos. Cambiar en medio del partido saca el cuerpo actual y monta el nuevo */
-      [["realistas","🧑 Realistas (beta)"],["modelo","🧍 Maniquí"],["clasicos","🧱 Clásicos (livianos)"]].forEach(([k,n])=>{
+      [["realistas","🧑 Realistas"],["modelo","🧍 Maniquí"],["clasicos","🧱 Clásicos (livianos)"]].forEach(([k,n])=>{
         const b=el("button","ficha",n); b.setAttribute("aria-pressed",jug3===k?"true":"false");
-        b.onclick=()=>{ const antes=E.config.c3dJugadores||"modelo"; E.config.c3dJugadores=k; guardar();
+        b.onclick=()=>{ const antes=E.config.c3dJugadores||"realistas"; E.config.c3dJugadores=k; guardar();
           if(typeof C3D!=="undefined"&&C3D.est){ if(k==="clasicos") _c3dSacarModelo(C3D.est);
             else { if(antes!==k) _c3dSacarModelo(C3D.est); C3D.est.m3dLento=false; _c3dIntentarModelo(C3D.est); } }
           render(); aviso(k==="realistas"?"🧑 Jugadores realistas: cara, pelo y piel de verdad, con el uniforme de tu club. Es la primera versión: contame qué ves.":

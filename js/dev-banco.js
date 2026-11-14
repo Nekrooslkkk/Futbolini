@@ -2360,3 +2360,90 @@ if(typeof devDoctorRegistrar==="function"){
     arreglo:"scripts/modelo_lod.py (meshes[1]+skins[1] de img/modelos/*.glb) · js/modelo3d.js (_m3dLeerGLB lod, modelo3dInstancia esqLod/dedos, modelo3dLod, M3D_GLSL_CORTES, _m3dCortes) · js/cancha3d.js _c3dLod/C3D_LOD_PX (en _c3dCuadro y _c3dCuadroUno)",
     fn:async function(){ const r=await devJugadoresLod(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }
+
+/* 7.9148 · LA CANCHA 3D SE VE COMO TRANSMISIÓN, no como juego indie. El autor: "se ve muy maniquís cualquiera, no se parece
+   en nada a PES 2006, los estadios están muy mal hechos". Lo que este chequeo cuida (todo medido, nada a ojo):
+   la cámara va lejos y alta con lente largo (se ve medio equipo y la tribuna del frente); los realistas son los jugadores
+   de siempre en Alta y Normal; existen los TRES modos (Alta · Normal · Celular papa) y se pueden elegir; el pasto no es
+   verde flúor; la luz de día no quema; el cemento de la galería va en sombra (la gente no se ve como confeti). */
+function devC3dTele(){
+  const f=[], det=[];
+  if(typeof CAM3D_TV==="undefined"||typeof c3dCamTV!=="function") return {f:["no existe la cámara de la tele (CAM3D_TV / c3dCamTV en js/cancha3d.js)"],det:det};
+  const A=CAM3D_TV.ancha, M=CAM3D_TV.media, pic=Math.atan2(A.alto,A.lado)*180/Math.PI;
+  if(!(A.lado>=40&&A.alto>=14&&A.fov<=27)) f.push("la cámara de la tele quedó cerca o con lente corto (lado "+A.lado+", alto "+A.alto+", fov "+A.fov+"): se ven 5 jugadores y puro pasto");
+  if(pic<14||pic>26) f.push("la cámara de la tele mira en "+pic.toFixed(0)+"° (tiene que ir entre 14° y 26°: más picado es vista de dron, menos no se entiende la cancha)");
+  if(!(M.lado<A.lado&&M.lado>=28)) f.push("la cámara intermedia (celular / Celular papa) tiene que ir más cerca que la ancha, pero no encima (lado "+M.lado+")");
+  if(c3dCamTV({canvas:{clientWidth:1280},perfil:{}})!==A) f.push("en una pantalla ancha no sale la cámara ancha");
+  if(c3dCamTV({canvas:{clientWidth:390},perfil:{}})!==M) f.push("en el celular no sale la cámara intermedia (los jugadores quedarían de 4 pixeles)");
+  if(c3dCamTV({canvas:{clientWidth:1280},perfil:{plano:true}})!==M) f.push("el Celular papa no usa la cámara intermedia");
+  det.push("cámara a "+A.lado+" m, "+A.alto+" m de alto, lente "+A.fov+"° ("+pic.toFixed(0)+"° de picado)");
+  /* los tres modos se pueden elegir (fuera del Modo papa, que siempre va con el antiguo) y cada uno es lo que dice */
+  const P=(typeof C3D_PERFIL!=="undefined")?C3D_PERFIL:{}, cfg=(typeof E!=="undefined"&&E&&E.config)||null;
+  if(!P.alta||!P.media||!P.antigua) f.push("falta un perfil de calidad (alta / media / antigua)");
+  else { if(P.alta.plano||P.media.plano) f.push("Alta y Normal tienen que usar los jugadores con modelo, no los clásicos");
+    if(!P.antigua.plano) f.push("el Celular papa tiene que usar los jugadores antiguos (livianos)");
+    if(!(P.alta.pr>P.media.pr&&P.media.pr>P.antigua.pr)) f.push("los tres modos no bajan de resolución en orden (alta > normal > papa)"); }
+  let papa=false; try{ papa=document.documentElement.classList.contains("papa"); }catch(e){}
+  if(cfg&&typeof c3dCalidad==="function"){
+    const q0=cfg.c3dCalidad, j0=cfg.c3dJugadores;
+    try{
+      if(!papa) ["alta","media","antigua"].forEach(q=>{ cfg.c3dCalidad=q; if(c3dCalidad()!==q) f.push("eliges «"+q+"» en Ajustes y el juego usa «"+c3dCalidad()+"»"); });
+      if(typeof c3dQuiereReal==="function"&&typeof modelo3dCargarReal==="function"){
+        delete cfg.c3dJugadores; if(!c3dQuiereReal()) f.push("sin elegir nada salen los maniquíes: los jugadores REALISTAS tienen que ser los de siempre");
+        cfg.c3dJugadores="modelo"; if(c3dQuiereReal()) f.push("pides el maniquí en Ajustes y salen los realistas igual");
+      }
+    } finally { if(q0===undefined) delete cfg.c3dCalidad; else cfg.c3dCalidad=q0; if(j0===undefined) delete cfg.c3dJugadores; else cfg.c3dJugadores=j0; }
+    det.push("modo de ahora: "+({alta:"Alta",media:"Normal",antigua:"Celular papa"}[c3dCalidad()]||c3dCalidad()));
+  }
+  /* el pasto y la luz: medidos en la textura de verdad */
+  if(typeof document!=="undefined"&&typeof _c3dPastoCanvas==="function"){
+    try{ const c=_c3dPastoCanvas(256), d=c.getContext("2d").getImageData(0,0,c.width,c.height).data; let r=0,g=0,b=0,n=0;
+      for(let i=0;i<d.length;i+=16){ if(d[i]>200&&d[i+1]>200&&d[i+2]>200) continue; r+=d[i]; g+=d[i+1]; b+=d[i+2]; n++; }
+      r/=n; g/=n; b/=n;
+      if(g/r>1.9||g>125) f.push("el pasto es verde flúor (rojo "+r.toFixed(0)+", verde "+g.toFixed(0)+"): un pasto de verdad tiene el verde a menos de 1,9 veces el rojo");
+      det.push("pasto rgb("+r.toFixed(0)+","+g.toFixed(0)+","+b.toFixed(0)+")");
+    }catch(e){ f.push("no pude medir el pasto: "+e.message); }
+  }
+  if(typeof E3D_AMB!=="undefined"&&E3D_AMB.dia){ const L=E3D_AMB.dia.hemi[2]+E3D_AMB.dia.sol[1];
+    if(L>1.7) f.push("la luz de día suma "+L.toFixed(2)+" (más de 1,7 quema el pasto y las camisetas blancas)"); }
+  if(typeof document!=="undefined"&&typeof _e3TexPublico==="function"&&typeof E3D!=="undefined"){
+    try{ const c=_e3TexPublico({tipo:"galeria",ocup:0,cols:["#cc0000","#0000cc"],nA:32,aw:8,semilla:7,fase:0}), d=c.getContext("2d").getImageData(0,0,c.width,c.height).data; let l=0,n=0;
+      for(let i=0;i<d.length;i+=4){ l+=0.3*d[i]+0.59*d[i+1]+0.11*d[i+2]; n++; } l/=n;
+      if(l>90) f.push("la galería vacía es cemento claro (luz "+l.toFixed(0)+" de 255, tope 90): con gente encima se ve como confeti");
+      det.push("galería vacía: luz "+l.toFixed(0));
+    }catch(e){ f.push("no pude medir la galería: "+e.message); }
+  }
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"c3d_tele", area:"interfaz",
+    n:"Cancha 3D como transmisión: cámara lejos y alta con lente largo, jugadores realistas por defecto, tres modos (Alta · Normal · Celular papa), pasto natural, luz que no quema y galería en sombra",
+    arreglo:"js/cancha3d.js (CAM3D_TV, c3dCamTV, c3dCalidad, c3dQuiereReal, C3D_PERFIL, _c3dPastoCanvas) · js/estadio3d.js (E3D_AMB, _e3TexPublico) · js/ui.js (Ajustes ▸ Cancha 3D: los tres modos)",
+    fn:function(){ const r=devC3dTele(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
+
+/* 7.9148 · PARIDAD ENTRE CLUBES. El autor: "que jugar con cualquiera se sienta como lo que logré con Colo-Colo". La pestaña
+   Cobertura decía "100 % ricos" porque su vara era 6 cosas propias; Colo-Colo tiene 16. Acá se mide contra Colo-Colo DE
+   VERDAD: decisiones propias, arcos e historia propia de cada club dirigible. No falla por la brecha (es trabajo de
+   contenido, se cierra de a poco): la CUENTA siempre, y falla si un club baja del piso de hoy (6 cosas propias) o si
+   Colo-Colo deja de ser medible. Devuelve {vara, clubes:[{id,dec,arcos,historia,total,pct}], mediana, sinHistoria, flacos}. */
+function devParidadClubes(){
+  const inf=(typeof devInformeCobertura==="function")?devInformeCobertura():null;
+  if(!inf) return null;
+  const H=(typeof HISTORIA_CLUBES!=="undefined")?HISTORIA_CLUBES:{};
+  const todos=inf.ricos.concat(inf.medios,inf.pobres).map(c=>({id:c.id, dec:c.decisiones, arcos:c.arcos, historia:!!H[c.id], total:c.total}));
+  const cc=todos.find(c=>c.id==="CC"), vara=cc?cc.total:0;
+  todos.forEach(c=>{ c.pct=vara?Math.round(100*c.total/vara):0; });
+  const orden=todos.slice().sort((a,b)=>a.total-b.total), med=orden.length?orden[orden.length>>1].total:0;
+  return {vara:vara, clubes:todos, mediana:med, sinHistoria:todos.filter(c=>!c.historia).map(c=>c.id), flacos:orden.filter(c=>c.id!=="CC").slice(0,8), piso:orden.length?orden[0].total:0};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"paridad_clubes", area:"contenido",
+    n:"Paridad entre clubes: cuánto contenido propio tiene cada club comparado con Colo-Colo (decisiones, arcos, historia). Cuenta la brecha y no deja que ninguno baje del piso",
+    arreglo:"js/dev-banco.js devParidadClubes · contenido: DECISIONES con club:\"ID\" (js/data-*.js), ARCOS_EQUIPO, js/data-historia-clubes.js (scripts/historia_clubes.py con hechos verificados)",
+    fn:function(){ const r=devParidadClubes(); if(!r) return _dok("sin informe de cobertura en esta partida");
+      const f=[]; if(!r.vara) f.push("Colo-Colo no tiene contenido propio medible: la vara se perdió");
+      r.clubes.filter(c=>c.total<6).forEach(c=>f.push(c.id+" bajó del piso: "+c.total+" cosas propias (decisiones + arcos); el piso es 6"));
+      const txt="vara Colo-Colo: "+r.vara+" · mediana de los "+r.clubes.length+" clubes: "+r.mediana+" ("+Math.round(100*r.mediana/(r.vara||1))+" %) · sin historia propia: "+r.sinHistoria.length+" · los más flacos: "+r.flacos.map(c=>c.id+" "+c.total).join(", ");
+      return f.length?_dmal(f.length+" club(es) bajo el piso",f.concat([txt])):_dok(txt); }});
+}

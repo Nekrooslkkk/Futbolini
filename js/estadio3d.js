@@ -38,9 +38,9 @@ const E3D_CORDILLERA=/^(Santiago|San Bernardo|Colina|Puente Alto|Rancagua|Rengo|
 const E3D_LLANO=/^(Buenos Aires|La Plata|Avellaneda|Lanús|Banfield|Florencio Varela|Florida Este|Rosario|Santa Fe|Junín|Mar del Plata|Río Cuarto|Santiago del Estero)$/;
 /* cielo: [cénit, media altura, horizonte, bajo el horizonte] · luz del cielo [arriba, suelo, fuerza] · foco/sol [color, fuerza, posición] */
 const E3D_AMB={
-  noche:{cielo:["#02050d","#0a1630","#22324f","#283247"], niebla:"#22324f", hemi:[0xd7e6ff,0x23301f,0.8], sol:[0xfff6e6,0.95,[30,60,25]], focos:true, estrellas:true},
-  tarde:{cielo:["#152a5c","#4a5f92","#e1a072","#7a5a4c"], niebla:"#c9957a", hemi:[0xffe6d2,0x3a3424,0.74], sol:[0xffc896,1.05,[72,30,-52]], focos:true},
-  dia:  {cielo:["#2a63b8","#5f97d6","#bcd8ee","#8fa3ad"], niebla:"#bcd8ee", hemi:[0xeaf4ff,0x3d4a2c,0.95], sol:[0xfff1dc,1.15,[45,75,-35]], focos:false}
+  noche:{cielo:["#02050d","#0a1630","#22324f","#283247"], niebla:"#22324f", hemi:[0xd7e6ff,0x23301f,0.6], sol:[0xfff6e6,0.85,[30,60,25]], focos:true, estrellas:true},
+  tarde:{cielo:["#152a5c","#4a5f92","#e1a072","#7a5a4c"], niebla:"#c9957a", hemi:[0xffe6d2,0x3a3424,0.58], sol:[0xffc896,0.95,[72,30,-52]], focos:true},
+  dia:  {cielo:["#2a63b8","#5f97d6","#bcd8ee","#8fa3ad"], niebla:"#bcd8ee", hemi:[0xeaf4ff,0x3d4a2c,0.62], sol:[0xfff1dc,0.92,[45,75,-35]], focos:false}
 };
 const E3D_COL={ cem:"#4b505a", muro:"#2f343d", tapa:"#575c66", techoArriba:"#2a2f37", techoAbajo:"#a9b1bd", techoLado:"#3a3f48",
   fascia:"#e6eaf0", acero:"#737b88", vidrio:"#1b2738", vom:"#0b0e14", suelo:"#262d27", pista:"#55585e", talud:"#2f5a28",
@@ -196,11 +196,14 @@ function _e3TexPublico(o){
   const nF=E3D.filasTex, nA=o.nA, aw=o.aw, fh=aw*2, W=nA*aw, H=nF*fh;
   const c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d"), rnd=_e3Rnd(o.semilla);
   const gal=o.tipo==="galeria", C=o.cols;
-  const camis=[C[0],C[0],C[0],C[0],C[1],C[1],"#f2f2f2","#1d1f24","#59606b","#8a1f1f","#2b4a7a","#c9b28f"];
+  /* 7.9148 · de lejos la gente era CONFETI (cuadritos de colores sobre cemento claro). Una hinchada de verdad es una masa
+     oscura con los colores del club: más camisetas del club, el resto ropa de calle apagada, el cemento en sombra y cada
+     persona con las piernas oscurecidas (da volumen a la fila) */
+  const camis=[C[0],C[0],C[0],C[0],C[0],C[1],C[1],C[1],"#e4e4e4","#1d1f24","#2a2d34","#3b4350","#59606b","#5a3a2c","#2b4a7a","#7d838d"];
   const pieles=["#e8b98f","#c99067","#a87250","#7a4a32","#f1cfae"], pelos=["#1b1410","#2c2018","#4a3524","#7a5a3a","#111"];
-  x.fillStyle=gal?"#585c64":"#353a44"; x.fillRect(0,0,W,H);
+  x.fillStyle=gal?"#44484f":"#30353e"; x.fillRect(0,0,W,H);
   for(let f=0;f<nF;f++){ const y0=f*fh;
-    x.fillStyle=gal?"#6d7179":"#434955"; x.fillRect(0,y0+fh*0.76,W,fh*0.24);
+    x.fillStyle=gal?"#585c64":"#3c424d"; x.fillRect(0,y0+fh*0.76,W,fh*0.24);
     x.fillStyle="rgba(0,0,0,.42)"; x.fillRect(0,y0+fh*0.74,W,Math.max(1,fh*0.05)); }
   const persona=(x0,y0)=>{
     const w=aw*(0.64+rnd()*0.2), cx=x0+aw/2+(rnd()-0.5)*aw*0.22, top=y0+fh*(gal?0.0:0.1), piel=pieles[(rnd()*pieles.length)|0];
@@ -208,6 +211,7 @@ function _e3TexPublico(o){
     x.beginPath(); x.moveTo(cx-w/2,y0+fh*0.97); x.lineTo(cx-w/2,top+fh*0.44);
     x.quadraticCurveTo(cx-w/2,top+fh*0.3,cx,top+fh*0.3); x.quadraticCurveTo(cx+w/2,top+fh*0.3,cx+w/2,top+fh*0.44);
     x.lineTo(cx+w/2,y0+fh*0.97); x.fill();
+    x.fillStyle="rgba(0,0,0,.26)"; x.fillRect(cx-w/2,y0+fh*0.66,w,fh*0.31);
     x.fillStyle=piel; x.beginPath(); x.arc(cx,top+fh*0.18,aw*0.23,0,Math.PI*2); x.fill();
     if(rnd()<0.82){ x.fillStyle=pelos[(rnd()*pelos.length)|0]; x.beginPath(); x.arc(cx,top+fh*0.15,aw*0.24,Math.PI,0); x.fill(); }
     if(rnd()<(gal?0.16:0.05)){ x.strokeStyle=piel; x.lineWidth=Math.max(1,aw*0.13); x.beginPath();

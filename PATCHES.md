@@ -5862,3 +5862,46 @@ Pedido del autor (9 nov 2026): "avanza todo, incluyendo 3D y mejoras de rendimie
   las pruebas quedaron en `.gitignore`.
 - **Estado:** core 1186/1186 · partidas viejas 12/12 · doctor sano en 4 partidas + celular (171 chequeos) · dev 595/595
   (escritorio 39/39, cancha 3D con los 3 casos y el tope de triángulos, Modo papa, duelos) · banco 255 partidas.
+
+### 7.9148 — La cancha 3D se ve como transmisión: cámara de tele, jugadores realistas de fábrica, tres modos y pasto de verdad
+Pedido del autor (14 nov 2026): "el 3D se sigue viendo como mal juego INDIE, no se parece en nada a lo tipo PES 2006. Se ve
+muy maniquís cualquiera. Y los estadios están muy mal hechos, que ahora exista una diferencia total. Son el modo ALTA
+CALIDAD, modo NORMAL CALIDAD, modo CELULAR PAPA que usa los modelos antiguos, aunque debe tener LAS MISMAS FÍSICAS".
+Y: "me preocupa que el juego en cada equipo no sea igual (que jugar con cualquiera se sienta como lo que logré con Colo-Colo)".
+- **Diagnóstico (con fotos antes de tocar nada):** el partido se veía indie por cuatro cosas, ninguna era "falta de
+  polígonos": (1) la cámara iba a 23 m y 9,5 m de alto con lente de 38°: 5 jugadores, puro pasto, la tribuna cortada;
+  (2) por defecto salía el maniquí liso (los realistas había que ir a buscarlos a Ajustes); (3) el pasto salía verde
+  flúor porque la luz de día sumaba 2,1; (4) la galería era cemento claro con cuadritos de colores (confeti).
+- **Cámara de la tele (`CAM3D_TV`, `c3dCamTV(est)` en `js/cancha3d.js`):** desde lo alto de la tribuna principal, a 50 m
+  y 17 m de alto, con lente largo (23°; 21° en las áreas). Se ve medio equipo, las dos bandas y la tribuna del frente
+  llena el fondo. En pantallas angostas (menos de 560 px) y en Celular papa va la intermedia (36 m, 13 m, 30°) para que
+  los jugadores no midan 4 pixeles. Las jugadas clave siguen con la cámara cercana de siempre (`CAM3D.gol_*`).
+- **Jugadores realistas de fábrica:** `c3dQuiereReal()` ahora es verdadero salvo que pidas "Maniquí" o "Clásicos" en
+  Ajustes. El maniquí queda como opción y como respaldo si el modelo realista no carga. (Ya pesaban poco desde 7.9147:
+  ~148.000 triángulos por cuadro con la malla liviana.)
+- **Tres modos en Ajustes ▸ Cancha 3D** (`js/ui.js`): ✨ **Alta calidad** · ⚽ **Normal** · 🥔 **Celular papa**. Sin elegir,
+  el juego parte en el que le toca a tu equipo y lo marca "· automático". `c3dCalidad()` acepta `"media"` (antes solo se
+  llegaba a Normal por el automático). Los tres juegan la MISMA física: el motor no sabe en qué modo se dibuja.
+- **Pasto de verdad** (`_c3dPastoCanvas`): verde oliva con franjas apenas marcadas, manchones de pasto gastado/tupido y
+  pelado frente a los arcos y en el círculo central. **Luz** (`E3D_AMB` en `js/estadio3d.js`): día 2,10 → 1,54; tarde y
+  noche también bajan. Las camisetas blancas ya no se queman.
+- **Hinchada** (`_e3TexPublico`): cemento en sombra, más camisetas del club, el resto ropa de calle apagada y cada
+  persona con las piernas oscurecidas (da volumen a la fila). De lejos es una masa con los colores del club, no confeti.
+- **Paridad entre clubes — el dato real:** la pestaña Cobertura decía "100 % ricos" porque su vara era 6 cosas propias.
+  Colo-Colo tiene **16** (15 decisiones + 1 arco, más el histórico 1989→2008). **La mediana de los 76 clubes es 7 (44 %)
+  y 73 de 76 no tienen historia propia** (solo REN, LSC, LIN). Eso es trabajo de contenido, no de código: se cierra con la
+  tubería de historias verificadas (`scripts/historia_clubes.py`). Desde hoy el doctor lo cuenta en cada partida.
+- **Modo dev (regla permanente):**
+  - doctor `c3d_tele`: cámara lejos/alta/lente largo y su ángulo, cámara intermedia en celular y papa, los tres perfiles
+    y que se puedan elegir, realistas por defecto y maniquí si se pide, pasto no flúor (medido en la textura), luz de día
+    ≤ 1,7 y galería vacía en sombra. **Probado al revés** con los valores viejos: 6 fallas (cámara, intermedia, maniquí
+    por defecto, pasto rojo 57/verde 131, luz 2,10, galería luz 96);
+  - doctor `paridad_clubes`: contenido propio de cada club contra Colo-Colo; no falla por la brecha (la cuenta), falla si
+    un club baja del piso de hoy (6) o si se pierde la vara. `devParidadClubes()` devuelve el detalle por club.
+- `test/cancha3d.mjs`: el caso PC ahora espera realistas sin configurar nada; el tercer caso pide el maniquí en Ajustes.
+- Archivos: `js/cancha3d.js`, `js/estadio3d.js`, `js/ui.js`, `js/dev-banco.js`, `test/cancha3d.mjs`, `js/util.js`
+  (+ `js/juego.js`, `index.html`, `js/boot-pintar.js` rearmados por `scripts/juntar.js`).
+- **Lo que NO se hizo (para no mentir):** los estadios siguen siendo las mismas piezas (tribunas, techos, torres); lo que
+  cambió es desde dónde y con qué luz se ven, y la gente. Rehacer la geometría (codos curvos, bandejas con baranda,
+  techos con cerchas) es el siguiente paso si la foto nueva todavía no convence. Los números en la espalda tampoco van aún.
+- **Estado:** doctor `c3d_tele` y `paridad_clubes` verdes y probados; suites completas corriendo al momento de este commit (el resultado va en la línea siguiente cuando terminen).

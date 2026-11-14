@@ -29,6 +29,15 @@
 /* una sola fuente de verdad para la cámara: así el autor (o el doctor) la afina sin cazar números por todo el archivo */
 const CAM3D={ lado:23, alto:9.5, mira_alto:0.6, sigue_z:0.86, sigue_x:0.4, suave:3.0, fov:38, fov_area:32, adelanta:5,
   gol_lado:16, gol_alto:6.5, gol_fov:30 };
+/* 7.9148 · LA CÁMARA DE LA TELE. Antes iba a 23 m del centro y 9,5 de alto: se veían 5 jugadores, puro pasto y la tribuna
+   cortada (cara de juego indie). La transmisión de verdad va desde lo alto de la tribuna principal, lejos y con lente
+   largo: se ve medio equipo, las dos bandas y la tribuna del frente llena el fondo. En pantallas angostas (celular) va la
+   intermedia, para que los jugadores no queden de 4 pixeles. Devuelve {lado, alto, fov, fov_area}. */
+const CAM3D_TV={ ancha:{lado:50, alto:17, fov:23, fov_area:21}, media:{lado:36, alto:13, fov:30, fov_area:27} };
+function c3dCamTV(est){
+  let w=0; try{ w=est&&est.canvas?(est.canvas.clientWidth||0):0; }catch(e){}
+  return ((w&&w<560)||(est&&est.perfil&&est.perfil.plano))?CAM3D_TV.media:CAM3D_TV.ancha;   /* celular o Celular papa: más cerca */
+}
 /* perfiles de calidad: pr = resolución (× píxeles de pantalla), publico = gente en la tribuna, tex = textura del pasto */
 const C3D_PERFIL={
   alta:   {pr:1.6,  prMin:0.7,  aa:true,  publico:1800, tex:2048, fps:60, plano:false, sombras:true},
@@ -56,7 +65,7 @@ function cancha3dActivo(){
 function c3dCalidad(){
   try{ if(document.documentElement.classList.contains("papa")) return "antigua"; }catch(e){}
   const c=(typeof E!=="undefined"&&E&&E.config&&E.config.c3dCalidad)||"auto";
-  if(c==="alta"||c==="antigua") return c;
+  if(c==="alta"||c==="media"||c==="antigua") return c;   /* 7.9148 · Alta · Normal (media) · Celular papa (antigua) */
   return (typeof _cvLiviano==="function"&&_cvLiviano())?"media":"alta";
 }
 function c3dAuto(){ return !((typeof E!=="undefined"&&E&&E.config&&E.config.c3dCalidad)&&E.config.c3dCalidad!=="auto"); }
@@ -70,10 +79,17 @@ function _c3dPastoCanvas(px){
   /* franjas de corte (a lo ancho, como en la tele) */
   const n=18;
   /* 7.9128 · verde de transmisión (más profundo; el de antes era pastel) */
-  for(let i=0;i<n;i++){ x.fillStyle=i%2?"#2e7a2a":"#378a32"; x.fillRect(Math.floor((C3D_MARGEN+i*105/n)*k),0,Math.ceil(105/n*k)+1,H); }
-  x.fillStyle="#2c7228"; x.fillRect(0,0,Math.ceil(C3D_MARGEN*k),H); x.fillRect(Math.floor((C3D_MARGEN+105)*k),0,Math.ceil(C3D_MARGEN*k)+1,H);
+  /* 7.9148 · verde de pasto de verdad (oliva, no flúor) y franjas apenas marcadas: con la luz del día el de antes salía
+     verde neón y las franjas parecían pintadas */
+  for(let i=0;i<n;i++){ x.fillStyle=i%2?"#40632e":"#496d35"; x.fillRect(Math.floor((C3D_MARGEN+i*105/n)*k),0,Math.ceil(105/n*k)+1,H); }
+  x.fillStyle="#3d5f2c"; x.fillRect(0,0,Math.ceil(C3D_MARGEN*k),H); x.fillRect(Math.floor((C3D_MARGEN+105)*k),0,Math.ceil(C3D_MARGEN*k)+1,H);
   /* grano: puntitos claros y oscuros (sin esto la franja se ve de plástico) */
-  if(px>=1024){ for(let i=0;i<W*H/180;i++){ x.fillStyle=Math.random()<0.5?"rgba(0,0,0,.06)":"rgba(255,255,255,.05)"; x.fillRect(Math.random()*W,Math.random()*H,1.5,1.5); } }
+  if(px>=1024){ for(let i=0;i<W*H/180;i++){ x.fillStyle=Math.random()<0.5?"rgba(0,0,0,.06)":"rgba(255,255,255,.05)"; x.fillRect(Math.random()*W,Math.random()*H,1.5,1.5); }
+    /* manchones: pasto más gastado o más tupido (y más pelado frente a los arcos y en el círculo central) */
+    for(let i=0;i<70;i++){ const gx=Math.random()*W, gy=Math.random()*H, r=(2+Math.random()*7)*k, g=x.createRadialGradient(gx,gy,0,gx,gy,r);
+      const os=Math.random()<0.5; g.addColorStop(0,os?"rgba(20,40,10,.10)":"rgba(190,200,120,.07)"); g.addColorStop(1,"rgba(0,0,0,0)"); x.fillStyle=g; x.fillRect(gx-r,gy-r,r*2,r*2); }
+    [[C3D_MARGEN+5,H/2,7],[C3D_MARGEN+100,H/2,7],[C3D_MARGEN+52.5,H/2,5]].forEach(([mz,gy,rm])=>{ const gx=mz*k, r=rm*k, g=x.createRadialGradient(gx,gy,0,gx,gy,r);
+      g.addColorStop(0,"rgba(150,140,80,.16)"); g.addColorStop(1,"rgba(150,140,80,0)"); x.fillStyle=g; x.fillRect(gx-r,gy-r,r*2,r*2); }); }
   /* líneas: z (largo) → x del canvas, x (ancho) → y del canvas */
   const X=m=>(m+C3D_MARGEN)*k, Y=m=>(m+C3D_MARGEN)*k;
   x.strokeStyle="rgba(245,248,242,.92)"; x.lineWidth=Math.max(1.2,0.12*k); x.lineCap="square";
@@ -486,7 +502,10 @@ function c3dModeloQuerido(est){
   return !(typeof E!=="undefined"&&E&&E.config&&E.config.c3dJugadores==="clasicos");
 }
 /* 7.9139 · Ajustes ▸ Jugadores 3D ▸ "Realistas (beta)": cara, pelo y piel (modelo3d.js MODELO3D_REAL) */
-function c3dQuiereReal(){ return typeof modelo3dCargarReal==="function"&&typeof E!=="undefined"&&!!E&&!!E.config&&E.config.c3dJugadores==="realistas"; }
+/* 7.9148 · los REALISTAS son los jugadores de siempre en Alta y Normal (antes había que ir a buscarlos a Ajustes y por
+   defecto salía el maniquí liso: "se ve muy maniquís cualquiera"). El maniquí queda como opción y como respaldo */
+function c3dQuiereReal(){ if(typeof modelo3dCargarReal!=="function") return false;
+  const j=(typeof E!=="undefined"&&E&&E.config&&E.config.c3dJugadores)||"realistas"; return j==="realistas"; }
 function _c3dIntentarModelo(est){
   if(!est||est.m3d||!c3dModeloQuerido(est)) return;
   /* 7.9139 · si eligió los realistas se baja ese modelo; si no llega (sin internet la primera vez, archivo roto), el maniquí */
@@ -584,10 +603,10 @@ function _c3dConstruir(host,P){
   const bola=new THREE.Mesh(new THREE.SphereGeometry(0.15,perfil.plano?8:16,perfil.plano?6:12), bTex?new THREE.MeshLambertMaterial({map:bTex}):new THREE.MeshLambertMaterial({color:0xf4f4f4}));
   scene.add(bola);
   const camGL=new THREE.PerspectiveCamera(CAM3D.fov,16/9,0.5,420);
-  camGL.position.set(CAM3D.lado,CAM3D.alto,0); camGL.lookAt(0,1,0);
+  camGL.position.set(CAM3D_TV.ancha.lado,CAM3D_TV.ancha.alto,0); camGL.lookAt(0,1,0);
   const hud=document.createElement("div"); hud.className="c3d-hud"; hud.setAttribute("aria-live","polite");
   const est={ host:null, canvas:canvas, hud:hud, renderer:renderer, scene:scene, camGL:camGL, piezas:piezas, sombras:sombras, bola:bola,
-    P:null, st:null, camPos:new THREE.Vector3(CAM3D.lado,CAM3D.alto,0), mira:new THREE.Vector3(0,CAM3D.mira_alto,0), fov:CAM3D.fov,
+    P:null, st:null, camPos:new THREE.Vector3(CAM3D_TV.ancha.lado,CAM3D_TV.ancha.alto,0), mira:new THREE.Vector3(0,CAM3D.mira_alto,0), fov:CAM3D.fov,
     calidad:calidad, perfil:perfil, pr:pr0, raf:0, W0:0, H0:0, franjas:[], pelados:[], gk:[], ultT:0, dtProm:16, prAjuste:0, carteles:"",
     hemi:hemi, sol:sol, colEstadio:[P&&P.part&&P.part.local===false?col.riv:col.mio] };
   C3D.montajes++;
@@ -690,7 +709,8 @@ function _c3dSincronizar(est,dt){
   /* cámara de transmisión: banda lateral, elevada, sigue la pelota y mira un poco hacia donde se ataca */
   const k=Math.min(1,dt*CAM3D.suave), gol=!!S.seq;
   const dueno=S.own>=0?S.jug[S.own]:null, dir=dueno?(dueno.mio?1:-1):0;
-  const lado=gol?CAM3D.gol_lado:CAM3D.lado, alto=gol?CAM3D.gol_alto:CAM3D.alto;
+  const TV=c3dCamTV(est);
+  const lado=gol?CAM3D.gol_lado:TV.lado, alto=gol?CAM3D.gol_alto:TV.alto;
   est.camPos.x+=(lado+Math.max(0,bx)*CAM3D.sigue_x-est.camPos.x)*k;
   est.camPos.y+=(alto-est.camPos.y)*k;
   est.camPos.z+=(Math.max(-38,Math.min(38,bz*CAM3D.sigue_z))-est.camPos.z)*k;
@@ -699,7 +719,7 @@ function _c3dSincronizar(est,dt){
   est.mira.x+=(cl(bx*0.6,20)-est.mira.x)*k;
   est.mira.z+=(cl(bz+dir*CAM3D.adelanta,45)-est.mira.z)*k*0.8;
   est.mira.y=CAM3D.mira_alto;
-  const fovObj=gol?CAM3D.gol_fov:(Math.abs(bz)>34?CAM3D.fov_area:CAM3D.fov);
+  const fovObj=gol?CAM3D.gol_fov:(Math.abs(bz)>34?TV.fov_area:TV.fov);
   if(Math.abs(fovObj-est.fov)>0.05){ est.fov+=(fovObj-est.fov)*k*0.6; est.camGL.fov=est.fov; est.camGL.updateProjectionMatrix(); }
   est.camGL.position.copy(est.camPos); est.camGL.lookAt(est.mira);
   /* cartel del gol (el mismo texto que el cenital) */
