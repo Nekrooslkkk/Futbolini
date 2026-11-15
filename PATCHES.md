@@ -5905,3 +5905,26 @@ Y: "me preocupa que el juego en cada equipo no sea igual (que jugar con cualquie
   cambió es desde dónde y con qué luz se ven, y la gente. Rehacer la geometría (codos curvos, bandejas con baranda,
   techos con cerchas) es el siguiente paso si la foto nueva todavía no convence. Los números en la espalda tampoco van aún.
 - **Estado:** todo verde en 7.9148 — core 1186/1186, saves 12/12, doctor SANO 173/173 en 4 partidas + celular, dev 595/595, banco 255 partidas sin fallas.
+
+### 7.9149 (Claude, editor de texto) — S3 y S4 de la tanda 7.9114: la voz de las camisetas
+**Archivos:** `js/data-kits-voz.js` (nuevo), `js/orden.txt`, `js/ui-partido.js`, `js/cancha.js`, `js/dev-banco.js`, `js/util.js`
+(+ `js/juego.js`, `index.html`, `js/boot-pintar.js` rearmados por `scripts/juntar.js`).
+- **`colorEnPalabras(hex)`** devuelve una de 12 palabras (blanco, azul, rojo, amarillo, verde, negro, naranja, celeste, granate,
+  marrón, rosado, violeta) o `null`. Los 24 hex de los 78 kits están mapeados a mano y cada palabra tiene al menos un kit.
+  Con `null` la frase dice «la camiseta», «el short», «las medias», sin adivinar. Concuerda género y número (la camiseta
+  blanca, el short negro, las medias blancas, las franjas azules).
+- **S3 · `fraseCenital(tipo, P, extra)`:** `carrera`, `estirada`, `gol`, `afuera` y `repeticion`, 8 líneas por tipo, sin
+  repetir la última. Usa el apellido y el minuto solo si `P` los trae (las líneas con `{nombre}` o `{min}` se descartan si no).
+  No cuenta goles, tiros ni porcentajes. **Solo `repeticion` está enganchado** (`cancha.js`: la palabra «REPETICIÓN» del
+  cartel, una vez por jugada y no por cuadro; sin la función queda la palabra de siempre, ≤22 caracteres). Los otros cuatro
+  tipos quedan listos y probados, sin consumidor: no toqué la simulación ni el relato.
+- **S4 · `salenDeCamarin(P)`:** 16 líneas, en la previa justo debajo de «De local / De visita en…» (esa línea no se tocó).
+  5 hablan del túnel, el pasto y el ruido (sirven para los clubes de 1925 sin kit y para cualquiera); 8 nombran camiseta,
+  short o medias solo si `piezaKit` devuelve kit; 3 nombran la franja solo si el kit la tiene. De visita usa la
+  alternativa. La línea no cambia al repintar la previa (se guarda por partido) y no repite la anterior.
+- **Doctor `kits_voz`** (`dev-banco.js`, área contenido): `revisarVocabularioKits()` falla si una línea nombra un color que
+  ningún kit tiene y si el mapa trae un hex que ningún kit usa; además genera 3 líneas × 2 lados × 8 veces sobre los 78 kits
+  y 3 clubes sin kit, y mira que cada color nombrado sea de ese kit. **Al revés:** «bordó» en una línea → 131 problemas;
+  un hex del mapa sin kit → falla; ambos restaurados.
+- **Estado:** doctor SANO 174/174 (4 partidas + celular) · core 1186/1186 · dev 595/595 · banco 255 sano · saves 12/12.
+  VERSION 7.9149.

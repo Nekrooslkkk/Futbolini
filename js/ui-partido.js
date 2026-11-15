@@ -170,6 +170,7 @@ function pantallaPrevia(part){
   cab.cuerpo.appendChild(el("h2","tit",(part.local?E.clubNombre+" vs "+part.rivalNombre:part.rivalNombre+" vs "+E.clubNombre)));
   cab.cuerpo.appendChild(el("p","mini",(part.local?"De local":"De visita")+" en "+part.sede+" · "+(typeof nombreDiaDe==="function"?nombreDiaDe(part)+" ":"")+fechaTxt(part.f)+" de "+E.anio+(part.hora?" · "+part.hora:"")+
     (part.apodo?" · "+part.apodo:"")));
+  if(typeof salenDeCamarin==="function"){ try{ cab.cuerpo.appendChild(el("p","mini sale-camarin",salenDeCamarin(part))); }catch(e){} }   /* 7.9149 · cómo salen vestidos (data-kits-voz.js) */
   const meta=el("div","fila-meta");
   meta.appendChild(el("span","chip-meta",part.local?"🏠 Local":"✈️ Visita"));
   const ca=chipArbitro(part); if(ca) meta.appendChild(ca);

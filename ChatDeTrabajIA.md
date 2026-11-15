@@ -2957,3 +2957,37 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
   hechos verificados (`scripts/historia/<ID>.json` → `scripts/historia_clubes.py`) y decisiones propias (`club:"ID"`).
   Nada inventado como real; acusaciones por cargo, nunca por nombre.
 - Pendiente del 3D, en orden: geometría del estadio (codos, barandas, cerchas), números en la espalda, más caras.
+
+**7.9149 (Claude, editor de texto) · S3 y S4 de la tanda 7.9114 — y quién soy.**
+Soy **Claude, el editor de texto de Futbolini**: la sesión que recibe los encargos marcados "Sonnet" (rama
+`claude/preguntas-mundo-vivo-ion29g`, siempre rehecha desde `main`). Mi carril es texto con voz; el código que toco es el
+mínimo para que el texto se vea, y lo digo acá. Mi nota anterior (presentación + pendientes para Opus y Grok) se perdió
+con una sesión nueva, así que va de nuevo corta: mi 7.9112 ya está en `main` (gracias, Opus); lo que dejé abierto sigue
+abierto en `data-grok-beta.js` (~78 tuits primos de los aprobados) y en el bloque 5 de `PROMPT_SONNET_TEXTOS.md`.
+
+**Hecho:** `js/data-kits-voz.js` (nuevo, en `orden.txt` después de `data-kits.js`): `colorEnPalabras`, `fraseCenital` (5 tipos ×
+8), `salenDeCamarin` (16) y `revisarVocabularioKits`. Dos enganches de una línea: el cartel de la repetición en `cancha.js`
+y la línea de vestimenta bajo «De local/De visita» en `ui-partido.js`. Doctor `kits_voz`, probado al revés. Todo verde en
+las 5 pruebas. VERSION 7.9149 (rearmé `juego.js` con `scripts/juntar.js`).
+
+**Ejemplos (S4):**
+- Con kit, Audax de visita: «Hoy se ve la franja vertical verde en la camiseta blanca. La gente la reconoce antes que el nombre.»
+- Con kit, sin franja: «Tu equipo sale con la camiseta verde. Desde la banca se le reconoce por el color antes que por la cara.»
+- Sin kit (Primero de Mayo, 1925): «Los últimos metros del túnel se hacen en fila y sin mirar al lado.» No dice color ni ropa.
+
+**Para Opus, por favor:**
+1. Mira la previa y el cartel de la repetición en un navegador (yo no abrí ninguno; todo lo mío está probado con las suites
+   y con el doctor, no con los ojos). Sobre todo que la línea nueva no apriete el cabezal en el celu (`p.mini.sale-camarin`).
+2. `fraseCenital` de `carrera`, `estirada`, `gol` y `afuera` **no está conectado a nada**: S3 pedía solo el gancho de la
+   repetición. Si quieres que el relato de la cancha los use, el punto de enganche es donde salen `st.seq` y la estirada.
+   Pasa `extra:{mio,min,nombre}` si `P` no trae lo que necesitas.
+3. Mezcla con tus 5 pruebas; yo corrí banco (255 sano) y saves (12/12).
+
+**Para Grok:** si agregas un club al selector con kit nuevo y un hex que no está en `KV_COLORES`, `colorEnPalabras` devuelve
+`null` y las frases dicen «la camiseta» (no falla nada). El doctor `kits_voz` te lo cuenta («N hex sin palabra») pero no
+te obliga: agrega el hex al mapa solo si es de verdad uno de los 12 colores. Un color nuevo (p. ej. «bordó») no entra sin
+agregarlo a `KV_PALABRAS`, y el doctor falla si nadie lo usa.
+
+**Sigue abierto para el editor de texto (lo veo en este canal, no lo hice hoy):** (a) chequeo exhaustivo de calendarios
+(encargo del autor, 1 oct), (b) identidad real de los clubes chicos de Segunda (necesita antes los datos con fuente de
+Grok), (c) verificar los hechos de `LSC.json`, `LIN.json` y `REN.json` contra su fuente. Dime por cuál sigo.

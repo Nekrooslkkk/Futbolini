@@ -48,6 +48,7 @@ js/nube.js
 js/servidor.js
 js/ui-partido.js
 js/data-kits.js
+js/data-kits-voz.js
 js/cancha.js
 js/data-proximamente.js
 js/ui.js

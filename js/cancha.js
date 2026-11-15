@@ -1000,7 +1000,8 @@ function _cvDraw(ctx,w,h,stOpc,P){
   if(st.seq&&st.seq.tipo==="gol"){
     const pad=Math.round(h*0.03), f2=Math.max(10,Math.round(h*0.055));
     ctx.font="800 "+f2+"px system-ui,sans-serif"; ctx.textAlign="left"; ctx.textBaseline="alphabetic";
-    const txt="REPETICIÓN"+(st.seq.cartel?"  ·  "+st.seq.cartel:"");
+    if(st.seq.rot==null){ let r=null; try{ r=(typeof fraseCenital==="function")?fraseCenital("repeticion",P):null; }catch(e){} st.seq.rot=r||"REPETICIÓN"; }   /* 7.9149 · una vez por jugada, no por cuadro */
+    const txt=st.seq.rot+(st.seq.cartel?"  ·  "+st.seq.cartel:"");
     const tw=ctx.measureText(txt).width;
     ctx.fillStyle=st.seq.mio?"rgba(12,80,36,.88)":"rgba(110,24,24,.88)";
     ctx.fillRect(pad,pad,tw+pad*1.6,f2*1.6);

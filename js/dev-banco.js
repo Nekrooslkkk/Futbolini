@@ -414,6 +414,43 @@ if(typeof devDoctorRegistrar==="function"){
       const det=r.sin.map(function(id){ return "sin kit: "+id; }).concat(r.mal);
       return r.ok?_dok(r.con+"/"+r.total+" clubes elegibles con kit"):_dmal(r.sin.length+" sin kit, "+r.mal.length+" color(es) malo(s)", det);
     }});
+  /* 7.9149 · la voz de las camisetas: ninguna línea nombra un color que el kit no tenga; sin kit no hay color; 8 por tipo */
+  devDoctorRegistrar({id:"kits_voz", area:"contenido", n:"Las frases de camisetas solo nombran colores que existen en los kits",
+    arreglo:"js/data-kits-voz.js: KV_COLORES (hex → palabra, solo de kits reales), KV_CENITAL (8 por tipo), KV_SALEN (16). Una frase sin color dice «la camiseta».",
+    fn:function(){
+      if(typeof revisarVocabularioKits!=="function"||typeof salenDeCamarin!=="function"||typeof fraseCenital!=="function") return _dmal("falta js/data-kits-voz.js");
+      const f=[], real=revisarVocabularioKits();
+      real.mal.slice(0,6).forEach(function(m){ f.push(m); });
+      /* al revés: un color que ningún kit tiene, y un hex del mapa que ningún kit usa, tienen que fallar */
+      const kb={CC:{local:["#ffffff","#111111","#ffffff"],visita:["#111111","#ffffff","#111111"]}}, mb={"#ffffff":"blanco","#111111":"negro"};
+      if(revisarVocabularioKits(kb,["Sale con la camiseta violeta."],mb).ok) f.push("el chequeo no detecta «violeta» sin kit violeta");
+      if(revisarVocabularioKits(kb,["Sale con la camiseta blanca."],{"#ffffff":"blanco","#111111":"negro","#4b2e83":"violeta"}).ok) f.push("el chequeo no detecta un hex del mapa que ningún kit usa");
+      if(!revisarVocabularioKits(kb,["Sale con la camiseta blanca y el short negro."],mb).ok) f.push("el chequeo rechaza una frase correcta");
+      Object.keys(KV_CENITAL).forEach(function(t){ if(KV_CENITAL[t].length<8) f.push(t+": "+KV_CENITAL[t].length+" líneas (van 8)"); });
+      KV_CENITAL.repeticion.forEach(function(s){ if(s.length>22) f.push("repetición «"+s+"» pasa de 22 caracteres"); });
+      if(KV_SALEN.length<16) f.push("salenDeCamarin: "+KV_SALEN.length+" líneas (van 16)");
+      /* generado: por cada kit, las líneas que salen solo nombran colores de ese kit; por cada club sin kit, ninguno */
+      const palabrasDe=function(k){ const w={}; [].concat(k.local,k.visita,[k.franjaColor,k.franjaColorVisita]).forEach(function(h){ const p=colorEnPalabras(h); if(p) w[p]=1; }); return w; };
+      const ids=Object.keys(KITS).concat(["PDM","ELR","GCX"]);   /* los de 1925 que no tienen kit */
+      let n=0, num=0;
+      ids.forEach(function(id){
+        const k=KITS[id], ok=k?palabrasDe(k):{};
+        [true,false].forEach(function(local){
+          for(let i=0;i<8;i++){
+            const P={clubMio:id, part:{local:local,rivalId:"CC",f:(++num)}, once:[{n:"Juan Pérez"}], min:30, golesDetalle:[{quien:"Juan Pérez",min:30,propio:true}]};
+            const txts=[salenDeCamarin(P), fraseCenital("carrera",P), fraseCenital("gol",P)]; n+=3;
+            txts.forEach(function(t){
+              if(!t){ f.push(id+": una línea salió vacía"); return; }
+              _kvColoresEn(t).forEach(function(p){ if(!ok[p]) f.push(id+(local?" local":" visita")+": «"+t.slice(0,60)+"» nombra «"+p+"»"); });
+              if(!k&&/camiseta|short|medias|franja/i.test(t)&&t===txts[0]) f.push(id+" no tiene kit y la línea habla de ropa: «"+t.slice(0,60)+"»");
+            });
+          }
+        });
+      });
+      const uno=function(){ const a=[]; for(let i=0;i<20;i++) a.push(fraseCenital("estirada",{min:40})); return a; }();
+      for(let i=1;i<uno.length;i++) if(uno[i]===uno[i-1]){ f.push("fraseCenital repite la misma línea dos veces seguidas"); break; }
+      return f.length?_dmal(f.length+" problema(s)",f.slice(0,10)):_dok(n+" líneas generadas sobre "+Object.keys(KITS).length+" kits y 3 clubes sin kit · "+real.palabras+" colores en palabras · "+real.sinPalabra.length+" hex sin palabra");
+    }});
 }
 if(typeof devDoctorRegistrar==="function"){
   /* 7.9116 · duelos en sala: lo que manda el rival se valida, los nombres se escapan, códigos cortos y viven en Ajustes */
