@@ -5928,3 +5928,34 @@ Y: "me preocupa que el juego en cada equipo no sea igual (que jugar con cualquie
   un hex del mapa sin kit → falla; ambos restaurados.
 - **Estado:** doctor SANO 174/174 (4 partidas + celular) · core 1186/1186 · dev 595/595 · banco 255 sano · saves 12/12.
   VERSION 7.9149.
+
+### 7.9150 (Claude, editor de texto) — la historia real de los clubes: verificada contra la fuente y 6 clubes nuevos
+**Archivos:** `js/data-historia-clubes.js`, `scripts/historia/*.json` (6 nuevos + 3 revisados), `js/dev-banco.js`, `scripts/verificar.js`,
+`js/util.js` (+ `js/juego.js`, `index.html`, `js/boot-pintar.js` rearmados por `scripts/juntar.js`).
+- **Encargo de Opus 7.9146 (verificar LSC, LIN, REN uno por uno contra la fuente):** hecho. Con fragmentos textuales de Wikipedia:
+  - **LSC:** la sanción por sueldos impagos y el descenso a Tercera A **no traen año** en el artículo («para la siguiente temporada»).
+    Estaba como «En 2017»; ahora dice «Tras el traspaso de mayo de 2017… más tarde» (hito y los 2 capítulos del arco de sueldos).
+  - **LSC, arco `lsc_h_a1` ("el club sigue partido en dos"):** era falso. Los dos Lota Schwager **se fusionaron en octubre de 2020**.
+    Reescrito entero sobre la historia real que el juego no tenía: fusión 2020 (con inversión de una empresa pesquera), descenso a
+    Tercera B en 2022 («por primera vez en su historia, jugando de local»), cautelar de 2023 (entró a Tercera B como invitado; en la
+    liguilla «ningún club se presentó a jugar»), regreso a Tercera A en 2024 (2-0 a Naval) y regreso al profesionalismo en 2025
+    («tras 9 años», cupo extra por la desafiliación de Deportes Melipilla, definido en penales). 5 hitos nuevos (10 → 15).
+  - **REN:** la fuente dice que «será local» en San Fernando (anuncio de 2023), no que lo fue; la ficha en inglés ni lo menciona.
+    Hito y 2 capítulos pasaron a «se anunció». Los 14 hechos restantes (y auspiciadores, 9-1 a Chimbarongo, 1-8 de Cobreloa) calzan.
+  - **LIN:** los 13 hechos calzan tal cual (incluye «vuelve a la Tercera» tras la Primera B 2001).
+- **6 clubes nuevos con historia real (de 3 a 9 de 46), todos de la Segunda:** Colchagua (CLC), Santiago Morning (SMO), Provincial Osorno
+  (OSO: el club antiguo, desafiliado en 2012, y el refundado por socios e hinchas), Trasandino (TRA), Provincial Ovalle (OVA) y Concón
+  National (CNA). Cada uno trae `scripts/historia/<ID>.json` (hechos con fragmento textual), 9–13 hitos para la línea de Historia y 2 arcos
+  de 3 capítulos con costo y beneficio. Total: 103 hitos · 18 arcos · 54 capítulos. Colchagua era el caso del autor («Quilín»): ya no
+  le llega texto genérico.
+- **Lo que NO entró, a propósito:** contradicciones de la fuente (capacidad de estadios en SMO, OSO, TRA; la categoría del título de CNA
+  en 2001; su posición en 2024), nombres de personas (técnicos, dueños, presidentes: solo hechos de club) y acusaciones. Brujas de Salamanca,
+  Real San Joaquín, Santiago City, Atlético Colina y General Velásquez quedan fuera: clubes de 2015 en adelante con artículos cortos y
+  contradictorios (Brujas: dos fuentes dan ascensos distintos).
+- **Doctor `historia_clubes` (más estricto):** todo año que menciona un capítulo tiene que estar en la línea del club (anio o texto de un
+  hito). Cazó a Osorno (2019, 2020 y 2021 estaban verificados pero invisibles en su línea; se sumaron 2 hitos) y habría cazado el «2017».
+  También cazó una opción mía sin costo en Trasandino.
+- **`scripts/verificar.js` (corre en cada push vía `npm run check`):** cada club de `HISTORIA_CLUBES` debe tener su `.json` de hechos
+  (≥ 6) con la misma `fuente` y `consultado`. Así nada entra a la historia sin su ficha.
+- **Estado:** doctor SANO 174/174 (4 partidas + celular) · core 1186/1186 · dev 595/595 · banco 255 sano · saves 12/12 · `npm run check` OK.
+  VERSION 7.9150.

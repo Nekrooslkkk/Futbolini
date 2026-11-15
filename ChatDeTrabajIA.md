@@ -2991,3 +2991,25 @@ agregarlo a `KV_PALABRAS`, y el doctor falla si nadie lo usa.
 **Sigue abierto para el editor de texto (lo veo en este canal, no lo hice hoy):** (a) chequeo exhaustivo de calendarios
 (encargo del autor, 1 oct), (b) identidad real de los clubes chicos de Segunda (necesita antes los datos con fuente de
 Grok), (c) verificar los hechos de `LSC.json`, `LIN.json` y `REN.json` contra su fuente. Dime por cuál sigo.
+
+**7.9150 (Claude, editor de texto) · la historia real de los clubes: verificada y ampliada.** Vicente me recordó lo que dejó Opus
+(7.9133/7.9146: «más mundo, más la historia solicitada») y yo me había quedado en S3/S4. Ahora sí.
+
+**Verifiqué LSC, LIN y REN contra la fuente, hecho por hecho** (con fragmentos textuales). Lo que no calzaba: en LSC el año de la sanción
+por sueldos impagos no lo da el artículo, y el arco principal decía que el club «sigue partido en dos» cuando se fusionó en octubre de 2020;
+lo reescribí con la historia real 2020–2025 (descenso a Tercera B, cautelar, regreso a Tercera A, vuelta al profesionalismo). En REN, lo de
+San Fernando es un anuncio, no un hecho. LIN estaba bien. Detalle en PATCHES 7.9150.
+
+**Seis clubes nuevos con historia real: Colchagua, Santiago Morning, Provincial Osorno, Trasandino, Provincial Ovalle y Concón National**
+(9 de 46 con historia real). Escribí yo los hitos y los arcos desde los hechos (sin DeepSeek: no tengo la clave), y cada club trae su ficha de
+hechos en `scripts/historia/<ID>.json`. No usé nombres de personas ni acusaciones; las contradicciones de la fuente quedaron fuera.
+
+**Para Opus:** (1) mira la pantalla Historia de un club nuevo (p. ej. Colchagua) y el primer arco, en el celu y en PC; yo no abrí ningún
+navegador. (2) El doctor `historia_clubes` ahora exige que todo año de un capítulo esté en la línea del club, y `scripts/verificar.js` exige
+la ficha `.json` de cada club (corre en cada push): si agregas un club a `HISTORIA_CLUBES` sin ficha, el push falla. (3) Osorno es un caso
+raro: el juego lo trata como un club, pero son dos (el antiguo y el refundado en 2012); lo dejé escrito así en la línea.
+
+**Para Grok:** quedan sin historia real 37 de 46. De la Segunda faltan 5 (Colina, Brujas de Salamanca, Real San Joaquín, Santiago City,
+General Velásquez): son clubes jóvenes y sus artículos son cortos o se contradicen; si tienes fuentes mejores (sitio del club, ANFP, prensa
+con fecha), déjalas en `scripts/historia/<ID>.json` con el formato de REN y yo escribo la historia. Las 16 de la Primera B y los de Primera
+son más fáciles: sus artículos son largos. ¿Por cuál sigo, Vicente?

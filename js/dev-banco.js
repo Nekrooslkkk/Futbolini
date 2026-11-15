@@ -1676,6 +1676,9 @@ function devHistoriaClubes(){
     const L=(typeof _lineaHistoriaPropia==="function")?_lineaHistoriaPropia(id):[];
     hs.forEach(h=>{ if(!L.some(x=>x.anio===h.anio&&x.txt===h.txt)) r.f.push(id+": el hito "+h.anio+" no llega a la línea de Historia"); });
     const propios=(typeof ARCOS_EQUIPO==="object"&&ARCOS_EQUIPO[id])||[];
+    /* 7.9149 · cada año que menciona un arco tiene que estar en la línea del club (anio o texto de un hito): si no, es un hecho
+       sin fuente a la vista. Cazó a mano "en 2017" (la fuente no daba el año) y "sigue partido en dos" (se fusionaron en 2020) */
+    const enLinea={}; hs.forEach(h=>{ enLinea[h.anio]=1; (String(h.txt||"").match(/\b(?:1[89]|20)\d\d\b/g)||[]).forEach(y=>{ enLinea[y]=1; }); });
     (H.arcos||[]).forEach((a,ia)=>{ r.arcos++;
       const caps=a.capitulos||[], ids={}; caps.forEach(c=>{ ids[c.id]=1; }); r.caps+=caps.length;
       if(caps.length<3) r.f.push(a.id+": "+caps.length+" capítulos (se piden 3)");
@@ -1684,6 +1687,7 @@ function devHistoriaClubes(){
         if((c.ops||[]).length<2) r.f.push(c.id+": menos de 2 opciones");
         if(/denunci|malvers|fraude|desv[ií]o|vendi[óo] el cupo|fines personales/i.test(c.ctx||"")&&/\b(?!Deportes|Club|Tercera|Segunda|Primera|Universidad|San|Santa|Hoy|En)[A-ZÁÉÍÓÚ][a-záéíóúñ]+ [A-ZÁÉÍÓÚ][a-záéíóúñ]{2,}\b/.test(c.ctx||"")) r.f.push(c.id+": el contexto acusa a alguien con nombre y apellido");
         if(!/\b(19|20)\d\d\b/.test(c.ctx||"")&&!/selecciones|tricampeon/i.test(c.ctx||"")) r.f.push(c.id+": el contexto no se ancla en un hecho con año");
+        (String(c.ctx||"").match(/\b(?:1[89]|20)\d\d\b/g)||[]).forEach(y=>{ if(!enLinea[y]) r.f.push(c.id+": menciona "+y+" y ese año no está en la línea de "+id+" (¿hecho sin fuente?)"); });
         if(/subir (el |los )?precio|bajar (las )?entradas|precio de las entradas/i.test((c.ctx||"")+" "+(c.ops||[]).map(o=>o.t).join(" "))) r.f.push(c.id+": vuelve el dilema genérico de los precios");
         (c.ops||[]).forEach(o=>{
           if(ult&&!o.cierra) r.f.push(c.id+": «"+o.t+"» no cierra el arco");

@@ -2,8 +2,8 @@
  "id": "LSC",
  "nombre": "Lota Schwager",
  "fuente": "https://es.wikipedia.org/wiki/Club_de_Deportes_Lota_Schwager",
- "consultado": "2026-10-16",
- "nota": "Verificado con citas textuales del artículo. Se omite a propósito el nombre del presidente que vendió el cupo en 1995 (persona real, hecho delicado): basta con «la dirigencia».",
+ "consultado": "2026-11-15",
+ "nota": "Verificado con citas textuales del artículo. Se omite a propósito el nombre del presidente que vendió el cupo en 1995 (persona real, hecho delicado): basta con «la dirigencia». 7.9149: verificado de nuevo el 2026-11-15; el año de la sanción por sueldos impagos NO lo da la fuente (dice «para la siguiente temporada»), y la fusión de octubre de 2020 desmiente que el club siga partido en dos.",
  "hechos": [
   {
    "txt": "Se fundó el 10 de mayo de 1966 con la fusión de Minas Lota y Federico Schwager, los equipos de las dos empresas del carbón de la zona."
@@ -36,10 +36,25 @@
    "txt": "El 14 de febrero de 2001, después de 7 años de desaparición, renació como club amateur; ese mismo año ganó la Tercera División."
   },
   {
-   "txt": "En 2017, por sueldos impagos, fue sancionado con la resta de 3 puntos y descendió a Tercera División A."
+   "txt": "En mayo de 2017 se traspasan las acciones de la SADP del club. En la temporada siguiente («para la siguiente temporada», el artículo no da el año), por sueldos impagos, fue sancionado con la resta de 3 puntos además del descenso a la Tercera División A."
   },
   {
    "txt": "Para 2019 dos equipos paralelos presentaron sus cuadernos de cargos ante la ANFA con el nombre del club."
+  },
+  {
+   "txt": "En octubre de 2020 «ambos cuadros acordaron fusionarse»; con la fusión compitieron en Tercera A como un solo club, con inversión de una empresa pesquera."
+  },
+  {
+   "txt": "En 2022 no le ganó a Provincial Osorno en la última fecha: «Lota Schwager descendió por primera vez en su historia jugando de local» (a la Tercera B)."
+  },
+  {
+   "txt": "En 2023 por un litigio con la ANFA entró a la Tercera B como invitado, por una medida cautelar; en la liguilla de ascenso «Ningún club se presentó a jugar contra Lota Schwager»; terminó tercero."
+  },
+  {
+   "txt": "En 2024 ganó el grupo sur de Tercera B y regresó a Tercera A: en la última fecha, de local, venció 2-0 a Naval de Talcahuano y superó a Malleco Unido por diferencia de goles."
+  },
+  {
+   "txt": "En 2025 cayó en semifinales del play-off de ascenso ante Comunal Cabrero; por la desafiliación de Deportes Melipilla la ANFP entregó un cupo adicional a Segunda, empatado 0-0 y ganado en penales: «el regreso al profesionalismo tras 9 años»."
   }
  ]
 }
