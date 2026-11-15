@@ -52233,6 +52233,14 @@ function devCanchaGrande(){
     det.push("pantalla completa "+Math.round(r.width)+"×"+Math.round(r.height)+(h.clientWidth>h.clientHeight&&H>W?" (girada: "+h.clientWidth+"×"+h.clientHeight+")":""));
   }catch(e){ f.push("no pude medir la cancha grande: "+e.message); }
   finally{ B.classList.remove("cancha-cine"); if(!teniaPart) B.classList.remove("en-partido"); h.remove(); }
+  /* el panel del partido mide el ancho completo desde el primer cuadro (en el celular se encogía a su contenido y crecía
+     un cuadro después, en cada repintado: "la pantalla se agranda") */
+  if(window.innerWidth<=720){ try{
+    const w=document.createElement("div"); w.className="partido-wrap"; w.style.visibility="hidden"; const pn=document.createElement("div"); pn.className="panel"; pn.textContent="x"; w.appendChild(pn);
+    (document.getElementById("vista")||B).appendChild(w); const aw=w.getBoundingClientRect().width, pw=pn.getBoundingClientRect().width; w.remove();
+    if(aw-pw>2) f.push("en el celular el panel del partido se encoge a su contenido ("+Math.round(pw)+" de "+Math.round(aw)+" px): en cada repintado sale angosto y después crece");
+    else det.push("panel del partido a todo el ancho ("+Math.round(pw)+" px)");
+  }catch(e){} }
   det.push(canchaFuerte()?"este equipo usa el modelo fuerte: la cancha se agranda":"este equipo va con el modelo antiguo o 2D: la cancha no se agranda (a propósito)");
   return {f:f,det:det};
 }

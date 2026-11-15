@@ -5922,6 +5922,11 @@ a escribir, déjale trabajo".
   quedaba corrida 13×60 px). Va en la capa 75, **debajo** de las ventanas de decisión (capa 80), y **se sale sola** si el
   partido te pide una decisión del panel o termina. Sale con ✕, Escape o el gesto del sistema. También sirve en PC.
 - **El aviso de gol / roja / penal va encima de la cancha** (cartel abajo, como en la tele): salto de la página 51 → 0 px.
+- **BUG "la pantalla se agranda" (celular, cualquier modelo, 3D o 2D; venía de antes):** el partido repinta su panel
+  entero en cada tramo, y en el celular `.partido-wrap` iba en columna con el `align-items:flex-start` heredado del
+  escritorio: el panel se encogía a su contenido y salía de **322 px**, y un cuadro después crecía a **366**. En cada
+  repintado. Ahora `align-items:stretch` (`css/movil.css`): 366 desde el primer cuadro. Lo vigila `cancha_grande`
+  (al revés: "se encoge a su contenido (322 de 366 px)") y `test/cancha3d.mjs`.
 - **`_c3dTam`** mide el canvas por su tamaño de diseño (`clientWidth/Height`), no por su rectángulo en pantalla: girado
   90° con CSS el partido se dibujaba aplastado.
 - El reloj de sesión no se muestra durante el partido en el celular (el aviso de guardado malo sí).
@@ -5953,4 +5958,7 @@ a escribir, déjale trabajo".
 - **Lo que NO se hizo:** no probé la pantalla completa en un teléfono real (solo en Chromium con pantalla táctil emulada);
   la geometría de los estadios y los números en la espalda siguen pendientes; "mejorar la interfaz por completo en
   celular" acá fue el partido —las 12 secciones ya se barrieron en 7.9147 y de nuevo hoy a 360×740 sin desbordes—.
-- **Estado:** `test/cancha3d.mjs` verde (con el caso nuevo de celular) y doctor `azar_sano` / `cancha_grande` verdes y probados al revés; suites completas corriendo al momento de este commit (el resultado va en el commit siguiente).
+- `test/cancha3d.mjs`: el paso del balón parado saltaba intermitente ("capas 0") cuando justo antes caía un gol de verdad y
+  su repetición seguía en pantalla; ahora salta la repetición antes de abrirlo. (El paso de servidores de `correr_dev.sh`
+  también falló una vez al arrancar y pasó solo al repetir: no se tocó.)
+- **Estado:** `test/cancha3d.mjs` verde dos veces seguidas y doctor `azar_sano` / `cancha_grande` verdes y probados al revés; core, saves, doctor y banco verdes en la primera pasada; dev, core y doctor repitiéndose con el último arreglo al momento de este commit (el resultado va en el commit siguiente).

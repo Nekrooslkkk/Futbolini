@@ -99,6 +99,9 @@ try{
         /* el reloj en pausa mientras se mide: si no, un gol del partido que sigue se contaba como del penal */
         /* _bpCadena=2: si la desvían al córner no se encadena otro (en el juego sí: la prueba mide una sola jugada) */
         /* 7.9132 · sin preguntas abiertas (en el juego no hay balón parado con una pregunta pendiente: el reloj espera) */
+        /* 7.9149 · si justo cayó un gol de verdad antes de este paso, su repetición sigue en pantalla y el balón parado no
+           se abre encima (falla intermitente "capas 0" con la máquina cargada): se salta la repetición y se sigue */
+        await p.evaluate(()=>{ const e=C3D.est; if(e&&e.rep&&typeof _c3dRepFin==="function") _c3dRepFin(e,true); if(P_ACTUAL) P_ACTUAL._celHasta=0; }); await esperar(250);
         const a=await p.evaluate((tipo)=>{ clearInterval(TIMER); document.querySelectorAll(".momento-vivo").forEach(x=>x.remove()); MOMENTO_OPS=[];
           PAUSADO=true; P_ACTUAL.modo="dirigir"; P_ACTUAL._bpCadena=2; E.config.cornerMinijuego=true; window._g0=P_ACTUAL.gl+P_ACTUAL.gv;
           window._lineas0=document.querySelectorAll(".relato *").length;
@@ -167,7 +170,9 @@ try{
       /* el aviso de gol va encima de la cancha: con él y sin él, la cancha queda en el mismo lugar */
       const salto=await p.evaluate(()=>{ PAUSADO=true; clearInterval(TIMER); const P=P_ACTUAL; P._flash=null; P._flashN=0; pintarPartido(); const y0=document.querySelector(".partido-cancha").getBoundingClientRect().top;
         P._flash={txt:"⚽ ¡GOOOL de prueba!",tono:"bueno"}; P._flashN=3; pintarPartido(); const h=document.querySelector(".partido-cancha"), f=h.querySelector(".flash-cancha");
-        return {dy:Math.round(h.getBoundingClientRect().top-y0), hay:!!f, pos:f?getComputedStyle(f).position:""}; });
+        const pn=h.closest(".panel"), wr=document.querySelector(".partido-wrap");
+        return {dy:Math.round(h.getBoundingClientRect().top-y0), hay:!!f, pos:f?getComputedStyle(f).position:"", panel:Math.round(pn.getBoundingClientRect().width), wrap:Math.round(wr.getBoundingClientRect().width)}; });
+      ok(salto.panel===salto.wrap,"recién repintado, el panel del partido ya mide el ancho completo ("+salto.panel+" de "+salto.wrap+" px; antes salía de 322 y crecía a 366: «la pantalla se agranda»)");
       ok(salto.hay&&salto.pos==="absolute"&&salto.dy===0,"el aviso de gol va encima de la cancha y no empuja la página (salto: "+salto.dy+" px)");
       await p.locator(".cancha-cine-btn").tap(); await esperar(900);
       const c=await medir();

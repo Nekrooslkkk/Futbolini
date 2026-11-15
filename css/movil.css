@@ -148,7 +148,10 @@ button,a,.op,.icono,.ficha,.mi,.dock-tab,.ctrlPartido{-webkit-tap-highlight-colo
   .ventana-so .so-titulo{font-size:13px}
   .bolsa-canvas canvas{height:64px}
   .fuera-lista{font-size:11px;overflow-wrap:anywhere}
-  .partido-wrap{flex-direction:column;gap:8px}
+  /* 7.9149 · align-items:stretch: en columna, el flex-start heredado del escritorio encogía el panel a su contenido, y como
+     el partido se repinta entero en cada tramo, el panel salía angosto (322 px) y un cuadro después crecía a 366:
+     "en partidos la pantalla se agranda". Ahora mide el ancho completo desde el primer cuadro */
+  .partido-wrap{flex-direction:column;gap:8px;align-items:stretch}
   .partido-wrap>*{flex:1 1 auto;min-width:0}
   .cancha2d{max-height:180px}
   .partido-hud{grid-template-columns:1fr;gap:4px}
