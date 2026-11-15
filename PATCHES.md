@@ -5961,4 +5961,4 @@ a escribir, déjale trabajo".
 - `test/cancha3d.mjs`: el paso del balón parado saltaba intermitente ("capas 0") cuando justo antes caía un gol de verdad y
   su repetición seguía en pantalla; ahora salta la repetición antes de abrirlo. (El paso de servidores de `correr_dev.sh`
   también falló una vez al arrancar y pasó solo al repetir: no se tocó.)
-- **Estado:** `test/cancha3d.mjs` verde dos veces seguidas y doctor `azar_sano` / `cancha_grande` verdes y probados al revés; core, saves, doctor y banco verdes en la primera pasada; dev, core y doctor repitiéndose con el último arreglo al momento de este commit (el resultado va en el commit siguiente).
+- **Estado:** todo verde en 7.9149 — core 1186/1186, saves 12/12, doctor SANO 175/175 en 4 partidas + celular, dev 595/595, banco 255 partidas sin fallas.
