@@ -5905,3 +5905,52 @@ Y: "me preocupa que el juego en cada equipo no sea igual (que jugar con cualquie
   cambió es desde dónde y con qué luz se ven, y la gente. Rehacer la geometría (codos curvos, bandejas con baranda,
   techos con cerchas) es el siguiente paso si la foto nueva todavía no convence. Los números en la espalda tampoco van aún.
 - **Estado:** todo verde en 7.9148 — core 1186/1186, saves 12/12, doctor SANO 173/173 en 4 partidas + celular, dev 595/595, banco 255 partidas sin fallas.
+
+### 7.9149 — Cancha grande y pantalla completa en el celular, el azar con semilla ya no da vueltas en redondo, y la cola de historias para Sonnet
+Pedido del autor (15 nov 2026): "mejora la interfaz por completo en celular (en partidos la pantalla se agranda si es el
+modelo fuerte). Quita bugs, haz que el juego se note más fuerte, revisa doctor y ve lo que es la historia: Sonnet entrará
+a escribir, déjale trabajo".
+- **Partido en el celular, medido antes** (390×844): la cancha 3D medía **340×169** con márgenes; el aviso de gol era un
+  bloque arriba del marcador que **empujaba todo 51 px** al aparecer y lo devolvía al irse; el reloj de sesión se montaba
+  sobre el título.
+- **Cancha grande** (`partidoCanchaGrande`, `canchaFuerte` en `js/ui-partido.js`; CSS en `css/interfaz-club.css`):
+  con el modelo fuerte (3D en Alta o Normal) la cancha va **de borde a borde, 390×244**. Con el modelo antiguo o la cancha
+  2D no se agranda, a propósito: ahí el punto es que corra.
+- **Pantalla completa ⛶** (`canchaCine`): la cancha tapa la pantalla con el marcador encima; si el teléfono está parado
+  **se gira sola** para verla con el teléfono acostado (844×390) y usa la cámara ancha de la tele. Pide pantalla completa
+  al navegador donde existe (Android) y funciona igual donde no (iPhone). Cuelga del `<body>` (adentro del panel de vidrio
+  quedaba corrida 13×60 px). Va en la capa 75, **debajo** de las ventanas de decisión (capa 80), y **se sale sola** si el
+  partido te pide una decisión del panel o termina. Sale con ✕, Escape o el gesto del sistema. También sirve en PC.
+- **El aviso de gol / roja / penal va encima de la cancha** (cartel abajo, como en la tele): salto de la página 51 → 0 px.
+- **`_c3dTam`** mide el canvas por su tamaño de diseño (`clientWidth/Height`), no por su rectángulo en pantalla: girado
+  90° con CSS el partido se dibujaba aplastado.
+- El reloj de sesión no se muestra durante el partido en el celular (el aviso de guardado malo sí).
+- **BUG DE FONDO que destapó el doctor (revisión en 5 partidas más: COB, UCH 1991, RIV, SMA, LIN):** en la partida de
+  Cobresal `motor_vs_ia` daba brecha −0,49 ("el club del jugador queda castigado"). No era el motor: era el **azar**.
+  `azarFijo` (el generador con semilla de todo el juego) multiplica más allá de 2^53, pierde los bits de abajo y **se
+  repite a los ~15.000 números (mediana de 400 semillas; mínimo 422)**; con la semilla de esa calibración, a los 513
+  (cola 266 + ciclo 247): los 1.200 partidos de la medición eran los mismos 3 dando vueltas. Para lo de siempre (un
+  plantel, un sorteo, un resultado de la IA: decenas de números) no se notaba.
+  - **Arreglo sin cambiar ningún mundo existente** (`js/data-plantel.js`): mientras la secuencia vieja no se repita, sale
+    tal cual —cada partida guardada, plantel generado y fixture queda idéntico—; en el momento exacto en que volvería a
+    un valor ya usado, sigue un generador sano (mulberry32, cuentas exactas de 32 bits). De paso nunca devuelve 1 justo
+    (antes podía, 1 vez en 2.000 millones: índice fuera de la lista).
+  - Cobresal: brecha −0,49 → **−0,08**. Las otras partidas siguen igual.
+- **Modo dev (regla permanente):**
+  - doctor `azar_sano`: 8 semillas × 40.000 números sin ciclos, parejos, y los primeros 60 de cada una idénticos a los de
+    siempre (partidas guardadas a salvo). **Al revés** (generador viejo): 9 fallas, entre ellas "se repite cada 247".
+  - doctor `cancha_grande`: pantalla completa fija y del tamaño de la pantalla, girada si el teléfono está parado, debajo
+    de las ventanas de decisión, aviso de gol encima de la cancha, botón de 36 px, y `_c3dTam` por tamaño de diseño.
+    **Al revés**: 4 fallas.
+  - `test/cancha3d.mjs`: caso nuevo "celu con el modelo fuerte" (10 pruebas: borde a borde, sin salto, pantalla completa
+    girada sin aplastarse, sobrevive al repintado, debajo de las ventanas, se sale sola, vuelve a su lugar).
+- **Historias: cola de trabajo para Sonnet** en `ChatDeTrabajIA.md` (orden 7.9149): 72 clubes en 4 tandas con formato,
+  reglas de integridad y definición de terminado. El doctor `paridad_clubes` cuenta lo que falta.
+- Corrección de mi propio resumen anterior: las tres historias que existen son Rengo, **Lota Schwager** (LSC) y Linares;
+  La Serena (LSE) no tiene todavía.
+- Archivos: `js/ui-partido.js`, `css/interfaz-club.css`, `js/cancha3d.js`, `js/data-plantel.js`, `js/dev-banco.js`,
+  `test/cancha3d.mjs`, `js/util.js` (+ rearmados).
+- **Lo que NO se hizo:** no probé la pantalla completa en un teléfono real (solo en Chromium con pantalla táctil emulada);
+  la geometría de los estadios y los números en la espalda siguen pendientes; "mejorar la interfaz por completo en
+  celular" acá fue el partido —las 12 secciones ya se barrieron en 7.9147 y de nuevo hoy a 360×740 sin desbordes—.
+- **Estado:** `test/cancha3d.mjs` verde (con el caso nuevo de celular) y doctor `azar_sano` / `cancha_grande` verdes y probados al revés; suites completas corriendo al momento de este commit (el resultado va en el commit siguiente).

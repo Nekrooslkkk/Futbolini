@@ -907,7 +907,9 @@ function _c3dRepCamara(est,dt,c,bx,by,bz){
   est.camPos.copy(r.cam.p); est.mira.copy(r.cam.m);
 }
 function _c3dTam(est){
-  const rc=est.canvas.getBoundingClientRect();
+  /* 7.9149 · el tamaño de DISEÑO (clientWidth/Height), no el rectángulo en pantalla: en la cancha grande del celular el
+     canvas va girado 90° con CSS y el rectángulo sale parado (el partido se dibujaba aplastado) */
+  const cv=est.canvas, rc=(cv.clientWidth&&cv.clientHeight)?{width:cv.clientWidth,height:cv.clientHeight}:cv.getBoundingClientRect();
   if(rc.width&&(Math.abs(rc.width-est.W0)>0.5||Math.abs(rc.height-est.H0)>0.5)){
     est.W0=rc.width; est.H0=rc.height; est.renderer.setSize(rc.width,rc.height,false);
     est.camGL.aspect=rc.width/Math.max(1,rc.height); est.camGL.updateProjectionMatrix();

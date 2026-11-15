@@ -145,6 +145,52 @@ try{
     ok(err.length===0,"sin errores en la página"+(err.length?": "+err.slice(0,3).join(" | "):""));
     await ctx.close();
   }
+  /* 7.9149 · EL CELULAR CON EL MODELO FUERTE: la cancha va de borde a borde, el aviso de gol no empuja la página, y ⛶ la
+     pone a pantalla completa girada (teléfono parado → se mira acostado) sin aplastar el dibujo */
+  { console.log("· celu con el modelo fuerte (cancha grande y pantalla completa)");
+    const ctx=await b.newContext({viewport:{width:390,height:844},serviceWorkers:"block",hasTouch:true,isMobile:true}), p=await ctx.newPage();
+    const err=[]; p.on("pageerror",e=>err.push(e.message));
+    await p.goto("http://127.0.0.1:"+port+"/index.html",{waitUntil:"load"});
+    await p.waitForFunction(()=>typeof nuevaPartida==="function"&&document.getElementById("arranque"),null,{timeout:60000});
+    const sin=await p.evaluate(async()=>{ document.getElementById("arranque").remove(); window.guardar=function(){};
+      nuevaPartida("CC",2026,"historico"); E.config.cancha3d=true; E.config.c3dCalidad="media";
+      const ok3=await cargarThree(); if(!ok3||!cancha3dSoportado()) return true; arrancarPartido(proximoPartido(),"seguir"); return false; });
+    if(sin) ok(true,"(sin WebGL en este navegador: no se prueba)");
+    else {
+      await esperar(1500);
+      const medir=()=>p.evaluate(()=>{ const h=document.querySelector(".partido-cancha"), cv=h&&h.querySelector("canvas"), r=h.getBoundingClientRect(), e=C3D.est;
+        return {x:Math.round(r.left), w:Math.round(r.width), h:Math.round(r.height), cw:cv?cv.clientWidth:0, ch:cv?cv.clientHeight:0, asp:e?e.camGL.aspect:0, sw:document.documentElement.scrollWidth,
+          cine:document.body.classList.contains("cancha-cine"), marc:!!h.querySelector(".cine-marc"), cam:e?c3dCamTV(e).lado:0, reloj:getComputedStyle(document.getElementById("guardadoTxt")||document.body).display}; });
+      const a=await medir();
+      ok(a.x===0&&a.w===390&&a.h>=230&&a.sw===390,"la cancha va de borde a borde ("+a.w+"×"+a.h+", antes 340×169) y la página no se ensancha");
+      ok(a.reloj==="none","el reloj de sesión no se monta sobre el título del partido");
+      /* el aviso de gol va encima de la cancha: con él y sin él, la cancha queda en el mismo lugar */
+      const salto=await p.evaluate(()=>{ PAUSADO=true; clearInterval(TIMER); const P=P_ACTUAL; P._flash=null; P._flashN=0; pintarPartido(); const y0=document.querySelector(".partido-cancha").getBoundingClientRect().top;
+        P._flash={txt:"⚽ ¡GOOOL de prueba!",tono:"bueno"}; P._flashN=3; pintarPartido(); const h=document.querySelector(".partido-cancha"), f=h.querySelector(".flash-cancha");
+        return {dy:Math.round(h.getBoundingClientRect().top-y0), hay:!!f, pos:f?getComputedStyle(f).position:""}; });
+      ok(salto.hay&&salto.pos==="absolute"&&salto.dy===0,"el aviso de gol va encima de la cancha y no empuja la página (salto: "+salto.dy+" px)");
+      await p.locator(".cancha-cine-btn").tap(); await esperar(900);
+      const c=await medir();
+      ok(c.cine&&c.x===0&&c.w===390&&c.h===844,"⛶ pone la cancha a pantalla completa ("+c.w+"×"+c.h+")");
+      ok(c.cw===844&&c.ch===390&&c.asp>2,"con el teléfono parado la cancha se gira y se dibuja acostada, sin aplastarse ("+c.cw+"×"+c.ch+", aspecto "+c.asp.toFixed(2)+")");
+      ok(c.marc&&c.cam>=40,"a pantalla completa lleva el marcador encima y la cámara ancha de la tele");
+      await p.evaluate(()=>{ pintarPartido(); pintarPartido(); }); const c2=await medir();
+      ok(c2.cine&&c2.h===844&&await p.evaluate(()=>document.querySelectorAll(".partido-cancha").length)===1,"sobrevive a los repintados del partido (y no deja canchas sueltas)");
+      const capa=await p.evaluate(()=>{ const h=document.querySelector("body > .partido-cancha"), e=document.elementFromPoint(195,420);
+        const mf=document.createElement("div"); mf.className="modal-fondo"; document.body.appendChild(mf); const z=+getComputedStyle(mf).zIndex; mf.remove();
+        return {arriba:!!(h&&e&&h.contains(e)), zCancha:+getComputedStyle(h).zIndex, zModal:z}; });
+      ok(capa.arriba&&capa.zCancha<capa.zModal,"tapa la pantalla pero queda DEBAJO de las ventanas de decisión (capa "+capa.zCancha+" < "+capa.zModal+")");
+      const sale=await p.evaluate(()=>{ MOMENTO_OPS.push({t:"prueba"}); const h=document.createElement("div"); try{ partidoCanchaGrande(h,P_ACTUAL); }finally{ MOMENTO_OPS.pop(); }
+        const r=!CANCHA_CINE&&!document.body.classList.contains("cancha-cine"); canchaCine(true); return r; });
+      await esperar(3400);   /* el aviso "te necesitan" dura 3 s y puede quedar encima del botón */
+      ok(sale,"si el partido te pide una decisión, la pantalla completa se sale sola (la decisión vive en el panel)");
+      await p.locator(".cancha-cine-btn").tap(); await esperar(600);
+      const d=await medir();
+      ok(!d.cine&&d.h===a.h&&d.cw===390,"✕ la devuelve a su lugar");
+    }
+    ok(err.length===0,"sin errores en la página"+(err.length?": "+err.slice(0,3).join(" | "):""));
+    await ctx.close();
+  }
 }catch(e){ ok(false,"error: "+(e&&e.stack||e)); }
 finally{ try{ await b.close(); }catch(e){} srv.kill(); }
 console.log(malos?"❌ CANCHA 3D: "+malos+" falla(s)":"✅ CANCHA 3D: se reusa, se ve, dibuja barato, el arquero ataja y el balón parado se juega adentro y el gol tiene repetición; jugadores realistas");

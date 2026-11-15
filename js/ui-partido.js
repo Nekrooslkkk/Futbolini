@@ -914,6 +914,54 @@ function bloqueStats(P){
 }
 /* 7.79 · CELEBRACIÓN DE GOL. Detecta un cambio de marcador entre renders (así atrapa
    TODO gol: jugada, penal, tiro libre) y explota la pantalla una sola vez por gol. */
+/* 7.9149 · LA CANCHA GRANDE. Pedido del autor: "en partidos la pantalla se agranda si es el modelo fuerte".
+   - Con el 3D en Alta o Normal, en el celular la cancha va de borde a borde (antes: 340×169 con márgenes).
+   - El botón ⛶ la pone a PANTALLA COMPLETA con el marcador encima; si el teléfono está parado, la cancha se gira sola
+     (se mira con el teléfono acostado, como un partido). Con el modelo antiguo o la cancha 2D no se agranda: ahí el
+     punto es que corra, no que luzca.
+   El partido repinta su panel entero en cada tramo, así que el estado vive acá (CANCHA_CINE) y se reaplica. */
+let CANCHA_CINE=false;
+function canchaFuerte(){ try{ return typeof cancha3dActivo==="function"&&cancha3dActivo()&&typeof c3dCalidad==="function"&&c3dCalidad()!=="antigua"; }catch(e){ return false; } }
+function canchaCine(on){
+  on=!!on&&canchaFuerte(); CANCHA_CINE=on;
+  document.body.classList.toggle("cancha-cine",on);
+  try{ const d=document.documentElement;
+    if(on){ if(d.requestFullscreen&&!document.fullscreenElement){ const r=d.requestFullscreen({navigationUI:"hide"}); if(r&&r.catch) r.catch(function(){}); } }
+    else if(document.fullscreenElement&&document.exitFullscreen){ window._cineFS=false; const r=document.exitFullscreen(); if(r&&r.catch) r.catch(function(){}); }
+  }catch(e){}
+  if(P_ACTUAL&&!P_ACTUAL.terminado&&document.body.classList.contains("en-partido")&&typeof pintarPartido==="function") pintarPartido();
+}
+function partidoCanchaGrande(host,P){
+  const fuerte=canchaFuerte();
+  /* se sale sola cuando el partido te necesita: una decisión del partido vive en el panel, debajo de la cancha (las
+     ventanas de decisión sí salen encima: la cancha va en la capa 75 y las ventanas en la 80) */
+  const teNecesitan=CANCHA_CINE&&typeof MOMENTO_OPS!=="undefined"&&MOMENTO_OPS&&MOMENTO_OPS.length>0;
+  if(teNecesitan&&typeof aviso==="function") aviso("⏸ Te necesitan en el partido: hay una decisión",3000);
+  if(CANCHA_CINE&&(!fuerte||P.terminado||teNecesitan)){ CANCHA_CINE=false; document.body.classList.remove("cancha-cine"); window._cineFS=false; try{ if(document.fullscreenElement) document.exitFullscreen().catch(function(){}); }catch(e){} }
+  document.body.classList.toggle("cancha-cine",CANCHA_CINE);
+  /* a pantalla completa la cancha cuelga del <body>: adentro del panel (vidrio con backdrop-filter) un position:fixed se
+     mide contra el panel y quedaba corrida 13×60 px. La de la pasada anterior se saca siempre */
+  document.querySelectorAll("body > .partido-cancha").forEach(function(x){ if(x!==host) x.remove(); });
+  if(!fuerte) return;
+  host.classList.add("cancha-grande");
+  if(CANCHA_CINE) document.body.appendChild(host);
+  const b=el("button","cancha-cine-btn",CANCHA_CINE?"✕":"⛶"); b.type="button";
+  b.title=CANCHA_CINE?"Salir de la pantalla completa":"Ver el partido a pantalla completa"; b.setAttribute("aria-label",b.title);
+  b.onclick=function(ev){ ev.stopPropagation(); canchaCine(!CANCHA_CINE); };
+  host.appendChild(b);
+  if(CANCHA_CINE){
+    const eh=(typeof escHtml==="function")?escHtml:function(s){ return String(s==null?"":s); };
+    const corto=function(n){ n=String(n||""); return n.length>14?n.slice(0,13)+"…":n; };
+    const L=P.part.local?E.clubNombre:P.part.rivalNombre, V=P.part.local?P.part.rivalNombre:E.clubNombre;
+    const m=el("div","cine-marc"); m.innerHTML='<span class="cine-eq">'+eh(corto(L))+'</span><b>'+(P.gl|0)+" - "+(P.gv|0)+'</b><span class="cine-eq">'+eh(corto(V))+'</span><i>'+eh(String(P.min|0))+"'</i>";
+    host.appendChild(m);
+  }
+}
+if(typeof document!=="undefined"&&!window._cineOido){ window._cineOido=true;
+  /* el jugador sale de la pantalla completa con el gesto del sistema (o Escape): la cancha vuelve a su lugar */
+  document.addEventListener("fullscreenchange",function(){ if(!document.fullscreenElement&&CANCHA_CINE&&window._cineFS){ window._cineFS=false; canchaCine(false); } else if(document.fullscreenElement) window._cineFS=true; });
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&CANCHA_CINE&&!document.body.classList.contains("con-modal")) canchaCine(false); });
+}
 function celebrarGolSiCorresponde(P, marcEl){
   if(!P || P.modo==="simular") return;
   const tot=P.gl+P.gv;
@@ -1147,7 +1195,7 @@ function _pintarPartidoCuerpo(P){
         (t==="bueno"?"background:#0f7a33;color:#eafff0;box-shadow:0 0 0 2px #1fae52 inset;":
          (t==="malo"?"background:#8f1d1d;color:#ffecec;box-shadow:0 0 0 2px #c9392c inset;":
                      "background:#243044;color:#eef3ff;box-shadow:0 0 0 2px #3a4a63 inset;"));
-      p.cuerpo.appendChild(fb);
+      p.cuerpo.appendChild(fb); p._flashEl=fb;
       P._flashN--;
     }
   })();
@@ -1170,6 +1218,10 @@ function _pintarPartidoCuerpo(P){
       const colC=el("div","partido-cancha");
       /* 7.9122 · el contenedor es el host: montarCanchaAuto decide 3D (cámara FIFA) o cenital 2D según Ajustes/Modo papa */
       canchaHost=colC; hud.appendChild(colC);
+      /* 7.9149 · EL AVISO DE GOL VA ENCIMA DE LA CANCHA (como el cartel de la tele). Antes era un bloque arriba del marcador:
+         aparecía y empujaba todo 50 px para abajo, y a los seis repintados desaparecía y todo saltaba de vuelta */
+      if(p._flashEl){ p._flashEl.classList.add("flash-cancha"); colC.appendChild(p._flashEl); }
+      partidoCanchaGrande(colC,P);
     }
     const colS=el("div","partido-stats");
     colS.appendChild(bloqueStats(P));

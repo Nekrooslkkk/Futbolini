@@ -212,7 +212,26 @@ const APELLIDOS=["Aránguiz","Bravo","Cáceres","Díaz","Espinoza","Fuentes","Gu
  "Yáñez","Zúñiga","Contreras","Silva","Riquelme","Maldonado","Cortés","Fernández","Aguilera","Bustos","Cifuentes"];
 
 function semilla(txt){let h=2166136261;for(let i=0;i<txt.length;i++){h^=txt.charCodeAt(i);h=Math.imul(h,16777619);}return Math.abs(h);}
-function azarFijo(s){let x=s;return()=>{x=(x*1103515245+12345)&0x7fffffff;return x/0x7fffffff;};}
+/* 7.9149 · BUG DE FONDO (lo destapó el doctor en una partida de Cobresal): la cuenta x*1103515245 pasa de 2^53 y pierde
+   los bits de abajo, así que este generador NO recorre sus 2.000 millones de valores: se repite a los ~15.000 números
+   (mediana) y con algunas semillas a los 500 ("calibrar|COB|…": cola 266 + ciclo 247). Para lo de siempre (un plantel, un
+   sorteo, un partido de la IA: decenas de números) no se notaba; en tiradas largas el azar daba vueltas en redondo.
+   Arreglo SIN cambiar ningún mundo existente: mientras la secuencia vieja no se repita, sale tal cual (cada partida
+   guardada, plantel generado y fixture queda idéntico); en el momento exacto en que la vieja volvería a un valor ya
+   usado, sigue un generador sano (mulberry32, cuentas exactas de 32 bits). Lo vigila el doctor `azar_sano`. */
+function azarFijo(s){
+  let x=s, vistos=null, sano=false;
+  return ()=>{
+    if(!sano){
+      const y=(x*1103515245+12345)&0x7fffffff;
+      if(!vistos) vistos=new Set();
+      if(!vistos.has(y)){ vistos.add(y); x=y; return Math.min(x/0x7fffffff,0.9999999999); }
+      sano=true; vistos=null; x=(x^0x9E3779B9)|0;
+    }
+    x=(x+0x6D2B79F5)|0; let t=Math.imul(x^(x>>>15),x|1); t^=t+Math.imul(t^(t>>>7),t|61);
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+}
 
 function jugadorDesde(a){
   return {n:a[0],pos:a[1],edad:a[2],nivel:a[3],proy:a[4],

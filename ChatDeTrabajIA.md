@@ -2957,3 +2957,60 @@ aero7.js, css, idiomas, datos de decisiones). Claude = 3D, escudos/imágenes y l
   hechos verificados (`scripts/historia/<ID>.json` → `scripts/historia_clubes.py`) y decisiones propias (`club:"ID"`).
   Nada inventado como real; acusaciones por cargo, nunca por nombre.
 - Pendiente del 3D, en orden: geometría del estadio (codos, barandas, cerchas), números en la espalda, más caras.
+
+**7.9149 (Claude) · Cancha grande en el celular + azar con semilla arreglado. LEER si tocan el partido o el azar:**
+- `azarFijo` NO se "arregla" cambiando la multiplicación por `Math.imul` a secas: eso cambia todos los mundos guardados.
+  Ya está arreglado de forma compatible (secuencia de siempre hasta que se repetiría; después mulberry32). El doctor
+  `azar_sano` falla si los primeros 60 números de una semilla cambian o si aparece un ciclo. Para tiradas LARGAS nuevas
+  (miles de números) pueden usar `azarFijo` tranquilos.
+- El panel del partido se repinta entero en cada tramo: la cancha a pantalla completa cuelga del `<body>` y su estado es
+  `CANCHA_CINE`. Si agregan algo que el jugador tiene que tocar DURANTE el partido y vive en el panel, hagan que la
+  pantalla completa se salga (miren `teNecesitan` en `partidoCanchaGrande`). Las ventanas (`.modal-fondo`, capa 80)
+  salen encima solas. No suban la capa de la cancha (75): el doctor `cancha_grande` falla.
+- Avisos del partido (gol, roja, penal): van como `.flash-cancha` ENCIMA de la cancha. Nada de bloques que aparecen y
+  desaparecen arriba del marcador.
+
+**ORDEN DE TRABAJO PARA SONNET · HISTORIAS DE LOS CLUBES (pedido del autor, 15 nov 2026: "Sonnet entrará a escribir, déjale trabajo")**
+Meta: que dirigir cualquier club enseñe algo de ESE club, como pasa con Colo-Colo. Hoy solo 3 de 76 tienen historia
+propia (REN, LSC = Lota Schwager, LIN). El doctor `paridad_clubes` cuenta lo que falta; `devParidadClubes()` da el detalle.
+
+0. **Antes de escribir nada nuevo:** verificar hecho por hecho `scripts/historia/REN.json`, `LSC.json` y `LIN.json`
+   contra su fuente (encargo de 7.9146, sigue abierto). Lo que no esté tal cual en la fuente se corrige o se saca, en el
+   .json Y en `js/data-historia-clubes.js`.
+1. **Cola, en este orden** (Colo-Colo no entra: tiene su modo histórico):
+   - Tanda 1 · Primera 2026 (17): UCH, UC, CBL (Cobreloa), SW, UES, EVE, PAL, AUD, OHI, HUA, COQ, COB (Cobresal), NUB,
+     CAL, LSE (La Serena), DCO, UDC, LIM.
+   - Tanda 2 · Primera B (14): SLQ, ANT, MAG, REC, PMO, SMA, COP, TEM, IQQ, USF, CUR, SCR, RAN, SMO.
+   - Tanda 3 · Segunda y abajo (10): OSO, CLC, TRA, COL, OVA, CNA, BSA, RSJ, SCI, GVE.
+   - Tanda 4 · Argentina (30): RIV, BOC, RAC, IND, VEL, SLO, ELP, ROS, TAL, HUR, LAN, ARG, NEW, BEL, DYJ, INS, UNI, GLP,
+     TUC, TIG, BAN, PLA, CCO, IRV, SAR, ALD, GME, RIE, ERC, BAR.
+   Ojo con los códigos: COB es Cobresal y CBL es Cobreloa; LSC es Lota Schwager y LSE es La Serena.
+2. **Por cada club, tres piezas:**
+   a. `scripts/historia/<ID>.json` — los HECHOS. Mismo formato que `LIN.json`:
+      `{"id","nombre","fuente":"<URL>","consultado":"AAAA-MM-DD","nota":"qué se omitió y por qué","hechos":[{"txt":"…"}]}`.
+      De 12 a 20 hechos: fundación y de dónde sale el nombre, apodos, estadio y ciudad, de qué vive la ciudad, títulos,
+      ascensos y descensos, crisis (quiebras, sanciones, desafiliaciones), clásico, la campaña que todos recuerdan, lo
+      último que pasó. Cada hecho tiene que poder mostrarse con una **cita textual** de la fuente (pidan la cita literal
+      al leer la página; los resúmenes automáticos se equivocan: ya pasó con un nombre propio). Si dos fuentes no calzan,
+      va la más oficial y se anota en `nota`. Lo que no se pueda citar, no entra.
+   b. En `js/data-historia-clubes.js`, la entrada `<ID>:{fuente, consultado, apodos, hitos:[…], arcos:[…]}` con la forma
+      exacta de `REN`: **8 a 12 hitos** `{anio,hito,txt}` (hechos públicos, tercera persona, una o dos frases) y **2 arcos
+      de 3 capítulos** (`id` con prefijo `<id en minúscula>_h_`). Cada capítulo es un dilema de HOY (ficción del juego)
+      anclado en un hecho real que el jugador aprende leyendo el `ctx`; 2 o 3 opciones con `ef`, `grupos`, `mem` y `va`
+      como en REN (mismos rangos: nada de efectos de ±30).
+   c. Una línea en `PATCHES.md` (qué clubes, cuántos hechos, qué se dejó fuera) y nota acá.
+   Pueden redactar ustedes mismos desde los hechos. `scripts/historia_clubes.py <ID>` hace un borrador con DeepSeek si la
+   sesión tiene `DEEPSEEK_API_KEY` en el entorno (la clave NUNCA va al repo ni a un archivo); el borrador se revisa a mano
+   igual: lo inventado se borra.
+3. **Reglas que no se negocian** (las vigila el doctor `historia_clubes`):
+   - Nada inventado como real. Ni años, ni cifras, ni nombres, ni frases. Las personas reales solo aparecen como hecho;
+     nunca hablan, opinan ni hacen algo que la fuente no diga.
+   - Acusaciones y denuncias: por el CARGO ("el gerente del club"), nunca por el nombre.
+   - El juego es realista y crudo, no satírico: si dudan entre un chiste y una verdad incómoda, va la verdad incómoda.
+   - Español de Chile, trato de tú, sin voseo en el narrador (también en los clubes argentinos; lo vigila `sin_voseo`).
+   - Diversidad sí, burla no.
+4. **Terminado es:** `node scripts/juntar.js` · `bash test/correr.sh` · `bash test/doctor.sh <ID>,2026` (uno por club
+   nuevo) verdes; `paridad_clubes` muestra menos clubes "sin historia propia"; commit con los .json adentro.
+   De a 3 o 4 clubes por parche, no 20 de una: se revisa mejor y un error no bota la tanda.
+5. **Después de las historias** (misma vara): decisiones propias por club (`club:"ID"` en DECISIONES). Colo-Colo tiene
+   15; la mediana es 6. Mismo método: del hecho al dilema.

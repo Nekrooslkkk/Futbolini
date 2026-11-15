@@ -2447,3 +2447,71 @@ if(typeof devDoctorRegistrar==="function"){
       const txt="vara Colo-Colo: "+r.vara+" · mediana de los "+r.clubes.length+" clubes: "+r.mediana+" ("+Math.round(100*r.mediana/(r.vara||1))+" %) · sin historia propia: "+r.sinHistoria.length+" · los más flacos: "+r.flacos.map(c=>c.id+" "+c.total).join(", ");
       return f.length?_dmal(f.length+" club(es) bajo el piso",f.concat([txt])):_dok(txt); }});
 }
+
+/* 7.9149 · LA CANCHA GRANDE en el celular (pedido del autor: "en partidos la pantalla se agranda si es el modelo fuerte").
+   Se prueba con las piezas de verdad, sin partido: la cancha del modelo fuerte lleva el botón ⛶; a pantalla completa
+   tapa la pantalla entera colgando del <body>; el aviso de gol va ENCIMA de la cancha (no empuja la página); y el 3D
+   mide el canvas por su tamaño de diseño (girado con CSS no se aplasta). */
+function devCanchaGrande(){
+  const f=[], det=[];
+  if(typeof partidoCanchaGrande!=="function"||typeof canchaCine!=="function"||typeof canchaFuerte!=="function") return {f:["no existe la cancha grande (partidoCanchaGrande / canchaCine / canchaFuerte en js/ui-partido.js)"],det:det};
+  if(typeof _c3dTam==="function"&&String(_c3dTam).indexOf("cv.clientWidth")<0) f.push("_c3dTam mide el canvas por su rectángulo en pantalla: girado 90° en la pantalla completa el partido se dibuja aplastado (tiene que usar clientWidth/clientHeight)");
+  if(typeof document==="undefined"||!document.body) return {f:f,det:det};
+  const B=document.body, teniaCine=B.classList.contains("cancha-cine"), teniaPart=B.classList.contains("en-partido");
+  if(teniaCine){ det.push("(la cancha está a pantalla completa ahora: no se mide)"); return {f:f,det:det}; }
+  const h=document.createElement("div"); h.className="partido-cancha cancha-grande"; h.style.visibility="hidden";
+  const fl=document.createElement("div"); fl.className="flash-cancha"; fl.textContent="gol"; h.appendChild(fl);
+  const bt=document.createElement("button"); bt.className="cancha-cine-btn"; bt.textContent="⛶"; h.appendChild(bt);
+  try{
+    B.appendChild(h); B.classList.add("en-partido","cancha-cine");
+    const cs=getComputedStyle(h), r=h.getBoundingClientRect(), W=window.innerWidth, H=window.innerHeight;
+    if(cs.position!=="fixed") f.push("a pantalla completa la cancha no queda fija sobre la pantalla (position "+cs.position+")");
+    const mf=document.createElement("div"); mf.className="modal-fondo"; mf.style.display="none"; B.appendChild(mf); const zM=+getComputedStyle(mf).zIndex||0; mf.remove();
+    if(zM&&!(+cs.zIndex<zM)) f.push("la cancha a pantalla completa (capa "+cs.zIndex+") tapa las ventanas de decisión (capa "+zM+"): el partido quedaría esperando una respuesta que no se ve");
+    else if(Math.abs(r.left)>2||Math.abs(r.top)>2||Math.abs(r.width-W)>3||Math.abs(r.height-H)>3) f.push("a pantalla completa la cancha no tapa la pantalla: "+Math.round(r.left)+","+Math.round(r.top)+" "+Math.round(r.width)+"×"+Math.round(r.height)+" en una de "+W+"×"+H);
+    if(W<=720&&H>W&&h.clientWidth<h.clientHeight) f.push("con el teléfono parado la cancha a pantalla completa no se gira (queda "+h.clientWidth+"×"+h.clientHeight+")");
+    if(getComputedStyle(fl).position!=="absolute") f.push("el aviso de gol no va encima de la cancha: empuja la página cada vez que aparece");
+    const cb=getComputedStyle(bt); if(parseFloat(cb.height)<34||parseFloat(cb.minWidth)<34) f.push("el botón ⛶ es muy chico para el dedo ("+cb.minWidth+" × "+cb.height+")");
+    det.push("pantalla completa "+Math.round(r.width)+"×"+Math.round(r.height)+(h.clientWidth>h.clientHeight&&H>W?" (girada: "+h.clientWidth+"×"+h.clientHeight+")":""));
+  }catch(e){ f.push("no pude medir la cancha grande: "+e.message); }
+  finally{ B.classList.remove("cancha-cine"); if(!teniaPart) B.classList.remove("en-partido"); h.remove(); }
+  det.push(canchaFuerte()?"este equipo usa el modelo fuerte: la cancha se agranda":"este equipo va con el modelo antiguo o 2D: la cancha no se agranda (a propósito)");
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"cancha_grande", area:"interfaz",
+    n:"Partido en el celular: con el modelo fuerte la cancha va de borde a borde y ⛶ la pone a pantalla completa (girada si el teléfono está parado); el aviso de gol no empuja la página",
+    arreglo:"js/ui-partido.js (partidoCanchaGrande, canchaCine, canchaFuerte, CANCHA_CINE) · css/interfaz-club.css (bloque 7.9149: .cancha-grande, body.cancha-cine, .flash-cancha, .cancha-cine-btn) · js/cancha3d.js _c3dTam",
+    fn:function(){ const r=devCanchaGrande(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
+
+/* 7.9149 · EL AZAR CON SEMILLA NO DA VUELTAS EN REDONDO. azarFijo perdía precisión y se repetía a los ~15.000 números
+   (con algunas semillas a los 500). Tres cosas, medidas: (1) los primeros números de cada semilla son EXACTAMENTE los de
+   siempre (ninguna partida guardada cambia); (2) en 40.000 números seguidos no hay ciclo (se busca el final de la tirada
+   más atrás); (3) siguen parejos (media y deciles). */
+function devAzarSano(){
+  const f=[], det=[];
+  if(typeof azarFijo!=="function"||typeof semilla!=="function") return {f:["no existe azarFijo / semilla"],det:det};
+  const sem=["calibrar|COB|200|-10,0,10","calibrar|CC|200|-10,0,10","CC-2026","xi|COB|2026","doctor|azar|1","doctor|azar|2","doctor|azar|3","doctor|azar|4"];
+  let peor=1e9, dif=0;
+  sem.forEach(function(k){
+    const s0=semilla(k), r=azarFijo(s0), N=40000, o=new Float64Array(N);
+    let x=s0; 
+    for(let i=0;i<N;i++){ o[i]=r(); if(i<60){ x=(x*1103515245+12345)&0x7fffffff; if(Math.abs(o[i]-x/0x7fffffff)>1e-9) dif++; } }
+    /* ciclo: ¿los últimos 48 números ya habían salido, en el mismo orden, más atrás? */
+    let per=0; for(let p=1;p<=N-48&&!per;p++){ let igual=true; for(let i=N-48;i<N;i++){ if(o[i]!==o[i-p]){ igual=false; break; } } if(igual) per=p; }
+    if(per){ peor=Math.min(peor,per); f.push("la semilla «"+k+"» se repite cada "+per+" números: en tiradas largas el azar da vueltas en redondo"); }
+    let m=0; const dec=new Array(10).fill(0); for(let i=0;i<N;i++){ m+=o[i]; dec[Math.min(9,Math.floor(o[i]*10))]++; if(!(o[i]>=0&&o[i]<1)) f.push("«"+k+"» dio un número fuera de [0,1): "+o[i]); }
+    m/=N; const desv=Math.max.apply(null,dec.map(function(c){ return Math.abs(c-N/10)/(N/10); }));
+    if(Math.abs(m-0.5)>0.02||desv>0.12) f.push("«"+k+"» no reparte parejo: media "+m.toFixed(3)+", un decil se desvía "+Math.round(desv*100)+" %");
+  });
+  if(dif) f.push(dif+" de los primeros 60 números de alguna semilla ya no son los de siempre: las partidas guardadas y los planteles generados cambiarían");
+  det.push(sem.length+" semillas × 40.000 números: sin ciclos, parejos, y los primeros 60 de cada una idénticos a los de siempre");
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"azar_sano", area:"motor",
+    n:"El azar con semilla no se repite en tiradas largas y sus primeros números son los de siempre (las partidas guardadas no cambian)",
+    arreglo:"js/data-plantel.js azarFijo (secuencia de siempre hasta que se repetiría; después mulberry32). No cambiar la multiplicación por Math.imul a secas: cambia todos los mundos guardados",
+    fn:function(){ const r=devAzarSano(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
