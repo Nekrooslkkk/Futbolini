@@ -6020,4 +6020,9 @@ jugar en grande en celular, cuando entras al partido, queda inservible".
   - Con el VAR el orden queda: revisión → se ve el gol → marcador (la revisión sale antes de verse el gol).
   - Los córners y laterales que se ven siguen saliendo del juego suelto, no del motor.
   - No se probó en un teléfono real ni con GPU de verdad (acá el 3D corre por software).
-- **Estado:** `test/cancha3d.mjs` verde entero (con las pruebas nuevas) y doctor `jugada_del_motor`, `gol_del_motor` y `cancha3d_fisica_rinde` verdes; suites completas corriendo al momento de este commit (el resultado va en el commit siguiente).
+- Después del primer commit (lo cazaron las suites): `jugada_del_motor` no usa `eval` (lo prohíbe la CSP y en Modo papa no
+  ve las funciones); `corner_salida` lee el tramo partido en dos; **BUG real**: un gol que caía con una orden de remate a
+  medias dejaba la orden viva debajo y el reloj no se soltaba (`_cvArmarGol` ahora la saca); tocar ⛶ mientras la pantalla
+  espera a la cancha ya mueve la cancha al tiro (`canchaCine`); los pasos de `test/cancha3d.mjs` que fuerzan jugadas
+  limpian órdenes y repeticiones pendientes antes de medir.
+- **Estado:** todo verde en 7.9150 — core 1186/1186, saves 12/12, doctor SANO 176/176 en 4 partidas + celular, dev 595/595, banco 255 partidas sin fallas.
