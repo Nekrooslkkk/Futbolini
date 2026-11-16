@@ -1008,7 +1008,7 @@ if(typeof devDoctorRegistrar==="function"){
       if(!/_cornerSalida/.test(mc)) f.push("el córner no tiene salida de emergencia (_cornerSalida)");
       if(!/setTimeout\(function\(\)\{ if\(!box\._cornerFin\)/.test(mc.replace(/\s+/g," ").replace(/\s/g,""))&&!/_cornerFin\)\s*_cornerSalida/.test(mc)) f.push("sin vigilante: si la animación se corta el modal queda abierto");
       if(!/Que se juegue solo/.test(mc)) f.push("falta el botón ✕ para cerrar el córner");
-      if(!/cornerMinijuegoOn/.test(src("pasoEnVivo"))) f.push("con el minijuego apagado el partido igual se detiene en cada córner");
+      if(!/cornerMinijuegoOn/.test(src("pasoEnVivo")+src("_pasoTrasTramo"))) f.push(   /* 7.9150 · el tramo se parte en dos: lo de después del motor vive en _pasoTrasTramo */ "con el minijuego apagado el partido igual se detiene en cada córner");
       /* apagado: mostrarAccion no abre el modal */
       if(E&&typeof mostrarAccion==="function"&&typeof P_ACTUAL!=="undefined"){
         const cfg=E.config?JSON.parse(JSON.stringify(E.config)):null, pPrev=P_ACTUAL, gu=window.guardar, pp=window.pintarPartido, rp=window.reanudarPronto;
@@ -2537,7 +2537,10 @@ if(typeof devDoctorRegistrar==="function"){
      y sin cancha a la vista NO se espera (nunca queda trabado). */
 function devJugadaDelMotor(){
   const f=[], det=[];
-  const falta=["cvOrdenar","_cvOrdenDecide","_cvOrdenPaso","_cvRematar","cvEventoMotor","cvEsperar","cvRevelar","cvOculto","cvGolSinVer","cvCanchaViva","_pasoTrasTramo"].filter(function(n){ try{ return typeof (0,eval)(n)!=="function"; }catch(e){ return true; } });
+  /* sin eval: la CSP del juego lo prohíbe y en el Modo papa las funciones no cuelgan de window */
+  const hay={cvOrdenar:typeof cvOrdenar, _cvOrdenDecide:typeof _cvOrdenDecide, _cvOrdenPaso:typeof _cvOrdenPaso, _cvRematar:typeof _cvRematar, cvEventoMotor:typeof cvEventoMotor, cvEsperar:typeof cvEsperar,
+    cvRevelar:typeof cvRevelar, cvOculto:typeof cvOculto, cvGolSinVer:typeof cvGolSinVer, cvCanchaViva:typeof cvCanchaViva, _pasoTrasTramo:typeof _pasoTrasTramo};
+  const falta=Object.keys(hay).filter(function(n){ return hay[n]!=="function"; });
   if(falta.length) return {f:["falta la jugada del motor en la cancha: "+falta.join(", ")],det:det};
   const paso=0.033, correr=function(st,seg,cada){ for(let t=0;t<seg;t+=paso){ _cvStep(null,paso,st); if(cada&&cada(t)===false) break; } };
   /* 1) juego suelto */
