@@ -726,6 +726,9 @@ function _cvArmarGol(st,lado,quien,min,ctx){
     A:g.dueno,B:(g.R[0]||{}).i,C:g.fin,
     cartel:_cvCartel(mio,ctx,min)+(quien||"")+(min?" "+min+"'":"")};
   st.pase=null; st.own=-1; st.saque=null; st.atajada=null; st.persigue=null; st.ball.vx=st.ball.vy=st.ball.vz=0;
+  /* 7.9150 · si había una orden de remate a medias, el gol manda: la orden se va y lo que la pantalla esperaba se suelta
+     cuando este gol entre (si no, la orden quedaba viva debajo del gol y el reloj no se soltaba nunca) */
+  if(st.orden){ st.orden=null; if(st.espera) st._espGol=true; }
 }
 function _cvPasoGol(st,dt){
   const s=st.seq, J=st.jug, b=st.ball, mio=s.mio, g=s.guion; s.t+=dt;

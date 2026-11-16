@@ -20423,6 +20423,18 @@ function canchaFuerte(){ try{ return typeof cancha3dActivo==="function"&&cancha3
 function canchaCine(on){
   on=!!on&&canchaFuerte(); CANCHA_CINE=on;
   document.body.classList.toggle("cancha-cine",on);
+  /* 7.9150 · mientras la cancha juega algo que la pantalla todavía no cuenta, el panel no se repinta: la cancha se mueve
+     a mano (y el marcador de encima copia el que está a la vista, no el del motor). El repintado de después lo ordena */
+  if(typeof cvOculto==="function"&&P_ACTUAL&&cvOculto(P_ACTUAL)){
+    const h=document.querySelector(".partido-cancha");
+    if(h){ const bt=h.querySelector(".cancha-cine-btn"); if(bt) bt.textContent=on?"✕":"⛶";
+      h.querySelectorAll(".cine-marc").forEach(function(x){ x.remove(); });
+      if(on){ if(!document.querySelector(".cancha-hueco")){ const hueco=el("div","cancha-hueco"); h.parentNode.insertBefore(hueco,h); }
+        document.body.appendChild(h);
+        const go=document.querySelector(".marcador-vivo .go"), eqs=document.querySelectorAll(".marcador-vivo .eq");
+        if(go){ const m=el("div","cine-marc"); m.innerHTML='<span class="cine-eq"></span><b></b><span class="cine-eq"></span>'; m.children[1].textContent=go.textContent.trim();
+          if(eqs[0]) m.children[0].textContent=eqs[0].textContent.trim().slice(0,14); if(eqs[1]) m.children[2].textContent=eqs[1].textContent.trim().slice(0,14); h.appendChild(m); } }
+      else { const hueco=document.querySelector(".cancha-hueco"); if(hueco){ hueco.parentNode.insertBefore(h,hueco); hueco.remove(); } } } }
   try{ const d=document.documentElement;
     if(on){ if(d.requestFullscreen&&!document.fullscreenElement){ const r=d.requestFullscreen({navigationUI:"hide"}); if(r&&r.catch) r.catch(function(){}); } }
     else if(document.fullscreenElement&&document.exitFullscreen){ window._cineFS=false; const r=document.exitFullscreen(); if(r&&r.catch) r.catch(function(){}); }
@@ -23334,6 +23346,9 @@ function _cvArmarGol(st,lado,quien,min,ctx){
     A:g.dueno,B:(g.R[0]||{}).i,C:g.fin,
     cartel:_cvCartel(mio,ctx,min)+(quien||"")+(min?" "+min+"'":"")};
   st.pase=null; st.own=-1; st.saque=null; st.atajada=null; st.persigue=null; st.ball.vx=st.ball.vy=st.ball.vz=0;
+  /* 7.9150 · si había una orden de remate a medias, el gol manda: la orden se va y lo que la pantalla esperaba se suelta
+     cuando este gol entre (si no, la orden quedaba viva debajo del gol y el reloj no se soltaba nunca) */
+  if(st.orden){ st.orden=null; if(st.espera) st._espGol=true; }
 }
 function _cvPasoGol(st,dt){
   const s=st.seq, J=st.jug, b=st.ball, mio=s.mio, g=s.guion; s.t+=dt;

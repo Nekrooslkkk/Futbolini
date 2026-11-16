@@ -87,6 +87,8 @@ try{
          congela la cancha (bien hecho) y queda abierta para lo que viene. La cancha se mueve igual: no depende del reloj */
       tecla(); clearInterval(TIMER);
       /* hasta 4 s para ver movimiento (si justo hay saque del medio, esperan quietos un momento) */
+      /* 7.9150 · si justo corre la repetición de un gol de verdad, la simulación no se mueve (se mira la repetición): se salta */
+      { const e0=C3D.est; if(e0&&e0.rep&&typeof _c3dRepFin==="function") _c3dRepFin(e0,true); if(e0){ e0.golSeq=null; e0.repPendiente=null; } }
       let c=b; for(let i=0;i<10&&c===b;i++){ await new Promise(r=>setTimeout(r,400)); c=foto(); }
       const e=C3D.est, diag="congelada "+cvCongelada(P_ACTUAL)+" · PAUSADO "+PAUSADO+" · preguntas "+MOMENTO_OPS.length+" · VAR "+!!P_ACTUAL._varHold+
         " · min "+P_ACTUAL.min+" · terminado "+!!P_ACTUAL.terminado+" · canvas "+!!(e&&e.canvas.isConnected)+" · bp "+!!(e&&e.bp)+" · rep "+!!(e&&e.rep)+" · seq "+!!(_cvSt&&_cvSt.seq);
@@ -105,6 +107,7 @@ try{
         await p.evaluate(()=>{ const e=C3D.est; if(e&&e.rep&&typeof _c3dRepFin==="function") _c3dRepFin(e,true);
           /* 7.9150 · tampoco con una jugada del motor a medias (en el juego el reloj espera y no puede caer un penal encima) */
           if(typeof _cvSt!=="undefined"&&_cvSt){ _cvSt.orden=null; if(_cvSt.espera&&typeof cvRevelar==="function") cvRevelar(P_ACTUAL,_cvSt); if(_cvSt.seq){ _cvSt.seq=null; _cvSt.barrera=null; } }
+          if(e){ e.golSeq=null; e.repPendiente=null; }   /* ni con una repetición a punto de arrancar */
           if(P_ACTUAL) P_ACTUAL._celHasta=0; }); await esperar(250);
         const a=await p.evaluate((tipo)=>{ clearInterval(TIMER); document.querySelectorAll(".momento-vivo").forEach(x=>x.remove()); MOMENTO_OPS=[];
           PAUSADO=true; P_ACTUAL.modo="dirigir"; P_ACTUAL._bpCadena=2; E.config.cornerMinijuego=true; window._g0=P_ACTUAL.gl+P_ACTUAL.gv;
@@ -174,6 +177,9 @@ try{
       const medir=()=>p.evaluate(()=>{ const h=document.querySelector(".partido-cancha"), cv=h&&h.querySelector("canvas"), r=h.getBoundingClientRect(), e=C3D.est;
         return {x:Math.round(r.left), w:Math.round(r.width), h:Math.round(r.height), cw:cv?cv.clientWidth:0, ch:cv?cv.clientHeight:0, asp:e?e.camGL.aspect:0, sw:document.documentElement.scrollWidth,
           cine:document.body.classList.contains("cancha-cine"), marc:!!h.querySelector(".cine-marc"), cam:e?c3dCamTV(e).lado:0, reloj:getComputedStyle(document.getElementById("guardadoTxt")||document.body).display}; });
+      /* 7.9150 · el partido en pausa y sin una jugada del motor a medias: mientras la cancha no muestra lo que pasó, la pantalla
+         no se repinta (a propósito), y estas pruebas miden repintados */
+      await p.evaluate(()=>{ PAUSADO=true; clearInterval(TIMER); if(_cvSt){ _cvSt.orden=null; if(_cvSt.espera) cvRevelar(P_ACTUAL,_cvSt); } pintarPartido(); }); await esperar(300);
       const a=await medir();
       ok(a.x===0&&a.w===390&&a.h>=230&&a.sw===390,"la cancha va de borde a borde ("+a.w+"×"+a.h+", antes 340×169) y la página no se ensancha");
       ok(a.reloj==="none","el reloj de sesión no se monta sobre el título del partido");
