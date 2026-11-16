@@ -61,6 +61,7 @@ function pintarDock(){
   const jugar=!!(part&&!part.jugado);
   const etJ=(typeof T==="function")?T("dock_jugar","Jugar"):"Jugar";
   const etA=(typeof T==="function")?T("dock_avanzar","Avanzar"):"Avanzar";
+  const enPrevia=document.body.classList.contains("en-previa")&&!!document.querySelector('#vista[data-sec="partido"]');
   const av=el("button","dock-avanza",jugar?("⚽ "+etJ):etA);
   av.type="button";
   av.setAttribute("aria-label",jugar?("Jugar "+(part.local?"vs ":"en ")+(part.rivalNombre||"el próximo")):"Avanzar la semana");
@@ -71,7 +72,8 @@ function pintarDock(){
     if(jugar&&typeof pantallaPrevia==="function"){ pantallaPrevia(part); return; }
     if(typeof avanzar==="function") avanzar();
   };
-  d.appendChild(av);
+  if(!enPrevia) d.appendChild(av);   /* 7.9150 · en la previa del partido se juega con Dirigir / Seguir: el grande sobra */
+  d.classList.toggle("sin-avanza",enPrevia);
   const row=el("div","dock-tabs");
   const porId={};
   SECCIONES.forEach(function(s){ porId[s[0]]=s; });
@@ -248,7 +250,7 @@ function _renderCuerpo(){
   if(typeof partidoEnCurso==="function" && partidoEnCurso() && P_ACTUAL && !P_ACTUAL._holdUI && typeof pausarPartidoHold==="function"){
     pausarPartidoHold();
   }
-  document.body.classList.remove("en-partido","hay-momento");
+  document.body.classList.remove("en-partido","hay-momento","en-previa");
   document.body.classList.toggle("con-juego", !!E);   /* 7.68 · lateral sólo corre el contenido si hay partida */
   pintarBarra(); pintarMenu();
   if(typeof pintarHoldBar==="function") pintarHoldBar();

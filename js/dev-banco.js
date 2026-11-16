@@ -1157,8 +1157,9 @@ if(typeof devDoctorRegistrar==="function"){
       for(let n=0;n<160;n++){
         const st=_cvNuevoEstado(null), del=st.jug.findIndex(p=>p.mio&&p.rol==="fwd");
         st.jug[del].x=0.86; st.jug[del].y=0.5; st.own=del; st.ball.x=0.87; st.ball.y=0.5;
-        const r=Math.random; let k=0; Math.random=function(){ k++; return k===1?0.05:r(); };
-        try{ _cvDecidir(st,null); }finally{ Math.random=r; }
+        /* 7.9150 · nadie remata por su cuenta: el remate es una ORDEN del motor (cvOrdenar) con su resultado */
+        if(typeof cvOrdenar==="function") cvOrdenar(st,Math.random()<0.4?"afuera":"atajada",true,{});
+        _cvDecidir(st,null);
         const q=st.pase; if(!q||!q.tiro){ f.push("forzando un remate no sale tiro"); break; }
         const altoM=(q.zFin||0)*11, ladoM=Math.abs(q.y1-0.5)*68;
         if(q.afuera){ afu++; if(altoM<=2.44&&ladoM<=3.66) malosAf++; }
@@ -2522,4 +2523,69 @@ if(typeof devDoctorRegistrar==="function"){
     n:"El azar con semilla no se repite en tiradas largas y sus primeros números son los de siempre (las partidas guardadas no cambian)",
     arreglo:"js/data-plantel.js azarFijo (secuencia de siempre hasta que se repetiría; después mulberry32). No cambiar la multiplicación por Math.imul a secas: cambia todos los mundos guardados",
     fn:function(){ const r=devAzarSano(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
+
+/* 7.9150 · LA JUGADA DEL MOTOR SE JUEGA EN LA CANCHA (y la pantalla se entera después). El autor: "la pelota tiene vida
+   propia, el jugador jamás está dentro de ese mundo; cuando sale gol, sale ANTES: debería suceder DENTRO del partido y
+   después la pantalla de GOL". Se mide sobre simulaciones aparte (no toca tu partido):
+   · juego suelto: nadie remata por su cuenta (los remates son los del motor);
+   · orden de GOL: la pelota termina en la red SIEMPRE; la mayoría jugada con la física (pases, control, remate) y el
+     resto con el guion; al rematar, el que le pega está encima de la pelota (no se mueve sola) y es de su equipo;
+   · orden de remate atajado / afuera: se cumple en su plazo;
+   · el guion (penal, tiro libre, córner, autogol, rebote): cada toque tiene su gesto;
+   · la pantalla: existen la espera y la red de seguridad de los que pintan, el cartel del gol sale con la pelota adentro,
+     y sin cancha a la vista NO se espera (nunca queda trabado). */
+function devJugadaDelMotor(){
+  const f=[], det=[];
+  const falta=["cvOrdenar","_cvOrdenDecide","_cvOrdenPaso","_cvRematar","cvEventoMotor","cvEsperar","cvRevelar","cvOculto","cvGolSinVer","cvCanchaViva","_pasoTrasTramo"].filter(function(n){ try{ return typeof (0,eval)(n)!=="function"; }catch(e){ return true; } });
+  if(falta.length) return {f:["falta la jugada del motor en la cancha: "+falta.join(", ")],det:det};
+  const paso=0.033, correr=function(st,seg,cada){ for(let t=0;t<seg;t+=paso){ _cvStep(null,paso,st); if(cada&&cada(t)===false) break; } };
+  /* 1) juego suelto */
+  { const st=_cvNuevoEstado(null); let tiros=0, prev=null; correr(st,90,function(){ if(st.pase&&st.pase.tiro&&st.pase!==prev){ tiros++; prev=st.pase; } });
+    if(tiros) f.push("en 90 s de juego suelto la cancha inventó "+tiros+" remate(s) que el motor nunca contó"); }
+  /* 2) goles ordenados */
+  let fis=0, guion=0, sinRed=0, lejos=0, ajeno=0, erro=0, tGol=[], N=40;
+  for(let k=0;k<N;k++){
+    const st=_cvNuevoEstado(null), mio=k%2===0; correr(st,3+((k*7)%11));
+    if(st.seq||st.orden) continue;
+    cvOrdenar(st,"gol",mio,{quien:"x"}); const od=st.orden; let visto=false, medido=false, t0=0;
+    correr(st,24,function(t){ t0=t;
+      if(od.remato&&!medido&&st.pase){ medido=true; const p=st.jug[od.rematador]; if(!p||Math.hypot((p.x-st.pase.x0)*105,(p.y-st.pase.y0)*68)>1.6) lejos++; if(p&&p.mio!==mio) ajeno++; }
+      if(st.seq&&st.seq.red){ visto=true; return false; } });
+    if(!visto){ sinRed++; continue; }
+    if(st.seq.fisico) fis++; else { guion++; if(od.remato) erro++; } tGol.push(t0);
+  }
+  if(erro>2) f.push(erro+" de "+N+" remates «de gol» no entraron (cruzan la línea por fuera del palo o los tapan): el gol terminó saliendo por el guion, tarde");
+  if(sinRed) f.push(sinRed+" de "+N+" goles ordenados no terminaron con la pelota en la red");
+  if(fis<N*0.7) f.push("solo "+fis+" de "+N+" goles se jugaron con la física (el resto cayó al guion): la orden no está saliendo");
+  if(lejos) f.push(lejos+" remate(s) salieron con el rematador a más de 1,6 m de la pelota: la pelota se movió sola");
+  if(ajeno) f.push(ajeno+" gol(es) los remató un jugador del otro equipo");
+  tGol.sort(function(a,b){ return a-b; });
+  det.push("goles: "+fis+" con física + "+guion+" con guion de "+N+" (mediana "+(tGol.length?tGol[tGol.length>>1].toFixed(1):"?")+" s)");
+  /* 3) remates ordenados */
+  let cumpl=0, M=20;
+  for(let k=0;k<M;k++){ const st=_cvNuevoEstado(null); correr(st,3+((k*5)%9)); if(st.seq) continue;
+    cvOrdenar(st,k%2?"atajada":"afuera",k%3===0,{}); const od=st.orden; correr(st,CV_ORDEN.tope+3,function(){ return !!st.orden; }); if(od.cumplida) cumpl++; }
+  if(cumpl<M*0.75) f.push("solo "+cumpl+" de "+M+" remates ordenados (atajado / afuera) llegaron a rematarse en su plazo");
+  det.push("remates: "+cumpl+" de "+M+" cumplidos");
+  /* 4) el guion: cada toque con su gesto */
+  { const st=_cvNuevoEstado(null); st.ball.x=0.4; st.ball.y=0.3; st.own=-1; _cvArmarGol(st,1,"x",30,{tipo:"rebote",noms:[]});
+    const R=st.seq.guion.R.filter(function(r){ return r.i>=0; }); let gestos=0; const visto={};
+    for(let n=0;n<700&&st.seq&&!st.seq.red;n++){ _cvPasoGol(st,0.02); st.jug.forEach(function(p,i){ if(p._acc&&!visto[i]){ visto[i]=true; gestos++; } }); }
+    if(gestos<Math.min(2,R.length)) f.push("en el gol con guion los jugadores no hacen el gesto del toque ("+gestos+" de "+R.length+"): la pelota pasa por su lado");
+    if(!R.some(function(r){ return r.toma; })) f.push("en el gol con guion la primera pelota sale sola: nadie llega a jugarla"); }
+  /* 5) la pantalla */
+  const fuente=String(pintarPartido)+String(actualizarPartidoVivo);
+  if(!(fuente.match(/cvGolSinVer\(/g)||[]).length) f.push("pintarPartido / actualizarPartidoVivo no esperan a la cancha: el marcador cuenta el gol antes de que se vea");
+  if(String(pasoEnVivo).indexOf("cvEventoMotor")<0) f.push("el tramo del partido no le avisa a la cancha lo que pasó (cvEventoMotor)");
+  if(typeof _c3dSincronizar==="function"&&!/seq\.red\|\|/.test(String(_c3dSincronizar))) f.push("el cartel del gol en 3D sale antes de que la pelota entre");
+  if(cvEsperar({modo:"simular"},function(){} )!==false) f.push("en modo simular (sin cancha) la pantalla se queda esperando");
+  if(cvCanchaViva({modo:"dirigir",terminado:true})) f.push("con el partido terminado la cancha sigue contando como viva");
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"jugada_del_motor", area:"motor", pesado:true,
+    n:"El partido es una sola cosa: lo que decide el motor (gol, remate atajado, remate afuera) se JUEGA en la cancha con la misma física, y el marcador y el ¡GOOOL! salen después de verlo",
+    arreglo:"js/cancha.js (cvOrdenar, _cvOrdenDecide, _cvOrdenPaso, _cvRematar, cvEventoMotor, cvEsperar/cvRevelar/cvGolSinVer, _cvGuionGol toma y toques) · js/ui-partido.js (pasoEnVivo → _pasoTrasTramo, pintarPartido, actualizarPartidoVivo) · js/cancha3d.js (cartel)",
+    fn:function(){ const r=devJugadaDelMotor(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }

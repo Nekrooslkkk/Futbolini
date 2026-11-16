@@ -5962,3 +5962,62 @@ a escribir, déjale trabajo".
   su repetición seguía en pantalla; ahora salta la repetición antes de abrirlo. (El paso de servidores de `correr_dev.sh`
   también falló una vez al arrancar y pasó solo al repetir: no se tocó.)
 - **Estado:** todo verde en 7.9149 — core 1186/1186, saves 12/12, doctor SANO 175/175 en 4 partidas + celular, dev 595/595, banco 255 partidas sin fallas.
+
+### 7.9150 — El partido es una sola cosa: lo que decide el motor se JUEGA en la cancha, y el gol se ve antes de anunciarse
+Pedido del autor (16 nov 2026): "la pelota tiene vida propia: en las jugadas solo se mueve la pelota y el jugador jamás
+está dentro de ese mundo; su aleatoriedad no pertenece al motor del partido. Cuando sale gol, sale ANTES: debería suceder
+DENTRO del partido y después poner la pantalla de GOL. No puede ser que sean 3 cosas que viven aparte". Y: "el botón de
+jugar en grande en celular, cuando entras al partido, queda inservible".
+- **Diagnóstico (leído en el código, no supuesto):** eran tres cosas sueltas.
+  1. El **motor** (`tickPartido`) decidía el tramo: gol, remate, atajada.
+  2. La **pantalla** (`pintarPartido`) lo anunciaba al tiro: marcador, relato, ¡GOOOL!.
+  3. Recién después la **cancha** lo "actuaba": `_cvPasoGol` llevaba la pelota de punto en punto por una ruta dibujada y
+     los jugadores corrían a pararse cerca, **sin un solo gesto de pase ni de remate**. Y entre medio la cancha inventaba
+     sus propios remates (16 % cada vez que alguien la tenía cerca del área) que no existían en las estadísticas.
+- **Ahora el motor da ÓRDENES a los 22 que ya están jugando** (`cvOrdenar`, `st.orden` en `js/cancha.js`): "gol de
+  fulano", "remate atajado", "remate afuera". Con la orden, el equipo que ataca recupera la pelota (el otro la pierde con
+  un pase malo o se la quitan), toca hacia adelante y el que tiene que rematar remata. **Todo con la física de siempre**:
+  `_cvPasar` (la patada con su gesto), `_cvControlar`, `_cvRematar` (sacado de `_cvDecidir`), gravedad, roce, el arquero
+  que se tira. Nadie mueve la pelota por decreto.
+  - Medido en 150 goles ordenados: **140 se juegan enteros con la física**; los otros 10 no alcanzan a rematar en 9 s y
+    caen al guion de antes. Al rematar, el jugador está a menos de 1 m de la pelota. Mediana: ~7 s por gol.
+  - BUG cazado midiendo: el gol se apuntaba a un punto 3 m detrás de la línea, y desde un costado la pelota cruzaba **por
+    fuera del palo** (13 de 61 remates "de gol" se iban afuera). Ahora el punto de la línea queda entre los palos.
+  - El pase largo de una orden va tenso y al pie (el raso de la física tarda 3,5 s en 20 m); nadie vuelve a tocar su
+    propio pase (`st.noToca`).
+- **Fuera de las órdenes nadie remata**: 0 remates en 3 minutos de juego suelto (antes ~1 cada 40 s). Los remates que se
+  ven son los que cuenta el motor (`chance`, `atajada`), y "al arco" en la estadística es lo que se vio (`ev._alArco`).
+- **La pantalla espera a la cancha** (`cvEventoMotor`, `cvEsperar`, `cvRevelar`, `cvGolSinVer`): el tramo ya está
+  decidido, pero marcador, relato, redes y ¡GOOOL! se pintan cuando la pelota entra, la atajan o se va
+  (`pasoEnVivo` → `_pasoTrasTramo`). Los goles que no pasan por el aviso del tramo (penal o tiro libre resueltos solos,
+  córner) los ataja la red de seguridad de los que pintan. El reloj del partido espera mientras tanto.
+  - **Nunca queda trabado:** sin cancha a la vista (modo simular, otra pestaña, cancha apagada) no se espera; hay tope de
+    reloj (20 s gol, 12 s remate); en pausa la espera tampoco corre; "Al resultado" pasa por encima.
+  - El cartel del gol en la cancha 3D sale con la pelota adentro (antes aparecía al empezar la jugada: contaba el final).
+- **Los goles de pizarrón** (penal, tiro libre, córner, autogol, rebote) siguen con su guion, pero ahora **cada toque
+  tiene su gesto** (pase, centro, remate, cabezazo, 0,2 s antes de que salga la pelota) y **la primera pelota la juega
+  alguien**: si el que arranca no la tiene al pie, primero llega y recién ahí sale.
+- **Cuánto dura un partido ahora:** los remates se muestran a 1x y a la velocidad normal; a 2x y 4x solo los goles. Cada
+  remate mostrado son ~6 s con el reloj esperando, así que un partido a 1x dura más que antes (medido: ~50 s de juego
+  para llegar al minuto 42). Es el costo de verlo; con 2x/4x queda como resumen.
+- **Celular:** en la previa del partido el botón grande «⚽ Jugar» desaparece (ahí se juega con Dirigir / Seguir y el
+  grande solo volvía a abrir la misma pantalla); vuelve al salir (`body.en-previa`, `pintarDock`).
+- **Modo dev (regla permanente):**
+  - doctor `jugada_del_motor`: juego suelto sin remates propios; 40 goles ordenados (todos en la red, ≥70 % con física,
+    rematador encima de la pelota y de su equipo, remates de gol que entran); 20 remates ordenados cumplidos; el guion
+    con gestos y con toma; la pantalla espera y sin cancha no espera. **Al revés** (remates sueltos de vuelta, gestos
+    apagados, pintores sin espera): 3 fallas.
+  - `cancha3d_fisica_rinde` ahora fuerza el remate con una orden (ya no existe el remate espontáneo).
+  - `test/cancha3d.mjs`: bloque nuevo "el gol sucede en la cancha y después lo cuenta la pantalla" (5 pruebas, con tiempos:
+    pelota adentro a los 5,6 s, marcador a los 5,6 s) y el botón «Jugar» en la previa del celular.
+- Archivos: `js/cancha.js`, `js/ui-partido.js`, `js/cancha3d.js`, `js/partido.js`, `js/ui.js`, `js/dev-banco.js`,
+  `test/cancha3d.mjs`, `js/util.js` (+ rearmados).
+- **Lo que NO se hizo (y es lo que el autor pidió mirar):**
+  - Los jugadores "maniquí" y la geometría de los estadios no se tocaron en este parche. Lo que les falta para el aire
+    de FIFA/PES de PS2 no son polígonos sino TEXTURA: hoy la camiseta es un color liso por zonas. Propuesta para el
+    siguiente: tela con pliegues y sombra pintados, franja/escudo/número, medias con vuelta, caras con más contraste,
+    y un modo de dibujo "consola" (resolución interna baja + tramado) que es justo ese pixelado.
+  - Con el VAR el orden queda: revisión → se ve el gol → marcador (la revisión sale antes de verse el gol).
+  - Los córners y laterales que se ven siguen saliendo del juego suelto, no del motor.
+  - No se probó en un teléfono real ni con GPU de verdad (acá el 3D corre por software).
+- **Estado:** `test/cancha3d.mjs` verde entero (con las pruebas nuevas) y doctor `jugada_del_motor`, `gol_del_motor` y `cancha3d_fisica_rinde` verdes; suites completas corriendo al momento de este commit (el resultado va en el commit siguiente).

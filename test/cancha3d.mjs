@@ -69,7 +69,8 @@ try{
     /* el reloj ESPERA a propósito mientras la cancha cuenta un gol (7.9138) o pasa la repetición: eso no es estar trabado.
        Se le da hasta 12 s para soltarse; lo que se exige es que vuelva a correr */
     let min2=m2.min, porQue=m2.por;
-    for(let k=0;k<12&&!(min2>r.min);k++){ await esperar(1000); const m3=await p.evaluate(()=>P_ACTUAL&&P_ACTUAL.min); if(m3>min2||m3>r.min){ min2=m3; break; } }
+    /* 7.9150 · ahora también espera mientras se JUEGA un remate o un gol del motor (hasta ~9 s) y su repetición: 45 s de plazo */
+    for(let k=0;k<45&&!(min2>r.min);k++){ await esperar(1000); const m3=await p.evaluate(()=>P_ACTUAL&&P_ACTUAL.min); if(m3>min2||m3>r.min){ min2=m3; break; } }
     ok(min2>r.min,"el partido sigue corriendo con el 3D ("+r.min+"' → "+min2+"')"+(min2>r.min?(m2.min>r.min?"":" · esperó a propósito: "+porQue):" · parado por: "+(porQue||"¿?")));
     /* 7.9132 · "cuando pausas, que la cancha también esté pausada": Espacio congela el reloj Y la cancha; al seguir, juegan */
     const pz=await p.evaluate(async()=>{
@@ -101,7 +102,10 @@ try{
         /* 7.9132 · sin preguntas abiertas (en el juego no hay balón parado con una pregunta pendiente: el reloj espera) */
         /* 7.9149 · si justo cayó un gol de verdad antes de este paso, su repetición sigue en pantalla y el balón parado no
            se abre encima (falla intermitente "capas 0" con la máquina cargada): se salta la repetición y se sigue */
-        await p.evaluate(()=>{ const e=C3D.est; if(e&&e.rep&&typeof _c3dRepFin==="function") _c3dRepFin(e,true); if(P_ACTUAL) P_ACTUAL._celHasta=0; }); await esperar(250);
+        await p.evaluate(()=>{ const e=C3D.est; if(e&&e.rep&&typeof _c3dRepFin==="function") _c3dRepFin(e,true);
+          /* 7.9150 · tampoco con una jugada del motor a medias (en el juego el reloj espera y no puede caer un penal encima) */
+          if(typeof _cvSt!=="undefined"&&_cvSt){ _cvSt.orden=null; if(_cvSt.espera&&typeof cvRevelar==="function") cvRevelar(P_ACTUAL,_cvSt); if(_cvSt.seq){ _cvSt.seq=null; _cvSt.barrera=null; } }
+          if(P_ACTUAL) P_ACTUAL._celHasta=0; }); await esperar(250);
         const a=await p.evaluate((tipo)=>{ clearInterval(TIMER); document.querySelectorAll(".momento-vivo").forEach(x=>x.remove()); MOMENTO_OPS=[];
           PAUSADO=true; P_ACTUAL.modo="dirigir"; P_ACTUAL._bpCadena=2; E.config.cornerMinijuego=true; window._g0=P_ACTUAL.gl+P_ACTUAL.gv;
           window._lineas0=document.querySelectorAll(".relato *").length;
@@ -155,8 +159,14 @@ try{
     const err=[]; p.on("pageerror",e=>err.push(e.message));
     await p.goto("http://127.0.0.1:"+port+"/index.html",{waitUntil:"load"});
     await p.waitForFunction(()=>typeof nuevaPartida==="function"&&document.getElementById("arranque"),null,{timeout:60000});
-    const sin=await p.evaluate(async()=>{ document.getElementById("arranque").remove(); window.guardar=function(){};
-      nuevaPartida("CC",2026,"historico"); E.config.cancha3d=true; E.config.c3dCalidad="media";
+    /* 7.9150 · en la previa, el botón grande «⚽ Jugar» del celular ya cumplió: se va (se juega con Dirigir / Seguir) */
+    const prev=await p.evaluate(()=>{ document.getElementById("arranque").remove(); window.guardar=function(){};
+      nuevaPartida("CC",2026,"historico"); SEC="escritorio"; render();
+      const antes=!!document.querySelector("#dock .dock-avanza"); pantallaPrevia(proximoPartido());
+      const enPrevia=!!document.querySelector("#dock .dock-avanza"), tabs=document.querySelectorAll("#dock .dock-tab").length;
+      irA("plantel"); const despues=!!document.querySelector("#dock .dock-avanza"); return {antes,enPrevia,tabs,despues}; });
+    ok(prev.antes&&!prev.enPrevia&&prev.tabs>3&&prev.despues,"en la previa del partido el «⚽ Jugar» grande del celular desaparece (quedan las secciones) y vuelve al salir");
+    const sin=await p.evaluate(async()=>{ E.config.cancha3d=true; E.config.c3dCalidad="media";
       const ok3=await cargarThree(); if(!ok3||!cancha3dSoportado()) return true; arrancarPartido(proximoPartido(),"seguir"); return false; });
     if(sin) ok(true,"(sin WebGL en este navegador: no se prueba)");
     else {
@@ -193,6 +203,38 @@ try{
       const d=await medir();
       ok(!d.cine&&d.h===a.h&&d.cw===390,"✕ la devuelve a su lugar");
     }
+    ok(err.length===0,"sin errores en la página"+(err.length?": "+err.slice(0,3).join(" | "):""));
+    await ctx.close();
+  }
+  /* 7.9150 · EL GOL SE VE ANTES DE ANUNCIARSE. El motor marca un gol de jugada; la pantalla (marcador, ¡GOOOL!) no puede
+     cambiar hasta que la pelota entre en la cancha, jugada por los 22 con la física (o por el guion si no salió) */
+  { console.log("· el gol sucede en la cancha y después lo cuenta la pantalla (cancha 2D, el motor de siempre)");
+    const ctx=await b.newContext({viewport:{width:1280,height:800},serviceWorkers:"block"}), p=await ctx.newPage();
+    const err=[]; p.on("pageerror",e=>err.push(e.message));
+    await p.goto("http://127.0.0.1:"+port+"/index.html",{waitUntil:"load"});
+    await p.waitForFunction(()=>typeof nuevaPartida==="function"&&document.getElementById("arranque"),null,{timeout:60000});
+    await p.evaluate(()=>{ document.getElementById("arranque").remove(); window.guardar=function(){};
+      nuevaPartida("CC",2026,"historico"); E.config.cancha3d=false; E.config.autoPausa=false; arrancarPartido(proximoPartido(),"seguir"); });
+    await esperar(1500);
+    const r=await p.evaluate(()=>new Promise(res=>{
+      const P=P_ACTUAL, st=_cvSt, R={}; clearInterval(TIMER);
+      /* que no haya nada a medias (un remate en camino) antes de forzar el tramo del gol */
+      const listo=()=>{ if(st.orden||st.seq||st.espera||P._celHasta>Date.now()){ setTimeout(listo,200); return; }
+        const marc0=document.querySelector(".marcador-vivo .go").textContent.trim(), t0=performance.now(), tk=tickPartido;
+        tickPartido=function(Q){ tickPartido=tk; if(Q.part.local) Q.gl++; else Q.gv++; Q.golesDetalle=Q.golesDetalle||[]; Q.golesDetalle.push({min:Q.min,quien:"Prueba",tipo:"jugada",propio:true}); return {tipo:"gol",min:Q.min}; };
+        pasoEnVivo(); R.ocultoAlTiro=document.querySelector(".marcador-vivo .go").textContent.trim()===marc0&&!document.querySelector(".gol-cel"); R.espera=!!st.espera;
+        const iv=setInterval(()=>{ const t=(performance.now()-t0)/1000, go=document.querySelector(".marcador-vivo .go");
+          if(st.orden&&R.tOrden==null) R.tOrden=t;
+          if(st.seq&&st.seq.red&&R.tRed==null){ R.tRed=t; R.fisico=!!st.seq.fisico; }
+          if(go&&go.textContent.trim()!==marc0&&R.tMarc==null) R.tMarc=t;
+          if(document.querySelector(".gol-cel")&&R.tCel==null) R.tCel=t;
+          if((R.tMarc!=null&&R.tRed!=null&&t>R.tMarc+0.4)||t>26){ clearInterval(iv); res(R); } },25); };
+      listo(); }));
+    ok(r.ocultoAlTiro&&r.espera,"el motor ya anotó el gol y la pantalla todavía no lo cuenta (marcador igual, sin ¡GOOOL!)");
+    ok(r.tOrden!=null,"la cancha recibe la ORDEN del gol y la juegan los 22");
+    ok(r.tRed!=null&&r.tMarc!=null&&r.tMarc>=r.tRed-0.06,"el marcador cambia DESPUÉS de que la pelota entra (pelota adentro a los "+(r.tRed==null?"?":r.tRed.toFixed(1))+" s, marcador a los "+(r.tMarc==null?"?":r.tMarc.toFixed(1))+" s; "+(r.fisico?"jugado con la física":"terminó con el guion")+")");
+    ok(r.tCel!=null&&r.tCel>=r.tRed-0.06,"la pantalla de ¡GOOOL! sale después de verlo en la cancha");
+    ok(r.tMarc!=null&&r.tMarc<22,"y no se queda esperando para siempre (tope 20 s)");
     ok(err.length===0,"sin errores en la página"+(err.length?": "+err.slice(0,3).join(" | "):""));
     await ctx.close();
   }

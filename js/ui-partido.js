@@ -161,6 +161,9 @@ function pantallaPrevia(part){
   }
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
   document.body.classList.remove("en-partido","hay-momento");
+  /* 7.9150 · en la previa el botón grande «⚽ Jugar» del celular ya cumplió (te trajo acá): se saca, porque acá se juega con
+     «Dirigir» / «Seguir» y el grande solo volvía a abrir esta misma pantalla */
+  document.body.classList.add("en-previa"); if(typeof pintarDock==="function") pintarDock();
   const ligaTit=E.eraBase==="2026b"?"Liga de Ascenso · fecha "+part.fecha
     :(E.eraBase==="2026c"?"Segunda División · fecha "+part.fecha
     :(E.anio>=2010?"Liga de Primera · fecha "+part.fecha:"Campeonato Nacional · fecha "+part.fecha));
@@ -824,7 +827,7 @@ function pausarPartidoHold(){
   }
   const varEl=document.querySelector(".var-lt");
   if(varEl&&varEl.parentNode) varEl.parentNode.removeChild(varEl);
-  document.body.classList.remove("en-partido","hay-momento");
+  document.body.classList.remove("en-partido","hay-momento","en-previa");
   pintarHoldBar();
 }
 function volverAlPartido(){
@@ -1021,7 +1024,7 @@ function celebrarGol(P, propio, quien, marcEl){
   }
   document.body.appendChild(ov);
   /* el reloj espera el festejo; se libera sí o sí al terminar */
-  P._celHasta=Date.now()+dur;   /* plazo, no bandera: si se guarda a mitad del festejo no queda trabado */
+  P._celHasta=Math.max(P._celHasta||0,Date.now()+dur);   /* plazo, no bandera: si se guarda a mitad del festejo no queda trabado (7.9150: no acorta la espera del festejo en la cancha) */
   setTimeout(()=>{ if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); }, dur);
 }
 /* 7.9003 · zócalo VAR estilo Aero (lower-third). Pausa 2s, después valida o anula. */
@@ -1130,6 +1133,11 @@ function aplicarVarValidado(P, ev){
    Se sostiene el alto mientras se repinta y se vuelve exactamente a donde estabas. */
 function pintarPartido(){
   const P=P_ACTUAL; if(!P) return;
+  /* 7.9150 · la cancha todavía está jugando lo que el motor ya decidió (gol o remate): la pantalla no se repinta hasta que
+     se vea (si no, el marcador y el relato lo cuentan antes). Solo se pone al día el botón de pausa */
+  if(typeof cvGolSinVer==="function"&&document.querySelector("#vista[data-sec=partido] .marcador-vivo")&&cvGolSinVer(P,function(){ if(P_ACTUAL===P) pintarPartido(); })){
+    const bp=document.querySelector("#vista[data-sec=partido] .ctrl-main button"); if(bp&&/Pausa|Seguir/.test(bp.textContent)) bp.textContent=PAUSADO?"▶ Seguir":"⏸ Pausa";
+    return; }
   /* 7.9101 · un botón (velocidad, cancha, plan) vaciaba la hoja y dejaba el reloj
      parado: las preguntas no volvían. Si había una abierta, se rearma al final. */
   const habiaHoja=!!(MOMENTO_OPS&&MOMENTO_OPS.length)&&!P.terminado;
@@ -1164,7 +1172,7 @@ function _pintarPartidoCuerpo(P){
   const v=$("#vista");
   if(v.dataset.sec==="partido"&&v.offsetHeight) v.style.minHeight=v.offsetHeight+"px";
   v.innerHTML=""; v.dataset.sec="partido";
-  document.body.classList.add("en-partido");
+  document.body.classList.add("en-partido"); document.body.classList.remove("en-previa");
   document.body.classList.remove("con-dock","hay-momento");
   if(typeof pintarDock==="function") pintarDock();
   const [yo,otro]=miMarcador(P);
@@ -1426,6 +1434,7 @@ function pintarChatSolo(P){
 function actualizarPartidoVivo(P){
   P=P||P_ACTUAL;
   if(!P) return;
+  if(typeof cvGolSinVer==="function"&&cvGolSinVer(P,function(){ if(P_ACTUAL===P) pintarPartido(); })) return;   /* 7.9150 · la cancha aún no lo mostró */
   if(document.body.classList.contains("con-modal")||document.body.classList.contains("hay-momento")) return;
   const v=document.querySelector("#vista[data-sec=partido]");
   const marc=v&&v.querySelector(".marcador-vivo");
@@ -1519,6 +1528,13 @@ function pasoEnVivo(){
     clearInterval(TIMER); pintarPartido(); mostrarMomento(); return;
   }
   const ev=tickPartido(P);
+  /* 7.9150 · EL TRAMO SE VE ANTES DE CONTARSE. Si lo que pasó es un gol o un remate y la cancha se está viendo, la pantalla
+     (marcador, relato, redes, ¡GOOOL!) espera a que la cancha lo juegue: cvEventoMotor guarda lo que falta y lo suelta
+     cuando la pelota entra, la atajan o se va. El reloj espera (P._celHasta). Sin cancha a la vista, todo sigue al tiro */
+  if(typeof cvEventoMotor==="function"&&cvEventoMotor(P,ev,function(){ if(P_ACTUAL===P&&!P.terminado) _pasoTrasTramo(P,ev); })) return;
+  _pasoTrasTramo(P,ev);
+}
+function _pasoTrasTramo(P,ev){
   if(ev && ev.tipo==="varCheck"){
     if(typeof tickerPost==="function") tickerPost(P,ev);
     if(typeof mostrarVar==="function"){ mostrarVar(P, ev); return; }

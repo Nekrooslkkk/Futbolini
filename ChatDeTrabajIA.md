@@ -3014,3 +3014,17 @@ propia (REN, LSC = Lota Schwager, LIN). El doctor `paridad_clubes` cuenta lo que
    De a 3 o 4 clubes por parche, no 20 de una: se revisa mejor y un error no bota la tanda.
 5. **Después de las historias** (misma vara): decisiones propias por club (`club:"ID"` en DECISIONES). Colo-Colo tiene
    15; la mediana es 6. Mismo método: del hecho al dilema.
+
+**7.9150 (Claude) · El motor manda en la cancha. LEER si tocan `js/cancha.js`, el partido en vivo o el relato:**
+- La cancha ya no inventa jugadas de peligro. Lo que decide `tickPartido` llega como ORDEN (`cvOrdenar(st,tipo,mio,opc)`,
+  tipos `"gol"`, `"atajada"`, `"afuera"`) y la juegan los 22 con la física. Si agregan un evento nuevo al motor que se
+  tenga que VER (palo, mano, offside), el camino es: un tipo de orden nuevo en `_cvOrdenDecide` / `_cvOrdenPaso` y su
+  entrada en `cvEventoMotor`. No vuelvan a meter probabilidades de remate en `_cvDecidir`: el doctor `jugada_del_motor`
+  falla si en 90 s de juego suelto aparece un remate.
+- La pantalla del partido NO se pinta mientras la cancha no mostró lo que pasó (`cvGolSinVer` en `pintarPartido` y
+  `actualizarPartidoVivo`). Si agregan algo que anuncia un gol por otro lado (un sonido, un tuit, un modal), tiene que
+  ir DESPUÉS de `cvRevelar`: lo más simple es ponerlo en `_pasoTrasTramo` o en lo que ya llama `pintarPartido`.
+- El reloj espera con `P._celHasta` (plazo, no bandera). No lo pisen con `=`: usen `Math.max`.
+- Pendiente del autor, en su orden de preocupación: (1) jugadores que no parezcan maniquíes y estadios (textura antes
+  que geometría: ver "Lo que NO se hizo" de PATCHES 7.9150); (2) córners y laterales como órdenes del motor; (3) VAR
+  después de ver el gol.

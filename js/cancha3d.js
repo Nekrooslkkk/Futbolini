@@ -723,7 +723,8 @@ function _c3dSincronizar(est,dt){
   if(Math.abs(fovObj-est.fov)>0.05){ est.fov+=(fovObj-est.fov)*k*0.6; est.camGL.fov=est.fov; est.camGL.updateProjectionMatrix(); }
   est.camGL.position.copy(est.camPos); est.camGL.lookAt(est.mira);
   /* cartel del gol (el mismo texto que el cenital) */
-  const txt=S.seq&&S.seq.cartel?S.seq.cartel:"";
+  /* 7.9150 · el cartel del gol sale cuando la pelota ENTRÓ (antes aparecía al empezar la jugada: te contaba el final) */
+  const txt=S.seq&&S.seq.cartel&&(S.seq.red||S.seq.tipo!=="gol")?S.seq.cartel:"";
   if(txt!==est.carteles){ est.carteles=txt; est.hud.textContent=txt; est.hud.classList.toggle("on",!!txt); }
 }
 /* ---------- 7.9129 · REPETICIÓN DEL GOL ----------

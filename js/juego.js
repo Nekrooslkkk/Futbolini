@@ -1,5 +1,5 @@
 "use strict";
-/* Futbolini · 7.9149 · 146 archivos en uno, armado por scripts/juntar.js (mismo código que js/papa-armar.js). NO SE EDITA A MANO: se editan los archivos de js/orden.txt y se corre node scripts/juntar.js */
+/* Futbolini · 7.9150 · 146 archivos en uno, armado por scripts/juntar.js (mismo código que js/papa-armar.js). NO SE EDITA A MANO: se editan los archivos de js/orden.txt y se corre node scripts/juntar.js */
 
 /* ==== js/util.js ==== */
 "use strict";
@@ -9,7 +9,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-var VERSION="7.9149";
+var VERSION="7.9150";
 try{ if(typeof document!=="undefined") document.title="Futbolini "+VERSION+" — Conducción de clubes chilenos"; }catch(e){}
 var $=(s,c)=>(c||document).querySelector(s);
 var $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
@@ -12965,7 +12965,7 @@ function actualizarStats(P,ev){
     case "golRival": s.remRiv++; s.arcRiv++; break;
     case "penal": case "tiroLibre": s.remMio++; s.arcMio++; break;
     case "penalRival": s.remRiv++; s.arcRiv++; break;
-    case "chance": s.remMio++; if(Math.random()<0.5) s.arcMio++; if(Math.random()<0.35) s.corMio++; break;
+    case "chance": s.remMio++; if(ev._alArco!=null?ev._alArco:Math.random()<0.5) s.arcMio++; if(Math.random()<0.35) s.corMio++; break;   /* 7.9150 · _alArco: lo que se VIO en la cancha (cvEventoMotor) */
     case "atajada": if(ev.aFavor){ s.remMio++; s.arcMio++; if(Math.random()<0.4) s.corMio++; } else { s.remRiv++; s.arcRiv++; } break;   /* 7.77 */
     case "corner": if(ev.aFavor!==false){ s.corMio++; if(ev.deAtajada){ s.remMio++; s.arcMio++; } } else s.corRiv++; break;
     case "polemica": if(Math.random()<0.5) s.remMio++; break;
@@ -19656,6 +19656,9 @@ function pantallaPrevia(part){
   }
   const v=$("#vista"); v.innerHTML=""; v.dataset.sec="partido";
   document.body.classList.remove("en-partido","hay-momento");
+  /* 7.9150 · en la previa el botón grande «⚽ Jugar» del celular ya cumplió (te trajo acá): se saca, porque acá se juega con
+     «Dirigir» / «Seguir» y el grande solo volvía a abrir esta misma pantalla */
+  document.body.classList.add("en-previa"); if(typeof pintarDock==="function") pintarDock();
   const ligaTit=E.eraBase==="2026b"?"Liga de Ascenso · fecha "+part.fecha
     :(E.eraBase==="2026c"?"Segunda División · fecha "+part.fecha
     :(E.anio>=2010?"Liga de Primera · fecha "+part.fecha:"Campeonato Nacional · fecha "+part.fecha));
@@ -20319,7 +20322,7 @@ function pausarPartidoHold(){
   }
   const varEl=document.querySelector(".var-lt");
   if(varEl&&varEl.parentNode) varEl.parentNode.removeChild(varEl);
-  document.body.classList.remove("en-partido","hay-momento");
+  document.body.classList.remove("en-partido","hay-momento","en-previa");
   pintarHoldBar();
 }
 function volverAlPartido(){
@@ -20516,7 +20519,7 @@ function celebrarGol(P, propio, quien, marcEl){
   }
   document.body.appendChild(ov);
   /* el reloj espera el festejo; se libera sí o sí al terminar */
-  P._celHasta=Date.now()+dur;   /* plazo, no bandera: si se guarda a mitad del festejo no queda trabado */
+  P._celHasta=Math.max(P._celHasta||0,Date.now()+dur);   /* plazo, no bandera: si se guarda a mitad del festejo no queda trabado (7.9150: no acorta la espera del festejo en la cancha) */
   setTimeout(()=>{ if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); }, dur);
 }
 /* 7.9003 · zócalo VAR estilo Aero (lower-third). Pausa 2s, después valida o anula. */
@@ -20625,6 +20628,11 @@ function aplicarVarValidado(P, ev){
    Se sostiene el alto mientras se repinta y se vuelve exactamente a donde estabas. */
 function pintarPartido(){
   const P=P_ACTUAL; if(!P) return;
+  /* 7.9150 · la cancha todavía está jugando lo que el motor ya decidió (gol o remate): la pantalla no se repinta hasta que
+     se vea (si no, el marcador y el relato lo cuentan antes). Solo se pone al día el botón de pausa */
+  if(typeof cvGolSinVer==="function"&&document.querySelector("#vista[data-sec=partido] .marcador-vivo")&&cvGolSinVer(P,function(){ if(P_ACTUAL===P) pintarPartido(); })){
+    const bp=document.querySelector("#vista[data-sec=partido] .ctrl-main button"); if(bp&&/Pausa|Seguir/.test(bp.textContent)) bp.textContent=PAUSADO?"▶ Seguir":"⏸ Pausa";
+    return; }
   /* 7.9101 · un botón (velocidad, cancha, plan) vaciaba la hoja y dejaba el reloj
      parado: las preguntas no volvían. Si había una abierta, se rearma al final. */
   const habiaHoja=!!(MOMENTO_OPS&&MOMENTO_OPS.length)&&!P.terminado;
@@ -20659,7 +20667,7 @@ function _pintarPartidoCuerpo(P){
   const v=$("#vista");
   if(v.dataset.sec==="partido"&&v.offsetHeight) v.style.minHeight=v.offsetHeight+"px";
   v.innerHTML=""; v.dataset.sec="partido";
-  document.body.classList.add("en-partido");
+  document.body.classList.add("en-partido"); document.body.classList.remove("en-previa");
   document.body.classList.remove("con-dock","hay-momento");
   if(typeof pintarDock==="function") pintarDock();
   const [yo,otro]=miMarcador(P);
@@ -20921,6 +20929,7 @@ function pintarChatSolo(P){
 function actualizarPartidoVivo(P){
   P=P||P_ACTUAL;
   if(!P) return;
+  if(typeof cvGolSinVer==="function"&&cvGolSinVer(P,function(){ if(P_ACTUAL===P) pintarPartido(); })) return;   /* 7.9150 · la cancha aún no lo mostró */
   if(document.body.classList.contains("con-modal")||document.body.classList.contains("hay-momento")) return;
   const v=document.querySelector("#vista[data-sec=partido]");
   const marc=v&&v.querySelector(".marcador-vivo");
@@ -21014,6 +21023,13 @@ function pasoEnVivo(){
     clearInterval(TIMER); pintarPartido(); mostrarMomento(); return;
   }
   const ev=tickPartido(P);
+  /* 7.9150 · EL TRAMO SE VE ANTES DE CONTARSE. Si lo que pasó es un gol o un remate y la cancha se está viendo, la pantalla
+     (marcador, relato, redes, ¡GOOOL!) espera a que la cancha lo juegue: cvEventoMotor guarda lo que falta y lo suelta
+     cuando la pelota entra, la atajan o se va. El reloj espera (P._celHasta). Sin cancha a la vista, todo sigue al tiro */
+  if(typeof cvEventoMotor==="function"&&cvEventoMotor(P,ev,function(){ if(P_ACTUAL===P&&!P.terminado) _pasoTrasTramo(P,ev); })) return;
+  _pasoTrasTramo(P,ev);
+}
+function _pasoTrasTramo(P,ev){
   if(ev && ev.tipo==="varCheck"){
     if(typeof tickerPost==="function") tickerPost(P,ev);
     if(typeof mostrarVar==="function"){ mostrarVar(P, ev); return; }
@@ -22669,7 +22685,7 @@ var CV_FIS={g:9.81, aire:0.006, roce:1.5, rebote:0.52, alto:11, L:105, A:68, lle
 function _cvAccion(p,tipo,dur,extra){ if(!p) return; p._acc=Object.assign({tipo:tipo,t:0,dur:dur||0.45},extra||{}); if(tipo!=="lanza") p._lanzaA=null; }
 function _cvEquipoDueno(st){ const o=st.own>=0?st.jug[st.own]:null; return o?o.mio:(st.ultToque!=null?st.ultToque:null); }
 function _cvPatear(st,vx,vy,vz){ const b=st.ball; b.vx=vx; b.vy=vy; b.vz=vz; }
-function _cvPasar(st,to,x1,y1,vel){
+function _cvPasar(st,to,x1,y1,vel,opc){
   const b=st.ball, dx=(x1-b.x)*CV_FIS.L, dy=(y1-b.y)*CV_FIS.A, D=Math.max(0.5,Math.hypot(dx,dy));
   const quien=_cvEquipoDueno(st); if(quien!=null) st.ultToque=quien;
   const de=st.own>=0?st.jug[st.own]:null;
@@ -22679,10 +22695,10 @@ function _cvPasar(st,to,x1,y1,vel){
     if(de._acc&&de._acc.previa){ const u=de._acc.t/de._acc.dur; de._acc.tipo=tipo; de._acc.dur=dur; de._acc.t=u*dur; de._acc.fuerza=_cvCl(D/40,0.3,1); }
     else { _cvAccion(de,tipo,dur,{fuerza:_cvCl(D/40,0.3,1)}); de._acc.t=dur*0.5; } }
   /* largo: a veces por arriba (de lejos casi siempre); corto: por el piso */
-  const elevado=D>32?Math.random()<0.7:(D>20&&Math.random()<0.35);
+  const elevado=(opc&&opc.elevado!=null)?opc.elevado:(D>32?Math.random()<0.7:(D>20&&Math.random()<0.35));
   let T, vh, vz=0, h=0;
   /* 7.9128 · casi la mitad de los balones largos llegan al pecho o a la cabeza (1,1–2,3 m): ahí nacen el pecho y el duelo aéreo */
-  if(elevado){ T=_cvCl(D/18,1.1,2.6); h=Math.random()<0.5?(Math.random()<0.6?_cvRnd(1.7,2.4):_cvRnd(1.1,1.6)):0; vz=(h+0.5*CV_FIS.g*T*T)/T; vh=D/T; }
+  if(elevado){ T=(opc&&opc.T)?opc.T:_cvCl(D/18,1.1,2.6); h=(opc&&opc.h!=null)?opc.h:Math.random()<0.5?(Math.random()<0.6?_cvRnd(1.7,2.4):_cvRnd(1.1,1.6)):0; vz=(h+0.5*CV_FIS.g*T*T)/T; vh=D/T; }
   else { vh=Math.sqrt(CV_FIS.llega*CV_FIS.llega+2*CV_FIS.roce*D); T=(vh-CV_FIS.llega)/CV_FIS.roce; vh*=0.98+Math.random()*0.06; }
   _cvPatear(st,dx/D*vh,dy/D*vh,vz);
   /* el balón largo va "medido" (sin roce del aire en el vuelo): si no, caía 3–7 m antes del compañero y nadie cabeceaba */
@@ -22721,11 +22737,169 @@ function _cvBpGol(st,o){ const v=st.bpVivo; if(!(v&&o&&o.mio===v.equipo)) return
   return Math.random()<(v.pGol||0)*Math.exp(-Math.max(0,d-6)/6); }
 /* el remate que va adentro: al palo contrario de donde está parado el arquero, bajo */
 function _cvBpApuntaGol(st,gk){ const gy=gk>=0?st.jug[gk].y:0.5, lado=gy>0.5?-1:1; return 0.5+lado*_cvRnd(0.026,0.047); }
+/* el remate, con su física (7.9126/7.9127): res = "gol" (entre los palos, lejos del arquero: entra) · "atajada" (al arco,
+   al alcance del arquero) · "afuera" (al lado o por arriba). zFin = altura al llegar (×11 = metros). */
+function _cvRematar(st,o,res){
+  const gk=_cvMasCercano(st,!o.mio,_cvX(o.mio,1),0.5,false);
+  const gol=res==="gol", afuera=res==="afuera", porArriba=afuera&&Math.random()<0.45;
+  const gkY=gk>=0?st.jug[gk].y:0.5;
+  const dy=gol?(_cvBpApuntaGol(st,gk)-0.5):(afuera?(porArriba?_cvRnd(-0.05,0.05):_cvRnd(0.065,0.13)*(Math.random()<0.5?-1:1)):_cvCl(gkY-0.5+_cvRnd(-0.038,0.038),-0.048,0.048));
+  const de=st.own, b0=st.ball;
+  /* 7.9150 · el gol se apunta a un punto 3 m DETRÁS de la línea: desde un costado, la pelota cruzaba la línea por fuera
+     del palo (13 de 61 remates "de gol" se iban afuera). Ahora el punto de la línea queda entre los palos y el de atrás
+     se calcula siguiendo la misma recta */
+  let y1=0.5+dy; const x1=_cvX(o.mio,gol?1.03:(afuera?1.02:0.985));
+  if(gol){ const kL=(x1-b0.x)/((_cvX(o.mio,1)-b0.x)||1e-6); y1=b0.y+(0.5+dy-b0.y)*kL; }
+  _cvPasar(st,gk,x1,y1,1.3);
+  if(st.pase){ const q=st.pase; q.tiro=true; q.afuera=afuera; q.gol=gol;   /* 7.9111 · el arquero se estira a buscarla */
+    q.zFin=gol?_cvRnd(0.01,0.12):(afuera?(porArriba?_cvRnd(0.25,0.36):_cvRnd(0.01,0.12)):_cvRnd(0.01,0.19));
+    /* 7.9127 · patada de remate: ~24–30 m/s con la vertical justa para llegar a esa altura (tiro parabólico) */
+    const dxm=(q.x1-q.x0)*CV_FIS.L, dym=(q.y1-q.y0)*CV_FIS.A, D=Math.hypot(dxm,dym), v=_cvRnd(24,30);
+    q.dur=_cvCl(D/v,0.45,1.1); const T=q.dur, h=q.zFin*CV_FIS.alto;
+    _cvAccion(o,"remate",0.55,{fuerza:1}); o._acc.t=0.55*0.52;   /* el remate sale en el golpe (la preparación ya se vio) */
+    _cvPatear(st,dxm/T,dym/T,(h+0.5*CV_FIS.g*T*T)/T); q.sinAire=true; }
+  return de;
+}
+/* ============================================================
+   7.9150 · LA JUGADA DEL MOTOR SE JUEGA EN LA CANCHA, CON LA MISMA FÍSICA
+   El autor (16 nov 2026): "la pelota tiene vida propia: en las jugadas solo se mueve la pelota y el jugador jamás está
+   dentro de ese mundo; su aleatoriedad no pertenece al motor del partido. No puede ser que sean 3 cosas que viven aparte.
+   Cuando sale gol, sale ANTES: debería suceder DENTRO del partido y después poner la pantalla de GOL".
+   Era verdad: (1) el motor decidía, (2) la pantalla lo anunciaba al tiro y (3) recién después la cancha lo "actuaba"
+   llevando la pelota por una ruta dibujada, sin que nadie la pateara; entre medio la cancha inventaba remates propios.
+   Ahora hay UNA sola cosa: el motor dice QUÉ pasa (gol de fulano, remate atajado, remate afuera) y eso es una ORDEN
+   (st.orden) para los 22 que ya están jugando. Con la orden, el equipo que ataca recupera la pelota, toca hacia adelante
+   y el que tiene que rematar remata: pases, controles, quites y remate son los de siempre (_cvPasar, _cvControlar,
+   _cvRematar, la pelota con su gravedad y su roce). Nadie mueve la pelota por decreto. El reloj del partido espera, y
+   la pantalla (marcador, relato, ¡GOOOL!) se entera cuando la pelota entra, la ataja el arquero o se va afuera.
+   Si en CV_ORDEN.tope segundos no salió (un rebote largo, un lateral), el gol cae al guion de antes (_cvArmarGol).
+   ============================================================ */
+var CV_ORDEN={tope:9, zona:0.74};
+function cvOrdenar(st,tipo,mio,opc){
+  if(!st||st.seq||st.bpVivo) return false;
+  const J=st.jug; let gol=(opc&&opc.gol>=0&&J[opc.gol]&&J[opc.gol].mio===!!mio&&J[opc.gol].rol!=="gk")?opc.gol:-1;
+  if(gol<0){ const del=J.map((p,i)=>({p:p,i:i})).filter(c=>c.p.mio===!!mio&&c.p.rol==="fwd"); if(del.length) gol=del[Math.floor(Math.random()*del.length)].i; }
+  st.orden=Object.assign({},opc||{},{tipo:tipo,mio:!!mio,t:0,gol:gol,hecho:false,remato:false});
+  st.golDentro=false; st.ultimoRemate=null; st.conduce=0;
+  if(st.own>=0) st.prox=Math.min(st.prox,0.35);   /* el que la tiene decide ya */
+  return true;
+}
+/* qué hace el que tiene la pelota cuando hay una orden. true = ya decidió */
+function _cvOrdenDecide(st,o,od){
+  const J=st.jug, yo=st.own, a=_cvA(o,o.x);
+  if(o.mio!==od.mio){
+    /* el equipo que NO es el de la jugada la pierde: un pase malo al rival más cercano (no un teletransporte) */
+    if(o.rol==="gk"&&st.atajada) return false;
+    const r=_cvMasCercano(st,od.mio,o.x+(o.mio?0.08:-0.08),o.y,true); if(r<0) return false;
+    _cvPasar(st,r,J[r].x,J[r].y,null,{elevado:false}); st.noToca=yo; return true;
+  }
+  if(o.rol==="gk"){ /* sale jugando al más adelantado que tenga cerca */ }
+  const fin=od.gol, enZona=a>=(od.t>4?CV_ORDEN.zona-0.04:CV_ORDEN.zona)&&Math.abs(o.y-0.5)<0.26;   /* con el reloj corriendo, le pega de más lejos */
+  /* remata el que tiene que rematar apenas está en zona. Si la orden trae nombre (gol de fulano) los demás se la dan;
+     si no trae (un remate cualquiera), remata el que esté en zona. Con el tiempo encima, remata el que la tenga */
+  const cualquiera=!od.quien||od.t>CV_ORDEN.tope-3;
+  if(o.rol!=="gk"&&((enZona&&(fin<0||fin===yo||cualquiera))||(od.t>CV_ORDEN.tope-1.5&&a>0.6))){
+    od.rematador=_cvRematar(st,o,od.tipo); od.remato=true; od.tRem=od.t; return true; }
+  /* el que remata la tiene pero todavía está lejos: encara */
+  if(fin===yo&&!(st.conduce>0)){ st.conduce=_cvCl((CV_ORDEN.zona+0.02-a)*CV_FIS.L/7,0.3,1.4); st.prox=st.conduce+0.05; st._zig=Math.random()*6; return true; }
+  /* pase hacia adelante: al que va a rematar si ya pasó la mitad; si no, al mejor ubicado adelante */
+  let dest=-1;
+  if(fin>=0&&fin!==yo&&J[fin]&&(_cvA(J[fin],J[fin].x)>=a-0.04||a>0.5)) dest=fin;
+  else { let mejor=-9; J.forEach((p,i)=>{ if(i===yo||p.mio!==o.mio||p.rol==="gk") return;
+    const da=_cvA(p,p.x)-a, dist=Math.hypot((p.x-o.x)*CV_FIS.L,(p.y-o.y)*CV_FIS.A); if(da<0.03||dist<5||dist>38) return;
+    const v=da-Math.abs(dist-18)*0.004; if(v>mejor){ mejor=v; dest=i; } }); }
+  if(dest<0){ st.conduce=0.8; st.prox=0.85; st._zig=Math.random()*6; return true; }
+  const q=J[dest], D=Math.hypot((q.x-o.x)*CV_FIS.L,(q.y-o.y)*CV_FIS.A), T=_cvCl(D/16,0.4,2.2);
+  let tx=_cvCl(q.x+_cvCl((q.vx||0)*T,-7,7)/CV_FIS.L+(o.mio?0.02:-0.02),0.02,0.98), ty=_cvCl(q.y+_cvCl((q.vy||0)*T,-7,7)/CV_FIS.A,0.03,0.97);
+  /* al pie (adonde va a estar): el que remata después encara solo hasta la zona. Largo: por arriba y al pie */
+  const Dp=Math.hypot((tx-o.x)*CV_FIS.L,(ty-o.y)*CV_FIS.A);
+  /* pase tenso: de más de 12 m va bombeado bajo y al pie a ~20 m/s (el raso de la física tarda 3,5 s en 20 m) */
+  _cvPasar(st,dest,tx,ty,null,Dp>12?{elevado:true,h:0,T:_cvCl(Dp/20,0.6,2.2)}:{elevado:false}); st.noToca=yo; od.pases=(od.pases||0)+1;   /* largo: por arriba y al pie (raso tardaría 5 s) */
+  return true;
+}
+/* cada paso: la orden envejece, se cumple (y avisa) o cae al guion */
+function _cvOrdenPaso(st,P,dt){
+  const od=st.orden; if(!od) return;
+  od.t+=dt;
+  if(od.tipo==="gol"){
+    if(st.golDentro){ _cvOrdenGolListo(st,od); return; }
+    if(od.t>CV_ORDEN.tope+(od.remato?2.5:0)){   /* no salió: el guion de antes (siempre termina en gol) */
+      st.orden=null; _cvArmarGol(st,od.mio?1:-1,od.quien,od.min,od.ctx||{}); if(st.seq) st.seq.deOrden=true; }
+    return;
+  }
+  const listo=od.remato&&(st.ultimoRemate||st.saque||od.t-od.tRem>2.2);
+  if(listo||od.t>CV_ORDEN.tope+(od.remato?2.2:0)){ od.hecho=true; od.cumplida=!!listo; st.orden=null; st.ordenes=(st.ordenes||0)+1; cvRevelar(P||null,st); }
+}
+/* la pelota entró: festejo, saque del medio y repetición con la maquinaria del gol de siempre (st.seq ya "en la red") */
+function _cvOrdenGolListo(st,od){
+  const b=st.ball, a=_cvA({mio:od.mio},b.x), r=od.rematador>=0?od.rematador:od.gol;
+  st.golDentro=false; st.orden=null; st.ordenes=(st.ordenes||0)+1; st.pase=null; st.own=-1; st.persigue=null; b.vx=b.vy=b.vz=0;
+  const K=[{a:a,y:b.y,z:0,d:0,t:0},{a:a,y:b.y,z:0,d:0,t:0}];
+  st.seq={tipo:"gol",lado:od.mio?1:-1,t:0,dur:od.mio?1.5:0.9,tGol:0,mio:od.mio,red:true,fisico:true,
+    guion:{tipo:"jugada",K:K,R:[],dueno:-1,fin:r,mio:od.mio}, goleador:r, golTipo:"jugada", A:-1, B:-1, C:r, cartel:od.cartel||""};
+}
+/* ---------- la pantalla espera a la cancha ----------
+   El motor ya sabe lo que pasó en este tramo; la pantalla del partido (marcador, relato, ¡GOOOL!, redes) NO se entera
+   hasta que la cancha lo muestra. cvEsperar guarda "lo que falta pintar" y cvRevelar lo suelta. Nunca queda trabado:
+   si la cancha no se está viendo o avanzando (otra pestaña, pausa, modo simular) no se espera, y hay un tope de reloj. */
+function cvCanchaViva(P,conPausa){
+  if(!_cvSt||!P||P.modo==="simular"||P.terminado) return false;
+  if(typeof document!=="undefined"&&document.hidden) return false;
+  if(!conPausa&&cvCongelada(P)) return false;
+  const tres=(typeof C3D!=="undefined"&&C3D.est&&C3D.est.raf&&C3D.est.canvas&&C3D.est.canvas.isConnected&&!C3D.est.bp&&!C3D.est.rep);
+  const dos=!!(_cvCanvas&&_cvRAF&&_cvCanvas.isConnected);
+  return !!(tres||dos);
+}
+function cvEsperar(P,cb,topeS){
+  const st=_cvSt; if(!st||!cvCanchaViva(P)) return false;
+  if(st.espera) cvRevelar(P,st);
+  const e=st.espera={cb:cb, P:P, tope:Date.now()+(topeS||14)*1000};
+  P._celHasta=Math.max(P._celHasta||0,e.tope);
+  /* en pausa la cancha está quieta: la espera no corre (ni se revela nada); sin cancha a la vista, se suelta al tiro */
+  const chk=function(){ if(st.espera!==e) return;
+    if(cvCanchaViva(P,true)&&cvCongelada(P)){ e.tope+=350; P._celHasta=Math.max(P._celHasta||0,e.tope); setTimeout(chk,350); return; }
+    if(Date.now()>=e.tope||!cvCanchaViva(P,true)) cvRevelar(P,st); else setTimeout(chk,350); };
+  setTimeout(chk,350);
+  return true;
+}
+function cvOculto(P){ const st=_cvSt, e=st&&st.espera; return !!(e&&e.P===P&&P&&!P.terminado&&P.modo!=="simular"&&Date.now()<e.tope); }
+/* la red de seguridad de los que pintan: hay un gol en el marcador del motor que la cancha todavía no jugó (un penal o un
+   tiro libre resueltos solos, un córner: no pasan por el aviso del tramo). true = no pintes todavía; repintar corre después */
+function cvGolSinVer(P,repintar){
+  const st=_cvSt; if(!st||!P) return false;
+  if(cvOculto(P)) return true;
+  const mk=_cvMarcador(P);
+  if((mk.yo>st.lastYo||mk.otro>st.lastOtro)&&(!st.seq||st.seq.red)&&!st.espera&&!st.bpVivo&&cvCanchaViva(P)&&cvEsperar(P,repintar,20)){ st._espGol=true; return true; }
+  return false;
+}
+function cvRevelar(P,st){
+  st=st||_cvSt; const e=st&&st.espera; if(!e) return false;
+  st.espera=null; P=e.P;
+  /* el reloj sigue esperando lo que queda del festejo (lo alarga la pantalla de gol y la repetición) */
+  if(P) P._celHasta=Date.now()+(st.seq?Math.max(0.3,Math.min(9,st.seq.dur-st.seq.t)):0.25)*1000;
+  try{ e.cb(); }catch(err){ if(typeof console!=="undefined") console.error("cvRevelar",err); }
+  return true;
+}
+/* el motor avisa lo que pasó en el tramo. Devuelve true si la pantalla tiene que ESPERAR a la cancha (cb pinta después) */
+function cvEventoMotor(P,ev,cb){
+  const st=_cvSt; if(!st||!ev||!cvCanchaViva(P)||st.seq||st.orden||st.bpVivo||st.espera) return false;
+  let tipo=null, mio=true;
+  if(ev.tipo==="gol"||ev.tipo==="golRival"){ if(!cvEsperar(P,cb,20)) return false; st._espGol=true; return true; }   /* la arma _cvStep al ver el marcador */
+  /* los remates se muestran a 1x y 2x; a 4x el partido va de resumen y solo se ven los goles */
+  if(typeof VEL_PARTIDO!=="undefined"&&VEL_PARTIDO<200) return false;
+  if(ev.tipo==="chance"){ if(ev._alArco==null) ev._alArco=Math.random()<0.5; tipo=ev._alArco?"atajada":"afuera"; mio=true; }
+  else if(ev.tipo==="atajada"){ tipo="atajada"; mio=!!ev.aFavor; }
+  if(!tipo) return false;
+  if(!cvEsperar(P,cb,CV_ORDEN.tope+3)) return false;
+  if(!cvOrdenar(st,tipo,mio,{})){ cvRevelar(P,st); return true; }
+  return true;
+}
 /* el dueño decide: pase (con chance de intercepción) o remate si está cerca del arco */
 function _cvDecidir(st,P){
   const o=st.jug[st.own]; if(!o) return;
   /* 7.9134 · el arquero ya preparó el lanzamiento: sale con la mano */
   if(o.rol==="gk"&&o._acc&&o._acc.tipo==="lanza"&&o._lanzaA!=null){ const c=o._lanzaA; o._lanzaA=null; if(_cvLanzar(st,c)) return; }
+  if(st.orden&&!st.orden.hecho&&!st.bpVivo&&_cvOrdenDecide(st,o,st.orden)) return;   /* 7.9150 · la jugada que dijo el motor */
   const dom=_cvDominio(P)*(o.mio?1:-1);
   const a=_cvA(o,o.x);
   /* 7.9129 · en la jugada viva del balón parado (st.bpVivo) el que la agarra en el área le pega al tiro, y el que defiende
@@ -22735,23 +22909,10 @@ function _cvDecidir(st,P){
     const lej=st.jug.map((p,i)=>({p:p,i:i})).filter(c=>c.p.mio===o.mio&&c.i!==st.own&&c.p.rol!=="gk").sort((c1,c2)=>_cvA(c2.p,c2.p.x)-_cvA(c1.p,c1.p.x))[0];
     if(lej){ _cvPasar(st,lej.i,lej.p.x,lej.p.y); _cvAccion(o,"despeje",0.55,{fuerza:1}); return; }
   }
-  if(a>0.8 && Math.random()<(ataBp?(a>0.845?0.65:0.3):0.16)){   /* 7.9128 · 0,45 → 0,16: había ~10 remates cada 6 minutos (en la realidad 1–2) */
-    const gk=_cvMasCercano(st,!o.mio,_cvX(o.mio,1),0.5,false);
-    const gol=_cvBpGol(st,o), afuera=!gol&&Math.random()<0.4;
-    /* 7.9126 · física del remate: al arco entra entre los palos (±3,66 m = ±0,054) y bajo el travesaño (2,44 m);
-       afuera se va al lado o por arriba. zFin = altura al llegar (×11 = metros). */
-    const porArriba=afuera&&Math.random()<0.45;
-    /* al arco: dentro del alcance del arquero (≤2,6 m de donde está parado), entre los palos */
-    const gkY=gk>=0?st.jug[gk].y:0.5;
-    const dy=gol?(_cvBpApuntaGol(st,gk)-0.5):(afuera?(porArriba?_cvRnd(-0.05,0.05):_cvRnd(0.065,0.13)*(Math.random()<0.5?-1:1)):_cvCl(gkY-0.5+_cvRnd(-0.038,0.038),-0.048,0.048));
-    _cvPasar(st,gk,_cvX(o.mio,gol?1.03:(afuera?1.02:0.985)),0.5+dy,1.3);
-    if(st.pase){ const q=st.pase; q.tiro=true; q.afuera=afuera; q.gol=gol;   /* 7.9111 · el arquero se estira a buscarla */
-      q.zFin=gol?_cvRnd(0.01,0.12):(afuera?(porArriba?_cvRnd(0.25,0.36):_cvRnd(0.01,0.12)):_cvRnd(0.01,0.19));
-      /* 7.9127 · patada de remate: ~24–30 m/s con la vertical justa para llegar a esa altura (tiro parabólico) */
-      const dxm=(q.x1-q.x0)*CV_FIS.L, dym=(q.y1-q.y0)*CV_FIS.A, D=Math.hypot(dxm,dym), v=_cvRnd(24,30);
-      q.dur=_cvCl(D/v,0.45,1.1); const T=q.dur, h=q.zFin*CV_FIS.alto;
-      _cvAccion(o,"remate",0.55,{fuerza:1}); o._acc.t=0.55*0.52;   /* el remate sale en el golpe (la preparación ya se vio) */
-      _cvPatear(st,dxm/T,dym/T,(h+0.5*CV_FIS.g*T*T)/T); q.sinAire=true; }
+  /* 7.9150 · FUERA del balón parado nadie remata por su cuenta: los remates del partido son los que cuenta el motor
+     (cvOrdenar). Antes la cancha inventaba ~1 remate cada 40 s que no existía en las estadísticas ni en el relato */
+  if(bpv && a>0.8 && Math.random()<(ataBp?(a>0.845?0.65:0.3):0.16)){
+    _cvRematar(st,o,_cvBpGol(st,o)?"gol":(Math.random()<0.4?"afuera":"atajada"));
     return;
   }
   /* 7.9111 · a veces encara: conduce hacia adelante un rato en vez de soltarla al tiro */
@@ -22828,7 +22989,8 @@ function _cvDistM(p,b){ return Math.hypot((p.x-b.x)*CV_FIS.L,(p.y-b.y)*CV_FIS.A)
 function _cvControlar(st,i){
   const b=st.ball, zM=(b.z||0)*CV_FIS.alto, p=st.jug[i], vel=Math.hypot(b.vx||0,b.vy||0);
   st.own=i; st.pase=null; st.persigue=null; b.vx=b.vy=b.vz=0; st.noToca=null;
-  st.ultToque=p.mio; st.prox=st.bpVivo?_cvRnd(0.25,0.7):_cvRnd(0.9,2.1); st.toque=0;   /* 7.9128 · ~1,5 s con la pelota antes de soltarla (antes 0,9: ritmo de futbolito); en un rebote, al tiro */
+  st.ultToque=p.mio; st.prox=st.bpVivo?_cvRnd(0.25,0.7):_cvRnd(0.9,2.1); st.toque=0;
+  if(st.orden&&!st.orden.hecho&&!st.bpVivo) st.prox=p.mio===st.orden.mio?_cvRnd(0.4,0.65):_cvRnd(0.3,0.5);   /* 7.9150 · la jugada del motor no se demora */   /* 7.9128 · ~1,5 s con la pelota antes de soltarla (antes 0,9: ritmo de futbolito); en un rebote, al tiro */
   /* 7.9128 · el primer toque depende de cómo viene: al pie, con el muslo, con el pecho (la baja y cae) o de cabeza */
   if(st.atajada&&st.atajada.gk===i) return;
   const tipo=p.rol==="gk"&&zM>0.6?"atrapa":(zM<0.35?"control":(zM<0.95?"muslo":(zM<1.65?"pecho":"cabeza")));
@@ -22853,9 +23015,12 @@ function _cvCabezazo(st,P){
   _cvAccion(g,"cabeza",0.65,{salto:Math.min(0.55,Math.max(0.1,zM-1.75)),alto:zM});
   if(pierde) _cvAccion(pierde.p,"salto",0.6,{salto:Math.min(0.45,Math.max(0.05,zM-1.85))});
   const a=_cvA(g,g.x), dom=_cvEquipoDueno(st);
-  if(a>0.84&&Math.abs(g.y-0.5)<0.2){
+  /* 7.9150 · de cabeza al arco solo en el balón parado vivo o cuando es el remate que pidió el motor (con su resultado) */
+  const odC=(st.orden&&!st.orden.hecho&&!st.orden.remato&&!st.bpVivo&&st.orden.mio===g.mio)?st.orden:null;
+  if(a>0.84&&Math.abs(g.y-0.5)<0.2&&(st.bpVivo||odC)){
+    if(odC){ odC.remato=true; odC.tRem=odC.t; odC.rematador=gana.i; }
     /* cabezazo al arco: como un remate flojo (12–17 m/s) que va al arquero; el gol lo decide el motor */
-    const gk=_cvMasCercano(st,!g.mio,_cvX(g.mio,1),0.5,false), gol=_cvBpGol(st,g), afuera=!gol&&Math.random()<0.5;
+    const gk=_cvMasCercano(st,!g.mio,_cvX(g.mio,1),0.5,false), gol=odC?odC.tipo==="gol":_cvBpGol(st,g), afuera=odC?odC.tipo==="afuera":(!gol&&Math.random()<0.5);
     const y1=gol?_cvBpApuntaGol(st,gk):0.5+(afuera?_cvRnd(0.06,0.11)*(Math.random()<0.5?-1:1):_cvRnd(-0.04,0.04));
     const x1=_cvX(g.mio,gol?1.03:(afuera?1.02:0.985)), dx=(x1-b.x)*CV_FIS.L, dy=(y1-b.y)*CV_FIS.A, D=Math.max(1,Math.hypot(dx,dy)), T=_cvCl(D/_cvRnd(12,17),0.35,1.2);
     const zFin=gol?_cvRnd(0.01,0.15):(afuera?_cvRnd(0.02,0.3):_cvRnd(0.0,0.17));
@@ -22895,7 +23060,9 @@ function _cvQuite(st,dt,pres){
   if(st.own<0||pres<0||st.atajada||(st.divT||0)>0) return false;
   const o=st.jug[st.own], q=st.jug[pres]; if(!o||!q||o.rol==="gk") return false;
   const d=Math.hypot((o.x-q.x)*CV_FIS.L,(o.y-q.y)*CV_FIS.A); if(d>1.1) return false;
-  if(Math.random()>dt*0.08) return false;   /* ~1 quite cada 12 s de presión encima (7.9129: con inercia el que marca se queda más rato pegado) */
+  const od=st.orden&&!st.orden.hecho&&!st.bpVivo?st.orden:null;
+  if(od&&o.mio===od.mio) return false;                 /* 7.9150 · la jugada del motor: al que ataca no se la quitan */
+  if(Math.random()>dt*(od?2.2:0.08)) return false;   /* ~1 quite cada 12 s de presión encima (7.9129: con inercia el que marca se queda más rato pegado) */
   st.divT=0.6; const b=st.ball;
   /* 7.9134 · 4 de cada 10 son barridas de verdad (se tira al pasto, desliza y se para: 1,4 s; el maniquí usa la animación
      Slide de la UAL2); el resto, entrada de pie */
@@ -23021,10 +23188,16 @@ function _cvJuego(st,P,dt){
     const bA=_cvA(p,b.x), suyo=(p.mio===ataca);
     let a=p.hx*0.86+(bA-0.5)*0.55*p.mob+(suyo?0.07:-0.03);
     let y=p.hy+(b.y-0.5)*0.32;
+    const odM=st.orden&&!st.orden.hecho&&!st.bpVivo?st.orden:null;
+    if(odM&&p.rol!=="gk"&&p.mio===odM.mio) a+=0.06;   /* 7.9150 · el equipo de la jugada empuja */
     if(p.rol==="gk"){ a=_cvCl(0.03+(bA<0.3?0.03:0),0.02,0.08); y=0.5+(b.y-0.5)*0.35; }
     let tx=_cvX(p.mio,_cvCl(a,0.02,0.95)), ty=_cvCl(y,0.05,0.95), v=0.13;
+    /* el que va a rematar pica a la zona de remate (si la pelota ya es de los suyos y no viene un pase para él) */
+    if(odM&&i===odM.gol&&i!==st.own&&!(st.pase&&st.pase.to===i)&&ataca===odM.mio&&!odM.remato){
+      tx=_cvX(p.mio,_cvCl(Math.max(_cvA(p,p.x),bA+0.1,CV_ORDEN.zona+0.04),0.3,0.86)); ty=_cvCl(p.y+(0.5-p.y)*0.5,0.3,0.7); v=0.19; }
     if(st.saque&&i===st.saque.quien){ tx=st.saque.x; ty=st.saque.y; v=0.2; }
     else if(i===st.own && p.rol==="gk"){ tx=p.x; ty=p.y; v=0; if(st.prox>0.7&&!(st.atajada&&st.atajada.t>0)) st.prox=0.7; }
+    else if(i===st.own && st.conduce>0 && odM && p.mio===odM.mio){ tx=_cvX(p.mio,_cvCl(_cvA(p,p.x)+0.16,0,0.88)); ty=_cvCl(p.y+(0.5-p.y)*0.35,0.2,0.8); v=0.2; }
     else if(i===st.own && st.conduce>0){ tx=_cvX(p.mio,_cvCl(_cvA(p,p.x)+0.16,0,0.9)); ty=_cvCl(p.y+Math.sin(st.t*3+(st._zig||0))*0.05+(0.5-p.y)*0.1,0.06,0.94); v=0.15; }
     else if(i===st.own){ tx=_cvX(p.mio,_cvCl(_cvA(p,p.x)+0.08,0,0.86)); ty=p.y+(0.5-p.y)*0.15; v=0.08; }
     else if(st.pase && st.pase.tiro && i===st.pase.to && p.rol==="gk"){
@@ -23137,9 +23310,15 @@ function _cvGuionGol(st,lado,quien,ctx){
   }
   /* nadie llega antes de lo que puede: la jugada se estira lo que tarda el que tiene que llegar. En el balón parado la espera
      va con la pelota quieta (se arma la jugada, como en la cancha); en la jugada, el que la lleva conduce más */
-  const espera=(tipo==="penal"||tipo==="libre"||tipo==="cabeza")?2:1;
-  let extra=0;
-  R.forEach(r=>{ if(r.i<0||!J[r.i]) return; const q=P(r.a,r.y), dist=Math.hypot((J[r.i].x-q.x)*105,(J[r.i].y-q.y)*68);
+  let toma=0;
+  /* 7.9150 · la primera pelota también la juega alguien: si el que arranca la jugada no la tiene al pie, primero llega
+     (la pelota lo espera donde está) y recién ahí sale. Antes partía sola desde donde estuviera */
+  if(dueno>=0&&J[dueno]&&tipo!=="penal"&&tipo!=="libre"){ const dd=Math.hypot((J[dueno].x-b.x)*105,(J[dueno].y-b.y)*68);
+    if(dd>1.3){ toma=Math.min(1.8,dd/6+0.6); K.splice(1,0,{a:A0.a,y:A0.y,z:0,d:toma}); R.forEach(r=>{ r.k++; }); R.unshift({i:dueno,k:1,a:A0.a,y:A0.y,toma:true}); }
+    else R.unshift({i:dueno,k:0,a:A0.a,y:A0.y,toma:true}); }
+  const espera=((tipo==="penal"||tipo==="libre"||tipo==="cabeza")?2:1)+(toma?1:0);
+  let extra=toma;
+  R.forEach(r=>{ if(r.i<0||!J[r.i]||r.toma) return; const q=P(r.a,r.y), dist=Math.hypot((J[r.i].x-q.x)*105,(J[r.i].y-q.y)*68);
     const tk=()=>{ let t=0; for(let j=1;j<=r.k;j++) t+=K[j].d; return t; };
     const falta=dist/6+0.6-tk(); if(falta>0&&extra<4){ const e=Math.min(4-extra,falta); K[espera].d+=e; extra+=e; }   /* ~6 m/s; 4 s de espera como máximo */
     /* si el goleador igual no llega (un volante que viene de atrás), remata de media distancia desde donde sí llega */
@@ -23166,9 +23345,15 @@ function _cvPasoGol(st,dt){
   if(s.t<s.tGol){ b.x=p0.x+(p1.x-p0.x)*u; b.y=p0.y+(p1.y-p0.y)*u; b.z=(k0.z||0)+((k1.z||0)-(k0.z||0))*u+(k1.arco||0)*Math.sin(u*Math.PI); }
   else { const q=P(K[K.length-1].a,K[K.length-1].y); b.x=q.x; b.y=q.y; b.z=0; if(!s.red){ s.red=true; st.redVibra=1; st.redLado=mio?1:-1; } }
   /* los que la juegan: cada uno a su punto antes de su toque */
+  J.forEach(p=>{ if(p._acc){ p._acc.t+=dt; if(p._acc.t>=p._acc.dur) p._acc=null; } });
   g.R.forEach(r=>{ if(r.i<0||!J[r.i]) return; const q=P(r.a,r.y), tk=K[r.k].t;
-    if(s.t<tk+0.3) _cvMover(J[r.i],q.x,q.y,0.36,dt,10); });
-  if(g.dueno>=0&&J[g.dueno]&&s.t<K[1].t){ const p=J[g.dueno]; _cvMover(p,b.x,b.y,0.3,dt); }
+    if(s.t<tk+0.3) _cvMover(J[r.i],q.x,q.y,0.36,dt,10);
+    /* 7.9150 · EL TOQUE SE VE: 0,2 s antes de que la pelota salga de su punto, el jugador arma el gesto (pase, centro,
+       remate o cabezazo) y la pelota sale en el golpe. Antes la pelota pasaba por su lado y nadie hacía nada */
+    if(!r._toco&&!s.fisico&&s.t>=tk-0.2&&s.t<s.tGol){ r._toco=true; const sig=K[r.k+1], alto=(K[r.k].z||0)*CV_FIS.alto;
+      if(sig){ const tipo=alto>1.2?"cabeza":(sig.remate?"remate":((sig.arco||0)>0.3?"centro":"patada")); _cvAccion(J[r.i],tipo,tipo==="remate"?0.55:0.45,{fuerza:sig.remate?1:0.6,alto:alto});
+        J[r.i]._ang=Math.atan2((P(sig.a,sig.y).y-q.y)*CV_FIS.A,(P(sig.a,sig.y).x-q.x)*CV_FIS.L); } } });
+  if(g.dueno>=0&&J[g.dueno]&&s.t<K[1].t&&!g.R.some(r=>r.toma)){ const p=J[g.dueno]; _cvMover(p,b.x,b.y,0.3,dt); }
   /* la barrera del tiro libre */
   if(st.barrera&&g.tipo==="libre"){ const br=st.barrera; let n=0;
     J.forEach((p,i)=>{ if(n>=br.n||p.mio!==br.mio||p.rol==="gk") return; n++; const q=P(br.a,br.y+(n-2.5)*0.012); _cvMover(p,q.x,q.y,0.3,dt); p._barrera=true; }); }
@@ -23253,10 +23438,18 @@ function _cvStep(P,dt,stOpc){
     const mk=_cvMarcador(P);
     const ult=(P.golesDetalle||[]).slice(-1)[0]||{};
     const cx={tipo:ult.tipo,yo:mk.yo,otro:mk.otro,noms:_cvNombres(P)};
-    if(mk.yo>st.lastYo) _cvArmarGol(st,1,ult.quien,ult.min,cx);
-    else if(mk.otro>st.lastOtro) _cvArmarGol(st,-1,ult.quien,ult.min,cx);
+    /* 7.9150 · el gol de jugada se JUEGA (orden a los 22, misma física); penal, tiro libre, córner, autogol y rebote
+       siguen con su guion armado (son jugadas de pizarrón), ahora con sus toques a la vista */
+    if(mk.yo>st.lastYo||mk.otro>st.lastOtro){
+      const lado=mk.yo>st.lastYo?1:-1, mioG=lado>0;
+      if(st.orden){ st.orden=null; }   /* venía un remate en camino: el gol manda */
+      const fisico=_cvGolTipo(cx.tipo)==="jugada"&&!st.seq&&!st.bpVivo&&st.espera&&
+        cvOrdenar(st,"gol",mioG,{gol:mioG?_cvIdxGoleador(st.jug,ult.quien,cx.noms):-1,quien:ult.quien,min:ult.min,ctx:cx,cartel:_cvCartel(mioG,cx,ult.min)+(ult.quien||"")+(ult.min?" "+ult.min+"'":"")});
+      if(!fisico) _cvArmarGol(st,lado,ult.quien,ult.min,cx);
+    }
     /* 7.9138 · el reloj espera mientras la cancha cuenta el gol (si no, el partido seguía mientras se armaba el córner) */
     if((mk.yo>st.lastYo||mk.otro>st.lastOtro)&&st.seq) P._celHasta=Math.max(P._celHasta||0,Date.now()+Math.min(9,st.seq.dur)*1000);
+    if(st.orden) P._celHasta=Math.max(P._celHasta||0,Date.now()+900);   /* mientras la jugada del motor se juega, el reloj espera */
     st.lastYo=mk.yo; st.lastOtro=mk.otro;
     if(P._penalSeq && st.penalSeq!==P._penalSeq && !st.seq){
       st.penalSeq=P._penalSeq; st.penalSeen=P._penalCancha||1; st.penalDive=1.6; st._penY=(Math.random()<0.5?-1:1)*_cvRnd(0.03,0.07);
@@ -23264,7 +23457,9 @@ function _cvStep(P,dt,stOpc){
   }
   if(st.seq) _cvPasoGol(st,dt);
   else if(st.penalDive>0) _cvPasoPenal(st,dt);
-  else _cvJuego(st,P,dt);
+  else { _cvJuego(st,P,dt); if(st.orden) _cvOrdenPaso(st,P,dt); }
+  /* 7.9150 · la pelota entró (o la jugada del gol se acabó): recién ahora la pantalla se entera */
+  if(st.espera&&st._espGol&&!st.orden&&(!st.seq||st.seq.red)){ st._espGol=false; cvRevelar(P,st); }
   /* los quietos miran la pelota (no quedan de espaldas a la jugada) */
   st.jug.forEach(p=>{ if((p._vel||0)<0.05){ const a=Math.atan2((st.ball.y-p.y)*68,(st.ball.x-p.x)*105), da=Math.atan2(Math.sin(a-(p._ang||0)),Math.cos(a-(p._ang||0))); p._ang=(p._ang||0)+da*Math.min(1,dt*4); } });
   st._rodado=((st._rodado||0)+Math.hypot((st.ball.x-bx0)*105,(st.ball.y-by0)*68)*1.6)%(Math.PI*2);
@@ -23856,6 +24051,7 @@ function pintarDock(){
   const jugar=!!(part&&!part.jugado);
   const etJ=(typeof T==="function")?T("dock_jugar","Jugar"):"Jugar";
   const etA=(typeof T==="function")?T("dock_avanzar","Avanzar"):"Avanzar";
+  const enPrevia=document.body.classList.contains("en-previa")&&!!document.querySelector('#vista[data-sec="partido"]');
   const av=el("button","dock-avanza",jugar?("⚽ "+etJ):etA);
   av.type="button";
   av.setAttribute("aria-label",jugar?("Jugar "+(part.local?"vs ":"en ")+(part.rivalNombre||"el próximo")):"Avanzar la semana");
@@ -23866,7 +24062,8 @@ function pintarDock(){
     if(jugar&&typeof pantallaPrevia==="function"){ pantallaPrevia(part); return; }
     if(typeof avanzar==="function") avanzar();
   };
-  d.appendChild(av);
+  if(!enPrevia) d.appendChild(av);   /* 7.9150 · en la previa del partido se juega con Dirigir / Seguir: el grande sobra */
+  d.classList.toggle("sin-avanza",enPrevia);
   const row=el("div","dock-tabs");
   const porId={};
   SECCIONES.forEach(function(s){ porId[s[0]]=s; });
@@ -24043,7 +24240,7 @@ function _renderCuerpo(){
   if(typeof partidoEnCurso==="function" && partidoEnCurso() && P_ACTUAL && !P_ACTUAL._holdUI && typeof pausarPartidoHold==="function"){
     pausarPartidoHold();
   }
-  document.body.classList.remove("en-partido","hay-momento");
+  document.body.classList.remove("en-partido","hay-momento","en-previa");
   document.body.classList.toggle("con-juego", !!E);   /* 7.68 · lateral sólo corre el contenido si hay partida */
   pintarBarra(); pintarMenu();
   if(typeof pintarHoldBar==="function") pintarHoldBar();
@@ -50915,8 +51112,9 @@ if(typeof devDoctorRegistrar==="function"){
       for(let n=0;n<160;n++){
         const st=_cvNuevoEstado(null), del=st.jug.findIndex(p=>p.mio&&p.rol==="fwd");
         st.jug[del].x=0.86; st.jug[del].y=0.5; st.own=del; st.ball.x=0.87; st.ball.y=0.5;
-        const r=Math.random; let k=0; Math.random=function(){ k++; return k===1?0.05:r(); };
-        try{ _cvDecidir(st,null); }finally{ Math.random=r; }
+        /* 7.9150 · nadie remata por su cuenta: el remate es una ORDEN del motor (cvOrdenar) con su resultado */
+        if(typeof cvOrdenar==="function") cvOrdenar(st,Math.random()<0.4?"afuera":"atajada",true,{});
+        _cvDecidir(st,null);
         const q=st.pase; if(!q||!q.tiro){ f.push("forzando un remate no sale tiro"); break; }
         const altoM=(q.zFin||0)*11, ladoM=Math.abs(q.y1-0.5)*68;
         if(q.afuera){ afu++; if(altoM<=2.44&&ladoM<=3.66) malosAf++; }
@@ -52280,6 +52478,71 @@ if(typeof devDoctorRegistrar==="function"){
     n:"El azar con semilla no se repite en tiradas largas y sus primeros números son los de siempre (las partidas guardadas no cambian)",
     arreglo:"js/data-plantel.js azarFijo (secuencia de siempre hasta que se repetiría; después mulberry32). No cambiar la multiplicación por Math.imul a secas: cambia todos los mundos guardados",
     fn:function(){ const r=devAzarSano(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
+
+/* 7.9150 · LA JUGADA DEL MOTOR SE JUEGA EN LA CANCHA (y la pantalla se entera después). El autor: "la pelota tiene vida
+   propia, el jugador jamás está dentro de ese mundo; cuando sale gol, sale ANTES: debería suceder DENTRO del partido y
+   después la pantalla de GOL". Se mide sobre simulaciones aparte (no toca tu partido):
+   · juego suelto: nadie remata por su cuenta (los remates son los del motor);
+   · orden de GOL: la pelota termina en la red SIEMPRE; la mayoría jugada con la física (pases, control, remate) y el
+     resto con el guion; al rematar, el que le pega está encima de la pelota (no se mueve sola) y es de su equipo;
+   · orden de remate atajado / afuera: se cumple en su plazo;
+   · el guion (penal, tiro libre, córner, autogol, rebote): cada toque tiene su gesto;
+   · la pantalla: existen la espera y la red de seguridad de los que pintan, el cartel del gol sale con la pelota adentro,
+     y sin cancha a la vista NO se espera (nunca queda trabado). */
+function devJugadaDelMotor(){
+  const f=[], det=[];
+  const falta=["cvOrdenar","_cvOrdenDecide","_cvOrdenPaso","_cvRematar","cvEventoMotor","cvEsperar","cvRevelar","cvOculto","cvGolSinVer","cvCanchaViva","_pasoTrasTramo"].filter(function(n){ try{ return typeof (0,eval)(n)!=="function"; }catch(e){ return true; } });
+  if(falta.length) return {f:["falta la jugada del motor en la cancha: "+falta.join(", ")],det:det};
+  const paso=0.033, correr=function(st,seg,cada){ for(let t=0;t<seg;t+=paso){ _cvStep(null,paso,st); if(cada&&cada(t)===false) break; } };
+  /* 1) juego suelto */
+  { const st=_cvNuevoEstado(null); let tiros=0, prev=null; correr(st,90,function(){ if(st.pase&&st.pase.tiro&&st.pase!==prev){ tiros++; prev=st.pase; } });
+    if(tiros) f.push("en 90 s de juego suelto la cancha inventó "+tiros+" remate(s) que el motor nunca contó"); }
+  /* 2) goles ordenados */
+  let fis=0, guion=0, sinRed=0, lejos=0, ajeno=0, erro=0, tGol=[], N=40;
+  for(let k=0;k<N;k++){
+    const st=_cvNuevoEstado(null), mio=k%2===0; correr(st,3+((k*7)%11));
+    if(st.seq||st.orden) continue;
+    cvOrdenar(st,"gol",mio,{quien:"x"}); const od=st.orden; let visto=false, medido=false, t0=0;
+    correr(st,24,function(t){ t0=t;
+      if(od.remato&&!medido&&st.pase){ medido=true; const p=st.jug[od.rematador]; if(!p||Math.hypot((p.x-st.pase.x0)*105,(p.y-st.pase.y0)*68)>1.6) lejos++; if(p&&p.mio!==mio) ajeno++; }
+      if(st.seq&&st.seq.red){ visto=true; return false; } });
+    if(!visto){ sinRed++; continue; }
+    if(st.seq.fisico) fis++; else { guion++; if(od.remato) erro++; } tGol.push(t0);
+  }
+  if(erro>2) f.push(erro+" de "+N+" remates «de gol» no entraron (cruzan la línea por fuera del palo o los tapan): el gol terminó saliendo por el guion, tarde");
+  if(sinRed) f.push(sinRed+" de "+N+" goles ordenados no terminaron con la pelota en la red");
+  if(fis<N*0.7) f.push("solo "+fis+" de "+N+" goles se jugaron con la física (el resto cayó al guion): la orden no está saliendo");
+  if(lejos) f.push(lejos+" remate(s) salieron con el rematador a más de 1,6 m de la pelota: la pelota se movió sola");
+  if(ajeno) f.push(ajeno+" gol(es) los remató un jugador del otro equipo");
+  tGol.sort(function(a,b){ return a-b; });
+  det.push("goles: "+fis+" con física + "+guion+" con guion de "+N+" (mediana "+(tGol.length?tGol[tGol.length>>1].toFixed(1):"?")+" s)");
+  /* 3) remates ordenados */
+  let cumpl=0, M=20;
+  for(let k=0;k<M;k++){ const st=_cvNuevoEstado(null); correr(st,3+((k*5)%9)); if(st.seq) continue;
+    cvOrdenar(st,k%2?"atajada":"afuera",k%3===0,{}); const od=st.orden; correr(st,CV_ORDEN.tope+3,function(){ return !!st.orden; }); if(od.cumplida) cumpl++; }
+  if(cumpl<M*0.75) f.push("solo "+cumpl+" de "+M+" remates ordenados (atajado / afuera) llegaron a rematarse en su plazo");
+  det.push("remates: "+cumpl+" de "+M+" cumplidos");
+  /* 4) el guion: cada toque con su gesto */
+  { const st=_cvNuevoEstado(null); st.ball.x=0.4; st.ball.y=0.3; st.own=-1; _cvArmarGol(st,1,"x",30,{tipo:"rebote",noms:[]});
+    const R=st.seq.guion.R.filter(function(r){ return r.i>=0; }); let gestos=0; const visto={};
+    for(let n=0;n<700&&st.seq&&!st.seq.red;n++){ _cvPasoGol(st,0.02); st.jug.forEach(function(p,i){ if(p._acc&&!visto[i]){ visto[i]=true; gestos++; } }); }
+    if(gestos<Math.min(2,R.length)) f.push("en el gol con guion los jugadores no hacen el gesto del toque ("+gestos+" de "+R.length+"): la pelota pasa por su lado");
+    if(!R.some(function(r){ return r.toma; })) f.push("en el gol con guion la primera pelota sale sola: nadie llega a jugarla"); }
+  /* 5) la pantalla */
+  const fuente=String(pintarPartido)+String(actualizarPartidoVivo);
+  if(!(fuente.match(/cvGolSinVer\(/g)||[]).length) f.push("pintarPartido / actualizarPartidoVivo no esperan a la cancha: el marcador cuenta el gol antes de que se vea");
+  if(String(pasoEnVivo).indexOf("cvEventoMotor")<0) f.push("el tramo del partido no le avisa a la cancha lo que pasó (cvEventoMotor)");
+  if(typeof _c3dSincronizar==="function"&&!/seq\.red\|\|/.test(String(_c3dSincronizar))) f.push("el cartel del gol en 3D sale antes de que la pelota entre");
+  if(cvEsperar({modo:"simular"},function(){} )!==false) f.push("en modo simular (sin cancha) la pantalla se queda esperando");
+  if(cvCanchaViva({modo:"dirigir",terminado:true})) f.push("con el partido terminado la cancha sigue contando como viva");
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"jugada_del_motor", area:"motor", pesado:true,
+    n:"El partido es una sola cosa: lo que decide el motor (gol, remate atajado, remate afuera) se JUEGA en la cancha con la misma física, y el marcador y el ¡GOOOL! salen después de verlo",
+    arreglo:"js/cancha.js (cvOrdenar, _cvOrdenDecide, _cvOrdenPaso, _cvRematar, cvEventoMotor, cvEsperar/cvRevelar/cvGolSinVer, _cvGuionGol toma y toques) · js/ui-partido.js (pasoEnVivo → _pasoTrasTramo, pintarPartido, actualizarPartidoVivo) · js/cancha3d.js (cartel)",
+    fn:function(){ const r=devJugadaDelMotor(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }
 
 ;
@@ -65354,7 +65617,8 @@ function _c3dSincronizar(est,dt){
   if(Math.abs(fovObj-est.fov)>0.05){ est.fov+=(fovObj-est.fov)*k*0.6; est.camGL.fov=est.fov; est.camGL.updateProjectionMatrix(); }
   est.camGL.position.copy(est.camPos); est.camGL.lookAt(est.mira);
   /* cartel del gol (el mismo texto que el cenital) */
-  const txt=S.seq&&S.seq.cartel?S.seq.cartel:"";
+  /* 7.9150 · el cartel del gol sale cuando la pelota ENTRÓ (antes aparecía al empezar la jugada: te contaba el final) */
+  const txt=S.seq&&S.seq.cartel&&(S.seq.red||S.seq.tipo!=="gol")?S.seq.cartel:"";
   if(txt!==est.carteles){ est.carteles=txt; est.hud.textContent=txt; est.hud.classList.toggle("on",!!txt); }
 }
 /* ---------- 7.9129 · REPETICIÓN DEL GOL ----------

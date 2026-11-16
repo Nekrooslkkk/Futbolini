@@ -1177,7 +1177,7 @@ function actualizarStats(P,ev){
     case "golRival": s.remRiv++; s.arcRiv++; break;
     case "penal": case "tiroLibre": s.remMio++; s.arcMio++; break;
     case "penalRival": s.remRiv++; s.arcRiv++; break;
-    case "chance": s.remMio++; if(Math.random()<0.5) s.arcMio++; if(Math.random()<0.35) s.corMio++; break;
+    case "chance": s.remMio++; if(ev._alArco!=null?ev._alArco:Math.random()<0.5) s.arcMio++; if(Math.random()<0.35) s.corMio++; break;   /* 7.9150 · _alArco: lo que se VIO en la cancha (cvEventoMotor) */
     case "atajada": if(ev.aFavor){ s.remMio++; s.arcMio++; if(Math.random()<0.4) s.corMio++; } else { s.remRiv++; s.arcRiv++; } break;   /* 7.77 */
     case "corner": if(ev.aFavor!==false){ s.corMio++; if(ev.deAtajada){ s.remMio++; s.arcMio++; } } else s.corRiv++; break;
     case "polemica": if(Math.random()<0.5) s.remMio++; break;
