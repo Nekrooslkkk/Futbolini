@@ -6095,4 +6095,4 @@ antes de entrar.
 - Ojo, comportamiento que ya existía: los hitos verificados reemplazan en la línea de historia a los que hubiera del mismo
   año (`sumarHistoriaClubes`); para la U eso pisa los de 1927 y 2011 que venían de `data-historico.js`.
 - Archivos: `js/data-historia-clubes.js`, `scripts/historia/{REN,LSC,LIN,UCH,UC,CBL}.json`, `js/util.js` (+ rearmados).
-- **Estado:** doctor `historia_clubes` y `paridad_clubes` verdes; suites completas y doctor de UCH, UC, CBL y LSC corriendo al momento de este commit (el resultado va en el commit siguiente).
+- **Estado:** todo verde en 7.9152 — core 1186/1186, saves 12/12, doctor SANO 177/177 en 4 partidas + celular y SANO en UCH, UC, CBL y LSC, dev 595/595, banco 255 partidas sin fallas.
