@@ -6026,3 +6026,37 @@ jugar en grande en celular, cuando entras al partido, queda inservible".
   espera a la cancha ya mueve la cancha al tiro (`canchaCine`); los pasos de `test/cancha3d.mjs` que fuerzan jugadas
   limpian órdenes y repeticiones pendientes antes de medir.
 - **Estado:** todo verde en 7.9150 — core 1186/1186, saves 12/12, doctor SANO 176/176 en 4 partidas + celular, dev 595/595, banco 255 partidas sin fallas.
+
+### 7.9151 — Los jugadores dejan de ser maniquíes: tela, vivos, escudo, dorsal y estilo consola
+Pedido del autor (16–17 nov 2026): "siguen siendo maniquís; no se ve ese pixelado que igual le daba realismo a los FIFA o
+PES". Se le propuso partir por la textura antes que por la geometría y dijo: "parte por la textura".
+- **Diagnóstico:** lo que faltaba no eran polígonos. La camiseta era UN color liso por zona (más la franja): sin tela,
+  sin número, sin cuello. Por eso se leían como maniquíes aunque el cuerpo y la animación fueran buenos.
+- **La tela, pintada en el sombreador** (`M3D_GLSL_TELA` en `js/modelo3d.js`, compartida por el maniquí y el realista;
+  sin archivos nuevos, sin internet y con el mismo número de llamadas de dibujo):
+  - **camiseta:** pliegues que caen en diagonal, trama de la tela, sombra bajo el brazo y en la cintura, **ribete en el
+    cuello y puño en las mangas** (el "vivo"), un **escudo** en el pecho y el **DORSAL en la espalda** (y chico adelante);
+  - **short:** pliegues verticales, entrepierna en sombra, dobladillo; **medias:** canalé y dos rayas en la vuelta;
+    **botines:** la suela oscura;
+  - **caras** (realista): contraste ×1,35 alrededor del tono medio: cejas, cuencas, nariz y boca se leen desde la cámara
+    de la tele (antes la cara era una mancha pareja).
+- **El dorsal:** una sola textura con las 10 cifras para los 22 (`_m3dTexNumeros`); cada jugador lleva su número
+  (`num` en la pintada de `js/cancha3d.js`). El color del número y el del vivo se eligen por contraste con la camiseta
+  (`modelo3dPintar`: `num`, `vivo`, `numCol`, `tela:false` lo apaga).
+- **Estilo consola** (Ajustes ▸ Cancha 3D ▸ 🎮 Estilo consola): el partido se dibuja a 640 puntos de ancho, sin
+  suavizado y con el pixel a la vista, como en la PS2. Va encima de Alta o Normal (`c3dConsola`, `c3dClave`,
+  `C3D_CONSOLA_ANCHO`; la escena se rearma al cambiarlo y la resolución automática no lo pisa). Es un gusto, no un ahorro.
+- **Modo dev (regla permanente):** doctor `tela_jugadores`: el bloque de la tela está en los dos materiales y cierra sus
+  llaves; 10 cifras con tinta y distintas; número y vivo contrastan con camiseta blanca y oscura; se puede apagar; en un
+  partido 3D en curso los 22 llevan dorsal sin repetir por equipo; el estilo consola se elige, cambia la escena y dibuja
+  a ≤ 680 puntos. **Al revés** (tela fuera del realista, número del color de la camiseta, sin apagado): 7 fallas.
+  `test/cancha3d.mjs`: los sombreadores compilan en un navegador de verdad, 11 dorsales distintos, y el tercer caso corre
+  con estilo consola (595 puntos de ancho). `CASO=n` corre un solo caso.
+- **Historias (Sonnet):** se lanzó una sesión aparte con la orden de 7.9149: verificar REN, LSC y LIN y escribir UCH, UC y
+  CBL. Trabaja en su propia copia; su resultado se integra cuando termine (no va en este parche).
+- Archivos: `js/modelo3d.js`, `js/cancha3d.js`, `js/ui.js`, `js/dev-banco.js`, `test/cancha3d.mjs`, `js/util.js`
+  (+ rearmados).
+- **Lo que NO se hizo:** el escudo del pecho es una forma genérica con los colores del club (no el escudo real); los
+  dorsales son 1–11 por posición en la cancha, no los números reales del plantel; la geometría de los estadios sigue
+  pendiente; el maniquí (sin textura de cara) no ganó cara, solo tela.
+- **Estado:** `test/cancha3d.mjs` verde entero y doctor `tela_jugadores` verde y probado al revés; suites completas corriendo al momento de este commit (el resultado va en el commit siguiente).

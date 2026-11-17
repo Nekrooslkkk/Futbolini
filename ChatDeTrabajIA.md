@@ -3028,3 +3028,14 @@ propia (REN, LSC = Lota Schwager, LIN). El doctor `paridad_clubes` cuenta lo que
 - Pendiente del autor, en su orden de preocupación: (1) jugadores que no parezcan maniquíes y estadios (textura antes
   que geometría: ver "Lo que NO se hizo" de PATCHES 7.9150); (2) córners y laterales como órdenes del motor; (3) VAR
   después de ver el gol.
+
+**7.9151 (Claude) · Tela de los jugadores y estilo consola. LEER si tocan `js/modelo3d.js`:**
+- El uniforme ya no es un color liso: `M3D_GLSL_TELA` pinta pliegues, vivos, escudo y dorsal por la posición de reposo
+  (`vReposo`; espalda = z menor que `uCuelloZ`). Va en los DOS materiales (maniquí y realista). Si agregan una zona o
+  cambian los cortes (`uCorteA/B`), revisen que el número siga cayendo en la espalda: el doctor `tela_jugadores` mira el
+  texto y el contraste, no la posición.
+- Cada jugador lleva `num` en `modelo3dPintar`. Hoy es 1–11 por puesto; **pendiente:** pasarle el dorsal real del plantel.
+- Estilo consola: `E.config.c3dLook==="consola"`. La escena se identifica con `c3dClave()` (calidad + estilo): si agregan
+  otra opción que cambie cómo se crea el renderer, súmenla ahí.
+- Hay una sesión de Sonnet escribiendo historias (UCH, UC, CBL) en una copia aparte: no editen
+  `js/data-historia-clubes.js` hasta que se integre.

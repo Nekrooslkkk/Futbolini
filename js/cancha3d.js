@@ -68,6 +68,12 @@ function c3dCalidad(){
   if(c==="alta"||c==="media"||c==="antigua") return c;   /* 7.9148 · Alta · Normal (media) · Celular papa (antigua) */
   return (typeof _cvLiviano==="function"&&_cvLiviano())?"media":"alta";
 }
+/* 7.9151 · ESTILO CONSOLA (pedido del autor: "ese pixelado que igual le daba realismo a los FIFA o PES"). El partido se
+   dibuja a 640 puntos de ancho (lo de una consola de 2004), sin suavizado, y se agranda con el pixel a la vista. Sirve en
+   Alta y en Normal; el Celular papa ya es pixelado de por sí. Ajustes ▸ Cancha 3D ▸ Estilo consola */
+const C3D_CONSOLA_ANCHO=640;
+function c3dConsola(){ return !!(typeof E!=="undefined"&&E&&E.config&&E.config.c3dLook==="consola"); }
+function c3dClave(){ return c3dCalidad()+(c3dConsola()?"+consola":""); }
 function c3dAuto(){ return !((typeof E!=="undefined"&&E&&E.config&&E.config.c3dCalidad)&&E.config.c3dCalidad!=="auto"); }
 
 /* ---------- cancha: pasto con franjas y TODAS las líneas en una sola textura ---------- */
@@ -287,7 +293,7 @@ function _c3dPintar(est){
     modelo3dPintar(I.malla.material,{piel:look.piel, camiseta:cam, short:gk?"#1b1d22":((mio?col.shortMio:col.shortRiv)||"#20242c"),
       medias:gk?cam:((mio?col.mediasMio:col.mediasRiv)||cam), botines:gk?"#f2f2f2":"#15161a", pelo:(look.pelado&&!real)?look.piel:look.pelo,
       manos:gk?"#f3f6fa":look.piel, franja:fr&&frc?fr:null, franjaCol:frc,
-      peinado:look.pelado?0:(look.peinado||1), barba:!!look.barba, ojos:look.ojos||0});
+      peinado:look.pelado?0:(look.peinado||1), barba:!!look.barba, ojos:look.ojos||0, num:p.num||(i%11)+1});   /* 7.9151 · el dorsal */
     /* 7.9140 · el realista además con su estatura, cabeza y piernas (el maniquí queda igual para todos) */
     if(real&&typeof modelo3dCuerpo==="function") modelo3dCuerpo(I,{talla:(look.talla||1)+(gk?0.03:0),cabeza:look.cabeza,grosor:look.grosor}); }
   Object.keys(P).forEach(n=>{ if(P[n].instanceColor) P[n].instanceColor.needsUpdate=true; });
@@ -571,10 +577,11 @@ function _c3dManosModelo(I){
 /* ---------- montaje (se arma UNA vez y se reusa entre repintados del partido) ---------- */
 function _c3dConstruir(host,P){
   const calidad=c3dCalidad(), perfil=C3D_PERFIL[calidad];
-  const canvas=document.createElement("canvas"); canvas.className="cancha3d"+(perfil.plano?" c3d-antigua":""); canvas.setAttribute("aria-hidden","true");
+  const consola=c3dConsola()&&!perfil.plano;
+  const canvas=document.createElement("canvas"); canvas.className="cancha3d"+((perfil.plano||consola)?" c3d-antigua":""); canvas.setAttribute("aria-hidden","true");
   canvas.style.cssText="display:block;width:100%;height:100%";
   let renderer;
-  try{ renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:perfil.aa,powerPreference:"high-performance"}); }
+  try{ renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:perfil.aa&&!consola,powerPreference:"high-performance"}); }
   catch(e){ return null; }
   renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0;
   /* 7.9128 · en Alta, sombras de verdad del foco (los jugadores proyectan su silueta como en el PES); en Media y Antigua,
@@ -607,7 +614,7 @@ function _c3dConstruir(host,P){
   const hud=document.createElement("div"); hud.className="c3d-hud"; hud.setAttribute("aria-live","polite");
   const est={ host:null, canvas:canvas, hud:hud, renderer:renderer, scene:scene, camGL:camGL, piezas:piezas, sombras:sombras, bola:bola,
     P:null, st:null, camPos:new THREE.Vector3(CAM3D_TV.ancha.lado,CAM3D_TV.ancha.alto,0), mira:new THREE.Vector3(0,CAM3D.mira_alto,0), fov:CAM3D.fov,
-    calidad:calidad, perfil:perfil, pr:pr0, raf:0, W0:0, H0:0, franjas:[], pelados:[], gk:[], ultT:0, dtProm:16, prAjuste:0, carteles:"",
+    calidad:calidad, clave:c3dClave(), consola:consola, perfil:perfil, pr:pr0, raf:0, W0:0, H0:0, franjas:[], pelados:[], gk:[], ultT:0, dtProm:16, prAjuste:0, carteles:"",
     hemi:hemi, sol:sol, colEstadio:[P&&P.part&&P.part.local===false?col.riv:col.mio] };
   C3D.montajes++;
   return est;
@@ -626,7 +633,7 @@ function _c3dPartido(est,P){
 function montarCancha3D(host, P){
   let est=C3D.est;
   /* mismo partido y misma calidad: se reusa todo (el repintado del partido no rearma la escena) */
-  if(est&&est.calidad!==c3dCalidad()){ detenerCancha3D(); est=null; }
+  if(est&&(est.calidad!==c3dCalidad()||est.clave!==c3dClave())){ detenerCancha3D(); est=null; }
   if(est){ C3D.reusos++; clearTimeout(est.liberar); }
   else { est=_c3dConstruir(host,P); if(!est) return null; C3D.est=est; }
   if(est.P!==P||est.st!==_cvSt) _c3dPartido(est,P);
@@ -911,6 +918,8 @@ function _c3dTam(est){
   /* 7.9149 · el tamaño de DISEÑO (clientWidth/Height), no el rectángulo en pantalla: en la cancha grande del celular el
      canvas va girado 90° con CSS y el rectángulo sale parado (el partido se dibujaba aplastado) */
   const cv=est.canvas, rc=(cv.clientWidth&&cv.clientHeight)?{width:cv.clientWidth,height:cv.clientHeight}:cv.getBoundingClientRect();
+  /* estilo consola: siempre 640 puntos de ancho, mida lo que mida la pantalla */
+  if(est.consola&&rc.width){ const prC=Math.max(0.2,Math.min(1,C3D_CONSOLA_ANCHO/rc.width)); if(Math.abs(prC-est.pr)>0.01){ est.pr=prC; est.renderer.setPixelRatio(prC); est.W0=0; } }
   if(rc.width&&(Math.abs(rc.width-est.W0)>0.5||Math.abs(rc.height-est.H0)>0.5)){
     est.W0=rc.width; est.H0=rc.height; est.renderer.setSize(rc.width,rc.height,false);
     est.camGL.aspect=rc.width/Math.max(1,rc.height); est.camGL.updateProjectionMatrix();
@@ -937,7 +946,7 @@ function _c3dCuadroUno(est){ try{ _c3dTam(est); _c3dSincronizar(est,0.016); if(t
 /* calidad Auto: si el equipo no llega, baja la resolución (no se cambia a 2D); si sobra, la sube */
 function _c3dAjusteAuto(est,dtReal){
   est.dtProm=est.dtProm*0.92+dtReal*0.08;
-  if(!c3dAuto()||performance.now()-est.prAjuste<1200) return;
+  if(est.consola||!c3dAuto()||performance.now()-est.prAjuste<1200) return;
   const p=est.perfil; let pr=est.pr;
   if(est.dtProm>26&&pr>p.prMin) pr=Math.max(p.prMin,pr*0.85);
   else if(est.dtProm<15&&pr<Math.min(p.pr,window.devicePixelRatio||1)) pr=Math.min(p.pr,pr*1.1);

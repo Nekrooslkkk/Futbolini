@@ -2592,3 +2592,63 @@ if(typeof devDoctorRegistrar==="function"){
     arreglo:"js/cancha.js (cvOrdenar, _cvOrdenDecide, _cvOrdenPaso, _cvRematar, cvEventoMotor, cvEsperar/cvRevelar/cvGolSinVer, _cvGuionGol toma y toques) · js/ui-partido.js (pasoEnVivo → _pasoTrasTramo, pintarPartido, actualizarPartidoVivo) · js/cancha3d.js (cartel)",
     fn:function(){ const r=devJugadaDelMotor(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }
+
+/* 7.9151 · LA TELA DE LOS JUGADORES y el ESTILO CONSOLA. El autor: "siguen siendo maniquís; no se ve ese pixelado que igual
+   le daba realismo a los FIFA o PES". Se revisa sin dibujar nada: el bloque de la tela está en los DOS materiales y cierra
+   bien sus llaves; el dorsal existe para las 10 cifras y no son todas iguales; el número y el vivo contrastan con la
+   camiseta (blanca y oscura); se puede apagar; y en un partido 3D en curso los 22 llevan su número, sin repetir por equipo.
+   Estilo consola: se puede elegir, cambia la clave de la escena y dibuja a 640 puntos de ancho. */
+function devTelaJugadores(){
+  const f=[], det=[];
+  if(typeof M3D_GLSL_TELA!=="string"||typeof M3D_GLSL_TELA_U!=="string"||typeof _m3dTexNumeros!=="function"||typeof _m3dLuz!=="function") return {f:["falta la tela de los jugadores (M3D_GLSL_TELA en js/modelo3d.js)"],det:det};
+  const llaves=function(t){ return (t.match(/\{/g)||[]).length-(t.match(/\}/g)||[]).length; };
+  if(llaves(M3D_GLSL_TELA)!==0||llaves(M3D_GLSL_TELA_U)!==0) f.push("el sombreador de la tela no cierra sus llaves: no compila y los jugadores salen negros o no salen");
+  if(typeof THREE==="undefined"){ det.push("sin three.js cargado acá: se revisó solo el texto del sombreador"); }
+  else {
+    const falso=function(){ return {uniforms:{}, vertexShader:"#include <common>\n#include <begin_vertex>\n#include <project_vertex>", fragmentShader:"#include <common>\nvec4 diffuseColor = vec4( diffuse, opacity );"}; };
+    const mats=[["maniquí",modelo3dMaterial(null,null)]];
+    if(typeof _m3dMaterialReal==="function") mats.push(["realista",_m3dMaterialReal(null,{tex:null,extra:{}})]);
+    mats.forEach(function(par){ const m=par[1], sh=falso(); try{ m.onBeforeCompile(sh); }catch(e){ f.push("el material del "+par[0]+" revienta al armarse: "+e.message); return; }
+      if(sh.fragmentShader.split("m3dNumero(").length-1<3||sh.fragmentShader.indexOf("kc=uVivo")<0) f.push(   /* la definición + sus dos usos (espalda y pecho) */ "el "+par[0]+" no lleva la tela (número, vivos, pliegues): camiseta lisa de maniquí");
+      if(llaves(sh.fragmentShader)!==0) f.push("el sombreador del "+par[0]+" quedó con las llaves descuadradas");
+      /* contraste del número y del vivo */
+      [["#f4f4f4","#111111","camiseta blanca"],["#12203f","#12203f","camiseta oscura con short igual"]].forEach(function(c){
+        modelo3dPintar(m,{piel:"#c68b5c",camiseta:c[0],short:c[1],medias:c[0],botines:"#111",pelo:"#111",num:10});
+        const U=m.userData.u, lum=function(C){ return 0.2126*C.r+0.7152*C.g+0.0722*C.b; }, lc=lum(U.uKit.value[1]);
+        if(Math.abs(lum(U.uNumCol.value)-lc)<0.25) f.push(par[0]+", "+c[2]+": el número no contrasta con la camiseta (no se lee)");
+        if(Math.abs(lum(U.uVivo.value)-lc)<0.08) f.push(par[0]+", "+c[2]+": el vivo del cuello y las mangas es del mismo tono que la camiseta");
+        if(U.uNum.value!==10||U.uTela.value!==1) f.push(par[0]+": pintar no deja el dorsal o la tela puestos"); });
+      modelo3dPintar(m,{camiseta:"#fff",short:"#000",num:7,tela:false}); if(m.userData.u.uTela.value!==0) f.push(par[0]+": la tela no se puede apagar");
+      m.dispose(); });
+    /* el dorsal: tinta en las 10 cifras y que no sean todas iguales */
+    const t=_m3dTexNumeros(), c=t&&t.image;
+    if(!c||!c.getContext) f.push("no existe la textura de los números");
+    else { const d=c.getContext("2d").getImageData(0,0,c.width,c.height).data, w=c.width/10, tinta=[];
+      for(let k=0;k<10;k++){ let n=0; for(let y=0;y<c.height;y+=2) for(let x=Math.floor(k*w);x<Math.floor((k+1)*w);x+=2) if(d[(y*c.width+x)*4]>128) n++; tinta.push(n); }
+      if(tinta.some(function(n){ return n<20; })) f.push("al dorsal le faltan cifras (sin tinta): "+tinta.join(","));
+      if(tinta[1]>=tinta[8]) f.push("las cifras del dorsal se ven iguales (el 1 pesa lo mismo que el 8): la fuente no cargó");
+      det.push("dorsal: 10 cifras"); }
+  }
+  /* en el partido 3D que se está viendo */
+  if(typeof C3D!=="undefined"&&C3D.est&&C3D.est.m3d&&C3D.est.m3d.length===22){
+    const N=C3D.est.m3d.map(function(I){ const u=I.malla.material.userData.u; return u&&u.uNum?u.uNum.value:0; });
+    if(N.some(function(n){ return !(n>=1&&n<=99); })) f.push("hay jugadores sin dorsal en la cancha: "+N.join(","));
+    [N.slice(0,11),N.slice(11)].forEach(function(e,k){ if(new Set(e).size!==11) f.push("el equipo "+(k?"rival":"propio")+" repite dorsales: "+e.join(",")); });
+    det.push("en la cancha: los 22 con dorsal");
+  }
+  /* estilo consola */
+  if(typeof c3dConsola!=="function"||typeof c3dClave!=="function") f.push("falta el estilo consola (c3dConsola / c3dClave en js/cancha3d.js)");
+  else if(typeof E!=="undefined"&&E&&E.config){ const a=E.config.c3dLook;
+    try{ E.config.c3dLook="consola"; if(!c3dConsola()||!/\+consola$/.test(c3dClave())) f.push("eliges el estilo consola y la escena no cambia");
+      E.config.c3dLook=""; if(c3dConsola()) f.push("el estilo consola no se puede apagar"); }
+    finally{ if(a===undefined) delete E.config.c3dLook; else E.config.c3dLook=a; }
+    if(typeof C3D!=="undefined"&&C3D.est&&C3D.est.consola&&C3D.est.canvas.width>C3D_CONSOLA_ANCHO+40) f.push("el estilo consola dibuja a "+C3D.est.canvas.width+" puntos de ancho (tope "+C3D_CONSOLA_ANCHO+"): no se ve el pixel");
+    det.push("estilo consola: "+(c3dConsola()?"puesto":"apagado")); }
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"tela_jugadores", area:"interfaz",
+    n:"Jugadores 3D con tela (pliegues, vivos, escudo, dorsal en la espalda, medias con vuelta) y estilo consola pixelado: nada de camisetas lisas de maniquí",
+    arreglo:"js/modelo3d.js (M3D_GLSL_TELA, M3D_GLSL_TELA_U, _m3dTexNumeros, _m3dTelaU, modelo3dPintar: num / vivo / numCol / tela) · js/cancha3d.js (num en la pintada, c3dConsola, c3dClave, C3D_CONSOLA_ANCHO, _c3dTam) · js/ui.js (Ajustes ▸ Estilo consola)",
+    fn:function(){ const r=devTelaJugadores(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}

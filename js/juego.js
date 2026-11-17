@@ -1,5 +1,5 @@
 "use strict";
-/* Futbolini · 7.9150 · 146 archivos en uno, armado por scripts/juntar.js (mismo código que js/papa-armar.js). NO SE EDITA A MANO: se editan los archivos de js/orden.txt y se corre node scripts/juntar.js */
+/* Futbolini · 7.9151 · 146 archivos en uno, armado por scripts/juntar.js (mismo código que js/papa-armar.js). NO SE EDITA A MANO: se editan los archivos de js/orden.txt y se corre node scripts/juntar.js */
 
 /* ==== js/util.js ==== */
 "use strict";
@@ -9,7 +9,7 @@
    ============================================================ */
 
 /* Versión única del juego (una sola fuente de verdad). */
-var VERSION="7.9150";
+var VERSION="7.9151";
 try{ if(typeof document!=="undefined") document.title="Futbolini "+VERSION+" — Conducción de clubes chilenos"; }catch(e){}
 var $=(s,c)=>(c||document).querySelector(s);
 var $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
@@ -27884,6 +27884,12 @@ function vistaAjustes(host){
       p.cuerpo.appendChild(el("p","mini","<b>Realistas</b>: "+(typeof MODELO3D_REAL_CREDITO==="string"?MODELO3D_REAL_CREDITO:"el personaje de Quaternius (CC0)")+
         "; se baja la primera vez (~1 MB) y queda guardado. <b>Maniquí</b>: el cuerpo liso con el uniforme del club. Los dos caminan, trotan y pican con "+
         (typeof MODELO3D_CREDITO==="string"?MODELO3D_CREDITO:"las animaciones de Quaternius (CC0)")+". Si tu equipo no da, vuelve solo a los <b>clásicos</b>. En Antigua y en Modo papa van los clásicos."));
+      /* 7.9151 · estilo consola: el pixelado de los FIFA y PES de la PS2, encima de Alta o Normal */
+      { const cons=E.config.c3dLook==="consola", bc=el("button","ficha",cons?"🎮 Estilo consola (pixelado): SÍ":"🎮 Estilo consola (pixelado)");
+        bc.setAttribute("aria-pressed",cons?"true":"false");
+        bc.onclick=()=>{ E.config.c3dLook=cons?"":"consola"; guardar(); render(); aviso(cons?"Estilo consola apagado: imagen nítida":"🎮 Estilo consola: el partido se dibuja a 640 puntos de ancho, con el pixel a la vista, como en la PS2",3800); };
+        const fc=el("div","fichas"); fc.appendChild(bc); p.cuerpo.appendChild(fc);
+        p.cuerpo.appendChild(el("p","mini","<b>Estilo consola</b>: los mismos jugadores y el mismo estadio, dibujados con la resolución de una consola de 2004 y sin suavizado. Es un gusto, no un ahorro (aunque de paso corre más liviano).")); }
       if(document.documentElement.classList.contains("papa")){
         const bp=el("button","ficha",E.config.cancha3dPapa?"🕹️ 3D antiguo en Modo papa: SÍ":"🕹️ Usar el 3D antiguo en Modo papa");
         bp.setAttribute("aria-pressed",E.config.cancha3dPapa?"true":"false");
@@ -52563,6 +52569,66 @@ if(typeof devDoctorRegistrar==="function"){
     fn:function(){ const r=devJugadaDelMotor(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
 }
 
+/* 7.9151 · LA TELA DE LOS JUGADORES y el ESTILO CONSOLA. El autor: "siguen siendo maniquís; no se ve ese pixelado que igual
+   le daba realismo a los FIFA o PES". Se revisa sin dibujar nada: el bloque de la tela está en los DOS materiales y cierra
+   bien sus llaves; el dorsal existe para las 10 cifras y no son todas iguales; el número y el vivo contrastan con la
+   camiseta (blanca y oscura); se puede apagar; y en un partido 3D en curso los 22 llevan su número, sin repetir por equipo.
+   Estilo consola: se puede elegir, cambia la clave de la escena y dibuja a 640 puntos de ancho. */
+function devTelaJugadores(){
+  const f=[], det=[];
+  if(typeof M3D_GLSL_TELA!=="string"||typeof M3D_GLSL_TELA_U!=="string"||typeof _m3dTexNumeros!=="function"||typeof _m3dLuz!=="function") return {f:["falta la tela de los jugadores (M3D_GLSL_TELA en js/modelo3d.js)"],det:det};
+  const llaves=function(t){ return (t.match(/\{/g)||[]).length-(t.match(/\}/g)||[]).length; };
+  if(llaves(M3D_GLSL_TELA)!==0||llaves(M3D_GLSL_TELA_U)!==0) f.push("el sombreador de la tela no cierra sus llaves: no compila y los jugadores salen negros o no salen");
+  if(typeof THREE==="undefined"){ det.push("sin three.js cargado acá: se revisó solo el texto del sombreador"); }
+  else {
+    const falso=function(){ return {uniforms:{}, vertexShader:"#include <common>\n#include <begin_vertex>\n#include <project_vertex>", fragmentShader:"#include <common>\nvec4 diffuseColor = vec4( diffuse, opacity );"}; };
+    const mats=[["maniquí",modelo3dMaterial(null,null)]];
+    if(typeof _m3dMaterialReal==="function") mats.push(["realista",_m3dMaterialReal(null,{tex:null,extra:{}})]);
+    mats.forEach(function(par){ const m=par[1], sh=falso(); try{ m.onBeforeCompile(sh); }catch(e){ f.push("el material del "+par[0]+" revienta al armarse: "+e.message); return; }
+      if(sh.fragmentShader.split("m3dNumero(").length-1<3||sh.fragmentShader.indexOf("kc=uVivo")<0) f.push(   /* la definición + sus dos usos (espalda y pecho) */ "el "+par[0]+" no lleva la tela (número, vivos, pliegues): camiseta lisa de maniquí");
+      if(llaves(sh.fragmentShader)!==0) f.push("el sombreador del "+par[0]+" quedó con las llaves descuadradas");
+      /* contraste del número y del vivo */
+      [["#f4f4f4","#111111","camiseta blanca"],["#12203f","#12203f","camiseta oscura con short igual"]].forEach(function(c){
+        modelo3dPintar(m,{piel:"#c68b5c",camiseta:c[0],short:c[1],medias:c[0],botines:"#111",pelo:"#111",num:10});
+        const U=m.userData.u, lum=function(C){ return 0.2126*C.r+0.7152*C.g+0.0722*C.b; }, lc=lum(U.uKit.value[1]);
+        if(Math.abs(lum(U.uNumCol.value)-lc)<0.25) f.push(par[0]+", "+c[2]+": el número no contrasta con la camiseta (no se lee)");
+        if(Math.abs(lum(U.uVivo.value)-lc)<0.08) f.push(par[0]+", "+c[2]+": el vivo del cuello y las mangas es del mismo tono que la camiseta");
+        if(U.uNum.value!==10||U.uTela.value!==1) f.push(par[0]+": pintar no deja el dorsal o la tela puestos"); });
+      modelo3dPintar(m,{camiseta:"#fff",short:"#000",num:7,tela:false}); if(m.userData.u.uTela.value!==0) f.push(par[0]+": la tela no se puede apagar");
+      m.dispose(); });
+    /* el dorsal: tinta en las 10 cifras y que no sean todas iguales */
+    const t=_m3dTexNumeros(), c=t&&t.image;
+    if(!c||!c.getContext) f.push("no existe la textura de los números");
+    else { const d=c.getContext("2d").getImageData(0,0,c.width,c.height).data, w=c.width/10, tinta=[];
+      for(let k=0;k<10;k++){ let n=0; for(let y=0;y<c.height;y+=2) for(let x=Math.floor(k*w);x<Math.floor((k+1)*w);x+=2) if(d[(y*c.width+x)*4]>128) n++; tinta.push(n); }
+      if(tinta.some(function(n){ return n<20; })) f.push("al dorsal le faltan cifras (sin tinta): "+tinta.join(","));
+      if(tinta[1]>=tinta[8]) f.push("las cifras del dorsal se ven iguales (el 1 pesa lo mismo que el 8): la fuente no cargó");
+      det.push("dorsal: 10 cifras"); }
+  }
+  /* en el partido 3D que se está viendo */
+  if(typeof C3D!=="undefined"&&C3D.est&&C3D.est.m3d&&C3D.est.m3d.length===22){
+    const N=C3D.est.m3d.map(function(I){ const u=I.malla.material.userData.u; return u&&u.uNum?u.uNum.value:0; });
+    if(N.some(function(n){ return !(n>=1&&n<=99); })) f.push("hay jugadores sin dorsal en la cancha: "+N.join(","));
+    [N.slice(0,11),N.slice(11)].forEach(function(e,k){ if(new Set(e).size!==11) f.push("el equipo "+(k?"rival":"propio")+" repite dorsales: "+e.join(",")); });
+    det.push("en la cancha: los 22 con dorsal");
+  }
+  /* estilo consola */
+  if(typeof c3dConsola!=="function"||typeof c3dClave!=="function") f.push("falta el estilo consola (c3dConsola / c3dClave en js/cancha3d.js)");
+  else if(typeof E!=="undefined"&&E&&E.config){ const a=E.config.c3dLook;
+    try{ E.config.c3dLook="consola"; if(!c3dConsola()||!/\+consola$/.test(c3dClave())) f.push("eliges el estilo consola y la escena no cambia");
+      E.config.c3dLook=""; if(c3dConsola()) f.push("el estilo consola no se puede apagar"); }
+    finally{ if(a===undefined) delete E.config.c3dLook; else E.config.c3dLook=a; }
+    if(typeof C3D!=="undefined"&&C3D.est&&C3D.est.consola&&C3D.est.canvas.width>C3D_CONSOLA_ANCHO+40) f.push("el estilo consola dibuja a "+C3D.est.canvas.width+" puntos de ancho (tope "+C3D_CONSOLA_ANCHO+"): no se ve el pixel");
+    det.push("estilo consola: "+(c3dConsola()?"puesto":"apagado")); }
+  return {f:f,det:det};
+}
+if(typeof devDoctorRegistrar==="function"){
+  devDoctorRegistrar({id:"tela_jugadores", area:"interfaz",
+    n:"Jugadores 3D con tela (pliegues, vivos, escudo, dorsal en la espalda, medias con vuelta) y estilo consola pixelado: nada de camisetas lisas de maniquí",
+    arreglo:"js/modelo3d.js (M3D_GLSL_TELA, M3D_GLSL_TELA_U, _m3dTexNumeros, _m3dTelaU, modelo3dPintar: num / vivo / numCol / tela) · js/cancha3d.js (num en la pintada, c3dConsola, c3dClave, C3D_CONSOLA_ANCHO, _c3dTam) · js/ui.js (Ajustes ▸ Estilo consola)",
+    fn:function(){ const r=devTelaJugadores(); return r.f.length?_dmal(r.f.length+" problema(s)",r.f.concat(r.det)):_dok(r.det.join(" · ")); }});
+}
+
 ;
 /* ==== js/data-afa-rigor.js ==== */
 "use strict";
@@ -64980,6 +65046,12 @@ function c3dCalidad(){
   if(c==="alta"||c==="media"||c==="antigua") return c;   /* 7.9148 · Alta · Normal (media) · Celular papa (antigua) */
   return (typeof _cvLiviano==="function"&&_cvLiviano())?"media":"alta";
 }
+/* 7.9151 · ESTILO CONSOLA (pedido del autor: "ese pixelado que igual le daba realismo a los FIFA o PES"). El partido se
+   dibuja a 640 puntos de ancho (lo de una consola de 2004), sin suavizado, y se agranda con el pixel a la vista. Sirve en
+   Alta y en Normal; el Celular papa ya es pixelado de por sí. Ajustes ▸ Cancha 3D ▸ Estilo consola */
+var C3D_CONSOLA_ANCHO=640;
+function c3dConsola(){ return !!(typeof E!=="undefined"&&E&&E.config&&E.config.c3dLook==="consola"); }
+function c3dClave(){ return c3dCalidad()+(c3dConsola()?"+consola":""); }
 function c3dAuto(){ return !((typeof E!=="undefined"&&E&&E.config&&E.config.c3dCalidad)&&E.config.c3dCalidad!=="auto"); }
 
 /* ---------- cancha: pasto con franjas y TODAS las líneas en una sola textura ---------- */
@@ -65199,7 +65271,7 @@ function _c3dPintar(est){
     modelo3dPintar(I.malla.material,{piel:look.piel, camiseta:cam, short:gk?"#1b1d22":((mio?col.shortMio:col.shortRiv)||"#20242c"),
       medias:gk?cam:((mio?col.mediasMio:col.mediasRiv)||cam), botines:gk?"#f2f2f2":"#15161a", pelo:(look.pelado&&!real)?look.piel:look.pelo,
       manos:gk?"#f3f6fa":look.piel, franja:fr&&frc?fr:null, franjaCol:frc,
-      peinado:look.pelado?0:(look.peinado||1), barba:!!look.barba, ojos:look.ojos||0});
+      peinado:look.pelado?0:(look.peinado||1), barba:!!look.barba, ojos:look.ojos||0, num:p.num||(i%11)+1});   /* 7.9151 · el dorsal */
     /* 7.9140 · el realista además con su estatura, cabeza y piernas (el maniquí queda igual para todos) */
     if(real&&typeof modelo3dCuerpo==="function") modelo3dCuerpo(I,{talla:(look.talla||1)+(gk?0.03:0),cabeza:look.cabeza,grosor:look.grosor}); }
   Object.keys(P).forEach(n=>{ if(P[n].instanceColor) P[n].instanceColor.needsUpdate=true; });
@@ -65483,10 +65555,11 @@ function _c3dManosModelo(I){
 /* ---------- montaje (se arma UNA vez y se reusa entre repintados del partido) ---------- */
 function _c3dConstruir(host,P){
   const calidad=c3dCalidad(), perfil=C3D_PERFIL[calidad];
-  const canvas=document.createElement("canvas"); canvas.className="cancha3d"+(perfil.plano?" c3d-antigua":""); canvas.setAttribute("aria-hidden","true");
+  const consola=c3dConsola()&&!perfil.plano;
+  const canvas=document.createElement("canvas"); canvas.className="cancha3d"+((perfil.plano||consola)?" c3d-antigua":""); canvas.setAttribute("aria-hidden","true");
   canvas.style.cssText="display:block;width:100%;height:100%";
   let renderer;
-  try{ renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:perfil.aa,powerPreference:"high-performance"}); }
+  try{ renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:perfil.aa&&!consola,powerPreference:"high-performance"}); }
   catch(e){ return null; }
   renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0;
   /* 7.9128 · en Alta, sombras de verdad del foco (los jugadores proyectan su silueta como en el PES); en Media y Antigua,
@@ -65519,7 +65592,7 @@ function _c3dConstruir(host,P){
   const hud=document.createElement("div"); hud.className="c3d-hud"; hud.setAttribute("aria-live","polite");
   const est={ host:null, canvas:canvas, hud:hud, renderer:renderer, scene:scene, camGL:camGL, piezas:piezas, sombras:sombras, bola:bola,
     P:null, st:null, camPos:new THREE.Vector3(CAM3D_TV.ancha.lado,CAM3D_TV.ancha.alto,0), mira:new THREE.Vector3(0,CAM3D.mira_alto,0), fov:CAM3D.fov,
-    calidad:calidad, perfil:perfil, pr:pr0, raf:0, W0:0, H0:0, franjas:[], pelados:[], gk:[], ultT:0, dtProm:16, prAjuste:0, carteles:"",
+    calidad:calidad, clave:c3dClave(), consola:consola, perfil:perfil, pr:pr0, raf:0, W0:0, H0:0, franjas:[], pelados:[], gk:[], ultT:0, dtProm:16, prAjuste:0, carteles:"",
     hemi:hemi, sol:sol, colEstadio:[P&&P.part&&P.part.local===false?col.riv:col.mio] };
   C3D.montajes++;
   return est;
@@ -65538,7 +65611,7 @@ function _c3dPartido(est,P){
 function montarCancha3D(host, P){
   let est=C3D.est;
   /* mismo partido y misma calidad: se reusa todo (el repintado del partido no rearma la escena) */
-  if(est&&est.calidad!==c3dCalidad()){ detenerCancha3D(); est=null; }
+  if(est&&(est.calidad!==c3dCalidad()||est.clave!==c3dClave())){ detenerCancha3D(); est=null; }
   if(est){ C3D.reusos++; clearTimeout(est.liberar); }
   else { est=_c3dConstruir(host,P); if(!est) return null; C3D.est=est; }
   if(est.P!==P||est.st!==_cvSt) _c3dPartido(est,P);
@@ -65823,6 +65896,8 @@ function _c3dTam(est){
   /* 7.9149 · el tamaño de DISEÑO (clientWidth/Height), no el rectángulo en pantalla: en la cancha grande del celular el
      canvas va girado 90° con CSS y el rectángulo sale parado (el partido se dibujaba aplastado) */
   const cv=est.canvas, rc=(cv.clientWidth&&cv.clientHeight)?{width:cv.clientWidth,height:cv.clientHeight}:cv.getBoundingClientRect();
+  /* estilo consola: siempre 640 puntos de ancho, mida lo que mida la pantalla */
+  if(est.consola&&rc.width){ const prC=Math.max(0.2,Math.min(1,C3D_CONSOLA_ANCHO/rc.width)); if(Math.abs(prC-est.pr)>0.01){ est.pr=prC; est.renderer.setPixelRatio(prC); est.W0=0; } }
   if(rc.width&&(Math.abs(rc.width-est.W0)>0.5||Math.abs(rc.height-est.H0)>0.5)){
     est.W0=rc.width; est.H0=rc.height; est.renderer.setSize(rc.width,rc.height,false);
     est.camGL.aspect=rc.width/Math.max(1,rc.height); est.camGL.updateProjectionMatrix();
@@ -65849,7 +65924,7 @@ function _c3dCuadroUno(est){ try{ _c3dTam(est); _c3dSincronizar(est,0.016); if(t
 /* calidad Auto: si el equipo no llega, baja la resolución (no se cambia a 2D); si sobra, la sube */
 function _c3dAjusteAuto(est,dtReal){
   est.dtProm=est.dtProm*0.92+dtReal*0.08;
-  if(!c3dAuto()||performance.now()-est.prAjuste<1200) return;
+  if(est.consola||!c3dAuto()||performance.now()-est.prAjuste<1200) return;
   const p=est.perfil; let pr=est.pr;
   if(est.dtProm>26&&pr>p.prMin) pr=Math.max(p.prMin,pr*0.85);
   else if(est.dtProm<15&&pr<Math.min(p.pr,window.devicePixelRatio||1)) pr=Math.min(p.pr,pr*1.1);
@@ -66774,18 +66849,73 @@ function _m3dCortesU(D){
   return {uCortar:{value:K.manga?1:0}, uCorteA:{value:new THREE.Vector3(K.hombro||0,K.manga||0,K.cuello||0)},
     uCorteB:{value:new THREE.Vector3(K.cintura||0,K.short||0,K.media||0)}, uCuelloZ:{value:K.cuelloZ||0}, uPeloY:{value:K.pelo||0}};
 }
+/* ============================================================
+   7.9151 · LA TELA. El autor: "siguen siendo maniquís; no se ve ese pixelado que igual le daba realismo a los FIFA o PES".
+   Lo que les faltaba no eran polígonos sino TEXTURA: la camiseta era un color liso por zonas. Todo esto se pinta en el
+   sombreador, por la posición de reposo (sin archivos nuevos, sin internet, mismo costo de dibujo):
+   · camiseta: pliegues que caen en diagonal, trama de la tela, sombra bajo el brazo y en la cintura, ribete en el cuello
+     y puño en la manga (el "vivo"), un escudo en el pecho y EL NÚMERO en la espalda (y chico adelante);
+   · short: pliegues verticales, entrepierna en sombra y dobladillo; medias: canalé y dos rayas en la vuelta; botines:
+     la suela oscura.
+   Lo comparten los dos materiales (maniquí y realista). uTela=0 lo apaga (así se compara y lo usa el doctor). */
+var M3D_GLSL_TELA_U="uniform float uTela;\nuniform sampler2D uNumTex;\nuniform float uNum;\nuniform vec3 uNumCol;\nuniform vec3 uVivo;\n"+
+  "float m3dH(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }\n"+
+  "float m3dN(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(m3dH(i),m3dH(i+vec2(1.0,0.0)),f.x),mix(m3dH(i+vec2(0.0,1.0)),m3dH(i+vec2(1.0,1.0)),f.x),f.y); }\n"+
+  /* un número de 1 o 2 cifras dentro de una caja (q de 0 a 1): devuelve cuánta tinta hay en ese punto */
+  "float m3dNumero(vec2 q){ if(q.x<0.0||q.x>1.0||q.y<0.0||q.y>1.0||uNum<0.5) return 0.0; float d, u;\n"+
+  "  if(uNum>9.5){ float iz=step(q.x,0.5); d=mix(mod(uNum,10.0),floor(uNum/10.0),iz); u=fract(q.x*2.0); }\n"+
+  "  else { if(q.x<0.25||q.x>0.75) return 0.0; d=uNum; u=(q.x-0.25)*2.0; }\n"+
+  "  return texture2D(uNumTex,vec2((floor(d+0.5)+clamp(u,0.02,0.98))/10.0,q.y)).r; }\n";
+var M3D_GLSL_TELA=
+  "if(uTela>0.5){ vec3 tp=vReposo; float tx=abs(tp.x); float grano=0.965+0.07*m3dN(tp.xy*150.0+tp.z*90.0);\n"+
+  "  if(kz>0.5&&kz<1.5){ bool torso=tx<=uCorteA.x; float alto=clamp((tp.y-uCorteB.x)/max(0.05,uCorteA.z-uCorteB.x),0.0,1.0);\n"+
+  "    float rc=length(vec2(tp.x,tp.z-uCuelloZ));\n"+
+  "    float fr=clamp((tp.z-uCuelloZ)/0.1,0.0,1.0);\n"+
+  "    if(torso&&tp.y>uCorteA.z-0.085-0.03*fr&&rc<0.096+0.03*fr) kc=uVivo;\n"+                         /* ribete del cuello */
+  "    else if(!torso&&tx>uCorteA.y-0.03) kc=uVivo;\n"+                               /* puño de la manga */
+  "    else if(torso){ float yc=mix(uCorteB.x,uCorteA.z,0.55);\n"+
+  "      if(tp.z<uCuelloZ-0.015) kc=mix(kc,uNumCol,m3dNumero(vec2(0.5-tp.x/0.25,(tp.y-yc)/0.25+0.5)));\n"+       /* la espalda */
+  "      else if(tp.z>uCuelloZ+0.02){ vec2 e=vec2(tp.x+0.075,tp.y-(uCorteA.z-0.13));\n"+                          /* el pecho: escudo a un lado, número chico al otro */
+  "        float esc=max(abs(e.x)*1.15,abs(e.y+0.004)+max(0.0,-e.y)*0.9-0.004);\n"+
+  "        if(esc<0.027) kc=esc<0.019?uNumCol:uVivo;\n"+
+  "        else kc=mix(kc,uNumCol,m3dNumero(vec2((tp.x-0.075)/0.085+0.5,(tp.y-(uCorteA.z-0.13))/0.085+0.5))); } }\n"+
+  "    float pl=sin(tp.y*34.0+sin(tp.x*19.0+tp.z*11.0)*2.4)*0.5+0.5;\n"+              /* pliegues que caen en diagonal */
+  "    float som=mix(0.80,1.05,smoothstep(0.0,0.75,alto))*(torso?mix(1.0,0.84,smoothstep(uCorteA.x-0.07,uCorteA.x,tx)):mix(0.9,1.0,pl));\n"+
+  "    kc*=som*(0.90+0.13*pl)*grano; }\n"+
+  "  else if(kz>1.5&&kz<2.5){ float pl=sin(tp.x*46.0+sin(tp.y*23.0)*1.8)*0.5+0.5;\n"+ /* short */
+  "    if(tp.y<uCorteB.y+0.02) kc=mix(kc,uVivo,0.85);\n"+
+  "    kc*=(0.89+0.13*pl)*mix(0.82,1.0,smoothstep(0.0,0.07,tx))*grano; }\n"+
+  "  else if(kz>2.5&&kz<3.5){ float v=(uCorteB.z-tp.y)/0.016;\n"+                      /* medias: vuelta con dos rayas y canalé */
+  "    if(v>0.0&&v<4.0&&fract(v*0.5)>0.5) kc=uVivo;\n"+
+  "    kc*=(0.93+0.07*step(0.5,fract(tp.y*95.0)))*mix(0.88,1.0,smoothstep(0.0,0.2,tp.y)); }\n"+
+  "  else if(kz>3.5&&kz<4.5){ if(tp.y<0.028) kc*=0.5; else kc*=0.9+0.2*m3dN(tp.xz*60.0); } }\n";
+/* las diez cifras en una fila (una sola textura para los 22): blancas sobre negro, gordas, como dorsal */
+var _M3D_NUMTEX=null;
+function _m3dTexNumeros(){
+  if(_M3D_NUMTEX||typeof document==="undefined"||typeof THREE==="undefined") return _M3D_NUMTEX;
+  const c=document.createElement("canvas"); c.width=640; c.height=96; const x=c.getContext("2d");
+  x.fillStyle="#000"; x.fillRect(0,0,640,96); x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="middle";
+  x.font="900 92px 'Arial Narrow','Helvetica Neue',Arial,sans-serif";
+  for(let d=0;d<10;d++){ x.save(); x.translate(d*64+32,52); x.scale(0.82,1); x.fillText(String(d),0,0); x.restore(); }
+  const t=new THREE.CanvasTexture(c); t.minFilter=THREE.LinearMipmapLinearFilter; t.magFilter=THREE.LinearFilter; t.generateMipmaps=true;
+  return (_M3D_NUMTEX=t);
+}
+function _m3dTelaU(){ return {uTela:{value:1}, uNumTex:{value:_m3dTexNumeros()}, uNum:{value:0}, uNumCol:{value:new THREE.Color(1,1,1)}, uVivo:{value:new THREE.Color(1,1,1)}}; }
+/* claro u oscuro (para elegir el color del número y del vivo sobre la camiseta) */
+function _m3dLuz(hex){ let s=String(hex||"#888").replace("#",""); if(s.length===3) s=s[0]+s[0]+s[1]+s[1]+s[2]+s[2]; const n=parseInt(s,16); if(isNaN(n)) return 0.5;
+  return (0.299*((n>>16)&255)+0.587*((n>>8)&255)+0.114*(n&255))/255; }
 /* ---------- material con los colores del club por zona (camiseta con franjas) ---------- */
 function modelo3dMaterial(colores,D){
   if(D&&D.tex) return _m3dMaterialReal(colores,D);
   const m=new THREE.MeshLambertMaterial({color:0xffffff});
   const U=Object.assign({uKit:{value:[0,1,2,3,4,5,6,7].map(()=>new THREE.Color())}, uFranja:{value:0}, uFranjaCol:{value:new THREE.Color()}},
-    _m3dCortesU(D||MODELO3D.datos));
+    _m3dCortesU(D||MODELO3D.datos),_m3dTelaU());
   m.userData.u=U;
   m.onBeforeCompile=function(sh){
     Object.assign(sh.uniforms,U);
     sh.vertexShader=sh.vertexShader.replace("#include <common>","#include <common>\nattribute vec4 kitA;\nattribute vec4 kitB;\nvarying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;")
       .replace("#include <begin_vertex>","#include <begin_vertex>\nvKitA=kitA; vKitB=kitB; vReposo=position;");
-    sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 uKit[8];\nuniform float uFranja;\nuniform vec3 uFranjaCol;\n"+M3D_GLSL_CORTES_U+"varying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;")
+    sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 uKit[8];\nuniform float uFranja;\nuniform vec3 uFranjaCol;\n"+M3D_GLSL_CORTES_U+M3D_GLSL_TELA_U+"varying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;")
       .replace("vec4 diffuseColor = vec4( diffuse, opacity );",
         /* la zona que más pesa en este punto (borde nítido entre camiseta y piel, sin mezclas raras) */
         "float kz=0.0; float km=vKitA.x;\n"+
@@ -66798,9 +66928,10 @@ function modelo3dMaterial(colores,D){
         "  else if(uFranja<2.5) f=step(0.5,fract(vReposo.x*7.0+0.25));\n"+
         "  else f=1.0-step(0.075,abs(vReposo.x+(vReposo.y-1.3)*0.85));\n"+
         "  kc=mix(kc,uFranjaCol,f); }\n"+
+        M3D_GLSL_TELA+
         "vec4 diffuseColor = vec4( diffuse*kc, opacity );");
   };
-  m.customProgramCacheKey=function(){ return "m3dkit2"; };
+  m.customProgramCacheKey=function(){ return "m3dkit3"; };
   if(colores) modelo3dPintar(m,colores);
   return m;
 }
@@ -66815,7 +66946,7 @@ function _m3dMaterialReal(colores,D){
     uPeinado:{value:1}, uBarba:{value:0}, uGuante:{value:0}, uOjo:{value:new THREE.Color(1,1,1)}, uOjoW:{value:0},
 
     uLumPelo:{value:(D.extra&&D.extra.lumPelo)||0.6}};
-  Object.assign(U,_m3dCortesU(D));
+  Object.assign(U,_m3dCortesU(D),_m3dTelaU());
   m.userData.u=U; m.userData.ref=ref; m.userData.real=true;
   m.onBeforeCompile=function(sh){
     Object.assign(sh.uniforms,U);
@@ -66824,7 +66955,7 @@ function _m3dMaterialReal(colores,D){
         "transformed+=normal*(kitA.y*0.010+kitA.z*0.016);\n"+
         "float m3dOcu=0.0; if(peinado>0.5){ if(peinado<2.5){ if(abs(peinado-uPeinado)>0.5) m3dOcu=1.0; } else if(uBarba<0.5) m3dOcu=1.0; }")
       .replace("#include <project_vertex>","#include <project_vertex>\nif(m3dOcu>0.5) gl_Position=vec4(2.0,2.0,2.0,1.0);");
-    sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 uKit[8];\nuniform float uFranja;\nuniform vec3 uFranjaCol;\nuniform sampler2D uAtlas;\nuniform vec3 uTinte;\nuniform vec3 uRef;\nuniform float uRefLum;\n"+M3D_GLSL_CORTES_U+"uniform float uGuante;\nuniform float uLumPelo;\nuniform vec3 uOjo;\nuniform float uOjoW;\nvarying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;\nvarying vec2 vUvR;")
+    sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 uKit[8];\nuniform float uFranja;\nuniform vec3 uFranjaCol;\nuniform sampler2D uAtlas;\nuniform vec3 uTinte;\nuniform vec3 uRef;\nuniform float uRefLum;\n"+M3D_GLSL_CORTES_U+M3D_GLSL_TELA_U+"uniform float uGuante;\nuniform float uLumPelo;\nuniform vec3 uOjo;\nuniform float uOjoW;\nvarying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;\nvarying vec2 vUvR;")
       .replace("vec4 diffuseColor = vec4( diffuse, opacity );",
         "float kz=0.0; float km=vKitA.x;\n"+
         "if(vKitA.y>km){km=vKitA.y;kz=1.0;} if(vKitA.z>km){km=vKitA.z;kz=2.0;} if(vKitA.w>km){km=vKitA.w;kz=3.0;}\n"+
@@ -66833,7 +66964,10 @@ function _m3dMaterialReal(colores,D){
         "vec4 m3dTx=texture2D(uAtlas,vUvR); vec3 m3dLin=pow(m3dTx.rgb,vec3(2.2)); vec3 kc;\n"+
         /* la piel: el tono del jugador por la luz y sombra de la textura (luminancia), con un poco del matiz original (labios,
            mejillas). Multiplicar canal por canal blanqueaba las pieles claras: el azul de la textura es muy bajo */
-        "vec3 m3dPiel=0.85*uTinte*mix(vec3(dot(m3dLin,vec3(0.2126,0.7152,0.0722))/uRefLum),clamp(m3dLin/max(uRef,vec3(0.02)),0.5,1.5),0.15);\n"+
+        /* 7.9151 · la cara con más contraste (×1,35 alrededor del tono medio): cejas, cuencas, nariz y boca se leen desde la
+           cámara de la tele; antes la cara era una mancha pareja */
+        "float m3dL=dot(m3dLin,vec3(0.2126,0.7152,0.0722))/uRefLum; m3dL=uTela>0.5?clamp(1.0+(m3dL-1.0)*1.35,0.22,1.75):m3dL;\n"+
+        "vec3 m3dPiel=0.85*uTinte*mix(vec3(m3dL),clamp(m3dLin/max(uRef,vec3(0.02)),0.5,1.5),0.15);\n"+
         "if(kz<0.5) kc=m3dPiel;\n"+
         /* 7.9140 · los ojos: el iris (lo oscuro de la textura) se cambia por el color de cada jugador con su mismo dibujo;
            lo blanco queda blanco. Café = la textura tal cual */
@@ -66846,9 +66980,10 @@ function _m3dMaterialReal(colores,D){
         "    else if(uFranja<2.5) f=step(0.5,fract(vReposo.x*7.0+0.25));\n"+
         "    else f=1.0-step(0.075,abs(vReposo.x+(vReposo.y-1.35)*0.85));\n"+
         "    kc=mix(kc,uFranjaCol,f); } }\n"+
+        M3D_GLSL_TELA+
         "vec4 diffuseColor = vec4( diffuse*kc, opacity );");
   };
-  m.customProgramCacheKey=function(){ return "m3dreal2"; };
+  m.customProgramCacheKey=function(){ return "m3dreal3"; };
   if(colores) modelo3dPintar(m,colores);
   return m;
 }
@@ -66870,6 +67005,13 @@ function modelo3dPintar(m,c){
   [c.piel,c.camiseta,c.short,c.medias,c.botines,c.pelo,c.manos||c.piel,c.piel].forEach((h,k)=>col(h||"#888888",U.uKit.value[k]));
   U.uFranja.value=c.franja==="horizontal"?1:(c.franja==="vertical"?2:(c.franja==="banda"?3:0));
   col(c.franjaCol||c.camiseta||"#ffffff",U.uFranjaCol.value);
+  /* 7.9151 · la tela: el VIVO (cuello, puños, vuelta de las medias) es el color de la franja o el del short si se distingue
+     de la camiseta, y si no un tono más claro u oscuro; el NÚMERO va en el color que más contraste con la camiseta */
+  if(U.uTela){ const lc=_m3dLuz(c.camiseta), claro=lc>0.55;
+    const cand=[c.vivo,c.franja?c.franjaCol:null,c.short].filter(function(h){ return h&&Math.abs(_m3dLuz(h)-lc)>0.18; })[0]||(claro?"#20242c":"#f2f2f2");
+    col(cand,U.uVivo.value); col(c.numCol||(claro?(_m3dLuz(cand)<0.4?cand:"#15161a"):"#f6f6f6"),U.uNumCol.value);
+    U.uNum.value=Math.max(0,Math.min(99,c.num|0)); U.uTela.value=c.tela===false?0:1;
+    if(!U.uNumTex.value) U.uNumTex.value=_m3dTexNumeros(); }
   if(U.uTinte){ col(c.piel||"#e0ac7e",U.uTinte.value);   /* el tono del jugador (el shader le pone la luz y sombra de la textura) */
     U.uPeinado.value=c.peinado!=null?c.peinado:1; U.uBarba.value=c.barba?1:0;
     U.uGuante.value=(c.manos&&c.manos!==c.piel)?1:0;

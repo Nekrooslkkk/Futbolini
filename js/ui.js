@@ -3879,6 +3879,12 @@ function vistaAjustes(host){
       p.cuerpo.appendChild(el("p","mini","<b>Realistas</b>: "+(typeof MODELO3D_REAL_CREDITO==="string"?MODELO3D_REAL_CREDITO:"el personaje de Quaternius (CC0)")+
         "; se baja la primera vez (~1 MB) y queda guardado. <b>Maniquí</b>: el cuerpo liso con el uniforme del club. Los dos caminan, trotan y pican con "+
         (typeof MODELO3D_CREDITO==="string"?MODELO3D_CREDITO:"las animaciones de Quaternius (CC0)")+". Si tu equipo no da, vuelve solo a los <b>clásicos</b>. En Antigua y en Modo papa van los clásicos."));
+      /* 7.9151 · estilo consola: el pixelado de los FIFA y PES de la PS2, encima de Alta o Normal */
+      { const cons=E.config.c3dLook==="consola", bc=el("button","ficha",cons?"🎮 Estilo consola (pixelado): SÍ":"🎮 Estilo consola (pixelado)");
+        bc.setAttribute("aria-pressed",cons?"true":"false");
+        bc.onclick=()=>{ E.config.c3dLook=cons?"":"consola"; guardar(); render(); aviso(cons?"Estilo consola apagado: imagen nítida":"🎮 Estilo consola: el partido se dibuja a 640 puntos de ancho, con el pixel a la vista, como en la PS2",3800); };
+        const fc=el("div","fichas"); fc.appendChild(bc); p.cuerpo.appendChild(fc);
+        p.cuerpo.appendChild(el("p","mini","<b>Estilo consola</b>: los mismos jugadores y el mismo estadio, dibujados con la resolución de una consola de 2004 y sin suavizado. Es un gusto, no un ahorro (aunque de paso corre más liviano).")); }
       if(document.documentElement.classList.contains("papa")){
         const bp=el("button","ficha",E.config.cancha3dPapa?"🕹️ 3D antiguo en Modo papa: SÍ":"🕹️ Usar el 3D antiguo en Modo papa");
         bp.setAttribute("aria-pressed",E.config.cancha3dPapa?"true":"false");

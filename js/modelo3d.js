@@ -193,18 +193,73 @@ function _m3dCortesU(D){
   return {uCortar:{value:K.manga?1:0}, uCorteA:{value:new THREE.Vector3(K.hombro||0,K.manga||0,K.cuello||0)},
     uCorteB:{value:new THREE.Vector3(K.cintura||0,K.short||0,K.media||0)}, uCuelloZ:{value:K.cuelloZ||0}, uPeloY:{value:K.pelo||0}};
 }
+/* ============================================================
+   7.9151 · LA TELA. El autor: "siguen siendo maniquís; no se ve ese pixelado que igual le daba realismo a los FIFA o PES".
+   Lo que les faltaba no eran polígonos sino TEXTURA: la camiseta era un color liso por zonas. Todo esto se pinta en el
+   sombreador, por la posición de reposo (sin archivos nuevos, sin internet, mismo costo de dibujo):
+   · camiseta: pliegues que caen en diagonal, trama de la tela, sombra bajo el brazo y en la cintura, ribete en el cuello
+     y puño en la manga (el "vivo"), un escudo en el pecho y EL NÚMERO en la espalda (y chico adelante);
+   · short: pliegues verticales, entrepierna en sombra y dobladillo; medias: canalé y dos rayas en la vuelta; botines:
+     la suela oscura.
+   Lo comparten los dos materiales (maniquí y realista). uTela=0 lo apaga (así se compara y lo usa el doctor). */
+const M3D_GLSL_TELA_U="uniform float uTela;\nuniform sampler2D uNumTex;\nuniform float uNum;\nuniform vec3 uNumCol;\nuniform vec3 uVivo;\n"+
+  "float m3dH(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }\n"+
+  "float m3dN(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(m3dH(i),m3dH(i+vec2(1.0,0.0)),f.x),mix(m3dH(i+vec2(0.0,1.0)),m3dH(i+vec2(1.0,1.0)),f.x),f.y); }\n"+
+  /* un número de 1 o 2 cifras dentro de una caja (q de 0 a 1): devuelve cuánta tinta hay en ese punto */
+  "float m3dNumero(vec2 q){ if(q.x<0.0||q.x>1.0||q.y<0.0||q.y>1.0||uNum<0.5) return 0.0; float d, u;\n"+
+  "  if(uNum>9.5){ float iz=step(q.x,0.5); d=mix(mod(uNum,10.0),floor(uNum/10.0),iz); u=fract(q.x*2.0); }\n"+
+  "  else { if(q.x<0.25||q.x>0.75) return 0.0; d=uNum; u=(q.x-0.25)*2.0; }\n"+
+  "  return texture2D(uNumTex,vec2((floor(d+0.5)+clamp(u,0.02,0.98))/10.0,q.y)).r; }\n";
+const M3D_GLSL_TELA=
+  "if(uTela>0.5){ vec3 tp=vReposo; float tx=abs(tp.x); float grano=0.965+0.07*m3dN(tp.xy*150.0+tp.z*90.0);\n"+
+  "  if(kz>0.5&&kz<1.5){ bool torso=tx<=uCorteA.x; float alto=clamp((tp.y-uCorteB.x)/max(0.05,uCorteA.z-uCorteB.x),0.0,1.0);\n"+
+  "    float rc=length(vec2(tp.x,tp.z-uCuelloZ));\n"+
+  "    float fr=clamp((tp.z-uCuelloZ)/0.1,0.0,1.0);\n"+
+  "    if(torso&&tp.y>uCorteA.z-0.085-0.03*fr&&rc<0.096+0.03*fr) kc=uVivo;\n"+                         /* ribete del cuello */
+  "    else if(!torso&&tx>uCorteA.y-0.03) kc=uVivo;\n"+                               /* puño de la manga */
+  "    else if(torso){ float yc=mix(uCorteB.x,uCorteA.z,0.55);\n"+
+  "      if(tp.z<uCuelloZ-0.015) kc=mix(kc,uNumCol,m3dNumero(vec2(0.5-tp.x/0.25,(tp.y-yc)/0.25+0.5)));\n"+       /* la espalda */
+  "      else if(tp.z>uCuelloZ+0.02){ vec2 e=vec2(tp.x+0.075,tp.y-(uCorteA.z-0.13));\n"+                          /* el pecho: escudo a un lado, número chico al otro */
+  "        float esc=max(abs(e.x)*1.15,abs(e.y+0.004)+max(0.0,-e.y)*0.9-0.004);\n"+
+  "        if(esc<0.027) kc=esc<0.019?uNumCol:uVivo;\n"+
+  "        else kc=mix(kc,uNumCol,m3dNumero(vec2((tp.x-0.075)/0.085+0.5,(tp.y-(uCorteA.z-0.13))/0.085+0.5))); } }\n"+
+  "    float pl=sin(tp.y*34.0+sin(tp.x*19.0+tp.z*11.0)*2.4)*0.5+0.5;\n"+              /* pliegues que caen en diagonal */
+  "    float som=mix(0.80,1.05,smoothstep(0.0,0.75,alto))*(torso?mix(1.0,0.84,smoothstep(uCorteA.x-0.07,uCorteA.x,tx)):mix(0.9,1.0,pl));\n"+
+  "    kc*=som*(0.90+0.13*pl)*grano; }\n"+
+  "  else if(kz>1.5&&kz<2.5){ float pl=sin(tp.x*46.0+sin(tp.y*23.0)*1.8)*0.5+0.5;\n"+ /* short */
+  "    if(tp.y<uCorteB.y+0.02) kc=mix(kc,uVivo,0.85);\n"+
+  "    kc*=(0.89+0.13*pl)*mix(0.82,1.0,smoothstep(0.0,0.07,tx))*grano; }\n"+
+  "  else if(kz>2.5&&kz<3.5){ float v=(uCorteB.z-tp.y)/0.016;\n"+                      /* medias: vuelta con dos rayas y canalé */
+  "    if(v>0.0&&v<4.0&&fract(v*0.5)>0.5) kc=uVivo;\n"+
+  "    kc*=(0.93+0.07*step(0.5,fract(tp.y*95.0)))*mix(0.88,1.0,smoothstep(0.0,0.2,tp.y)); }\n"+
+  "  else if(kz>3.5&&kz<4.5){ if(tp.y<0.028) kc*=0.5; else kc*=0.9+0.2*m3dN(tp.xz*60.0); } }\n";
+/* las diez cifras en una fila (una sola textura para los 22): blancas sobre negro, gordas, como dorsal */
+let _M3D_NUMTEX=null;
+function _m3dTexNumeros(){
+  if(_M3D_NUMTEX||typeof document==="undefined"||typeof THREE==="undefined") return _M3D_NUMTEX;
+  const c=document.createElement("canvas"); c.width=640; c.height=96; const x=c.getContext("2d");
+  x.fillStyle="#000"; x.fillRect(0,0,640,96); x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="middle";
+  x.font="900 92px 'Arial Narrow','Helvetica Neue',Arial,sans-serif";
+  for(let d=0;d<10;d++){ x.save(); x.translate(d*64+32,52); x.scale(0.82,1); x.fillText(String(d),0,0); x.restore(); }
+  const t=new THREE.CanvasTexture(c); t.minFilter=THREE.LinearMipmapLinearFilter; t.magFilter=THREE.LinearFilter; t.generateMipmaps=true;
+  return (_M3D_NUMTEX=t);
+}
+function _m3dTelaU(){ return {uTela:{value:1}, uNumTex:{value:_m3dTexNumeros()}, uNum:{value:0}, uNumCol:{value:new THREE.Color(1,1,1)}, uVivo:{value:new THREE.Color(1,1,1)}}; }
+/* claro u oscuro (para elegir el color del número y del vivo sobre la camiseta) */
+function _m3dLuz(hex){ let s=String(hex||"#888").replace("#",""); if(s.length===3) s=s[0]+s[0]+s[1]+s[1]+s[2]+s[2]; const n=parseInt(s,16); if(isNaN(n)) return 0.5;
+  return (0.299*((n>>16)&255)+0.587*((n>>8)&255)+0.114*(n&255))/255; }
 /* ---------- material con los colores del club por zona (camiseta con franjas) ---------- */
 function modelo3dMaterial(colores,D){
   if(D&&D.tex) return _m3dMaterialReal(colores,D);
   const m=new THREE.MeshLambertMaterial({color:0xffffff});
   const U=Object.assign({uKit:{value:[0,1,2,3,4,5,6,7].map(()=>new THREE.Color())}, uFranja:{value:0}, uFranjaCol:{value:new THREE.Color()}},
-    _m3dCortesU(D||MODELO3D.datos));
+    _m3dCortesU(D||MODELO3D.datos),_m3dTelaU());
   m.userData.u=U;
   m.onBeforeCompile=function(sh){
     Object.assign(sh.uniforms,U);
     sh.vertexShader=sh.vertexShader.replace("#include <common>","#include <common>\nattribute vec4 kitA;\nattribute vec4 kitB;\nvarying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;")
       .replace("#include <begin_vertex>","#include <begin_vertex>\nvKitA=kitA; vKitB=kitB; vReposo=position;");
-    sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 uKit[8];\nuniform float uFranja;\nuniform vec3 uFranjaCol;\n"+M3D_GLSL_CORTES_U+"varying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;")
+    sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 uKit[8];\nuniform float uFranja;\nuniform vec3 uFranjaCol;\n"+M3D_GLSL_CORTES_U+M3D_GLSL_TELA_U+"varying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;")
       .replace("vec4 diffuseColor = vec4( diffuse, opacity );",
         /* la zona que más pesa en este punto (borde nítido entre camiseta y piel, sin mezclas raras) */
         "float kz=0.0; float km=vKitA.x;\n"+
@@ -217,9 +272,10 @@ function modelo3dMaterial(colores,D){
         "  else if(uFranja<2.5) f=step(0.5,fract(vReposo.x*7.0+0.25));\n"+
         "  else f=1.0-step(0.075,abs(vReposo.x+(vReposo.y-1.3)*0.85));\n"+
         "  kc=mix(kc,uFranjaCol,f); }\n"+
+        M3D_GLSL_TELA+
         "vec4 diffuseColor = vec4( diffuse*kc, opacity );");
   };
-  m.customProgramCacheKey=function(){ return "m3dkit2"; };
+  m.customProgramCacheKey=function(){ return "m3dkit3"; };
   if(colores) modelo3dPintar(m,colores);
   return m;
 }
@@ -234,7 +290,7 @@ function _m3dMaterialReal(colores,D){
     uPeinado:{value:1}, uBarba:{value:0}, uGuante:{value:0}, uOjo:{value:new THREE.Color(1,1,1)}, uOjoW:{value:0},
 
     uLumPelo:{value:(D.extra&&D.extra.lumPelo)||0.6}};
-  Object.assign(U,_m3dCortesU(D));
+  Object.assign(U,_m3dCortesU(D),_m3dTelaU());
   m.userData.u=U; m.userData.ref=ref; m.userData.real=true;
   m.onBeforeCompile=function(sh){
     Object.assign(sh.uniforms,U);
@@ -243,7 +299,7 @@ function _m3dMaterialReal(colores,D){
         "transformed+=normal*(kitA.y*0.010+kitA.z*0.016);\n"+
         "float m3dOcu=0.0; if(peinado>0.5){ if(peinado<2.5){ if(abs(peinado-uPeinado)>0.5) m3dOcu=1.0; } else if(uBarba<0.5) m3dOcu=1.0; }")
       .replace("#include <project_vertex>","#include <project_vertex>\nif(m3dOcu>0.5) gl_Position=vec4(2.0,2.0,2.0,1.0);");
-    sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 uKit[8];\nuniform float uFranja;\nuniform vec3 uFranjaCol;\nuniform sampler2D uAtlas;\nuniform vec3 uTinte;\nuniform vec3 uRef;\nuniform float uRefLum;\n"+M3D_GLSL_CORTES_U+"uniform float uGuante;\nuniform float uLumPelo;\nuniform vec3 uOjo;\nuniform float uOjoW;\nvarying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;\nvarying vec2 vUvR;")
+    sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 uKit[8];\nuniform float uFranja;\nuniform vec3 uFranjaCol;\nuniform sampler2D uAtlas;\nuniform vec3 uTinte;\nuniform vec3 uRef;\nuniform float uRefLum;\n"+M3D_GLSL_CORTES_U+M3D_GLSL_TELA_U+"uniform float uGuante;\nuniform float uLumPelo;\nuniform vec3 uOjo;\nuniform float uOjoW;\nvarying vec4 vKitA;\nvarying vec4 vKitB;\nvarying vec3 vReposo;\nvarying vec2 vUvR;")
       .replace("vec4 diffuseColor = vec4( diffuse, opacity );",
         "float kz=0.0; float km=vKitA.x;\n"+
         "if(vKitA.y>km){km=vKitA.y;kz=1.0;} if(vKitA.z>km){km=vKitA.z;kz=2.0;} if(vKitA.w>km){km=vKitA.w;kz=3.0;}\n"+
@@ -252,7 +308,10 @@ function _m3dMaterialReal(colores,D){
         "vec4 m3dTx=texture2D(uAtlas,vUvR); vec3 m3dLin=pow(m3dTx.rgb,vec3(2.2)); vec3 kc;\n"+
         /* la piel: el tono del jugador por la luz y sombra de la textura (luminancia), con un poco del matiz original (labios,
            mejillas). Multiplicar canal por canal blanqueaba las pieles claras: el azul de la textura es muy bajo */
-        "vec3 m3dPiel=0.85*uTinte*mix(vec3(dot(m3dLin,vec3(0.2126,0.7152,0.0722))/uRefLum),clamp(m3dLin/max(uRef,vec3(0.02)),0.5,1.5),0.15);\n"+
+        /* 7.9151 · la cara con más contraste (×1,35 alrededor del tono medio): cejas, cuencas, nariz y boca se leen desde la
+           cámara de la tele; antes la cara era una mancha pareja */
+        "float m3dL=dot(m3dLin,vec3(0.2126,0.7152,0.0722))/uRefLum; m3dL=uTela>0.5?clamp(1.0+(m3dL-1.0)*1.35,0.22,1.75):m3dL;\n"+
+        "vec3 m3dPiel=0.85*uTinte*mix(vec3(m3dL),clamp(m3dLin/max(uRef,vec3(0.02)),0.5,1.5),0.15);\n"+
         "if(kz<0.5) kc=m3dPiel;\n"+
         /* 7.9140 · los ojos: el iris (lo oscuro de la textura) se cambia por el color de cada jugador con su mismo dibujo;
            lo blanco queda blanco. Café = la textura tal cual */
@@ -265,9 +324,10 @@ function _m3dMaterialReal(colores,D){
         "    else if(uFranja<2.5) f=step(0.5,fract(vReposo.x*7.0+0.25));\n"+
         "    else f=1.0-step(0.075,abs(vReposo.x+(vReposo.y-1.35)*0.85));\n"+
         "    kc=mix(kc,uFranjaCol,f); } }\n"+
+        M3D_GLSL_TELA+
         "vec4 diffuseColor = vec4( diffuse*kc, opacity );");
   };
-  m.customProgramCacheKey=function(){ return "m3dreal2"; };
+  m.customProgramCacheKey=function(){ return "m3dreal3"; };
   if(colores) modelo3dPintar(m,colores);
   return m;
 }
@@ -289,6 +349,13 @@ function modelo3dPintar(m,c){
   [c.piel,c.camiseta,c.short,c.medias,c.botines,c.pelo,c.manos||c.piel,c.piel].forEach((h,k)=>col(h||"#888888",U.uKit.value[k]));
   U.uFranja.value=c.franja==="horizontal"?1:(c.franja==="vertical"?2:(c.franja==="banda"?3:0));
   col(c.franjaCol||c.camiseta||"#ffffff",U.uFranjaCol.value);
+  /* 7.9151 · la tela: el VIVO (cuello, puños, vuelta de las medias) es el color de la franja o el del short si se distingue
+     de la camiseta, y si no un tono más claro u oscuro; el NÚMERO va en el color que más contraste con la camiseta */
+  if(U.uTela){ const lc=_m3dLuz(c.camiseta), claro=lc>0.55;
+    const cand=[c.vivo,c.franja?c.franjaCol:null,c.short].filter(function(h){ return h&&Math.abs(_m3dLuz(h)-lc)>0.18; })[0]||(claro?"#20242c":"#f2f2f2");
+    col(cand,U.uVivo.value); col(c.numCol||(claro?(_m3dLuz(cand)<0.4?cand:"#15161a"):"#f6f6f6"),U.uNumCol.value);
+    U.uNum.value=Math.max(0,Math.min(99,c.num|0)); U.uTela.value=c.tela===false?0:1;
+    if(!U.uNumTex.value) U.uNumTex.value=_m3dTexNumeros(); }
   if(U.uTinte){ col(c.piel||"#e0ac7e",U.uTinte.value);   /* el tono del jugador (el shader le pone la luz y sombra de la textura) */
     U.uPeinado.value=c.peinado!=null?c.peinado:1; U.uBarba.value=c.barba?1:0;
     U.uGuante.value=(c.manos&&c.manos!==c.piel)?1:0;
