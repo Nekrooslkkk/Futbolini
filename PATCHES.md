@@ -6059,4 +6059,4 @@ PES". Se le propuso partir por la textura antes que por la geometría y dijo: "p
 - **Lo que NO se hizo:** el escudo del pecho es una forma genérica con los colores del club (no el escudo real); los
   dorsales son 1–11 por posición en la cancha, no los números reales del plantel; la geometría de los estadios sigue
   pendiente; el maniquí (sin textura de cara) no ganó cara, solo tela.
-- **Estado:** `test/cancha3d.mjs` verde entero y doctor `tela_jugadores` verde y probado al revés; suites completas corriendo al momento de este commit (el resultado va en el commit siguiente).
+- **Estado:** todo verde en 7.9151 — core 1186/1186, saves 12/12, doctor SANO 177/177 en 4 partidas + celular, dev 595/595, banco 255 partidas sin fallas.
