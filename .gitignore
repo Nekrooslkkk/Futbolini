@@ -8,3 +8,6 @@ __pycache__/
 /_*_tmp.html
 /_saves_datos.js
 /_duelo_juego.html
+
+# copias de trabajo de otras sesiones de IA (no van al repo)
+/.claude/worktrees/
