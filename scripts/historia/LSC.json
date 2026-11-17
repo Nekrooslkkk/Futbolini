@@ -3,7 +3,7 @@
  "nombre": "Lota Schwager",
  "fuente": "https://es.wikipedia.org/wiki/Club_de_Deportes_Lota_Schwager",
  "consultado": "2026-10-16",
- "nota": "Verificado con citas textuales del artículo. Se omite a propósito el nombre del presidente que vendió el cupo en 1995 (persona real, hecho delicado): basta con «la dirigencia».",
+ "nota": "Verificado con citas textuales del artículo. Se omite a propósito el nombre del presidente que vendió el cupo en 1995 (persona real, hecho delicado): basta con «la dirigencia». Re-verificado el 2026-11-17 contra el texto de la página: sin cambios en los hechos anteriores; se agrega la fusión de octubre de 2020, que el hito de 2019 omitía.",
  "hechos": [
   {
    "txt": "Se fundó el 10 de mayo de 1966 con la fusión de Minas Lota y Federico Schwager, los equipos de las dos empresas del carbón de la zona."
@@ -40,6 +40,9 @@
   },
   {
    "txt": "Para 2019 dos equipos paralelos presentaron sus cuadernos de cargos ante la ANFA con el nombre del club."
+  },
+  {
+   "txt": "En octubre de 2020 los dos equipos que usaban el nombre del club acordaron fusionarse y compitieron en Tercera A como un solo club."
   }
  ]
 }

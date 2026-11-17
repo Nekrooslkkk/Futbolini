@@ -6060,3 +6060,39 @@ PES". Se le propuso partir por la textura antes que por la geometría y dijo: "p
   dorsales son 1–11 por posición en la cancha, no los números reales del plantel; la geometría de los estadios sigue
   pendiente; el maniquí (sin textura de cara) no ganó cara, solo tela.
 - **Estado:** todo verde en 7.9151 — core 1186/1186, saves 12/12, doctor SANO 177/177 en 4 partidas + celular, dev 595/595, banco 255 partidas sin fallas.
+
+### 7.9152 — Historias reales: la U, la UC y Cobreloa, y las tres que había, verificadas (trabajo de Sonnet, revisado)
+Pedido del autor (15 y 17 nov 2026): "ve lo que es la historia, Sonnet entrará a escribir y déjale trabajo" · "y dale pega a
+Sonnet". Se lanzó una sesión de Sonnet con la orden de 7.9149, en una copia aparte del repo; esto es lo que entregó, revisado
+antes de entrar.
+- **Paso 0 · verificación de lo que había** (cada hecho contra el texto de su fuente, leyendo el wikitexto, no resúmenes):
+  - **REN** (16 hechos): todos calzan. El 4.º lugar de 2024 está solo en la página en inglés (quedó anotado en la `nota`).
+  - **LSC · Lota Schwager** (12): todos calzan, pero faltaba uno que cambiaba el sentido: en octubre de 2020 los dos
+    equipos paralelos **acordaron fusionarse**. El arco presentaba el club "partido en dos" como un hecho de hoy; ahora el
+    hito lo dice y el capítulo aclara que en TU club (la ficción del juego) la fusión no cuajó.
+  - **LIN** (12): todos calzan. Se sacó una frase inventada en un capítulo (el brote de 2020 "dejó secuelas": la fuente
+    solo dice que hubo un gran brote). La URL citada hoy redirige a «Club Social y Deportes Linares Unido».
+- **Tres clubes nuevos** (fuente: su página en es.wikipedia.org, consultada el 17 nov 2026):
+  - **UCH · Universidad de Chile**: 19 hechos, 11 hitos (la fundación en disputa, el Ballet Azul, el descenso de 1989, la
+    quiebra de 2006, el triplete de 2011, el estadio que no llega, Rancagua 2021). Arcos: «La casa prestada» y «Deudas azules».
+  - **UC · Universidad Católica**: 18 hechos, 12 hitos (el cupo universitario de 1938, el primer título de 1949, la venta
+    de Independencia, San Carlos, la final de 1993, Cruzados, el tetracampeonato, el Claro Arena). Arcos: «La casa de la
+    Franja» y «La Máquina».
+  - **CBL · Cobreloa**: 19 hechos, 11 hitos (el "ahora o nunca" de 1977, las dos finales de Libertadores, los 91 partidos
+    invicto en Calama, el descenso por secretaría de 2015, el título de la B en 2023 y la vuelta a bajar). Arcos: «Ahora o
+    nunca» y «Caída y regreso».
+- **Lo que se dejó fuera a propósito** (no se podía citar, o es una acusación con nombre): nombres de dirigentes, síndicos y
+  alcaldes; incidentes de hinchada; la denuncia de 2024 que involucró a excadetes de Cobreloa; el nombre del jugador del
+  caso de 2015 (queda "un fallo del Tribunal de Disciplina"); el marcador de la Interamericana 1994 de la UC.
+- **Dudas que quedan anotadas** (en la `nota` de cada `.json`): la fuente de Cobreloa se contradice sobre dónde se jugó la
+  vuelta de la final de 1981 (solo se afirma lo de 1982, que coincide en las dos secciones); la UC da dos fechas de
+  fundación (1927 en un libro, 1937 oficial: se usó la oficial); la U da tres (se cuenta la disputa, sin elegir).
+- **Revisión de esta sesión antes de integrar:** los hitos se contrastaron uno por uno contra lo que se sabe de esos clubes
+  (sin diferencias); estructura, prefijos de `id`, destinos `va`, rangos de efectos y ausencia de voseo revisados con un
+  script; una frase aclarada (la final de 1993: "cae 5-1 en Brasil y gana 2-0 en Santiago", antes se podía leer al revés).
+- **Cómo queda la cuenta** (doctor `historia_clubes` y `paridad_clubes`): **6 clubes con historia real, 65 hitos, 12 arcos
+  y 36 capítulos**; faltan 40 de los 46 de Chile; clubes sin historia propia 73 → 70.
+- Ojo, comportamiento que ya existía: los hitos verificados reemplazan en la línea de historia a los que hubiera del mismo
+  año (`sumarHistoriaClubes`); para la U eso pisa los de 1927 y 2011 que venían de `data-historico.js`.
+- Archivos: `js/data-historia-clubes.js`, `scripts/historia/{REN,LSC,LIN,UCH,UC,CBL}.json`, `js/util.js` (+ rearmados).
+- **Estado:** doctor `historia_clubes` y `paridad_clubes` verdes; suites completas y doctor de UCH, UC, CBL y LSC corriendo al momento de este commit (el resultado va en el commit siguiente).

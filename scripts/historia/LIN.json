@@ -3,7 +3,7 @@
  "nombre": "Deportes Linares",
  "fuente": "https://es.wikipedia.org/wiki/Club_de_Deportes_Linares",
  "consultado": "2026-10-16",
- "nota": "Verificado con citas textuales. Se omite el nombre del gerente denunciado en 2020 (persona real, denuncia): basta con «el gerente del club».",
+ "nota": "Verificado con citas textuales. Se omite el nombre del gerente denunciado en 2020 (persona real, denuncia): basta con «el gerente del club». Re-verificado el 2026-11-17 contra el texto de la página (hoy titulada «Club Social y Deportes Linares Unido»; la URL citada redirige a ella): los 12 hechos calzan. Se corrigió en js/data-historia-clubes.js un contexto que decía que el brote de 2020 «dejó secuelas»: la fuente solo dice que el plantel sufrió un gran brote de coronavirus.",
  "hechos": [
   {
    "txt": "Se fundó el 19 de noviembre de 1955, con la fusión de tres clubes amateurs de Linares, como Club Deportivo Lister Rossel: el nombre de un médico pediatra linarense, deportista y delegado del fútbol amateur."

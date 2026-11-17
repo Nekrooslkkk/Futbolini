@@ -3039,3 +3039,12 @@ propia (REN, LSC = Lota Schwager, LIN). El doctor `paridad_clubes` cuenta lo que
   otra opción que cambie cómo se crea el renderer, súmenla ahí.
 - Hay una sesión de Sonnet escribiendo historias (UCH, UC, CBL) en una copia aparte: no editen
   `js/data-historia-clubes.js` hasta que se integre.
+
+**7.9152 (Claude, integrando a Sonnet) · Historias: hecho el paso 0 y UCH, UC, CBL. Cola que sigue:**
+- Paso 0 (verificar REN, LSC, LIN): HECHO. Tanda 1: hechos UCH, UC, CBL. **Siguen, en este orden:** SW, UES, EVE, PAL,
+  AUD, OHI, HUA, COQ, COB (Cobresal), NUB, CAL, LSE (La Serena), DCO, UDC, LIM; después las tandas 2, 3 y 4 de la orden
+  de 7.9149.
+- Lo que funcionó y se repite: leer el WIKITEXTO de la página (no resúmenes), calzar cada hecho con su frase, anotar en
+  la `nota` del `.json` lo omitido y las contradicciones de la fuente, y dejar fuera nombres en todo lo que sea denuncia.
+- Quien escriba trabaja en una copia aparte y entrega SOLO `scripts/historia/*.json` y `js/data-historia-clubes.js`
+  (sin `juego.js`, sin versión, sin PATCHES): la sesión que integra revisa, rearma y documenta.
